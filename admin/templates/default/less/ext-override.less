@@ -1,0 +1,228 @@
+// Tool: mini buttons for panels
+.x-tool-after-title {
+  width: 16px !important;
+
+  img {
+    margin-top: -7px !important;
+    margin-left: -1px !important;
+  }
+}
+
+.x-tool-top {
+  width: 16px !important;
+
+  img {
+    margin-left: -1px;
+  }
+}
+
+.x-toolbar {
+
+  // buttons
+  .x-btn {
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+  }
+}
+
+
+// GRID RELATED STYLES
+//---------------------------
+
+.x-column-header {
+  font-weight: normal !important;
+}
+
+.x-column-header-text {
+  font-size: 12px;
+}
+
+.x-progress-default {
+  border-width: 1px !important;
+}
+
+.x-progress-default .x-progress-text {
+  font-size: 12px !important;
+  font-weight: normal !important;
+}
+
+// grid row hover state
+// grid row selected state
+.x-grid-row-over .x-grid-td,
+.x-grid-row-selected .x-grid-td {
+  background-color: fadeout(@link-color, 90%) !important;
+  border-color: fadeout(@link-color, 40%) !important;
+  color: #333 !important;
+}
+.x-grid-row-before-over .x-grid-td,
+.x-grid-row-before-selected .x-grid-td {
+  border-color: fadeout(@link-color, 40%) !important;
+}
+
+.x-grid-row-alt {
+  background-color: #f9f9f9 !important;
+}
+
+.grid-row-customly-highlighted {
+  background-color: fadeout(@link-color, 70%) !important;
+}
+
+#page--pages .grid-row-customly-highlighted .x-grid-cell-titleCol > div:before {
+  content: '\e000';
+  font-family: 'Subrion';
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  margin-right: 6px;
+  color: #555;
+}
+
+
+// IA-MENU BOXES
+//---------------------------
+
+#js-placeholder-menus,
+#js-placeholder-pages {
+  
+  .x-panel-default {
+    border: 0 none;
+  }
+
+  .x-grid-header-ct {
+    border: 0 none !important;
+    background: none !important;
+  }
+
+  .x-grid-body {
+    background: none;
+  }
+
+  .x-grid-cell {
+    background: none !important;
+  }
+}
+
+
+// EXT MODAL CONTENT
+//---------------------------
+
+.extension {
+  &-docs {
+    padding: 10px !important;
+
+    h2 {
+      margin: 0 0 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    ul {
+      list-style-type: none;
+      margin-left: 0;
+      padding: 0;
+
+      > li {
+        font-weight: bold;
+
+        ul {
+          padding-left: 20px;
+          font-weight: normal;
+          margin-bottom: 20px;
+
+          > li {
+            font-weight: normal;
+          }
+        }
+      }
+    }
+  }
+}
+
+.plugin-icon {
+  text-align: center;
+}
+
+
+// MENU DRAG COMPONENT
+//---------------------------
+
+.x-tree-view {
+  .x-grid-row-over,
+  .x-grid-row-over > td {
+    background: #f5f5f5;
+  }
+
+  .x-grid-row-selected,
+  .x-grid-row-selected > td {
+    background: fadeout(@link-color, 60%);
+  }
+
+}
+
+#form-panel-body {
+  padding: 14px;
+}
+
+
+// GRID ICONs
+//---------------------------
+
+.grid-icon {
+  cursor: pointer;
+  font-size: 15px;
+}
+.grid-icon-disabled {
+  color: #d0d0d0;
+  font-size: 15px;
+}
+
+
+// STATUSES
+//---------------------------
+
+.grid-status-active,
+.grid-status-passed,
+.grid-status-available {
+  background-color: #92cf67 !important;
+  color: #fff;
+}
+.grid-status-approval,
+.grid-status-pending {
+  background-color: #E59642 !important;
+}
+.grid-status-inactive {
+  background-color: #ddd !important;
+}
+.grid-status-unconfirmed,
+.grid-status-refunded {
+  background:#e6de00 !important;
+}
+.grid-status-banned,
+.grid-status-failed {
+  background-color: #ff3c3c !important;
+}
+.grid-status-suspended {
+  background-color: #bbb !important;
+}
+.grid-status-draft {
+  background-color: #bbb !important;
+}
+
+
+// STUFF
+//---------------------------
+
+.custom .item_val { display: block; min-height: 18px; padding: 4px; font-weight: bold; }
+.custom .item_input, .common .item_val { display: none; }
+.common .item_input { display: block; min-height: 26px; }
+
+.custom .js-set-custom, .common .js-set-default { display: block; cursor: pointer; }
+.custom .js-set-default, .common .js-set-custom { display: none; }
+

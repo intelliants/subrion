@@ -1,0 +1,90 @@
+// LOGIN PAGE
+// ----------
+
+#page-login {
+	background: @base-dark-color;
+	overflow: hidden;
+	height: 100%;
+}
+
+.login-block {
+	.opacity(0);
+	width: 430px;
+	height: 400px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -230px; // -260px original
+	margin-left: -215px;
+
+	.login-header {
+		margin-bottom: 30px;
+
+		h3 {
+			margin-left: 120px;
+			color: @base-dark-color;
+		}
+	}
+
+	.logo { 
+		display: block;
+		width: 84px;
+		float: left;
+
+		img {
+			width: 100%;
+		}
+	}
+
+	.login-block-content {
+		background: #fff;
+		padding: 30px;
+	}
+
+	.copyright {
+		font-size: 12px;
+		border-top: 1px solid #eee;
+		color: #999;
+		margin: 30px -30px 0;
+		padding: 30px 30px 0;
+	}
+
+	.js-login-body-forgot-password {
+		display: none;
+		
+	}
+}
+
+@media (max-width: @screen-tablet) {
+
+	#page-login {
+		padding: 20px;
+	}
+
+	.login-block {
+		.opacity(1);
+		width: auto;
+		height: auto;
+		position: static;
+		margin: 0 !important;
+
+		.logo {
+			float: none;
+			display: inline-block;
+			margin-bottom: 10px;
+		}
+
+		.login-header {
+			text-align: center;
+			h3 {
+				margin: 0;
+			}	
+		}
+	}
+}
+
+@media (max-width: @screen-phone) {
+	#page-login {
+		padding: 10px;
+	}
+}

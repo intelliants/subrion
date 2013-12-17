@@ -1,0 +1,45 @@
+<html><head><title>Printing out the Nodes of an XML Document Using SAXY</title></head>
+<body>
+
+<h2>Printing out the Nodes of an XML Document Using SAXY</h2>
+
+<p>The SAXY XML parser is a Simple API for XML (SAX) parser. It is modelled on the Expat parser, so if you have used Expat before, you should find it an easy transition to SAXY. </p>
+
+<p>In this brief example, we will use SAXY to print out the nodes of a simple XML string:</p>
+
+<pre><type>&lt;book&gt;&lt;title&gt;&lt;![CDATA[How to use SAXY]]&gt;&lt;/title&gt;&lt;author&gt;John Heinstein&lt;/author&gt;&lt;/book&gt;</type>
+</pre>
+
+<p>We begin by including the SAXY php file and creating an instance of the parser:</p>
+
+<p>
+<pre><type>//create new SAXY parser
+require_once("xml_saxy_parser.php");
+$parser = new SAXY_Parser();</type>
+</pre>
+</p>
+
+<p>As with Expat, we set the handler for start and end tag events:</p>
+
+<p>
+<pre><type>$parser-&gt;xml_set_element_handler(array(&amp;$this, "startElement"), array(&amp;$this, "endElement"));</type>
+</pre>
+</p>
+
+
+<p>We do the same for a character data event:</p>
+
+<p>
+<pre><type>$parser-&gt;xml_set_character_data_handler(array(&amp;$this, "charData"));</type>
+</pre>
+</p>
+
+<p>The string is then fed to the parser instance using the <b>parse</b> method:</p>
+
+<p>
+</p><pre><type>//parse RSS XML
+$parser-&gt;parse("&lt;book&gt;&lt;title&gt;&lt;![CDATA[How to use SAXY]]&gt;&lt;/title&gt;&lt;author&gt;John Heinstein&lt;/author&gt;&lt;/book&gt;");</type>
+</pre>
+</p>
+
+</body></html>

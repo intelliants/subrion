@@ -1,0 +1,38 @@
+// Field styles
+// -------------------------
+
+.ia-field {
+  margin-bottom: 20px;
+
+  &.separated {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0 none;
+  }
+
+  .title {
+    float: left;
+    width: 160px;
+    font-weight: bold;
+    text-align: right;
+  }
+
+  .content {
+    margin-left: 180px;
+  }
+
+  &.plain {
+    .title,
+    .content {
+      float: none;
+      text-align: left;
+      width: auto;
+      margin: 0;
+    }
+  }
+}

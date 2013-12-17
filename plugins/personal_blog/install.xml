@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<plugin name="personal_blog">
+	<title>Personal Blog</title>
+	<summary>Allows to create a personal admin blog.</summary>
+	<author>Intelliants LLC</author>
+	<contributor>Intelliants LLC</contributor>
+	<version>3.1.0</version>
+	<date>2013-11-18</date>
+	<compatibility>3.1.0</compatibility>
+	<status>active</status>
+
+	<actions>
+		<action name="blogs" url="blog/" icon="list" pages="personal_blog,blog_add,blog_edit">List</action>
+		<action name="blog_add" url="blog/add/" icon="plus" pages="personal_blog">Add Blog Entry</action>
+		<action type="dashboard" name="dashboard_blogpost_add" url="blog/add/" icon="quill">New Blog Post</action>
+	</actions>
+
+	<adminpages>
+		<page group="content" name="personal_blog" order="45" url="blog/" menus="menu">Blog</page>
+		<page group="content" name="blog_add" url="blog/add/" action="add" parent="personal_blog">Add Blog Entry</page>
+		<page group="content" name="blog_edit" url="blog/edit/" action="edit" parent="personal_blog">Edit Blog Entry</page>
+	</adminpages>
+
+	<pages>
+		<page menus="main,bottom" name="blog" url="blog/">Blog</page>
+	</pages>
+
+	<phrases>
+		<phrase category="admin" key="add_blog_entry">Add Blog entry</phrase>
+		<phrase category="admin" key="blogposts">Blogposts</phrase>
+		<phrase category="admin" key="blog_entry_added">Blog entry added.</phrase>
+		<phrase category="admin" key="blog_entry_deleted">Blog entry deleted.</phrase>
+		<phrase category="admin" key="body_is_empty">Body is empty.</phrase>
+		<phrase category="admin" key="edit_blog_entry">Edit Blog entry</phrase>
+
+		<phrase category="common" key="personal_blog">Personal Blog</phrase>
+		<phrase category="common" key="blog">Blog</phrase>
+
+		<phrase category="frontend" key="view_all_blog_entries">View all blog entries</phrase>
+		<phrase category="frontend" key="no_blog_entries">Administrator has not posted any blogposts yet.</phrase>
+		<phrase category="frontend" key="blogroll">Blogroll</phrase>
+		<phrase category="frontend" key="posted_on">Posted on</phrase>
+	</phrases>
+
+	<configgroup name="blog">Blog</configgroup>
+
+	<config group="blog" name="blog_plugin" type="divider" value="General">General</config>
+	<config group="blog" name="blog_display_grid" type="radio" values="1,0" description="Display blog as image grid">0</config>
+	<config group="blog" name="blog_number_block" type="text" description="Number of displayed entries in Blogroll entries">6</config>
+	<config group="blog" name="blog_number_new_block" type="text" description="Number of displayed entries in New Blog Posts block">3</config>
+	<config group="blog" name="blog_max_block" type="text" description="Number of chars in short description in Latest Blog entries">200</config>
+	<config group="blog" name="blog_number" type="text" description="Number of displayed entries">5</config>
+	<config group="blog" name="blog_max" type="text" description="Number of chars in short description">500</config>
+	<config group="blog" name="blog_order" type="select" values="alphabetic,date" description="Entries order by">date</config>
+
+	<tooltips>
+		<tooltip key="blog_display_grid"><![CDATA[This option allows you to display only images in Blogroll section. This display type suits best for portfolios.]]></tooltip>
+	</tooltips>
+
+	<blocks>
+		<block title="Blogroll" name="latest_blog_posts" position="bottom" sticky="0" header="0" pages="index" order="1" type="smarty" filename="plugin:personal_blog:block.latest_blog_posts.tpl"><![CDATA[]]></block>
+		<block title="New blog posts" name="new_blog_posts" position="left" type="smarty" classname="box-clear" order="5" filename="plugin:personal_blog:block.new_blog_posts.tpl"><![CDATA[]]></block>
+	</blocks>
+
+	<hooks>
+		<hook name="phpCoreBeforePageDisplay" page_type="front">
+			<![CDATA[
+if (iaView::REQUEST_HTML == $iaView->getRequestType())
+{
+	if ($iaView->blockExists('latest_blog_posts') || $iaView->blockExists('new_blog_posts'))
+	{
+		$stmt = '`status` = :status AND `lang` = :language ORDER BY `date` DESC';
+		$iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'language' => $iaView->language));
+
+		$array = $iaDb->all(array('id', 'title', 'date', 'alias', 'body', 'image'), $stmt, 0, $iaCore->get('blog_number_block'), 'blog_entries');
+		$iaView->assign('block_blog_entries', $array);
+	}
+}
+			]]>
+		</hook>
+		<hook name="adminDashboardStatistics" page_type="admin"><![CDATA[$items['personal_blog:blogs'] = 'plugin';]]></hook>
+		<hook name="sitemapGeneration"><![CDATA[$items[] = 'personal_blog:blog';]]></hook>
+	</hooks>
+
+	<install>
+		<sql>
+			<![CDATA[
+CREATE TABLE IF NOT EXISTS `{prefix}blog_entries` (
+	`id` smallint(5) unsigned NOT NULL auto_increment,
+	`title` tinytext NOT NULL,
+	`alias` varchar(155) NOT NULL,
+	`body` text NOT NULL,
+	`date` datetime NOT NULL,
+	`image` tinytext NOT NULL,
+	`status` enum('inactive','active') NOT NULL default 'inactive',
+	`lang` char(2) NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `LANGUAGE` (`lang`),
+	FULLTEXT KEY `SEARCH` (`title`, `body`)
+) {mysql_version};
+			]]>
+		</sql>
+		<sql>
+			<![CDATA[
+INSERT INTO `{prefix}blog_entries` SET
+	`title` = 'Hello, World!',
+	`alias` = 'Hello-World.html',
+	`body` = '<p>It&#39;s my first blog entry!</p>',
+	`date` = NOW(),
+	`status` = 'active',
+	`lang` = 'en';
+			]]>
+		</sql>
+	</install>
+
+	<uninstall>
+		<sql>
+			<![CDATA[
+DROP TABLE IF EXISTS `{prefix}blog_entries`;
+			]]>
+		</sql>
+	</uninstall>
+</plugin>

@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /backup/
+Disallow: /front/
+Disallow: /includes/
+Disallow: /install/
+Disallow: /js/
+Disallow: /packages/
+Disallow: /plugins/
+Disallow: /templates/
+Disallow: /tmp/
+Disallow: /updates/

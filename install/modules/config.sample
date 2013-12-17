@@ -1,0 +1,19 @@
+<?php
+/*
+ * Subrion Open Source CMS {version}
+ * Config file generated on {date}
+ */
+
+define('INTELLI_CONNECT', '{dbconnector}');
+define('INTELLI_DBHOST', '{dbhost}');
+define('INTELLI_DBNAME', '{dbname}');
+define('INTELLI_DBUSER', '{dbuser}');
+define('INTELLI_DBPASS', '{dbpass}');
+define('INTELLI_DBPORT', '{dbport}');
+define('INTELLI_DBPREFIX', '{dbprefix}');
+
+define('IA_MYSQLVER', '{mysql_version}');
+define('IA_SALT', '{salt}');
+
+// debug mode: 0 - disabled, 1 - enabled
+define('INTELLI_DEBUG', {debug});

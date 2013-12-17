@@ -1,0 +1,40 @@
+UTF8 TO ASCII
+
+US-ASCII transliterations of Unicode text
+
+Ported Sean M. Burke's Text::Unidecode Perl module
+
+http://search.cpan.org/~sburke/Text-Unidecode-0.04/
+http://interglacial.com/~sburke/
+
+Use is simple;
+
+<?php
+require_once '/path/to/utf8_to_ascii/utf8_to_ascii.php';
+$utf8 = file_get_contents('/tmp/someutf8.txt');
+$ascii = utf8_to_ascii($utf8);
+?>
+
+Some notes;
+
+- Make sure you provide is well-formed UTF-8!
+http://phputf8.sourceforge.net/#UTF_8_Validation_and_Cleaning
+
+- For European languages, it should replace Unicode character
+with corresponding ascii characters and produce a readable
+result. For other languages, the results will be less
+meaningful - it's a "dumb" character for character replacement
+True trasliteration is a little more complex than this;
+See: http://en.wikipedia.org/wiki/Transliteration
+
+- For any characters for which there's no replacement
+character available, a (default) '?' will be inserted. The second
+argument can be used to define an alternative replacement char
+
+- Don't panic about all the files in the db subdirectory - they
+are not all loaded at once - in fact they are only loaded if they
+are needed to convert a given character (i.e. which files get
+loaded depends on the input)
+
+For a little more see;
+http://www.sitepoint.com/blogs/2006/03/03/us-ascii-transliterations-of-unicode-text/

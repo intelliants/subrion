@@ -1,0 +1,351 @@
+<?php
+//##copyright##
+
+final class iaSystem
+{
+	const CLASSES_PREFIX = 'ia.';
+	const EXECUTABLE_FILE_EXT = '.php';
+
+	private static $_halt = false;
+
+	public static $timer = array();
+
+
+	public static function autoload($className)
+	{
+		$systemClasses = array(
+			// interfaces
+			'iaInterfaceDbAdapter' => 'ia.base.db',
+			// core
+			'iaCore' => 'ia.core',
+			'iaDebug' => 'ia.debug',
+			'iaGrid' => 'ia.admin.grid',
+			// plugins/packages
+			'abstractPlugin' => 'ia.base.plugin',
+			'abstractPackageAdmin' => 'ia.base.package.admin',
+			'abstractPackageFront' => 'ia.base.package.front'
+		);
+
+		if (isset($systemClasses[$className]))
+		{
+			$fileName = $systemClasses[$className] . self::EXECUTABLE_FILE_EXT;
+
+			if (include_once IA_CLASSES . $fileName)
+			{
+				iaDebug::debug('<b>autoload:</b> ' . $fileName . ' (' . self::byteView(filesize(IA_CLASSES . $fileName)) . ')', 'Initialized Classes List', 'info');
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static function output($output)
+	{
+		$escapedScriptPath = str_replace('/', '\/', preg_quote(IA_HOME));
+		$matches = array();
+		$filteredContent = strip_tags($output);
+
+		preg_match('#Parse error\: (.+) in ' . $escapedScriptPath . '(.+?) on line (\d+)#i', $filteredContent, $matches);
+		if (empty($matches))
+		{
+			preg_match('#Fatal error\: (.+) in ' . $escapedScriptPath . '(.+?) on line (\d+)#i', $filteredContent, $matches);
+			if (empty($matches))
+			{
+				return false; // return false in order to output the original string
+			}
+		};
+		self::$_halt = true;
+		iaDebug::debug(self::error(0, $matches[1], $matches[2], $matches[3], true), null, 'error');
+
+		return '';
+	}
+
+	public static function shutdown()
+	{
+		ob_end_flush();
+
+		if (self::$_halt)
+		{
+			include_once IA_CLASSES . self::CLASSES_PREFIX . 'debug' . self::EXECUTABLE_FILE_EXT;
+			new iaDebug();
+
+			exit('Aborting...');
+		}
+	}
+
+	public static function error($errno = 0, $errstr = '', $errfile = '', $errline = 0)
+	{
+		$exit = false;
+		$errfile = str_replace(IA_HOME, '', $errfile);
+		$errortype = array (
+			0 => 'Parsing Error',
+			E_ERROR => 'Fatal Error',
+			2048 => 'Error', // E_STRICT
+			E_WARNING => 'Warning',
+			E_PARSE => 'Parsing Error',
+			E_NOTICE => 'Notice',
+			E_CORE_ERROR => 'Core Error',
+			E_CORE_WARNING => 'Core Warning',
+			E_COMPILE_ERROR => 'Compile Error',
+			E_COMPILE_WARNING => 'Compile Warning',
+			E_USER_ERROR => 'User Error',
+			E_USER_WARNING => 'User Warning',
+			E_USER_NOTICE => 'User Notice'
+		);
+		$error = ' ' . $errstr . ' <i><br> ' . ($errline != 0 ? 'on line <b>' . $errline . '</b>' : '')
+			. ' in file <span style="font-weight:bold; text-shadow: 1px 1px 1px white; text-decoration: underline;">' . $errfile . '</span></i>';
+		switch ($errno)
+		{
+			case 2048:
+				$text = '';
+				break;
+			case 0:
+			case E_COMPILE_ERROR:
+			case E_PARSE:
+			case E_ERROR:
+			case E_USER_ERROR:
+				$text = '<span style="font-weight:bold;text-shadow:1px 1px 1px red;color:red;">' . $errortype[$errno] . ':</span> ' . $error . '<br>';
+				$exit = true;
+				break;
+
+			case E_WARNING:
+			case E_USER_WARNING:
+				$text = '<span class="e_warning">' . $errortype[$errno] . ':</span> ' . $error;
+				break;
+
+			case E_NOTICE:
+			case E_USER_NOTICE:
+				$text = '<span class="e_notice">' . $errortype[$errno] . ':</span> ' . $error;
+				break;
+
+			default:
+				$text = (!isset($errortype[$errno]) ? 'Unknown error type [' . $errno . ']:' : $errortype[$errno]) . ' ' . $error;
+		}
+		$backTrace = debug_backtrace();
+		$traceList = array();
+
+		if ($errno == 0)
+		{
+			iaDebug::debug($backTrace, 'Backtrace<span style="display:none;">' . (mt_rand(10000, 99999)) . '</span>', 'error');
+			return $text;
+		}
+		else
+		{
+			if ($backTrace)
+			{
+				foreach ($backTrace as $v)
+				{
+					$file = '';
+					if (isset($v['line']))
+					{
+						$file .= 'on line [' . $v['line'] . '] ';
+					}
+					if (isset($v['file']))
+					{
+						$file .= 'in file [' . str_replace(IA_HOME, '', $v['file']) . '] ';
+					}
+					$trace = '';
+					if (isset($v['class']))
+					{
+						$trace .= 'in class ' . $v['class'] . '::' . $v['function'] . '(';
+						if (isset($v['args']))
+						{
+							$separator = '';
+							foreach ($v['args'] as $argument )
+							{
+								$trace .= $separator . htmlspecialchars(self::_getArgument($argument));
+								$separator = ', ';
+							}
+						}
+						$trace .= ')';
+					}
+					elseif (isset($v['function']))
+					{
+						$trace .= 'in function ' . $v['function'] . '(';
+						if (isset($v['args']))
+						{
+							$separator = '';
+							foreach ($v['args'] as $argument)
+							{
+								$trace .= $separator . htmlspecialchars(self::_getArgument($argument));
+								$separator = ', ';
+							}
+						}
+						$trace .= ')';
+					}
+					if ($file)
+					{
+						$trace = '<b style="color: #F00;">' . $trace . '</b><br><b>' . $file . '</b><hr>';
+					}
+					$traceList[] = $trace;
+				}
+
+				unset($traceList[count($traceList) - 1]);
+				$traceList = array_reverse($traceList);
+			}
+		}
+
+		if ($text)
+		{
+			iaDebug::debug($text, null, 'error');
+			iaDebug::debug($traceList, 'Backtrace<span style="display:none;">' . (mt_rand(10000, 99999)) . '</span>', 'error');
+			iaDebug::debug('<div class="hr">&nbsp;</div>', null, 'error');
+		}
+
+		if ($exit)
+		{
+			exit('Aborting...');
+		}
+
+		return true;
+	}
+
+	public static function phpSyntaxCheck($phpCode)
+	{
+		return @eval('return true;' . $phpCode);
+	}
+
+	public static function renderTime($description)
+	{
+		$size = '-';
+
+		if (function_exists('memory_get_peak_usage'))
+		{
+			$size = memory_get_peak_usage(1);
+		}
+		elseif (function_exists('memory_get_usage'))
+		{
+			$size = memory_get_usage(1);
+		}
+
+		self::$timer[] = array(
+			'time' => explode(' ', microtime()),
+			'description' => $description,
+			'bytes' => $size
+		);
+	}
+
+	protected static function _getArgument($argument)
+	{
+		switch (strtolower(gettype($argument)))
+		{
+			case 'string':
+				return '"' . str_replace("\n", '', $argument) . '"';
+			case 'boolean':
+				return $argument ? 'true' : 'false';
+			case 'object':
+				return 'object(' . get_class($argument) . ')';
+			case 'array':
+				return 'array()';
+			case 'resource':
+				return 'resource(' . get_resource_type($argument) . ')';
+			default:
+				return $argument;
+		}
+	}
+
+	public static function forceUpgrade($version)
+	{
+		iaCore::util();
+
+		$patchUrl = 'http://tools.subrion.com/download/patch/%s/%s/';
+		$patchUrl = sprintf($patchUrl, IA_VERSION, $version);
+
+		$filePath = IA_TMP . 'patch.iap';
+
+		iaUtil::downloadRemoteContent($patchUrl, $filePath);
+
+		if ($contents = file_get_contents($filePath))
+		{
+			require_once IA_HOME . 'install/classes/ia.patch.parser.php';
+			require_once IA_HOME . 'install/classes/ia.patch.applier.php';
+
+			try {
+				$iaPatchParser = new iaPatchParser($contents);
+				$patch = $iaPatchParser->patch;
+
+				$iaPatchApplier = new iaPatchApplier(IA_HOME, array(
+					'host' => INTELLI_DBHOST . ':' . INTELLI_DBPORT,
+					'database' => INTELLI_DBNAME,
+					'user' => INTELLI_DBUSER,
+					'password' => INTELLI_DBPASS,
+					'prefix' => INTELLI_DBPREFIX
+				), true);
+
+				$iaPatchApplier->process($patch, $version);
+
+				$logFile = 'upgrade-log-' . $patch['info']['version_to'] . '_' . date('d-m-y-Hi') . '.txt';
+				if ($fh = fopen(IA_UPLOADS . $logFile, 'wt'))
+				{
+					fwrite($fh, $iaPatchApplier->getLog());
+					fclose($fh);
+				}
+
+
+				$logParams = array('type' => 'app-forced', 'from' => IA_VERSION, 'to' => $version, 'file' => $logFile);
+
+				$iaLog = iaCore::instance()->factory('log');
+				$iaLog->write(iaLog::ACTION_UPGRADE, $logParams);
+
+				return true;
+			}
+			catch (Exception $e)
+			{
+				return $e->getMessage();
+			}
+		}
+
+		return false;
+	}
+
+	public static function byteView($num = 0)
+	{
+		$text = '';
+		$num = (int)$num;
+		$list = array('Kb', 'Mb', 'Gb', 'Pb');
+
+		$i = 0;
+		while ($num > 0 && $i < 10)
+		{
+			if (isset($list[$i]))
+			{
+				$temp = ($num / 1024);
+				if (floor($temp) > 0)
+				{
+					$num = number_format($temp, 5, '.', '');
+					$text = number_format($num, 2, '.', ' ') . $list[$i];
+				}
+			}
+			else
+			{
+				$num = 0;
+			}
+			$i++;
+		}
+
+		return $text;
+	}
+
+	public static function setDebugMode()
+	{
+		$iaCore = iaCore::instance();
+
+		if ($debuggerPassword = $iaCore->get('debug_pass'))
+		{
+			if (isset($_GET['debugger']) && $debuggerPassword == $_GET['debugger'])
+			{
+				$_SESSION['debugger'] = $_GET['debugger'];
+			}
+			if (isset($_SESSION['debugger']) && $debuggerPassword == $_SESSION['debugger'])
+			{
+				define('INTELLI_QDEBUG', true);
+			}
+		}
+
+		if (!defined('INTELLI_QDEBUG'))
+		{
+			define('INTELLI_QDEBUG', false);
+		}
+	}
+}

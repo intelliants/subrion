@@ -1,0 +1,238 @@
+//
+// Utility classes
+// --------------------------------------------------
+
+
+// Floats
+// -------------------------
+
+.clearfix {
+  .clearfix();
+}
+.pull-right {
+  float: right !important;
+}
+.pull-left {
+  float: left !important;
+}
+
+
+// Toggling content
+// -------------------------
+
+.hide {
+  display: none !important;
+}
+.show {
+  display: block !important;
+}
+.invisible {
+  visibility: hidden;
+}
+.text-hide {
+  .hide-text();
+}
+
+
+// For Affix plugin
+// -------------------------
+
+.affix {
+  position: fixed;
+}
+
+
+// IA-UTILS
+//---------------------------
+
+// bottom margin if neccecary
+.gap {
+	margin-bottom: 10px;
+}
+
+// 
+.js-actions {
+  margin-top: 5px;
+}
+
+// 
+.template-tags {
+  padding: 10px;
+}
+
+
+// AJAX LOADER on front page after login
+//---------------------------
+
+#js-ajax-loader {
+  position: fixed;
+  z-index: 30000;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: @base-dark-color;
+
+  .spinner {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     width: 60px;
+     height: 60px;
+     line-height: 60px;
+     margin-top: -30px;
+     margin-left: -30px;
+     font-size: 60px;
+     color: @navbar-inverse-bg;
+     -webkit-animation: spin 1.5s infinite linear;
+     -moz-animation: spin 1.5s infinite linear;
+     -ms-animation: spin 1.5s infinite linear;
+     -o-animation: spin 1.5s infinite linear;
+     animation: spin 1.5s infinite linear;
+
+     i {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-left: -30px;
+      margin-top: -30px;
+     }
+  }
+}
+
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+
+@-moz-keyframes spin {
+    to { -moz-transform: rotate(360deg); }
+}
+
+@-ms-keyframes spin {
+    to { -ms-transform: rotate(360deg); }
+}
+
+@-o-keyframes spin {
+    to { -o-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+// widgets preloader
+#widget-preloader {
+  .spinner {
+    float: left;
+    margin-right: 10px;
+    -webkit-animation: spin 1s infinite linear;
+    -moz-animation: spin 1s infinite linear;
+    -ms-animation: spin 1s infinite linear;
+    -o-animation: spin 1s infinite linear;
+    animation: spin 1s infinite linear;
+  }
+}
+
+
+// EDIT AREA STYLES
+//---------------------------
+
+#editor {
+  border: 1px solid #ccc;
+}
+
+.area_toolbar {
+  padding: 10px;
+  background-color: #f5f5f5;
+  text-align: left;
+}
+
+#EditAreaArroundInfos_codeContainer {
+
+  > div {
+    padding: 10px 0 0;
+    // border-bottom: 1px solid #eee;
+    margin-bottom: 0;
+  }
+  
+  input {
+    cursor: pointer;
+    margin-right: 4px;
+  }
+
+  label {
+    cursor: pointer;
+  }
+}
+
+
+// CKEDITOR FIXES
+//---------------------------
+
+.cke_maximized {
+  z-index: 10001 !important;
+}
+
+
+// PACKAGES INSTALLATION and stuff
+//---------------------------
+
+#package_form {
+  .url_type {
+    margin-bottom: 10px;
+  }
+
+  .url_type label {
+    display: block;
+    background: #f5f5f5;
+    padding: 7px;
+    border: 1px solid #f5f5f5;
+    cursor: pointer;
+    font-weight: bold;
+
+    &.selected {
+      border: 1px solid @brand-primary;
+      background: fadeout(@brand-primary, 90%);
+      color: @brand-primary;
+    }
+  }
+
+  .url_type_info {
+    padding: 10px;
+    color: #777;
+    font-size: 12px;
+  }
+}
+
+
+// SPARKLINE TOOLTIP STYLES
+//---------------------------
+
+.jqstooltip,
+.jqsfield {
+  .box-sizing(content-box);
+}
+
+.jqstooltip {
+  border-radius: 3px;
+  border: 0 none !important;
+}
+
+
+// CHECK ALL boxes
+//---------------------------
+
+.checkbox-all {
+  .pull-right();
+  padding-top: 13px !important;
+  font-size: 12px;
+
+  input[type="checkbox"] {
+    margin-top: 2px;
+  }
+}
+
+.tab-content .checkbox-all {
+  padding-top: 9px !important;
+}
+

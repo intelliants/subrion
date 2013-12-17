@@ -1,0 +1,145 @@
+#debug {
+	font-size: 11px;
+	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+	/*background: #333;*/
+	position: fixed;
+	z-index: 50000;
+	left: auto;
+	right: 31px;
+	bottom: 0;
+	height: 30px;
+	line-height: 30px;
+	color: #777;
+	/*border-top: 1px solid #252525;*/
+}
+#debug.closed {
+	display: none;
+}
+#debug-toggle {
+	position: fixed;
+	z-index: 50001;
+	right: 0;
+	bottom: 0;
+	height: 30px;
+	width: 31px;
+	background: #333;
+	border-top: 1px solid #252525;
+	border-left: 1px solid #252525;	
+}
+#debug-toggle a {
+	display: block;
+	margin-top: 6px;
+	margin-left: 7px;
+	width: 16px;
+	height: 16px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	text-decoration: none;
+	background: #89b258 url('toggler.png') center 2px no-repeat;
+}
+#debug-toggle a.closed {
+	background-color: #e85656;
+}
+
+.debug-btn {
+	display: block;
+	float: right;
+	border-left: 1px solid #252525;
+	padding: 0 10px;
+	text-decoration: none;
+	color: #777;
+	background: #333;
+	border-top: 1px solid #252525;
+	cursor: pointer;
+	position: relative;
+	height: 30px;
+	z-index: 100;
+	position: relative;
+}
+
+.debug-btn:after {
+	content: '';
+	display: block;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 0px;
+	height: 0px;
+	border-style: solid;
+	border-width: 0 5px 5px 0;
+	border-color: transparent #007bff transparent transparent;
+}
+.debug-btn:hover,
+.debug-btn.active {
+	background: #444;
+	color: #777;
+	text-decoration: none;
+}
+a[data-toggle="error"] {
+	background: #e41c2a;
+	color: #fff;
+}
+a[data-toggle="error"]:hover {
+	background: #dd3844;
+	color: #fff;
+}
+
+.debug-modal {
+	display: none;
+	position: fixed;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	background: rgba(0,0,0,.7);
+	z-index: 50;
+}
+
+.debug-text {
+	/*display: none;*/
+	position: fixed;
+	left: 15%;
+	top: 15%;
+	bottom: 15%;
+	right: 15%;
+	background: #fff;
+	overflow: auto;
+	padding: 40px;
+	box-shadow: 0 0 6px rgba(0,0,0,.6);
+}
+.debug-btn-close {
+	position: fixed;
+	right: 15%;
+	top: 15%;
+	margin-top: -30px;
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	text-align: center;
+	font-size: 30px;
+	text-decoration: none;
+	cursor: pointer;
+	background: #e41c2a;
+	color: #fff;
+}
+.debug-btn-close:hover {
+	text-decoration: none;
+	background: #dd3844;
+	color: #fff;
+}
+
+#debug pre {
+	border: 1px solid #eee;
+	padding: 20px;
+}
+
+#debug .hr {
+	height: 1px;
+	border-top: 1px solid #eee;
+}
+
+#debug pre {
+	line-height: 14px !important;
+	margin-left: 20px !important;
+}

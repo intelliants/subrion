@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<plugin name="fancybox">
+	<title>fancyBox</title>
+	<summary>Plugin will add lightbox effect to images based on Fancybox javascript library.</summary>
+	<author>Intelliants LLC</author>
+	<contributor>Intelliants LLC</contributor>
+	<version>3.1.1</version>
+	<date>2013-11-26</date>
+	<status>active</status>
+	<compatibility>3.1</compatibility>
+
+	<config group="pictures" name="fancybox_divider" custom="1" type="divider" description="fancyBox configuration">fancyBox</config>
+	<config group="pictures" name="fancybox_slide_transition" custom="1" type="select" multiplevalues="elastic,fade" description="fancyBox slide effect">elastic</config>
+	<config group="pictures" name="fancybox_open_transition" custom="1" type="select" multiplevalues="elastic,fade" description="fancyBox open/close effect">fade</config>
+	<config group="pictures" name="fancybox_slide_speed" custom="1" type="select" multiplevalues="fast,slow,normal" description="fancyBox slide speed">fast</config>
+	<config group="pictures" name="fancybox_open_speed" custom="1" type="select" multiplevalues="fast,slow,normal" description="fancyBox open/close speed">fast</config>
+	<config group="pictures" name="fancybox_padding" custom="1" type="text" description="fancyBox inner padding">15</config>
+	<config group="pictures" name="fancybox_arrows" custom="1" type="radio" values="1,0" description="Display navigation arrows">1</config>
+	<config group="pictures" name="fancybox_closeBtn" custom="1" type="radio" values="1,0" description="Display close button">1</config>
+	<config group="pictures" name="fancybox_closeClick" custom="1" type="radio" values="1,0" description="If set, fancyBox will be closed when user clicks the content">0</config>
+
+
+	<hooks>
+		<hook name="smartyFrontAfterHeadSection,smartyAdminAfterHeadSection" type="smarty">
+			<![CDATA[
+{if 'fancybox' == $config.lightbox_name}
+	{ia_add_media files='css:_IA_URL_plugins/fancybox/js/jquery.fancybox, js:_IA_URL_plugins/fancybox/js/jquery.fancybox.pack'}
+
+	{ia_add_js}
+$(function()
+{
+	$('a[rel^="ia_lightbox"]').fancybox(
+	{
+		nextEffect: '{$config.fancybox_slide_transition}',
+		prevEffect: '{$config.fancybox_slide_transition}',
+		openEffect: '{$config.fancybox_open_transition}',
+		closeEffect: '{$config.fancybox_open_transition}',
+		nextSpeed: '{$config.fancybox_slide_speed}',
+		prevSpeed: '{$config.fancybox_slide_speed}',
+		openSpeed: '{$config.fancybox_open_speed}',
+		closeSpeed: '{$config.fancybox_open_speed}',
+		padding: {$config.fancybox_padding},
+		arrows: {$config.fancybox_arrows},
+		closeBtn: {$config.fancybox_closeBtn},
+		closeClick: {$config.fancybox_closeClick}
+	});
+});
+	{/ia_add_js}
+{/if}
+			]]>
+		</hook>
+	</hooks>
+
+	<install>
+		<code>
+			<![CDATA[
+$iaCore = iaCore::instance();
+
+if ($currentValues = $iaCore->iaDb->one("`multiple_values`", "`name` = 'lightbox_name'", iaCore::getConfigTable()))
+{
+	$values = explode(',', $currentValues);
+}
+
+$values[] = 'fancybox';
+
+$iaCore->iaDb->update(array('multiple_values' => implode(',', $values)), "`name` = 'lightbox_name'", null, iaCore::getConfigTable());
+
+if (1 == count($values))
+{
+	$iaCore->set('lightbox_name', 'fancybox', true);
+}
+			]]>
+		</code>
+	</install>
+
+	<uninstall>
+		<code>
+			<![CDATA[
+$iaCore = iaCore::instance();
+
+if ($values = explode(',', $iaCore->iaDb->one("`multiple_values`", "`name` = 'lightbox_name'", iaCore::getConfigTable())))
+{
+	$iaCore->iaDb->update(array('multiple_values' => implode(',', array_diff($values, array('fancybox')))), "`name` = 'lightbox_name'", null, iaCore::getConfigTable());
+}
+			]]>
+		</code>
+	</uninstall>
+</plugin>

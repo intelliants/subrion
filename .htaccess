@@ -1,0 +1,30 @@
+Options -MultiViews
+
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+	DirectoryIndex system.php
+
+	RewriteEngine On
+
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_URI} !(.*)\.(.*)$
+	RewriteRule ^(.+[^/])$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]
+
+	# Google sitemap controller
+	RewriteRule ^sitemap.xml$ tmp/sitemap.xml [L]
+	RewriteRule ^tmp/sitemap.xml$ tmp/sitemap.xml [L]
+
+	RewriteCond %{REQUEST_FILENAME} -f
+	RewriteRule ^(.*)(\.xml|\.php([0-9]*)|\.tpl|\.phtml|\.ini|\.inc|/)$ system.php?_p=$1 [QSA,L]
+
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^(.*)$ system.php?_p=$1 [QSA,L]
+</IfModule>
+
+# compresses text, html, javascript, css and xml
+<IfModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+	AddOutputFilterByType DEFLATE application/xml application/xhtml+xml application/rss+xml
+	AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+</IfModule>

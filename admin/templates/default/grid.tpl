@@ -1,0 +1,1 @@
+<div id="js-grid-placeholder" style="overflow: hidden"></div>

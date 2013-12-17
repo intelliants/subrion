@@ -1,0 +1,47 @@
+2006-10-25 16:57  harryf
+
+	* docs/examples/tables.php: Add sample for lookup tables
+
+2006-10-17 11:58  harryf
+
+	* tests/cases/utf8_unicode.test.php: Add basic sanity checks
+
+2006-10-17 11:48  harryf
+
+	* native/core.php: Move lookup tables to local statics instead of
+	  globals
+
+2006-10-17 11:22  harryf
+
+	* tests/cases/: utf8_strtoupper.test.php,
+	  utf8_substr_replace.test.php: Fix class names when run tests
+	  individually
+
+2006-10-17 11:09  harryf
+
+	* tests/cases/utf8_specials.test.php: Add tests for
+	  utf8_is_word_chars
+
+2006-10-17 10:53  harryf
+
+	* tests/cases/utf8_ascii.test.php: Add test for empty string
+
+2006-10-17 10:53  harryf
+
+	* tests/cases/utf8_specials.test.php: Add utf8_strip_specials tests
+
+2006-10-16 23:13  harryf
+
+	* utils/specials.php: Eliminate the global
+
+2006-10-16 22:39  harryf
+
+	* tests/cases/utf8_ascii.test.php: Add basic tests for
+	  utf8_accents_to_ascii
+
+2006-10-16 22:38  harryf
+
+	* utils/ascii.php: Fix bug 1568924 plus make this function actually
+	  do something - used correct lookup tables, s/$string/$str - guess
+	  no one using it yet, so no complaints ;)
+

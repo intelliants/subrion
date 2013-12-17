@@ -1,0 +1,355 @@
+// GLOBAL item styles
+// `write something here later`
+//---------------------------
+
+.ia-item {
+  margin-bottom: @iaItemMarginBottom;
+  background: @iaItemBg;
+  color: @iaItemColor;
+  position: relative;
+  padding: @iaItemPadding;
+
+  &:last-child,
+  > *:last-child {
+    margin-bottom: 0;
+  }
+
+  .media-heading {
+
+    small {
+      color: @iaItemHeadingSmallColor;
+
+      a {
+        color: darken(@iaItemHeadingSmallColor, 15%);
+      }
+    }
+  }
+
+  .media-object {
+    margin-bottom: 10px;
+  }
+
+  .media-body {
+    margin-bottom: 10px;
+    
+    > div + div,
+    > .media-heading + div {
+      margin-top: 8px;
+    }
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
+
+    .media-object.pull-left {
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    .media-object.pull-right {
+      margin-left: 10px;
+      margin-bottom: 10px;
+    }
+  }
+
+  &-date {
+    font-size: 12px;
+    color: @iaItemDateColor;
+  }
+
+  &-image {
+    margin-bottom: 10px;
+  }
+
+  &-panel {
+    .clearfix();
+    clear: both;
+    margin-top: 20px;
+    padding: 5px 10px;
+    font-size: @fontSizeSmall;
+    color: @iaItemPanelColor;
+    background-color: @iaItemPanelBg;
+
+    // give inner items some space to breathe
+    // depending on position
+    > .pull-left {
+      margin-right: 10px;
+    }
+
+    > .pull-right {
+      margin-left: 10px;
+    }
+
+    // make items same height as buttons
+    .panel-item {
+      padding: 3px 0;
+    }
+  }
+
+  &-view {
+
+    &.ia-item-featured,
+    &.ia-item-sponsored {
+      border: 0 none;
+    }
+
+    .ia-badge {
+      float: none;
+      margin-bottom: 20px;
+    }
+  }
+}
+
+// special content inside ia-item 
+
+.ia-item {
+  > table,
+  > .table {
+    margin-bottom: 0;
+  }
+}
+
+.ia-items {
+  margin-bottom: @boxMarginBottom;
+
+  .box & {
+    margin-bottom: 0;
+  }
+}
+
+
+// IA-ITEM VARIATIONS
+//---------------------------
+
+.ia-item {
+  &-bordered {
+    border: 1px solid @iaItemBorderColor;
+    padding: @iaItemBorderedPadding;
+
+    .ia-item-panel {
+      margin: 10px -@iaItemBorderedPadding -@iaItemBorderedPadding;
+      border-top: 1px solid @iaItemBorderColor;
+    }
+
+    &-bottom {
+      border-bottom: 1px solid @iaItemBorderColor;
+      padding-bottom: @iaItemMarginBottom - @iaItemBorderedPadding * 2; 
+      margin-bottom: @iaItemMarginBottom - @iaItemBorderedPadding * 2;
+
+      &:last-child {
+        border-bottom: 0 none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+    }
+  }
+
+  &-featured {
+    border: 1px solid @iaItemBorderFeaturedColor;
+  }
+
+  &-sponsored {
+    border: 1px solid @iaItemBorderSponsoredColor;
+  }
+}
+
+// in boxes
+
+.box {
+  .ia-item-bordered-bottom {
+    border-color: darken(@iaItemBorderColor, 5%);
+  }
+}
+
+
+// GRID
+// ----
+
+.ia-item-grid {
+  border: 1px solid #eee;
+  padding: 10px;
+  text-align: center;
+  position: relative;
+
+  img {
+    margin-bottom: 10px;
+  }
+
+  h3 {
+    font-size: 14px;
+    line-height: 14px;
+    margin: 0;
+  }
+
+  .date {
+    margin: 0;
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+  }
+}
+
+
+// BADGES IN IA-ITEM
+//---------------------------
+
+.ia-badge {
+  color: @iaItemBadgeColor;
+  background: @iaItemBadgeBgColor;
+  display: block;
+  position: absolute; right: 10px; top: 0;
+  width: @iaItemBadgeWidth;
+  height: @iaItemBadgeHeight;
+  line-height: @iaItemBadgeHeight;
+  text-align: center;
+
+  &:before,
+  &:after {
+    content: '';
+    display: block;
+    position: absolute; top: 100%; left: 0;
+    width: 0px;
+    height: 0px;
+    border-style: solid;
+    border-width: (@iaItemBadgeTenonWidth/2) @iaItemBadgeTenonWidth 0 0;
+    border-color: @iaItemBadgeBgColor transparent transparent transparent;
+  }
+
+  &:after {
+    left: auto; right: 0;
+    border-width: 0 @iaItemBadgeTenonWidth (@iaItemBadgeTenonWidth/2) 0;
+    border-color: transparent @iaItemBadgeBgColor transparent transparent;
+  }
+
+  &-featured {
+    color: #fff;
+    background-color: @iaItemBorderFeaturedColor;
+
+    &:before {
+      border-top-color: @iaItemBorderFeaturedColor;
+    }
+
+    &:after {
+      border-right-color: @iaItemBorderFeaturedColor;
+    }
+  }
+
+  &-sponsored {
+    color: #fff;
+    background-color: @iaItemBorderSponsoredColor;
+
+    &:before {
+      border-top-color: @iaItemBorderSponsoredColor;
+    }
+
+    &:after {
+      border-right-color: @iaItemBorderSponsoredColor;
+    }
+  }
+
+  &-banned {
+    color: @iaItemBadgeBannedColor;
+  }
+
+  &-approval {
+    color: @iaItemBadgeApprovalColor;
+  }
+
+  &-suspended {
+    color: @iaItemBadgeSuspendedColor;
+  }
+
+  // on view page
+  .ia-item-view & {
+    right: 0;
+  }
+}
+
+
+// LIST ITEMS
+// 
+// like ul lists with different styling
+//---------------------------
+
+.ia-list-items {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+
+  > li {
+    margin: 4px 0;
+
+    &.active {
+
+      > a {
+        color: @linkColorHover;
+      }
+    }
+  }
+
+  // bullets variations
+
+  &--circle,
+  &--chevron,
+  &--checkmark {
+
+    > li {
+      margin-left: @baseFontSize + 4px;
+      position: relative;
+
+      &:before {
+        position: absolute;
+        .icon(@circle-blank);
+        left: -@baseFontSize - 4px;
+        top: 0;
+      }
+    }
+  }
+
+  &--chevron > li:before {
+    .icon(@chevron-right);
+  }
+
+  &--checkmark > li:before {
+    .icon(@ok);
+  }
+
+  // left margin if needed
+
+  &--left-margin {
+    margin-left: 20px;
+  }
+}
+
+
+// TAGS RELATED STYLING
+//---------------------------
+
+.tags a {
+  .label();
+}
+
+
+// ACCOUNT BLOCK
+//---------------------------
+
+.account-info {
+  text-align: center;
+
+  border-bottom: 1px solid darken(@boxBgColor, 5%);
+  padding-bottom: 20px;
+  margin-bottom: 15px;
+
+  img {
+    display: block;
+    margin: 0 auto;
+    margin-bottom: 10px;
+  }
+}
+
+
+// AUTHOR BLOCK
+//---------------------------
+
+.ia-item--author-block {
+  margin-bottom: 0;
+}

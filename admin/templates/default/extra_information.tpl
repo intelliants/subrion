@@ -1,0 +1,21 @@
+<table>
+	{icon}
+	<tr>
+		<td><b>Name:</b>&nbsp;{name}</td>
+	</tr>
+	<tr>
+		<td><b>Author:</b>&nbsp;{author}</td>
+	</tr>
+	<tr>
+		<td><b>Contributor:</b>&nbsp;{contributor}</td>
+	</tr>
+	<tr>
+		<td><b>Version:</b>&nbsp;{version}</td>
+	</tr>
+	<tr>
+		<td><b>Date:</b>&nbsp;{date}</td>
+	</tr>
+	<tr>
+		<td><b>Script version:</b>&nbsp;{compatibility}</td>
+	</tr>
+</table>

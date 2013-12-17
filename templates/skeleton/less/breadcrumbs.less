@@ -1,0 +1,33 @@
+//
+// Breadcrumbs
+// --------------------------------------------------
+
+.ia-breadcrumb {
+  padding: 0;
+  font-size: 11px;
+  margin: 0;
+  list-style: none;
+
+  > li {
+    display: inline-block;
+    .ie7-inline-block();
+
+    a {
+      text-decoration: underline;
+      color: @breadcrumbLinkColor;
+
+      &:hover {
+        text-decoration: none;
+        color: @breadcrumbLinkHoverColor;
+      }
+    }
+
+    > .divider {
+      padding: 0 5px;
+      color: @breadcrumbDividerColor;
+    }
+  }
+  > .active {
+    color: @breadcrumbActiveColor;
+  }
+}

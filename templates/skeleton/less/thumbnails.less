@@ -1,0 +1,71 @@
+//
+// Thumbnails
+// --------------------------------------------------
+
+
+// Note: `.thumbnails` and `.thumbnails > li` are overriden in responsive files
+
+// Make wrapper ul behave like the grid
+.thumbnails,
+.thumbnails-grid {
+  margin-left: -@gridGutterWidth;
+  list-style: none;
+  .clearfix();
+}
+// Fluid rows have no left margin
+.row-fluid .thumbnails,
+.row-fluid .thumbnails-grid {
+  margin-left: 0;
+}
+
+// Float li to make thumbnails appear in a row
+.thumbnails > li {
+  float: left; // Explicity set the float since we don't require .span* classes
+  margin-bottom: @baseLineHeight;
+  margin-left: @gridGutterWidth;
+}
+
+// in grid
+.thumbnails-grid > .thumbnail {
+  float: left; // Explicity set the float since we don't require .span* classes
+  margin-bottom: @baseLineHeight;
+  margin-left: @gridGutterWidth;
+
+  > a {
+    display: block;
+  }
+}
+
+// The actual thumbnail (can be `a` or `div`)
+.thumbnail {
+  display: block;
+  padding: 4px;
+  line-height: @baseLineHeight;
+  border: 1px solid #ddd;
+  // .border-radius(@baseBorderRadius);
+  // .box-shadow(0 1px 3px rgba(0,0,0,.055));
+  // .transition(all .2s ease-in-out);
+
+  // ia-replace
+  background: #f5f5f5;
+}
+// Add a hover/focus state for linked versions only
+a.thumbnail:hover,
+a.thumbnail:focus {
+  border-color: @linkColor;
+  // .box-shadow(0 1px 4px rgba(0,105,214,.25));
+
+  // ia-replace
+}
+
+// Images and captions
+.thumbnail > img {
+  display: block;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.thumbnail .caption {
+  padding: 9px;
+  color: @gray;
+}

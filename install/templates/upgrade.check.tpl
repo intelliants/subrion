@@ -1,0 +1,61 @@
+<?php if ($this->errorCode): ?>
+	<?php if ('authorization' == $this->errorCode): ?>
+		<div class="alert alert-danger">Please log in as an administrator to proceed.</div>
+	<?php elseif ('version' == $this->errorCode): ?>
+		<div class="alert alert-warning">Incorrect upgrade version specified.</div>
+	<?php elseif ('remote' == $this->errorCode): ?>
+		<div class="alert alert-danger">Could not continue.</div>
+		<p>The patch file could not be downloaded because of server settings.</p>
+		<p>You have to modify the server settings in order to be able to go ahead.</p>
+
+		<h3>Settings to be modified</h3>
+		<ul>
+			<li>PHP option <em>allow_url_fopen</em></li>
+			<li>PHP extension <em>cUrl</em></li>
+		</ul>
+	<?php endif ?>
+
+	<div class="form-actions">
+		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/" class="btn btn-lg btn-primary"><i class="i-loop"></i> Refresh</a>
+	</div>
+<?php else: ?>
+	<div class="widget widget-default">
+		<div class="widget-content">
+			<p>Getting ready to download the patch file from the Intelliants servers...</p>
+			<p>Click <code>Next</code> button to continue.</p>
+			<p><a href="#changelog-details" data-toggle="modal" class="btn btn-default"><i class="i-list"></i> Show changelog details</a></p>
+		</div>
+	</div>
+
+	<div class="form-actions">
+		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/download/" class="btn btn-large btn-primary">Next <i class="icon-arrow-right icon-white"></i></a>
+	</div>
+
+	<div class="modal fade" id="changelog-details">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Changelog Details</h4>
+				</div>
+				<div class="modal-body">
+					<div class="alert alert-block">Could not get changelog details from Intelliants.</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+	<script type="text/javascript">
+	$(function()
+	{
+		$('#changelog-details').appendTo('body');
+		$.getJSON('http://tools.subrion.com/changelog.json?fn=?', {version: '<?php echo $this->version ?>'}, function(response)
+		{
+			$('.modal-body:first', '#changelog-details').html(response.html);
+		});
+	});
+	</script>
+<?php endif ?>
