@@ -175,6 +175,11 @@
 
 {elseif 'comparison' == $action}
 	{if count($languages) > 1}
-		<div id="comparison"></div>
+		{ia_add_media files='css:grid-extra'}
+		<div id="js-legend-panel" style="display: none;">
+			<p><span style="background-color: #e0f2f7; display: inline-block; height: 20px; width: 40px;"></span> Identical phrases pair</p>
+			<p><span style="background-color: #eaeaea; display: inline-block; height: 20px; width: 40px;"></span> Incomplete phrases pair</p>
+		</div>
+		<div id="js-comparison-grid"></div>
 	{/if}
 {/if}

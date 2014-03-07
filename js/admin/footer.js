@@ -5,7 +5,7 @@ $(function()
 		$('#js-ajax-loader').fadeOut();
 		intelli.cookie.write('loader', 'loaded');
 	}, 2000);
-	
+
 	// panel toggle
 	$('.panel-toggle').on('click', function(e)
 	{
@@ -25,7 +25,8 @@ $(function()
 		}
 	});
 
-	$('#user-logout').on('click', function() {
+	$('#user-logout').on('click', function()
+	{
 		intelli.cookie.write('loader', 'notloaded');
 	});
 
@@ -36,16 +37,18 @@ $(function()
 		{
 			e.preventDefault();
 
-			var toggler = '#' + $(this).data('toggle');
+			var toggler = $(this).data('toggle');
 
 			$(this).parent().addClass('active').siblings().removeClass('active');
-			$(toggler).addClass('active').siblings().removeClass('active');
+			$('#' + toggler).addClass('active').siblings().removeClass('active');
 			
-			if($('body').scrollTop() > 0) {
+			if($(window).scrollTop() > 0) {
 				$('html, body').animate({ scrollTop: 0 }, 'fast');
 			}
 		}
 	});
+
+	
 
 	// minmax
 	var widgetsState = JSON.parse(intelli.cookie.read('widgetsState'));
@@ -415,7 +418,7 @@ $(function()
 
 	function getMousePosition(e)
 	{
-		return { x: e.clientX + document.documentElement.scrollLeft, y: e.clientY + document.documentElement.scrollTop};
+		return {x: e.clientX + document.documentElement.scrollLeft, y: e.clientY + document.documentElement.scrollTop};
 	}
 
 	// get substring count with limit
@@ -532,5 +535,49 @@ $(function()
 		$($(this).attr('rel')).toggle();
 	});
 
-	// intelli.admin.initAjaxLoader();
+	/*
+	 * Resolving issues
+	 */
+
+	if ($('.notifications.alerts').length > 0)
+	{
+		// remove installer
+		var $installerAlert = $('.alert-danger:contains("module.install.php")');
+		if ($installerAlert.length > 0)
+		{
+			$installerAlert.on('click', '.b-resolve__btn', function(event)
+			{
+				event.preventDefault();
+				event.stopPropagation();
+
+				var $this = $(this);
+
+				if (!$this.hasClass('disabled'))
+				{
+					$this.fadeOut('fast', function()
+					{
+						$this.addClass('disabled');
+					});
+
+					$.post(intelli.config.admin_url + '/actions/read.json', {action: 'remove-installer'}, function(response)
+					{
+						if (!response.error)
+						{
+							$installerAlert
+								.removeClass('alert-danger')
+								.addClass('alert-info');
+							$('i', $this)
+								.removeClass('i-wrench')
+								.addClass('i-checkmark')
+								.parent()
+								.fadeIn('fast');
+						}
+					});
+				}
+			});
+
+			var resolveBtnHtml = '<div class="b-resolve__wrapper"><a href="#" class="b-resolve__btn" title="Resolve issue"><i class="i-wrench"></i></a></p>';
+			$installerAlert.addClass('b-resolve').append(resolveBtnHtml);
+		}
+	}
 });

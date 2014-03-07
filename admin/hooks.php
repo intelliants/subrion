@@ -14,7 +14,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 				break;
 
 			case 'set':
-				$iaDb->update(array('code' => $_POST['code']), '`id` = ' . (int)$_POST['hook']);
+				$iaDb->update(array('code' => $_POST['code']), iaDb::convertIds($_POST['hook']));
 		}
 
 		return;
@@ -37,7 +37,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			}
 
 			$output = $iaGrid->gridRead($_GET,
-				"`id`, `name`, `extras`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`",
+				"`id`, `name`, `extras`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`",
 				array('name' => 'like', 'type' => 'equal'),
 				$conditions
 			);
@@ -56,7 +56,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 	$iaView->assign($output);
 }
 
-if ($iaView->getRequestType() == iaView::REQUEST_HTML)
+if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	$iaView->grid('admin/hooks');
 	$iaView->display('hooks');

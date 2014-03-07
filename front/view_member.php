@@ -6,7 +6,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	// display 404 if members are disabled
 	if (!$iaCore->get('members_enabled'))
 	{
-		iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
 	$iaUsers = $iaCore->factory('users');
@@ -28,10 +28,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 	if (empty($member))
 	{
-		iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
-	iaCore::util();
+	$iaCore->factory('util');
+	$iaPage = $iaCore->factory('page', iaCore::FRONT);
 
 	$member['item'] = $iaUsers->getItemName();
 
@@ -39,7 +40,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		'listing' => $member['id'],
 		'item' => $member['item'],
 		'title' => $member['fullname'],
-		'url' => $iaCore->iaSmarty->ia_url(array(
+		'url' => $iaView->iaSmarty->ia_url(array(
 			'data' => $member,
 			'item' => $member['item'],
 			'type' => 'url'
@@ -54,12 +55,26 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$page = ($page < 1) ? 1 : $page;
 	$start = ($page - 1) * $iaCore->get('num_items_perpage');
 
+	if (iaUsers::hasIdentity() && iaUsers::getIdentity()->id == $member['id'])
+	{
+		$iaItem->setItemTools(array(
+			'title' => iaLanguage::get('edit'),
+			'url' => $iaPage->getUrlByName('profile')
+		));
+	}
+
+	$member = array_shift($iaItem->updateItemsFavorites(array($member), $member['item']));
+	$member['items'] = array();
+
+	// get fieldgroups
+	$iaField = $iaCore->factory('field');
+	list($sections, ) = $iaField->generateTabs($iaField->filterByGroup($member, $member['item']));
+
 	// get all items added by this account
 	$itemsList = $iaItem->getPackageItems();
-	$array = $iaItem->getItemsInfo(true);
 	$itemsFlat = array();
 
-	if ($array)
+	if ($array = $iaItem->getItemsInfo(true))
 	{
 		foreach ($array as $itemData)
 		{
@@ -70,67 +85,58 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		}
 	}
 
-	if (iaUsers::hasIdentity() && iaUsers::getIdentity()->id == $member['id'])
-	{
-		$iaItem->setItemTools(array(
-			'title' => iaLanguage::get('edit'),
-			'url' => IA_URL . 'profile/'
-		));
-	}
-
-	$member = array_shift($iaItem->updateItemsFavorites(array($member), $member['item']));
-	$member['items'] = array();
-
-	// get fieldgroups
-	$iaField = $iaCore->factory('field');
-	list($tabs, $fieldgroups) = $iaField->generateTabs($iaField->filterByGroup($member, $member['item']));
-
-	// compose tabs
-	$sections = array_merge(array('common' => $fieldgroups), $tabs);
-
 	if (count($itemsFlat) > 0)
 	{
 		$limit = $iaCore->get('num_items_perpage');
-		foreach ($itemsFlat as $item)
+		foreach ($itemsFlat as $itemName)
 		{
-			$class = $iaCore->factoryPackage('item', $itemsList[$item], iaCore::FRONT, $item);
-
-			if ($class && method_exists($class, iaUsers::TAB_FILLER_METHOD))
+			if ($class = $iaCore->factoryPackage('item', $itemsList[$itemName], iaCore::FRONT, $itemName))
 			{
-				$return = $class->{iaUsers::TAB_FILLER_METHOD}(null, $start, $limit, $member['id']);
-
-				if ($return['items'])
+				if (method_exists($class, iaUsers::METHOD_NAME_GET_LISTINGS))
 				{
-					// add tab in case items exist
-					$sections[$item] = array();
-
-					$return['items'] = $iaItem->updateItemsFavorites($return['items'], $item);
+					$result = $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit);
+				}
+				// TODO: this section will be removed from the 3.1.5 core
+				// packages should implement the method above instead
+				elseif (method_exists($class, 'addAccountTab'))
+				{
+					$result = $class->addAccountTab(null, $start, $limit, $member['id']);
+				}
+				//
+				else
+				{
+					$result = null;
 				}
 
-				$member['items'][$item] = $return;
-				$member['items'][$item]['fields'] = $iaField->filter($member['items'][$item]['items'], $item);
+				if (!is_null($result))
+				{
+					if ($result['items'])
+					{
+						// add tab in case items exist
+						$sections[$itemName] = array();
+
+						$result['items'] = $iaItem->updateItemsFavorites($result['items'], $itemName);
+					}
+
+					$member['items'][$itemName] = $result;
+					$member['items'][$itemName]['fields'] = $iaField->filter($member['items'][$itemName]['items'], $itemName);
+				}
 			}
 		}
 	}
 
-	$iaView->assign('sections', $sections);
-	$iaView->assign('item', $member);
-
 	$alpha = substr($member[$filterBy], 0, 1);
-	if (empty($alpha) || $alpha === false)
-	{
-		$alpha = substr($member['username'], 0, 1);
-	}
+	$alpha || $alpha = substr($member['username'], 0, 1);
 	$alpha = strtoupper($alpha);
+
 	$iaView->set('subpage', $alpha);
 
-	$iaView->assign('url', IA_URL . 'members/' . iaSanitize::alias($member['username']) . '.html');
+	iaBreadcrumb::preEnd($alpha, $iaPage->getUrlByName('members') . $alpha . IA_URL_DELIMITER);
 
-	iaBreadcrumb::preEnd($alpha, IA_URL . 'members' . IA_URL_DELIMITER . $alpha . IA_URL_DELIMITER);
+	$iaView->assign('item', $member);
+	$iaView->assign('sections', $sections);
 
 	$iaView->title($iaView->title() . ' - ' . (empty($member['fullname']) ? $member['username'] : $member['fullname']));
-
-	$iaView->set('subpage', array_search($alpha, iaUtil::getLetters()));
 
 	$iaView->display('view-member');
 }

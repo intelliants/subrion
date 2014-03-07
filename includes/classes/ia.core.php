@@ -43,7 +43,8 @@ final class iaCore
 
 	protected $_checkDomainValue;
 
-	public $iaSmarty;
+	public $iaDb;
+	public $iaView;
 
 	public $packagesData = array();
 	public $languages = array();
@@ -89,26 +90,29 @@ final class iaCore
 		iaLanguage::load($this->iaView->language);
 
 		$this->startHook('phpCoreBeforeAuth');
+
 		$this->_authorize();
+		$this->_forgeryCheck();
 		$this->getCustomConfig();
 
 		$this->startHook('phpCoreBeforePageDefine');
+
 		$this->iaView->definePage();
-
-		$this->factory('acl');
-
 		$this->iaView->loadSmarty();
 
 		$this->startHook('bootstrap');
-		$this->iaView->initializeOutput();
 
-		$this->_forgeryCheck();
+		$this->_defineModule();
+		$this->iaView->defineOutput();
+		$this->_checkPermissions();
+		$this->_executeModule();
 
 		$this->startHook('phpCoreBeforeJsCache');
 		$this->factory('cache')->createJsCache();
 
 		if (self::ACCESS_FRONT == $this->getAccessType()
-			&& iaView::REQUEST_HTML == $this->iaView->getRequestType())
+			&& iaView::REQUEST_HTML == $this->iaView->getRequestType()
+			&& iaView::PAGE_ERROR != $this->iaView->name())
 		{
 			$this->factory('users')->registerVisitor();
 		}
@@ -140,6 +144,8 @@ final class iaCore
 
 	protected function _parseUrl()
 	{
+		$iaView = &$this->iaView;
+
 		$domain = $_SERVER['HTTP_HOST'];
 		$requestPath = preg_replace('#^\/#', '', $_SERVER['REQUEST_URI']);
 
@@ -154,12 +160,12 @@ final class iaCore
 			$this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
 		}
 
-		$this->iaView->domain = $domain;
-		$this->iaView->domainUrl = 'http://' . $domain . IA_URL_DELIMITER . FOLDER_URL;
-		$this->iaView->language = $this->get('lang');
-		$this->iaView->homePage = $this->get('home_page', iaView::DEFAULT_HOMEPAGE);
+		$iaView->domain = $domain;
+		$iaView->domainUrl = 'http://' . $domain . IA_URL_DELIMITER . FOLDER_URL;
+		$iaView->language = $this->get('lang');
+		$iaView->homePage = $this->get('home_page', iaView::DEFAULT_HOMEPAGE);
 
-		define('IA_CLEAR_URL', $this->iaView->domainUrl);
+		define('IA_CLEAR_URL', $iaView->domainUrl);
 
 		$doExit = false;
 		$changeLang = false;
@@ -181,33 +187,34 @@ final class iaCore
 			}
 			$url = substr($url, strlen(FOLDER) . IA_URL_DELIMITER);
 		}
-		$array = explode('?', $url);
-		$url = array_shift($array);
-		$pos = strrpos($url, '.');
 
 		$extension = IA_URL_DELIMITER;
-		if ($pos)
+
+		$url = array_shift(explode('?', $url));
+		$url = explode(IA_URL_DELIMITER, trim($url, IA_URL_DELIMITER));
+
+		$lastChunk = end($url);
+		if ($pos = strrpos($lastChunk, '.'))
 		{
-			$ext = substr($url, $pos + 1);
-			switch ($ext)
+			$extension = substr($lastChunk, $pos + 1);
+			switch ($extension)
 			{
 				case 'json':
-					$this->iaView->setRequestType(iaView::REQUEST_JSON);
+					$iaView->setRequestType(iaView::REQUEST_JSON);
 					break;
 				case 'xml':
-					$this->iaView->setRequestType(iaView::REQUEST_XML);
+					$iaView->setRequestType(iaView::REQUEST_XML);
 			}
-			$extension = '.' . $ext;
-			$url = str_replace($extension, '', $url);
+
+			$url = str_replace('.' . $extension, '', $url);
 		}
-		$this->iaView->set('extension', $extension);
-		$url = explode(IA_URL_DELIMITER, trim($url, IA_URL_DELIMITER));
+		$iaView->set('extension', $extension);
 
 		$this->startHook('phpCoreGetUrlBeforeParseUrl', array('url' => &$url));
 
 		if (isset($_GET['_lang']) && isset($this->languages[$_GET['_lang']]))
 		{
-			$this->iaView->language = $_GET['_lang'];
+			$iaView->language = $_GET['_lang'];
 			$changeLang = true;
 		}
 
@@ -234,24 +241,24 @@ final class iaCore
 				case (2 == strlen($value)): // current language
 					if (isset($this->languages[$value]))
 					{
-						$changeLang || $this->iaView->language = $value;
+						$changeLang || $iaView->language = $value;
 						continue 2;
 					}
 				default:
-					$this->iaView->name($value);
+					$iaView->name($value);
 					$isSystemChunk = false;
 			}
 		}
 
 		if (self::ACCESS_ADMIN == $this->getAccessType())
 		{
-			if ($isSystemChunk && $this->get('home_page') == $this->iaView->name())
+			if ($isSystemChunk && $this->get('home_page') == $iaView->name())
 			{
-				$this->iaView->name(iaView::DEFAULT_HOMEPAGE);
+				$iaView->name(iaView::DEFAULT_HOMEPAGE);
 			}
 		}
 
-		$this->iaView->url = $url;
+		$iaView->url = $url;
 		$this->requestPath = $array;
 
 		define('IA_EXIT', $doExit);
@@ -259,21 +266,137 @@ final class iaCore
 
 		if (isset($_POST['_lang']) && isset($this->languages[$_POST['_lang']]))
 		{
-			$this->iaView->language = $_POST['_lang'];
+			$iaView->language = $_POST['_lang'];
 		}
 
 		$languagesEnabled = $this->get('language_switch') && count($this->languages) > 1;
 
-		define('IA_URL_LANG', $languagesEnabled ? $this->iaView->language . IA_URL_DELIMITER : '');
+		define('IA_URL_LANG', $languagesEnabled ? $iaView->language . IA_URL_DELIMITER : '');
 		define('IA_URL', IA_CLEAR_URL . IA_URL_LANG);
-		define('IA_LANGUAGE', $this->iaView->language);
-		define('IA_SELF', rtrim($this->iaView->domainUrl . implode(IA_URL_DELIMITER, $this->iaView->url), IA_URL_DELIMITER) . $extension);
-		define('IA_CANONICAL', preg_replace('/\?(.*)/', '', 'http://' . $this->iaView->domain . IA_URL_DELIMITER . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
+		define('IA_LANGUAGE', $iaView->language);
+		define('IA_SELF', rtrim($iaView->domainUrl . implode(IA_URL_DELIMITER, $iaView->url), IA_URL_DELIMITER) . $extension);
+		define('IA_CANONICAL', preg_replace('/\?(.*)/', '', 'http://' . $iaView->domain . IA_URL_DELIMITER . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
 
-		$this->iaView->theme = $this->get((self::ACCESS_ADMIN == $this->getAccessType() ? 'admin_' : '') . 'tmpl', 'default');
+		$iaView->theme = $this->get((self::ACCESS_ADMIN == $this->getAccessType() ? 'admin_' : '') . 'tmpl', 'default');
 
 		define('IA_ADMIN_URL', IA_URL . $adminPanelUrl . IA_URL_DELIMITER);
-		define('IA_TPL_URL', IA_CLEAR_URL . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin/' : '') . 'templates/' . $this->iaView->theme . IA_URL_DELIMITER);
+		define('IA_TPL_URL', IA_CLEAR_URL . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin/' : '') . 'templates/' . $iaView->theme . IA_URL_DELIMITER);
+	}
+
+	protected function _defineModule()
+	{
+		$iaView = &$this->iaView;
+
+		$extrasName = $iaView->get('extras');
+		$fileName = $iaView->get('filename');
+
+		switch ($iaView->get('type'))
+		{
+			case 'package':
+				define('IA_CURRENT_PACKAGE', $extrasName);
+				define('IA_PACKAGE_URL', ($iaView->packageUrl ? $iaView->packageUrl . IA_URL_LANG : $iaView->domainUrl . IA_URL_LANG . $iaView->extrasUrl));
+				define('IA_PACKAGE_PATH', IA_PACKAGES . $extrasName . IA_DS);
+				define('IA_PACKAGE_TEMPLATE', IA_PACKAGES . $extrasName . IA_DS . 'templates' . IA_DS);
+				define('IA_PACKAGE_TEMPLATE_ADMIN', IA_PACKAGE_TEMPLATE . 'admin' . IA_DS);
+				define('IA_PACKAGE_TEMPLATE_COMMON', IA_PACKAGE_TEMPLATE . 'common' . IA_DS);
+
+				iaDebug::debug('<br>', null, 'info');
+				iaDebug::debug(IA_PACKAGE_PATH, 'IA_PACKAGE_PATH', 'info');
+				iaDebug::debug(IA_CURRENT_PACKAGE, 'IA_CURRENT_PACKAGE', 'info');
+				iaDebug::debug(IA_PACKAGE_URL, 'IA_PACKAGE_URL', 'info');
+				iaDebug::debug(IA_PACKAGE_TEMPLATE, 'IA_PACKAGE_TEMPLATE', 'info');
+				iaDebug::debug(IA_PACKAGE_TEMPLATE_ADMIN, 'IA_PACKAGE_TEMPLATE_ADMIN', 'info');
+				iaDebug::debug(IA_PACKAGE_TEMPLATE_COMMON, 'IA_PACKAGE_TEMPLATE_COMMON', 'info');
+
+				$module = empty($fileName) ? iaView::DEFAULT_HOMEPAGE : $fileName;
+				$module = IA_PACKAGES . $extrasName . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . $module . iaSystem::EXECUTABLE_FILE_EXT;
+
+				file_exists($module) || $module = (self::ACCESS_ADMIN == $this->getAccessType() ? IA_ADMIN : IA_FRONT) . $fileName . iaSystem::EXECUTABLE_FILE_EXT;
+
+				break;
+
+			case 'plugin':
+				define('IA_CURRENT_PLUGIN', $extrasName);
+				define('IA_PLUGIN_TEMPLATE', IA_PLUGINS . $extrasName . IA_DS . 'templates' . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' : 'front') . IA_DS);
+
+				iaDebug::debug('<br>', null, 'info');
+				iaDebug::debug(IA_CURRENT_PLUGIN, 'IA_CURRENT_PLUGIN', 'info');
+				iaDebug::debug(IA_PLUGIN_TEMPLATE, 'IA_PLUGIN_TEMPLATE', 'info');
+
+				$module = empty($fileName) ? iaView::DEFAULT_HOMEPAGE : $fileName;
+				$module = IA_PLUGINS . $extrasName . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . $module . iaSystem::EXECUTABLE_FILE_EXT;
+
+				break;
+
+			default:
+				$module = empty($fileName) ? $iaView->name() : $fileName;
+				$module = (self::ACCESS_ADMIN == $this->getAccessType() ? IA_ADMIN : IA_FRONT) . $module . iaSystem::EXECUTABLE_FILE_EXT;
+		}
+
+		$iaView->set('filename', $module);
+	}
+
+	protected function _checkPermissions()
+	{
+		$object = (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin_' : '') . 'pages';
+		$objectId = $this->iaView->get('name');
+		if ($parent = $this->iaView->get('parent'))
+		{
+			$object .= '-' . $parent;
+			$objectId = null;
+		}
+
+		$iaAcl = $this->factory('acl');
+		$accessGranted = $iaAcl->checkAccess($object . iaAcl::SEPARATOR . $this->iaView->get('action'), 0, 0, $objectId);
+
+		if (self::ACCESS_ADMIN == $this->getAccessType())
+		{
+			if (!iaUsers::hasIdentity())
+			{
+				iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
+			}
+			elseif (!$iaAcl->isAdmin() || !$accessGranted)
+			{
+				iaView::accessDenied();
+			}
+		}
+		else
+		{
+/*			if (!$accessGranted)
+			{
+				iaView::accessDenied();
+			}*/
+		}
+	}
+
+	protected function _executeModule()
+	{
+		$module = $this->iaView->get('filename');
+
+		if (!file_exists($module))
+		{
+			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		};
+
+		// this set of variables should be defined since there is a PHP file inclusion below
+		$iaCore = &$this;
+		$iaView = &$this->iaView;
+		$iaDb = &$this->iaDb;
+		$iaAcl = $this->factory('acl');
+		//
+
+		$pageName = $this->iaView->name();
+		$permission = (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin_' : '') . 'pages-' . $pageName . iaAcl::SEPARATOR;
+
+		$pageAction = $this->iaView->get('action');
+		iaDebug::debug($pageAction, 'Page Action', 'info');
+
+		$this->startHook('phpCoreCodeBeforeStart');
+
+		iaDebug::debug($this->iaView->get('filename'), 'Module', 'info');
+		require $module;
+
+		$this->startHook('phpCoreCodeAfterAll');
 	}
 
 	public function getConfig($reloadRequired = false)
@@ -281,16 +404,18 @@ final class iaCore
 		if (empty($this->_config) || $reloadRequired)
 		{
 			$iaCache = $this->factory('cache');
+
 			$this->_config = $iaCache->get('config', 604800, true);
 			iaSystem::renderTime('<b>config</b> - Cached Configuration Loaded');
 
 			if (empty($this->_config) || $reloadRequired)
 			{
-				$this->_config = $this->iaDb->keyvalue(array('name', 'value'), "`type` NOT IN ('divider')", self::getConfigTable());
+				$this->_config = $this->iaDb->keyvalue(array('name', 'value'), "`type` != 'divider'", self::getConfigTable());
 				iaSystem::renderTime('<b>config</b> - Configuration Loaded from DB');
 
-				$extras = $this->iaDb->keyvalue(array('id', 'name'), "`status` = 'active'", 'extras');
+				$extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'extras');
 				$extras[] = $this->_config['tmpl'];
+
 				$this->_config['extras'] = $extras;
 
 				$iaCache->write('config', $this->_config);
@@ -298,11 +423,6 @@ final class iaCore
 			}
 
 			$this->languages = unserialize($this->_config['languages']);
-		}
-
-		if (file_exists(IA_INCLUDES . 'custom.inc.php'))
-		{
-			include IA_INCLUDES . 'custom.inc.php';
 		}
 
 		return $this->_config;
@@ -578,7 +698,7 @@ final class iaCore
 			}
 			else
 			{
-				iaView::accessDenied($msg);
+				return iaView::accessDenied($msg);
 			}
 		}
 	}
@@ -636,7 +756,9 @@ final class iaCore
 			}
 
 			header('HTTP/1.1 203'); // reply with 203 "Non-Authoritative Information" status
-			die;
+
+			$this->iaView->set('nodebug', true);
+			die('Request treated as potential CSRF attack.');
 		}
 
 		/* PREVIOUS IMPLEMENTATION VIA POOL OF SESSION VARIABLES **

@@ -108,8 +108,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$iaTemplate->rollback();
 			$iaTemplate->install();
 
-			$iaCache->clearAll();
-
 			if ($iaTemplate->error)
 			{
 				$error = true;
@@ -117,9 +115,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			}
 			else
 			{
-				$messages[] = iaLanguage::getf('template_installed', array('name' => $iaTemplate->title));
+				$iaView->setMessages(iaLanguage::getf('template_installed', array('name' => $iaTemplate->title)), iaView::SUCCESS);
+
+				$iaCache->clearAll();
 
 				$iaCore->factory('log')->write(iaLog::ACTION_INSTALL, array('type' => 'template', 'name' => $iaTemplate->title));
+
+				iaUtil::go_to(IA_SELF);
 			}
 		}
 	}

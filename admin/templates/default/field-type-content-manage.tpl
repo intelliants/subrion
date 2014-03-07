@@ -56,7 +56,6 @@
 			{if !is_array($chosen)}
 				{assign var='chosen' value='|'|explode:$chosen}
 			{/if}
-
 			<div class="row control-group-inner">
 				<div class="col col-lg-6">
 					<label for="{$variable.name}[title]" class="control-label">{lang key='title'}:</label>
@@ -72,7 +71,6 @@
 		{case 'textarea' break}
 			{if !$variable.use_editor}
 				<textarea name="{$varname}" rows="8" id="{$name}">{$chosen}</textarea>
-
 				{if $variable.length > 0}
 					{ia_add_js}
 						$(function($)
@@ -172,27 +170,27 @@
 			{html_options options=$variable.values selected=$chosen}
 		</select>
 
-		{if $variable.relation == 'parent' && !empty($variable.children)}
+		{if $variable.relation == 'parent' && $variable.children}
 			{ia_add_js order=5}
 			$(function()
 			{
-				{foreach $variable.children as $_field => $field_list}
-					{foreach $field_list as $child}
-						$('#{$child}_fieldzone').addClass('hide_{$varname}');
-					{/foreach}
-				{/foreach}
+				$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
 				$('#{$name}').on('change', function()
 				{
 					var value = $(this).val();
-					$('.hide_{$varname}').hide();
-					{foreach $variable.children as $_field => $field_list}
-					if (value == '{$_field}')
-					{
-						{foreach $field_list as $child}
-							$('#{$child}_fieldzone').show();
-						{/foreach}
-					}
+					$('.hide_{$variable.name}').hide();
+					{foreach $variable.children as $_field => $_values}
+					if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 					{/foreach}
+					$('fieldset').show().each(function(index, item)
+					{
+						if ($('.fieldset-wrapper', item).length > 0)
+						{
+							$('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0
+								? $(this).hide()
+								: $(this).show();
+						}
+					});
 				}).change();
 			});
 			{/ia_add_js}
@@ -205,27 +203,26 @@
 			<div class="radio">{'<div class="radio">'|implode:$radios}
 		{/if}
 
-		{if $variable.relation == 'parent' && !empty($variable.children)}
+		{if $variable.relation == 'parent' && $variable.children}
 			{ia_add_js order=5}
 			$(function()
 			{
-				{foreach $variable.children as $_field => $field_list}
-					{foreach $field_list as $child}
-						$('#{$child}_fieldzone').addClass('hide_{$varname}');
-					{/foreach}
-				{/foreach}
+				$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
 				$('input[name="{$varname}"]').on('change', function()
 				{
 					var value = $(this).val();
-					$('.hide_{$varname}').hide();
-					{foreach $variable.children as $_field => $field_list}
-					if (value == '{$_field}')
-					{
-						{foreach $field_list as $child}
-							$('#{$child}_fieldzone').show();
-						{/foreach}
-					}
+					$('.hide_{$variable.name}').hide();
+					{foreach $variable.children as $_field => $_values}
+					if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 					{/foreach}
+					$('fieldset').show().each(function(index, item)
+					{
+						if ($('.fieldset-wrapper', item).length > 0)
+						{
+							if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
+							else $(this).show();
+						}
+					});
 				}).change();
 			});
 			{/ia_add_js}
@@ -239,29 +236,28 @@
 			<div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
 		{/if}
 
-		{if $variable.relation == 'parent' && !empty($variable.children)}
+		{if $variable.relation == 'parent' && $variable.children}
 			{ia_add_js order=5}
 			$(function()
 			{
-				{foreach $variable.children as $_field => $field_list}
-					{foreach $field_list as $child}
-						$('#{$child}_fieldzone').addClass('hide_{$varname}');
-					{/foreach}
-				{/foreach}
+				$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
 				$('input[name="{$varname}[]"]').on('change', function()
 				{
-					$('.hide_{$varname}').hide();
+					$('.hide_{$variable.name}').hide();
 					$('#type_fieldzone input[type="checkbox"]:checked').each(function()
 					{
 						var value = $(this).val();
-						{foreach $variable.children as $_field => $field_list}
-							if (value == '{$_field}')
-							{
-								{foreach $field_list as $child}
-									$('#{$child}_fieldzone').show();
-								{/foreach}
-							}
+						{foreach $variable.children as $_field => $_values}
+						if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 						{/foreach}
+					});
+					$('fieldset').show().each(function(index, item)
+					{
+						if ($('.fieldset-wrapper', item).length > 0)
+						{
+							if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
+							else $(this).show();
+						}
 					});
 				}).change();
 			});

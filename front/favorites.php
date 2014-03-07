@@ -49,7 +49,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	if (!iaUsers::hasIdentity())
 	{
-		iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
+		return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
 	}
 
 	$favorites = $iaItem->getFavoritesByMemberId(iaUsers::getIdentity()->id);
@@ -59,30 +59,21 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$itemInfo = array();
 		$itemsList = $iaItem->getPackageItems();
 
-		// TODO: implement pagination
-
 		$iaField = $iaCore->factory('field');
 
 		foreach ($favorites as $itemName => $ids)
 		{
-			$itemIds = array();
-			foreach ($ids as $id)
-			{
-				$itemIds[] = $id['id'];
-			}
-			$ids = implode(', ', $itemIds);
-
 			$fields = array('id');
 
 			$favorites[$itemName]['fields'] = $iaField->filter($itemInfo, $itemName);
 
-			$class = ('core' != $itemsList[$itemName])
+			$class = (iaCore::CORE != $itemsList[$itemName])
 				? $iaCore->factoryPackage('item', $itemsList[$itemName], iaCore::FRONT, $itemName)
 				: $iaCore->factory('members' == $itemName ? 'users' : $itemName);
 
-			if ($class && method_exists($class, iaUsers::TAB_FILLER_FAVORITES_METHOD))
+			if ($class && method_exists($class, iaUsers::METHOD_NAME_GET_FAVORITES))
 			{
-				$favorites[$itemName]['items'] = $class->{iaUsers::TAB_FILLER_FAVORITES_METHOD}($ids, $fields);
+				$favorites[$itemName]['items'] = $class->{iaUsers::METHOD_NAME_GET_FAVORITES}($ids, $fields);
 			}
 			else
 			{
@@ -101,7 +92,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					$fields[] = $f['name'];
 				}
 
-				$stmt = iaDb::printf("`id` IN (:ids) AND `status` = ':active'", array('ids' => $ids, 'active' => iaCore::STATUS_ACTIVE));
+				$stmt = iaDb::printf("`id` IN (:ids) AND `status` = ':status'", array('ids' => implode(',', $ids), 'status' => iaCore::STATUS_ACTIVE));
 
 				$favorites[$itemName]['items'] = $iaDb->all('`' . implode('`,`', $fields) . '`, 1 `favorite`', $stmt, null, null, $iaItem->getItemTable($itemName));
 			}

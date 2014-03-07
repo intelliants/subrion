@@ -25,8 +25,7 @@ Ext.onReady(function()
 					? '<span style="color:green;">Allowed</span>'
 					: '<span style="color:red;">Not allowed</span>';
 			}},
-			/*
-			{name: 'permissions', title: _t('permissions'), href: intelli.config.admin_url + '/permissions/?group={id}', icon: 'folder'},
+			/*{name: 'permissions', title: _t('permissions'), href: intelli.config.admin_url + '/permissions/?group={id}', icon: 'folder'},
 			{name: 'config', title: _t('go_to_config'), href: intelli.config.admin_url + '/configuration/?group={id}', icon: 'cogs'},
 			*/
 			'delete'

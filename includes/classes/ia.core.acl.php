@@ -175,7 +175,7 @@ class iaAcl extends abstractUtil
 	{
 		if (!$this->checkAccess($params, $ownerUser, $ownerGroup, $objectId))
 		{
-			iaView::accessDenied();
+			return iaView::accessDenied();
 		}
 
 		return true;

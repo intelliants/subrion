@@ -5,7 +5,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	if (!iaUsers::hasIdentity())
 	{
-		iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
+		return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
 	}
 
 	$iaField = $iaCore->factory('field');
@@ -48,6 +48,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$error = false;
 			$messages[] = iaLanguage::get('password_changed');
 		}
+
 		$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
 	}
 	elseif ($_POST && (isset($_POST['change_info']) || isset($_POST['plan_id'])))

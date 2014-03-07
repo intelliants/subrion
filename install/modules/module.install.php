@@ -1,8 +1,8 @@
 <?php
 //##copyright##
 
-define('IA_VERSION', '3.1.1');
-define('IA_VER', '311');
+define('IA_VERSION', '3.1.4');
+define('IA_VER', '314');
 
 $error = false;
 $message = '';
@@ -37,7 +37,7 @@ switch ($step)
 			'class' => true,
 			'name' => 'Mysql version',
 			'value' => function_exists('mysql_connect')
-				? '<td class="success">' . mysql_get_client_info() . '</td>'
+				? '<td class="success">' . substr(mysql_get_client_info(), 0, strpos(mysql_get_client_info(), '-')) . '</td>'
 				: '<td class="danger">MySQL 4.x or upper required</td>'
 		);
 		$checks['server']['php_version'] = array(
@@ -447,11 +447,10 @@ HTML;
 					$iaTemplateInstaller->parse();
 					$iaTemplateInstaller->check();
 
-					$notes = $iaTemplateInstaller->getNotes();
-					if ($notes)
+					if ($notes = $iaTemplateInstaller->getNotes())
 					{
 						$error = true;
-						$message = implode('<br />', $notes);
+						$message = implode('<br>', $notes);
 					}
 
 					$iaTemplateInstaller->install(iaTemplate::SETUP_INITIAL);

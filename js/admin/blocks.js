@@ -426,7 +426,7 @@ Ext.onReady(function()
 			{
 				$.ajax(
 				{
-					data: {id: $('input[name="id"]').val()},
+					data: {'id[]': $('input[name="id"]').val()},
 					dataType: 'json',
 					failure: function()
 					{

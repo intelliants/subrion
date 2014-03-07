@@ -38,7 +38,7 @@ function smarty_function_ia_hooker($params, &$smarty)
 						}
 						break;
 					case 'smarty':
-						echo $iaCore->iaSmarty->fetch(IA_HOME . $hook['filename']);
+						echo $smarty->fetch(IA_HOME . $hook['filename']);
 				}
 			}
 			else
@@ -49,7 +49,7 @@ function smarty_function_ia_hooker($params, &$smarty)
 						eval($hook['code']);
 						break;
 					case 'smarty':
-						echo $iaCore->iaSmarty->fetch('eval:' . $hook['code']);
+						echo $smarty->fetch('eval:' . $hook['code']);
 						break;
 					case 'html':
 						echo $hook['code'];

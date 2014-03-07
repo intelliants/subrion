@@ -13,6 +13,8 @@ function smarty_function_randnum($params, &$smarty)
 	$ceiling = (array_key_exists('ceiling', $params)) ? $params['ceiling']:1000;
 
 	$result = rand($floor, $ceiling);
+
 	$smarty->assign('randnum', $result);
+
 	return $result;
 }

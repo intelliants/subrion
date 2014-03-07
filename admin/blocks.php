@@ -38,13 +38,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		$iaCore->startHook('adminAddBlockValidation');
 
-		if (!defined('IA_NOUTF'))
-		{
-			$iaUtil = $iaCore->factory('util');
-
-			iaUtf8::loadUTF8Core();
-			iaUtf8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-		}
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 		$error = false;
 
@@ -264,7 +258,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$blockData = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($_GET['id']));
 				if (empty($blockData))
 				{
-					iaView::errorPage(iaView::ERROR_NOT_FOUND);
+					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
 
 				if (0 == $blockData['multi_language'])

@@ -139,8 +139,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 					}
 					else
 					{
-						$pageId = (int)$node;
-						if ($pageId > 0)
+						if ($pageId = (int)$node)
 						{
 							$page = $iaDb->one('`name`', iaDb::convertIds($pageId), 'pages');
 							$key = 'page_title_' . $page;
@@ -232,12 +231,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$entry = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`id` = :id', array('id' => $_GET['id']));
 				if (empty($entry))
 				{
-					iaView::errorPage(iaView::ERROR_NOT_FOUND);
+					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
 			}
 			else
 			{
-				iaView::errorPage(iaView::ERROR_NOT_FOUND);
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 			}
 		}
 		else
@@ -384,7 +383,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		{
 			if (!isset($_GET['id']))
 			{
-				iaView::errorPage(iaView::ERROR_NOT_FOUND);
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 			}
 			$menuId = (int)$_GET['id'];
 		}

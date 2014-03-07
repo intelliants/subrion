@@ -3,7 +3,7 @@
 
 if (!iaUsers::hasIdentity())
 {
-	iaView::accessDenied();
+	return iaView::accessDenied();
 }
 
 $iaTransaction = $iaCore->factory('transaction');

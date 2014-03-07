@@ -15,8 +15,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
 	protected $_table;
 
-	public $ver_data = '';
-
+	public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8';
 	public $prefix;
 
 
@@ -40,21 +39,12 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			die($message);
 		}
 
-		$mysql_ver = version_compare('4.1', mysql_get_server_info(), '<=') ? '41' : '40';
-		if ($mysql_ver > 40)
-		{
-			$this->query("SET NAMES 'utf8'");
-			$this->ver_data = 'ENGINE = MyISAM DEFAULT CHARSET = utf8';
-		}
-		else
-		{
-			$this->ver_data = 'TYPE = MyISAM';
-		}
+		$this->query("SET NAMES 'utf8'");
 
 		if (!mysql_select_db(INTELLI_DBNAME, $this->_link))
 		{
 			trigger_error('An error occurred while selecting database: ' . mysql_error($this->_link), E_USER_ERROR);
-			die ();
+			die();
 		}
 	}
 
@@ -1134,7 +1124,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 				switch (true) // an order of statements is important!
 				{
 					case is_numeric($value):
-						$pattern = '`%s` = %s';
+//						$pattern = '`%s` = %s';
 						break;
 					case is_bool($value):
 						$value = $value ? 1 : 0;

@@ -84,10 +84,10 @@
 			</div>
 
 		{case 'date' break}
-			{assign var='default_date' value=($chosen && '0000-00-00' != $chosen) ? {$chosen|escape:'html'} : {$smarty.now|date_format:'%Y-%m-%d'}}
+			{assign var='default_date' value=($chosen && '0000-00-00' != $chosen) ? {$chosen|escape:'html'} : ''}
 
 			<div class="input-append date" id="field_date_{$varname}">
-				<input type="text" name="{$varname}" class="js-datepicker" id="{$name}" value="{$default_date}" readonly="readonly">
+				<input type="text" name="{$varname}" class="js-datetimepicker" id="{$name}" value="{$default_date}">
 				<span class="add-on js-datetimepicker-toggle"><i class="icon-calendar"></i></span>
 			</div>
 
@@ -95,7 +95,7 @@
 			{ia_add_js}
 			$(function()
 			{
-				$('.js-datepicker').datetimepicker(
+				$('.js-datetimepicker').datetimepicker(
 				{
 					format: 'yyyy-mm-dd',
 					pickerPosition: 'top-left',
@@ -107,7 +107,7 @@
 				});
 				$('.js-datetimepicker-toggle').on('click', function()
 				{
-					$('.js-datepicker').datetimepicker('show');
+					$(this).prev().datetimepicker('show');
 				});
 			});
 			{/ia_add_js}
@@ -141,11 +141,13 @@
 						<input type="file" class="upload-hidden" name="{$variable.name}[]">
 					</div>
 					<input class="upload-title" type="text" placeholder="{lang key='title'}" name="{$variable.name}_title[]" maxlength="100">
-					<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
-					<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
+					{if $max_num > 1}
+						<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
+						<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
+					{/if}
 				</div>
 			</div>
-			<input type="hidden" value="{$max_num}" id="{$variable.name}" />
+			<input type="hidden" value="{$max_num}" id="{$variable.name}">
 
 		{case 'image' break}
 			<div class="upload-wrap">
@@ -207,14 +209,17 @@
 							<span class="span2 uneditable-input">{lang key='image_click_to_upload'}</span>
 							<span class="add-on">{lang key='browse'}</span>
 						</div>
-						<input type="file" class="upload-hidden" name="{$variable.name}[]" />
+						<input type="file" class="upload-hidden" name="{$variable.name}[]">
 					</div>
 					<input class="upload-title" type="text" placeholder="{lang key='title'}" name="{$variable.name}_title[]" maxlength="100">
-					<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
-					<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
+
+					{if $max_num > 1}
+						<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
+						<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
+					{/if}
 				</div>
 
-				<input type="hidden" value="{$max_num}" id="{$variable.name}" />
+				<input type="hidden" value="{$max_num}" id="{$variable.name}">
 				<p class="help-block">{lang key='click'}<strong> {lang key='browse'}... </strong>{lang key='choose_image_file'}</p>
 			</div>
 
@@ -228,36 +233,27 @@
 				{/if}
 			</select>
 
-			{if $variable.relation == 'parent' && !empty($variable.children)}
-			{ia_add_js order='5'}
-			$(function(){
-				{foreach $variable.children as $_field => $field_list}
-					{foreach $field_list as $child}
-				$('#{$child}_fieldzone').addClass('hide_{$variable.name}');
-					{/foreach}
-				{/foreach}
-				$('#{$name}').change(function()
+			{if $variable.relation == 'parent' && $variable.children}
+			{ia_add_js order=5}
+			$(function()
+			{
+				$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
+				$('#{$name}').on('change', function()
 				{
 					var value = $(this).val();
 					$('.hide_{$variable.name}').hide();
-					{foreach $variable.children as $_field => $field_list}
-					if (value == '{$_field}')
-					{
-						{foreach $field_list as $child}
-						$('#{$child}_fieldzone').show();
-						{/foreach}
-					}
+					{foreach $variable.children as $_field => $_values}
+					if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 					{/foreach}
-					$('fieldset')
-						.show()
-						.each(function(index, item)
+					$('fieldset').show().each(function(index, item)
+					{
+						if ($('.fieldset-wrapper', item).length > 0)
 						{
-							if ($('.fieldset-wrapper', item).length > 0)
-							{
-								if ($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
-								else $(this).show();
-							}
-						});
+							$('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0
+								? $(this).hide()
+								: $(this).show();
+						}
+					});
 				}).change();
 			});
 			{/ia_add_js}
@@ -271,78 +267,62 @@
 				{/if}
 			</div>
 
-			{if $variable.relation == 'parent' && !empty($variable.children)}
-				{ia_add_js order='5'}
-					$(function()
+			{if $variable.relation == 'parent' && $variable.children}
+				{ia_add_js order=5}
+				$(function()
+				{
+					$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
+					$('input[name="{$varname}"]').on('change', function()
 					{
-						{foreach $variable.children as $_field => $field_list}
-							{foreach $field_list as $child}
-								$('#{$child}_fieldzone').addClass('hide_{$variable.name}');
-							{/foreach}
+						var value = $(this).val();
+						$('.hide_{$variable.name}').hide();
+						{foreach $variable.children as $_field => $_values}
+						if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 						{/foreach}
-						$('input[name="{$varname}"]').change(function(){
-							var value = $(this).val();
-							$('.hide_{$variable.name}').hide();
-							{foreach $variable.children as $_field => $field_list}
-								if(value == '{$_field}')
-								{
-									{foreach $field_list as $child}
-										$('#{$child}_fieldzone').show();
-									{/foreach}
-								}
-							{/foreach}
-							$('fieldset').show();
-							$('fieldset').each(function(index, item){
-								if($('.fieldset-wrapper', item).length > 0){
-									if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
-									else $(this).show();
-								}
-							});
-						}).change();
-					});
+						$('fieldset').show().each(function(index, item)
+						{
+							if ($('.fieldset-wrapper', item).length > 0)
+							{
+								if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
+								else $(this).show();
+							}
+						});
+					}).change();
+				});
 				{/ia_add_js}
 			{/if}
 
 		{elseif $type == 'checkbox'}
 			<div class="radios-list">
 				{if !empty($variable.values)}
-					{html_checkboxes assign="checkboxes" name=$varname id=$name options=$variable.values selected=$chosen separator="</div>"}
+					{html_checkboxes assign='checkboxes' name=$varname id=$name options=$variable.values selected=$chosen separator="</div>"}
 					<div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
 				{/if}
 			</div>
 
-			{if $variable.relation == 'parent' && !empty($variable.children)}
+			{if $variable.relation == 'parent' && $variable.children}
 			{ia_add_js order=5}
 			$(function()
 			{
-				{foreach $variable.children as $_field => $field_list}
-					{foreach $field_list as $child}
-				$('#{$child}_fieldzone').addClass('hide_{$variable.name}');
-					{/foreach}
-				{/foreach}
-				$('input[name="{$varname}[]"]').change(function()
+				$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
+				$('input[name="{$varname}[]"]').on('change', function()
 				{
 					$('.hide_{$variable.name}').hide();
 					$('#type_fieldzone input[type="checkbox"]:checked').each(function()
 					{
 						var value = $(this).val();
-						{foreach $variable.children as $_field => $field_list}
-						if(value == '{$_field}') {
-							{foreach $field_list as $child}
-							$('#{$child}_fieldzone').show();
-							{/foreach}
-						}
+						{foreach $variable.children as $_field => $_values}
+						if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 						{/foreach}
 					});
-					$('fieldset')
-						.show();
-						.each(function(index, item)
+					$('fieldset').show().each(function(index, item)
+					{
+						if ($('.fieldset-wrapper', item).length > 0)
 						{
-							if($('.fieldset-wrapper', item).length > 0){
-								if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
-								else $(this).show();
-							}
-						});
+							if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
+							else $(this).show();
+						}
+					});
 				}).change();
 			});
 			{/ia_add_js}

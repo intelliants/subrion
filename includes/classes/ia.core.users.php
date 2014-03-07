@@ -12,8 +12,8 @@ class iaUsers extends abstractCore
 	const STATUS_UNCONFIRMED = 'unconfirmed';
 	const STATUS_SUSPENDED = 'suspended';
 
-	const TAB_FILLER_METHOD = 'addAccountTab';
-	const TAB_FILLER_FAVORITES_METHOD = 'addFavoritesTab';
+	const METHOD_NAME_GET_LISTINGS = 'fetchMemberListings';
+	const METHOD_NAME_GET_FAVORITES = 'getFavorites';
 
 	protected static $_table = 'members';
 	protected static $_itemName = 'members';
@@ -55,16 +55,14 @@ class iaUsers extends abstractCore
 	 */
 	public static function getIdentity($plainArray = false)
 	{
-		$result = null;
-
 		if (isset($_SESSION[self::SESSION_KEY]) && $_SESSION[self::SESSION_KEY])
 		{
-			$result = $plainArray
+			return $plainArray
 				? $_SESSION[self::SESSION_KEY]
 				: (object)$_SESSION[self::SESSION_KEY];
 		}
 
-		return $result;
+		return null;
 	}
 
 	/**
@@ -203,6 +201,7 @@ class iaUsers extends abstractCore
 		$memberInfo['password'] = (isset($memberInfo['disable_fields']) && $memberInfo['disable_fields'])
 			? $this->_createPassword()
 			: $memberInfo['password'];
+
 		unset($memberInfo['disable_fields']);
 
 		$password = $memberInfo['password'];
@@ -219,9 +218,9 @@ class iaUsers extends abstractCore
 		}
 
 		// send email
-		$action = 'member_registration';
-
 		$this->iaCore->startHook('memberAddEmailSubmission', array('member' => $memberInfo));
+
+		$action = 'member_registration';
 		if ($this->iaCore->get($action) && $memberInfo['email'])
 		{
 			$iaMailer = $this->iaCore->factory('mailer');
@@ -231,7 +230,7 @@ class iaUsers extends abstractCore
 			$iaMailer->replace['{%FULLNAME%}'] = $memberInfo['fullname'];
 			$iaMailer->replace['{%EMAIL%}'] = $memberInfo['email'];
 			$iaMailer->replace['{%PASSWORD%}'] = $password;
-			$iaMailer->replace['{%KEY%}'] = $memberInfo['sec_key'];
+			$iaMailer->replace['{%LINK%}'] = IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key'];
 
 			$iaMailer->Send();
 		}
@@ -491,7 +490,7 @@ class iaUsers extends abstractCore
 		{
 			foreach ($rows as &$row)
 			{
-				$row['url'] = $this->iaCore->iaSmarty->ia_url(array('item' => $this->getItemName(), 'type' => 'link', 'text' => $row['fullname'], 'data' => $row)) ;
+				$row['url'] = $this->iaView->iaSmarty->ia_url(array('item' => $this->getItemName(), 'type' => 'link', 'text' => $row['fullname'], 'data' => $row)) ;
 			}
 		}
 

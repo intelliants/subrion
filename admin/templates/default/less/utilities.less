@@ -362,3 +362,64 @@
   margin-bottom: 0;
   padding: 6px;
 }
+
+
+// PLUGINS
+//---------------------------
+
+.x-window .plugin-icon {
+  img {
+    width: 130px;
+    .center-block();
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+}
+
+
+// RESOLVE ISSUES
+//---------------------------
+
+.b-resolve {
+  position: relative;
+  padding-right: 40px;
+
+  &__wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 40px;
+    border-left: 1px solid #eee;
+
+    a {
+      display: block;
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -10px;
+      margin-left: -10px;
+      border: 2px solid @brand-primary;
+      color: @link-color;
+      font-size: 12px;
+      line-height: 16px;
+      text-align: center;
+      border-radius: 50%;
+
+      &:hover {
+        text-decoration: none;
+        color: @link-hover-color;
+        border-color: @link-hover-color;
+      }
+
+      &.disabled,
+      &.disabled:hover {
+        border: 2px solid @brand-info;
+        background: @brand-info;
+        color: #fff;
+      }
+    }
+  }
+}

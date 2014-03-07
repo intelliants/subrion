@@ -193,7 +193,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			break;
 
 		case iaCore::ACTION_DELETE:
-			$iaCore->factory('grid', iaCore::ADMIN)->gridDelete($_POST, 'transaction_deleted');
+			$output = $iaCore->factory('grid', iaCore::ADMIN)->gridDelete($_POST, 'transaction_deleted');
 
 			break;
 

@@ -62,6 +62,7 @@ intelli.gridHelper = {
 					.replace(':title', '')
 					.replace(':class', 'i-checkmark-2');
 			}
+
 			return '';
 		}
 	},
@@ -125,7 +126,7 @@ function IntelliGrid(params, autoInit)
 {
 	this.columns = [];
 	this.config = {
-		height: params.height || 485,
+		height: params.height || 525,
 		minHeight: params.minHeight || 250,
 		pageSize: params.pageSize || 15,
 		resizer: ('boolean' == typeof params.resizer) ? params.resizer : true,
@@ -183,10 +184,10 @@ function IntelliGrid(params, autoInit)
 
 	var self = this;
 
-	this.init = function()
+	this.init = function(autoLoad)
 	{
 		_setupColumns();
-		_setupStore();
+		_setupStore('boolean' != typeof autoLoad ? true : autoLoad);
 		_setupToolbar();
 		_setupGrid();
 	};
@@ -213,7 +214,7 @@ function IntelliGrid(params, autoInit)
 		}
 	};
 
-	var _setupStore = function()
+	var _setupStore = function(autoLoad)
 	{
 		if (self.params.fields !== undefined)
 		{
@@ -223,7 +224,7 @@ function IntelliGrid(params, autoInit)
 		self.store = Ext.create('Ext.data.Store',
 		{
 			autoDestroy: true,
-			autoLoad: true,
+			autoLoad: autoLoad,
 			fields: self.fields,
 			pageSize: self.config.pageSize,
 			proxy:
@@ -397,13 +398,7 @@ function IntelliGrid(params, autoInit)
 		self.grid = Ext.create('Ext.grid.Panel',
 		{
 			allowDeselect: true,
-			bbar: Ext.create('Ext.PagingToolbar',
-			{
-				store: self.store,
-				displayInfo: true,
-				plugins: plugins,
-				items: pagingBar
-			}),
+			bbar: Ext.create('Ext.PagingToolbar', {store: self.store, displayInfo: true, plugins: plugins, items: pagingBar}),
 			columns: self.columns,
 			height: self.config.height,
 			minHeight: self.config.minHeight,
@@ -420,7 +415,9 @@ function IntelliGrid(params, autoInit)
 			title: self.config.title
 		});
 
-		self.grid.on('cellclick', function(view, cell, columnIndex, store, row, rowIndex, e)
+		var events = (undefined === self.params.events) ? {} : self.params.events;
+
+		self.grid.on('cellclick', events.click || function(view, cell, columnIndex, store, row, rowIndex, e)
 		{
 			var field = view.getGridColumns()[columnIndex].dataIndex;
 			var record = view.getRecord(row);
@@ -477,7 +474,8 @@ function IntelliGrid(params, autoInit)
 					}
 			}
 		});
-		self.grid.on('selectionchange', function(model, selected, eOpts)
+
+		self.grid.on('selectionchange', events.select ||  function(model, selected, eOpts)
 		{
 			var selection = model.getSelection();
 
@@ -513,7 +511,8 @@ function IntelliGrid(params, autoInit)
 				self.config.rowdeselect(self);
 			}
 		});
-		self.grid.on('edit', function(editor, e)
+
+		self.grid.on('edit', events.edit || function(editor, e)
 		{
 			if (e.value == e.originalValue)
 			{
@@ -534,6 +533,15 @@ function IntelliGrid(params, autoInit)
 
 			intelli.gridHelper.httpRequest(self, data);
 		});
+
+		if ('function' == typeof events.beforeedit)
+		{
+			self.grid.on('beforeedit', events.beforeedit);
+		}
+		if ('function' == typeof events.load)
+		{
+			self.store.on('load', events.load);
+		}
 
 		Ext.EventManager.onWindowResize(self.grid.doLayout, self.grid);
 
@@ -605,7 +613,7 @@ function IntelliGrid(params, autoInit)
 		switch (type)
 		{
 			case 'text': return Ext.create('Ext.form.TextField', {allowBlank: false});
-			case 'text-wide': return Ext.create('Ext.form.TextField', {allowBlank: false, height: 60, grow: true});
+			case 'text-wide': return Ext.create('Ext.form.field.TextArea', {allowBlank: false, grow: true});
 			case 'date': return Ext.create('Ext.form.DateField', {allowBlank: false, format: 'Y-m-d'});
 			case 'number': return Ext.create('Ext.form.NumberField', {allowBlank: false, allowDecimals: false, allowNegative: false});
 		}

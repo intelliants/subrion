@@ -34,11 +34,11 @@ class iaPage extends abstractCore
 	{
 		$pageParams = $this->getByName($name);
 
-		$pageInfo['parent'] = $pageParams['parent'];
-		$pageInfo['title'] = iaLanguage::get(sprintf('page_title_%s', $pageParams['name']));
-		$pageInfo['url'] = $pageParams['alias'] ? $this->getUrlByName($pageParams['name']) : $pageParams['name'] . IA_URL_DELIMITER;
-
-		return $pageInfo;
+		return array(
+			'parent' => $pageParams['parent'],
+			'title' => iaLanguage::get(sprintf('page_title_%s', $pageParams['name'])),
+			'url' => $pageParams['alias'] ? $this->getUrlByName($pageParams['name']) : $pageParams['name'] . IA_URL_DELIMITER
+		);
 	}
 
 	public function getParents($parentPageName, array &$chain)
@@ -47,6 +47,10 @@ class iaPage extends abstractCore
 		{
 			$chain[] = $parent = $this->_getInfoByName($parentPageName);
 			$this->getParents($parent['parent'], $chain);
+		}
+		else
+		{
+			$chain = array_reverse($chain);
 		}
 	}
 }

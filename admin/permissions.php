@@ -7,36 +7,6 @@ $id = 0;
 $group = 0;
 $actionType = 2;
 
-if (isset($_GET['user']))
-{
-	$target = 'user';
-	$actionType = 0;
-	$user = $id = isset($_GET[$target]) ? (int)$_GET[$target] : 0;
-	$item = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`id` = :id', array('id' => $id), iaUsers::getTable());
-	if ($item)
-	{
-		$group = $item['usergroup_id'];
-	}
-	iaBreadcrumb::add(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
-	$iaView->title(iaLanguage::getf('permissions_members', array('member' => '"' . $item['username'] . '"')));
-}
-elseif (isset($_GET['group']))
-{
-	$target = 'group';
-	$actionType = 1;
-	$group = $id = isset($_GET[$target]) ? (int)$_GET[$target] : 0;
-	$item = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), iaUsers::getUsergroupsTable());
-
-	iaBreadcrumb::add(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
-	iaBreadcrumb::add(iaLanguage::get('usergroups'), IA_ADMIN_URL . 'usergroups/');
-
-	$iaView->title(iaLanguage::getf('permissions_usergroups', array('usergroup' => '"' . $item['title'] . '"')));
-}
-if (!isset($item) || empty($item))
-{
-	iaView::errorPage(iaView::ERROR_NOT_FOUND);
-}
-
 $objects = $iaAcl->getObjects();
 
 $iaDb->setTable('acl_privileges');
@@ -122,6 +92,35 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
+	if (isset($_GET['user']))
+	{
+		$target = 'user';
+		$actionType = 0;
+		$user = $id = isset($_GET[$target]) ? (int)$_GET[$target] : 0;
+		$item = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`id` = :id', array('id' => $id), iaUsers::getTable());
+		if ($item)
+		{
+			$group = $item['usergroup_id'];
+		}
+		iaBreadcrumb::add(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
+		$iaView->title(iaLanguage::getf('permissions_members', array('member' => '"' . $item['username'] . '"')));
+	}
+	elseif (isset($_GET['group']))
+	{
+		$target = 'group';
+		$actionType = 1;
+		$group = $id = isset($_GET[$target]) ? (int)$_GET[$target] : 0;
+		$item = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), iaUsers::getUsergroupsTable());
+
+		iaBreadcrumb::add(iaLanguage::get('usergroups'), IA_ADMIN_URL . 'usergroups/');
+
+		$iaView->title(iaLanguage::getf('permissions_usergroups', array('usergroup' => '"' . $item['title'] . '"')));
+	}
+	if (!isset($item) || empty($item))
+	{
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+	}
+
 	$userPermissions = $iaAcl->getPermissions($id, $group);
 	$actions = $iaAcl->getActions();
 	$groups = array(

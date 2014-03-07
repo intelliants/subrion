@@ -7,15 +7,15 @@
 				<div id="plans_container" class="plans well-subrion">
 					<div class="plan well-item">
 						<label for="plan_0" class="radio">
-							<input type="radio" name="plan_id" value="0" {if isset($item.plan) && $item.plan == 0}checked="checked"{/if} id="plan_0"/>
+							<input type="radio" name="plan_id" value="0" {if isset($item.plan) && $item.plan == 0}checked="checked"{/if} id="plan_0">
 							<strong>{lang key='_not_assigned_'}</strong>
 						</label>
-						<input type="hidden" id="fields_0" value="" />
+						<input type="hidden" id="fields_0">
 					</div>
 					{foreach $plans as $plan}
 						<div class="plan well-item">
 							<label for="plan_{$plan.id}" class="radio">
-								<input type="radio" name="plan_id" value="{$plan.id}" {if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id}checked="checked"{/if} id="plan_{$plan.id}"/>
+								<input type="radio" name="plan_id" value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} checked="checked"{/if} id="plan_{$plan.id}">
 								<strong>{lang key="plan_title_{$plan.id}"} - {$plan.cost} {$config.currency}</strong>
 							</label>
 							<div class="description">{lang key="plan_description_{$plan.id}"}</div>

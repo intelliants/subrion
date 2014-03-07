@@ -6,16 +6,29 @@ Ext.onReady(function()
 			columns: [
 				'selection',
 				{name: 'name', title: _t('name'), hidden: true, width: 160},
-				{name: 'title', title: _t('title'), sortable: false, width: 1},
-				{name: 'item', title: _t('item'), width: 150, renderer: function(value){return _t(value, value);}},
+				{name: 'title', title: _t('title'), sortable: false, width: 2},
+				{name: 'item', title: _t('item'), width: 100, renderer: function(value){return _t(value, value);}},
 				{name: 'group', title: _t('field_group'), width: 120},
-				{name: 'type', title: _t('fields_type'), width: 160, renderer: function(value){return _t('fields_type_'+value, value);}},
+				{name: 'type', title: _t('fields_type'), width: 130, renderer: function(value){return _t('fields_type_'+value, value);}},
 				{name: 'relation', title: _t('field_relation'), hidden: true, width: 80},
-				{name: 'length', title: _t('field_length'), width: 70},
+				{name: 'length', title: _t('field_length'), width: 80},
 				{name: 'order', title: _t('order'), width: 50, editor: 'number'},
+				'status',
 				'update',
 				'delete'
 			],
+			events: {
+				beforeedit: function(editor, e)
+				{
+					if (0 == e.record.get('delete'))
+					{
+						this.store.rejectChanges();
+						e.cancel = true;
+
+						intelli.notifFloatBox({autohide: true, msg: _t('status_change_not_allowed'), pause: 1400, type: 'info'});
+					}
+				}
+			},
 			texts: {delete_single: _t('are_you_sure_to_delete_field')},
 			url: intelli.config.admin_url + '/fields/'
 		};
@@ -180,46 +193,6 @@ $(function()
 	};
 */
 
-	// populate & activate field groups select
-	$('#js-item-name').on('change', function()
-	{
-		var $fieldGroup = $('#js-fieldgroup-selectbox');
-		$fieldGroup.empty().append('<option selected="selected" value="">' + _t('_select_') + '</option>').prop('disabled', true);
-
-		var $pagesList = $('#js-pages-list-row');
-		var itemName = $(this).val();
-
-		if (itemName)
-		{
-			$('.checkbox', $pagesList).each(function()
-			{
-				$(this).data('item') == itemName ? $(this).show() : $(this).hide();
-			});
-
-			$pagesList.is(':visible') || $pagesList.slideDown();
-
-			// get item field groups
-			$.get(intelli.config.admin_url + '/fields.json', {get: 'groups', item: itemName}, function(response)
-			{
-				if (response.length > 0)
-				{
-					$.each(response, function(i, entry)
-					{
-						$fieldGroup.append($('<option>').val(entry.id).text(_t('fieldgroup_' + entry.name)));
-					});
-
-					$fieldGroup.prop('disabled', false);
-				}
-			});
-		}
-		else
-		{
-			$pagesList.slideUp();
-		}
-
-		$('input[type="checkbox"]:not(:visible)', $pagesList).prop('checked', false);
-	});
-
 	$('#type').on('change', function()
 	{
 		var type = $(this).val();
@@ -256,14 +229,15 @@ $(function()
 		(value == 'parent') ? $('.main_fields').show() : $('.main_fields').hide();
 	});
 
-	$('#searchable').change(function()
+	$('#searchable').on('change', function()
 	{
 		($(this).val() == 1) ? $('#show_in_search_as').show() : $('#show_in_search_as').hide();
 	}).change();
 
-	$('#add_item').click(function(e)
+	$('#add_item').on('click', function(e)
 	{
 		e.preventDefault();
+
 		$('div[id^="item-value-"]:first')
 			.clone(true)
 			.attr('id', 'item-value-' + Math.ceil(Math.random() * 10000))
@@ -273,15 +247,15 @@ $(function()
 		intelli.displayUpdown();
 	});
 
-	$('select[name="pic_resize_mode"]').change(function()
+	$('select[name="pic_resize_mode"]').on('change', function()
 	{
-		$('.help-block[id^=pic_resize_mode_tip_]').hide();
+		$('.help-block[id^="pic_resize_mode_tip_"]').hide();
 		$('#pic_resize_mode_tip_'+$(this).val()).show();
 	}).change();
 
-	$('select[name="resize_mode"]').change(function()
+	$('select[name="resize_mode"]').on('change', function()
 	{
-		$('.help-block[id^=resize_mode_tip_]').hide();
+		$('.help-block[id^="resize_mode_tip_"]').hide();
 		$('#resize_mode_tip_'+$(this).val()).show();
 	}).change();
 
@@ -416,9 +390,9 @@ $(function()
 
 	$('.js-filter-numeric').numeric();
 
-	$('#type').change(function()
+	$('#type').on('change', function()
 	{
-		$('#field_type_tip .help-block').hide();
+		$('.help-block', '#field_type_tip').hide();
 		$('#type_tip_' + $(this).val()).show();
 	});
 
@@ -445,7 +419,8 @@ $(function()
 
 	$('input[name="relation_type"]').on('change', function()
 	{
-		(this.value == 0) ? $('#regular_field').show() : $('#regular_field').hide();
+		var $field = $('#regular_field');
+		(this.value == 0) ? $field.show() : $field.hide();
 	});
 
 	$('input[name="required"]').on('change', function()
@@ -462,5 +437,70 @@ $(function()
 		}
 	});
 
-	$('#js-item-name').trigger('change');
+	// populate & activate field groups select
+	$('#js-item-name').on('change', function()
+	{
+		var $fieldGroup = $('#js-fieldgroup-selectbox');
+		$fieldGroup.empty().append('<option selected="selected" value="">' + _t('_select_') + '</option>').prop('disabled', true);
+
+		var $pagesList = $('#js-pages-list-row');
+		var itemName = $(this).val();
+
+		if (itemName)
+		{
+			$('.checkbox', $pagesList).each(function()
+			{
+				$(this).data('item') == itemName ? $(this).show() : $(this).hide();
+			});
+
+			$pagesList.is(':visible') || $pagesList.slideDown();
+
+			$('.js-dependent-fields-list').each(function()
+			{
+				var $this = $(this);
+				($this.data('item') == itemName) ? $this.show() : $this.hide();
+			});
+
+			// get item field groups
+			$.get(intelli.config.admin_url + '/fields.json', {get: 'groups', item: itemName}, function(response)
+			{
+				if (response.length > 0)
+				{
+					$.each(response, function(i, entry)
+					{
+						$fieldGroup.append($('<option>').val(entry.id).text(_t('fieldgroup_' + entry.name)));
+					});
+
+					$fieldGroup.prop('disabled', false);
+				}
+			});
+		}
+		else
+		{
+			$pagesList.slideUp();
+		}
+
+		$('input[type="checkbox"]:not(:visible)', $pagesList).prop('checked', false);
+	}).trigger('change');
+
+	// accordion for host fields
+
+	$('.js-dependent-fields-list').on('click', 'a.list-group-item', function(event) {
+		event.preventDefault();
+
+		var _this = $(this);
+
+		if(!_this.hasClass('active'))
+		{
+			_this
+				.siblings('.active')
+				.removeClass('active')
+				.next()
+				.slideUp('fast', function()
+					{
+						_this.addClass('active').next().slideDown('fast');
+					});
+		}
+		
+	});
 });

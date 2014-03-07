@@ -1,16 +1,19 @@
 function dialog_package(type, item, package_url, package_name)
 {
 	intelli.config.default_package = $('#js-default-package-value').val();
-	var default_package = '<div class="alert alert-info">' + _t('root_old').replace(/:name/gi, intelli.config.default_package) + '</div>' +
-						  '<p><code>'+intelli.config.ia_url+'</code> <input type="text" value="" name="url[0]" class="common" /> <code>/</code></p>';
-	var form_text = '<div class="url_type">' +
-						'<label for="subdomain_type"><input type="radio" value="1" name="type" id="subdomain_type"> '+_t('subdomain_title')+'</label>' +
-						'<div class="url_type_info"><p>' + _t('subdomain_about') + '</p><code>http://</code> <input type="text" value="'+/*package_name*/package_url+'" name="url[1]" class="common"> <code>.' + location.hostname + '/</code></div>' + 
-					'</div>' +
-					'<div class="url_type">' +
-						'<label for="subdirectory_type"><input type="radio" value="2" name="type"' + (intelli.config.default_package ? ' checked="checked"' : '') + ' id="subdirectory_type" /> ' + _t('subdirectory_title') + '</label>' +
-						'<div class="url_type_info"><p>'+_t('subdirectory_about')+'</p><code>' + intelli.config.ia_url+'</code> <input type="text" value="'+package_url+'" name="url[2]" class="common"> <code>/</code></div>' +
-					'</div>';
+
+	var default_package =
+		'<div class="alert alert-info">' + _t('root_old').replace(/:name/gi, intelli.config.default_package) + '</div>' +
+		'<p><code>'+intelli.config.ia_url+'</code> <input type="text" name="url[0]" class="common"> <code>/</code></p>';
+	var form_text =
+		'<div class="url_type">' +
+			'<label for="subdomain_type"><input type="radio" value="1" name="type" id="subdomain_type"> '+_t('subdomain_title')+'</label>' +
+			'<div class="url_type_info"><p>' + _t('subdomain_about') + '</p><code>http://</code> <input type="text" value="'+/*package_name*/package_url+'" name="url[1]" class="common"> <code>.' + location.hostname + '/</code></div>' +
+		'</div>' +
+		'<div class="url_type">' +
+			'<label for="subdirectory_type"><input type="radio" value="2" name="type"' + (intelli.config.default_package ? ' checked="checked"' : '') + ' id="subdirectory_type"> ' + _t('subdirectory_title') + '</label>' +
+			'<div class="url_type_info"><p>'+_t('subdirectory_about')+'</p><code>' + intelli.config.ia_url+'</code> <input type="text" value="'+package_url+'" name="url[2]" class="common"> <code>/</code></div>' +
+		'</div>';
 
 	if (intelli.package_window)
 	{
@@ -21,7 +24,7 @@ function dialog_package(type, item, package_url, package_name)
 	if (type == 'install')
 	{
 		html = '<div class="url_type"><label for="root_type"><input type="radio" value="0" name="type" id="root_type"'
-			+ (intelli.config.default_package ? '' : ' checked="checked"') + ' /> '+_t('root_title')+'</label><div class="url_type_info"><p>'+_t('root_about')+'</p>'
+			+ (intelli.config.default_package ? '' : ' checked="checked"') + '> ' + _t('root_title') + '</label><div class="url_type_info"><p>' + _t('root_about') + '</p>'
 			+ (intelli.config.default_package ? default_package : '') +
 			'</div></div>' + form_text;
 	}
@@ -36,13 +39,12 @@ function dialog_package(type, item, package_url, package_name)
 			window.location = $(item).attr('url');
 			return false;
 		}
-		
 	}
 	else if (type == 'reset')
 	{
 		html = '<div class="url_type">' + _t('reset_default_package') + '</div>' + form_text;
 	}
-	html = '<form action="'+$(item).attr('url')+'" method="get" id="package_form">' + html + '</form>';
+	html = '<form action="' + $(item).attr('url') + '" method="get" id="package_form">' + html + '</form>';
 
 	intelli.package_window = new Ext.Window(
 	{
@@ -98,7 +100,8 @@ function resetUrl(item, package_url, package_name)
 
 function readme(pluginName)
 {
-	Ext.Ajax.request({
+	Ext.Ajax.request(
+	{
 		url: intelli.config.admin_url + '/packages.json',
 		method: 'POST',
 		params: {action: 'info', name: pluginName},

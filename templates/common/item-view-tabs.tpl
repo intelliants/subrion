@@ -26,7 +26,7 @@
 		<div class="tab-content ia-form">
 			{foreach $sections as $section_name => $section}
 				<div id="tab-{$section_name}" class="tab-pane{if $active == $section_name} active{/if}">
-					{content_hook value=$tabs_before key=$section_name}
+					{content_hook key=$section_name value=$tabs_before}
 
 					{if $section}
 						{include file='field-type-content-fieldset.tpl' item_sections=$section}
@@ -34,7 +34,7 @@
 						{$tabs_content[$section_name]}
 					{/if}
 
-					{content_hook value=$tabs_after key=$section_name}
+					{content_hook key=$section_name value=$tabs_after}
 				</div>
 			{/foreach}
 		</div>

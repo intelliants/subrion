@@ -3,7 +3,6 @@
 
 require_once IA_SMARTY . 'Smarty.class.php';
 require_once IA_SMARTY . 'SmartyPlugins.class.php';
-require_once IA_SMARTY . 'SmartyResources.class.php';
 
 class iaSmarty extends iaSmartyPlugins
 {
@@ -18,14 +17,6 @@ class iaSmarty extends iaSmartyPlugins
 	{
 		$this->iaCore = iaCore::instance();
 		parent::init();
-
-		$obj = new smartyResources();
-		$this->registerResource(self::INTELLI_RESOURCE, array(
-			array($obj, 'intelli_get_template'),
-			array($obj, 'intelli_get_timestamp'),
-			array($obj, 'intelli_get_secure'),
-			array($obj, 'intelli_get_trusted')
-		));
 
 		foreach ($this->iaCore->packagesData as $packageName => $packageData)
 		{
@@ -58,6 +49,7 @@ class iaSmarty extends iaSmartyPlugins
 			'datepicker' => 'js:bootstrap/js/bootstrap-datetimepicker.min, css:_IA_URL_js/bootstrap/css/datetimepicker',
 			'tagsinput' => 'js:jquery/plugins/tagsinput/jquery.tagsinput.min, css:_IA_URL_js/jquery/plugins/tagsinput/jquery.tagsinput',
 			'underscore' => 'js:utils/underscore.min',
+			'iadropdown' => 'js:jquery/plugins/jquery.ia-dropdown.min',
 			'flexslider' => 'js:jquery/plugins/flexslider/jquery.flexslider.min, css:_IA_URL_js/jquery/plugins/flexslider/flexslider'
 		);
 
@@ -65,23 +57,18 @@ class iaSmarty extends iaSmartyPlugins
 	}
 
 	/*
-	 * Return absolute path to template resource
+	 * Return absolute path to template resource according to the script's logic
 	 *
 	 * @param string resourceName template resource name
-	 * @param bool useDefault
+	 * @param bool useCustom
 	 *
 	 * @return string absolute path to a template resource name
 	 */
-	public function ia_template($resourceName, $useDefault = false)
+	public function ia_template($resourceName, $useCustom = true)
 	{
-		$default = $resourceName;
-
-		if ($useDefault)
+		if ($useCustom)
 		{
-			$resourceName = $this->template_dir . $resourceName;
-		}
-		else
-		{
+			$default = $resourceName;
 			$templateName = $this->iaCore->iaView->theme;
 
 			if (defined('IA_CURRENT_PACKAGE'))
@@ -104,21 +91,34 @@ class iaSmarty extends iaSmartyPlugins
 			}
 			elseif (defined('IA_CURRENT_PLUGIN'))
 			{
-				$resourceName = is_file(IA_PLUGIN_TEMPLATE . $resourceName)
-					? IA_PLUGIN_TEMPLATE . $resourceName
-					: IA_TEMPLATES . $templateName . IA_DS . $resourceName;
+				if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()
+					&& is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS
+						. 'plugins' . IA_DS . IA_CURRENT_PLUGIN . IA_DS . $resourceName))
+				{
+					$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS
+						. 'plugins' . IA_DS . IA_CURRENT_PLUGIN . IA_DS . $resourceName;
+				}
+				else
+				{
+					$resourceName = IA_PLUGIN_TEMPLATE . $resourceName;
+				}
 			}
 
 			$resourceName = ($resourceName == $default)
 				? IA_TEMPLATES . $templateName . IA_DS . $resourceName
 				: $resourceName;
 
+			is_file($resourceName) || $resourceName = IA_TEMPLATES . $templateName . IA_DS . $default;
 			is_file($resourceName) || $resourceName = IA_TEMPLATES . 'common' . IA_DS . $default;
+		}
+		else
+		{
+			$resourceName = $this->template_dir . $resourceName;
 		}
 
 		if (!$this->templateExists($resourceName))
 		{
-			if (INTELLI_DEBUG > 1 || INTELLI_QDEBUG > 1)
+			if (INTELLI_DEBUG || INTELLI_QDEBUG)
 			{
 				trigger_error('Unable to find the following resource: <b>' . $resourceName . '</b>', E_USER_ERROR);
 			}
@@ -132,28 +132,19 @@ class iaSmarty extends iaSmartyPlugins
 
 		return $resourceName;
 	}
-
+/*
 	public function display($template = null, $cache_id = null, $compile_id = null, $parent = null)
 	{
 		$resourceName = $this->ia_template($template, false);
 
 		iaSystem::renderTime('check the template: ' . $resourceName);
 
-		$result = parent::display($resourceName, $cache_id, null);
+		parent::display($resourceName, $cache_id, $compile_id, $parent);
 
 		iaSystem::renderTime('rendering the template: ' . $resourceName);
-
-		return $result;
 	}
-
-	public function fetch_tpl($resourceName, $cacheId = null, $compileId = null, $display = false)
-	{
-		$resourceName = $this->ia_template($resourceName, false);
-
-		return parent::fetch($resourceName, $cacheId, $compileId, $display);
-	}
-
-	private function _createPackageTemplateHandlers ($packageName)
+*/
+	private function _createPackageTemplateHandlers($packageName)
 	{
 		$pathDeterminationCode = '
 			$templateFile = sprintf("%stemplates/%s/packages/%s/%s", IA_HOME, $smarty->iaCore->get("tmpl"), ":name", $name);

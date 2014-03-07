@@ -188,14 +188,9 @@ class iaTemplate extends abstractCore
 
 		if ($this->error)
 		{
-			if (empty($missingFields))
-			{
-				$this->setMessage('Fatal error: Probably specified file is not XML file or is not acceptable');
-			}
-			else
-			{
-				$this->setMessage('Fatal error: The following fields are required: ' . implode(', ', $missingFields));
-			}
+			empty($missingFields)
+				? $this->setMessage('Fatal error: Probably specified file is not XML file or is not acceptable')
+				: $this->setMessage('Fatal error: The following fields are required: ' . implode(', ', $missingFields));
 
 			return;
 		}
@@ -218,7 +213,6 @@ class iaTemplate extends abstractCore
 						break;
 					case self::DEPENDENCY_TYPE_TEMPLATE:
 						$exists = ($extrasName == $currentTemplate);
-						break;
 				}
 				if (isset($exists))
 				{
@@ -601,19 +595,13 @@ class iaTemplate extends abstractCore
 			}
 		}
 		$rollbackData = empty($rollbackData) ? '' : serialize($rollbackData);
-		$rollbackData = array('value' => $rollbackData);
 
 		$this->iaCore->set(self::CONFIG_LAYOUT_DATA, serialize($this->layout), true);
-
-		$stmt = sprintf("`name` = '%s'", self::CONFIG_ROLLBACK_DATA);
-		$iaDb->update($rollbackData, $stmt, null, iaCore::getConfigTable());
+		$this->iaCore->set(self::CONFIG_ROLLBACK_DATA, $rollbackData, true);
 
 		if (self::SETUP_INITIAL != $type)
 		{
 			setcookie('template_color_scheme', '', time() - 3600, '/');
-
-			$iaCache = $this->iaCore->factory('cache');
-			$iaCache->clearAll();
 		}
 
 		return true;
@@ -740,13 +728,14 @@ class iaTemplate extends abstractCore
 					'name' => $this->attr('name'),
 					'value' => $text,
 					'config_group' => $this->attr(array('group','configgroup')),
-					'multiple_values' => $this->attr(array('values','multiplevalues')),
+					'multiple_values' => $this->attr(array('values', 'multiplevalues')),
 					'type' => $this->attr('type'),
 					'description' => $this->attr('description'),
 					'wysiwyg' => $this->attr('wysiwyg', 0),
 					'code_editor' => $this->attr('code_editor', 0),
 					'private' => $this->attr('private', 0),
 					'order' => $this->attr('order', false),
+					'show' => $this->attr('show', ''),
 					'extras' => $this->name
 				);
 				break;
@@ -791,10 +780,10 @@ class iaTemplate extends abstractCore
 						'order' => $this->attr('order', false),
 						'extras' => $this->name,
 						'status' => $this->attr('status', iaCore::STATUS_ACTIVE, array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)),
-						'header' => $this->attr('header', 1),
-						'collapsible' => $this->attr('collapsible', 0),
-						'sticky' => $this->attr('sticky', 0),
-						'multi_language' => $this->attr('multilanguage', 1),
+						'header' => $this->attr('header', true),
+						'collapsible' => $this->attr('collapsible', false),
+						'sticky' => $this->attr('sticky', false),
+						'multi_language' => $this->attr('multilanguage', true),
 						'pages' => $this->attr('pages'),
 						'pagesexcept' => $this->attr('pagesexcept'),
 						'added' => $this->attr('added'),

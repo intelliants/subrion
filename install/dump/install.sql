@@ -98,14 +98,14 @@ CREATE TABLE `{install:prefix}blocks` (
 	`subpages` text NOT NULL,
 	`classname` varchar(50) NOT NULL,
 	PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQUE` (`name`, `extras`),
+	UNIQUE KEY `UNIQUE` (`name`,`extras`),
 	KEY `STATUS` (`status`)
 ) {install:mysql_version};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}blocks_pages`;
 CREATE TABLE `{install:prefix}blocks_pages` (
 	`id` mediumint(7) unsigned NOT NULL auto_increment,
-	`page_name` char(30) NOT NULL,
+	`page_name` char(50) NOT NULL,
 	`block_id` smallint(5) unsigned NOT NULL,
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `UNIQUE` (`page_name`,`block_id`)
@@ -149,7 +149,8 @@ CREATE TABLE `{install:prefix}config_groups` (
 	`title` varchar(150) NOT NULL,
 	`order` smallint(4) unsigned NOT NULL,
 	`extras` varchar(40) NOT NULL,
-	UNIQUE KEY `UNIQUE` (`name`)
+  PRIMARY KEY (`name`),
+  KEY `PLUGIN` (`extras`)
 ) {install:mysql_version};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}cron`;
@@ -268,7 +269,8 @@ CREATE TABLE `{install:prefix}fields_relations` (
 	`child` varchar(50) NOT NULL,
 	`item` varchar(30) NOT NULL,
 	`extras` varchar(40) NOT NULL,
-	PRIMARY KEY (`id`)
+	PRIMARY KEY (`id`),
+	KEY `ITEMNAME` (`item`)
 ) {install:mysql_version};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}hooks`;
@@ -683,7 +685,7 @@ INSERT INTO `{install:prefix}admin_pages_groups` (`name`, `title`) VALUES
 ('extensions', 'Extensions');
 
 INSERT INTO `{install:prefix}blocks` VALUES
-(1, 'Actions', 'item_actions', '$iaItem = $iaCore->factory(''item'');\r\n\r\nif (false !== strpos($iaCore->iaView->name(), ''view''))\r\n{\r\n	$iaCore->startHook(''smartyItemTools'');\r\n\r\n	$iaItem->setItemTools(array(\r\n		''title'' => iaLanguage::get(''print_preview''),\r\n		''url'' => ''javascript: ;'',\r\n		''id'' => ''print_preview" onclick="window.print(); return false;''\r\n	));\r\n\r\n	$itemData = $iaCore->iaSmarty->getTemplateVars(''item'');\r\n	if (iaUsers::hasIdentity() && $itemData)\r\n	{\r\n		if ((''members'' != $itemData[''item''] && isset($itemData[''member_id'']) && iaUsers::getIdentity()->id != $itemData[''member_id''])\r\n			|| ($itemData[''item''] == ''members'' && iaUsers::getIdentity()->id != $itemData[''id'']))\r\n		{\r\n			$isAlreadyFavorited = isset($itemData[''favorite'']) && $itemData[''favorite''] == 1;\r\n\r\n			$iaItem->setItemTools(array(\r\n				''title'' => iaLanguage::get($isAlreadyFavorited ? ''favorites_remove_from'' : ''favorites_add_to''),\r\n				''url'' => ''javascript: ;'',\r\n				''id'' => ''action-favorite" onclick="intelli.actionFavorites('' . $itemData[''id''] . ", ''"\r\n						. $itemData[''item''] . "'', ''" . ($isAlreadyFavorited ? iaCore::ACTION_DELETE : iaCore::ACTION_ADD) . "'');"\r\n			));\r\n		}\r\n	}\r\n\r\n	$links = $js = $html = '''';\r\n	foreach ($iaItem->setItemTools() as $item)\r\n	{\r\n		$id = empty($item[''id'']) ? '''' : '' id="'' . $item[''id''] . ''"'';\r\n		$links .= ''<li><a href="'' . $item[''url''] . ''" rel="nofollow"'' . $id . ''>'' . $item[''title''] . ''</a></li>'' . PHP_EOL;\r\n		if (isset($item[''js'']))\r\n		{\r\n			$js .= $item[''js''];\r\n		}\r\n		$html .= isset($item[''html'']) ? $item[''html''] : '''';\r\n	}\r\n\r\n	echo ''<ul class="nav nav-pills nav-stacked extra-menu">'' . $links . ''</ul>'' . ($html ? $html : '''')\r\n			. ($js ? ''<script type="text/javascript">'' . $js . ''</script>'' : '''');\r\n}', 1, 'right', 'php', '', 'active', 1, 0, 1, '', 1, '', '', '', 0, 0, 'a:2:{s:7:"members";s:0:"";s:11:"view_member";s:0:"";}', ''),
+(1, 'Actions', 'item_actions', '$iaItem = $iaCore->factory(''item'');\r\n\r\nif (false !== strpos($iaCore->iaView->name(), ''view''))\r\n{\r\n	$iaCore->startHook(''smartyItemTools'');\r\n\r\n	$iaItem->setItemTools(array(\r\n		''title'' => iaLanguage::get(''print_preview''),\r\n		''url'' => ''javascript: ;'',\r\n		''id'' => ''print_preview" onclick="window.print(); return false;''\r\n	));\r\n\r\n	$itemData = $iaCore->iaView->iaSmarty->getTemplateVars(''item'');\r\n	if (iaUsers::hasIdentity() && $itemData)\r\n	{\r\n		if ((''members'' != $itemData[''item''] && isset($itemData[''member_id'']) && iaUsers::getIdentity()->id != $itemData[''member_id''])\r\n			|| ($itemData[''item''] == ''members'' && iaUsers::getIdentity()->id != $itemData[''id'']))\r\n		{\r\n			$isAlreadyFavorited = isset($itemData[''favorite'']) && $itemData[''favorite''] == 1;\r\n\r\n			$iaItem->setItemTools(array(\r\n				''title'' => iaLanguage::get($isAlreadyFavorited ? ''favorites_remove_from'' : ''favorites_add_to''),\r\n				''url'' => ''javascript: ;'',\r\n				''id'' => ''action-favorite" onclick="intelli.actionFavorites('' . $itemData[''id''] . ", ''"\r\n						. $itemData[''item''] . "'', ''" . ($isAlreadyFavorited ? iaCore::ACTION_DELETE : iaCore::ACTION_ADD) . "'');"\r\n			));\r\n		}\r\n	}\r\n\r\n	$links = $js = $html = '''';\r\n	foreach ($iaItem->setItemTools() as $item)\r\n	{\r\n		$id = empty($item[''id'']) ? '''' : '' id="'' . $item[''id''] . ''"'';\r\n		$links .= ''<li><a href="'' . $item[''url''] . ''" rel="nofollow"'' . $id . ''>'' . $item[''title''] . ''</a></li>'' . PHP_EOL;\r\n		if (isset($item[''js'']))\r\n		{\r\n			$js .= $item[''js''];\r\n		}\r\n		$html .= isset($item[''html'']) ? $item[''html''] : '''';\r\n	}\r\n\r\n	echo ''<ul class="nav nav-pills nav-stacked extra-menu">'' . $links . ''</ul>'' . ($html ? $html : '''')\r\n			. ($js ? ''<script type="text/javascript">'' . $js . ''</script>'' : '''');\r\n}', 1, 'right', 'php', '', 'active', 1, 0, 1, '', 1, '', '', '', 0, 0, 'a:2:{s:7:"members";s:0:"";s:11:"view_member";s:0:"";}', ''),
 (2, 'Inventory Menu', 'inventory', '', 0, 'inventory', 'menu', '', 'active', 0, 0, 1, '', 1, '', 'render-menu.tpl', '', '0', 0, '', ''),
 (3, 'Main Menu', 'main', '', 0, 'mainmenu', 'menu', '', 'active', 0, 0, 1, '', 1, '', 'render-menu.tpl', '', '0', 0, '', ''),
 (4, 'Member Menu', 'account', '', 0, 'right', 'menu', '', 'active', 0, 0, 1, '', 1, '', 'render-menu.tpl', '', '0', 0, '', ''),
@@ -711,7 +713,7 @@ INSERT INTO `{install:prefix}config` (`name`, `value`, `type`, `description`, `p
 INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple_values`, `type`, `wysiwyg`, `description`, `order`, `extras`, `private`, `custom`, `show`) VALUES
 ('general', 'general_divider', 'General', '1', 'divider', 0, '', 0, '', 1, 1, ''),
 ('general', 'site', 'Subrion CMS', '1', 'text', 0, 'Site title', 3, '', 0, 1, ''),
-('general', 'suffix', ':: Powered by Subrion 3.0', '1', 'text', 0, 'Suffix for page titles', 9, '', 0, 1, ''),
+('general', 'suffix', ':: Powered by Subrion 3.1', '1', 'text', 0, 'Suffix for page titles', 9, '', 0, 1, ''),
 ('general', 'site_logo', '', '', 'image', 0, 'Website logo', 12, '', 0, 0, ''),
 ('general', 'regional_divider', 'Regional', '1', 'divider', 30, '', 20, '', 1, 1, ''),
 ('general', 'lang', '{install:lang}', '1', 'select', 0, 'Script language', 33, '', 0, 1, ''),
@@ -754,7 +756,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('mail', 'mail_configuration_divider', 'General', '1', 'divider', 0, '', 1, '', 1, 0, ''),
 ('mail', 'site_from_name', 'Subrion CMS', '1', 'text', 0, 'Default mail name', 1, '', 1, 0, ''),
 ('mail', 'site_email', '{install:email}', '1', 'text', 0, 'Default site email', 2, '', 1, 0, ''),
-('mail', 'default_email_signature', '\r\n<p>______________________________</p>\r\n<p>Thank you,<br>\r\n{%SITE_NAME%} Team<br>\r\n{%SITE_URL%}</p>', '1', 'textarea', 0, 'Default Mail Signature', 3, '', 1, 0, ''),
+('mail', 'default_email_signature', '\r\n<p>______________________________</p>\r\n<p>Thank you,<br>\r\n{%SITE_NAME%} Team<br>\r\n{%SITE_URL%}</p>', '1', 'textarea', 0, 'Default mail signature', 3, '', 1, 0, ''),
 ('mail', 'mail_function', 'php mail', '''php mail'',''sendmail'',''smtp''', 'select', 0, 'Mail method', 3, '', 1, 0, ''),
 ('mail', 'smtp_configuration', 'SMTP Settings', '', 'divider', 0, '', 6, '', 1, 0, 'mail_function|smtp'),
 ('mail', 'smtp_auth', '1', '''1'',''0''', 'radio', 0, 'SMTP Authentication', 7, '', 1, 0, 'mail_function|smtp'),
@@ -778,9 +780,9 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('system', 'system_config_divider', 'System configuration', '1', 'divider', 0, '', 8, '', 1, 0, ''),
 ('system', 'alias_urlencode', '0', '''1'',''0''', 'radio', 0, 'Encode non-Latin symbols in URL', 9, '', 0, 0, ''),
 ('system', 'redirect_time', '4000', '', 'text', 0, 'Redirect time (ms)', 10, '', 0, 0, ''),
-('system', 'prevent_csrf', '1', '''1'',''0''', 'radio', 0, 'Prevent CSRF Attack', 33, '', 1, 0, ''),
+('system', 'prevent_csrf', '1', '''1'',''0''', 'radio', 0, 'Prevent CSRF attack', 33, '', 1, 0, ''),
 ('system', 'caching', '0', '''1'',''0''', 'hidden', 0, 'Caching', 34, '', 1, 0, ''),
-('system', 'smarty_cache', '0', '''1'',''0''', 'radio', 0, 'Smarty Force Compile', 35, '', 0, 0, ''),
+('system', 'smarty_cache', '0', '''1'',''0''', 'radio', 0, 'Smarty force compile', 35, '', 0, 0, ''),
 ('system', 'compress_js', '0', '''1'',''0''', 'radio', 0, 'Compress Javascript', 36, '', 0, 0, ''),
 
 ('email_templates', 'member_optgroup', '', '', 'divider', 0, 'Members', 0, '', 1, 1, ''),
@@ -792,7 +794,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('email_templates', 'member_disapproved_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was disapproved in {%SITE_NAME%}.</p>', '', 'textarea', 1, 'HTML Body', 22, '', 1, 1, ''),
 ('email_templates', 'member_registration', '1', '''1'',''0''', 'radio', 0, 'Member Registration', 3, '', 1, 1, ''),
 ('email_templates', 'member_registration_subject', 'Thanks for registration at {%SITE_NAME%}', '', 'text', 0, 'Subject: ', 3, '', 1, 1, ''),
-('email_templates', 'member_registration_body', '<p>Dear {%FULLNAME%},</p> <p>Thanks for your registration at {%SITE_URL%}. Here is information you should use in order to login:</p> <p>Your e-mail: {%EMAIL%}<br /> Your password: {%PASSWORD%}</p> <p>Your activation key: {%KEY%}</p> <p>To activate your account go to {%SITE_URL%}confirm/?email={%EMAIL%}&key={%KEY%}<br /> You may change your password later by editing your personal attributes in your account area.</p>', '', 'textarea', 1, 'HTML Body', 3, '', 1, 1, ''),
+('email_templates', 'member_registration_body', '<p>Dear {%FULLNAME%},</p> <p>Thanks for your registration at <a href="{%SITE_URL%}" target="_blank">{%SITE_URL%}</a>. Here is information you should use in order to login:</p> <p>Your e-mail: {%EMAIL%}<br /> Your password: {%PASSWORD%}</p> <p>To activate your account, please, <a href="{%LINK%}" target="_blank">follow this link</a>. <br /> You may change your password later by editing your personal attributes in your member area.</p>', '', 'textarea', 1, 'HTML Body', 3, '', 1, 1, ''),
 ('email_templates', 'member_registration_admin_subject', 'Member has been created {%SITE_NAME%}', '', 'text', 0, 'Subject (admin registration): ', 4, '', 1, 1, ''),
 ('email_templates', 'member_registration_admin_body', '<p>Greetings {%FULLNAME%},</p> <p>Administrator has just created an account for you at {%SITE_URL%}. Here is information you should use in order to login:</p> <p>Your email: <b>{%EMAIL%}</b><br /> Your password: <b>{%PASSWORD%}</b></p>', '', 'textarea', 1, 'HTML Body (admin registration)', 4, '', 1, 1, ''),
 ('email_templates', 'member_removal', '1', '''1'',''0''', 'radio', 0, 'Member Removal', 4, '', 1, 1, ''),
@@ -906,11 +908,11 @@ INSERT INTO `{install:prefix}pages` (`group`, `name`, `service`, `readonly`, `st
 (3, 'register_confirm', 1, 1, 'active', NOW(), 'confirm/', 1, 'registration', '', '', ''),
 (3, 'member_password_forgot', 1, 1, 'active', NOW(), 'forgot/', 1, 'registration', '', '', ''),
 (2, 'page', 1, 1, 'active', NOW(), '', 0, 'page', '', '', ''),
-(2, 'about', 0, 0, 'active', NOW(), '', 0, 'page', '', '', ''),
-(2, 'policy', 0, 0, 'active', NOW(), '', 0, 'page', '', '', ''),
-(2, 'terms', 0, 0, 'active', NOW(), '', 0, 'page', '', '', ''),
-(2, 'help', 0, 0, 'active', NOW(), '', 0, 'page', '', '', ''),
-(2, 'advertise', 0, 0, 'active', NOW(), '', 0, 'page', '', '', '');
+(2, 'about', 0, 0, 'active', NOW(), 'about/', 0, 'page', '', '', ''),
+(2, 'policy', 0, 0, 'active', NOW(), 'policy/', 0, 'page', '', '', ''),
+(2, 'terms', 0, 0, 'active', NOW(), 'terms/', 0, 'page', '', '', ''),
+(2, 'help', 0, 0, 'active', NOW(), 'help/', 0, 'page', '', '', ''),
+(2, 'advertise', 0, 0, 'active', NOW(), 'advertise/', 0, 'page', '', '', '');
 
 INSERT INTO `{install:prefix}usergroups` VALUES
 (1, 'Administrators', 1),
@@ -1012,7 +1014,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('are_you_sure_to_delete_transactions', 'Are you sure you want to delete transactions?', 'admin'),
 ('are_you_sure_to_uninstall_selected_plugin', 'Are you sure you wish to uninstall this plugin? Please take a note that all plugin data will be lost. This action cannot be reverted.', 'admin'),
 ('ascii_required', 'Only alphanumeric characters are allowed', 'admin'),
-('at_least_one_item_should_be_checked', 'At least one item should be selected', 'admin'),
+('at_least_one_item_should_be_checked', 'At least one item should be selected.', 'admin'),
 ('available_dump_files', 'Available Dump Files', 'admin'),
 ('available_plugins', 'Available Plugins', 'admin'),
 
@@ -1076,10 +1078,11 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('csv_format', 'CSV format', 'admin'),
 ('current_home_page', 'Current homepage', 'admin'),
 ('custom', 'Custom', 'admin'),
-('customize', 'Customize', 'admin'),
+('custom_url_exist', 'Custom URL already exist.', 'admin'),
 ('custom_perm', 'Custom Permissions', 'admin'),
 ('custom_modification', 'Custom Modification', 'admin'),
 ('custom_url', 'Custom URL', 'admin'),
+('customize', 'Customize', 'admin'),
 ('customization_mode_alert', 'You are in customization mode. Do not forget to save your changes.', 'admin'),
 
 ('dashboard', 'Dashboard', 'admin'),
@@ -1103,10 +1106,10 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('edit_page', 'Edit Page', 'admin'),
 ('edit_plan', 'Edit Plan', 'admin'),
 ('edit_phrases', 'Edit Phrases', 'admin'),
-('empty', '-empty-', 'admin'),
 ('email_templates', 'Email Templates', 'admin'),
+('empty', '-empty-', 'admin'),
 ('email_templates_tags', 'Email Template Tags', 'admin'),
-('email_templates_tags_info', 'You can use these tags in your email templates. They will be changed to real information while sending email templates.', 'admin'),
+('email_templates_tags_info', 'You can use these tags in your email templates. They will be changed to real information while sending email templates. Click will paste it to template body.', 'admin'),
 ('empty_field', 'Empty field text', 'admin'),
 ('enable_no_follow', 'Enable No-Follow', 'admin'),
 ('enable_template_sending', 'Enable sending', 'admin'),
@@ -1140,7 +1143,6 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('extra_documentation', 'Documentation', 'admin'),
 ('extra_installation', 'Installation', 'admin'),
 ('extra_screenshots', 'Screenshots', 'admin'),
---('extra_thumbnail_number', 'Number of extra thumbnails', 'admin'),
 
 ('feature_request', 'New Feature Request', 'admin'),
 ('featured_end', 'Featured end', 'admin'),
@@ -1159,7 +1161,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('field_relation_parent', 'Parent field', 'admin'),
 ('field_relation_regular', 'Regular field', 'admin'),
 ('field_required', '<span class=\"text-danger\">*</span>', 'admin'),
-('field_values', 'Field values', 'admin'),
+('field_values', 'field values', 'admin'),
 ('fieldgroup_added', 'Field group added.', 'admin'),
 ('fieldgroup_deleted', 'Field group deleted.', 'admin'),
 ('field_add', 'Add Field', 'admin'),
@@ -1183,10 +1185,10 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('fields_type_storage', 'Upload Attachment', 'admin'),
 ('fields_type_text', 'Single Line Text Input', 'admin'),
 ('fields_type_textarea', 'Multiline Textarea', 'admin'),
-('fields_type_tip_checkbox', 'This field allows multiple values selection. ', 'admin'),
+('fields_type_tip_checkbox', 'This field allows multiple values selection.', 'admin'),
 ('fields_type_tip_combo', 'Other', 'admin'),
 ('fields_type_tip_date', 'This field adds calendar control to set the date.', 'admin'),
-('fields_type_tip_image', 'This field value will be displayed as an image. ', 'admin'),
+('fields_type_tip_image', 'This field value will be displayed as an image.', 'admin'),
 ('fields_type_tip_number', 'This field can be searched by interval on Advanced Search page. Two inputs are created to set start and end values.', 'admin'),
 ('fields_type_tip_pictures', 'This field is displayed as a gallery of images. Lightbox display is used on View Item page.', 'admin'),
 ('fields_type_tip_radio', 'Other', 'admin'),
@@ -1214,10 +1216,9 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('hours_ago', ':hours hours ago', 'admin'),
 ('host_fields', 'Host Fields', 'admin'),
 ('html', 'HTML', 'admin'),
-('html_templates', 'HTML templates', 'admin'),
 
 ('id', 'ID', 'admin'),
-('ie_update_warning', 'Warning!!! Your version of Internet Explorer is too old. It may cause malfunctions of the script. Please update the browser to the 8 or higher version.', 'admin'),
+('ie_update_warning', 'Warning! Your version of Internet Explorer is too old. It may cause malfunctions of the script. Please update the browser to the 8 or higher version.', 'admin'),
 ('image_height', 'Image Height', 'admin'),
 ('import', 'Import', 'admin'),
 ('import_from_pc', 'Import the language file from PC', 'admin'),
@@ -1269,10 +1270,10 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('language_deleted', 'Selected language has been deleted.', 'admin'),
 ('languages_comparison', 'Comparison', 'admin'),
 ('last_updated', 'Last updated', 'admin'),
+('legend', 'Legend', 'admin'),
 ('link_to', 'Display as a link to View Details', 'admin'),
 ('loading_widgets', 'Loading widgets...', 'admin'),
 ('local', 'Local', 'admin'),
-('login_to', 'Login To Subrion CMS Admin Panel', 'admin'),
 ('login_to_text', 'Enter the login name into "Login" and password into the "Password" fields.\r\nThen click "Login".', 'admin'),
 ('location_sql_file', 'Location of MySQL upgrade file', 'admin'),
 
@@ -1286,7 +1287,6 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('member_already_exist', 'Member already exists.', 'admin'),
 ('member_deleted', 'Member deleted.', 'admin'),
 ('member_edit', 'Edit Member', 'admin'),
-('members_chart', 'Members chart', 'admin'),
 ('menu_doesnot_exists', 'Menu does not exist.', 'admin'),
 ('menu_exists', 'Menu with this name is already present. Please set another name.', 'admin'),
 ('menu_removed', 'Menu removed.', 'admin'),
@@ -1309,6 +1309,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('new_password', 'New password', 'admin'),
 ('no_blocks', 'There are no blocks.', 'admin'),
 ('no_captcha_preview', 'No captcha preview.', 'admin'),
+('no_extension', 'No extension', 'admin'),
 ('no_follow_url', 'No Follow URL', 'admin'),
 ('no_implemented_packages', 'No implemented packages.', 'admin'),
 ('no_packages', 'No packages.', 'admin'),
@@ -1325,7 +1326,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 
 ('one_day_ago', 'one day ago', 'admin'),
 ('one_hour_ago', 'one hour ago', 'admin'),
-('one_value', 'You have to add at least one value', 'admin'),
+('one_value', 'You have to add at least one value.', 'admin'),
 ('optimize_complete', 'Tables optimizing complete.', 'admin'),
 ('optimize_tables', 'Optimize tables', 'admin'),
 ('options', 'Options', 'admin'),
@@ -1363,7 +1364,6 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('phrase_manager', 'Phrase Manager', 'admin'),
 ('phrase_text', 'Phrase Text', 'admin'),
 ('place', 'Position in template', 'admin'),
-('plain_text_templates', 'Plain text templates', 'admin'),
 ('plan', 'Plan', 'admin'),
 ('plan_add', 'Add Plan', 'admin'),
 ('plan_deleted', 'Plan deleted.', 'admin'),
@@ -1398,9 +1398,9 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('repair_complete', 'Tables repairing complete.', 'admin'),
 ('reset_all', 'Reset all', 'admin'),
 ('reset_backup_alert', 'Please backup your data before resetting your items.', 'admin'),
-('reset_choose_table', 'Reset choose table', 'admin'),
+('reset_choose_table', 'Choose entries to reset.', 'admin'),
 ('reset_default', 'Reset default', 'admin'),
-('reset_default_package', 'Your package URLs will be reset. Please choose the URL that will be used to access your directory package. ', 'admin'),
+('reset_default_package', 'Your package URLs will be reset. Please choose the URL that will be used to access your directory package.', 'admin'),
 ('reset_default_success', 'Your package URLs have been reset.', 'admin'),
 ('reset_previous_default_success', 'Your previous default value has been reset.', 'admin'),
 ('reset_success', 'Reset successfully completed.', 'admin'),
@@ -1427,12 +1427,12 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('select_all', 'Select all', 'admin'),
 ('select_all_in_tab', 'Select all in this tab', 'admin'),
 ('select_none', 'Select None', 'admin'),
-('send_expiration_email', 'Send expiration email', 'admin'),
 ('send_confirm', 'Are you sure you wish to send this feedback to the Subrion Team?', 'admin'),
 ('server_info', 'Server Info', 'admin'),
 ('set_as_default_value', 'Set as default value', 'admin'),
 ('set_as_default_package', 'Set as default package', 'admin'),
 ('set_as_default_template', 'Activate', 'admin'),
+('set_default', 'Set Default', 'admin'),
 ('set_default_success', 'Changes saved. Your package is now available in root.', 'admin'),
 ('set_all_to', 'set all to', 'admin'),
 ('settings', 'Settings', 'admin'),
@@ -1451,15 +1451,14 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('stay_here', 'Stay here', 'admin'),
 ('start', 'Start', 'admin'),
 ('statistics', 'Statistics', 'admin'),
+('status_change_not_allowed', 'Status change of readonly field not allowed.', 'admin'),
 ('sticky', 'Sticky', 'admin'),
 ('structure', 'Structure', 'admin'),
 ('subdirectory_about', 'Your package will be accessible in a subdirectory. We recommend to use this way on shared hostings when you have several packages installed. <br /> Ex.: domain.com/articles/, domain.com/links/, domain.com/autos/, etc.', 'admin'),
 ('subdirectory_title', 'Subdirectory Installation', 'admin'),
 ('subdomain_about', 'You can install the package as a subdomain. Note you should be able to modify your Apache config file to use package on a subdomain. More instructions can be found in our <a href="http://www.subrion.com/forums/">User Forums.</a><br /> Ex.: articles.domain.com, links.domain.com, autos.domain.com, etc.', 'admin'),
 ('subdomain_title', 'Subdomain Installation', 'admin'),
-('submission_notif', 'Submission Notification', 'admin'),
 ('submit_feedback', 'Submit Feedback to the Subrion Team', 'admin'),
-('subrion_new_plugins', 'Subrion new plugins', 'admin'),
 ('sure_uninstall_package', 'Are you sure you want to uninstall this package? Please be informed that all your package data will be lost.', 'admin'),
 ('system_fields', 'System Fields', 'admin'),
 ('system_notifications', 'System Notifications', 'admin'),
@@ -1526,9 +1525,9 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('_select_', '-- select --', 'common'),
 ('_status_', '- Status -', 'common'),
 
-('401', 'You are  not authorized to access this page (401).', 'common'),
-('403', 'You do not have permissions to access this page (403).', 'common'),
-('404', 'Requested URL not found (404).', 'common'),
+('401', 'You are not authorized to access this page.', 'common'),
+('403', 'You do not have permissions to access this page.', 'common'),
+('404', 'Requested URL not found.', 'common'),
 
 ('active', 'Active', 'common'),
 ('add', 'Add', 'common'),
@@ -1539,7 +1538,6 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('advanced_search', 'Advanced Search', 'common'),
 ('all', 'All', 'common'),
 ('amount', 'Amount', 'common'),
-('amount_less_min', 'Please input a greater amount.', 'common'),
 ('any', 'Any', 'common'),
 ('any_word', 'any word', 'common'),
 ('apply', 'apply', 'common'),
@@ -1574,9 +1572,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('country', 'Country', 'common'),
 ('currency', 'Currency', 'common'),
 ('current', 'Current', 'common'),
-('current_assets', 'Current Assets', 'common'),
 ('current_page', 'Current Page', 'common'),
-('custom_url_exist', 'Custom URL already exist.', 'common'),
 
 ('day1', 'Monday', 'common'),
 ('day2', 'Tuesday', 'common'),
@@ -1622,7 +1618,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('failed', 'Failed', 'common'),
 ('from', 'from', 'common'),
 ('from_email_err', 'Sender email is incorrect', 'common'),
-('featured_status_finished_date_is_empty', 'Listing has been marked as a featured, but no finished date was specified.', 'common'),
+('featured_status_finished_date_is_empty', 'Listing has been marked as featured, but no finished date was specified.', 'common'),
 
 ('field__annotation', 'please upload only image files', 'common'),
 ('field_member_id', 'Member username', 'common'),
@@ -1723,7 +1719,6 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('password_confirm', 'Password Confirmation', 'common'),
 ('password_incorrect', 'Password is incorrect.', 'common'),
 ('pending', 'Pending', 'common'),
-('pictures_info', 'Pictures', 'common'),
 ('plan_added', 'Plan added.', 'common'),
 ('plans', 'Plans', 'common'),
 ('position', 'Position', 'common'),
@@ -1788,10 +1783,10 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 
 INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('active_users', 'Active Users', 'frontend'),
-('add_favorite', 'Are you sure you wish to add this item to Favorites?', 'frontend'),
 ('add_to_favorites', 'Are you sure you wish to add this item to Favorites?', 'frontend'),
 ('advanced', 'Advanced', 'frontend'),
 ('amount_incorrect', 'Please input correct amount.', 'frontend'),
+('amount_less_min', 'Please input a greater amount.', 'frontend'),
 ('are_you_sure_to_cancel_invoice', 'Are you sure you want to cancel your invoice?', 'frontend'),
 ('author_contact_request', 'Contact request regarding ":title"', 'frontend'),
 ('auto_generate_password', 'Auto generate password', 'frontend'),
@@ -1808,6 +1803,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('choose_image_file', 'and choose image file on your computer.', 'frontend'),
 ('confirmation_code_incorrect', 'Confirmation code is incorrect.', 'frontend'),
 ('confirmation_key_incorrect', 'Confirmation key is incorrect.', 'frontend'),
+('current_assets', 'Current Assets', 'frontend'),
 ('current_password', 'Current Password', 'frontend'),
 
 ('date_added', 'Date', 'frontend'),
@@ -1893,7 +1889,6 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('register_login', 'Please Login or Register', 'frontend'),
 ('registration_annotation', 'Registration is simple and takes just few seconds. Please fill in the form below.', 'frontend'),
 ('remove_favorite', 'Are you sure you wish to remove this item from Favorites?', 'frontend'),
-('remove_from_favorites', 'Remove from favorites.', 'frontend'),
 ('restore_pass_confirm', 'We have sent confirmation code to your email. Please check it and follow the instructions.', 'frontend'),
 
 ('search_criterias', 'Search Criterias', 'frontend'),
@@ -1920,7 +1915,6 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('thankyou_head', '<p>Below is the information you submitted so far. You will be able to extend and edit this information via your member account.</p><p><span class=\"label label-important\">IMPORTANT!</span> Your account password has been sent to the following email address:</p>', 'frontend'),
 ('thankyou_tail', '<p>Please read our letter with further instructions.</p>', 'frontend'),
 ('this_transaction_already_passed', 'We already have this payment in our database. Transaction passed successfully.', 'frontend'),
-('this_transaction_failed', 'This transaction failed', 'frontend'),
 ('total_paid', 'Total Paid', 'frontend'),
 
 ('unable_to_send_email', 'Unable to send e-mail.', 'frontend'),
@@ -1937,7 +1931,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('your_password', 'Your password', 'frontend'),
 ('your_password_confirm', 'Confirm your password', 'frontend'),
 ('your_username', 'Your username', 'frontend'),
-('youre_admin_browsing_disabled_front', 'Frontend is disabled for regular members. It''s only available for admin members. ', 'frontend'),
+('youre_admin_browsing_disabled_front', 'Frontend is disabled for regular members. It''s only available for admin members.', 'frontend'),
 ('youre_in_ie6_mode', 'You are using Internet Explorer 6! We highly recommend to upgrade your web browser!', 'frontend'),
 ('youre_in_manage_mode', 'You are in manage mode. <a href="?manage_exit=y">Exit</a>', 'frontend'),
 ('youre_in_preview_mode', 'You are in preview mode. <a href="?preview_exit=y">Exit</a>', 'frontend');

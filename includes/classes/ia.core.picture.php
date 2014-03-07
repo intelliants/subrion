@@ -10,7 +10,7 @@ class iaPicture extends ImageWorkshop
 
 	const SOURCE_PREFIX = 'source_';
 
-	protected $_typesMap = array(
+	protected static $_typesMap = array(
 		'image/gif' => 'gif',
 		'image/jpeg' => 'jpg',
 		'image/pjpeg' => 'jpg',
@@ -25,9 +25,9 @@ class iaPicture extends ImageWorkshop
 	 *
 	 * @return string
 	 */
-	public function getImageExt($fileName)
+	protected static function _getImageExt($fileName)
 	{
-		return array_key_exists($fileName, $this->_typesMap) ? '.' . $this->_typesMap[$fileName] : '';
+		return array_key_exists($fileName, self::$_typesMap) ? '.' . self::$_typesMap[$fileName] : '';
 	}
 
 	protected static function _createFilename($name, $ext, $thumb = false)
@@ -81,11 +81,11 @@ class iaPicture extends ImageWorkshop
 	 */
 	public function processImage($aFile, $folder, $aName, $imageInfo)
 	{
-		$ext = $this->getImageExt($aFile['type']);
+		$ext = self::_getImageExt($aFile['type']);
 
 		if (empty($ext))
 		{
-			$this->iaCore->setMessage(iaLanguage::get('file_type_error', array('extension' => implode(',', array_unique($this->_typesMap)))));
+			$this->iaCore->setMessage(iaLanguage::get('file_type_error', array('extension' => implode(',', array_unique(self::$_typesMap)))));
 
 			return false;
 		}
@@ -97,7 +97,7 @@ class iaPicture extends ImageWorkshop
 		$image->save($path, self::SOURCE_PREFIX . $aName . $ext);
 
 		// process thumbnails for files uploaded in CKEditor and other tools
-		if (empty($imageInfo['image_width']) && empty($imageInfo['image_height']))
+		if (empty($imageInfo))
 		{
 			// apply watermark
 			$image = self::_applyWaterMark($image);
@@ -150,8 +150,13 @@ class iaPicture extends ImageWorkshop
 		}
 
 		// save full image
-		($imageInfo['image_width'] > $imageInfo['image_height']) ? $largestSide = $imageInfo['image_width'] : $largestSide = $imageInfo['image_height'];
-		$image->resizeByLargestSideInPixel($largestSide, true);
+		$largestSide = ($imageInfo['image_width'] > $imageInfo['image_height']) ? $imageInfo['image_width'] : $imageInfo['image_height'];
+
+		if ($largestSide)
+		{
+			$image->resizeByLargestSideInPixel($largestSide, true);
+		}
+
 		$image = self::_applyWaterMark($image);
 		$image->save($path, self::_createFilename($aName, $ext));
 
@@ -165,10 +170,12 @@ class iaPicture extends ImageWorkshop
 			{
 				case self::FIT:
 					$thumb->resizeInPixel($thumbWidth, $thumbHeight, true, 0, 0, 'MM');
+
 					break;
 
 				case self::CROP:
 					$largestSide = $thumbWidth > $thumbHeight ? $thumbWidth : $thumbHeight;
+
 					$thumb->cropMaximumInPixel(0, 0, 'MM');
 					$thumb->resizeInPixel($largestSide, $largestSide);
 					$thumb->cropInPixel($thumbWidth, $thumbHeight, 0, 0, 'MM');

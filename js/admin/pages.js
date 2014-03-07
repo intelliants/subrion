@@ -2,13 +2,17 @@ intelli.pagesUrl = intelli.config.admin_url + '/pages/';
 
 function fillUrlBox()
 {
-	var name = $('input[name="name"]').val();
 	var externalUrl = $('#unique').prop('checked');
 	var customUrl = $('#custom_url').val();
-	var url = $('input[name="alias"]').val();
-	var parent = $('#js-field-parent').val();
+	var name = $('input[name="name"]').val();
 
-	var params = {get: 'url', name: name, url: url, parent: parent};
+	var params = {
+		get: 'url',
+		name: name,
+		url: $('input[name="alias"]').val(),
+		parent: $('#js-field-parent').val(),
+		ext: $('input[name="extension"]').val()
+	};
 
 	if (externalUrl && '' != customUrl)
 	{
@@ -18,21 +22,22 @@ function fillUrlBox()
 	{
 		sendQuery(params);
 	}
-	else
-	{
-		$('#js-alias-placeholder').fadeOut();
-	}
 }
 
 function sendQuery(params)
 {
 	$.get(intelli.pagesUrl + 'read.json', params, function(response)
 	{
-		var $placeholder = $('#js-alias-placeholder');
+		var $placeholder = $('.text-danger', '#js-alias-placeholder');
 		if ('string' == typeof response.url)
 		{
-			$('span:first', $placeholder).text(response.url);
-			$placeholder.fadeIn();
+			$placeholder
+				.text(response.url)
+				.fadeIn();
+
+			response.exists
+				? $placeholder.append('<div class="alert alert-info" id="js-exist-url-alert">' + _t('custom_url_exist') + '</div>')
+				: $('#js-exist-url-alert').remove();
 		}
 		else
 		{
@@ -50,11 +55,11 @@ Ext.onReady(function()
 			columns: [
 				'selection',
 				'expander',
-				{name: 'name', title: _t('name'), width: 1},
-				{name: 'title', id: 'titleCol', title: _t('title'), width: 2, sortable: false},
-				{name: 'url', title: _t('url'), width: 150},
+				{name: 'name', title: _t('name'), width: 150},
+				{name: 'title', id: 'titleCol', title: _t('title'), width: 1, sortable: false},
+				{name: 'url', title: _t('url'), width: 1},
 				'status',
-				{name: 'last_updated', title: _t('last_updated'), width: 120},
+				{name: 'last_updated', title: _t('last_updated'), width: 170},
 				'update',
 				'delete'
 			],
@@ -114,7 +119,7 @@ Ext.onReady(function()
 				{
 					$.ajax(
 					{
-						data: {id: $('input[name="id"]').val()},
+						data: {'id[]': $('input[name="id"]').val()},
 						dataType: 'json',
 						failure: function()
 						{
@@ -139,13 +144,13 @@ Ext.onReady(function()
 
 $(function()
 {
-	$('input[name="preview"]').click(function()
+	$('input[name="preview"]').on('click', function()
 	{
 		$('#page_form').attr('target', '_blank');
 		$('#js-csrf-protection-code').val($('input[name="prevent_csrf"]:first', '#csrf_for_preview').val());
 	});
 
-	$('input[name="save"]').click(function(e)
+	$('input[name="save"]').on('click', function(e)
 	{
 		$('#page_form').removeAttr('target');
 		$('#js-csrf-protection-code').val($('input[name="prevent_csrf"]:first', '#csrf_for_save').val());
@@ -179,4 +184,19 @@ $(function()
 		$('#js-active-language').val($(this).data('language'));
 	});
 	$('a[data-toggle="tab"]:first', '#ckeditor').trigger('shown.bs.tab');
+
+	// page extension dropdown
+	$('a', '#js-page-extension-list').on('click', function(e)
+	{
+		e.preventDefault();
+
+		var text = $(this).text();
+		var value  = $(this).data('extension');
+
+		$('input[name="extension"]').val(value);
+		$(this).parent().addClass('active').siblings().removeClass('active');
+		$(this).closest('div').find('button').html(text + ' <span class="caret"></span>');
+
+		fillUrlBox();
+	});
 });

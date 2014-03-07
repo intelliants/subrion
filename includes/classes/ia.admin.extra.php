@@ -1943,7 +1943,7 @@ class iaExtra extends abstractCore
 				{
 					$this->itemData['items'][$text] = array(
 						'item' => $text,
-						'payable' => (int)$this->_attr('payable', 1),
+						'payable' => (int)$this->_attr('payable', true),
 						'pages' => $this->_attr('pages'),
 						'table_name' => $this->_attr('table_name'),
 						'class_name' => $this->_attr('class_name')
@@ -2081,10 +2081,10 @@ class iaExtra extends abstractCore
 						'multiple_values' => $this->_attr(array('values', 'multiplevalues', 'multiple_values')),
 						'type' => $this->_attr('type'),
 						'description' => $this->_attr('description'),
-						'wysiwyg' => $this->_attr('wysiwyg', 0),
-						'code_editor' => $this->_attr('code_editor', 0),
-						'private' => $this->_attr('private', 0),
-						'custom' => $this->_attr('custom', 1),
+						'wysiwyg' => $this->_attr('wysiwyg', false),
+						'code_editor' => $this->_attr('code_editor', false),
+						'private' => $this->_attr('private', false),
+						'custom' => $this->_attr('custom', true),
 						'extras' => $this->itemData['name'],
 						'show' => $this->_attr('show', '')
 					);
@@ -2158,10 +2158,14 @@ class iaExtra extends abstractCore
 			case 'field':
 				if ($this->_checkPath('fields'))
 				{
-					$values = false;
+					$values = array();
 					if (isset($this->_attributes['values']))
 					{
-						foreach (explode(',', $this->_attributes['values']) as $k => $v)
+						$value = $this->_attributes['values'];
+						$value = (false !== strpos($value, '::'))
+							? explode('::', $value)
+							: explode(',', $value);
+						foreach ($value as $k => $v)
 						{
 							$array = explode('||', $v);
 							if (!isset($array[1]))
@@ -2170,10 +2174,6 @@ class iaExtra extends abstractCore
 							}
 							else
 							{
-								if ($array[0] == '-')
-								{
-									$array[0] = iaSanitize::alias($array[1]);
-								}
 								$values[$array[0]] = $array[1];
 							}
 						}
@@ -2202,7 +2202,7 @@ class iaExtra extends abstractCore
 						'group' => $this->_attr('group', $this->itemData['name']), // will be changed to the inserted ID by the further code
 						'name' => $this->_attr('name'),
 						'type' => $this->_attr('type'),
-						'use_editor' => $this->_attr('editor', 0),
+						'use_editor' => $this->_attr('editor', false),
 						'length' => $this->_attr('length', 100),
 						'default' => $this->_attr('default'),
 						'editable' => $this->_attr('editable', true),
@@ -2212,7 +2212,7 @@ class iaExtra extends abstractCore
 						'relation' => $this->_attr('relation', 'regular', array('regular', 'dependent', 'parent')),
 						'parent' => $this->_attr('parent', ''),
 						'empty_field' => $this->_attr('empty_field'),
-						'link_to' => $this->_attr('link_to', 0),
+						'link_to' => $this->_attr('link_to', false),
 						'adminonly' => $this->_attr('adminonly', false),
 						'allow_null' => $this->_attr('allow_null', false),
 						'searchable' => $this->_attr('searchable', false),

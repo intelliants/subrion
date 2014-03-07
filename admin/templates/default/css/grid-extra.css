@@ -1,0 +1,8 @@
+.grid-row-inactive td
+{
+	background-color: #eaeaea !important;
+}
+.grid-row-highlight td
+{
+	background-color: #e0f2f7 !important;
+}

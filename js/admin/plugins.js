@@ -349,7 +349,7 @@ Ext.onReady(function()
 
 								intelli.available.store.getProxy().extraParams.filter = title;
 								intelli.available.store.getProxy().extraParams.mode = mode;
-								intelli.available.store.reload();
+								intelli.available.store.loadPage(1);
 							}
 						}
 					},{
@@ -363,7 +363,7 @@ Ext.onReady(function()
 							intelli.available.grid.columns[6].setVisible(true);
 
 							intelli.available.store.getProxy().extraParams = {type: 'available', mode: 'local'};
-							intelli.available.store.reload();
+							intelli.available.store.loadPage(1);
 						}}
 					]});
 					intelli.available.init();
@@ -418,7 +418,7 @@ Ext.onReady(function()
 		handler: function()
 		{
 			intelli.installed.store.getProxy().extraParams.filter = Ext.getCmp('installedFilter').getValue();
-			intelli.installed.store.reload();
+			intelli.installed.store.loadPage(1);
 		}
 	},{
 		text: '<i class="i-close"></i> ' + _t('reset'),
@@ -426,7 +426,7 @@ Ext.onReady(function()
 		{
 			Ext.getCmp('installedFilter').reset();
 			intelli.installed.store.getProxy().extraParams = {type: 'installed'};
-			intelli.installed.store.reload();
+			intelli.installed.store.loadPage(1);
 		}
 	}]});
 	intelli.installed.init();

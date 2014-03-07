@@ -40,18 +40,18 @@ $(function()
 		var $o = $('#sap_style');
 		var $parent = $o.parent();
 		var currentStyle = $o.val();
-		var $currentStyleCSS = $('link[href$="bootstrap-' + currentStyle + '.css"]');
+		var $currentStyleCSS = $('link[href*="bootstrap-' + currentStyle + '.css"]');
 		var currentStyleLink = $currentStyleCSS.attr('href');
 
 		$currentStyleCSS.attr('id', 'defaultStyle');
 
 		var styles = {
 			colors: {
-				'calmy': 'background: #a2dadb; border: 8px solid #3d4c4f;',
-				'emerald': 'background: #47c1a8; border: 8px solid #25272a;',
-				'alizarin': 'background: #f6a440; border: 8px solid #432523;',
+				calmy: 'background: #a2dadb; border: 8px solid #3d4c4f;',
+				emerald: 'background: #47c1a8; border: 8px solid #25272a;',
+				alizarin: 'background: #f6a440; border: 8px solid #432523;',
 				'gebeus-waterfall': 'background: #38b7ea; border: 8px solid #1d1c24;',
-				'roseus': 'background: #e45b9b; border: 8px solid #3d4049;',
+				roseus: 'background: #e45b9b; border: 8px solid #3d4049;',
 				'radiant-orchid': 'background: #B163A3; border: 8px solid #3d4049;'
 			},
 			css: 'height: 34px; width: 34px; margin-right: 10px; display: inline-block;'

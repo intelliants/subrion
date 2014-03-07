@@ -22,29 +22,28 @@ class iaField extends abstractCore
 	const DEFAULT_LENGTH = 100;
 
 	protected static $_table = 'fields';
-	protected static $_tableFieldGroups = 'fields_groups';
-	protected static $_tableFieldPages = 'fields_pages';
-	protected static $_tableFieldRelations = 'fields_relations';
+	protected static $_tableGroups = 'fields_groups';
+	protected static $_tablePages = 'fields_pages';
+	protected static $_tableRelations = 'fields_relations';
 
 
 	public static function getTableGroups()
 	{
-		return self::$_tableFieldGroups;
+		return self::$_tableGroups;
 	}
 
 	public static function getTablePages()
 	{
-		return self::$_tableFieldPages;
+		return self::$_tablePages;
 	}
 
 	public static function getTableRelations()
 	{
-		return self::$_tableFieldRelations;
+		return self::$_tableRelations;
 	}
 
 	public function insert(array $fieldData)
 	{
-		$iaCore = &$this->iaCore;
 		$iaDb = &$this->iaDb;
 
 		if (isset($fieldData['parents']))
@@ -68,7 +67,7 @@ class iaField extends abstractCore
 
 		unset($fieldData['pages'], $fieldData['groups']);
 
-		foreach ($iaCore->languages as $code => $l)
+		foreach ($this->iaCore->languages as $code => $l)
 		{
 			if (!empty($fieldData['title'][$code]))
 			{
@@ -165,7 +164,7 @@ class iaField extends abstractCore
 			$this->_setPagesList($fieldId, $pagesList, $fieldData['extras']);
 		}
 
-		$fieldData['table_name'] = $iaCore->factory('item')->getItemTable($fieldData['item']);
+		$fieldData['table_name'] = $this->iaCore->factory('item')->getItemTable($fieldData['item']);
 
 		$fields = $iaDb->describe($fieldData['table_name']);
 		$exist = false;
@@ -565,25 +564,15 @@ class iaField extends abstractCore
 
 	public function getByItemName($itemName)
 	{
-		$sql =
-			'SELECT f.*, ' .
-			'(SELECT GROUP_CONCAT(CONCAT(`element`,"-",`child`)) FROM `:prefix:table_relations` fr ' .
-			'WHERE fr.`field` = f.`name` AND fr.`item` = f.`item`) `children` ' .
-			'FROM `:table` f ' .
-			"WHERE f.`status` = ':status' AND f.`item` = ':item' " .
-			'ORDER BY f.`order`';
-		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->iaDb->prefix,
-			'table_relations' => self::getTableRelations(),
-			'table' => self::getTable(true),
-			'status' => iaCore::STATUS_ACTIVE,
-			'item' => $itemName
-		));
-
 		$fields = array();
 
-		if ($rows = $this->iaDb->getAll($sql))
+		$stmt = '`status` = :status AND `item` = :item';
+		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'item' => $itemName));
+
+		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt, null, null, self::getTable()))
 		{
+			$fieldsList = array();
+
 			foreach ($rows as $row)
 			{
 				if (in_array($row['type'], array(self::CHECKBOX, self::COMBO, self::RADIO)))
@@ -600,22 +589,13 @@ class iaField extends abstractCore
 					{
 						$row['values'][$v] = iaLanguage::get('field_' . $row['name'] . '_' . $v);
 					}
-
-					if (isset($row['children']) && $row['children'])
-					{
-						$children = array();
-						$array = explode(',', $row['children']);
-						foreach ($array as $value)
-						{
-							$info = explode('-', $value);
-							$children[$info[0]][] = $info[1];
-						}
-						$row['children'] = $children;
-					}
 				}
 
+				$fieldsList[] = $row['name'];
 				$fields[] = $row;
 			}
+
+			self::_handleRelations($itemName, $fieldsList, $fields);
 		}
 
 		return $fields;
@@ -676,10 +656,7 @@ class iaField extends abstractCore
 			$params['page'] = 'admin';
 		}
 
-		if (!isset($params['info']))
-		{
-			$params['info'] = true;
-		}
+		isset($params['info']) || $params['info'] = true;
 		if ($params['filter'] !== false && !is_array($params['filter']))
 		{
 			$params['filter'] = explode(',', $params['filter']);
@@ -709,7 +686,7 @@ class iaField extends abstractCore
 		foreach ($fieldsList as $key => $field)
 		{
 			$empty[$field['name']] = $field['empty_field'];
-			if ($field['for_plan'] == 0 || $field['required'] == 1)
+			if (!$field['for_plan'] || $field['required'])
 			{
 				$fields[] = $field['name'];
 			}
@@ -781,91 +758,69 @@ class iaField extends abstractCore
 	 *
 	 * @obsolete should not be used
 	 */
-	public static function getAcoFieldsList($aAco = false, $aItem = false, $aWhere = '', $aAllFieldInfo = false, $aItemData = false, $params = array())
+	public static function getAcoFieldsList($pageName = null, $itemName = null, $aWhere = '', $aAllFieldInfo = false, $aItemData = false, $params = array())
 	{
 		$iaCore = iaCore::instance();
 		$iaView = &$iaCore->iaView;
 		$iaAcl = $iaCore->factory('acl');
 
-		$aAco = $aAco ? $aAco : $iaView->name();
+		$pageName = $pageName ? $pageName : $iaView->name();
+		$itemName = $itemName ? $itemName : $iaView->get('extras');
 
-		$aItem = $aItem ? $aItem : $iaView->get('extras');
-
-		$selection = $aAllFieldInfo || $aAco == 'admin' ? '`f`.*' : '`f`.name';
+		$selection = 'f.' . ($aAllFieldInfo || $pageName == 'admin' ? iaDb::ALL_COLUMNS_SELECTION : '`name`');
 		if (isset($params['selection']) && $params['selection'])
 		{
 			$selection = $params['selection'];
 		}
-		$order = 'ORDER BY f.`order`';
-		if (isset($params['order']) && $params['order'])
-		{
-			$order = 'ORDER BY ' . $params['order'];
-		}
 
-		$sql_plan = '';
-		$children_select = ", (SELECT GROUP_CONCAT(CONCAT(`element`,'-',`child`)) FROM `" . $iaCore->iaDb->prefix . self::getTableRelations() . '` fr WHERE fr.`field` = f.`name` AND fr.`item` = f.`item`) `children`';
+		$sql = "SELECT $selection ";
 
-		if (iaCore::ADMIN == $aAco)
+		if (iaCore::ADMIN == $pageName)
 		{
 			$aAllFieldInfo = true;
-			$sql =
-				"SELECT {$selection}{$children_select} " .
-				"FROM `" . self::getTable(true) . "` `f` " .
-				"WHERE `f`.`status` = 'active' AND `f`.`item` = '{$aItem}' "
-				. ($aWhere ? ' AND ' . $aWhere : '')
-				. ' GROUP BY `f`.`id`'
-				. $order;
-
+			$sql .= "FROM `" . self::getTable(true) . "` f " .
+				"WHERE f.`status` = 'active' AND f.`item` = '{$itemName}' "
+				. ($aWhere ? ' AND ' . $aWhere : '');
 		}
-		elseif ('all' == $aAco)
+		elseif ('all' == $pageName)
 		{
-			$sql = "SELECT {$selection}{$children_select}
-				FROM `" . self::getTable(true) . "` f
-				WHERE " .
+			$sql .= "FROM `" . self::getTable(true) . "` f " .
+				"WHERE " .
 					"f.`status` = 'active' AND " .
-					"f.`item` = '{$aItem}' AND " .
+					"f.`item` = '{$itemName}' AND " .
 					"f.`adminonly` = 0 "
-				. ($aWhere ? ' AND ' . $aWhere : '')
-				. " GROUP BY `f`.`id`"
-				. $order;
+				. ($aWhere ? ' AND ' . $aWhere : '');
 			//			$sql .= $aPlan && (!$aItemData || $aItemData['sponsored']) ? " AND (`plans`='' OR FIND_IN_SET('{$aPlan}', `plans`)) " : " AND `plans`='' ";
 		}
 		else
 		{
-			$sql = "SELECT {$selection}{$children_select} " .
-					'FROM `' . $iaCore->iaDb->prefix . self::getTablePages() . '` fp ' .
+			$sql .= 'FROM `' . $iaCore->iaDb->prefix . self::getTablePages() . '` fp ' .
 					'LEFT JOIN `' . $iaCore->iaDb->prefix . self::getTable() . '` f ON (fp.`field_id` = f.`id`) ' .
-					"WHERE `fp`.`page_name` = '{$aAco}' AND f.`status` = 'active' AND f.`item` = '{$aItem}' AND f.`adminonly` = 0 "
-						. ($aWhere ? ' AND ' . $aWhere : '')
-						. $sql_plan
-						. ' GROUP BY f.`id` '
-						. $order;
+					"WHERE fp.`page_name` = '{$pageName}' AND f.`status` = 'active' AND f.`item` = '{$itemName}' AND f.`adminonly` = 0 "
+						. ($aWhere ? ' AND ' . $aWhere : '');
 			//			$sql .= $aPlan && (!$aItemData || $aItemData['sponsored']) ? " AND (`plans`='' OR FIND_IN_SET('{$aPlan}', `plans`)) " : " AND `plans`='' ";
 		}
 
-		$rows = $iaCore->iaDb->getAll($sql);
+		$sql .= 'ORDER BY ' . (empty($params['order']) ? 'f.`order`' : $params['order']);
 
-		foreach ($rows as $key => $value)
+		$rows = $iaCore->iaDb->getAll($sql);
+		$fieldNames = array();
+
+		foreach ($rows as $key => $entry)
 		{
-			if (isset($value['name']) && $iaAcl->checkAccess('field', 0, 0, $aItem . '_' . $value['name']) === false)
+			if (isset($entry['name']) && $entry['name'])
 			{
-				unset($rows[$key]);
-			}
-			else
-			{
-				if (isset($value['children']) && $value['children'])
+				if ($iaAcl->checkAccess('field', 0, 0, $itemName . '_' . $entry['name']))
 				{
-					$children = array();
-					$array = explode(',', $value['children']);
-					foreach ($array as $entry)
-					{
-						$info = explode('-', $entry);
-						$children[$info[0]][] = $info[1];
-					}
-					$rows[$key]['children'] = $children;
+					$fieldNames[$entry['id']] = $entry['name'];
+					continue;
 				}
 			}
+
+			unset($rows[$key]);
 		}
+
+		self::_handleRelations($itemName, $fieldNames, $rows);
 
 		if ($aAllFieldInfo)
 		{
@@ -882,6 +837,26 @@ class iaField extends abstractCore
 		}
 
 		return $fields;
+	}
+
+	protected static function _handleRelations($itemName, array $fieldsList, array &$fields)
+	{
+		$iaDb = iaCore::instance()->iaDb;
+
+		$stmt = sprintf("`field` IN('%s') AND `item` = '%s'", implode("','", $fieldsList), $itemName);
+		$relations = $iaDb->all(array('field', 'element', 'child'), $stmt, null, null, self::getTableRelations());
+
+		$relationsMap = array();
+		foreach ($relations as $entry)
+		{
+			$relationsMap[$entry['field']][$entry['child']][] = $entry['element'];
+		}
+
+		foreach ($fields as &$entry)
+		{
+			$entry['children'] = isset($relationsMap[$entry['name']]) ? $relationsMap[$entry['name']] : array();
+		}
+		//
 	}
 
 	protected function _getFieldsSection($aco = false, $aItem = false, $aWhere = '', &$aItemData, $params = array())
@@ -983,22 +958,18 @@ class iaField extends abstractCore
 
 	public function getValues($field, $item)
 	{
-		$row = $this->iaDb->one_bind(array('values'), '`name` = :field AND `item` = :item', array('field' => $field, 'item' => $item), self::getTable());
-
-		if (empty($row))
+		if ($values = $this->iaDb->one_bind(array('values'), '`name` = :field AND `item` = :item', array('field' => $field, 'item' => $item), self::getTable()))
 		{
-			return false;
+			$result = array();
+			foreach (explode(',', $values) as $key)
+			{
+				$result[$key] = iaLanguage::get('field_' . $field . '_' . $key, $key);
+			}
+
+			return $result;
 		}
 
-		$keys = explode(',', $row);
-		$values = array();
-
-		foreach ($keys as $key)
-		{
-			$values[$key] = iaLanguage::get('field_' . $field . '_' . $key, $key);
-		}
-
-		return $values;
+		return false;
 	}
 
 	public function getGroups($itemName)
@@ -1050,7 +1021,7 @@ class iaField extends abstractCore
 		return $groups;
 	}
 
-	public function parsePost($fieldsList, $previousValues = null, $isBackend = false)
+	public function parsePost(array $fields, $previousValues = null, $isBackend = false)
 	{
 		$iaCore = &$this->iaCore;
 
@@ -1059,11 +1030,13 @@ class iaField extends abstractCore
 		$invalidFields = array();
 
 		$item = array();
+		$data = &$_POST; // access to the data source by link
+
 		// check plan
-		if (isset($_POST['plan_id']))
+		if (isset($data['plan_id']))
 		{
 			$iaCore->factory('plan', iaCore::FRONT);
-			$item[iaPlan::SPONSORED_PLAN_ID] = (int)$_POST['plan_id'];
+			$item[iaPlan::SPONSORED_PLAN_ID] = (int)$data['plan_id'];
 			if (!isset($previousValues[iaPlan::SPONSORED_PLAN_ID])
 				|| !isset($item[iaPlan::SPONSORED_PLAN_ID])
 				|| $item[iaPlan::SPONSORED_PLAN_ID] != $previousValues[iaPlan::SPONSORED_PLAN_ID])
@@ -1074,24 +1047,24 @@ class iaField extends abstractCore
 			}
 			if ($isBackend)
 			{
-				$item[iaPlan::SPONSORED] = (int)$_POST['sponsored'];
+				$item[iaPlan::SPONSORED] = (int)$data['sponsored'];
 				$item[iaPlan::SPONSORED_DATE_START] = date(iaDb::DATETIME_SHORT_FORMAT);
-				$item[iaPlan::SPONSORED_DATE_END] = $_POST['sponsored_end'];
+				$item[iaPlan::SPONSORED_DATE_END] = $data['sponsored_end'];
 			}
 		}
 		// end
 
 		if ($isBackend)
 		{
-			if (isset($_POST['featured']))
+			if (isset($data['featured']))
 			{
-				$item['featured'] = (int)$_POST['featured'];
+				$item['featured'] = (int)$data['featured'];
 				if ($item['featured'])
 				{
-					if (isset($_POST['featured_end']) && $_POST['featured_end'])
+					if (isset($data['featured_end']) && $data['featured_end'])
 					{
 						$item['featured_start'] = date(iaDb::DATETIME_SHORT_FORMAT);
-						$item['featured_end'] = iaSanitize::html($_POST['featured_end']);
+						$item['featured_end'] = iaSanitize::html($data['featured_end']);
 					}
 					else
 					{
@@ -1107,14 +1080,14 @@ class iaField extends abstractCore
 				}
 			}
 
-			if (isset($_POST['status']))
+			if (isset($data['status']))
 			{
-				$item['status'] = iaSanitize::html($_POST['status']);
+				$item['status'] = iaSanitize::html($data['status']);
 			}
 
-			if (isset($_POST['date_added']))
+			if (isset($data['date_added']))
 			{
-				$time = strtotime($_POST['date_added']);
+				$time = strtotime($data['date_added']);
 				if (!$time)
 				{
 					$error = true;
@@ -1131,9 +1104,9 @@ class iaField extends abstractCore
 				}
 			}
 
-			if (isset($_POST['owner']))
+			if (isset($data['owner']))
 			{
-				if (empty($_POST['owner']))
+				if (empty($data['owner']))
 				{
 					$error = true;
 					$messages[] = iaLanguage::get('owner_is_not_specified');
@@ -1153,59 +1126,46 @@ class iaField extends abstractCore
 			}
 		}
 
-		$iaUtil = $iaCore->factory('util');
-		iaUTF8::loadUTF8Util('validation', 'bad');
+		// the code block below filters fields based on parent/dependent structure
+		$activeFields = array();
+		$parentFields = array();
 
-		$aFields = array();
-		$parents = array();
-		$dependent = array();
-
-		foreach ($fieldsList as $field)
+		foreach ($fields as $field)
 		{
-			$fieldName = $field['name'];
-			$aFields[$fieldName] = $field;
-			if (self::RELATION_PARENT == $field['relation'])
+			$activeFields[$field['name']] = $field;
+			if (iaField::RELATION_PARENT == $field['relation'])
 			{
-				$parents[$fieldName] = $field['children'];
-			}
-			elseif (self::RELATION_DEPENDENT == $field['relation'])
-			{
-				$dependent[$fieldName] = 1;
+				$parentFields[$field['name']] = $field['children'];
 			}
 		}
 
-		foreach ($parents as $fieldName => $elementList)
+		foreach ($parentFields as $fieldName => $dependencies)
 		{
-			if (isset($_POST[$fieldName]))
+			if (isset($data[$fieldName]))
 			{
-				$post = $_POST[$fieldName];
-				if (isset($elementList[$post]))
+				$value = $data[$fieldName];
+				foreach ($dependencies as $dependentFieldName => $values)
 				{
-					foreach ($elementList[$post] as $child)
+					if (!in_array($value, $values))
 					{
-						if (isset($dependent[$child]))
-						{
-							unset($dependent[$child]);
-						}
+						unset($activeFields[$dependentFieldName]);
 					}
 				}
 			}
 		}
-
-		// clear field list by dependent list
-		foreach ($dependent as $fieldName => $value)
-		{
-			unset($aFields[$fieldName]);
-		}
+		//
 
 		$iaView = &$iaCore->iaView;
 		$iaDb = &$iaCore->iaDb;
+		$iaUtil = $iaCore->factory('util');
 
-		foreach ($aFields as $fieldName => $field)
+		iaUtil::loadUTF8Functions('validation', 'bad');
+
+		foreach ($activeFields as $fieldName => $field)
 		{
-			if (!isset($_POST[$fieldName]))
+			if (!isset($data[$fieldName]))
 			{
-				$_POST[$fieldName] = '';
+				$data[$fieldName] = '';
 				if (in_array($field['type'], array(self::STORAGE, self::PICTURES, self::IMAGE)))
 				{
 					iaDebug::debug('[' . $fieldName . '] not uploaded', null, 'info');
@@ -1213,9 +1173,9 @@ class iaField extends abstractCore
 			}
 
 			// Check the UTF-8 is well formed
-			if (!is_array($_POST[$fieldName]) && !utf8_is_valid($_POST[$fieldName]))
+			if (!is_array($data[$fieldName]) && !utf8_is_valid($data[$fieldName]))
 			{
-				$_POST[$fieldName] = utf8_bad_replace($_POST[$fieldName]);
+				$data[$fieldName] = utf8_bad_replace($data[$fieldName]);
 			}
 
 			if ($field['extra_actions'])
@@ -1232,7 +1192,7 @@ class iaField extends abstractCore
 						eval($field['required_checks']);
 					}
 
-					if (empty($_POST[$fieldName]))
+					if (empty($data[$fieldName]))
 					{
 						$error = true;
 
@@ -1247,14 +1207,14 @@ class iaField extends abstractCore
 				if (self::TEXTAREA == $field['type'])
 				{
 					$item[$fieldName] = $field['use_editor']
-						? iaUtil::safeHTML($_POST[$fieldName])
-						: strip_tags($_POST[$fieldName]);
+						? iaUtil::safeHTML($data[$fieldName])
+						: strip_tags($data[$fieldName]);
 				}
 				else
 				{
-					$item[$fieldName] = is_array($_POST[$fieldName])
-						? implode(',', $_POST[$fieldName])
-						: $_POST[$fieldName];
+					$item[$fieldName] = is_array($data[$fieldName])
+						? implode(',', $data[$fieldName])
+						: $data[$fieldName];
 				}
 
 				if (self::NUMBER == $field['type'])
@@ -1268,16 +1228,22 @@ class iaField extends abstractCore
 				{
 					eval($field['required_checks']);
 				}
-				elseif ($field['required'] && empty($_POST[$fieldName]))
+				elseif ($field['required'] && empty($data[$fieldName]))
 				{
 					$error = true;
 					$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
 					$invalidFields[] = $fieldName;
 				}
 
-				if ($_POST[$fieldName])
+				$data[$fieldName] = trim($data[$fieldName]);
+
+				if (empty($data[$fieldName]))
 				{
-					$array = explode('-', $_POST[$fieldName]);
+					$item[$fieldName] = '';
+				}
+				else
+				{
+					$array = explode('-', $data[$fieldName]);
 
 					$year = (int)$array[0];
 					$month = max(1, (int)$array[1]);
@@ -1302,7 +1268,7 @@ class iaField extends abstractCore
 					{
 						eval($field['required_checks']);
 					}
-					elseif (empty($_POST[$fieldName]['url']) || in_array($_POST[$fieldName]['url'], $validProtocols))
+					elseif (empty($data[$fieldName]['url']) || in_array($data[$fieldName]['url'], $validProtocols))
 					{
 						$error = $req_error = true;
 						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
@@ -1310,13 +1276,13 @@ class iaField extends abstractCore
 					}
 				}
 
-				if (!$req_error && !empty($_POST[$fieldName]['url']) && !in_array($_POST[$fieldName]['url'], $validProtocols))
+				if (!$req_error && !empty($data[$fieldName]['url']) && !in_array($data[$fieldName]['url'], $validProtocols))
 				{
-					if (iaValidate::isUrl($_POST[$fieldName]['url']))
+					if (iaValidate::isUrl($data[$fieldName]['url']))
 					{
 						$item[$fieldName] = array();
-						$item[$fieldName]['url'] = iaSanitize::html($_POST[$fieldName]['url']);
-						$item[$fieldName]['title'] = empty($_POST[$fieldName]['title']) ? $item[$fieldName]['url'] : iaSanitize::html($_POST[$fieldName]['title']);
+						$item[$fieldName]['url'] = iaSanitize::html($data[$fieldName]['url']);
+						$item[$fieldName]['title'] = empty($data[$fieldName]['title']) ? $item[$fieldName]['url'] : iaSanitize::html($data[$fieldName]['title']);
 						$item[$fieldName] = implode('|', $item[$fieldName]);
 					}
 					else
@@ -1398,8 +1364,8 @@ class iaField extends abstractCore
 						list($filename, $error, $messages) = self::$methodName($field, $file, $path);
 
 						$fieldValue = array(
-							'title' => (isset($_POST[$fieldName . '_title'][$id]) ?
-								iaSanitize::html(substr($_POST[$fieldName . '_title'][$id], 0, 100)) : ''),
+							'title' => (isset($data[$fieldName . '_title'][$id]) ?
+								iaSanitize::html(substr($data[$fieldName . '_title'][$id], 0, 100)) : ''),
 							'path' => $filename
 						);
 
@@ -1414,7 +1380,7 @@ class iaField extends abstractCore
 					}
 				}
 
-				// If already has images, append them. Previous value can be either array or comma delimited string
+				// If already has images, append them.
 				$item[$fieldName] = array_merge($previousValues[$fieldName], $item[$fieldName]);
 				$item[$fieldName] = empty($item[$fieldName]) ? false : serialize($item[$fieldName]);
 			}
@@ -1433,7 +1399,7 @@ class iaField extends abstractCore
 			}
 		}
 
-		return array($item, $error, $messages, is_array($invalidFields) ? implode(',', $invalidFields) : '');
+		return array($item, $error, $messages, implode(',', $invalidFields));
 	}
 
 	protected static function _generateFileName($filename = '', $prefix = '', $glue = true)
@@ -1446,12 +1412,16 @@ class iaField extends abstractCore
 		$extension = '';
 		if (false !== strpos($filename, '.'))
 		{
-			// get extension
 			$extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-			// get filename
 			$filename = $prefix . pathinfo($filename, PATHINFO_FILENAME);
+
+			if (false !== strpos($filename, '.'))
+			{
+				$filename = str_replace('.', '-', $filename);
+			}
 		}
+
+		$filename.= '_' . iaUtil::generateToken(4);
 
 		return $glue ? $filename . '.' . $extension : array($filename, $extension);
 	}
@@ -1491,6 +1461,7 @@ class iaField extends abstractCore
 		list($filename, ) = self::_generateFileName($file['name'], $field['file_prefix'], false);
 
 		$imageName = $iaPicture->processImage($file, $path, $filename, $field);
+
 		if ($imageName)
 		{
 			$imageName = str_replace(IA_DS, '/', $imageName);

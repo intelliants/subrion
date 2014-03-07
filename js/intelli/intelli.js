@@ -55,8 +55,9 @@ intelli = {
 		 * @param {String} name cookie name
 		 * @param {String} value cookie value
 		 * @param {Integer} days number of days to keep cookie value for
+		 * @param {String} value path value
 		 */
-		write: function(name, value, days)
+		write: function(name, value, days, path)
 		{
 			var expires = '';
 			if (days)
@@ -66,7 +67,9 @@ intelli = {
 				expires = '; expires=' + date.toGMTString();
 			}
 
-			document.cookie = name + '=' + value + expires + '; path=/';
+			path = path || '/';
+
+			document.cookie = name + '=' + value + expires + '; path=' + path;
 		},
 
 		/**
@@ -143,11 +146,11 @@ intelli = {
 
 	notifFloatBox: function(opt)
 	{
-		var msg      = opt.msg;
-		var type     = opt.type || 'notif';
-		var pause    = opt.pause || 2000;
-		var autohide = opt.autohide;
-		var html     = '';
+		var msg = opt.msg,
+			type = opt.type || 'notif',
+			pause = opt.pause || 2000,
+			autohide = opt.autohide,
+			html = '';
 
 		// building message box
 		html += '<div id="msg_box" class="msg_box-' + type + '"><a href="#" class="close">&times;</a>';
@@ -185,7 +188,7 @@ intelli = {
 				}, pause);
 			}
 
-			$('#msg_box .close').on('click', function(e)
+			$('.close', '#msg_box').on('click', function(e)
 			{
 				e.preventDefault();
 				$('#msg_box').fadeOut(function()
@@ -231,11 +234,12 @@ intelli = {
 
 	actionFavorites: function(item_id, item, action)
 	{
-		var msg = ('add' == action) ? intelli.lang.add_favorite : intelli.lang.remove_favorite;
+		var msg = ('add' == action) ? intelli.lang.add_to_favorites : intelli.lang.remove_favorite;
 
 		if (confirm(msg))
 		{
-			$.ajax({
+			$.ajax(
+			{
 				url: 'favorites.json',
 				type: 'get',
 				data: {item: item, item_id: item_id, action: action},

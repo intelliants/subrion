@@ -2,7 +2,6 @@
 
 {if 404 == $code}
 	<div class="google_suggestions" id="google_suggestions">
-		{* google's helpful suggestions *}
 		<script type="text/javascript">
 			var GOOG_FIXURL_LANG = '{$smarty.const.IA_LANGUAGE}';
 			var GOOG_FIXURL_SITE = '{$smarty.const.IA_URL}';

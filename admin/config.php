@@ -26,13 +26,10 @@ if (isset($_POST['save']) && iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	if (!$iaAcl->checkAccess($pageName . iaAcl::SEPARATOR . iaCore::ACTION_EDIT))
 	{
-		iaView::accessDenied();
+		return iaView::accessDenied();
 	}
-	if (!defined('IA_NOUTF'))
-	{
-		iaUTF8::loadUTF8Core();
-		iaUTF8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-	}
+
+	iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 	$messages = array();
 	$error = false;
@@ -293,12 +290,14 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
+	$iaItem = $iaCore->factory('item');
+
 	$groupName = isset($iaCore->requestPath[0]) ? $iaCore->requestPath[0] : 'general';
 	$groupData = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $groupName), iaCore::getConfigGroupsTable());
 
 	if (empty($groupData))
 	{
-		iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
 	$iaView->title($groupData['title']);
@@ -309,23 +308,27 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		$activeMenu = $groupData['name'];
 
-		if ($groupData['extras'] == $this->iaCore->get('tmpl'))
+		if ($groupData['extras'] == $iaCore->get('tmpl'))
 		{
+			// template configuration options
 			$page = $iaPage->getByName('templates');
 
 			$iaView->set('group', $page['group']);
 
 			iaBreadcrumb::add($page['title'], IA_ADMIN_URL . $page['alias']);
 		}
-		else
+		elseif ($pluginPage = $iaDb->row(array('alias', 'group'), iaDb::printf("`name` = ':name' OR `name` = ':name_stats'", array('name' => $groupData['extras'])), iaPage::getAdminTable()))
 		{
-			$stmt = iaDb::printf("`name` = ':name' OR `name` = ':name_stats'", array('name' => $groupData['extras']));
-			if ($pluginPage = $iaDb->row(array('alias', 'group'), $stmt, iaPage::getAdminTable()))
-			{
-				$iaView->set('group', $pluginPage['group']);
+			// it is a package
+			$iaView->set('group', $pluginPage['group']);
 
-				iaBreadcrumb::add($groupData['title'], IA_ADMIN_URL . $pluginPage['alias']);
-			}
+			iaBreadcrumb::add($groupData['title'], IA_ADMIN_URL . $pluginPage['alias']);
+
+		}
+		elseif ($iaItem->isExtrasExist($groupData['extras'], iaItem::TYPE_PLUGIN))
+		{
+			// plugin with no admin pages
+			$iaView->set('group', 5);
 		}
 	}
 	else
@@ -359,7 +362,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		$custom = $iaCore->getCustomConfig($customUser, $customGroup);
 		$custom2 = array();
-		if ($customGroup === false)
+		if (false === $customGroup)
 		{
 			$custom2 = $iaDb->getKeyValue("SELECT d.`name`, d.`value`
 				FROM `{$iaCore->iaDb->prefix}config_custom` d, `{$iaCore->iaDb->prefix}members` a
@@ -369,8 +372,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		}
 	}
 
-	$iaItems = $iaCore->factory('item');
-	$itemsList = $iaItems->getItems();
+	$itemsList = $iaItem->getItems();
 
 	foreach ($params as $index => $item)
 	{
@@ -410,7 +412,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if ($array)
 			{
-				$enabledItems = $iaItems->getEnabledItemsForPlugin($item['extras']);
+				$enabledItems = $iaItem->getEnabledItemsForPlugin($item['extras']);
 
 				for ($i = 0; $i < count($array); $i++)
 				{

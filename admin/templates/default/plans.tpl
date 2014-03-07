@@ -127,7 +127,7 @@
 					{foreach $languages as $code => $language}
 						<div class="tab-pane{if $language@iteration == 1} active{/if}" id="tab-language-{$code}">
 							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='title'}</label>
+								<label class="col col-lg-2 control-label">{lang key='title'} {lang key='field_required'}</label>
 
 								<div class="col col-lg-10">
 									<input type="text" name="title[{$code}]" value="{if isset($plan.id)}{lang key="plan_title_{$plan.id}"}{elseif isset($smarty.post.title.$code)}{$smarty.post.title.$code}{/if}">

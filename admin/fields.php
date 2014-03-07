@@ -42,7 +42,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 				$iaGrid = $iaCore->factory('grid', iaCore::ADMIN);
 
 				$output = $iaGrid->gridRead($_GET,
-					array('name', 'item', 'group', 'fieldgroup_id', 'type', 'relation', 'length', 'order', 'delete' => 'editable'),
+					array('name', 'item', 'group', 'fieldgroup_id', 'type', 'relation', 'length', 'order', 'status', 'delete' => 'editable'),
 					array('status' => 'equal', 'id' => 'equal', 'item' => 'equal', 'relation' => 'equal')
 				);
 
@@ -122,7 +122,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 	$iaView->assign('field_item', $fieldItem);
 
-	iaCore::util();
+	$iaUtil = $iaCore->factory('util');
 
 	if ($pageAction == iaCore::ACTION_ADD || $pageAction == iaCore::ACTION_EDIT)
 	{
@@ -151,7 +151,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			'length' => iaUtil::checkPostParam('length', false),
 			'title' => iaSanitize::html(iaUtil::checkPostParam('title')),
 			'pages' => iaUtil::checkPostParam('pages', array()),
-			'values' => iaUtil::checkPostParam('values', array()),
 			'required' => iaUtil::checkPostParam('required'),
 			'use_editor' => (int)iaUtil::checkPostParam('use_editor'),
 			'empty_field' => iaSanitize::html(iaUtil::checkPostParam('empty_field')),
@@ -163,9 +162,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			'extra_actions' => iaUtil::checkPostParam('extra_actions'),
 			'link_to' => (int)iaUtil::checkPostParam('link_to'),
 			'extras' => '',
+			'values' => '',
 			'relation' => iaUtil::checkPostParam('relation', iaField::RELATION_REGULAR),
 			'parents' => isset($_POST['parents']) && is_array($_POST['parents']) ? $_POST['parents'] : array(),
-			'children' => isset($_POST['children']) && is_array($_POST['children']) ? $_POST['children'] : array()
+			'children' => isset($_POST['children']) && is_array($_POST['children']) ? $_POST['children'] : array(),
+			'status' => iaUtil::checkPostParam('status', iaCore::STATUS_ACTIVE)
 		);
 
 		$iaItem = $iaCore->factory('item');
@@ -177,7 +178,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		if (isset($_POST['data-field']))
 		{
-			iaUTF8::loadUTF8Util('ascii', 'bad', 'validation');
+			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad');
 
 			if (!$iaDb->exists(iaDb::convertIds($field['fieldgroup_id']), null, iaField::getTableGroups()))
 			{
@@ -275,13 +276,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 						}
 						$field['length'] = min(255, max(1, $field['text_length']));
 						$field['default'] = $field['text_default'];
-						unset($field['values']);
 
 						break;
 
 					case iaField::TEXTAREA:
 						$field['default'] = '';
-						$field['values'] = '';
 
 						break;
 
@@ -320,7 +319,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 								{
 									foreach ($iaCore->languages as $lang_code => $lang_title)
 									{
-										if ($lang_code != IA_LANGUAGE)
+										if ($lang_code != $iaView->language)
 										{
 											if (!isset($_values[$index]))
 											{
@@ -388,7 +387,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 							$field['file_prefix'] = iaUtil::checkPostParam('file_prefix');
 							$field['file_types'] = str_replace(' ', '', iaUtil::checkPostParam('file_types'));
 							$field['length'] = (int)iaUtil::checkPostParam('max_files', 5);
-							$field['values'] = '';
 						}
 						else
 						{
@@ -411,14 +409,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 						$field['thumb_width'] = (int)iaUtil::checkPostParam('thumb_width');
 						$field['file_prefix'] = iaUtil::checkPostParam('file_prefix');
 						$field['resize_mode'] = iaUtil::checkPostParam('resize_mode');
-						$field['values'] = '';
 
 						break;
 
 					case iaField::NUMBER:
 						$field['length'] = (int)iaUtil::checkPostParam('number_length', 8);
 						$field['default'] = iaUtil::checkPostParam('number_default');
-						$field['values'] = '';
 
 						break;
 
@@ -430,11 +426,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 						$field['thumb_height'] = (int)iaUtil::checkPostParam('pic_thumb_height');
 						$field['thumb_width'] = (int)iaUtil::checkPostParam('pic_thumb_width');
 						$field['resize_mode'] = iaUtil::checkPostParam('pic_resize_mode');
-						$field['values'] = '';
 				}
 
-				unset($field['text_length']);
-				unset($field['text_default']);
+				unset($field['text_length'], $field['text_default']);
 			}
 
 			if (empty($field['pages']) && !$field['adminonly'])
@@ -550,6 +544,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			if (empty($field['values_titles']))
 			{
 				unset($field['values_titles']);
+			}
+
+			if (!$field['editable'])
+			{
+				unset($field['status']);
 			}
 
 			foreach ($iaCore->languages as $code => $val)

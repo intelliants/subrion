@@ -1,13 +1,6 @@
 <?php
 //##copyright##
 
-if (!ini_get('safe_mode'))
-{
-	set_time_limit(180);
-}
-
-$iaDbControl = $iaCore->factory('dbcontrol', iaCore::ADMIN);
-
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
 	$action = isset($iaCore->requestPath[0]) ? $iaCore->requestPath[0] : 'sql';
@@ -33,27 +26,27 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
-	iaCore::util();
-	$iaCache = $iaCore->factory('cache');
+	$iaCore->factory('util');
+	$iaDbControl = $iaCore->factory('dbcontrol', iaCore::ADMIN);
 
 	$actions = array('sql', 'export', 'import', 'consistency', 'reset');
 	$page = isset($iaCore->requestPath[0]) && in_array($iaCore->requestPath[0], $actions) ? $iaCore->requestPath[0] : $actions[0];
 
+	$adminActions = $iaView->getValues('admin_actions');
 	foreach ($actions as $index => $action)
 	{
 		if (!$iaAcl->checkAccess($permission . $action))
 		{
-			unset($adminActions['db_' . $action]);
-			unset($actions[$index]);
+			unset($adminActions['db_' . $action], $actions[$index]);
 		}
 	}
 
-	$iaView->assign('actions', $adminActions);
+	$iaView->assign('admin_actions', $adminActions);
 	$actions = array_values($actions);
 
 	if (!$iaAcl->checkAccess($permission . $page))
 	{
-		iaView::accessDenied();
+		return iaView::accessDenied();
 	}
 
 	$resetOptions = array(
@@ -72,7 +65,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if (!is_writable($dirname))
 			{
-				$backup_is_not_writeable = iaLanguage::getf('directory_not_writable', array('directory' => $dirname));
+				$message = iaLanguage::getf('directory_not_writable', array('directory' => $dirname));
+				$iaView->assign('backup_is_not_writeable', $message);
 			}
 
 			$pageCaption = iaLanguage::get('export');
@@ -201,6 +195,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		case 'sql':
 			$pageCaption = iaLanguage::get('sql_management');
+
 			if (isset($_SESSION['queries']))
 			{
 				$iaView->assign('history', $_SESSION['queries']);
@@ -208,11 +203,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if (isset($_POST['exec_query']))
 			{
-				if (!defined('IA_NOUTF'))
-				{
-					iaUTF8::loadUTF8Core();
-					iaUTF8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-				}
+				iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 				$queryOut = '';
 				$error = false;
@@ -235,6 +226,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				else
 				{
 					$queries = explode(";\r\n", $sqlQuery);
+				}
+
+				if (!ini_get('safe_mode'))
+				{
+					set_time_limit(180);
 				}
 
 				foreach ($queries as $key => $sqlquery)
@@ -370,7 +366,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 					$messages = iaLanguage::get('upgrade_completed');
 
-					$iaCache->clearAll();
+					$iaCore->factory('cache')->clearAll();
 				}
 
 				$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
@@ -419,13 +415,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			break;
 
 		case 'reset':
-
 			$pageCaption = iaLanguage::get('reset');
 
-			$notifications = array(
-				'msg' => iaLanguage::get('reset_backup_alert'),
-				'type' => iaView::ALERT
-			);
+			$iaView->setMessages(iaLanguage::get('reset_backup_alert'), iaView::ALERT);
 
 			if (isset($_POST['reset']))
 			{
@@ -443,11 +435,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 						$iaUsers = $iaCore->factory('users');
 
 						// get current account
-						$currentMember = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`id` = :id', array('id' => iaUsers::getIdentity()->id), iaUsers::getTable());
+						$currentMember = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds(iaUsers::getIdentity()->id), iaUsers::getTable());
 
 						// truncate members table
-						$iaDBControl = $iaCore->factory('dbcontrol', iaCore::ADMIN);
-						$iaDBControl->truncate(iaUsers::getTable());
+						$iaCore->factory('dbcontrol', iaCore::ADMIN)->truncate(iaUsers::getTable());
 
 						// insert current member
 						$iaDb->insert($currentMember, null, iaUsers::getTable());
@@ -468,7 +459,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				$iaView->setMessages($messages, ($error ? iaView::ERROR : iaView::SUCCESS));
 			}
-			break;
 	}
 
 	if ($pageCaption)
@@ -518,19 +508,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 	$iaView->assign('dumpFiles', $dumpFiles);
 
-	if (isset($backup_is_not_writeable))
-	{
-		$iaView->assign('backup_is_not_writeable', $backup_is_not_writeable);
-	}
-
 	if (isset($out_sql))
 	{
 		$iaView->assign('out_sql', $out_sql);
-	}
-
-	if (isset($notifications))
-	{
-		$iaView->assign('notifications', $notifications);
 	}
 
 	$iaView->assign('database_page', $page);

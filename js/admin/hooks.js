@@ -16,6 +16,7 @@ Ext.onReady(function()
 				displayField: 'title',
 				valueField: 'value'
 			})},
+			{name: 'order', title: _t('order'), width: 50, editor: 'text'},
 			'status',
 			{name: 'filename', title: _t('filename'), width: 120, editor: 'text'},
 			{name: 'open', title: _t('edit'), icon: 'pencil', click: function(record, field)
@@ -74,7 +75,8 @@ Ext.onReady(function()
 		allow_resize: 'yes',
 		min_height: 300,
 		toolbar: 'save, search, go_to_line, |, undo, redo',
-		save_callback: 'saveHook'
+		save_callback: 'saveHook',
+		allow_toggle: false
 	});
 
 	$('#js-save-cmd').click(function()

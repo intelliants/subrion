@@ -1,6 +1,6 @@
 {if isset($categories) && $categories}
 	{assign var='num_columns' value=((isset($num_columns)) ? $num_columns : 2)}
-	{assign var=class_names value=array('span12', 'span6', 'span4', 'span3')}
+	{assign var='class_names' value=array('span12', 'span6', 'span4', 'span3')}
 
 	<div class="row-fluid cats">
 		{foreach $categories as $category}

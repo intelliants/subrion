@@ -114,38 +114,12 @@ intelli.admin = function()
 			currentPage = currentPage || 'plugins';
 
 			$.ajax({
-				data: {action: 'menu'},
+				data: {action: 'menu', page: currentPage},
 				success: function(response)
 				{
-					var menus = response.menus;
-					$('.nav-main li').not(':first').each(function()
-					{
-						var name = $(this).attr('id').split('menu-section-')[1];
-						var html = '';
-						if (menus[name])
-						{
-							var items = menus[name].items;
-							if (items && items.length > 0)
-							{
-								for (var i = 0; i < items.length; i++)
-								{
-									html += items[i].name
-										? '<li' + (currentPage == items[i].name ? ' class="active"' : '') + '>'
-											+ '<a href="' + items[i].url + '"' + (undefined === items[i].attr ? '' : items[i].attr) + '>' + items[i].title + '</a>'
-											+ (items[i].config ? '<a href="configuration/' + items[i].config + '/" class="nav-sub__config" title="' + _t('settings') + '"><i class="i-cog"></i></a>' : '')
-											+ '</li>'
-										: '<li class="heading">' + items[i].title + '</li>';
-								}
-							}
-
-							$('#nav-sub-' + name).html(html);
-						}
-						if ('' == html)
-						{
-							$('#menu-section-' + name).hide();
-							$(this).hide();
-						}
-					});
+					var $menuSection = $('#panel-center');
+					$('ul:not(:first)', $menuSection).remove();
+					$menuSection.append(response.menus);
 				},
 				type: 'POST',
 				url: intelli.config.admin_url + '/index/read.json'

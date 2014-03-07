@@ -15,8 +15,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
 	protected $_table;
 
-	public $ver_data = '';
-
+	public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8';
 	public $prefix;
 
 
@@ -36,12 +35,12 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		$this->_link = mysqli_init();
 		if (!$this->_link)
 		{
-			die('mysqli_init failed');
+			die('mysqli_init failed.');
 		}
 
 		if (!mysqli_options($this->_link, MYSQLI_OPT_CONNECT_TIMEOUT, 5))
 		{
-			die('Setting MYSQLI_OPT_CONNECT_TIMEOUT failed');
+			die('Setting MYSQLI_OPT_CONNECT_TIMEOUT failed.');
 		}
 
 		mysqli_real_connect($this->_link, INTELLI_DBHOST, INTELLI_DBUSER, INTELLI_DBPASS, INTELLI_DBNAME, INTELLI_DBPORT);
@@ -54,16 +53,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		// set active database again
 		mysqli_select_db($this->_link, INTELLI_DBNAME);
 
-		$mysqli_ver = version_compare('4.1', $this->_link->server_version, '<=') ? '41' : '40';
-		if ($mysqli_ver > 40)
-		{
-			$this->query("SET NAMES 'utf8'");
-			$this->ver_data = 'ENGINE = MyISAM DEFAULT CHARSET = utf8';
-		}
-		else
-		{
-			$this->ver_data = 'TYPE = MyISAM';
-		}
+		$this->query("SET NAMES 'utf8'");
 	}
 
 	/**
@@ -656,7 +646,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			return $result;
 		}
 
-		$field	= str_replace('`', '', $field);
+		$field = str_replace('`', '', $field);
 		foreach ($rows as $row)
 		{
 			$result[] = $row[$field];
@@ -1138,7 +1128,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 				switch (true) // an order of statements is important!
 				{
 					case is_numeric($value):
-						$pattern = '`%s` = %s';
+//						$pattern = '`%s` = %s';
 						break;
 					case is_bool($value):
 						$value = $value ? 1 : 0;

@@ -86,3 +86,40 @@
   margin-bottom: 0;
   line-height: 1.3;
 }
+
+.list-group-item-info {
+  background: @state-info-bg;
+  color: @state-info-text;
+}
+
+// Accordion style
+//---------------------------
+
+.list-group-accordion {
+  .list-group-item-heading {
+    margin-bottom: 0;
+  }
+
+  .list-group-item.fields-list {
+    border-top: 0 none;
+    .checkbox {
+      padding-top: 0;
+    }
+  }
+
+  // .list-group-item + .fields-list {
+  //   display: none;
+  // }
+
+  .list-group-item.active,
+  .list-group-item.active:hover,
+  .list-group-item.active:focus {
+    color: @list-group-link-heading-color;
+    background-color: @list-group-hover-bg;
+    border-color: @list-group-border;
+  }
+
+  // .list-group-item.active + .fields-list {
+  //   display: block;
+  // }
+}

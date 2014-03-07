@@ -246,7 +246,7 @@ Ext.onReady(function()
 
 	$('.js-remove-lang-cmd').each(function()
 	{
-		$(this).click(function(e)
+		$(this).on('click', function(e)
 		{
 			e.preventDefault();
 
@@ -269,22 +269,24 @@ Ext.onReady(function()
 		});
 	});
 
-	if (Ext.get('comparison'))
+	if (Ext.get('js-comparison-grid'))
 	{
-		var languagesStore = [];
-		var j = 0;
-		for (var i in intelli.languages)
+		var comparisonRenderer = function(value, metadata, row)
 		{
-			languagesStore[j++] = [i, intelli.languages[i]];
-		}
+			if (null == value)
+			{
+				value = '<i><small>&lt;does not exist&gt;</small></i>';
+			}
+
+			return value;
+		};
 
 		intelli.languageComparison = new IntelliGrid(
 		{
-			target: 'comparison',
 			columns: [
 				{name: 'key', title: _t('key'), width: 200},
-				{name: 'lang1', title: _t('default_language'), width: 300, renderer: Ext.util.Format.htmlEncode},
-				{name: 'value', title: _t('language'), width: 1, editor: 'text-wide', renderer: Ext.util.Format.htmlEncode},
+				{name: 'lang1', title: _t('default_language'), width: 1, editor: 'text-wide', renderer: comparisonRenderer},
+				{name: 'lang2', title: _t('language'), width: 1, editor: 'text-wide', renderer: comparisonRenderer},
 				{name: 'category', title: _t('category'), width: 100, editor: Ext.create('Ext.form.ComboBox',
 				{
 					typeAhead: true,
@@ -293,35 +295,105 @@ Ext.onReady(function()
 					value: 'admin',
 					displayField: 'title',
 					valueField: 'value'
-				})},
-				'delete'
+				})}
 			],
+			events: {
+				edit: function(editor, e)
+				{
+					if (e.value == e.originalValue)
+					{
+						return;
+					}
+
+					var data = {key: e.record.get('key')};
+					var fieldName = e.field;
+
+					if ('lang1' == fieldName || 'lang2' == fieldName)
+					{
+						data['lang'] = intelli.languageComparison.store.getProxy().extraParams[fieldName];
+						fieldName = 'value';
+					}
+
+					data[fieldName] = e.value;
+
+					intelli.gridHelper.httpRequest(intelli.languageComparison, data);
+				}
+			},
 			storeParams: {get: 'comparison'},
+			target: 'js-comparison-grid',
 			texts: {delete_multiple: _t('are_you_sure_to_delete_selected_phrases')},
 			url: intelli.config.admin_url + '/language/'
 		}, false);
 
-		intelli.languageComparison.toolbar = Ext.create('Ext.Toolbar', {items:[
+		var tb1 = Ext.create('Ext.Toolbar', {items:[
 		{
-			displayField: 'title',
-			emptyText: _t('default_language'),
-			listeners: intelli.gridHelper.listener.specialKey,
+			fieldLabel: _t('languages'),
+			xtype: 'combo',
+			allowBlank: false,
+			editable: false,
 			id: 'lang1',
-			name: 'lang1',
+			listeners: {
+				select: function()
+				{
+					var selectedLanguage = this.getValue();
+					languagesStore.each(function(record)
+					{
+						if (record.get('value') != selectedLanguage)
+						{
+							Ext.getCmp('lang2').setValue(record.get('value'));
+							return;
+						}
+					});
+				}
+			},
+			value: intelli.config.lang,
 			store: languagesStore,
-			valueField: 'code',
-			xtype: 'combo'
-		},{
 			displayField: 'title',
-			emptyText: _t('language'),
-			listeners: intelli.gridHelper.listener.specialKey,
-			id: 'lang2',
-			name: 'lang2',
-			store: languagesStore,
-			valueField: 'code',
-			xtype: 'combo'
+			valueField: 'value'
 		},{
+			xtype: 'combo',
+			allowBlank: false,
+			editable: false,
+			id: 'lang2',
+			store: languagesStore,
+			displayField: 'title',
+			valueField: 'value'
+		},'->',{
+			handler: function()
+			{
+				var legendPanel = Ext.getCmp('legend_panel');
+
+				if (!legendPanel)
+				{
+					var $target = $('#js-legend-panel');
+					var content = $target.html();
+
+					$target.html('').css('display', 'inline');
+
+					legendPanel = new Ext.FormPanel(
+					{
+						frame: true,
+						title: _t('legend'),
+						bodyStyle: 'margin-bottom: 20px; padding: 5px 5px 0',
+						renderTo: 'js-legend-panel',
+						id: 'legend_panel',
+						items: [{html: content, xtype: 'panel'}]
+					});
+
+					legendPanel.show();
+
+					return
+				}
+
+				legendPanel.getEl().toggle();
+			},
+			text: '<i class="i-chevron-up"></i> ' + _t('legend')
+		}]});
+
+		var tb2 = Ext.create('Ext.Toolbar', {items:[
+		{
 			emptyText: _t('value'),
+			fieldLabel: _t('search'),
 			listeners: intelli.gridHelper.listener.specialKey,
 			id: 'value',
 			name: 'value',
@@ -353,21 +425,29 @@ Ext.onReady(function()
 		},{
 			handler: function()
 			{
-				var language1 = Ext.getCmp('lang1').getValue();
-				var language2 = Ext.getCmp('lang2').getValue();
+				var cmb1 = Ext.getCmp('lang1');
+				var cmb2 = Ext.getCmp('lang2');
 
-				if ('' != language1 || '' != language2)
+				if ('' != cmb1.getValue() || '' != cmb2.getValue())
 				{
+					var language1 = cmb1.getValue();
+					var language2 = cmb2.getValue();
+
 					// notify if comparing same languages
 					if (language1 == language2)
 					{
-						intelli.notifFloatBox({msg: _t('error_compare_same_languages'), type: 'error', autohide: true, pause: 5000});
+						intelli.notifFloatBox({msg: _t('error_compare_same_languages'), type: 'error', autohide: true});
 
 						return false;
 					}
 
+					var columns = intelli.languageComparison.grid.getView().getGridColumns();
+					columns[1].setText('&quot;' + cmb1.getRawValue().toUpperCase() + '&quot;');
+					columns[2].setText('&quot;' + cmb2.getRawValue().toUpperCase() + '&quot;');
+
 					intelli.languageComparison.store.getProxy().extraParams.lang1 = language1;
 					intelli.languageComparison.store.getProxy().extraParams.lang2 = language2;
+
 					intelli.languageComparison.store.getProxy().extraParams.key = Ext.getCmp('value').getValue();
 					intelli.languageComparison.store.getProxy().extraParams.category = Ext.getCmp('category').getValue();
 					intelli.languageComparison.store.getProxy().extraParams.plugin = Ext.getCmp('plugin').getValue();
@@ -376,17 +456,21 @@ Ext.onReady(function()
 				}
 			},
 			id: 'fltBtn',
-			text: '<i class="i-search"></i> ' + _t('compare')
+			text: '<i class="i-search"></i> ' + _t('search')
 		},{
 			handler: function()
 			{
+				var langSelector = Ext.getCmp('lang1');
+				langSelector.reset();
+				langSelector.fireEvent('select');
+
 				Ext.getCmp('value').reset();
 				Ext.getCmp('category').reset();
 				Ext.getCmp('plugin').reset();
 
 				intelli.languageComparison.store.getProxy().extraParams = {
 					get: 'comparison',
-					lang1: Ext.getCmp('lang1').getValue(),
+					lang1: langSelector.getValue(),
 					lang2: Ext.getCmp('lang2').getValue()
 				};
 
@@ -395,6 +479,27 @@ Ext.onReady(function()
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
 
-		intelli.languageComparison.init();
+		intelli.languageComparison.toolbar = Ext.create('Ext.Panel', {items: [tb1, tb2]});
+		Ext.getCmp('lang1').fireEvent('select');
+		intelli.languageComparison.init(false);
+
+		Ext.getCmp('fltBtn').getEl().dom.click();
+
+		intelli.languageComparison.grid.getView().getRowClass = function(record, rowIndex, rowParams, store)
+		{
+			var phrase1 = record.get('lang1'),
+				phrase2 = record.get('lang2');
+
+			if (null === phrase2 || null === phrase1)
+			{
+				return 'grid-row-inactive';
+			}
+			if (phrase1 == phrase2)
+			{
+				return 'grid-row-highlight';
+			}
+
+			return '';
+		};
 	}
 });

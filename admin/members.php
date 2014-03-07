@@ -188,11 +188,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	$iaField = $iaCore->factory('field');
 
-	if ((!isset($_GET['id']) || (int)$_GET['id'] == 0) && iaCore::ACTION_EDIT == $pageAction)
-	{
-		iaUtil::go_to(IA_ADMIN_URL . 'members/add/');
-	}
-
 	$error = false;
 	$messages = array();
 
@@ -200,11 +195,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		$iaCore->startHook('adminAddMemberValidation');
 
-		if (!defined('IA_NOUTF'))
-		{
-			iaUTF8::loadUTF8Core();
-			iaUTF8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-		}
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 		if (iaCore::ACTION_EDIT == $pageAction)
 		{
@@ -239,7 +230,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		{
 			if (isset($member['status']))
 			{
-				if ($iaDb->one_bind('status', '`id` = :id', array('id' => (int)$_GET['id'])) == $member['status'])
+				if ($iaDb->one('status', iaDb::convertIds((int)$_GET['id'])) == $member['status'])
 				{
 					unset($member['status']);
 				}
@@ -386,7 +377,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					? $_POST
 					: $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($_GET['id']));
 
-				if (1 == $adminsCount)
+				if (1 == $adminsCount && iaUsers::MEMBERSHIP_ADMINISTRATOR == $member['usergroup_id'])
 				{
 					unset($member['status']);
 				}
@@ -411,6 +402,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$plans = $iaPlans->getPlans($iaUsers->getItemName());
 
 			$iaView->assign('item', $member);
+
 			$iaView->assign('sections', $sections);
 			$iaView->assign('statuses', array(iaCore::STATUS_ACTIVE, iaCore::STATUS_APPROVAL, iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED));
 			$iaView->assign('plans', $plans);

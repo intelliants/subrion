@@ -265,7 +265,7 @@ class iaPatchApplier
 		{
 			foreach ($this->_log as $entry)
 			{
-				$output .= '' . strtoupper($entry['type']) . ': ' . $entry['message'] . PHP_EOL;
+				$output .= strtoupper($entry['type']) . ' ' . $entry['message'] . PHP_EOL;
 			}
 		}
 

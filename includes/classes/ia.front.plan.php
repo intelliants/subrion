@@ -92,6 +92,7 @@ class iaPlan extends abstractCore
 	public function getPlanById($planId)
 	{
 		$plan = null;
+
 		if (isset($planId) && !is_array($planId))
 		{
 			$stmt = iaDb::printf("`status` = ':status' AND `id` = :id", array(
@@ -105,6 +106,7 @@ class iaPlan extends abstractCore
 				$plan['description'] = iaLanguage::get('plan_description_' . $plan['id']);
 			}
 		}
+
 		return $plan;
 	}
 
@@ -153,7 +155,7 @@ class iaPlan extends abstractCore
 		$iaDb = &$this->iaDb;
 
 		$ret = false;
-		$funds = iaUsers::hasIdentity() ? $iaDb->one_bind('funds', '`id`= :user', array('user' => iaUsers::getIdentity()->id), iaUsers::getTable()) : 0;
+		$funds = iaUsers::hasIdentity() ? $iaDb->one_bind('funds', '`id` = :user', array('user' => iaUsers::getIdentity()->id), iaUsers::getTable()) : 0;
 		$balance = $funds - $aTransaction['total'];
 		if ($balance >= 0)
 		{
@@ -209,18 +211,14 @@ class iaPlan extends abstractCore
 			// initiating class to perform item specific actions when plan is assigned
 			$class_name = ucfirst(substr($item, 0, -1));
 			$iaItems = $this->iaCore->factory('item');
-			if ($item == 'members')
-			{
-				$iaItem = $this->iaCore->factory('users');
-			}
-			else
-			{
-				$iaItem = $this->iaCore->factoryPackage($class_name, $iaItems->getPackageByItem($item));
+			$iaItem = ($item == 'members')
+				? $this->iaCore->factory('users')
+				: $this->iaCore->factoryPackage($class_name, $iaItems->getPackageByItem($item));
 
-			}
 			if ($iaItem && method_exists($iaItem, 'postPayment'))
 			{
 				$aPlan = $this->getPlanById($aTransaction['plan_id']);
+
 				return $iaItem->postPayment($aPlan, $aTransaction);
 			}
 		}
@@ -228,31 +226,6 @@ class iaPlan extends abstractCore
 		return false;
 	}
 
-	/**
-	 * Call this function after external payment gateway confirms payment
-	 *
-	 * @param array $aTransaction
-	 * @param string $aGateway payment gateway name
-	 */
-
-	// COMMENTED OUT
-	// FIXME: is it actually used?
-/*	function externalOK($aTransaction, $aGateway)
-	{
-		// update transaction status
-		$trans = array('status' => 'passed', 'gateway_name' => $aGateway, 'order_number' => $aTransaction['order_number']);
-
-		// change member_id if different account makes the payment
-		if (!empty($_SESSION['user']['id']) && $_SESSION['user']['id'] != $aTransaction['member_id'])
-		{
-			$trans['member_id'] = $_SESSION['user']['id'];
-		}
-
-		$this->iaDb->update($trans, "`id` = '{$aTransaction['id']}'", array('date' => 'NOW()'), 'transactions');
-
-		$this->enableItem($aTransaction);
-	}
-*/
 	/**
 	 * Mark item as sponsored and set sponsored expire date
 	 */

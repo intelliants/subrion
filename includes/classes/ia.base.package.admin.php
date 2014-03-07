@@ -165,12 +165,19 @@ abstract class abstractPackageAdmin extends iaGrid
 			return false;
 		}
 
+		$currentData = $this->getById($id);
+
+		if (empty($currentData))
+		{
+			return false;
+		}
+
 		$result = (bool)$this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
 
 		if ($result)
 		{
 			$this->_writeLog(iaCore::ACTION_EDIT, $itemData, $id);
-			$this->updateCounters($id, $itemData, iaCore::ACTION_EDIT);
+			$this->updateCounters($id, $itemData, iaCore::ACTION_EDIT, $currentData);
 		}
 
 		return $result;
@@ -293,7 +300,7 @@ abstract class abstractPackageAdmin extends iaGrid
 		return $result;
 	}
 
-	public function updateCounters($itemId, array $itemData, $action)
+	public function updateCounters($itemId, array $itemData, $action, $previousData = null)
 	{
 		// within final class, the counters update routines should be placed here
 	}

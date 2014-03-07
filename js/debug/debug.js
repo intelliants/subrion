@@ -5,7 +5,7 @@ u[o]&&(delete u[o],c?delete n[l]:typeof n.removeAttribute!==i?n.removeAttribute(
 
 // jQuery 1.10.2 END
 
-$d = jQuery.noConflict();
+$d = jQuery.noConflict(true);
 
 function debugSetCookie(name, value, expires, path, domain, secure)
 {

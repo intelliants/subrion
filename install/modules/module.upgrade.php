@@ -2,7 +2,7 @@
 //##copyright##
 
 $ia_version = true;
-include IA_HOME . 'system.php';
+include IA_HOME . 'index.php';
 
 $iaOutput->layout()->title = 'Upgrade Wizard';
 
@@ -147,6 +147,10 @@ switch ($step)
 			//
 
 			$iaOutput->log = $textLog;
+
+			// clean up cache files
+			$tempFolder = IA_HOME . 'tmp' . IA_DS;
+			iaHelper::cleanUpDirectoryContents($tempFolder);
 		}
 		catch (Exception $e)
 		{

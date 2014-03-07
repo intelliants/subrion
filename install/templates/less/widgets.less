@@ -485,3 +485,21 @@ li.dc-form {
   }
 
 }
+
+
+// responsive columns in configs
+
+@media (min-width: 1200px) and (max-width: 1400px) {
+  .widget-content {
+    > .row > .col-lg-5,
+    > .row > .col-lg-4 {
+      width: 50%;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .widget-content .widget-annotation {
+    margin-top: 10px;
+  }
+}

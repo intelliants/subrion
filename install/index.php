@@ -4,7 +4,7 @@
 define('INSTALL', 'install');
 define('IA_DS', '/');
 define('IA_URL_DELIMITER', '/');
-define('IA_HOME', str_replace(array(INSTALL . IA_DS, '\\'), array('', IA_DS), dirname($_SERVER['SCRIPT_FILENAME']) . IA_DS));
+define('IA_HOME', str_replace(array(INSTALL . IA_DS, '\\'), array('', IA_DS), dirname(__FILE__) . IA_DS));
 define('IA_INSTALL', IA_HOME . INSTALL . IA_DS);
 
 // installation files can only be in 'install' directory!
@@ -26,7 +26,7 @@ if (version_compare(PHP_VERSION, '5.3.0', '<') && function_exists('set_magic_quo
 	@set_magic_quotes_runtime(0);
 }
 
-$scriptFolder = trim(str_replace(INSTALL . IA_URL_DELIMITER . 'system.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER);
+$scriptFolder = trim(str_replace(INSTALL . IA_URL_DELIMITER . 'index.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER);
 $scriptFolder = empty($scriptFolder) ? '' : $scriptFolder . IA_URL_DELIMITER;
 
 define('URL_HOME', 'http://' . $_SERVER['SERVER_NAME'] . IA_URL_DELIMITER . $scriptFolder);

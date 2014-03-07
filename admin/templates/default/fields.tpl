@@ -158,7 +158,31 @@
 
 					<div class="col col-lg-4">
 						{foreach $parents as $field_item => $item_list}
-							<div class="field_pages pages" item="{$field_item}"{if $field.item != $field_item} style="display: none;"{/if}>
+							<div class="js-dependent-fields-list" data-item="{$field_item}"{if $field.item != $field_item} style="display: none;"{/if}>
+								<div class="list-group list-group-accordion">
+									{foreach $item_list as $field_name => $elements}
+										<a href="#" class="list-group-item{if $elements@first} active{/if}">
+											<p class="list-group-item-heading"><b>{lang key='field_'|cat:$field_name} {lang key='field_values'}</b></p>
+										</a>
+										<div class="list-group-item fields-list"{if !$elements@first} style="display:none;"{/if}>
+											{foreach $elements as $element}
+												<div class="checkbox">
+													<label>
+														<input type="checkbox" value="1"{if isset($field.parents[$field_item][$field_name][$element])} checked="checked"{/if} name="parents[{$field_item}][{$field_name}][{$element}]">
+														{lang key="field_{$field_name}_{$element}"}
+													</label>
+												</div>
+											{/foreach}
+										</div>
+									{foreachelse}
+										<span class="list-group-item list-group-item-info">{lang key='no_parent_fields'}</span>
+									{/foreach}
+								</div>
+							</div>
+						{/foreach}
+
+						{*foreach $parents as $field_item => $item_list}
+							<div class="js-dependent-fields-list pages" data-item="{$field_item}"{if $field.item != $field_item} style="display: none;"{/if}>
 								{foreach $item_list as $field_name => $elements}
 									<fieldset class="list">
 										<legend><span class="text-up">{lang key='field_'|cat:$field_name}</span> {lang key='field_values'}</legend>
@@ -177,7 +201,7 @@
 									<div>{lang key='no_parent_fields'}</div>
 								{/foreach}
 							</div>
-						{/foreach}
+						{/foreach*}
 					</div>
 				</div>
 
@@ -292,10 +316,10 @@
 							<div class="col col-lg-4">
 								<div class="row">
 									<div class="col col-lg-6">
-										<input type="text" name="image_width" value="{if isset($field.image_width)}{$field.image_width}{elseif isset($smarty.post.image_width)}{$smarty.post.image_width}{/if}">
+										<input type="text" name="image_width" value="{if isset($field.image_width)}{$field.image_width}{elseif isset($smarty.post.image_width)}{$smarty.post.image_width}{else}900{/if}">
 									</div>
 									<div class="col col-lg-6">
-										<input type="text" name="image_height" value="{if isset($field.image_height)}{$field.image_height}{elseif isset($smarty.post.image_height)}{$smarty.post.image_height}{/if}">
+										<input type="text" name="image_height" value="{if isset($field.image_height)}{$field.image_height}{elseif isset($smarty.post.image_height)}{$smarty.post.image_height}{else}600{/if}">
 									</div>
 								</div>
 							</div>
@@ -306,10 +330,10 @@
 							<div class="col col-lg-4">
 								<div class="row">
 									<div class="col col-lg-6">
-										<input type="text" name="thumb_width" value="{if isset($field.thumb_width)}{$field.thumb_width}{elseif isset($smarty.post.thumb_width)}{$smarty.post.thumb_width}{/if}">
+										<input type="text" name="thumb_width" value="{if isset($field.thumb_width)}{$field.thumb_width}{elseif isset($smarty.post.thumb_width)}{$smarty.post.thumb_width}{else}{$config.thumb_w}{/if}">
 									</div>
 									<div class="col col-lg-6">
-										<input type="text" name="thumb_height" value="{if isset($field.thumb_height)}{$field.thumb_height}{elseif isset($smarty.post.thumb_height)}{$smarty.post.thumb_height}{/if}">
+										<input type="text" name="thumb_height" value="{if isset($field.thumb_height)}{$field.thumb_height}{elseif isset($smarty.post.thumb_height)}{$smarty.post.thumb_height}{else}{$config.thumb_h}{/if}">
 									</div>
 								</div>
 							</div>
@@ -356,7 +380,7 @@
 
 						<div class="col col-lg-4">
 							{if isset($field.values) && $field.values}
-								{foreach $field.values as $key => $value name='values'}
+								{foreach $field.values as $key => $value}
 									<div id="item-value-{$value}" class="wrap-row wrap-block" data-value-id="{$value}">
 										<div class="row">
 											<label class="col col-lg-4 control-label">{lang key='key'} <i>({lang key='not_required'})</i></label>
@@ -397,7 +421,7 @@
 										<div class="row">
 											<label class="col col-lg-4 control-label">{lang key='key'} <i>({lang key='not_required'})</i></label>
 											<div class="col col-lg-8">
-												<input type="text" name="keys[]" value="">
+												<input type="text" name="keys[]">
 											</div>
 										</div>
 										{foreach $languages as $code => $language}
@@ -405,10 +429,10 @@
 												<label class="col col-lg-4 control-label">{lang key='item_value'} <span class="label label-info">{$language}</span></label>
 												<div class="col col-lg-8">
 													{if $code == $smarty.const.IA_LANGUAGE}
-														<input type="text" class="fvalue" name="values[]" value="">
+														<input type="text" class="fvalue" name="values[]">
 													{else}
-														<input type="text" name="lang_values[{$code}][]" value="">
-													{/if}	
+														<input type="text" name="lang_values[{$code}][]">
+													{/if}
 												</div>
 											</div>
 										{/foreach}
@@ -538,6 +562,25 @@
 					</div>
 				</div>
 			</div>
+
+			{if isset($field.status)}
+			<div class="wrap-group">
+				<div class="wrap-group-heading">
+					<h4>{lang key='system_fields'}</h4>
+				</div>
+
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='status'}</label>
+
+					<div class="col col-lg-4">
+						<select name="status">
+							<option value="active"{if isset($field.status) && $field.status == 'active'} selected="selected"{/if}>{lang key='active'}</option>
+							<option value="inactive"{if isset($field.status) && $field.status == 'inactive'} selected="selected"{/if}>{lang key='inactive'}</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			{/if}
 		</div>
 
 		<div class="form-actions inline">

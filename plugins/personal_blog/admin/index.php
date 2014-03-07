@@ -64,18 +64,18 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		{
 			if (!isset($_GET['id']))
 			{
-				iaView::errorPage(iaView::ERROR_NOT_FOUND);
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 			}
 
 			$id = (int)$_GET['id'];
 			$blogEntry = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
 			if (empty($blogEntry))
 			{
-				iaView::errorPage(iaView::ERROR_NOT_FOUND);
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 			}
 		}
 
-		iaCore::util();
+		$iaCore->factory('util');
 
 		$blogEntry = array(
 			'id' => isset($id) ? $id : 0,
@@ -95,11 +95,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		if (isset($_POST['save']))
 		{
-			if (!defined('IA_NOUTF'))
-			{
-				iaUtf8::loadUTF8Core();
-				iaUtf8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-			}
+			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 			$error = false;
 			$messages = array();

@@ -31,7 +31,14 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			break;
 
 		case 'menu':
-			$iaView->assign('menus', $iaView->getAdminMenu());
+			$iaView->loadSmarty(true);
+
+			$page = $iaCore->factory('page', iaCore::ADMIN)->getByName($_POST['page']);
+
+			$iaView->iaSmarty->assign('menu', $iaView->getAdminMenu());
+			$iaView->iaSmarty->assign('page', array('active_menu' => $page['name'], 'group' => $page['group'])); // trick to get the specified page marked as active
+
+			$iaView->assign('menus', $iaView->iaSmarty->fetch('menu.tpl'));
 	}
 }
 
@@ -42,7 +49,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	switch ($iaView->name())
 	{
 		case 'phpinfo':
-
 			ob_start();
 			phpinfo();
 			$content = ob_get_contents();
@@ -77,10 +83,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			break;
 
 		case 'clear_cache':
-
 			$iaCore->factory('cache')->clearGlobalCache();
 
-			$this->iaCore->iaView->setMessages(iaLanguage::get('cache_dropped'), iaView::SUCCESS);
+			$iaView->setMessages(iaLanguage::get('cache_dropped'), iaView::SUCCESS);
 
 			if (isset($_SERVER['HTTP_REFERER']))
 			{
@@ -90,7 +95,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			break;
 
 		case 'sitemap':
-
 			$iaSitemap = $iaCore->factory('sitemap', iaCore::ADMIN);
 
 			$iaSitemap->generate()
@@ -269,10 +273,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$data = $iaCore->factory('users')->getOnlineMembers();
 				$iaView->assign('online_members', $data);
 			}
-
-			// here we do populate the dashboard quick links
-			$data = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`type` = 'dashboard' ORDER BY `order` DESC", null, null, 'admin_actions');
-			$iaView->assign('dashboard', $data);
 
 			if ($iaCore->get('check_for_updates'))
 			{

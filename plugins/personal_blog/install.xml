@@ -4,9 +4,9 @@
 	<summary>Allows to create a personal admin blog.</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.1.0</version>
-	<date>2013-11-18</date>
-	<compatibility>3.1.0</compatibility>
+	<version>3.1.1</version>
+	<date>2013-12-27</date>
+	<compatibility>3.1.2</compatibility>
 	<status>active</status>
 
 	<actions>
@@ -44,7 +44,7 @@
 
 	<configgroup name="blog">Blog</configgroup>
 
-	<config group="blog" name="blog_plugin" type="divider" value="General">General</config>
+	<config group="blog" name="blog_plugin" type="divider">General</config>
 	<config group="blog" name="blog_display_grid" type="radio" values="1,0" description="Display blog as image grid">0</config>
 	<config group="blog" name="blog_number_block" type="text" description="Number of displayed entries in Blogroll entries">6</config>
 	<config group="blog" name="blog_number_new_block" type="text" description="Number of displayed entries in New Blog Posts block">3</config>

@@ -66,7 +66,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			{
 				if (!isset($_GET['id']))
 				{
-					iaView::errorPage(iaView::ERROR_NOT_FOUND);
+					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
 
 				$group = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($_GET['id']));
@@ -104,8 +104,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				$languages = $iaCore->languages;
 
-				iaCore::util();
-				iaUTF8::loadUTF8Util('ascii', 'bad', 'validation');
+				iaUtil::loadUTF8Functions('ascii', 'bad', 'validation');
 
 				if (iaCore::ACTION_ADD == $pageAction)
 				{

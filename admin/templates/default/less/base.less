@@ -124,28 +124,31 @@ a:focus {
 		text-align: center;
 		font-size: 11px;
 		border-top: 1px solid @brand-border-color;
-		padding-top: 20px;
+		padding: 20px 0;
 		color: @main-nav-link-color;
+	}
 
-		.social-links {
-			margin-bottom: 20px;
-			
-			a {
-				font-size: 20px;
+	.social-links {
+		margin-bottom: 20px;
+		border-top: 1px solid @brand-border-color;
+		padding: 20px 0;
+		text-align: center;
+		
+		a {
+			font-size: 20px;
 
-				&:hover {
-					text-decoration: none;
-				}
+			&:hover {
+				text-decoration: none;
+			}
 
-				&.social-links__twitter:hover {
-					color: #44ccf6;
-				}
-				&.social-links__facebook:hover {
-					color: #3b5998;
-				}
-				&.social-links__googleplus:hover {
-					color: #d13f2d;
-				}
+			&.social-links__twitter:hover {
+				color: #44ccf6;
+			}
+			&.social-links__facebook:hover {
+				color: #3b5998;
+			}
+			&.social-links__googleplus:hover {
+				color: #d13f2d;
 			}
 		}
 	}
@@ -188,6 +191,13 @@ a:focus {
 					background: @sub-nav-link-hover-color;
 					text-decoration: none;
 				}
+			}
+
+			> span {
+				padding: 5px 10px;
+				display: block;
+				color: darken(@sub-nav-link-color, 25%);
+				margin-right: -30px;
 			}
 
 			> .nav-sub__config {
@@ -425,6 +435,7 @@ a:focus {
 
 	&__image {
 		position: relative;
+		padding: 20px;
 
 		> a {
 			display: block;

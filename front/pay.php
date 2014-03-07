@@ -18,15 +18,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	if (empty($transactionId))
 	{
-		iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
 	$iaTransaction = $iaCore->factory('transaction');
 
 	$transaction = $iaTransaction->getById($transactionId);
+
 	if (empty($transaction))
 	{
-		iaView::errorPage(iaView::ERROR_NOT_FOUND, iaLanguage::get('no_transaction'));
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND, iaLanguage::get('no_transaction'));
 	}
 
 	$tplFile = 'pay';
@@ -45,12 +46,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 
 	$action = isset($iaCore->requestPath[1]) ? iaSanitize::sql($iaCore->requestPath[1]) : null;
-
-	// get payment gateways list
 	$gateways = $iaTransaction->getPaymentGateways();
-
-	// user cannot add funds for own account via internal payment system
 	$balance = (iaUsers::hasIdentity() && 'balance' == $transaction['item'] && iaUsers::getIdentity()->id == $transaction['item_id']);
+
 	$iaView->assign('balance', $balance);
 
 	// if account has enough funds to pay internally
@@ -176,7 +174,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 							{
 								if (!$transaction)
 								{
-									iaView::errorPage(iaView::ERROR_FORBIDDEN, $messages);
+									return iaView::errorPage(iaView::ERROR_FORBIDDEN, $messages);
 								}
 
 								if (in_array($transaction['status'], array(iaTransaction::PASSED, iaTransaction::PENDING)))
@@ -209,13 +207,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 								}
 								else
 								{
-									iaView::errorPage(iaView::ERROR_NOT_FOUND, $messages);
+									return iaView::errorPage(iaView::ERROR_NOT_FOUND, $messages);
 								}
 							}
 						}
 						else
 						{
-							iaView::errorPage(iaView::ERROR_NOT_FOUND);
+							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 						}
 					}
 				}

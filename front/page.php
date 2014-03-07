@@ -66,9 +66,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$iaPage = $iaCore->factory('page', iaCore::FRONT);
 	$page = $iaPage->getByName($name, $preview ? iaCore::STATUS_DRAFT : iaCore::STATUS_ACTIVE);
-	if (empty($page) && !$previewMode)
+
+	if (!$previewMode && (empty($page) || $iaCore->requestPath))
 	{
-		iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
 	// check read permissions

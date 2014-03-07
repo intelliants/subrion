@@ -39,9 +39,6 @@ class iaPlan extends abstractCore
 	 */
 	public function update($plan, $ids)
 	{
-		unset($plan['title']);
-		unset($plan['description']);
-
 		if (empty($plan))
 		{
 			$this->setMessage(iaLanguage::getf('key_parameter_is_empty', array('key' => 'Plan')));
@@ -56,9 +53,9 @@ class iaPlan extends abstractCore
 			return false;
 		}
 
-		$where = $this->iaDb->convertIds($ids);
+		unset($plan['title'], $plan['description']);
 
-		$this->iaDb->update($plan, $where, null, self::getTable());
+		$this->iaDb->update($plan, $this->iaDb->convertIds($ids), null, self::getTable());
 
 		return true;
 	}
@@ -72,22 +69,21 @@ class iaPlan extends abstractCore
 	 */
 	public function insert(array $plan)
 	{
-		$iaDb = &$this->iaDb;
-
-		unset($plan['title'], $plan['description']);
-
 		if (empty($plan))
 		{
 			$this->setMessage(iaLanguage::getf('key_parameter_is_empty', array('key' => 'Plan')));
+
 			return false;
 		}
 
-		$order = $iaDb->getMaxOrder(self::getTable()) + 1;
+		unset($plan['title'], $plan['description']);
+
+		$order = $this->iaDb->getMaxOrder(self::getTable()) + 1;
 		$plan['order'] = $order ? $order : 1;
 
-		$iaDb->insert($plan, null, self::getTable());
+		$this->iaDb->insert($plan, null, self::getTable());
 
-		return $iaDb->getInsertId();
+		return $this->iaDb->getInsertId();
 	}
 
 	/**
@@ -106,15 +102,11 @@ class iaPlan extends abstractCore
 			return false;
 		}
 
-		if (!is_array($ids))
-		{
-			$ids = array($ids);
-		}
+		is_array($ids) || $ids = array($ids);
 
 		$this->iaCore->startHook('phpAdminBeforePlanDelete');
 
-		$stmt = $this->iaDb->convertIds($ids);
-		$this->iaDb->delete($stmt, self::getTable());
+		$this->iaDb->delete($this->iaDb->convertIds($ids), self::getTable());
 
 		// here we should drop the "for_plan" column of fields
 		// if there are no plans exist

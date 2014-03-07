@@ -34,11 +34,10 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 				if (isset($_GET['lang1']) && isset($_GET['lang2']) && $_GET['lang1'] != $_GET['lang2']
 					&& array_key_exists($_GET['lang1'], $iaCore->languages) && array_key_exists($_GET['lang2'], $iaCore->languages))
 				{
-					$start = isset($params['start']) ? (int)$params['start'] : 0;
-					$limit = isset($params['limit']) ? (int)$params['limit'] : 15;
+					$start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
+					$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 15;
 
-					$conditions[] = '`code` = :code';
-					$values = array('code' => $_GET['lang1']);
+					$values = array();
 
 					if (isset($_GET['key']) && $_GET['key'])
 					{
@@ -61,23 +60,28 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 					$where = empty($conditions) ? iaDb::EMPTY_CONDITION : implode(' AND ', $conditions);
 					$iaDb->bind($where, $values);
 
-					// get default language phrases
-					$phrases = $iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $where . $order, $start, $limit);
-
+					$rows = $iaDb->all('SQL_CALC_FOUND_ROWS DISTINCT `key`, `category`', $where, $start, $limit);
 					$output = array('data' => array(), 'total' => $iaDb->foundRows());
 
-					// get all phrases for destination language
-					$array = $iaDb->assoc('CONCAT(`key`, "-", `category`) `key`, `value`, `id` ', "`code` = '{$_GET['lang2']}'");
-
-					foreach ($phrases as $phrase)
+					$keys = array();
+					foreach ($rows as $row)
 					{
-						$key = $phrase['key'] . '-' . $phrase['category'];
+						$keys[] = $row['key'];
+					}
+
+					$stmt = "`code` = ':lang' AND `key` IN('" . implode("','", $keys) . "')";
+
+					$lang1 = $iaDb->keyvalue(array('key', 'value'), iaDb::printf($stmt, array('lang' => $_GET['lang1'])));
+					$lang2 = $iaDb->keyvalue(array('key', 'value'), iaDb::printf($stmt, array('lang' => $_GET['lang2'])));
+
+					foreach ($rows as $row)
+					{
+						$key = $row['key'];
 						$output['data'][] = array(
-							'id' => isset($array[$key]) ? $array[$key]['id'] : null,
-							'key' => $phrase['key'],
-							'lang1' => $phrase['value'],
-							'value' => isset($array[$key]) ? $array[$key]['value'] : null,
-							'category' => $phrase['category']
+							'key' => $key,
+							'lang1' => isset($lang1[$key]) ? $lang1[$key] : null,
+							'lang2' => isset($lang2[$key]) ? $lang2[$key] : null,
+							'category' => $row['category']
 						);
 					}
 				}
@@ -102,11 +106,37 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			break;
 
 		case iaCore::ACTION_EDIT:
-			$output = $iaGrid->gridUpdate($_POST);
+			$output = array(
+				'result' => false,
+				'message' => iaLanguage::get('invalid_parameters')
+			);
 
-			if ($output['result'])
+			$params = $_POST;
+
+			if (isset($params['id']) && $params['id'])
 			{
-				$iaCache->createJsCache(true);
+				$stmt = '`id` IN (' . implode($params['id']) . ')';
+
+				unset($params['id']);
+			}
+			elseif (isset($params['key']))
+			{
+				$stmt = '`key` = :key';
+				empty($params['lang']) || $stmt.= ' AND `code` = :lang';
+				$iaDb->bind($stmt, $params);
+
+				unset($params['key'], $params['lang']);
+			}
+
+			if (isset($stmt))
+			{
+				$output['result'] = (bool)$iaDb->update($params, $stmt);
+				$output['message'] = iaLanguage::get($output['result'] ? 'saved' : 'db_error');
+
+				if ($output['result'])
+				{
+					$iaCache->createJsCache(true);
+				}
 			}
 
 			break;

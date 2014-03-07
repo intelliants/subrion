@@ -1,147 +1,5 @@
 - Subrion CMS Changelog -
 
->> From 2.3.4 to 2.3.5 <<
-
-	- Incorrect field processing
-	- Hook Editor grid does not accept pagination
-	- Upgrade process security breches
-	+ Force files reupload
-	+ Make 'Pictures' field's titles editable
-	+ Improve print_js function
-
->> From 2.3.5 to 2.3.6 <<
-
-	- Incorrect hash for patch files
-	- Incorrect grid width in Admin Panel
-	* Compare content hash of php files
-	- Conflict on Manage Menus page when activating plugins
-	- Incorrect sticky block processing
-	+ Better remote plugins installation progress
-	+ Redirect to the last visited page after login.
-	+ Installer: check if a patch file was downloaded completely
-	+ Installer: display version release details at the first step of upgrade
-	+ Implement the single template file usage when generating a block
-
->> From 2.3.6 to 2.3.7 <<
-
-	- Page preview should be opened with currently editing language
-	- Status is not changed for accounts after plan is expired
-	- Date field can't be edited
-	- Default value of number fields is always '0'
-	- 404 error if there is a page with 2 characters length alias
-	- Errors appear when using no DB prefix
-	- Several errors on backend related to parent/dependent fields
-	- Vulnerable actions are executed when editing user's data on front-end page
-	- Print categories list without &lt;table&gt; tag
-	- Files actually do not removed from Storage fields
-	- HTML chars are not applied in RSS feeds
-	- HTML block does not disappear when file removed from Storage field
-	- Don't use lightbox on members & search page
-	- Add to account balance
-	* Passwords should be generated using salt
-	* Provide a way to get the data of logged user
-	+ Highlight search results
-	+ Add logger to the core
-	+ Add canonical url
-	+ Add function to check post
-
->> From 2.3.7 to 3.0.0 <<
-
-	- Bug #312: Admin blocks state is not saved
-	- Bug #430: Issue with registering users
-	- Bug #553: Installer incorrect fields mapping
-	- Bug #563: Regular/Dependent fields problem
-	- Bug #576: Backend: previously set values are not saved for Goto block
-	- Bug #594: Bug when switching permissions to certain objects for usergroups
-	- Bug #759: E-mail template is not updated after clicking "Save" button
-	- Bug #760: Add support for flexible columns in template
-	- Bug #765: Backend: "Featured" and "Featured end" fields does not work properly for members
-	- Bug #770: Invalid URL parsing on IIS server with ISAPI IIRF module installed
-	- Bug #774: for_plan field left marked as 1 even if there are no plans at all
-	- Bug #775: Backend: no action buttons on Edit/Add Plan pages
-	- Bug #776: Small pictures in lightbox view for image/pictures fields in admin panel
-	- Bug #777: Incorrect cached file is included
-	- Bug #783: Member status becomes active without confirmation
-	- Bug #784: Field group select not working when creating new field.
-	- Bug #785: Datepicker issue on frontend
-	- Bug #787: HTML is broken on search page when query is empty
-	- Bug #789: getTable() function and PHP 5.2 version
-	- Bug #792: Blank page on package installation
-	- Bug #798: Item search issues
-	- Bug #799: Premium Radius Search: doest not work with the Yellowpages package on the 2.3.7 script
-	- Bug #804: Issue with the cron page
-	- Bug #805: Unique key assigned to NAME column for "blocks" DB table
-	- Bug #807: parseUrl does not work for domains ending with www
-	- Bug #808: Trailing slash in a URL even for ".html" pages
-	- Bug #811: IE10 with the "Compatibility Mode" enabled is detected as IE7
-	- Bug #813: getById method should be mandatory for all the packages
-	- Bug #814: "Add Funds" feature does not work correctly.
-	- Bug #819: Incorrect link generation in the grid
-	- Bug #841: Related options do not show
-	- Bug #842: 401 error on admin login page
-	- Bug #845: Paypal "pending" status is processed incorrectly
-	- Bug #846: Required image field considered empty though it's filled
-	- Bug #848: Long words break layout in Chrome browser
-	- Bug #851: Extras menus cannot be seen in Admin Panel
-	- Bug #856: Blank page after returning from payment gateway's page
-	- Bug #871: Get rid of online stats in inventory menu
-	- Bug #872: Member fields does not list member fields only
-	- Bug #873: Admin Panel forgot password does not work
-	- Bug #878: New language incorrect form
-	- Bug #879: Change Template information design
-	- Bug #882: No way to create new menu
-	- Bug #883: Check all does not work correctly in grid
-	- Bug #884: progressBar incorrect params
-	- Bug #892: Update account information after edit
-	- Bug #893: Twitter API Exchange issues
-	- Bug #895: Backend: Incorrect output on 404 error
-	- Bug #899: Incorrect grid display on Available Plugins tab
-	- Bug #901: Remote plugins incorrect display
-	- Bug #902: Avatar field does not work on Edit Member
-	- Bug #903: Field group is displayed incorrectly on fields page
-	- Bug #905: Notifications look
-	- Bug #906: Add typeahead in Admin panel bootstrap
-	- Bug #908: Review design for all fields types
-	- Bug #911: Incorrect active menu/submenu for some pages
-	- Bug #917: Admin Panel edit account
-	- Bug #919: Make better design for Advanced Search
-	- Bug #924: Review design for intelli.admin.notifFloatBox
-	- Bug #931: Date field does not save properly on frontend
-	- Bug #932: Default editItemSetSystemDefaults generates error
-	- Bug #948: Admin Panel Color Schemes are not saved after clicking "Save" button
-	- Bug #949: Grid search doesn't work properly if active page number is more than 1
-	+ Feature #43: Mobile version and template
-	+ Feature #87: Stylize debugger
-	+ Feature #91: Update Smarty version
-	+ Feature #101: Implement Bootstrap for admin panel
-	+ Feature #133: Sort pages by title
-	+ Feature #311: Create new block Frequently Accessed Areas
-	+ Feature #313: Use Bootstrap date & time pickers in Admin Panel
-	+ Feature #315: Improve configuration page
-	+ Feature #332: Autofill username on register page
-	+ Feature #452: Create smarter top menu
-	+ Feature #545: Backend: time picker should be added to Featured End fields
-	+ Feature #585: Option in config to display code editor for textarea
-	+ Feature #724: Hide "empty field text" option where it's not required
-	+ Feature #782: Move copyright link into database
-	+ Feature #812: Make capable to see a site live when it is disabled/offline for administrator
-	+ Feature #820: Method to get URL alias by page name
-	+ Feature #828: Allow multiple dependent field values
-	+ Feature #849: Add ability to override plugin templates
-	+ Feature #863: Make capable to uninstall physically missing plugins
-	+ Feature #881: Add more filters to Hook Editor
-	+ Feature #891: Integrate Twitter REST API
-	+ Feature #896: Implement Admin activity log
-	+ Feature #897: Integrate Dashboard statistics with real values
-	+ Feature #904: Keep uploaded image source
-	+ Feature #910: Backend: menu contents should be synchronized after plugins (un)installation
-	+ Feature #913: Add more actions logs
-	+ Feature #914: Add more hooks for Dashboard page
-	+ Feature #916: Add underscore to the default installation
-	+ Feature #923: Custom css classname for blocks
-	+ Feature #933: Integrate mysqli adapter
-	+ Feature #946: iaBootstrap improvements
-
 >> From 3.0.0 to 3.0.1 <<
 
 	- Bug #874: Adapt package index page
@@ -298,3 +156,75 @@
 	+ Feature #1297: Move Templates menu item to Extensions
 	+ Feature #1298: Add template configuration
 	+ Feature #1299: New admin panel color theme
+
+>> From 3.1.1 to 3.1.2 <<
+
+	- Bug #414: Move some code from template to php.
+	- Bug #727: Fix empty first tab
+	- Bug #1191: No link to settings for plugins without pages.
+	- Bug #1209: Reduce timeout for retrieving twitter news to 30 seconds
+	- Bug #1255: Grid: Make "text-wide" cell editor longer
+	- Bug #1307: Incorrect redirect after upgrade
+	- Bug #1308: Upgrade log is generated in TMP instead of UPLOADS
+	- Bug #1309: No log about successful upgrade
+	- Bug #1310: Change colors for successful upgrade notification
+	- Bug #1316: Breadcrumbs generating incorrectly when setting Blog as home page.
+	- Bug #1321: Referrer link is reset when incorrect username or password entered on login page
+	- Bug #1324: Admin Panel: Class 'iaUtf8' not found on plan adding
+	- Bug #1325: Admin Panel: no result message when deleting transactions
+	- Bug #1326: Installation minor strict error
+	- Bug #1328: UTF issues
+	- Bug #1329: No confirmation link/code when registering is sent
+	- Bug #1331: Samples of Email Template tags differ from the used ones
+	- Bug #1335: Menu not rebuilds after activating template
+	- Bug #1336: Better versioning for mysql
+	- Bug #1337: Display default picture dimensions for fields
+	- Bug #1338: Delete Block, Delete Page button doesn't work.
+	- Bug #1341: Pages: remove Home page from parents
+	+ Feature #14: Refactor major classes
+	+ Feature #595: Create function to return page url by page name
+	+ Feature #877: Implement language comparison tool
+	+ Feature #912: Improve Custom URL for pages
+	+ Feature #1190: Create page for entering confirmation code after registration
+	+ Feature #1250: Implement template overrides for plugins.
+	+ Feature #1303: Get rid of IA_NOUTF checks
+	+ Feature #1312: Intelli.cookie: add ability to pass cookie path
+	+ Feature #1315: Update CKEditor library
+	+ Feature #1319: Create tpl for pagination
+	+ Feature #1327: Hooks order management via dashboard
+	+ Feature #1339: No need to display +/- when only one upload file allowed
+
+>> From 3.1.2 to 3.1.3 <<
+
+	- Bug #1342: Pages: problem with parents
+	- Bug #1343: Incorrect values are written during field creation
+	- Bug #1344: Disable Toggle editor button on Hooks page for editArea plugin
+	- Bug #1345: Upgrade issues
+	- Bug #1361: Fields filtering does not work correctly when there are many dependencies
+	- Bug #1368: Multiple hooks execution
+	- Bug #1369: Get rid of members search if members are disabled
+	- Bug #1390: Error on View Member page when Google Map plugin installed.
+	- Bug #1392: Better field values separation for install.xml
+	- Bug #1393: Images are not processed correctly
+	- Bug #1394: Unable to duplicate pagination
+	- Bug #1409: Reversed order of parent breadcrumb elements if more than 1 parent
+	+ Feature #1370: Improve upgrade page design / features
+	+ Feature #1406: Add status for fields: active/inactive
+
+>> From 3.1.3 to 3.1.4 <<
+
+	- Bug #1197: Add versioning to CSS/js files
+	- Bug #1314: Can't upload files with the same name using system fields
+	- Bug #1420: Admin Panel: can not change status of member on add/edit page
+	- Bug #1422: Problem with home page
+	- Bug #1430: Dependent fields are not being saved properly
+	- Bug #1431: Install module is inaccessible.
+	- Bug #1432: Incorrect working of 'First' and 'Last' buttons in Members Pagination
+	- Bug #1438: Make sure two date fields operate correctly
+	- Bug #1442: 404 error if change the home page and revert it back
+	- Bug #1445: Numeric strings in text fields are processed incorrectly
+	- Bug #1457: Unable to clear date field value
+	+ Feature #1208: Add 'Resolve issue' button for notifications where possible
+	+ Feature #1434: Style 404 page
+	+ Feature #1444: Add the "store-load" listener to IntelliGrid
+	+ Feature #1459: Display title field in all-items-page.tpl

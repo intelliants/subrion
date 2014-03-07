@@ -33,7 +33,7 @@
 							{lang key='date'}: {$template.date}<br>
 							{lang key='compatibility'}: {$template.compatibility}
 						</p>
-				
+
 						{if $template.buttons}
 							<form method="post" class="clearfix">
 								{preventCsrf}

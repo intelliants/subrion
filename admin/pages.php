@@ -2,7 +2,7 @@
 //##copyright##
 
 $iaPage = $iaCore->factory('page', iaCore::ADMIN);
-$iaUtil = iaCore::util();
+$iaUtil = $iaCore->factory('util');
 
 $iaDb->setTable(iaPage::getTable());
 
@@ -14,8 +14,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			switch ($_GET['get'])
 			{
 				case 'url':
-					iaUtf8::loadUTF8Core();
-					iaUtf8::loadUTF8Util('ascii', 'bad', 'utf8_to_ascii');
+					iaUtil::loadUTF8Functions('ascii', 'utf8_to_ascii');
 
 					$name = $_GET['name'];
 					$name = !utf8_is_ascii($name) ? utf8_to_ascii($name) : $name;
@@ -30,12 +29,17 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 					if (is_numeric($_GET['parent']) && $_GET['parent'])
 					{
 						$parentPage = $iaPage->getById($_GET['parent']);
-						$url = (empty($parentPage['alias']) ? $parentPage['name'] . IA_URL_DELIMITER : $parentPage['alias']) . $url;
+						$parentAlias = empty($parentPage['alias']) ? $parentPage['name'] . IA_URL_DELIMITER : $parentPage['alias'];
+
+						$url = $parentAlias . (IA_URL_DELIMITER == substr($parentAlias, -1, 1) ? '' : IA_URL_DELIMITER) . $url;
 					}
 
-					$url = IA_URL . $url . IA_URL_DELIMITER;
+					$url.= $_GET['ext'];
 
-					$output = array('url' => $url);
+					$exists = $iaDb->exists('`alias` = :url AND `name` != :name', array('url' => $url, 'name' => $name));
+					$url = IA_URL . $url;
+
+					$output = array('url' => $url, 'exists' => $exists);
 
 					break;
 
@@ -48,7 +52,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 						'LEFT JOIN `:prefixextras` g ON g.`name` = p.`extras` ' .
 						'GROUP BY p.`extras`';
 					$sql = iaDb::printf($sql, array(
-						'prefix' => $iaCore->iaDb->prefix,
+						'prefix' => $iaDb->prefix,
 						'pages' => iaPage::getTable()
 					));
 
@@ -91,11 +95,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		}
 		else
 		{
-			if (!defined('IA_NOUTF'))
-			{
-				iaUTF8::loadUTF8Core();
-				iaUTF8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-			}
+			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
 			$newPage = array();
 			$name = strtolower($_POST['name'] = !utf8_is_ascii($_POST['name']) ? utf8_to_ascii($_POST['name']) : $_POST['name']);
 			if (isset($_POST['contents']) && is_array($_POST['contents']))
@@ -132,11 +133,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		$iaCore->startHook('phpAdminAddPageValidation');
 
-		if (!defined('IA_NOUTF'))
-		{
-			iaUTF8::loadUTF8Core();
-			iaUTF8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-		}
+		iaUtil::loadUTF8Functions('ascii', 'bad', 'utf8_to_ascii', 'validation');
 
 		$error = false;
 		$messages = array();
@@ -178,14 +175,15 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		$newPage['alias'] = !utf8_is_ascii($newPage['alias']) ? utf8_to_ascii($newPage['alias']) : $newPage['alias'];
 		$newPage['alias'] = empty($newPage['alias']) ? '' : iaSanitize::alias($newPage['alias']);
-		$newPage['alias'].= IA_URL_DELIMITER;
+		$newPage['alias'].= $_POST['extension'];
 
 		if (is_numeric($_POST['parent_id']) && $_POST['parent_id'] > 0)
 		{
 			$parentPage = $iaPage->getById($_POST['parent_id']);
+			$parentAlias = empty($parentPage['alias']) ? $parentPage['name'] . IA_URL_DELIMITER : $parentPage['alias'];
 
 			$newPage['parent'] = $parentPage['name'];
-			$newPage['alias'] = (empty($parentPage['alias']) ? $parentPage['name'] . IA_URL_DELIMITER : $parentPage['alias']) . $newPage['alias'];
+			$newPage['alias'] = $parentAlias . (IA_URL_DELIMITER == substr($parentAlias, -1, 1) ? '' : IA_URL_DELIMITER) . $newPage['alias'];
 		}
 
 		if ($iaDb->exists('`id` != :id AND `alias` = :alias', array('id' => isset($_GET['id']) ? $_GET['id'] : 0, 'alias' => $newPage['alias'])))
@@ -396,7 +394,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			iaBreadcrumb::add(iaLanguage::get('pages'), IA_ADMIN_URL . 'pages/');
 
 			$pageId = (isset($_GET['id']) && is_numeric($_GET['id'])) ? (int)$_GET['id'] : null;
-			$page = null;
 			$menus = array();
 			$displayableInMenus = array();
 
@@ -404,7 +401,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			{
 				if (!$pageId)
 				{
-					iaView::errorPage(iaView::ERROR_NOT_FOUND);
+					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
 
 				$pageId = (int)$_GET['id'];
@@ -415,16 +412,33 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$page['contents'] = $iaDb->keyvalue(array('code', 'value'), "`key` = 'page_content_{$page['name']}' AND `category` = 'page'");
 				$iaDb->resetTable();
 
-				$parentAlias = $iaPage->getByName($page['parent'], false);
-				$parentAlias = empty($parentAlias['alias']) ? $parentAlias['name'] . IA_URL_DELIMITER : $parentAlias['alias'];
+				$parentAlias = '';
+				if ($page['parent'])
+				{
+					$parentAlias = $iaPage->getByName($page['parent'], false);
+					$parentAlias = empty($parentAlias['alias']) ? $parentAlias['name'] . IA_URL_DELIMITER : $parentAlias['alias'];
+				}
 
-				$page['alias'] = str_replace($parentAlias, '', $page['alias']);
+				$page['extension'] = (false === strpos($page['alias'], '.')) ? '' : end(explode('.', $page['alias']));
+				$page['alias'] = substr($page['alias'], strlen($parentAlias), -1 - strlen($page['extension']));
 
-				$iaView->assign('home_page', ($iaCore->get('home_page', iaView::DEFAULT_ACTION) == $page['name'] ? 1 : 0));
-				$iaView->assign('entry', $page);
+				if ($page['name'] == $page['alias'])
+				{
+					$page['alias'] = '';
+				}
+
+				$iaView->assign('home_page', ($iaCore->get('home_page', iaView::DEFAULT_HOMEPAGE) == $page['name'] ? 1 : 0));
 			}
 			else
 			{
+				$page = array(
+					'name' => '',
+					'extension' => '',
+					'parent' => '',
+					'readonly' => false,
+					'service' => false
+				);
+
 				$iaView->assign('home_page', 0);
 			}
 
@@ -482,10 +496,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 */
 			$parentPage = $iaPage->getByName($page['parent'], false);
 
-			$iaView->assign('pages', $iaPage->getNonServicePages(array('index')));
-			$iaView->assign('pages_group', $iaPage->getGroups());
-			$iaView->assign('parent_page', $parentPage['id']);
+			$groups = $iaPage->getGroups(array($iaCore->get('home_page'), $page['name']));
 
+			$iaView->assign('item', $page);
+			$iaView->assign('pages', $iaPage->getNonServicePages(array('index')));
+			$iaView->assign('pages_group', $groups);
+			$iaView->assign('parent_page', $parentPage['id']);
+			$iaView->assign('extensions', $iaPage->extendedExtensions);
 			$iaView->assign('usergroups', $userGroups);
 //			$iaView->assign('perms', $perms);
 			$iaView->assign('show_in_menus', $displayableInMenus);

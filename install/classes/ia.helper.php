@@ -60,6 +60,7 @@ class iaHelper
 				}
 			}
 		}
+
 		return true;
 	}
 
@@ -93,15 +94,16 @@ class iaHelper
 			}
 
 			set_include_path(IA_CLASSES);
-			require_once 'ia.debug.php';
+
 			require_once 'ia.system.php';
-			require_once 'ia.interfaces.php';
-			require_once 'ia.core.php';
 
 			if (function_exists('spl_autoload_register') && function_exists('spl_autoload_unregister'))
 			{
 				spl_autoload_register(array('iaSystem', 'autoload'));
 			}
+
+			require_once IA_INCLUDES . 'function.php';
+			require_once 'ia.interfaces.php';
 
 			$iaCore = iaCore::instance();
 

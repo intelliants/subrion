@@ -118,13 +118,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				}
 				$iaCore->startHook('phpAdminAddPlanValidation');
 
-				if (!defined('INTELLI_NOUTF'))
-				{
-					iaCore::util();
-
-					iaUtf8::loadUTF8Core();
-					iaUtf8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-				}
+				iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 				$lang = array(
 					'title' => $_POST['title'],

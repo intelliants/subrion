@@ -35,15 +35,10 @@ class iaBlog extends abstractPlugin
 	{
 		$result = iaSanitize::tags($title);
 
-		if (!defined('IA_NOUTF'))
-		{
-			iaCore::util();
+		$this->iaCore->factory('util');
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
-			iaUtf8::loadUTF8Core();
-			iaUtf8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-			utf8_is_ascii($result) || $result = utf8_to_ascii($result);
-		}
+		utf8_is_ascii($result) || $result = utf8_to_ascii($result);
 
 		$result = preg_replace('#' . self::ALIAS_SUFFIX . '$#i', '', $result);
 		$result = iaSanitize::alias($result);

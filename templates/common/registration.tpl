@@ -22,13 +22,13 @@
 				<div class="control-group">
 					<label class="control-label" for="pass1">{lang key='your_password'}:</label>
 					<div class="controls">
-						<input type="password" name="password" id="pass1" value="{if isset($tmp.password)}{$tmp.password}{/if}" />
+						<input type="password" name="password" id="pass1" value="{if isset($tmp.password)}{$tmp.password}{/if}">
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="pass2">{lang key='your_password_confirm'}:</label>
 					<div class="controls">
-						<input type="password" name="password2" id="pass2" value="{if isset($tmp.password)}{$tmp.password}{/if}" />
+						<input type="password" name="password2" id="pass2" value="{if isset($tmp.password)}{$tmp.password}{/if}">
 					</div>
 				</div>
 			</div>

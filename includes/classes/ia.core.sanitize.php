@@ -84,6 +84,45 @@ class iaSanitize extends abstractUtil
 		return preg_replace('/[^a-z_0-9]/i', '', $string);
 	}
 
+	/*
+	* Converts text to snippet
+	*
+	* The function cuts text to specified length,
+	* also it strips all special tags like [b] etc.
+	*
+	* @params array $params - full text, if 'summary' not used, create snippet from it
+	*
+	* @return string
+	*/
+	public static function snippet($text, $length = 600)
+	{
+		$iaUtil = iaCore::instance()->factory('util');
+
+		iaUtil::loadUTF8Functions();
+
+		// Strip HTML and BB codes
+		$pattern = '/(\[\w+[^\]]*?\]|\[\/\w+\]|<\w+[^>]*?>|<\/\w+>)/i';
+		$text = preg_replace($pattern, '', $text);
+
+		// remove repeated spaces and new lines
+		$text = preg_replace('/\s{2,}/', PHP_EOL, $text);
+		$text = trim($text, PHP_EOL);
+
+		if (utf8_strlen($text) > $length)
+		{
+			$text = utf8_substr($text, 0, $length);
+			$_tmp = utf8_decode($text);
+			if (preg_match('#.*([\.\s]).*#s', $_tmp, $matches, PREG_OFFSET_CAPTURE))
+			{
+				$end_pos = $matches[1][1];
+				$text = utf8_substr($text, 0, $end_pos + 1);
+				$text .= ' ...';
+			}
+		}
+
+		return $text;
+	}
+
 	/**
 	 * Converts text to well-formed URL, replaces all non alpha-numeric / underscore symbols to separator
 	 *
@@ -94,19 +133,14 @@ class iaSanitize extends abstractUtil
 	 */
 	public static function alias($string, $separator = '-')
 	{
-		if (!defined('IA_NOUTF'))
-		{
-			iaCore::util();
-			iaUtf8::loadUTF8Core();
-			iaUtf8::loadUTF8Util('ascii', 'validation', 'bad', 'utf8_to_ascii');
-		}
+		iaCore::instance()->factory('util')->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 		$string = html_entity_decode($string);
 		$string = str_replace(array('&'), array('and'), $string);
 
 		$urlEncoded = false;
 
-		if(!utf8_is_ascii($string))
+		if (!utf8_is_ascii($string))
 		{
 			if (iaCore::instance()->get('alias_urlencode', false))
 			{

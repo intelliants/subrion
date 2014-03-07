@@ -16,17 +16,10 @@ class iaLanguage
 	protected static $_validCategories = array(self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP);
 
 
-	public function __construct()
-	{
-	}
+	public function __construct(){}
+	public function __clone(){}
 
-	public function __clone()
-	{
-	}
-
-	public function init()
-	{
-	}
+	public function init(){}
 
 	public static function get($key, $default = null)
 	{
@@ -113,12 +106,12 @@ class iaLanguage
 
 	public static function getTooltips()
 	{
-		$iaDb = &iaCore::instance()->iaDb;
+		$iaCore = &iaCore::instance();
 
 		$stmt = '`category` = :category AND `code` = :language';
-		$iaDb->bind($stmt, array('category' => self::CATEGORY_TOOLTIP, 'language' => IA_LANGUAGE),1);
+		$iaCore->iaDb->bind($stmt, array('category' => self::CATEGORY_TOOLTIP, 'language' => $iaCore->iaView->language),1);
 
-		$rows = $iaDb->keyvalue(array('key', 'value'), $stmt, self::getTable());
+		$rows = $iaCore->iaDb->keyvalue(array('key', 'value'), $stmt, self::getTable());
 
 		return is_array($rows) ? $rows : array();
 	}

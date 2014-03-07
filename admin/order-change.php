@@ -3,7 +3,7 @@
 
 if (!isset($_SESSION['manageMode']) && iaCore::ACCESS_FRONT == $iaCore->getAccessType())
 {
-	iaView::errorPage(iaView::ERROR_FORBIDDEN);
+	return iaView::errorPage(iaView::ERROR_FORBIDDEN);
 }
 
 $positions = explode(',', $iaCore->get('block_positions'));

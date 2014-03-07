@@ -10,7 +10,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$iaCore->factory('util')->go_to($iaPage->getUrlByName('profile'));
 	}
 
-	if (isset($_SERVER['HTTP_REFERER'])) // used by login redirecting mech
+	if (isset($_SERVER['HTTP_REFERER']) && IA_SELF != $_SERVER['HTTP_REFERER']) // used by login redirecting mech
 	{
 		$_SESSION['referrer'] = $_SERVER['HTTP_REFERER'];
 	}

@@ -8,7 +8,6 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 	switch ($_POST['action'])
 	{
 		case 'edit_picture_title':
-
 			$title = isset($_POST['value']) ? iaSanitize::sql($_POST['value']) : '';
 			$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : false;
 			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : false;
@@ -91,7 +90,6 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			break;
 
 		case 'delete-file':
-
 			$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : null;
 			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : null;
 			$path = isset($_POST['path']) ? iaSanitize::sql($_POST['path']) : null;
@@ -163,6 +161,14 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 					}
 				}
 			}
+
+			break;
+
+		case 'remove-installer':
+			$iaCore->factory('util');
+
+			$output['error'] = !iaUtil::deleteFile(IA_HOME . 'install/modules/module.install.php');
+			$output['message'] = iaLanguage::get($output['error'] ? 'error' : 'deleted');
 
 			break;
 

@@ -3,7 +3,7 @@
 
 if (!$iaCore->get('members_enabled'))
 {
-	iaView::errorPage(iaView::ERROR_NOT_FOUND);
+	return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 }
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())

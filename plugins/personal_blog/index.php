@@ -11,14 +11,14 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		if (!$id)
 		{
-			iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 		}
 
 		$blogEntry = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, 'id = :id AND `status` = :status', array('id' => $id, 'status' => iaCore::STATUS_ACTIVE));
 
 		if (empty($blogEntry))
 		{
-			iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 		}
 
 		iaBreadcrumb::toEnd($blogEntry['title'], IA_SELF);

@@ -40,16 +40,16 @@
 			{assign var='chosen' value=$item.$varname|unserialize}
 			<div class="thumbnail" style="width: {$variable.thumb_width}px;">
 				{if $variable.link_to && isset($all_item_type)}
-					<a href="{ia_url data=$oneitem item=$all_item_type type='url'}" title="{$chosen.title}">
-						{printImage imgfile=$chosen.path title=$chosen.title}
-						{if !empty($chosen.title)}<span class="caption">{$chosen.title}</span>{/if}
+					<a href="{ia_url data=$oneitem item=$all_item_type type='url'}" title="{$chosen.title|default:''}">
+						{printImage imgfile=$chosen.path|default:'' title=$chosen.title|default:''}
+						{if !empty($chosen.title)}<span class="caption">{$chosen.title|default:''}</span>{/if}
 					</a>
 				{elseif $variable.thumb_width == $variable.image_width && $variable.thumb_height == $variable.image_height}
-					{printImage imgfile=$chosen.path title=$chosen.title width=$variable.thumb_width height=$variable.thumb_height}
+					{printImage imgfile=$chosen.path|default:'' title=$chosen.title|default:'' width=$variable.thumb_width height=$variable.thumb_height}
 				{else}
-					<a href="{printImage imgfile=$chosen.path url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$varname}]" title="{$chosen.title}">
-						{printImage imgfile=$chosen.path title=$chosen.title}
-						{if !empty($chosen.title)}<span class="caption">{$chosen.title}</span>{/if}
+					<a href="{printImage imgfile=$chosen.path|default:'' url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$varname}]" title="{$chosen.title|default:''}">
+						{printImage imgfile=$chosen.path|default:'' title=$chosen.title|default:''}
+						{if !empty($chosen.title)}<span class="caption">{$chosen.title|default:''}</span>{/if}
 					</a>
 				{/if}
 			</div>
@@ -71,8 +71,8 @@
 				<ul id="{$varname}" class="thumbnails">
 					{foreach $item.$varname|unserialize as $pic}
 						<li class="thumbnail">
-							<a href="{printImage imgfile=$pic.path url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$varname}]" title="{$pic.title}">
-								{printImage imgfile=$pic.path title=$pic.title}
+							<a href="{printImage imgfile=$pic.path|default:'' url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$varname}]" title="{$pic.title}">
+								{printImage imgfile=$pic.path|default:'' title=$pic.title}
 								{if !empty($pic.title)}<div class="caption">{$pic.title}</div>{/if}
 							</a>
 						</li>

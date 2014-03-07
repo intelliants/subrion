@@ -55,26 +55,29 @@ class iaUtil extends abstractUtil
 		return false;
 	}
 
-	public static function getPageContent($url)
+	public static function getPageContent($url, $timeout = 10)
 	{
 		$result = null;
-		$user_agent = 'Subrion CMS Bot';
+		$userAgent = 'Subrion CMS Bot';
 		if (extension_loaded('curl'))
 		{
-			set_time_limit(60);
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_HEADER, false);
-			curl_setopt($ch, CURLOPT_REFERER, IA_CLEAR_URL);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-			curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+			curl_setopt_array($ch, array(
+				CURLOPT_URL => $url,
+				CURLOPT_HEADER => false,
+				CURLOPT_REFERER => IA_CLEAR_URL,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_CONNECTTIMEOUT => (int)$timeout,
+				CURLOPT_USERAGENT => $userAgent
+			));
+
 			$result = curl_exec($ch);
+
 			curl_close($ch);
 		}
 		elseif (ini_get('allow_url_fopen'))
 		{
-			ini_set('user_agent', $user_agent);
+			ini_set('user_agent', $userAgent);
 			$result = file_get_contents($url, false);
 			ini_restore('user_agent');
 		}
@@ -269,48 +272,6 @@ class iaUtil extends abstractUtil
 	}
 
 	/*
-	* Converts text to snippet
-	*
-	* The function cuts text to specified length,
-	* also it strips all special tags like [b] etc.
-	*
-	* @params array $params - full text, if 'summary' not used, create snippet from it
-	*
-	* @return string
-	*/
-
-	// TODO: separate out 2 parameters: $text and $length
-	public function text_to_snippet($params)
-	{
-		iaUTF8::loadUTF8Core();
-
-		$text = &$params['text'];
-		$length = isset($params['length']) ? $params['length'] : 600;
-
-		// Strip HTML and BB codes
-		$pattern = '/(\[\w+[^\]]*?\]|\[\/\w+\]|<\w+[^>]*?>|<\/\w+>)/i';
-		$text = preg_replace($pattern, '', $text);
-
-		// remove repeated spaces and new lines
-		$text = preg_replace('/\s{2,}/', PHP_EOL, $text);
-		$text = trim($text, PHP_EOL);
-
-		if (utf8_strlen($text) > $length)
-		{
-			$text = utf8_substr($text, 0, $length);
-			$_tmp = utf8_decode($text);
-			if (preg_match('#.*([\.\s]).*#s', $_tmp, $matches, PREG_OFFSET_CAPTURE))
-			{
-				$end_pos = $matches[1][1];
-				$text = utf8_substr($text, 0, $end_pos + 1);
-				$text .= ' ...';
-			}
-		}
-
-		return $text;
-	}
-
-	/*
 	 * Check that personal folder exists and return path
 	 *
 	 * @param string $userName
@@ -463,64 +424,51 @@ class iaUtil extends abstractUtil
 
 		return false;
 	}
-}
 
-class iaUTF8
-{
-	protected static $_path = 'phputf8';
-
-
-	public static function loadUTF8Core()
+	/**
+	 * Loads core of the UTF8 lib and then functions specified in arguments
+	 *
+	 * @param list of function names to be prepared to use
+	 * @return bool
+	 */
+	public static function loadUTF8Functions()
 	{
-		static $loaded = false;
+		$libPath = 'phputf8';
+		static $isLibLoaded = false;
 
-		if ($loaded)
+		if (!$isLibLoaded)
 		{
-			return false;
+			$path = IA_INCLUDES . $libPath . IA_DS;
+
+			try
+			{
+				if (function_exists('mb_internal_encoding'))
+				{
+					mb_internal_encoding('UTF-8');
+					require_once $path . 'mbstring' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
+				}
+				else
+				{
+					require_once $path . 'utils' . IA_DS . 'unicode' . iaSystem::EXECUTABLE_FILE_EXT;
+					require_once $path . 'native' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
+				}
+			}
+			catch (Exception $e)
+			{
+				return false;
+			}
+
+			$isLibLoaded = true;
 		}
 
-		$path = IA_INCLUDES . self::$_path . IA_DS;
-		if (function_exists('mb_internal_encoding'))
+		if (func_num_args())
 		{
-			mb_internal_encoding('UTF-8');
-			require_once $path . 'mbstring' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
+			foreach (func_get_args() as $fn)
+			{
+				require_once IA_INCLUDES . $libPath . IA_DS . 'utils' . IA_DS . $fn . iaSystem::EXECUTABLE_FILE_EXT;
+			}
 		}
-		else
-		{
-			require_once $path . 'utils' . IA_DS . 'unicode' . iaSystem::EXECUTABLE_FILE_EXT;
-			require_once $path . 'native' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
-		}
-
-		$loaded = true;
 
 		return true;
-	}
-
-	public static function loadUTF8Function($fn)
-	{
-		iaUTF8::loadUTF8Core();
-		$p = IA_INCLUDES . self::$_path . IA_DS . $fn . iaSystem::EXECUTABLE_FILE_EXT;
-		if (file_exists($p))
-		{
-			require_once $p;
-			if (function_exists($fn))
-			{
-				return true;
-			}
-			trigger_error("No such function from phputf8 package: '$fn'", E_USER_ERROR);
-		}
-	}
-
-	public static function loadUTF8Util()
-	{
-		iaUTF8::loadUTF8Core();
-		if (func_num_args() == 0)
-		{
-			return false;
-		}
-		foreach (func_get_args() as $fn)
-		{
-			require_once IA_INCLUDES . self::$_path . IA_DS . 'utils' . IA_DS . $fn . iaSystem::EXECUTABLE_FILE_EXT;
-		}
 	}
 }

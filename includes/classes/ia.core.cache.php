@@ -20,7 +20,7 @@ class iaCache extends abstractUtil
 			iaCore::instance()->util()->makeDirCascade($this->_savePath, 0777);
 		}
 
-		$mask = !function_exists('posix_getuid') || function_exists('posix_getuid') && posix_getuid() != fileowner(IA_HOME . 'system.php') ? 0777 : 0755;
+		$mask = !function_exists('posix_getuid') || function_exists('posix_getuid') && posix_getuid() != fileowner(IA_HOME . 'index' . iaSystem::EXECUTABLE_FILE_EXT) ? 0777 : 0755;
 		chmod($this->_savePath, $mask);
 	}
 
@@ -122,12 +122,12 @@ class iaCache extends abstractUtil
 	{
 		$this->_filePath = $this->_savePath . $fileName;
 
-		$this->iaCore->iaView->loadSmarty(true);
+		$iaView = &$this->iaCore->iaView;
+		$iaView->loadSmarty(true);
 
 		if (!file_exists($this->_filePath))
 		{
-			$this->iaCore->iaSmarty->clearCache(null);
-
+			$iaView->iaSmarty->clearCache(null);
 			clearstatcache();
 
 			return true;
@@ -136,7 +136,7 @@ class iaCache extends abstractUtil
 		{
 			if (unlink($this->_filePath))
 			{
-				$this->iaCore->iaSmarty->clearCache(null);
+				$iaView->iaSmarty->clearCache(null);
 				clearstatcache();
 
 				return true;
@@ -267,7 +267,7 @@ class iaCache extends abstractUtil
 
 	protected function _createJsFile($file, $type = 'config')
 	{
-		$this->iaCore->util(); // required in order the class iaUtil to be loaded
+		$this->iaCore->factory('util'); // required in order the class iaUtil to be loaded
 
 		switch ($type)
 		{

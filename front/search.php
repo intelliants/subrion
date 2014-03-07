@@ -137,8 +137,13 @@ $conditions['pictures'] = array(
 $conditions['image'] = $conditions['pictures'];
 $conditions['storage'] = $conditions['pictures'];
 
+$items = array();
+
 // get items
-$items['members'] = array('extras' => iaCore::CORE, 'type' => iaCore::CORE);
+if ($iaCore->get('members_enabled'))
+{
+	$items['members'] = array('extras' => iaCore::CORE, 'type' => iaCore::CORE);
+}
 $res = $iaDb->all(array('name', 'type', 'items'), "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, 'extras');
 foreach ($res as $r)
 {
@@ -153,7 +158,6 @@ foreach ($res as $r)
 
 $fields = searchableFields($iaDb, array_keys($items), array_keys($conditions));
 $old_items = $items;
-$items = array();
 
 foreach (array_keys($fields) as $item)
 {
@@ -268,7 +272,7 @@ if ($search)
 					)
 				);
 			}
-			if (!$adv)
+			if (!$adv && !empty($search['terms']['items']))
 			{
 				foreach ($search['terms']['items'] as $i => $flds)
 				{
@@ -323,12 +327,12 @@ if ($search)
 
 				if ($rows && iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
-					$iaCore->iaSmarty->assign('all_items', $rows);
-					$iaCore->iaSmarty->assign('all_item_fields', $fieldsList);
-					$iaCore->iaSmarty->assign('all_item_type', $v['type']);
+					$iaView->iaSmarty->assign('all_items', $rows);
+					$iaView->iaSmarty->assign('all_item_fields', $fieldsList);
+					$iaView->iaSmarty->assign('all_item_type', $v['type']);
 
 					$results['num'] += 1;
-					$results['html'][$v['name']] = $iaCore->iaSmarty->fetch('all-items-page.tpl');
+					$results['html'][$v['name']] = $iaView->iaSmarty->fetch('all-items-page.tpl');
 				}
 			}
 		}
@@ -345,7 +349,7 @@ if ($search)
 				continue;
 			}
 
-			if ($items[$i]['type'] != 'core')
+			if (iaCore::CORE != $items[$i]['type'])
 			{
 				$search_file = ('package' == $items[$i]['type'] ? 'packages/' : 'plugins/') . $items[$i]['extras'] . '/includes/search.inc.php';
 				// we echo HTML code in search.inc.php file

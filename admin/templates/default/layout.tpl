@@ -56,14 +56,14 @@
 				{/foreach}
 			</ul>
 			<div class="system-info">
-				<div class="social-links">
-					<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><i class="i-twitter-2"></i></a>
-					<a href="https://www.facebook.com/Intelliants" target="_blank" class="social-links__facebook"><i class="i-facebook-2"></i></a> 
-					<a href="https://plus.google.com/102500660503219569194/posts" target="_blank" class="social-links__googleplus"><i class="i-googleplus"></i></a>
-				</div>
 				Subrion CMS
 				<br>
 				<span class="version">v {$config.version}</span>
+			</div>
+			<div class="social-links">
+				<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><i class="i-twitter-2"></i></a>
+				<a href="https://www.facebook.com/Intelliants" target="_blank" class="social-links__facebook"><i class="i-facebook-2"></i></a> 
+				<a href="https://plus.google.com/102500660503219569194/posts" target="_blank" class="social-links__googleplus"><i class="i-googleplus"></i></a>
 			</div>
 		</section>
 
@@ -84,29 +84,7 @@
 					</li>
 				</ul>
 			{/if}
-			{foreach $menu as $item}
-				{if isset($item.items) && $item.items}
-					<ul id="nav-sub-{$item.name}" class="nav-sub{if $page.group == $item.id} active{/if}">
-						{foreach $item.items as $submenu}
-							{if $submenu.name}
-								<li class="{if $page.name == $submenu.name || $page.parent == $submenu.name || (isset($page.active_menu) && $page.active_menu == $submenu.name) && !isset($submenu.config)}active{/if}{if isset($submenu.config) && isset($page.active_menu) && $submenu.config == $page.active_menu} active-setting{/if}">
-									<a href="{$submenu.url}"{if isset($submenu.attr)} {$submenu.attr}{/if}>{$submenu.title}</a>
-									{if isset($submenu.config) && $submenu.config}
-										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$submenu.config}/" class="nav-sub__config{if isset($page.active_menu) && $submenu.config == $page.active_menu} active{/if}" title="{lang key='settings'}"><i class="i-cog"></i></a>
-									{/if}
-								</li>
-							{else}
-								<li class="heading">
-									{$submenu.title}
-									{if isset($submenu.config) && $submenu.config}
-										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$submenu.config}/" class="nav-sub__config{if isset($page.active_menu) && $submenu.config == $page.active_menu} active{/if}" title="{lang key='settings'}"><i class="i-cog"></i></a>
-									{/if}
-								</li>
-							{/if}
-						{/foreach}
-					</ul>
-				{/if}
-			{/foreach}
+			{include file='menu.tpl'}
 		</section>
 		
 		<section id="panel-content">
@@ -129,21 +107,21 @@
 						{/foreach}
 						</ul>
 					</li>
-					{if isset($system_notifications)}
-						<li class="dropdown notifications alerts">
-							<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='system_notifications'}">
-								<i class="i-flag"></i>
-								<span class="label label-info">{$system_notifications|count}</span>
-								<span> {lang key='system_notifications'}</span>
-							</a>
-							<ul class="dropdown-menu pull-right">
-								<li class="dropdown-block">
-									{foreach $system_notifications as $message}
-										<div class="alert alert-danger">{$message}</div>
-									{/foreach}
-								</li>
-							</ul>
-						</li>
+					{if isset($notifications.system)}
+					<li class="dropdown notifications alerts">
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='system_notifications'}">
+							<i class="i-flag"></i>
+							<span class="label label-info">{$notifications.system|count}</span>
+							<span> {lang key='system_notifications'}</span>
+						</a>
+						<ul class="dropdown-menu pull-right">
+							<li class="dropdown-block">
+								{foreach $notifications.system as $message}
+									<div class="alert alert-danger">{$message}</div>
+								{/foreach}
+							</li>
+						</ul>
+					</li>
 					{/if}
 
 					<li class="dropdown">
@@ -235,7 +213,7 @@
 								{/if}
 							{/if}
 
-							{foreach $actions as $action}
+							{foreach $admin_actions as $action}
 								<li><a href="{$action.url}" {$action.attributes}>{if $action.icon}<i class="{$action.icon}"></i> {/if}{$action.title}</a></li>
 							{/foreach}
 						</ul>

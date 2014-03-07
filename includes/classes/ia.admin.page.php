@@ -8,6 +8,8 @@ class iaPage extends abstractPlugin
 	protected static $_adminTable = 'admin_pages';
 	protected static $_adminGroupsTable = 'admin_pages_groups';
 
+	public $extendedExtensions = array('htm', 'html', 'php');
+
 
 	public static function getAdminTable()
 	{
@@ -97,6 +99,8 @@ class iaPage extends abstractPlugin
 			return false;
 		}
 
+		$currentData = $this->getById($id);
+
 		$extras = empty($itemData['extras']) ? '' : $itemData['extras'];
 
 		foreach (array('title', 'content') as $type)
@@ -107,7 +111,7 @@ class iaPage extends abstractPlugin
 				{
 					iaLanguage::addPhrase('page_' . $type . '_' . $itemData['name'], $lngvalue, $lngcode, $extras, iaLanguage::CATEGORY_PAGE);
 				}
-				isset($title) || $title = $itemData[$type . 's'][$this->iaCore->iaView->language];
+				isset($title) || $title = $itemData[$type . 's'][$this->iaView->language];
 				unset($itemData[$type . 's']);
 			}
 		}
@@ -120,12 +124,31 @@ class iaPage extends abstractPlugin
 		$stmt = iaDb::convertIds($id);
 		$result = (bool)$this->iaDb->update($itemData, $stmt, array('last_updated' => iaDb::FUNCTION_NOW), self::getTable());
 
-		if ($result && isset($title))
+		if ($result)
 		{
-			$this->iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array('item' => 'page', 'name' => $title, 'id' => $id));
+			if (isset($title))
+			{
+				$this->iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array('item' => 'page', 'name' => $title, 'id' => $id));
+			}
+
+			if (!empty($currentData['alias']) && $itemData['alias'] && $currentData['alias'] != $itemData['alias'])
+			{
+				$this->_massUpdateAlias($currentData['alias'], $itemData['alias']);
+			}
 		}
 
 		return $result;
+	}
+
+	protected function _massUpdateAlias($previous, $new)
+	{
+		$previous = iaSanitize::sql($previous);
+		$new = iaSanitize::sql($new);
+
+		$cond = iaDb::printf("`alias` LIKE ':alias%'", array('alias' => $previous));
+		$stmt = array('alias' => "REPLACE(`alias`, '$previous', '$new')");
+
+		$this->iaDb->update(null, $cond, $stmt, self::getTable());
 	}
 
 	public function delete($id)
@@ -143,7 +166,7 @@ class iaPage extends abstractPlugin
 
 		$iaDb->setTable(self::getTable());
 
-		if ($row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`id` = :id', array('id' => $id)))
+		if ($row = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id)))
 		{
 			$result = (bool)$iaDb->delete(iaDb::convertIds($id));
 
@@ -176,9 +199,13 @@ class iaPage extends abstractPlugin
 		return $this->iaDb->getAll($sql);
 	}
 
-	public function getGroups()
+	public function getGroups(array $exclusions = array())
 	{
 		$stmt = '`status` = :status AND `service` = 0';
+		if ($exclusions)
+		{
+			$stmt.= " AND `name` NOT IN ('" . implode("','", $exclusions) . "')";
+		}
 		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE));
 
 		$pages = array();
@@ -212,16 +239,12 @@ class iaPage extends abstractPlugin
 
 		if (is_null($pagesToUrlMap))
 		{
-			$iaDb = &iaCore::instance()->iaDb;
-
-			$pagesToUrlMap = $iaDb->keyvalue(array('name', 'alias'), null, self::getAdminTable());
+			$pagesToUrlMap = $this->iaDb->keyvalue(array('name', 'alias'), null, self::getAdminTable());
 		}
 
 		if (isset($pagesToUrlMap[$pageName]))
 		{
-			return $pagesToUrlMap[$pageName]
-				? $pagesToUrlMap[$pageName]
-				: $pageName;
+			return $pagesToUrlMap[$pageName] ? $pagesToUrlMap[$pageName] : $pageName;
 		}
 
 		return null;

@@ -20,12 +20,23 @@ class iaItem extends abstractCore
 
 	public function getFavoritesByMemberId($memberId)
 	{
-		$stmt = "`item` IN (':items') AND `member_id` = :user ORDER BY `item` ASC";
+		$stmt = "`item` IN (':items') AND `member_id` = :user";
 		$stmt = iaDb::printf($stmt, array('items' => implode("','", $this->getItems()), 'user' => (int)$memberId));
 
-		$rows = $this->iaDb->assoc(array('item', 'id'), $stmt, self::getFavoritesTable());
+		$result = array();
 
-		return $rows;
+		if ($rows = $this->iaDb->all(array('item', 'id'), $stmt, null, null, self::getFavoritesTable()))
+		{
+			foreach ($rows as $row)
+			{
+				$key = $row['item'];
+				isset($result[$key]) || $result[$key] = array();
+
+				$result[$key][] = $row['id'];
+			}
+		}
+
+		return $result;
 	}
 
 	/**

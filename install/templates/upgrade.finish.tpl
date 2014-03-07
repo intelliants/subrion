@@ -1,9 +1,9 @@
 <?php if (!isset($this->message)): ?>
-	<div class="alert alert-info">Upgrade completed.</div>
+	<div class="alert alert-success">Upgrade completed.</div>
 
 	<div class="widget widget-default">
 		<div class="widget-content">
-			<p>Installation log has been also saved to temporary folder.</p>
+			<p>Installation log has been also saved to <em>uploads</em> folder.</p>
 			<div id="upgrade-log" class="box box-simple"><?php echo $this->log ?></div>
 			<div id="upgrade-log-legend">
 				<h5>Legend</h5>

@@ -78,7 +78,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	if (!$iaCore->get('members_enabled'))
 	{
-		iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
 	iaCore::util();
@@ -277,26 +277,25 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		{
 			if (!isset($_GET['email']) || !isset($_GET['key']))
 			{
-				iaView::accessDenied();
+				return iaView::accessDenied();
 			}
-			$success = $url = false;
+
+			$error = true;
 			$result = $iaUsers->confirmation($_GET['email'], $_GET['key']);
 			if ($result)
 			{
 				$messages[] = $iaCore->get('members_autoapproval') ? iaLanguage::get('reg_confirmed') : iaLanguage::get('reg_confirm_adm_approve');
-				$success = true;
+				$error = false;
 
 				$url = $iaCore->get('members_autoapproval') ? IA_URL . 'login/' : IA_URL;
 				iaUtil::redirect(iaLanguage::get('reg_confirmation'), $messages, $url);
 			}
 			else
 			{
-				$messages = $_SESSION['error'];
 				$messages[] = iaLanguage::get('confirmation_key_incorrect');
 			}
 
-			$iaView->assign('success', $success);
-			$iaView->assign('confirmation', true);
+			$iaView->assign('success', !$error);
 		}
 	}
 

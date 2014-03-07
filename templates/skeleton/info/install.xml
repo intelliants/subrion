@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <template name="skeleton">
 	<title>Skeleton</title>
 	<summary>Barebones template for Subrion CMS</summary>
@@ -39,7 +39,7 @@
 
 	<configgroup name="template_skeleton">Template</configgroup>
 	<config group="general_config" name="block_positions" type="hidden" description="position">inventory,mainmenu,header,after_header_1,after_header_2,after_header_3,verytop,top,left,right,bottom,user1,user2,verybottom,copyright,footer1,footer2,footer3,footer4</config>
-	
+
 	<config group="template_skeleton" 
 		    name="skeleton_divider1" 
 		    type="divider" 
