@@ -6,9 +6,9 @@
 
 define('INTELLI_CONNECT', '{dbconnector}');
 define('INTELLI_DBHOST', '{dbhost}');
-define('INTELLI_DBNAME', '{dbname}');
 define('INTELLI_DBUSER', '{dbuser}');
 define('INTELLI_DBPASS', '{dbpass}');
+define('INTELLI_DBNAME', '{dbname}');
 define('INTELLI_DBPORT', '{dbport}');
 define('INTELLI_DBPREFIX', '{dbprefix}');
 

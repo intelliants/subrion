@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaBlock extends abstractPlugin
 {
@@ -55,7 +78,7 @@ class iaBlock extends abstractPlugin
 	{
 		if (empty($blockData['lang']) || !array_key_exists($blockData['lang'], $this->iaCore->languages))
 		{
-			$blockData['lang'] = IA_LANGUAGE;
+			$blockData['lang'] = $this->iaView->language;
 		}
 
 		if (!isset($blockData['type']) || !in_array($blockData['type'], $this->getTypes()))
@@ -246,13 +269,13 @@ class iaBlock extends abstractPlugin
 				{
 					if ($titleLanguages = $this->iaDb->keyvalue(array('code', 'value'), "`key` = 'block_title_blc{$block['id']}'", iaLanguage::getTable()))
 					{
-						if ($titleLanguages[IA_LANGUAGE])
+						if ($titleLanguages[$this->iaView->language])
 						{
-							$block['title'] = $titleLanguages[IA_LANGUAGE];
+							$block['title'] = $titleLanguages[$this->iaView->language];
 						}
 						else
 						{
-							unset($titleLanguages[IA_LANGUAGE]);
+							unset($titleLanguages[$this->iaView->language]);
 
 							foreach ($titleLanguages as $languageTitle)
 							{

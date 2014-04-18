@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaTemplate extends abstractCore
 {
@@ -29,6 +52,16 @@ class iaTemplate extends abstractCore
 
 	protected $_requiredFields = array('name', 'title', 'version', 'summary', 'author', 'contributor');
 
+	protected $_changeset;
+	protected $_config;
+	protected $_configGroups;
+	protected $_dependencies;
+	protected $_hooks;
+	protected $_layout;
+	protected $_phrases;
+	protected $_screenshots;
+	protected $_requires;
+
 	public $name;
 	public $title;
 	public $status = iaCore::STATUS_ACTIVE;
@@ -37,17 +70,9 @@ class iaTemplate extends abstractCore
 	public $author;
 	public $contributor;
 	public $blocks;
-	public $hooks;
-	public $phrases;
-	public $screenshots;
-	public $requires;
-	public $config;
-	public $config_groups;
+
 	public $date;
 	public $compatibility = false;
-	public $dependencies;
-	public $changeset;
-	public $layout;
 
 
 	public function getList()
@@ -106,10 +131,10 @@ class iaTemplate extends abstractCore
 								'version' => $this->version,
 								'compatibility'	=> $this->compatibility,
 								'buttons' => $buttons,
-								'screenshots' => $this->screenshots,
+								'screenshots' => $this->_screenshots,
 								'notes' => $this->getNotes(),
-								'config' => $this->config,
-								'url' => 'http://www.subrion.com/product/templates/' . $this->name . '.html'
+								'config' => $this->_config,
+								'url' => 'http://www.subrion.org/template/' . $this->name . '.html'
 							);
 
 							if (file_exists(IA_FRONT_TEMPLATES . $this->name . '/info' . IA_DS . 'preview.jpg'))
@@ -144,9 +169,9 @@ class iaTemplate extends abstractCore
 		$this->error = false;
 		$this->_notes = array();
 		$this->_message = null;
-		$this->screenshots = array();
+		$this->_screenshots = array();
 
-		$this->dependencies = null;
+		$this->_dependencies = null;
 	}
 
 	public function parse()
@@ -197,12 +222,12 @@ class iaTemplate extends abstractCore
 
 		$this->error = false;
 
-		if ($this->dependencies)
+		if ($this->_dependencies)
 		{
 			$currentTemplate = $this->iaCore->get('tmpl');
 			$iaItem = $this->iaCore->factory('item');
 
-			foreach ($this->dependencies as $extrasName => $dependency)
+			foreach ($this->_dependencies as $extrasName => $dependency)
 			{
 				$shouldBeExist = (bool)$dependency['exist'];
 				switch ($dependency['type'])
@@ -250,9 +275,9 @@ class iaTemplate extends abstractCore
 		}
 
 		$existPositions = array();
-		if ($this->config)
+		if ($this->_config)
 		{
-			foreach ($this->config as $entry)
+			foreach ($this->_config as $entry)
 			{
 				if ($entry['name'] == 'block_positions')
 				{
@@ -293,10 +318,10 @@ class iaTemplate extends abstractCore
 		$iaDb = &$this->iaDb;
 
 		// TODO: check for relations and deactivate all needed extras
-		if ($this->requires)
+		if ($this->_requires)
 		{
 			$messages = array();
-			foreach ($this->requires as $require)
+			foreach ($this->_requires as $require)
 			{
 				if ($require['min'] || $require['max'])
 				{
@@ -358,7 +383,7 @@ class iaTemplate extends abstractCore
 
 		$iaDb->update(array('value' => $this->name), "`name` = 'tmpl'", null, iaCore::getConfigTable());
 
-		if ($this->phrases)
+		if ($this->_phrases)
 		{
 			$installedLanguages = unserialize($iaDb->one('value', "`name` = 'languages'", iaCore::getConfigTable()));
 
@@ -366,10 +391,10 @@ class iaTemplate extends abstractCore
 			{
 				foreach ($installedLanguages as $code => $language)
 				{
-					foreach ($this->phrases as $key => $phrase)
+					foreach ($this->_phrases as $key => $phrase)
 					{
-						$this->phrases[$key]['lang'] = $language;
-						$this->phrases[$key]['code'] = $code;
+						$this->_phrases[$key]['lang'] = $language;
+						$this->_phrases[$key]['code'] = $code;
 					}
 				}
 			}
@@ -379,7 +404,7 @@ class iaTemplate extends abstractCore
 				{
 					if ('en' != $code)
 					{
-						foreach ($this->phrases as $phrase)
+						foreach ($this->_phrases as $phrase)
 						{
 							iaLanguage::addPhrase($phrase['key'], $phrase['value'], $code, $this->name, $phrase['category'], false);
 						}
@@ -387,7 +412,7 @@ class iaTemplate extends abstractCore
 				}
 			}
 
-			foreach ($this->phrases as $phrase)
+			foreach ($this->_phrases as $phrase)
 			{
 				iaLanguage::addPhrase($phrase['key'], $phrase['value'], $phrase['code'], $this->name, $phrase['category'], false);
 			}
@@ -395,14 +420,14 @@ class iaTemplate extends abstractCore
 
 		$positions = explode(',', $iaDb->one('value', "`name` = 'block_positions'", iaCore::getConfigTable()));
 
-		if ($this->config)
+		if ($this->_config)
 		{
 			$iaDb->setTable(iaCore::getConfigTable());
 
 			$maxOrder = $iaDb->one('MAX(`order`) + 1');
 			$maxOrder = $maxOrder ? (int)$maxOrder : 1;
 
-			foreach ($this->config as $config)
+			foreach ($this->_config as $config)
 			{
 				$order = $config['order'];
 				unset($config['order']);
@@ -426,13 +451,13 @@ class iaTemplate extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->config_groups)
+		if ($this->_configGroups)
 		{
 			$iaDb->setTable(iaCore::getConfigGroupsTable());
 
 			$maxOrder = $iaDb->getMaxOrder() + 1;
 
-			foreach ($this->config_groups as $config)
+			foreach ($this->_configGroups as $config)
 			{
 				$iaDb->insert($config, array('order' => $maxOrder));
 				$maxOrder++;
@@ -441,19 +466,19 @@ class iaTemplate extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->hooks)
+		if ($this->_hooks)
 		{
 			$iaDb->setTable('hooks');
 
 			$maxOrder = $iaDb->one('MAX(`order`) + 1');
 			$maxOrder = $maxOrder ? $maxOrder : 1;
 
-			foreach ($this->hooks as $hook)
+			foreach ($this->_hooks as $hook)
 			{
 				$array = explode(',', $hook['name']);
 				foreach ($array as $hookName)
 				{
-					if (trim($hookName) != '')
+					if (trim($hookName))
 					{
 						$hook['name'] = $hookName;
 						if (isset($hook['code']) && $hook['code'])
@@ -535,15 +560,16 @@ class iaTemplate extends abstractCore
 		}
 
 		$rollbackData = array();
-		if ($this->changeset)
+		if ($this->_changeset)
 		{
 			$tablesMapping = array(
 				'block' => 'blocks',
 				'field' => 'fields',
-				'menu' => 'blocks'
+				'menu' => 'blocks',
+				'page' => 'pages'
 			);
 
-			foreach ($this->changeset as $changeset)
+			foreach ($this->_changeset as $changeset)
 			{
 				if (!isset($tablesMapping[$changeset['type']]))
 				{
@@ -596,7 +622,7 @@ class iaTemplate extends abstractCore
 		}
 		$rollbackData = empty($rollbackData) ? '' : serialize($rollbackData);
 
-		$this->iaCore->set(self::CONFIG_LAYOUT_DATA, serialize($this->layout), true);
+		$this->iaCore->set(self::CONFIG_LAYOUT_DATA, serialize($this->_layout), true);
 		$this->iaCore->set(self::CONFIG_ROLLBACK_DATA, $rollbackData, true);
 
 		if (self::SETUP_INITIAL != $type)
@@ -694,7 +720,7 @@ class iaTemplate extends abstractCore
 				break;
 
 			case 'dependency':
-				$this->dependencies[$text] = array(
+				$this->_dependencies[$text] = array(
 					'type' => $this->attr('type'),
 					'exist' => $this->attr('exist', true)
 				);
@@ -703,11 +729,11 @@ class iaTemplate extends abstractCore
 			case 'phrase':
 				if (in_array('phrases', $this->_path))
 				{
-					$this->phrases[] = array(
+					$this->_phrases[] = array(
 						'key' => $attr['key'],
 						'value' => $text,
 						'category' => $this->attr('category', iaLanguage::CATEGORY_COMMON),
-						'code' => $this->attr('code', IA_LANGUAGE)
+						'code' => $this->attr('code', $this->iaView->language)
 					);
 				}
 				break;
@@ -715,7 +741,7 @@ class iaTemplate extends abstractCore
 			case 'screenshot':
 				if (in_array('screenshots', $this->_path))
 				{
-					$this->screenshots[] = array(
+					$this->_screenshots[] = array(
 						'name' => $this->attr('name'),
 						'title' => $text,
 						'type' => $this->attr('type', false)
@@ -724,7 +750,7 @@ class iaTemplate extends abstractCore
 				break;
 
 			case 'config':
-				$this->config[] = array(
+				$this->_config[] = array(
 					'name' => $this->attr('name'),
 					'value' => $text,
 					'config_group' => $this->attr(array('group','configgroup')),
@@ -741,7 +767,7 @@ class iaTemplate extends abstractCore
 				break;
 
 			case 'configgroup':
-				$this->config_groups[] = array(
+				$this->_configGroups[] = array(
 					'name' => $this->attr('name'),
 					'extras' => $this->name,
 					'title' => $text
@@ -749,7 +775,7 @@ class iaTemplate extends abstractCore
 				break;
 
 			case 'extension':
-				$this->requires[] = array(
+				$this->_requires[] = array(
 					'name' => $text,
 					'type' => $this->attr('type', 'package', array('package', 'plugin')),
 					'min' => $this->attr(array('min_version', 'min'), false),
@@ -758,13 +784,14 @@ class iaTemplate extends abstractCore
 				break;
 
 			case 'hook':
-				$this->hooks[] = array(
+				$this->_hooks[] = array(
 					'name' => $this->attr('name'),
 					'type' => $this->attr('type', 'php', array('php', 'html', 'smarty', 'plain')),
 					'filename' => $this->attr('filename'),
 					'extras' => $this->name,
 					'code' => $text,
-					'status' => $this->attr('status', iaCore::STATUS_ACTIVE)
+					'status' => $this->attr('status', iaCore::STATUS_ACTIVE),
+					'page_type' => $this->attr('page_type')
 				);
 				break;
 
@@ -795,16 +822,17 @@ class iaTemplate extends abstractCore
 			// intentionally missing break stmt
 			case 'field':
 			case 'menu':
+			case 'page':
 				if (in_array('changeset', $this->_path))
 				{
-					$this->changeset[] = array_merge($this->_attributes, array('type' => $this->_inTag, 'name' => $text));
+					$this->_changeset[] = array_merge($this->_attributes, array('type' => $this->_inTag, 'name' => $text));
 				}
 				break;
 
 			case 'position':
 				if (in_array('section', $this->_path))
 				{
-					$this->layout[$this->_section][$text] = array(
+					$this->_layout[$this->_section][$text] = array(
 						'width' => (int)$this->attr('width', 3),
 						'fixed' => (bool)$this->attr('fixed', false)
 					);

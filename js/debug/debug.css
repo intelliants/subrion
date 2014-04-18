@@ -131,15 +131,12 @@ a[data-toggle="error"]:hover {
 
 #debug pre {
 	border: 1px solid #eee;
+	line-height: 14px !important;
+	margin-left: 20px !important;
 	padding: 20px;
 }
 
 #debug .hr {
 	height: 1px;
 	border-top: 1px solid #eee;
-}
-
-#debug pre {
-	line-height: 14px !important;
-	margin-left: 20px !important;
 }

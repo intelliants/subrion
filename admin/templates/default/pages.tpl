@@ -85,35 +85,43 @@
 				</div>
 			</div>
 
-			{if $home_page == 1}
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='use_as_home_page'}</label>
 				<div class="col col-lg-4">
-					<div class="alert alert-info">{lang key='already_home_page'}</div>
+					{if 1 == $home_page}
+						<div class="alert alert-info">{lang key='already_home_page'}</div>
+					{else}
+						{html_radio_switcher value=$home_page name='home_page'}
+						<p class="help-block">{lang key='current_home_page'}: <span class="text-danger">{lang key="page_title_{$config.home_page}"}</span></p>
+					{/if}
 				</div>
 			</div>
-			{else}
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='use_as_home_page'}</label>
-				<div class="col col-lg-4">
-					{html_radio_switcher value=$home_page name='home_page'}
-					<p class="help-block">{lang key='current_home_page'}: <span class="text-danger">{lang key='page_title_'|cat:$config.home_page}</span></p>
-				</div>
-			</div>
-			{/if}
 
 			{if !isset($item) || $item === false || !isset($item.service) && !isset($item.readonly) || $item.service == 0 && $item.readonly == '0'}
 
 				{if isset($item.nofollow)}
-					{assign var='nofollow' value=$item.nofollow}
+					{assign nofollow $item.nofollow}
 				{else}
-					{assign var='nofollow' value=0}
+					{assign nofollow 0}
 				{/if}
 
 				<div class="row">
 					<label class="col col-lg-2 control-label">{lang key='no_follow_url'}</label>
 					<div class="col col-lg-4">
 						{html_radio_switcher value=$nofollow name='nofollow'}
+					</div>
+				</div>
+
+				{if isset($item.new_window)}
+					{assign new_window $item.new_window}
+				{else}
+					{assign new_window 0}
+				{/if}
+
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='open_in_new_window'}</label>
+					<div class="col col-lg-4">
+						{html_radio_switcher value=$new_window name='new_window'}
 					</div>
 				</div>
 

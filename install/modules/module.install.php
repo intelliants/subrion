@@ -1,8 +1,31 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
-define('IA_VERSION', '3.1.4');
-define('IA_VER', '314');
+define('IA_VERSION', '3.1.6');
+define('IA_VER', '316');
 
 $error = false;
 $message = '';
@@ -37,7 +60,7 @@ switch ($step)
 			'class' => true,
 			'name' => 'Mysql version',
 			'value' => function_exists('mysql_connect')
-				? '<td class="success">' . substr(mysql_get_client_info(), 0, strpos(mysql_get_client_info(), '-')) . '</td>'
+				? '<td class="success">' . substr(mysql_get_client_info(), 0, (false === $pos = strpos(mysql_get_client_info(), '-')) ? 10 : $pos) . '</td>'
 				: '<td class="danger">MySQL 4.x or upper required</td>'
 		);
 		$checks['server']['php_version'] = array(
@@ -373,14 +396,14 @@ Useful information regarding the Subrion CMS can be found on Subrion.com's suppo
 http://www.subrion.com/support.html
 __________________________
 The Subrion Support Team
-http://www.subrion.com
+http://www.subrion.org
 http://www.intelliants.com
 HTML;
 					$params = array(
 						'{version}' => IA_VERSION,
 						'{date}' => date('d F Y H:i:s'),
 						'{mysql_version}' => version_compare('4.1', mysql_get_server_info(), '<=') ? '41' : '40',
-						'{dbconnector}' => function_exists('mysqli_connect') ? 'mysqli' : 'mysql',
+						'{dbconnector}' => in_array('mysqli', get_loaded_extensions()) && function_exists('mysqli_connect') ? 'mysqli' : 'mysql',
 						'{dbhost}' => iaHelper::getPost('dbhost'),
 						'{dbuser}' => iaHelper::getPost('dbuser'),
 						'{dbpass}' => iaHelper::getPost('dbpwd', '', false),
@@ -531,7 +554,7 @@ $iaOutput->steps = array(
 	'check' => 'Pre-Installation Check',
 	'license' => 'Subrion License',
 	'configuration' => 'Configuration',
-	'finish' => 'Finish',
+	'finish' => 'Script Installation',
 	'plugins' => 'Plugins Installation'
 );
 

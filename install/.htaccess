@@ -4,6 +4,6 @@
 	# Uncomment the line below if your server redirects to install/ recursively
 	# RewriteBase /install
 
-	RewriteRule ^(.*).(gif|png|jpg|js|css|ico|swf|eot|woff|ttf|svg)$ $1.$2 [QSA,L]
+	RewriteRule ^(.*)\.(gif|png|js|css|ico|eot|woff|ttf|svg)$ $1.$2 [QSA,L]
 	RewriteRule ^(.*)$ index.php?_p=$1 [QSA,L]
 </IfModule>

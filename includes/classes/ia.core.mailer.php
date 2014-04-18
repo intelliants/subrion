@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 require_once IA_INCLUDES . 'phpmailer' . IA_DS . 'class.phpmailer.php';
 
@@ -152,11 +175,11 @@ class iaMailer extends PHPMailer
 		switch ($event['action'])
 		{
 			case 'admin_password_restoration':
-				$this->setAdminPasswordRestorationOptions($event);
+				$this->_setAdminPasswordRestorationOptions($event);
 				break;
 
 			case 'admin_new_password_send':
-				$this->setAdminNewPasswordOptions($event);
+				$this->_setAdminNewPasswordOptions($event);
 				break;
 		}
 
@@ -240,7 +263,7 @@ class iaMailer extends PHPMailer
 	 * @access public
 	 * @return bool
 	 */
-	function setAdminPasswordRestorationOptions(&$event)
+	protected function _setAdminPasswordRestorationOptions(&$event)
 	{
 		$subject = 'Admin password restoration';
 		$body = 'Please follow this URL: {url} in order to reset your password.';
@@ -254,7 +277,7 @@ class iaMailer extends PHPMailer
 		$this->Body = $body;
 	}
 
-	function setAdminNewPasswordOptions(&$event)
+	protected function _setAdminNewPasswordOptions(&$event)
 	{
 		$subject = "Admin password restoration";
 		$body = "Your new password: {password}";

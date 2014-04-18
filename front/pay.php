@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
@@ -23,7 +46,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$iaTransaction = $iaCore->factory('transaction');
 
-	$transaction = $iaTransaction->getById($transactionId);
+	$transaction = $iaTransaction->getBy('sec_key', $transactionId);
 
 	if (empty($transaction))
 	{
@@ -66,7 +89,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	// cancel payment
 	if (iaTransaction::CANCELED == $action)
 	{
-		$iaTransaction->update(array('id' => $transaction['id'], 'status' => iaTransaction::FAILED));
+		$iaTransaction->update(array('status' => iaTransaction::FAILED), $transaction['id']);
 
 		$iaView->setMessages(iaLanguage::get('payment_canceled'), iaView::SUCCESS);
 		iaUtil::go_to($iaPage->getUrlByName('member_balance'));
@@ -180,7 +203,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 								if (in_array($transaction['status'], array(iaTransaction::PASSED, iaTransaction::PENDING)))
 								{
 									// update transaction record
-									$iaTransaction->update($transaction);
+									$iaTransaction->update($transaction, $transaction['id']);
 
 									// process item specific post-processing actions
 									$iaPlan->postPayment($transaction);

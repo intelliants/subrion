@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaSmartyPlugins extends Smarty
 {
@@ -19,7 +42,7 @@ class iaSmartyPlugins extends Smarty
 	{
 		parent::__construct();
 
-		iaSystem::renderTime('<b>main</b> - beforeSmartyFuncInit');
+		iaSystem::renderTime('main', 'beforeSmartyFuncInit');
 
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'captcha', array(__CLASS__, 'captcha'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_wysiwyg', array(__CLASS__, 'ia_wysiwyg'));
@@ -83,9 +106,10 @@ class iaSmartyPlugins extends Smarty
 		$iaView->resources->js->{'code:$(function(){if(!window.CKEDITOR)'
 			. "$('textarea[id=\"{$name}\"]').show();else CKEDITOR.replace('{$name}');});"} = iaView::RESOURCE_ORDER_REGULAR;
 
-		return sprintf('<textarea name="%s" ' .
-			'style="width:100%s;height:200px;display:none;" cols="80" rows="10" id="%s">' .
-			'%s</textarea>', $name, '%', $name, $value);
+		return sprintf(
+			'<textarea style="display: none;" name="%s" id="%s">%s</textarea>',
+			$name, $name, $value
+		);
 	}
 
 	public static function ia_block_view($params, Smarty_Internal_Template &$smarty)

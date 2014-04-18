@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'ImageWorkshop.php';
 
@@ -21,7 +44,7 @@ class iaPicture extends ImageWorkshop
 	/**
 	 * Return image file extension
 	 *
-	 * @param string $aFile file mime type
+	 * @param string $fileName file mime type
 	 *
 	 * @return string
 	 */
@@ -30,6 +53,15 @@ class iaPicture extends ImageWorkshop
 		return array_key_exists($fileName, self::$_typesMap) ? '.' . self::$_typesMap[$fileName] : '';
 	}
 
+	/**
+	 * Generate filename for an uploaded image
+	 *
+	 * @param string $name name of the uploaded file
+	 * @param string $ext extension of the uploaded file
+	 * @param bool $thumb true to generate thumbnail filename
+	 *
+	 * @return string
+	 */
 	protected static function _createFilename($name, $ext, $thumb = false)
 	{
 		return $thumb ? $name . $ext : $name . '~' . $ext;
@@ -75,9 +107,11 @@ class iaPicture extends ImageWorkshop
 	 * @param array $aFile uploaded file information
 	 * @param string $folder the file path
 	 * @param string $aName the file name
-	 * @param integer $imageInfo image information array: width, height, resize_mode
+	 * @param array $imageInfo image information array: width, height, resize_mode
 	 *
-	 * @return string
+	 * @return bool|string
+	 * @throws ImageWorkshopException
+	 * @throws Exception
 	 */
 	public function processImage($aFile, $folder, $aName, $imageInfo)
 	{
@@ -187,7 +221,13 @@ class iaPicture extends ImageWorkshop
 		return self::_createFilename($folder . $aName, $ext, true);
 	}
 
-	// TODO: revise
+	/**
+	 * Delete picture field value
+	 *
+	 * @param string $fileName filename to be deleted
+	 *
+	 * @return bool
+	 */
 	public function delete($fileName)
 	{
 		if (':' == $fileName[1])
@@ -221,6 +261,13 @@ class iaPicture extends ImageWorkshop
 		}
 	}
 
+	/**
+	 * Delete image & derivatives (original, thumbnail) from the filesystem
+	 *
+	 * @param string $fileName filename to be deleted
+	 *
+	 * @return bool
+	 */
 	protected function _deleteSingleImage($fileName)
 	{
 		$fileThumb = explode('.', $fileName);
@@ -230,12 +277,16 @@ class iaPicture extends ImageWorkshop
 		$fileOriginal = basename($fileName);
 		$fileOriginal = str_replace($fileOriginal, self::SOURCE_PREFIX . $fileOriginal, $fileName);
 
-		$iaUtil = $this->iaCore->factory('util');
+		$this->iaCore->factory('util')->deleteFile(array(
+			IA_UPLOADS . $fileName,
+			IA_UPLOADS . $fileThumb,
+			IA_UPLOADS . $fileOriginal
+		));
 
-		return (bool)(
-			$iaUtil->deleteFile(IA_UPLOADS . $fileName) &&
-			$iaUtil->deleteFile(IA_UPLOADS . $fileThumb) &&
-			$iaUtil->deleteFile(IA_UPLOADS . $fileOriginal)
+		return (
+			!file_exists(IA_UPLOADS . $fileName) &&
+			!file_exists(IA_UPLOADS . $fileThumb) &&
+			!file_exists(IA_UPLOADS . $fileOriginal)
 		);
 	}
 }

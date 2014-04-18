@@ -9,19 +9,19 @@
 					<div class="control-group">
 						<label class="control-label" for="current">{lang key='current_password'}:</label>
 						<div class="controls">
-							<input type="password" name="current" id="current"/>
+							<input type="password" name="current" id="current">
 						</div>
 					</div>
 					<div class="control-group">
 						<label class="control-label" for="new">{lang key='new_password'}:</label>
 						<div class="controls">
-							<input type="password" name="new" id="new"/>
+							<input type="password" name="new" id="new">
 						</div>
 					</div>
 					<div class="control-group">
 						<label class="control-label" for="confirm">{lang key='new_password2'}:</label>
 						<div class="controls">
-							<input type="password" name="confirm" id="confirm" />
+							<input type="password" name="confirm" id="confirm">
 						</div>
 					</div>
 				</div>

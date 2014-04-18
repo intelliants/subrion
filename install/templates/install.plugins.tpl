@@ -167,7 +167,7 @@ $(function()
 			elementsSet.each(function(i, item)
 			{
 				item = $(item);
- 				$.ajax({
+				$.ajax({
 					type: 'POST',
 					url: '<?php echo URL_INSTALL ?>install/plugins/',
 					data: {plugin: item.val()},

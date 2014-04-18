@@ -222,13 +222,13 @@ intelli.available = {
 		'selection',
 		'expander',
 		{name: 'title', title: _t('title'), width: 1},
-		{name: 'version', title: _t('version'), width: 80, sortable: false},
-		{name: 'compatibility', title: _t('compatibility'), width: 80, renderer: function(value, metadata, record)
+		{name: 'version', title: _t('version'), width: 70, sortable: false},
+		{name: 'compatibility', title: _t('compatibility'), width: 70, renderer: function(value, metadata, record)
 		{
 			return '<span style="color:' + (record.get('install') ? 'green' : 'red') + ';">' + value + '</span>';
 		}},
-		{name: 'author', title: _t('author'), width: 130},
-		{name: 'date', title: _t('date'), width: 130},
+		{name: 'author', title: _t('author'), width: 120},
+		{name: 'date', title: _t('date'), width: 140},
 		{name: 'info', title: _t('documentation'), icon: 'info', click: helpClick},
 		{name: 'install', title: _t('install'), icon: 'box-add', click: installClick}
 	],
@@ -305,17 +305,6 @@ Ext.onReady(function()
 								if (e.ENTER == e.getKey()) Ext.getCmp('search2').handler();
 							}
 						}
-					},
-					' ' + _t('mode') + ':',
-					{
-						xtype: 'combo',
-						typeAhead: true,
-						editable: false,
-						store: new Ext.data.SimpleStore({fields: ['value', 'title'], data: [['local', _t('local')], ['remote', _t('remote')]]}),
-						value: 'local',
-						displayField: 'title',
-						valueField: 'value',
-						id: 'modeFilter'
 					},{
 						xtype: 'button',
 						text: '<i class="i-search"></i> ' + _t('search'),
@@ -323,49 +312,65 @@ Ext.onReady(function()
 						handler: function()
 						{
 							var title = Ext.getCmp('availableFilter').getValue();
-							var mode = Ext.getCmp('modeFilter').getValue();
 
-							if ('' != title || '' != mode)
+							if ('' != title)
 							{
-								if ('remote' == mode)
-								{
-									intelli.available.grid.getView().getHeaderCt().gridDataColumns[0].setVisible(false);
-									intelli.available.grid.columns[6].setVisible(false);
+								intelli.available.store.getProxy().extraParams.filter = title;
+								intelli.available.store.loadPage(1);
+							}
+						}
+					},{
+						text: '<i class="i-close"></i> ' + _t('reset'),
+						id: 'reset2',
+						handler: function()
+						{
+							Ext.getCmp('availableFilter').reset();
 
-									//Ext.getCmp('multi_install_btn').disable();
-								}
-								else
-								{
-									intelli.available.grid.getView().getHeaderCt().gridDataColumns[0].setVisible(true);
-									intelli.available.grid.columns[6].setVisible(true);
-								}
+							intelli.available.store.getProxy().extraParams = {type: 'available', mode: 'local'};
+							intelli.available.store.loadPage(1);
+						}
+					},'->',_t('mode') + ':',{
+						xtype: 'combo',
+						typeAhead: true,
+						editable: false,
+						store: new Ext.data.SimpleStore({fields: ['value', 'title'], data: [['local', _t('local')], ['remote', _t('remote')]]}),
+						value: 'local',
+						displayField: 'title',
+						valueField: 'value',
+						id: 'modeFilter',
+						listeners: {
+							change: function()
+							{
+								var isLocalMode = ('remote' == this.getValue());
+
+								intelli.available.grid.getView().getHeaderCt().gridDataColumns[0].setVisible(!isLocalMode);
+								intelli.available.grid.columns[6].setVisible(!isLocalMode);
 
 								intelli.available.grid.columns[1].sortable =
 								intelli.available.grid.columns[2].sortable =
 								intelli.available.grid.columns[3].sortable =
 								intelli.available.grid.columns[4].sortable =
 								intelli.available.grid.columns[5].sortable
-									= ('remote' != mode);
+									= isLocalMode;
 
-								intelli.available.store.getProxy().extraParams.filter = title;
-								intelli.available.store.getProxy().extraParams.mode = mode;
+								if (isLocalMode)
+								{
+									Ext.getCmp('availableFilter').disable();
+									Ext.getCmp('search2').disable();
+									Ext.getCmp('reset2').disable();
+								}
+								else
+								{
+									Ext.getCmp('availableFilter').enable();
+									Ext.getCmp('search2').enable();
+									Ext.getCmp('reset2').enable();
+								}
+
+								intelli.available.store.getProxy().extraParams.mode = this.getValue();
 								intelli.available.store.loadPage(1);
 							}
 						}
-					},{
-						text: _t('reset'),
-						handler: function()
-						{
-							Ext.getCmp('availableFilter').reset();
-							Ext.getCmp('modeFilter').setValue('local');
-
-							intelli.available.grid.getView().getHeaderCt().gridDataColumns[0].setVisible(true);
-							intelli.available.grid.columns[6].setVisible(true);
-
-							intelli.available.store.getProxy().extraParams = {type: 'available', mode: 'local'};
-							intelli.available.store.loadPage(1);
-						}}
-					]});
+					}]});
 					intelli.available.init();
 				}
 

@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaExtra extends abstractCore
 {
@@ -337,6 +360,7 @@ class iaExtra extends abstractCore
 				$sql .= 'VARCHAR (' . $fieldData['length'] . ') '
 					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
 				break;
+			case 'url':
 			case 'image':
 			case 'storage':
 				$sql .= 'TINYTEXT ';
@@ -667,7 +691,7 @@ class iaExtra extends abstractCore
 
 			foreach ($this->itemData['blocks'] as $block)
 			{
-				if (isset($block['added']) && $block['added'] && version_compare($block['added'], $version, '<=') )
+				if (isset($block['added']) && $block['added'] && version_compare($version, $block['added'], '<=') )
 				{
 					$blockPages = $block['pages'];
 					$blockExceptPages = $block['pagesexcept'];
@@ -691,7 +715,8 @@ class iaExtra extends abstractCore
 					}
 					else
 					{
-						$id = $iaDb->insert($block, array('order' => $maxOrder++));
+						$block['order'] = $maxOrder++;
+						$id = $iaDb->insert($block);
 					}
 
 					if ($blockPages)
@@ -799,19 +824,14 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['sql']['upgrade'])
 		{
-			$mysql_ver_data = (IA_MYSQLVER == '41') ? 'ENGINE=MyISAM DEFAULT CHARSET=utf8' : 'TYPE=MyISAM';
-			$iaDb->setTable(self::getTable());
-			$versionInstalled = $iaDb->one_bind('`version`', '`name` = :name', array('name' => $this->itemData['name']));
-			$iaDb->resetTable();
-
-			// TODO: use compare version
-			if ($versionInstalled && isset($this->itemData['sql']['upgrade'][$versionInstalled]))
+			if (($versionInstalled = $iaDb->one_bind('`version`', '`name` = :name', array('name' => $this->itemData['name']), self::getTable()))
+				&& isset($this->itemData['sql']['upgrade'][$versionInstalled]))
 			{
 				foreach ($this->itemData['sql']['upgrade'][$versionInstalled] as $sql)
 				{
 					$iaDb->query(str_replace(
-						array('{prefix}', '{mysql_version}'),
-						array($this->iaDb->prefix, $mysql_ver_data),
+						array('{prefix}', '{options}'),
+						array($iaDb->prefix, $iaDb->tableOptions),
 						$sql['query'])
 					);
 				}
@@ -823,8 +843,8 @@ class iaExtra extends abstractCore
 					if (isset($sql['query']))
 					{
 						$iaDb->query(str_replace(
-							array('{prefix}', '{mysql_version}'),
-							array($this->iaDb->prefix, $mysql_ver_data),
+							array('{prefix}', '{options}'),
+							array($iaDb->prefix, $iaDb->tableOptions),
 							$sql['query'])
 						);
 					}
@@ -1149,7 +1169,8 @@ class iaExtra extends abstractCore
 				}
 			}
 
-			foreach ($this->itemData['phrases'] as $phrase) {
+			foreach ($this->itemData['phrases'] as $phrase)
+			{
 				iaLanguage::addPhrase($phrase['key'], $phrase['value'], $phrase['code'], $this->itemData['name'], $phrase['category'], false);
 			}
 		}
@@ -1617,14 +1638,14 @@ class iaExtra extends abstractCore
 			{
 				$item['order'] || $item['order'] = $maxOrder++;
 
-				if ($item['title'] && !$iaDb->exists("`key` = 'fieldgroup_{$item['name']}' AND `code`='" . IA_LANGUAGE . "'", null, iaLanguage::getTable()))
+				if ($item['title'] && !$iaDb->exists("`key` = 'fieldgroup_{$item['name']}' AND `code`='" . $this->iaView->language . "'", null, iaLanguage::getTable()))
 				{
 					iaLanguage::addPhrase('fieldgroup_' . $item['name'], $item['title'], null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
 				}
 				unset($item['title']);
 
 				$description = 'fieldgroup_description_' . $item['item'] . '_' . $item['name'];
-				if (!$iaDb->exists('`key` = :key AND `code` = :language', array('key' => $description, 'language' => IA_LANGUAGE), iaLanguage::getTable()))
+				if (!$iaDb->exists('`key` = :key AND `code` = :language', array('key' => $description, 'language' => $this->iaView->language), iaLanguage::getTable()))
 				{
 					// insert fieldgroup description
 					iaLanguage::addPhrase(
@@ -2158,9 +2179,10 @@ class iaExtra extends abstractCore
 			case 'field':
 				if ($this->_checkPath('fields'))
 				{
-					$values = array();
+					$values = '';
 					if (isset($this->_attributes['values']))
 					{
+						$values = array();
 						$value = $this->_attributes['values'];
 						$value = (false !== strpos($value, '::'))
 							? explode('::', $value)
@@ -2245,7 +2267,7 @@ class iaExtra extends abstractCore
 						'key' => $this->_attr('key'),
 						'value' => $text,
 						'category' => ($this->_inTag == 'phrase') ? $this->_attr('category') : $this->_inTag,
-						'code' => $this->_attr('code', IA_LANGUAGE)
+						'code' => $this->_attr('code', $this->iaView->language)
 					);
 				}
 				break;
@@ -2321,11 +2343,11 @@ class iaExtra extends abstractCore
 					'query' => $text,
 					'external' => isset($this->_attributes['external']) ? true : false
 				);
-				if ($this->_checkPath(array('install', 'installsql')))
+				if ($this->_checkPath('install'))
 				{
 					$this->itemData['sql']['install'][] = $sql;
 				}
-				elseif ($this->_checkPath(array('uninstall', 'uninstallsql')))
+				elseif ($this->_checkPath('uninstall'))
 				{
 					$this->itemData['sql']['uninstall'][] = $sql;
 				}

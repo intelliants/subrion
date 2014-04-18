@@ -392,7 +392,7 @@ CREATE TABLE `{install:prefix}online` (
 	`page` varchar(150) NOT NULL,
 	`ip` bigint(12) NOT NULL,
 	PRIMARY KEY (`id`),
-	KEY `INDEX` (`session_id`)
+	KEY `SESSION` (`session_id`)
 ) {install:mysql_version};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}pages`;
@@ -407,6 +407,7 @@ CREATE TABLE `{install:prefix}pages` (
 	`order` mediumint(7) unsigned NOT NULL,
 	`alias` varchar(150) NOT NULL,
 	`nofollow` tinyint(1) unsigned NOT NULL,
+	`new_window` tinyint(1) unsigned NOT NULL,
 	`extras` varchar(40) NOT NULL,
 	`passw` char(32) NOT NULL,
 	`filename` varchar(50) NOT NULL,
@@ -901,7 +902,7 @@ INSERT INTO `{install:prefix}pages` (`group`, `name`, `service`, `readonly`, `st
 (3, 'favorites', 0, 1, 'active', NOW(), 'profile/favorites/', 1, '', 'account', 'profile', ''),
 (3, 'members', 0, 1, 'active', NOW(), 'members/', 0, '', 'main', '', 'members'),
 (3, 'login', 0, 1, 'active', NOW(), 'login/', 1, '', '', '', ''),
-(3, 'view_member', 0, 1, 'active', NOW(), 'members/info/', 0, '', '', 'members', 'members'),
+(3, 'view_member', 0, 1, 'active', NOW(), 'members/info/', 1, '', '', 'members', 'members'),
 (3, 'profile', 0, 1, 'active', NOW(), 'profile/', 1, '', 'account', '', ''),
 (3, 'member_balance', 0, 1, 'active', NOW(), 'profile/balance/', 1, 'transactions', 'account', 'profile', ''),
 (3, 'member_registration', 0, 1, 'active', NOW(), 'registration/', 1, 'registration', '', '', ''),
@@ -1018,6 +1019,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('available_dump_files', 'Available Dump Files', 'admin'),
 ('available_plugins', 'Available Plugins', 'admin'),
 
+('back_to_homepage', 'Back to homepage', 'admin'),
 ('bad_iso_code', 'Bad country-ISO code.', 'admin'),
 ('banned', 'Banned', 'admin'),
 ('body', 'Body', 'admin'),
@@ -1223,7 +1225,6 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('import', 'Import', 'admin'),
 ('import_from_pc', 'Import the language file from PC', 'admin'),
 ('import_from_server', 'Import the language file from your server', 'admin'),
-('invalid_parameters', 'Invalid parameters.', 'admin'),
 ('inactive', 'Inactive', 'admin'),
 ('incompatible', 'Incompatible', 'admin'),
 ('incorrect_file_format', 'Incorrect file format.', 'admin'),
@@ -1323,10 +1324,14 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('not_required', 'not required', 'admin'),
 ('not_saved', 'No changes have been made. Nothing was saved.', 'admin'),
 ('nothing', 'Nothing', 'admin'),
+('notification_resolve--resolve', 'Resolve issue', 'admin'),
+('notification_resolve--working', 'Working...', 'admin'),
+('notification_resolve--resolved', 'Resolved!', 'admin'),
 
 ('one_day_ago', 'one day ago', 'admin'),
 ('one_hour_ago', 'one hour ago', 'admin'),
 ('one_value', 'You have to add at least one value.', 'admin'),
+('open_in_new_window', 'Open in a new window', 'admin'),
 ('optimize_complete', 'Tables optimizing complete.', 'admin'),
 ('optimize_tables', 'Optimize tables', 'admin'),
 ('options', 'Options', 'admin'),
@@ -1661,6 +1666,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('image_width', 'Image Width', 'common'),
 ('incorrect_fullname', 'Please input correct full name.', 'common'),
 ('incorrect_username', 'Incorrect username', 'common'),
+('invalid_parameters', 'Invalid parameters.', 'common'),
 ('ip_address', 'IP Address', 'common'),
 ('item', 'Item', 'common'),
 
@@ -1876,7 +1882,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('payment_redirect_message', "You will be automatically redirected to the item's page in :seconds. If you do not want to wait click the button below:", 'frontend'),
 ('payment_status', 'Payment status', 'frontend'),
 ('pictures', 'Pictures', 'frontend'),
-('powered_by_subrion', 'Powered by <a href="http://www.subrion.com" title="Open Source CMS">Subrion CMS</a>', 'frontend'),
+('powered_by_subrion', 'Powered by <a href="http://www.subrion.org" title="Open Source CMS">Subrion CMS</a>', 'frontend'),
 ('print_preview', 'Print Page', 'frontend'),
 ('proceed_pay', 'Proceed to Payment', 'frontend'),
 ('protected_page', 'Protected page', 'frontend'),
@@ -1970,7 +1976,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 ('backup', 'Folder name where your DB backups are saved.', 'tooltip'),
 
 ('caching', 'If you use a slow shared hosting, this will cache your pages for faster loading.', 'tooltip'),
-('charset', 'Default is UTF-8.', 'tooltip'),
+('charset', 'UTF-8 is recommended.', 'tooltip'),
 
 ('date_format', 'Select the preferred date format %e is timezone,  %Y is 4-digit year. See more in Smarty manual.', 'tooltip'),
 
@@ -2002,7 +2008,7 @@ INSERT INTO `{install:prefix}language` (`key`, `value`, `category`) VALUES
 
 ('timezone', 'Select your server timezone.', 'tooltip'),
 
-('underconstruction', 'The message below is shown in case "Display Frontend" option is disabled.', 'tooltip'),
+('underconstruction', 'This message is shown in case &quot;Display Frontend&quot; option is disabled.', 'tooltip'),
 ('upgrade_available', 'Upgrade patch to version :version is available. In order to upgrade please <a href=":url">follow this link</a>.', 'admin');
 
 UPDATE `{install:prefix}language` SET `code` = '{install:lang}', `original` = `value`;

@@ -1,7 +1,31 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 $iaExtra = $iaCore->factory('extra', iaCore::ADMIN);
+$iaUtil = $iaCore->factory('util');
 
 $iaDb->setTable(iaExtra::getTable());
 
@@ -15,7 +39,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			$start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
 			$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 15;
 			$sort = isset($_GET['sort']) ? $_GET['sort'] : '';
-			$dir = in_array($_GET['dir'], array('ASC', 'DESC')) ? $_GET['dir'] : 'ASC';
+			$dir = in_array($_GET['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $_GET['dir'] : iaDb::ORDER_ASC;
 			$filter = isset($_GET['filter']) ? $_GET['filter'] : '';
 
 			switch ($_GET['type'])
@@ -39,9 +63,9 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 						}
 						else
 						{
-							if ($response = $iaCore->util()->getPageContent('http://tools.subrion.com/plugins-list/?version=' . IA_VERSION))
+							if ($response = $iaUtil->getPageContent('http://tools.subrion.com/plugins-list/?version=' . IA_VERSION))
 							{
-								$response = $iaCore->util()->jsonDecode($response);
+								$response = $iaUtil->jsonDecode($response);
 								if (!empty($response['error']))
 								{
 									$output['msg'][] = $response['error'];
@@ -55,7 +79,6 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 										{
 											$pluginInfo = (array)$entry;
 
-											$pluginInfo['type'] = 'remote';
 											$pluginInfo['install'] = 0;
 
 											// exclude installed plugins
@@ -65,7 +88,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 												{
 													$pluginInfo['install'] = 1;
 												}
-												$pluginInfo['date'] = gmdate("Y-m-d H:i:s", $pluginInfo['date']);
+												$pluginInfo['date'] = gmdate('Y-m-d H:i', $pluginInfo['date']);
 												$pluginInfo['file'] = $pluginInfo['name'];
 												$pluginInfo['readme'] = false;
 												$pluginInfo['reinstall'] = false;
@@ -158,7 +181,6 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 												'date' => $iaExtra->itemData['info']['date'],
 												'file' => $file,
 												'notes' => $notes,
-												'type' => 'local',
 												'info' => true,
 												'install' => true
 											);
@@ -270,7 +292,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 									$n = substr($doc, 0, count($doc) - 6);
 									$output['tabs'][] = array(
 										'title' => iaLanguage::get('extra_' . $n, $n),
-										'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.com/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
+										'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 										'cls' => 'extension-docs'
 									);
 								}
@@ -362,8 +384,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 				$fileName = $filePath . '.zip';
 
 				// save remote plugin file
-				$iaCore->util()->downloadRemoteContent('http://tools.subrion.com/download-plugin/?plugin=' . $pluginFolder . '&version=' . IA_VERSION, $fileName);
-	
+				$iaUtil->downloadRemoteContent('http://tools.subrion.com/download-plugin/?plugin=' . $pluginFolder . '&version=' . IA_VERSION, $fileName);
+
 				if (file_exists($fileName))
 				{
 					if (is_writable(IA_PLUGINS))

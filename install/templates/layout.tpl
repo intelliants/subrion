@@ -11,7 +11,7 @@
 			<script src="<?php echo URL_INSTALL ?>templates/js/respond.min.js"></script>
 		<![endif]-->
 
-		<link rel="stylesheet" href="<?php echo URL_INSTALL ?>templates/css/bootstrap.css" />
+		<link rel="stylesheet" href="<?php echo URL_INSTALL ?>templates/css/bootstrap.css">
 
 		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="<?php echo URL_INSTALL ?>templates/img/ico/apple-touch-icon-144-precomposed.png">
 		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="<?php echo URL_INSTALL ?>templates/img/ico/apple-touch-icon-114-precomposed.png">
@@ -45,7 +45,7 @@
 							<a href="https://www.facebook.com/Intelliants" target="_blank"><i class="i-facebook-2"></i></a> 
 							<a href="https://plus.google.com/102500660503219569194/posts" target="_blank"><i class="i-googleplus"></i></a>
 						</div>
-						<a href="http://www.subrion.com/" title="Open Source CMS">Subrion CMS</a>
+						<a href="http://www.subrion.org/" title="Open Source CMS">Subrion CMS</a>
 						<br>
 						<span class="version">v <?php echo IA_VERSION ?></span>
 					</div>
@@ -54,27 +54,27 @@
 				<section id="panel-center">
 					<ul id="nav-sub-something" class="nav-sub active">
 						<li class="heading">Steps</li>
-						<?php
-							$current = array_search($this->step, array_keys($this->steps));
+<?php
+	$current = array_search($this->step, array_keys($this->steps));
 
-							$i = 0;
-							foreach ($this->steps as $key => $value)
-							{
-								$i++;
-								if ($key == $this->step)
-								{
-									echo "<li class=\"active\"><span>{$i}. {$value}</span></li>";
-								}
-								elseif ($current >= $i)
-								{
-									echo '<li class="done"><a href="' . URL_INSTALL . '' . $key . '/"><i class="i-checkmark"></i> ' . $value . '</a></li>';
-								}
-								else
-								{
-									echo "<li><span>{$i}. {$value} </span></li>";
-								}
-							}
-						?>
+	$i = 0;
+	foreach ($this->steps as $key => $value)
+	{
+		$i++;
+		if ($key == $this->step)
+		{
+			echo "<li class=\"active\"><span>{$i}. {$value}</span></li>";
+		}
+		elseif ($current >= $i)
+		{
+			echo '<li class="done"><a href="' . URL_INSTALL . $this->module . '/' . $key . '/"><i class="i-checkmark"></i> ' . $value . '</a></li>';
+		}
+		else
+		{
+			echo "<li><span>{$i}. {$value} </span></li>";
+		}
+	}
+?>
 					</ul>
 				</section>
 				

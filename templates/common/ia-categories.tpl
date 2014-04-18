@@ -7,7 +7,7 @@
 			<div class="{$class_names[$num_columns - 1]}">
 				<div class="cat-wrap">
 					{if isset($icons) && $icons}
-						{if $category.icon}
+						{if isset($category.icon) && $category.icon}
 							<img src="{$smarty.const.IA_CLEAR_URL}uploads/{$category.icon.path}" alt="{$category.icon.title}">
 						{else}
 							<i class="icon-folder-open"></i>

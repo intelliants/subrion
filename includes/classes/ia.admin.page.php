@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaPage extends abstractPlugin
 {
@@ -143,7 +166,10 @@ class iaPage extends abstractPlugin
 	protected function _massUpdateAlias($previous, $new)
 	{
 		$previous = iaSanitize::sql($previous);
+		$previous = (IA_URL_DELIMITER == $previous[strlen($previous) - 1]) ? substr($previous, 0, -1) : $previous;
+
 		$new = iaSanitize::sql($new);
+		$new = (IA_URL_DELIMITER == $new[strlen($new) - 1]) ? substr($new, 0, -1) : $new;
 
 		$cond = iaDb::printf("`alias` LIKE ':alias%'", array('alias' => $previous));
 		$stmt = array('alias' => "REPLACE(`alias`, '$previous', '$new')");

@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 $iaTransaction = $iaCore->factory('transaction');
 
@@ -14,7 +37,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			{
 				case 'items':
 					$output = array('data' => null);
-					if ($items = $iaDb->onefield('item', '`payable` = 1', null, null, 'items'))
+
+					if ($items = $iaCore->factory('item')->getItems(true))
 					{
 						foreach ($items as $key => $item)
 						{
@@ -164,29 +188,39 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			break;
 
 		case iaCore::ACTION_EDIT:
-			$output = $iaCore->factory('grid', iaCore::ADMIN)->gridUpdate($_POST);
+			$output = array(
+				'result' => false,
+				'message' => iaLanguage::get('invalid_parameters')
+			);
 
-			if ($output['result'] && isset($_POST['status']))
+			$params = $_POST;
+
+			if (isset($params['id']) && is_array($params['id']) && count($params) > 1)
 			{
-				foreach ($_POST['id'] as $transactionId)
+				$ids = $params['id'];
+				unset($params['id']);
+
+				$total = count($ids);
+				$affected = 0;
+
+				foreach ($ids as $id)
 				{
-					$transaction = $iaTransaction->getById((int)$transactionId);
-					if ('balance' == $transaction['item'])
+					if ($iaTransaction->update($params, $id))
 					{
-						$iaDb->setTable(iaUsers::getTable());
-						if (iaTransaction::PASSED == $_POST['status'])
-						{
-							$iaDb->update(null, '`id` = ' . $transaction['item_id'], array('funds' => '`funds` + ' . $transaction['total']));
-						}
-						else
-						{
-							if (iaTransaction::PASSED == $transaction['status'])
-							{
-								$iaDb->update(null, '`id` = ' . $transaction['item_id'], array('funds' => '`funds` - ' . $transaction['total']));
-							}
-						}
-						$iaDb->resetTable();
+						$affected++;
 					}
+				}
+
+				if ($affected)
+				{
+					$output['result'] = true;
+					$output['message'] = ($affected == $total)
+						? iaLanguage::get('saved')
+						: iaLanguage::getf('items_updated_of', array('num' => $affected, 'total' => $total));
+				}
+				else
+				{
+					$output['message'] = iaLanguage::get('db_error');
 				}
 			}
 

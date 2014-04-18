@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 $iaDb->setTable(iaLanguage::getTable());
 
@@ -171,7 +194,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			{
 				$lang = (isset($_POST['language']) && array_key_exists($_POST['language'], $iaCore->languages))
 					? $_POST['language']
-					: IA_LANGUAGE;
+					: $iaView->language;
 				$key = preg_replace("#[^a-z0-9_]#", '', $_POST['key']);
 				$value = iaSanitize::sql($_POST['value']);
 				$category = preg_replace("#[^a-z0-9_]#", '', $_POST['category']);
@@ -338,7 +361,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					$counter = 0;
 					$languageCode = strtolower($_POST['code']);
-					$rows = $iaDb->all(array('key', 'value', 'category', 'extras'), "`code` = '" . IA_LANGUAGE . "'");
+					$rows = $iaDb->all(array('key', 'value', 'category', 'extras'), "`code` = '" . $iaView->language . "'");
 					foreach ($rows as $value)
 					{
 						$row = array(

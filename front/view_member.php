@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
@@ -96,7 +119,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					$result = $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit);
 				}
-				// TODO: this section will be removed from the 3.1.5 core
+				// TODO: this section will be removed from the 3.1.7 core
 				// packages should implement the method above instead
 				elseif (method_exists($class, 'addAccountTab'))
 				{
@@ -112,9 +135,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					if ($result['items'])
 					{
-						// add tab in case items exist
-						$sections[$itemName] = array();
-
 						$result['items'] = $iaItem->updateItemsFavorites($result['items'], $itemName);
 					}
 

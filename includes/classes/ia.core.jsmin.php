@@ -50,7 +50,6 @@ define('ORD_SPACE', 32);
 
 class iaJsmin extends abstractUtil
 {
-
   var $a           = '';
   var $b           = '';
   var $input       = '';

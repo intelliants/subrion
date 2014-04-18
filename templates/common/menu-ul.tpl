@@ -12,11 +12,12 @@
 				    {if $menu.level >= 1 && (isset($data[$menu.el_id]) || isset($menu_children))} dropdown-submenu{/if}
 				    {if $menu.level >= 0 && (isset($data[$menu.el_id]) || isset($menu_children)) && $position == 'left'} dropdown-submenu{/if}
 				    ">
-				    
+
 					<a href="{if $menu.url}{$menu.url}{else}{$smarty.const.IA_SELF}#{/if}"
-					   {if (isset($data[$menu.el_id]) || isset($menu_children)) && $menu.level == 0} class="dropdown-toggle" data-toggle="dropdown" data-target="#"{/if}
-					   {if $menu.nofollow} rel="nofollow"{/if}
-					   >
+							{if (isset($data[$menu.el_id]) || isset($menu_children)) && $menu.level == 0} class="dropdown-toggle" data-toggle="dropdown" data-target="#"{/if}
+							{if $menu.nofollow} rel="nofollow"{/if}
+							{if $menu.new_window} target="_blank"{/if}
+					>
 						{$menu.text}{if (isset($data[$menu.el_id]) || isset($menu_children)) && $menu.level == 0  && $position != 'left'} <b class="caret"></b>{/if}
 					</a>
 					{if isset($data[$menu.el_id])}

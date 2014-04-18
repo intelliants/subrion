@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 $ia_version = true;
 include IA_HOME . 'index.php';
@@ -8,11 +31,12 @@ $iaOutput->layout()->title = 'Upgrade Wizard';
 
 $iaOutput->steps = array(
 	'check' => 'Pre-Upgrade Check',
-	'download' => 'Start Upgrade',
-	'finish' => 'Finish'
+	'download' => 'Download Patch',
+	'backup' => 'Backup',
+	'finish' => 'Upgrade'
 );
 
-// check if a user performing an upgrade is administrator
+// check that a user performing an upgrade is administrator
 $iaUsers = iaHelper::loadCoreClass('users', 'core');
 
 $proceed = false;
@@ -81,11 +105,33 @@ switch ($step)
 
 		break;
 
+	case 'backup':
+		require_once IA_INSTALL . 'classes/ia.backup.php';
+		$iaBackup = new iaBackup();
+
+		if (iaHelper::isAjaxRequest())
+		{
+			iaHelper::loadCoreClass('view', 'core')->set('nodebug', true);
+
+			echo $iaBackup->save()
+				? 'success'
+				:  array_shift($iaBackup->messages);
+			exit();
+		}
+		else
+		{
+			$iaOutput->backupFile = str_replace(IA_HOME, '', $iaBackup->filePath);
+		}
+
+		break;
+
 	case 'finish':
 		require_once IA_INSTALL . 'classes/ia.patch.parser.php';
 		require_once IA_INSTALL . 'classes/ia.patch.applier.php';
 
 		$iaOutput->adminPath = iaCore::instance()->iaDb->one_bind('value', '`name` = :name', array('name' => 'admin_page'), iaCore::getConfigTable());
+
+		$options = isset($_GET['options']) && is_array($_GET['options']) ? $_GET['options'] : array();
 
 		try
 		{
@@ -96,7 +142,6 @@ switch ($step)
 			}
 
 			$patchParser = new iaPatchParser($patchFileContent);
-
 			$patch = $patchParser->patch;
 
 			if ($patch['info']['version_from'] != str_replace('.', '', IA_VERSION))
@@ -104,15 +149,13 @@ switch ($step)
 				throw new Exception('Patch is not applicable to your version of Subrion CMS.');
 			}
 
-			$forceMode = (bool)(isset($_GET['mode']) && 'force' == $_GET['mode']);
-
 			$patchApplier = new iaPatchApplier(IA_HOME, array(
 				'host' => INTELLI_DBHOST . ':' . INTELLI_DBPORT,
 				'database' => INTELLI_DBNAME,
 				'user' => INTELLI_DBUSER,
 				'password' => INTELLI_DBPASS,
 				'prefix' => INTELLI_DBPREFIX
-			), $forceMode);
+			), in_array('force-mode', $options));
 			$patchApplier->process($patch, $_SESSION['upgrade_to']);
 
 			$textLog = $patchApplier->getLog();
@@ -137,8 +180,9 @@ switch ($step)
 			// processing the upgrade log to show nicely
 			$textLog = htmlspecialchars($textLog);
 			$textLog = str_replace(
-				array(PHP_EOL, 'SUCCESS', 'ERROR', 'ALERT'),
+				array(PHP_EOL, 'INFO', 'SUCCESS', 'ERROR', 'ALERT'),
 				array('',
+					'<p>',
 					'<p><span class="label label-success">SUCCESS</span>',
 					'<p><span class="label label-danger">ERROR</span>',
 					'<p><span class="label label-warning">ALERT</span>'
@@ -151,6 +195,8 @@ switch ($step)
 			// clean up cache files
 			$tempFolder = IA_HOME . 'tmp' . IA_DS;
 			iaHelper::cleanUpDirectoryContents($tempFolder);
+
+			unset($_SESSION['upgrade_to']);
 		}
 		catch (Exception $e)
 		{
@@ -159,5 +205,50 @@ switch ($step)
 			$iaOutput->message = $e->getMessage();
 		}
 
-		unset($_SESSION['upgrade_to']);
+		break;
+
+	case 'rollback':
+		$iaOutput->steps = array(
+			'check' => 'Upgrade Wizard',
+			'rollback' => 'Rollback'
+		);
+
+		$fileList = glob(IA_HOME . 'backup/backup_*_*.zip');
+		$backups = array();
+
+		if ($fileList)
+		{
+			foreach ($fileList as $fileName)
+			{
+				$fileName = basename($fileName);
+				$array = explode('_', $fileName);
+				if (3 == count($array))
+				{
+					$backups[$array[1]][$fileName] = date('M d, Y', strtotime(substr($array[2], 0, -4)));
+				}
+			}
+		}
+
+		$iaOutput->backups = $backups;
+
+		if (!empty($_POST['backup']))
+		{
+			$fileName = $_POST['backup'];
+			iaSanitize::filenameEscape($fileName);
+			$fileName = IA_HOME . 'backup/' . $fileName;
+
+			if (file_exists($fileName))
+			{
+				require_once IA_INSTALL . 'classes/ia.backup.php';
+				$iaBackup = new iaBackup();
+
+				$iaBackup->restore($fileName)
+					? $iaOutput->success = true
+					: $iaOutput->error = array_shift($iaBackup->messages);
+			}
+			else
+			{
+				$iaOutput->error = 'Incorrect backup file specified.';
+			}
+		}
 }

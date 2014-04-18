@@ -1,247 +1,276 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action']))
 {
-	if (isset($_POST['action']))
+	$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+
+	$iaUsers = $iaCore->factory('users');
+
+	switch ($_POST['action'])
 	{
-		$output = array('error' => true, 'message' => array());
+		case 'edit-picture-title':
+			$title = isset($_POST['value']) ? iaSanitize::sql($_POST['value']) : '';
+			$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : false;
+			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : false;
+			$path = isset($_POST['path']) ? iaSanitize::sql($_POST['path']) : false;
+			$itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
 
-		$iaUsers = $iaCore->factory('users');
+			if ($itemId && $item && $field && $path)
+			{
+				$tableName = $iaCore->factory('item')->getItemTable($item);
 
-		switch ($_POST['action'])
-		{
-			case 'edit_picture_title':
-
-				$title = isset($_POST['value']) ? iaSanitize::sql($_POST['value']) : '';
-				$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : false;
-				$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : false;
-				$path = isset($_POST['path']) ? iaSanitize::sql($_POST['path']) : false;
-				$itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
-
-				if ($itemId && $item && $field && $path)
+				if (iaUsers::getItemName() == $item)
 				{
-					$tableName = $iaCore->factory('item')->getItemTable($item);
+					$itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
+					$memberId = $itemId;
+				}
+				else
+				{
+					$row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName);
+					$itemValue = $row[$field];
+					$memberId = $row['id'];
+				}
 
-					if (iaUsers::getItemName() == $item)
+				if (iaUsers::hasIdentity() && $memberId == iaUsers::getIdentity()->id && $itemValue)
+				{
+					$pictures = null;
+					if ($itemValue[1] == ':')
 					{
-						$itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
-						$memberId = $itemId;
+						$array = unserialize($itemValue);
+						if (is_array($array) && $array)
+						{
+							$pictures = $array;
+						}
 					}
 					else
 					{
-						$row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName);
-						$itemValue = $row[$field];
-						$memberId = $row['id'];
+						if ($array = explode(',', $itemValue))
+						{
+							$pictures = $array;
+						}
 					}
 
-					if (iaUsers::hasIdentity() && $memberId == iaUsers::getIdentity()->id && $itemValue)
+					if (is_array($pictures))
 					{
-						$pictures = null;
-						if ($itemValue[1] == ':')
+						foreach ($pictures as $i => $value)
 						{
-							$array = unserialize($itemValue);
-							if (is_array($array) && $array)
+							if (is_array($value))
 							{
-								$pictures = $array;
+								if ($path == $value['path'])
+								{
+									$pictures[$i]['title'] = $title;
+								}
 							}
+							else
+							{
+								if ($path == $value)
+								{
+									$key = $i;
+								}
+							}
+						}
+
+						$newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
+						$iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName);
+
+						if (0 == $iaDb->getErrorNumber())
+						{
+							$output['error'] = false;
+							unset($output['message']);
 						}
 						else
 						{
-							if ($array = explode(',', $itemValue))
-							{
-								$pictures = $array;
-							}
+							$output['message'] = iaLanguage::get('db_error');
 						}
 
-						if (is_array($pictures))
+						if (iaUsers::getItemName() == $item)
 						{
-							foreach ($pictures as $i => $value)
+							// update current profile data
+							if ($itemId == iaUsers::getIdentity()->id)
 							{
-								if (is_array($value))
-								{
-									if ($path == $value['path'])
-									{
-										$pictures[$i]['title'] = $title;
-									}
-								}
-								else
-								{
-									if ($path == $value)
-									{
-										$key = $i;
-									}
-								}
-							}
-
-							$newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
-							$iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName);
-
-							if (iaUsers::getItemName() == $item)
-							{
-								// update current profile data
-								if ($itemId == iaUsers::getIdentity()->id)
-								{
-									$iaUsers->getAuth($itemId);
-								}
+								$iaUsers->getAuth($itemId);
 							}
 						}
 					}
 				}
-				break;
+			}
 
-			case 'delete-file':
+			break;
 
-				$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : false;
-				$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : false;
-				$path = isset($_POST['path']) ? iaSanitize::sql($_POST['path']) : false;
-				$itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
+		case 'delete-file':
+			$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : false;
+			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : false;
+			$path = isset($_POST['path']) ? iaSanitize::sql($_POST['path']) : false;
+			$itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
 
-				if ($itemId && $item && $field && $path)
+			if ($itemId && $item && $field && $path)
+			{
+				$tableName = $iaCore->factory('item')->getItemTable($item);
+
+				if (iaUsers::getItemName() == $item)
 				{
-					$tableName = $iaCore->factory('item')->getItemTable($item);
+					$itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
+					$memberId = $itemId;
+				}
+				else
+				{
+					$row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName);
+					$itemValue = $row[$field];
+					$memberId = $row['id'];
+				}
 
-					if (iaUsers::getItemName() == $item)
+				if (iaUsers::hasIdentity() && $memberId == iaUsers::getIdentity()->id && $itemValue)
+				{
+					$pictures = null;
+					if ($itemValue[1] == ':')
 					{
-						$itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
-						$memberId = $itemId;
+						$array = unserialize($itemValue);
+						if (is_array($array) && $array)
+						{
+							$pictures = $array;
+						}
 					}
 					else
 					{
-						$row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName);
-						$itemValue = $row[$field];
-						$memberId = $row['id'];
+						if ($array = explode(',', $itemValue))
+						{
+							$pictures = $array;
+						}
 					}
 
-					if (iaUsers::hasIdentity() && $memberId == iaUsers::getIdentity()->id && $itemValue)
+					$key = false;
+					if (is_array($pictures))
 					{
-						$pictures = null;
-						if ($itemValue[1] == ':')
+						foreach ($pictures as $i => $value)
 						{
-							$array = unserialize($itemValue);
-							if (is_array($array) && $array)
+							if (is_array($value))
 							{
-								$pictures = $array;
-							}
-						}
-						else
-						{
-							if ($array = explode(',', $itemValue))
-							{
-								$pictures = $array;
-							}
-						}
-
-						$key = false;
-						if (is_array($pictures))
-						{
-							foreach ($pictures as $i => $value)
-							{
-								if (is_array($value))
+								if ($path == $value['path'])
 								{
-									if ($path == $value['path'])
-									{
-										$key = $i;
-										break;
-									}
-								}
-								else
-								{
-									if ($path == $value)
-									{
-										$key = $i;
-										break;
-									}
+									$key = $i;
+									break;
 								}
 							}
-							if (false !== $key)
+							else
 							{
-								unset($pictures[$key]);
-							}
-							$newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
-						}
-						else
-						{
-							// single image
-							$newValue = '';
-							if ($pictures == $path)
-							{
-								$key = true;
-							}
-						}
-
-						if ($key !== false)
-						{
-							$iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName);
-
-							$iaPicture = $iaCore->factory('picture');
-							$iaPicture->delete($path);
-
-							$output = array('error' => false, 'message' => iaLanguage::get('deleted'));
-
-							if (iaUsers::getItemName() == $item)
-							{
-								// update current profile data
-								if ($itemId == iaUsers::getIdentity()->id)
+								if ($path == $value)
 								{
-									$iaUsers->getAuth($itemId);
+									$key = $i;
+									break;
 								}
 							}
 						}
+						if (false !== $key)
+						{
+							unset($pictures[$key]);
+						}
+						$newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
 					}
-				}
-
-				break;
-
-			case 'send_email':
-
-				$memberInfo = $iaUsers->getInfo((int)$_POST['author_id']);
-
-				if (empty($memberInfo) || $memberInfo['status'] != iaCore::STATUS_ACTIVE)
-				{
-					$output['message'][] = iaLanguage::get('member_doesnt_exist');
-				}
-
-				if (empty($_POST['from_name']))
-				{
-					$output['message'][] = iaLanguage::get('incorrect_fullname');
-				}
-
-				if (empty($_POST['from_email']) || !iaValidate::isEmail($_POST['from_email']))
-				{
-					$output['message'][] = iaLanguage::get('error_email_incorrect');
-				}
-
-				if (empty($_POST['email_body']))
-				{
-					$output['message'][] = iaLanguage::get('err_message');
-				}
-
-				if ($captchaName = $iaCore->get('captcha_name'))
-				{
-					$iaCaptcha = $iaCore->factoryPlugin($captchaName, iaCore::FRONT, 'captcha');
-					if (!$iaCaptcha->validate())
+					else
 					{
-						$output['message'][] = iaLanguage::get('confirmation_code_incorrect');
+						// single image
+						$newValue = '';
+						if ($pictures == $path)
+						{
+							$key = true;
+						}
+					}
+
+					if ($key !== false)
+					{
+						$iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName);
+
+						$iaPicture = $iaCore->factory('picture');
+						$iaPicture->delete($path);
+
+						$output = array('error' => false, 'message' => iaLanguage::get('deleted'));
+
+						if (iaUsers::getItemName() == $item)
+						{
+							// update current profile data
+							if ($itemId == iaUsers::getIdentity()->id)
+							{
+								$iaUsers->getAuth($itemId);
+							}
+						}
 					}
 				}
+			}
 
-				if (empty($output['message']))
+			break;
+
+		case 'send_email':
+			$output['message'] = array();
+			$memberInfo = $iaUsers->getInfo((int)$_POST['author_id']);
+
+			if (empty($memberInfo) || $memberInfo['status'] != iaCore::STATUS_ACTIVE)
+			{
+				$output['message'][] = iaLanguage::get('member_doesnt_exist');
+			}
+
+			if (empty($_POST['from_name']))
+			{
+				$output['message'][] = iaLanguage::get('incorrect_fullname');
+			}
+
+			if (empty($_POST['from_email']) || !iaValidate::isEmail($_POST['from_email']))
+			{
+				$output['message'][] = iaLanguage::get('error_email_incorrect');
+			}
+
+			if (empty($_POST['email_body']))
+			{
+				$output['message'][] = iaLanguage::get('err_message');
+			}
+
+			if ($captchaName = $iaCore->get('captcha_name'))
+			{
+				$iaCaptcha = $iaCore->factoryPlugin($captchaName, iaCore::FRONT, 'captcha');
+				if (!$iaCaptcha->validate())
 				{
-					$iaMailer = $iaCore->factory('mailer');
-
-					$subject = iaLanguage::getf('author_contact_request', array('title' => $_POST['regarding']));
-
-					$iaMailer->FromName  = $_POST['from_name'];
-					$iaMailer->From = $_POST['from_email'];
-					$iaMailer->AddAddress($memberInfo['email']);
-					$iaMailer->Subject = $subject;
-					$iaMailer->Body = strip_tags($_POST['email_body']);
-
-					$output['error'] = !$iaMailer->Send();
-					$output['message'][] = iaLanguage::get($output['error'] ? 'unable_to_send_email' : 'mail_sent');
+					$output['message'][] = iaLanguage::get('confirmation_code_incorrect');
 				}
-		}
+			}
+
+			if (empty($output['message']))
+			{
+				$iaMailer = $iaCore->factory('mailer');
+
+				$subject = iaLanguage::getf('author_contact_request', array('title' => $_POST['regarding']));
+
+				$iaMailer->FromName = $_POST['from_name'];
+				$iaMailer->From = $_POST['from_email'];
+				$iaMailer->AddAddress($memberInfo['email']);
+				$iaMailer->Subject = $subject;
+				$iaMailer->Body = strip_tags($_POST['email_body']);
+
+				$output['error'] = !$iaMailer->Send();
+				$output['message'][] = iaLanguage::get($output['error'] ? 'unable_to_send_email' : 'mail_sent');
+			}
 	}
 
 	$iaView->assign($output);
@@ -252,7 +281,6 @@ if (isset($_GET) && isset($_GET['action']))
 	switch ($_GET['action'])
 	{
 		case 'ckeditor_upload':
-
 			$iaView->disableLayout();
 			$iaView->set('nodebug', 1);
 

@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 abstract class abstractPackageFront extends abstractCore
 {
@@ -51,16 +74,42 @@ abstract class abstractPackageFront extends abstractCore
 	{
 		$itemId = $this->iaDb->insert($itemData, null, self::getTable());
 
-		empty($itemId) || $this->updateCounters($itemId, $itemData, iaCore::ACTION_ADD);
+		if ($itemId)
+		{
+			$this->updateCounters($itemId, $itemData, iaCore::ACTION_ADD);
+
+			// finally, notify plugins
+			$this->iaCore->startHook('phpListingAdded', array(
+				'itemId' => $itemId,
+				'itemName' => $this->getItemName(),
+				'itemData' => $itemData
+			));
+		}
 
 		return $itemId;
 	}
 
 	public function update(array $itemData, $id)
 	{
+		if (empty($id))
+		{
+			return false;
+		}
+
+		$currentData = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
 		$result = (bool)$this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
 
-		empty($result) || $this->updateCounters($id, $itemData, iaCore::ACTION_EDIT);
+		if ($result)
+		{
+			$this->updateCounters($id, $itemData, iaCore::ACTION_EDIT, $currentData);
+
+			$this->iaCore->startHook('phpListingUpdated', array(
+				'itemId' => $id,
+				'itemName' => $this->getItemName(),
+				'itemData' => $itemData,
+				'previousData' => $currentData
+			));
+		}
 
 		return $result;
 	}
@@ -89,13 +138,19 @@ abstract class abstractPackageFront extends abstractCore
 				}
 
 				$this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
+
+				$this->iaCore->startHook('phpListingRemoved', array(
+					'itemId' => $itemId,
+					'itemName' => $this->getItemName(),
+					'itemData' => $entryData
+				));
 			}
 		}
 
 		return $result;
 	}
 
-	public function updateCounters($itemId, array $itemData, $action)
+	public function updateCounters($itemId, array $itemData, $action, $previousData = null)
 	{
 		// within final class, the counters update routines should be placed here
 	}

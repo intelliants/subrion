@@ -17,18 +17,20 @@
 
 	<div class="form-actions">
 		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/" class="btn btn-lg btn-primary"><i class="i-loop"></i> Refresh</a>
+		<a class="pull-right btn btn-primary btn-lg" href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/rollback/"><i class="i-box-remove"></i> Rollback upgrade</a>
 	</div>
 <?php else: ?>
 	<div class="widget widget-default">
 		<div class="widget-content">
 			<p>Getting ready to download the patch file from the Intelliants servers...</p>
-			<p>Click <code>Next</code> button to continue.</p>
+			<p>Click <code>&laquo;Next&raquo;</code> button to continue.</p>
 			<p><a href="#changelog-details" data-toggle="modal" class="btn btn-default"><i class="i-list"></i> Show changelog details</a></p>
 		</div>
 	</div>
 
 	<div class="form-actions">
-		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/download/" class="btn btn-large btn-primary">Next <i class="icon-arrow-right icon-white"></i></a>
+		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/download/" class="btn btn-lg btn-primary">Next <i class="icon-arrow-right icon-white"></i></a>
+		<a class="pull-right btn btn-primary btn-lg" href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/rollback/"><i class="i-box-remove"></i> Rollback upgrade</a>
 	</div>
 
 	<div class="modal fade" id="changelog-details">

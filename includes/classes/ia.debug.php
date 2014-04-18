@@ -1,14 +1,37 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaDebug
 {
 	const STATE_OPENED = 'opened';
 	const STATE_CLOSED = 'closed';
 
-	protected $_timer;
-
 	protected static $_logger;
+
+	protected static $_data = array();
 
 
 	public function __construct()
@@ -29,18 +52,12 @@ class iaDebug
 		echo '<div id="debug" class="' . $debug . ' clearfix">';
 
 		$this->_box('info');
+		$this->_box('hooks');
 		$this->_box('sql');
 		$this->_box('timer');
 
-		if (isset($_SESSION['error']))
-		{
-			$this->_box('error');
-		}
-
-		if (isset($_SESSION['debug']))
-		{
-			$this->_box('debug', self::STATE_OPENED);
-		}
+		empty(self::$_data['error']) || $this->_box('error');
+		empty(self::$_data['debug']) || $this->_box('debug', self::STATE_OPENED);
 	}
 
 	public static function logger($destinationDirectory = null)
@@ -67,21 +84,6 @@ class iaDebug
 
 	protected function _box($type = 'info', $debug = 'none')
 	{
-		// FIXME: the $debug variable is unused in the code below
-		/* COMMENTED OUT
-		if ($debug == 'none' || !in_array($debug, array(self::STATE_OPENED, self::STATE_CLOSED)))
-		{
-			$debug = self::STATE_CLOSED;
-			if (isset($_COOKIE['dtext_' . $type]))
-			{
-				if ($_COOKIE['dtext_' . $type] == self::STATE_OPENED)
-				{
-					$debug = self::STATE_OPENED;
-				}
-			}
-		}
-		/* ENDOFCM */
-
 		echo
 			'<div class="debug-modal" id="dtext-'.$type.'">
 			<a class="debug-btn-close" data-toggle="'.$type.'">&times;</a>
@@ -95,20 +97,16 @@ class iaDebug
 
 	protected function _debugInfo()
 	{
-		if (isset($_SESSION['info']))
-		{
-			foreach ($_SESSION['info'] as $key => $val)
-			{
-				self::vardump($val, (!is_int($key) ? $key : ''));
-			}
-			unset($_SESSION['info']);
-		}
-
 		$iaCore = iaCore::instance();
+		$iaCore->factory('users');
 
-		self::vardump();
-		self::vardump($iaCore->iaDb->getCount(), 'Queries count');
-		self::vardump($iaCore->iaView->getParams(), 'Page Params');
+		self::dump(iaCore::ACCESS_FRONT == $iaCore->getAccessType() ? iaCore::FRONT : iaCore::ADMIN, 'Access Type');
+		self::dump($iaCore->iaView->getParams(), 'Page');
+		self::dump($iaCore->iaView->get('action'), 'Action', 'info');
+		self::dump($iaCore->iaView->get('filename'), 'Module');
+		self::dump($iaCore->iaView->language, 'Language');
+		self::dump(iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : null, 'Identity');
+		self::dump();
 
 		$blocks = array();
 		if ($blocksData = $iaCore->iaView->blocks)
@@ -121,35 +119,31 @@ class iaDebug
 					$blocks[$position][] = $block['name'];
 				}
 			}
-
 		}
-		self::vardump($blocks, 'Blocks List');
 
-		$iaCore->factory('users');
-		if (iaUsers::hasIdentity())
+		self::dump($iaCore->requestPath, 'URL Params');
+		self::dump($blocks, 'Blocks List');
+		self::dump($iaCore->packagesData, 'Installed Packages');
+		self::dump($iaCore->getConfig(), 'Configuration Params');
+
+		if (!empty(self::$_data['info']))
 		{
-			self::vardump(iaUsers::getIdentity(true), 'User Profile');
+			foreach (self::$_data['info'] as $key => $val)
+			{
+				self::dump($val, (!is_int($key) ? $key : ''));
+			}
 		}
 
-		self::vardump();
-		self::vardump(array_keys($iaCore->getHooks()), 'Hooks List');
-		self::vardump($iaCore->packagesData, 'Installed Packages Data');
+		self::dump();
+		self::dump($_POST, '$_POST');
+		self::dump($_FILES, '$_FILES');
+		self::dump($_GET, '$_GET');
 
-		self::vardump();
-		self::vardump($iaCore->requestPath, 'URL Params');
-		self::vardump($iaCore->getConfig(), 'Configuration Params');
-
-		self::vardump();
-		self::vardump($_SERVER, '$_SERVER');
-		self::vardump($_SESSION, '$_SESSION');
-		self::vardump($_COOKIE, '$_COOKIE');
-
-		self::vardump();
-		self::vardump($_POST, '$_POST');
-		self::vardump($_FILES, '$_FILES');
-		self::vardump($_GET, '$_GET');
-
-		echo '<div id="error_console_log"></div>';
+		self::dump();
+		self::dump(PHP_VERSION, 'PHP version');
+		self::dump($_SERVER, '$_SERVER');
+		self::dump($_SESSION, '$_SESSION');
+		self::dump($_COOKIE, '$_COOKIE');
 
 		return '[' . $iaCore->iaView->name() . ']';
 	}
@@ -213,42 +207,92 @@ class iaDebug
 
 					$table .= '<tr><td style="width:15px;color:'.($query[1] > 0.001 ? 'red' : 'green') . ';">'
 						. ($query[1] * 1000) . '&nbsp;ms</td><td style="width:30px;text-align:center;">' . $index . '.</td><td>'
-						. $double.self::vardump($query[0], $title, 1) . '</td></tr>';
+						. $double.self::dump($query[0], $title, 1) . '</td></tr>';
 				}
 			}
 		}
-		echo '<table cellspacing="0" cellpadding="0" width="100%"><tr><th width="30">Time</th><th></th><th>Sql</th></tr>' . $table . '</table>';
+		echo '<table cellspacing="0" cellpadding="0" width="100%"><tr><th width="30">Time</th><th></th><th>Query</th></tr>' . $table . '</table>';
 
 		return sprintf('[Queries: %d]', $iaCore->iaDb->getCount());
 	}
 
 	protected function _debugDebug()
 	{
-		foreach ($_SESSION['debug'] as $key => $val)
+		foreach (self::$_data['debug'] as $key => $val)
 		{
-			self::vardump($val, (!is_int($key) ? $key : ''));
+			self::dump($val, (!is_int($key) ? $key : ''));
 		}
-		$return = '[Count: ' . count($_SESSION['debug']) . ']';
-		unset($_SESSION['debug']);
 
-		return $return;
+		return '[' . count(self::$_data['debug']) . ']';
+	}
+
+	protected function _debugHooks()
+	{
+		$output = '';
+		$i = 0;
+		$total = 0;
+
+		$listLoaded = iaCore::instance()->getHooks();
+		$listUnused = $listLoaded; // needs to be pre-populated
+
+		foreach (self::$_data['hooks'] as $name => $type)
+		{
+			$i++;
+
+			if (isset($listLoaded[$name])) // if this hook has been executed
+			{
+				unset($listUnused[$name]);
+
+				$cellContent = '';
+				foreach ($listLoaded[$name] as $pluginName => $hookData)
+				{
+					$cellContent .= '<h5>' . (empty($pluginName) ? 'core' : $pluginName) . '</h5>';
+					foreach ($hookData as $key => $value)
+					{
+						if ($value && in_array($key, array('code', 'type', 'filename')))
+						{
+							$cellContent .= '<u>' . $key . '</u>: ' . ('code' == $key ? iaSanitize::html($value, 0, 100) : $value) . '<br>';
+						}
+					}
+				}
+				$name = '<span style="color: green;">(' . count($listLoaded[$name]) . ')</span> ' . $name;
+				$cellContent = self::dump($cellContent, $name, true);
+			}
+			else
+			{
+				$cellContent = '<b>' . $name . '</b>';
+			}
+
+			$type = is_array($type) ? $type[0] : $type;
+
+			$output.= '<tr><td width="30">' . $i . '</td><td width="60"><i>' . $type . '</i></td><td>' . $cellContent . '</td></tr>';
+		}
+
+		foreach ($listLoaded as $hooks)
+		{
+			$total += count($hooks);
+		}
+
+		empty($listUnused) || self::dump($listUnused, 'Hooks loaded, but weren\'t executed');
+
+		echo '<h4>Hooks List</h4><table>' . $output . '</table>';
+
+		return "[$total/$i]";
 	}
 
 	protected function _debugError()
 	{
 		$count = 0;
-		foreach ($_SESSION['error'] as $key => $val)
+		foreach (self::$_data['error'] as $key => $val)
 		{
 			if ($val != '<div class="hr">&nbsp;</div>' && strpos($key, 'Backtrace') !== false)
 			{
 				$count++;
 			}
-			self::vardump($val, (!is_int($key) ? $key : ''));
+			self::dump($val, (!is_int($key) ? $key : ''));
 		}
 
-		unset($_SESSION['error']);
-
-		return '[Count: '.$count.']';
+		return '[' . $count . ']';
 	}
 
 	protected function _debugTimer()
@@ -300,7 +344,7 @@ class iaDebug
 
 		$text = str_replace($search, $replace, '<b>Real time render:</b> ' . $totalRealTime . '<br />
 			<b>Math time render:</b> ' . $totalTime . '<br />
-			<b>Memory usage without gz compress:</b> ' . iaSystem::byteView($memoryUsed) . '(' . number_format($memoryUsed, 0, '', ' ') . 'b)
+			<b>Memory usage:</b> ' . iaSystem::byteView($memoryUsed) . '(' . number_format($memoryUsed, 0, '', ' ') . 'b)
 			<table border="0" cellspacing="2" cellpadding="2" width="100%">' . $text . '</table>');
 
 		echo $text;
@@ -308,14 +352,19 @@ class iaDebug
 		return '[Time: '.$totalRealTime.'] [Mem.: '.iaSystem::byteView($memoryUsed).']';
 	}
 
-	public static function vardump($val = '<br />', $title = '', $type = 0)
+	public static function dump($value = '<br />', $title = '', $type = false)
 	{
-		if (is_array($val))
+		if (!INTELLI_DEBUG && !INTELLI_QDEBUG)
 		{
-			if (empty($val))
+			return '';
+		}
+
+		if (is_array($value))
+		{
+			if (empty($value))
 			{
 				echo '<div><span style="text-decoration: line-through;color:#464B4D;font-weight:bold;text-shadow: 0 1px 1px white;">'
-					. $title . '</span> <span style="color:red;">Array is empty</span></div>';
+					. $title . '</span> <span style="color:red;">Empty array</span></div>';
 			}
 			else
 			{
@@ -323,44 +372,48 @@ class iaDebug
 				{
 					$name = 'pre_' . mt_rand(1000, 9999);
 					echo '<div style="margin:0px;font-size:11px;"><span onclick="document.getElementById(\''.$name.'\').style.display = (document.getElementById(\''.$name.'\').style.display==\'none\' ? \'block\' : \'none\');">
-					<b><i style="color:green;cursor:pointer;text-shadow: 0 1px 1px white;">'.$title.'</i></b></span> ['.count($val).']</div>
+					<b><i style="color:green;cursor:pointer;text-shadow: 0 1px 1px white;">'.$title.'</i></b></span> ['.count($value).']</div>
 					<pre style="display:none;font-size:12px;max-height:250px;overflow:auto;margin:5px;" id="'.$name.'">';
 				}
 				else
 				{
 					echo '<pre>';
 				}
-				print_r($val);
+				print_r($value);
 				echo '</pre>';
 			}
 		}
 		else
 		{
-			if (is_bool($val))
+			switch (true)
 			{
-				$val = $val
-					? '<i style="color:green">true</i>'
-					: '<i style="color:red">false</i>';
+				case is_bool($value):
+					$value = $value
+						? '<i style="color:green">true</i>'
+						: '<i style="color:red">false</i>';
+					break;
+				case is_null($value):
+					$value = '<i style="color:gray">NULL</i>';
 			}
 
-			if ($type == 1)
+			if ($type)
 			{
 				$count = 50;
-				if (strlen($val) > $count)
+				if (strlen($value) > $count)
 				{
-					$title = $title ? $title : substr($val, 0, - strlen($val) + $count) . ' ... ';
+					$title = $title ? $title : substr($value, 0, - strlen($value) + $count) . ' ... ';
 					$name = 'val_' . mt_rand(1000, 9999);
 					return '<div onclick="document.getElementById(\''.$name.'\').style.display = (document.getElementById(\''.$name.'\').style.display==\'none\' ? \'block\' : \'none\');">'
-						. '<b><i style="color:black;cursor:pointer;">'.$title.'</i></b></div><div style="display:none;color:#464B4D;" id="'.$name.'"><pre><code class="sql">'.$val.'</code></pre></div> ';
+						. '<b><i style="color:black;cursor:pointer;">'.$title.'</i></b></div><div style="display:none;color:#464B4D;" id="'.$name.'"><pre><code class="sql">'.$value.'</code></pre></div> ';
 				}
 				else
 				{
-					return '<div style="color:black;"><pre><code class="sql">'.$val.'</code></pre></div>';
+					return '<div style="color:black;"><pre><code class="sql">'.$value.'</code></pre></div>';
 				}
 			}
 			else
 			{
-				echo '<div>' . ($title != '' ? '<b><i style="color:#464B4D;text-shadow: 0 1px 1px white;">' . $title . ':</i></b> ' : '') . $val . '</div>';
+				echo '<div>' . ($title != '' ? '<b><i style="color:#464B4D;text-shadow: 0 1px 1px white;">' . $title . ':</i></b> ' : '') . $value . '</div>';
 			}
 		}
 
@@ -369,6 +422,12 @@ class iaDebug
 
 	public static function debug($value, $key = null, $type = 'debug')
 	{
+		if (!INTELLI_DEBUG && defined('INTELLI_QDEBUG') && !INTELLI_QDEBUG)
+		{
+			// no need to continue if debug is turned off
+			return;
+		}
+
 		switch (true)
 		{
 			case is_bool($value):
@@ -394,24 +453,19 @@ class iaDebug
 
 		if (empty($key))
 		{
-			$_SESSION[$type][] = $value;
+			self::$_data[$type][] = $value;
 		}
 		else
 		{
-			if (isset($_SESSION[$type][$key]))
+			if (isset(self::$_data[$type][$key]))
 			{
-				if (is_array($_SESSION[$type][$key]))
-				{
-					$_SESSION[$type][$key][] = $value;
-				}
-				else
-				{
-					$_SESSION[$type][$key] = array($_SESSION[$type][$key], $value);
-				}
+				is_array(self::$_data[$type][$key])
+					? self::$_data[$type][$key][] = $value
+					: self::$_data[$type][$key] = array(self::$_data[$type][$key], $value);
 			}
 			else
 			{
-				$_SESSION[$type][$key] = $value;
+				self::$_data[$type][$key] = $value;
 			}
 		}
 	}

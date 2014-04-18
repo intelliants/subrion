@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaPatchApplier
 {
@@ -15,6 +38,7 @@ class iaPatchApplier
 	const FILE_FORMAT_BINARY = 0x20;
 	const FILE_FORMAT_TEXT = 0x40;
 
+	const LOG_INFO = 'info';
 	const LOG_ERROR = 'error';
 	const LOG_ALERT = 'alert';
 	const LOG_SUCCESS = 'success';
@@ -24,6 +48,15 @@ class iaPatchApplier
 	protected $_scriptRoot;
 
 	private $_signatures = array(
+		999 => array(
+			'Subrion - open source content management system',
+			'This file is part of Subrion.',
+			'Subrion is free software: you can redistribute it and/or modify',
+			'it under the terms of the GNU General Public License as published by',
+			'the Free Software Foundation, either version 3 of the License, or',
+			'(at your option) any later version.',
+			'@link http://www.subrion.org/'
+		),
 		765 => array(
 			'COMPANY: Intelliants LLC',
 			'PROJECT: Subrion Content Management System',
@@ -57,10 +90,10 @@ class iaPatchApplier
 		{
 			if (!$this->_dbConnect())
 			{
-				$this->_logInfo('Unable to connect to the database :database.', self::LOG_ERROR, array('database' => $this->_dbConnectionParams['database']));
+				$this->_logInfo('Unable to connect to the database :database.', self::LOG_INFO, array('database' => $this->_dbConnectionParams['database']));
 				return;
 			}
-			$this->_logInfo('Starting to process SQL queries...', self::LOG_SUCCESS);
+			$this->_logInfo('Starting to process SQL queries...', self::LOG_INFO);
 			foreach ($patch['queries'] as $entry)
 			{
 				$this->_processQuery($entry);
@@ -68,7 +101,7 @@ class iaPatchApplier
 		}
 		if (count($patch['files']) > 0)
 		{
-			$this->_logInfo('Starting to process files in :mode mode...', self::LOG_SUCCESS, array('mode' => $this->_forceMode ? 'forced' : 'regular'));
+			$this->_logInfo('Starting to process files in :mode mode...', self::LOG_INFO, array('mode' => $this->_forceMode ? 'forced' : 'regular'));
 			chdir($this->_scriptRoot);
 			foreach ($patch['files'] as $entry)
 			{

@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaField extends abstractCore
 {
@@ -1334,6 +1357,11 @@ class iaField extends abstractCore
 					$previousValues[$fieldName] = empty($previousValues[$fieldName]) ? array() : $previousValues[$fieldName];
 					$previousValues[$fieldName] = is_array($previousValues[$fieldName]) ? $previousValues[$fieldName] : unserialize($previousValues[$fieldName]);
 
+					foreach ($previousValues[$fieldName] as $fileKey => $fileValue)
+					{
+						$previousValues[$fieldName][$fileKey]['title'] = isset($data[$fieldName . '_title'][$fileKey]) ? $data[$fieldName . '_title'][$fileKey] : $fileValue['title'];
+					}
+
 					// initialize class to work with images
 					$methodName = '_processImageField';
 					if (self::STORAGE == $field['type'])
@@ -1365,7 +1393,7 @@ class iaField extends abstractCore
 
 						$fieldValue = array(
 							'title' => (isset($data[$fieldName . '_title'][$id]) ?
-								iaSanitize::html(substr($data[$fieldName . '_title'][$id], 0, 100)) : ''),
+								substr(iaSanitize::html($data[$fieldName . '_title'][$id]), 0, 100) : ''),
 							'path' => $filename
 						);
 
@@ -1382,7 +1410,7 @@ class iaField extends abstractCore
 
 				// If already has images, append them.
 				$item[$fieldName] = array_merge($previousValues[$fieldName], $item[$fieldName]);
-				$item[$fieldName] = empty($item[$fieldName]) ? false : serialize($item[$fieldName]);
+				$item[$fieldName] = empty($item[$fieldName]) ? '' : serialize($item[$fieldName]);
 			}
 
 			if (isset($item[$fieldName]))
@@ -1421,7 +1449,7 @@ class iaField extends abstractCore
 			}
 		}
 
-		$filename.= '_' . iaUtil::generateToken(4);
+		$filename .= '_' . iaUtil::generateToken(4);
 
 		return $glue ? $filename . '.' . $extension : array($filename, $extension);
 	}

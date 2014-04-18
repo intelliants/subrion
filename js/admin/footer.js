@@ -554,30 +554,68 @@ $(function()
 
 				if (!$this.hasClass('disabled'))
 				{
-					$this.fadeOut('fast', function()
-					{
-						$this.addClass('disabled');
-					});
+					$this.animate({
+						left: '10px',
+						opacity: 0
+					}, 150, function() {
+						$this.hide().prev().show(function() {
+							$.post(intelli.config.admin_url + '/actions/read.json', {action: 'remove-installer'}, function(response)
+							{
+								if (!response.error)
+								{
+									$this.prev().animate({
+										left: '10px',
+										opacity: 0
+									}, 150, function() {
+										$this.prev().hide().prev().show();
+									});
 
-					$.post(intelli.config.admin_url + '/actions/read.json', {action: 'remove-installer'}, function(response)
-					{
-						if (!response.error)
-						{
-							$installerAlert
-								.removeClass('alert-danger')
-								.addClass('alert-info');
-							$('i', $this)
-								.removeClass('i-wrench')
-								.addClass('i-checkmark')
-								.parent()
-								.fadeIn('fast');
-						}
+									$installerAlert
+										.removeClass('alert-danger')
+										.addClass('alert-info');
+
+									setTimeout(function() {
+										clearNotification($installerAlert);
+									}, 2000);
+								}
+							});
+						});
 					});
 				}
 			});
 
-			var resolveBtnHtml = '<div class="b-resolve__wrapper"><a href="#" class="b-resolve__btn" title="Resolve issue"><i class="i-wrench"></i></a></p>';
+			var resolveBtnHtml = '<div class="b-resolve__wrapper">' + 
+									'<span href="#" class="b-resolve__btn b-resolve__btn--result" title="' + _t('notification_resolve--resolved') + '"><i class="i-checkmark"></i> ' + _t('notification_resolve--resolved') + '</span>' + 
+									'<span href="#" class="b-resolve__btn b-resolve__btn--progress" title="' + _t('notification_resolve--working') + '"><i class="i-spinner"></i> ' + _t('notification_resolve--working') + '</span>' + 
+									'<a href="#" class="b-resolve__btn" title="' + _t('notification_resolve--resolve') + '"><i class="i-wrench"></i> ' + _t('notification_resolve--resolve') + '</a>' + 
+								 '</div>';
 			$installerAlert.addClass('b-resolve').append(resolveBtnHtml);
 		}
 	}
 });
+
+function clearNotification(el)
+{
+	var $nLabel = $('.notifications.alerts > a .label-info'),
+		$nLabelCount = parseInt($nLabel.text()),
+		$nBlock = $('.notifications.alerts .dropdown-block');
+
+	if (0 != $nLabelCount)
+	{
+		$nLabel.text($nLabelCount - 1);
+	}
+
+	if ($('.alert', $nBlock).length >= 2)
+	{
+		el.animate({
+			top: '-10px',
+			opacity: 0
+		}, 150, function() {
+			el.hide();
+		})
+	}
+	else
+	{
+		el.closest('.dropdown').find('.dropdown-toggle').dropdown('toggle');
+	}
+}

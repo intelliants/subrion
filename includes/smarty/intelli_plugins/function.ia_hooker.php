@@ -7,23 +7,21 @@ function smarty_function_ia_hooker($params, &$smarty)
 		return;
 	}
 
-	iaSystem::renderTime('<b>smarty</b> - ' . $params['name']);
+	$name = $params['name'];
+
+	iaDebug::debug('smarty', $name, 'hooks');
+	iaSystem::renderTime('smarty', $name);
 
 	$iaCore = iaCore::instance();
 	$hooks = $iaCore->getHooks();
 
-	if (!array_key_exists($params['name'], $hooks) || empty($hooks[$params['name']]))
+	if (!array_key_exists($name, $hooks) || empty($hooks[$name]))
 	{
-		return false;
+		return;
 	}
 
-	foreach ($hooks[$params['name']] as $hook)
+	foreach ($hooks[$name] as $hook)
 	{
-		if (empty($hook))
-		{
-			continue;
-		}
-
 		$hook['type'] = (in_array($hook['type'], array('php', 'html', 'plain', 'smarty'))) ? $hook['type'] : 'php';
 		if (empty($hook['pages']) || in_array($iaCore->iaView->name(), $hook['pages']))
 		{

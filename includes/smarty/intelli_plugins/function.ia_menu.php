@@ -19,6 +19,7 @@ function smarty_function_ia_menu($params, Smarty_Internal_Template &$smarty)
 			$params['menus'][0][] = array_merge($menuDefaults, array(
 				'id' => -1,
 				'page_name' => 'logout',
+				'new_window' => 0,
 				'text' => iaLanguage::get('logout'),
 				'url' => 'logout/',
 				'active' => ('logout' == $currentPage)
@@ -29,6 +30,7 @@ function smarty_function_ia_menu($params, Smarty_Internal_Template &$smarty)
 			$params['menus'][0][] = array_merge($menuDefaults, array(
 				'id' => -1,
 				'page_name' => 'login',
+				'new_window' => 0,
 				'text' => iaLanguage::get('page_title_login'),
 				'url' => 'login/',
 				'active' => ('login' == $currentPage)
@@ -36,6 +38,7 @@ function smarty_function_ia_menu($params, Smarty_Internal_Template &$smarty)
 			$params['menus'][0][] = array_merge($menuDefaults, array(
 				'id' => 0,
 				'page_name' => 'member_registration',
+				'new_window' => 0,
 				'text' => iaLanguage::get('page_title_member_registration'),
 				'url' => 'registration/',
 				'active' => ('member_registration' == $currentPage)

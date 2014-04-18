@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaSitemap extends abstractCore
 {
@@ -31,6 +54,8 @@ class iaSitemap extends abstractCore
 	 */
 	public function generate($type = self::TYPE_GOOGLE)
 	{
+		set_time_limit(600);
+
 		$entries = $this->_getEntries($type);
 		$content = $this->_wrapToXml($entries, $type);
 
@@ -71,6 +96,7 @@ class iaSitemap extends abstractCore
 
 		// 1. first process the core content
 		$extrasList = $this->iaCore->iaDb->keyvalue(array('name', 'type'), "`status` = 'active'", 'extras');
+		$homePageName = $this->iaCore->get('home_page');
 
 		$stmt = '`nofollow` = 0 AND `service` = 0 AND `status` = :status AND `passw` = :password ORDER BY `order`';
 		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'password' => ''));
@@ -82,14 +108,14 @@ class iaSitemap extends abstractCore
 			{
 				switch (true)
 				{
+					case ($page['name'] == $homePageName):
+						$url = '';
+						break;
 					case $page['custom_url']:
 						$url = $page['custom_url'];
 						break;
 					case $page['alias']:
 						$url = $page['alias'];
-						break;
-					case ($page['name'] == iaView::DEFAULT_HOMEPAGE):
-						$url = '';
 						break;
 					default:
 						$url = $page['name'] . IA_URL_DELIMITER;

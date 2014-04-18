@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaOutput
 {
@@ -38,17 +61,21 @@ class iaOutput
 		return $this->_layout;
 	}
 
-	public function render($template)
+	public function render($templateName)
 	{
-		$templateFile = $this->_templatesPath . $template . self::TEMPLATE_FILE_EXTENSION;
-		if (!file_exists($templateFile))
+		if (!$this->isRenderable($templateName))
 		{
-			throw new Exception('Template file does not exist.');
+			throw new Exception('Template file is not acceptable.');
 		}
 
-		$this->layout()->content = $this->_fetch($templateFile);
+		$this->layout()->content = $this->_fetch($this->_composePath($templateName));
 
-		return $this->_fetch($this->_templatesPath . 'layout' . self::TEMPLATE_FILE_EXTENSION);
+		return $this->_fetch($this->_composePath('layout'));
+	}
+
+	public function isRenderable($templateName)
+	{
+		return is_readable($this->_composePath($templateName));
 	}
 
 	protected function _fetch($filePath)
@@ -59,5 +86,10 @@ class iaOutput
 		ob_end_clean();
 
 		return $result;
+	}
+
+	protected function _composePath($templateName)
+	{
+		return $this->_templatesPath . $templateName . self::TEMPLATE_FILE_EXTENSION;
 	}
 }

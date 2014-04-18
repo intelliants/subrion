@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaUtil extends abstractUtil
 {
@@ -98,19 +121,16 @@ class iaUtil extends abstractUtil
 	 */
 	public static function safeHTML($string)
 	{
-		include_once IA_INCLUDES . 'htmlpurifier' . IA_DS . 'HTMLPurifier.auto' . iaSystem::EXECUTABLE_FILE_EXT;
-
-		$config = HTMLPurifier_Config::createDefault();
-		$config->set('HTML.Doctype', 'XHTML 1.0 Transitional');
+		require_once IA_INCLUDES . 'htmlpurifier' . IA_DS . 'HTMLPurifier.auto' . iaSystem::EXECUTABLE_FILE_EXT;
 
 		// generate cache folder
-		$purifier_cache_dir = IA_CACHEDIR . 'Serializer' . IA_DS;
-		if (!file_exists($purifier_cache_dir))
-		{
-			@mkdir($purifier_cache_dir, 0777);
-		}
+		$cacheDirectory = IA_CACHEDIR . 'Serializer' . IA_DS;
+		file_exists($cacheDirectory) || @mkdir($cacheDirectory, 0777);
 
-		$config->set('Cache.SerializerPath', $purifier_cache_dir);
+		$config = HTMLPurifier_Config::createDefault();
+
+		$config->set('HTML.Doctype', 'XHTML 1.0 Transitional');
+		$config->set('Cache.SerializerPath', $cacheDirectory);
 		$config->set('Attr.AllowedFrameTargets', array('_blank'));
 		$config->set('Attr.AllowedRel', 'facebox,nofollow,print,ia_lightbox');
 
@@ -119,9 +139,8 @@ class iaUtil extends abstractUtil
 		$config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/)%');
 
 		$purifier = new HTMLPurifier($config);
-		$string = $purifier->purify($string);
 
-		return $string;
+		return $purifier->purify($string);
 	}
 
 	public static function go_to($url)
@@ -415,9 +434,25 @@ class iaUtil extends abstractUtil
 		);
 	}
 
+	/**
+	 * Delete file(s)
+	 *
+	 * @param string|array $file filename(s) to be deleted
+	 *
+	 * @return bool
+	 */
 	public static function deleteFile($file)
 	{
-		if (is_file($file))
+		if (is_array($file))
+		{
+			foreach ($file as $name)
+			{
+				self::deleteFile($name);
+			}
+
+			return true;
+		}
+		elseif (is_file($file))
 		{
 			return @unlink($file);
 		}
@@ -426,7 +461,7 @@ class iaUtil extends abstractUtil
 	}
 
 	/**
-	 * Loads core of the UTF8 lib and then functions specified in arguments
+	 * Load core of the UTF8 lib and then functions specified in arguments
 	 *
 	 * @param list of function names to be prepared to use
 	 * @return bool

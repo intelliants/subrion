@@ -4,10 +4,10 @@
 	<summary>Barebones template for Subrion CMS</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.0.5</version>
-	<date>2013-11-19</date>
+	<version>3.0.6</version>
+	<date>2014-03-13</date>
 	<status>active</status>
-	<compatibility>3.1.0</compatibility>
+	<compatibility>3.1.4</compatibility>
 
 	<layout>
 		<section name="after-header">
@@ -45,11 +45,12 @@
 		    type="divider" 
 		    order="3000">Skeleton</config>
 
-	<config group="template_skeleton" 
-		    name="ckeditor_color" 
-		    type="text" 
-		    description="CKEditor color"
-		    order="3001">#868686</config>
+	<config group="template_skeleton"
+		    name="sticky_navbar" 
+		    type="radio"
+		    order="3001" 
+		    values="1,0" 
+		    description="Sticky navbar">0</config>
 
 	<config group="template_skeleton" 
 		    name="max_top_menu_items" 

@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaTransaction extends abstractCore
 {
@@ -8,6 +31,8 @@ class iaTransaction extends abstractCore
 	const REFUNDED = 'refunded';
 	const PASSED = 'passed';
 	const PENDING = 'pending';
+
+	const TRANSACTION_MEMBER_BALANCE = 'balance';
 
 	protected static $_table = 'transactions';
 	protected $_tableGateways = 'payment_gateways';
@@ -38,18 +63,6 @@ class iaTransaction extends abstractCore
 	}
 
 	/**
-	 * Checks if input string is a valid payment status
-	 *
-	 * @param string $status text to be processed
-	 *
-	 * @return bool
-	 */
-	public static function isPaymentStatus($status)
-	{
-		return (bool)in_array($status, array(self::FAILED, self::REFUNDED, self::PASSED, self::PENDING));
-	}
-
-	/**
 	 * Checks if payment gateway installed
 	 *
 	 * @param string $aGateway payment gateway name
@@ -73,9 +86,35 @@ class iaTransaction extends abstractCore
 		return $this->one_bind('gateway', '`name` = :gateway', array('gateway' => $gatewayName), $this->getTableGateways());
 	}
 
-	public function update(array $transactionData)
+	public function update(array $transactionData, $id)
 	{
-		return (bool)$this->iaDb->update($transactionData, null, array('date' => iaDb::FUNCTION_NOW), self::getTable());
+		$result = false;
+
+		if ($transaction = $this->getById($id))
+		{
+			$result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), array('date' => iaDb::FUNCTION_NOW), self::getTable());
+
+			if ($result && !empty($transactionData['status']))
+			{
+				$operation = empty($transactionData['item']) ? $transaction['item'] : $transactionData['item'];
+				if (self::TRANSACTION_MEMBER_BALANCE == $operation)
+				{
+					$itemId = empty($transactionData['item_id']) ? $transaction['item_id'] : $transactionData['item_id'];
+					$amount = empty($transactionData['total']) ? $transaction['total'] : $transactionData['total'];
+
+					if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
+					{
+						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), array('funds' => '`funds` + ' . $amount), iaUsers::getTable());
+					}
+					elseif (self::PASSED != $transactionData['status'] && self::PASSED == $transaction['status'])
+					{
+						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), array('funds' => '`funds` - ' . $amount), iaUsers::getTable());
+					}
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	public function delete($aId)
@@ -91,7 +130,12 @@ class iaTransaction extends abstractCore
 
 	public function getById($transactionId)
 	{
-		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`sec_key` = :key', array('key' => $transactionId), self::getTable());
+		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($transactionId), self::getTable());
+	}
+
+	public function getBy($key, $id)
+	{
+		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id', array('id' => $id), self::getTable());
 	}
 
 	public function createIpn($transaction)
@@ -140,7 +184,7 @@ class iaTransaction extends abstractCore
 
 		if (!$return)
 		{
-			$this->iaCore->util()->go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
+			iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 		}
 
 		return $transactionId;

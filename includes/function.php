@@ -3,7 +3,23 @@
 
 function _v($val = '<br />', $title = '', $type = 0)
 {
-	iaDebug::vardump($val, $title, $type);
+	iaDebug::dump($val, $title, $type);
+}
+
+function _vc()
+{
+	echo '<!-- DEBUG OUTPUT STARTED' . PHP_EOL;
+	if ($count = func_num_args())
+	{
+		$count--;
+		foreach (func_get_args() as $i => $argument)
+		{
+			echo PHP_EOL . 'Arg #' . ($i + 1) . ':' . PHP_EOL;
+			var_dump($argument);
+			echo PHP_EOL . ($i == $count ? '' : '==========');
+		}
+	}
+	echo '-->';
 }
 
 function _d($value, $key = null)

@@ -207,9 +207,9 @@
   }
 
   // tweak search form
-  .nav-bar-collapse .form-inline {
+  .nav-bar-collapse form {
     float: none;
-    margin: 20px;
+    margin: 20px 0;
     padding: 0;
 
     input {
@@ -220,8 +220,10 @@
   }
 
   // navigation tweaks
-  .nav-mainmenu {
+  .nav-bar .nav-mainmenu {
     padding-bottom: 20px;
+    max-height: 200px;
+    overflow: auto;
 
     li {
       float: none;
@@ -232,11 +234,26 @@
       }
 
       a {
+        text-transform: none;
+        font-weight: normal;
+        margin: 0;
+        padding: 0 12px;
+        line-height: 30px;
+        color: @linkColor;
 
         &:hover {
           background: @linkColor;
+          color: #fff;
         }
       }
+
+      &.active > a {
+        color: #fff;
+      }
+    }
+
+    .dropdown-toggle {
+      display: none;
     }
 
     .dropdown-menu {
@@ -258,19 +275,6 @@
       > .active > a:focus {
         background-image: none;
       }
-    }
-
-    .dropdown-submenu > a,
-    .dropdown-submenu > a:hover,
-    .dropdown-submenu > a:focus {
-      background-image: none;
-      background-color: transparent;
-      color: @textColor;
-    }
-
-    .dropdown-submenu > a:hover {
-      background-color: @linkColor;
-      color: #fff;
     }
   }
 }

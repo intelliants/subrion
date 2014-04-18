@@ -1,7 +1,30 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
-define('IA_VERSION', '3.1.4');
+define('IA_VERSION', '3.1.6');
 
 if (isset($ia_version))
 {
@@ -35,7 +58,7 @@ define('IA_TMP', IA_HOME . 'tmp' . IA_DS);
 define('IA_CACHEDIR', IA_TMP . 'cache' . IA_DS);
 define('IA_FRONT', IA_HOME . 'front' . IA_DS);
 define('IA_ADMIN', IA_HOME . 'admin' . IA_DS);
-define('FOLDER', trim(str_replace('/index.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER));
+define('FOLDER', trim(str_replace(IA_DS . 'index.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER));
 define('FOLDER_URL', FOLDER != '' ? trim(str_replace(IA_DS, IA_URL_DELIMITER, FOLDER), IA_URL_DELIMITER) . IA_URL_DELIMITER : '');
 
 // process stripslashes if magic_quotes is enabled on the server
@@ -81,8 +104,6 @@ if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], '.') && !filte
 session_name('INTELLI_' . substr(md5(IA_HOME), 0, 10));
 session_start();
 
-unset($_SESSION['debug'], $_SESSION['error'], $_SESSION['info']);
-
 $performInstallation = false;
 
 if (file_exists(IA_INCLUDES . 'config.inc.php'))
@@ -108,6 +129,7 @@ if ($performInstallation)
 }
 
 require_once IA_CLASSES . 'ia.system.php';
+require_once IA_INCLUDES . 'function.php';
 
 if (function_exists('spl_autoload_register'))
 {
@@ -128,9 +150,6 @@ else
 
 set_error_handler(array('iaSystem', 'error'));
 
-require_once IA_INCLUDES . 'function.php';
-require_once IA_CLASSES . 'ia.interfaces.php';
-
-iaSystem::renderTime('Core Loaded');
+iaSystem::renderTime('Core started');
 
 iaCore::instance()->init();

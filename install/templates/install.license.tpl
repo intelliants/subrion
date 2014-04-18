@@ -1,6 +1,6 @@
 <div class="widget widget-default">
 	<div class="widget-content">
-		<iframe style="width: 100%; height: 500px;" src="<?php echo URL_HOME ?>LICENSE.htm" class="license" frameborder="0" scrolling="auto"></iframe>
+		<iframe style="width: 100%; height: 500px;" src="<?php echo URL_HOME ?>license.txt" class="license" frameborder="0" scrolling="auto"></iframe>
 	</div>
 </div>
 

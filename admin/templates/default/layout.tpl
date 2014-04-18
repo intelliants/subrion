@@ -137,7 +137,7 @@
 							{/if}
 							<li><a href="http://www.subrion.com/desk/" target="_blank">Helpdesk</a></li>
 							<li><a href="http://www.subrion.com/forums/" target="_blank">User forums</a></li>
-							<li><a href="http://dev.subrion.com/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
+							<li><a href="http://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
 						</ul>
 					</li>
 					<li>

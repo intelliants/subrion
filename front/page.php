@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
@@ -23,9 +46,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					$pageTitle = $newPage['titles'];
 				}
-				elseif (isset($newPage['titles'][IA_LANGUAGE]))
+				elseif (isset($newPage['titles'][$iaView->language]))
 				{
-					$pageTitle = $newPage['titles'][IA_LANGUAGE];
+					$pageTitle = $newPage['titles'][$iaView->language];
 				}
 				$iaView->assign('titles', $pageTitle);
 			}
@@ -35,9 +58,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					$iaView->assign('content', $newPage['contents']);
 				}
-				elseif (isset($newPage['contents'][IA_LANGUAGE]))
+				elseif (isset($newPage['contents'][$iaView->language]))
 				{
-					$iaView->assign('content', $newPage['contents'][IA_LANGUAGE]);
+					$iaView->assign('content', $newPage['contents'][$iaView->language]);
 				}
 			}
 			if (isset($newPage['passw']) && $newPage['passw'])
@@ -75,12 +98,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	// check read permissions
 	$page['passw'] = trim($page['passw']);
 
-	if (isset($_POST['password']) && !empty($page['passw']) && $passw != $page['passw'])
+	if (isset($_POST['password']) && $page['passw'] && $passw != $page['passw'])
 	{
 		$iaView->setMessages(iaLanguage::get('password_incorrect'), iaView::ERROR_NOT_FOUND);
 	}
 
-	if ($page['passw'] != '' && $passw != $page['passw'] && !$previewMode)
+	if ($page['passw'] && $passw != $page['passw'] && !$previewMode)
 	{
 		if (!$preview)
 		{
@@ -117,7 +140,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	if ($page && !$previewMode)
 	{
-		$page_content_check = $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'content', $jt_where) . IA_LANGUAGE . "'");
+		$page_content_check = $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'content', $jt_where) . $iaView->language . "'");
 		$page_content = $page_content_check ? $page_content_check : $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'content', $jt_where) . $defaultLanguage . "'");
 
 		$iaView->assign('content', $page_content);

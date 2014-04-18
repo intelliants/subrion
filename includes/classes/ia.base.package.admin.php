@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 abstract class abstractPackageAdmin extends iaGrid
 {
@@ -121,7 +144,7 @@ abstract class abstractPackageAdmin extends iaGrid
 				isset($data[$row['status']][$row['day']]) || $data[$row['status']][$row['day']] = 0;
 				$data[$row['status']][$row['day']]++;
 			}
-			foreach ($data as &$days)
+			foreach ($data as $key => &$days)
 			{
 				$i = null;
 				for ($i = 1; $i < 8; $i++)
@@ -131,13 +154,14 @@ abstract class abstractPackageAdmin extends iaGrid
 				}
 				ksort($days, SORT_NUMERIC);
 				$days = implode(',', $days);
+				$stArray[] = $key;
 			}
 		}
 
 		return array_merge(array(
 			'_format' => 'package',
 			'data' => $defaultProcessing
-				? array('array' => implode('|', $data), 'max' => $max)
+				? array('array' => implode('|', $data), 'max' => $max, 'statuses' => implode('|', $stArray))
 				: implode(',', $statuses),
 			'rows' => $statuses,
 			'item' => $this->getItemName(),
@@ -152,7 +176,14 @@ abstract class abstractPackageAdmin extends iaGrid
 		if ($itemId)
 		{
 			$this->_writeLog(iaCore::ACTION_ADD, $itemData, $itemId);
+
 			$this->updateCounters($itemId, $itemData, iaCore::ACTION_ADD);
+
+			$this->iaCore->startHook('phpListingAdded', array(
+				'itemId' => $itemId,
+				'itemName' => $this->getItemName(),
+				'itemData' => $itemData
+			));
 		}
 
 		return $itemId;
@@ -177,23 +208,31 @@ abstract class abstractPackageAdmin extends iaGrid
 		if ($result)
 		{
 			$this->_writeLog(iaCore::ACTION_EDIT, $itemData, $id);
+
 			$this->updateCounters($id, $itemData, iaCore::ACTION_EDIT, $currentData);
+
+			$this->iaCore->startHook('phpListingUpdated', array(
+				'itemId' => $id,
+				'itemName' => $this->getItemName(),
+				'itemData' => $itemData,
+				'previousData' => $currentData
+			));
 		}
 
 		return $result;
 	}
 
-	public function delete($entryId)
+	public function delete($itemId)
 	{
 		$result = false;
 
-		if ($entryData = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($entryId), self::getTable()))
+		if ($entryData = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($itemId), self::getTable()))
 		{
-			$result = (bool)$this->iaDb->delete(iaDb::convertIds($entryId), self::getTable());
+			$result = (bool)$this->iaDb->delete(iaDb::convertIds($itemId), self::getTable());
 
 			if ($result)
 			{
-				$this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
+				$this->_writeLog(iaCore::ACTION_DELETE, $entryData, $itemId);
 
 				// we have to check for uploaded images of this listing
 				if ($imageFields = $this->iaCore->factory('field')->getImageFields($this->getPackageName()))
@@ -209,7 +248,13 @@ abstract class abstractPackageAdmin extends iaGrid
 					}
 				}
 
-				$this->updateCounters($entryId, $entryData, iaCore::ACTION_DELETE);
+				$this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
+
+				$this->iaCore->startHook('phpListingRemoved', array(
+					'itemId' => $itemId,
+					'itemName' => $this->getItemName(),
+					'itemData' => $entryData
+				));
 			}
 		}
 

@@ -9,7 +9,7 @@
 	<status>active</status>
 	<compatibility>3.1</compatibility>
 
-	<config group="pictures" name="fancybox_divider" custom="1" type="divider" description="fancyBox configuration">fancyBox</config>
+	<config group="pictures" name="fancybox_divider" type="divider">fancyBox</config>
 	<config group="pictures" name="fancybox_slide_transition" custom="1" type="select" multiplevalues="elastic,fade" description="fancyBox slide effect">elastic</config>
 	<config group="pictures" name="fancybox_open_transition" custom="1" type="select" multiplevalues="elastic,fade" description="fancyBox open/close effect">fade</config>
 	<config group="pictures" name="fancybox_slide_speed" custom="1" type="select" multiplevalues="fast,slow,normal" description="fancyBox slide speed">fast</config>
@@ -19,13 +19,11 @@
 	<config group="pictures" name="fancybox_closeBtn" custom="1" type="radio" values="1,0" description="Display close button">1</config>
 	<config group="pictures" name="fancybox_closeClick" custom="1" type="radio" values="1,0" description="If set, fancyBox will be closed when user clicks the content">0</config>
 
-
 	<hooks>
 		<hook name="smartyFrontAfterHeadSection,smartyAdminAfterHeadSection" type="smarty">
 			<![CDATA[
 {if 'fancybox' == $config.lightbox_name}
 	{ia_add_media files='css:_IA_URL_plugins/fancybox/js/jquery.fancybox, js:_IA_URL_plugins/fancybox/js/jquery.fancybox.pack'}
-
 	{ia_add_js}
 $(function()
 {

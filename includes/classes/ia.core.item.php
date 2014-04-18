@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaItem extends abstractCore
 {
@@ -42,13 +65,15 @@ class iaItem extends abstractCore
 	/**
 	* Returns array with keys of available items and values - packages titles
 	*
+	* @param bool $payableOnly - flag to return items, that can be paid
+	*
 	* @return array
 	*/
-	public function getPackageItems()
+	public function getPackageItems($payableOnly = false)
 	{
 		$result = array();
 
-		$itemsInfo = $this->getItemsInfo();
+		$itemsInfo = $this->getItemsInfo($payableOnly);
 		foreach ($itemsInfo as $itemInfo)
 		{
 			$result[$itemInfo['item']] = $itemInfo['package'];
@@ -58,7 +83,10 @@ class iaItem extends abstractCore
 	}
 
 	/**
-	 * Returns items parameters
+	 * Returns items list
+	 *
+	 * @param bool $payableOnly - flag to return items, that can be paid
+	 *
 	 * @return array
 	 */
 	public function getItemsInfo($payableOnly = false)
@@ -67,8 +95,19 @@ class iaItem extends abstractCore
 
 		if (is_null($itemsInfo))
 		{
-			$itemsInfo = $this->iaDb->all('`item`, `package`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? ' AND `payable` = 1' : '', null, null, self::$_itemsTable);
+			$itemsInfo = $this->iaDb->all('`item`, `package`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::$_itemsTable);
 			$itemsInfo = is_array($itemsInfo) ? $itemsInfo : array();
+
+			// get active packages
+			$packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getTable());
+			foreach($itemsInfo as $key => $itemInfo)
+			{
+				if ('core' != $itemInfo['package'] && !in_array($itemInfo['package'], $packages))
+				{
+					unset($itemsInfo[$key]);
+				}
+			}
+
 		}
 
 		return $itemsInfo;
@@ -76,11 +115,14 @@ class iaItem extends abstractCore
 
 	/**
 	 * Returns list of items
+	 *
+	 * @param bool $payableOnly - flag to return items, that can be paid
+	 *
 	 * @return array
 	 */
-	public function getItems()
+	public function getItems($payableOnly = false)
 	{
-		return array_keys($this->getPackageItems());
+		return array_keys($this->getPackageItems($payableOnly));
 	}
 
 	protected function _searchItems($search, $type = 'item')

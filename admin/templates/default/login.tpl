@@ -39,7 +39,7 @@
 
 		<div class="login-block-content">
 			<div class="login-header clearfix">
-				<a href="http://www.subrion.com/" class="logo"><img src="{$img}logo-symbol-150.png" alt="Subrion CMS" title="Subrion CMS"/></a>
+				<a href="http://www.subrion.org/" class="logo"><img src="{$img}logo-symbol-150.png" alt="Subrion CMS" title="Subrion CMS"/></a>
 				<h3>{lang key='welcome_to_admin_panel'}</h3>
 			</div>
 			<div class="login-body">
@@ -88,10 +88,11 @@
 				</form>
 			</div>
 			<p class="copyright">
-				Powered by <a href="http://www.subrion.com/" title="Subrion CMS">Subrion CMS v{$config.version}</a><br />
+				Powered by <a href="http://www.subrion.org/" title="Subrion CMS">Subrion CMS v{$config.version}</a><br />
 				Copyright &copy; 2008-{$smarty.now|date_format:'%Y'} <a href="http://www.intelliants.com/" title="Intelligent Web Solutions">Intelliants LLC</a>
 			</p>
 		</div>
+		<a href="{$smarty.const.IA_URL}" class="back-to-home"><span>←</span> {lang key='back_to_homepage'}</a>
 	</div>
 
 	{ia_hooker name='smartyAdminFooterBeforeJsDisplay'}

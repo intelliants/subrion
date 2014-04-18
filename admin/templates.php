@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 $iaTemplate = $iaCore->factory('template', iaCore::ADMIN);
 
@@ -28,7 +51,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 						$contents = file_get_contents($documentationPath . $doc);
 						$output['tabs'][] = array(
 							'title' => iaLanguage::get('extra_' . $tab, $tab),
-							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.com/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
+							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 							'cls' => 'extension-docs'
 						);
 					}
@@ -77,7 +100,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaCache = $iaCore->factory('cache');
 
 	// set default template
-	if (isset($_POST['set_template']))
+	if (isset($_POST['set_template']) || isset($_POST['reinstall']))
 	{
 		$template = $_POST['template'];
 
@@ -92,7 +115,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$messages[] = iaLanguage::get('template_folder_error');
 		}
 
-		$infoXmlFile = IA_FRONT_TEMPLATES . $template . IA_DS . 'info' . IA_DS . 'install.xml';
+		$infoXmlFile = IA_FRONT_TEMPLATES . $template . IA_DS . 'info' . IA_DS . iaTemplate::INSTALL_FILE_NAME;
 
 		if (!file_exists($infoXmlFile) && !$error)
 		{

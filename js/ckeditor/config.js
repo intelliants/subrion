@@ -3,7 +3,7 @@
  * For licensing, see LICENSE.html or http://ckeditor.com/license
  */
 
-CKEDITOR.editorConfig = function( config )
+CKEDITOR.editorConfig = function(config)
 {
 	config.allowedContent = true;
 	config.language = 'en';

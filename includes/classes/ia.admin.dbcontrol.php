@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaDbControl extends abstractCore
 {
@@ -14,17 +37,16 @@ class iaDbControl extends abstractCore
 	{
 		$result = false;
 
-		$query = $this->iaDb->query('SHOW TABLES');
+		$sql = "SHOW TABLES LIKE '{$this->iaDb->prefix}%'";
+		$query = $this->iaDb->query($sql);
+
 		if ($this->iaDb->getNumRows($query) > 0)
 		{
 			$result = array();
 			$function = INTELLI_CONNECT . '_fetch_row';
 			while ($row = $function($query))
 			{
-				if (0 === strpos($row[0], $this->iaDb->prefix))
-				{
-					$result[] = $row[0];
-				}
+				$result[] = $row[0];
 			}
 		}
 
@@ -58,7 +80,7 @@ class iaDbControl extends abstractCore
 	 */
 	public function splitSQL($file, $delimiter = ';')
 	{
-		set_time_limit(0);
+		$result = false;
 
 		if (is_file($file))
 		{
@@ -66,6 +88,7 @@ class iaDbControl extends abstractCore
 
 			if (is_resource($file))
 			{
+				set_time_limit(0);
 				$query = array();
 
 				while (!feof($file))
@@ -89,8 +112,12 @@ class iaDbControl extends abstractCore
 						$query = array();
 					}
 				}
+
+				$result = true;
 			}
 		}
+
+		return $result;
 	}
 
 	/**
@@ -176,7 +203,7 @@ class iaDbControl extends abstractCore
 			}
 		}
 
-		$output = substr($output, 0, -3);
+		$output = substr($output, 0, -2);
 		$output .= PHP_EOL . ')';
 
 		if ($collation = $this->_getTableCollation($tableName))
@@ -264,7 +291,7 @@ class iaDbControl extends abstractCore
 	public function makeFullBackup($tableName, $drop = false, $complete = false, $prefix = true)
 	{
 		$out = $this->makeStructureBackup($tableName, $drop, $prefix);
-		$out .= PHP_EOL . PHP_EOL;
+		$out .= PHP_EOL;
 		$out .= $this->makeDataBackup($tableName, $complete, $prefix);
 		$out .= PHP_EOL . PHP_EOL;
 

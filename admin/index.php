@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
@@ -89,7 +112,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if (isset($_SERVER['HTTP_REFERER']))
 			{
-				iaCore::util()->go_to($_SERVER['HTTP_REFERER']);
+				iaUtil::go_to($_SERVER['HTTP_REFERER']);
 			}
 
 			break;
@@ -241,7 +264,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 									$class = 'other';
 							}
 
-							$issue = preg_replace('/#(\d+)/', '<a href="http://dev.subrion.com/issues/$1" target="_blank">#$1</a>', ltrim($line, '+-* '));
+							$issue = preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', ltrim($line, '+-* '));
 							$log[$index][$class] .= '<li>' . $issue . '</li>';
 						}
 					}

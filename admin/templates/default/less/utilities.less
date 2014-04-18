@@ -49,6 +49,10 @@
   .text-overflow();
 }
 
+.text-break-word {
+  word-wrap: break-word;
+}
+
 // bottom margin if neccecary
 .gap {
 	margin-bottom: 10px;
@@ -325,7 +329,8 @@
 
 .msg_box {
 
-  &-notif {
+  &-notif,
+  &-success {
     background: #95ba12 !important;
   }
 }
@@ -382,37 +387,12 @@
 
 .b-resolve {
   position: relative;
-  padding-right: 40px;
 
   &__wrapper {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 40px;
-    border-left: 1px solid #eee;
+    position: relative;
+    overflow: hidden;
 
     a {
-      display: block;
-      width: 20px;
-      height: 20px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      margin-top: -10px;
-      margin-left: -10px;
-      border: 2px solid @brand-primary;
-      color: @link-color;
-      font-size: 12px;
-      line-height: 16px;
-      text-align: center;
-      border-radius: 50%;
-
-      &:hover {
-        text-decoration: none;
-        color: @link-hover-color;
-        border-color: @link-hover-color;
-      }
 
       &.disabled,
       &.disabled:hover {
@@ -420,6 +400,35 @@
         background: @brand-info;
         color: #fff;
       }
+    }
+  }
+
+  &__btn {
+    position: relative;
+    color: @link-color;
+
+    i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+    }
+
+    &--progress {
+      display: none;
+      color: #999;
+
+      i {
+        -webkit-animation: spin 0.7s infinite linear;
+        -moz-animation: spin 0.7s infinite linear;
+        -ms-animation: spin 0.7s infinite linear;
+        -o-animation: spin 0.7s infinite linear;
+        animation: spin 0.7s infinite linear;
+      }
+    }
+
+    &--result {
+      display: none;
+      color: @brand-info;
     }
   }
 }

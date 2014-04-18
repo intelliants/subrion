@@ -36,7 +36,7 @@
 		{/ia_add_js}
 	</head>
 
-	<body>
+	<body{if $config.sticky_navbar} class="sticky-navbar"{/if}>
 		<header>
 
 			<section class="section section-narrow inventory">

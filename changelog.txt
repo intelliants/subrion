@@ -228,3 +228,44 @@
 	+ Feature #1434: Style 404 page
 	+ Feature #1444: Add the "store-load" listener to IntelliGrid
 	+ Feature #1459: Display title field in all-items-page.tpl
+
+>> From 3.1.4 to 3.1.5 <<
+
+	- Bug #1465: Mysql version field is empty
+	- Bug #1466: Admin Panel: configuration link is displayed in Extensions section when package is deactivated
+	- Bug #1468: If image doesn't exist in uploads folder it can not be removed
+	- Bug #1469: Parent & children pages don't work again
+	- Bug #1473: Blank page if no mysqli extension installed
+	- Bug #1491: Account balance does not update when adding transaction
+	- Bug #1494: Member Balance page shows incorrect funds
+	+ Feature #86: Improve Hooks List in debug mode
+	+ Feature #1364: Easy backup creation before upgrade process
+	+ Feature #1425: Move xml extension to constant
+	+ Feature #1443: Debug in HTML comments mode
+	+ Feature #1484: Improve sitemap
+	+ Feature #1497: Link to subrion.org instead of subrion.com
+
+>> From 3.1.5 to 3.1.6 <<
+
+	- Bug #1482: Incorrect working of Remote Plugins installation if I have not the latest version of the core
+	- Bug #1498: Unable to set a title for uploaded image
+	- Bug #1532: Error in debugger
+	- Bug #1533: Incorrect iaDb::convertIds() function behavior
+	- Bug #1548: Default value for fields is set to 0
+	- Bug #1549: New blocks are not added during a package upgrade
+	- Bug #1550: Frontend: intelli.notifFloatBox shows all of notifications in red (as error)
+	- Bug #1556: Titles are empty for multiple images upload field
+	- Bug #1561: When package is disabled - statistics block is visible on dashboard
+	- Bug #1562: Fields order is reversed after any package reinstallation
+	+ Feature #301: Reinstall template button
+	+ Feature #1505: Return mysql error in debugger instead of php error
+	+ Feature #1516: Disable pages with <changeset>
+	+ Feature #1522: Change dev.subrion.com to .org
+	+ Feature #1524: Admin Panel: improved graphical presentation of added items/listings
+	+ Feature #1526: Implement some easy way to add custom tabs
+	+ Feature #1528: Improve debug hooks section
+	+ Feature #1530: Backend: URL preview field isn't completely visible
+	+ Feature #1543: Open page in a new window
+	+ Feature #1552: phpListingRemoved should be called in package's abstract classes
+	+ Feature #1555: Add GPLv3 license to the core files
+	+ Feature #1575: Hooks from template install

@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 {
@@ -197,6 +220,15 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			$this->_queryList[] = array($sql, $times);
 		}
 
+		// 2013 - lost connection during the execution
+		if (!$result && 2013 != mysql_errno())
+		{
+			$error = $this->getError();
+			$error .= PHP_EOL . $sql;
+
+			trigger_error($error, E_USER_WARNING);
+		}
+
 		return $result;
 	}
 
@@ -256,7 +288,11 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		{
 			$result = mysqli_fetch_assoc($query);
 		}
-		mysqli_free_result($query);
+
+		if ($query)
+		{
+			mysqli_free_result($query);
+		}
 
 		return $result;
 	}
@@ -287,7 +323,11 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 				$result[] = $row;
 			}
 		}
-		mysqli_free_result($query);
+
+		if ($query)
+		{
+			mysqli_free_result($query);
+		}
 
 		return $result;
 	}
@@ -320,7 +360,11 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 				}
 			}
 		}
-		mysqli_free_result($query);
+
+		if ($query)
+		{
+			mysqli_free_result($query);
+		}
 
 		return $result;
 	}
@@ -356,7 +400,11 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 				$result[$array[0]] = $asArray ? $array : $array[1];
 			}
 		}
-		mysqli_free_result($query);
+
+		if ($query)
+		{
+			mysqli_free_result($query);
+		}
 
 		return $result;
 	}
@@ -803,7 +851,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	 * 		generated sql code looks like:
 	 * 		UPDATE `prefix_table_name` SET `title` = 'My Row Title', `text` = 'My Row Text', `date` = NOW() WHERE `id` = '50';
 	 *
-	 * @param array $fields fields key=>value array to be updated
+	 * @param array $values fields key=>value array to be updated
 	 * @param string $condition condition used for the update query, if empty tries to update using id field from $fields array
 	 * @param array|null $rawValues key=>value array for the record without sanitizing, commonly used for date insert
 	 * @param string|null $tableName table name to perform update, null uses current set table
@@ -947,7 +995,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	 */
 	public static function convertIds($ids, $columnName = 'id', $equal = true)
 	{
-		if (empty($ids) || empty($columnName))
+		if (empty($columnName))
 		{
 			return false;
 		}

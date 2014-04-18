@@ -79,7 +79,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			]]>
 		</hook>
 		<hook name="adminDashboardStatistics" page_type="admin"><![CDATA[$items['personal_blog:blogs'] = 'plugin';]]></hook>
-		<hook name="sitemapGeneration"><![CDATA[$items[] = 'personal_blog:blog';]]></hook>
+		<hook name="sitemapGeneration" page_type="admin" pages="index"><![CDATA[$items[] = 'personal_blog:blog';]]></hook>
 	</hooks>
 
 	<install>

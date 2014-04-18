@@ -16,18 +16,22 @@ $(function()
 		var data = $this.data();
 
 		var statGroups = data.array.split('|');
+		var statLabels = data.statuses.split('|');
+
 		if (statGroups.length > 0)
 		{
 			var max = data.max || 100;
-			$this.sparkline('html', {fillColor: false, changeRangeMin: 0, chartRangeMax: max, height: '65px', width: '280px'});
-			var colors = ['red', 'green', 'navy', 'orange', 'purple', 'grey'];
+			$this.sparkline('html', {fillColor: false, changeRangeMin: 0, lineWidth: 2, spotRadius: 0, spotColor: '', chartRangeMax: max, height: '65px', width: '280px'});
+			var colors = ['#2ecc71', '#f39c12', '#3498db', '#7f8c8d', '#a864a8', '#95a5a6'];
 			var colorIndex = 1;
 
 			for (var j = 0; j <= statGroups.length; j++)
 			{
 				if (!statGroups[j]) continue;
 
-				$this.sparkline(statGroups[j].split(','), {composite: true, fillColor: false, lineColor: colors[colorIndex - 1], changeRangeMin: 0, chartRangeMax: max, height: '65px', width: '280px'});
+				$this.sparkline(statGroups[j].split(','), {composite: true, lineWidth: 2, spotRadius: 0, spotColor: '', fillColor: false, lineColor: colors[colorIndex - 1], changeRangeMin: 0, chartRangeMax: max, height: '65px', width: '280px',
+					tooltipPrefix: statLabels[j].charAt(0).toUpperCase() + statLabels[j].slice(1) + ' - '
+				});
 
 				if (colorIndex == colors.length) colorIndex = 0;
 				colorIndex++;

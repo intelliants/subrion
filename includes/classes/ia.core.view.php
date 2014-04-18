@@ -1,11 +1,35 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaView extends abstractUtil
 {
 	const DEFAULT_ACTION = 'index';
 	const DEFAULT_HOMEPAGE = 'index';
 	const PAGE_ERROR = 'error';
+
 	const TEMPLATE_FILENAME_EXT = '.tpl';
 
 	const SUCCESS = 'success';
@@ -83,7 +107,7 @@ class iaView extends abstractUtil
 		}
 		else
 		{
-			if ($value == '_home_')
+			if ('_home_' == $value)
 			{
 				$value = $this->homePage;
 			}
@@ -262,13 +286,15 @@ class iaView extends abstractUtil
 
 	public function getAdminMenu()
 	{
+		$iaDb = &$this->iaCore->iaDb;
+
 		$result = array();
 		$menuGroups = array();
 		$extras = $this->iaCore->get('extras');
 		$stmt = "`extras` IN ('', '" . implode("','", $extras) . "')";
 		$templateName = $this->iaCore->get('tmpl');
 
-		$rows = $this->iaCore->iaDb->all(array('id', 'name', 'title'), $stmt . ' ORDER BY `order`', null, null, 'admin_pages_groups');
+		$rows = $iaDb->all(array('id', 'name', 'title'), $stmt . ' ORDER BY `order`', null, null, 'admin_pages_groups');
 		foreach ($rows as $row)
 		{
 			$menuGroups[$row['id']] = array_merge($row, array('items' => array()));
@@ -289,7 +315,7 @@ class iaView extends abstractUtil
 			"AND p.`status` = ':status' " .
 			'ORDER BY p.`order`';
 		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->iaCore->iaDb->prefix,
+			'prefix' => $iaDb->prefix,
 			'table_admin_pages' => 'admin_pages',
 			'table_config_groups' => iaCore::getConfigGroupsTable(),
 			'table_extras' => iaItem::getTable(),
@@ -297,7 +323,7 @@ class iaView extends abstractUtil
 			'groups' => implode(',', array_keys($menuGroups)),
 			'status' => iaCore::STATUS_ACTIVE
 		));
-		$rows = $this->iaCore->iaDb->getAll($sql);
+		$rows = $iaDb->getAll($sql);
 		foreach ($rows as $row)
 		{
 			$menuGroups[$row['group']]['items'][] = $row;
@@ -306,7 +332,7 @@ class iaView extends abstractUtil
 		$iaAcl = $this->iaCore->factory('acl');
 
 		// config groups to be included as menu items
-		$rows = $this->iaCore->iaDb->all(array('name', 'title', 'extras'), "`name` != 'email_templates' ORDER BY `order`", null, null, iaCore::getConfigGroupsTable());
+		$rows = $iaDb->all(array('name', 'title', 'extras'), "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
 		$configGroups = array();
 
 		foreach ($rows as $row)
@@ -528,7 +554,7 @@ class iaView extends abstractUtil
 			else
 			{
 				$sql =
-					'SELECT m.*, p.`nofollow` ' .
+					'SELECT m.*, p.`nofollow`, p.`new_window` ' .
 					'FROM `:prefixmenus` m ' .
 					'LEFT JOIN `:prefixpages` p ON (p.`name` = m.`page_name`) ' .
 					'WHERE m.`menu_id` = :menu ORDER BY m.`level`, m.`id`';
@@ -722,31 +748,7 @@ class iaView extends abstractUtil
 		$baseUrl = $this->iaCore->get('baseurl', $this->domainUrl);
 		$page404 = true;
 
-		if (empty($pages))
-		{
-			array_unshift($this->iaCore->requestPath, $this->name());
-
-			$this->name('_home_');
-
-			if (self::DEFAULT_HOMEPAGE != $this->name())
-			{
-				$sql =
-					'SELECT ' . $fields .
-					"FROM `{$this->iaCore->iaDb->prefix}pages` p " .
-					"LEFT JOIN `{$this->iaCore->iaDb->prefix}extras` e ON(e.`name` = p.`extras`) " .
-					"WHERE p.`name` = '" . $this->name() . "' AND p.`status` = 'active' " .
-						"AND (e.`status` = 'active' OR e.`status` IS NULL) " .
-					'ORDER BY p.`alias`';
-
-				if ($pageName = $this->iaCore->iaDb->getRow($sql))
-				{
-					$page404 = false;
-					$pageParams = $pageName;
-					$this->extrasUrl = ($pageName['url'] == IA_URL_DELIMITER) ? '': $pageName['url'];
-				}
-			}
-		}
-		else
+		if ($pages)
 		{
 			$pageExtension = $this->get('extension');
 			if (self::REQUEST_HTML != $this->getRequestType()
@@ -814,14 +816,6 @@ class iaView extends abstractUtil
 		{
 			$this->iaCore->setPackagesData();
 		}
-
-		iaDebug::debug(PHP_VERSION, 'PHP_VERSION', 'info');
-		iaDebug::debug(iaUsers::hasIdentity(), 'USER HAS IDENTITY', 'info');
-		iaDebug::debug(iaCore::ACCESS_FRONT == $this->iaCore->getAccessType() ? iaCore::FRONT : iaCore::ADMIN, 'ACCESS TYPE', 'info');
-		iaDebug::debug(IA_SELF, 'IA_SELF', 'info');
-		iaDebug::debug('<br>', null, 'info');
-		iaDebug::debug($this->language, 'Current Language', 'info');
-		iaDebug::debug($this->name(), 'Page Name', 'info');
 
 		if ($page404)
 		{

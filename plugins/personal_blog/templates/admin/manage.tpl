@@ -29,7 +29,7 @@
 				<label class="col col-lg-2 control-label" for="input-alias">{lang key='title_alias'}</label>
 				<div class="col col-lg-4">
 					<input type="text" name="alias" id="input-alias" value="{if isset($entry.alias)}{$entry.alias}{/if}">
-					<p class="help-block col-lg-4 text-overflow" id="title_box" style="display: none;">{lang key='page_url_will_be'}: <span id="title_url" class="text-danger">{$smarty.const.IA_URL}</span></p>
+					<p class="help-block text-break-word" id="title_box" style="display: none;">{lang key='page_url_will_be'}: <span id="title_url" class="text-danger">{$smarty.const.IA_URL}</span></p>
 				</div>
 			</div>
 

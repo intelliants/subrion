@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
@@ -99,7 +122,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	list($tabs, $fieldgroups) = $iaField->generateTabs($iaField->filterByGroup($item, $itemName));
 
 	// compose tabs
-	$sections = array_merge(array('common' => $fieldgroups), $tabs, array('password' => null, 'member_balance' => null, 'plans' => null));
+	$sections = array_merge(array('common' => $fieldgroups), $tabs);
 
 	$extraTabs = array();
 	$iaCore->startHook('editProfileExtraTabs', array('tabs' => &$extraTabs, 'item' => &$item));

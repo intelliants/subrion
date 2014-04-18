@@ -41,13 +41,18 @@
 								{if $template.name != $tmpl}
 									<button type="submit" name="set_template" class="btn btn-success btn-sm"><i class="i-checkmark"></i> {lang key='set_as_default_template'}</button>
 								{else}
+									{if $smarty.const.INTELLI_DEBUG}
+										<button type="submit" name="reinstall" class="btn btn-warning btn-sm"><i class="i-loop"></i></button>
+									{/if}
 									<!-- <a href="#" class="btn btn-warning btn-sm disabled"><i class="i-checkmark"></i> {lang key='active'}</a> -->
 									{if $template.config}
 										<a href="{$smarty.const.IA_ADMIN_URL}configuration/template_{$tmpl}/" class="btn btn-sm btn-default" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
 									{/if}
 								{/if}
 								<a href="#" rel="{$template.name}" class="btn btn-sm btn-default js-cmd-info" title="{lang key='details'}"><i class="i-info"></i></a>
-								<a href="{$smarty.const.IA_URL}index/?preview={$template.name}" class="btn btn-sm btn-default" title="{lang key='preview'}" target="_blank"><i class="i-eye"></i></a>
+								{if $template.name != $tmpl}
+									<a href="{$smarty.const.IA_URL}index/?preview={$template.name}" class="btn btn-sm btn-default" title="{lang key='preview'}" target="_blank"><i class="i-eye"></i></a>
+								{/if}
 							</form>
 						{elseif isset($template.remote)}
 							<form method="post" class="clearfix">

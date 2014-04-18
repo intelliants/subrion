@@ -1,5 +1,28 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaHelper
 {
@@ -68,8 +91,6 @@ class iaHelper
 	{
 		if (!class_exists('iaCore'))
 		{
-			define('IA_LANGUAGE', 'en');
-
 			define('IA_INCLUDES', IA_HOME . 'includes' . IA_DS);
 			define('IA_SMARTY', IA_INCLUDES . 'smarty' . IA_DS);
 			define('IA_CLASSES', IA_INCLUDES . 'classes' . IA_DS);
@@ -114,13 +135,16 @@ class iaHelper
 			$iaCore->factory('language');
 			$iaCore->iaView = $iaCore->factory('view');
 
-			$languages = $iaCore->iaDb->one_bind(array('value'), '`name` = :name', array('name' => 'languages'), iaCore::getConfigTable());
-			$languages = empty($languages) ? array('en' => 'English') : unserialize($languages);
+			$config = array('baseurl', 'languages', 'timezone');
+			$config = $iaCore->iaDb->keyvalue(array('name', 'value'), "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
+
+			$languages = empty($config['languages']) ? array('en' => 'English') : unserialize($config['languages']);
 			$iaCore->languages = $languages;
+			$iaCore->iaView->language = 'en';
 
-			date_default_timezone_set($iaCore->iaDb->one_bind(array('value'), '`name` = :name', array('name' => 'timezone'), iaCore::getConfigTable()));
+			date_default_timezone_set($config['timezone']);
 
-			define('IA_CLEAR_URL', $iaCore->iaDb->one_bind(array('value'), '`name` = :name', array('name' => 'baseurl'), iaCore::getConfigTable()));
+			define('IA_CLEAR_URL', $config['baseurl']);
 			define('IA_URL', IA_CLEAR_URL);
 			define('IA_FRONT_TEMPLATES', IA_HOME . 'templates' . IA_DS);
 			define('IA_TEMPLATES', IA_FRONT_TEMPLATES);

@@ -2,10 +2,7 @@ $(function()
 {
 	if ($('#error').length > 0)
 	{
-		$('html, body').animate(
-		{
-			scrollTop: $('.page-header').offset().top
-		});
+		$('html, body').animate({scrollTop: $('.page-header').offset().top});
 	}
 
 	if ('object' == typeof jQuery.tabs)
@@ -18,10 +15,10 @@ $(function()
 	{
 		if ($.trim($(this).html()) == '')
 		{
-			var tab_id = '#';
-			tab_id += $(this).attr('id');
+			var tabId = '#';
+			tabId += $(this).attr('id');
 			$(this).remove();
-			$('a[href='+ tab_id +']').parent('li').remove();
+			$('a[href='+ tabId +']').parent('li').remove();
 		}
 	});
 
@@ -34,17 +31,18 @@ $(function()
 		}
 	});
 
-	// quick fix for empty first tab
 	if ($('.tabbable').length > 0)
 	{
 		$('.tabbable .nav-tabs li a:first').tab('show');
 	}
 
-	$('input[placeholder]').each(function(){
+	$('input[placeholder]').each(function()
+	{
 		inputPlaceholder(this);
 	});
 
-	$('.js-filter-numeric').each(function(){
+	$('.js-filter-numeric').each(function()
+	{
 		$(this).numeric();
 	});
 
@@ -55,7 +53,8 @@ $(function()
 	});
 
 	// Navbar clickable parent menus
-	$('.nav > li:has(ul)').hover(function(){
+	$('.nav > li:has(ul)').hover(function()
+	{
 		var _this = $(this);
 		_this.addClass('open');
 		var thisHref = $('> a', _this).attr('href');
@@ -64,11 +63,10 @@ $(function()
 		});
 		// disable click on More dropdown
 		$('.dropdown-more').unbind('click');
-	}, function () {
-		_this = $(this);
-		setTimeout(function(){
-			_this.removeClass('open');
-		});
+	}, function()
+	{
+		var $this = $(this);
+		setTimeout(function(){$this.removeClass('open');});
 	});
 
 	// update picture titles
@@ -81,19 +79,20 @@ $(function()
 			type: 'text',
 			params: function(params)
 			{
-				var self = $(this);
+				var $self = $(this);
 
-				params.action = 'edit_picture_title';
-				params.field = self.data('field');
-				params.item = self.data('item');
-				params.itemid = self.data('item-id');
-				params.path = self.data('picture-path');
+				params.action = 'edit-picture-title';
+				params.field = $self.data('field');
+				params.item = $self.data('item');
+				params.itemid = $self.data('item-id');
+				params.path = $self.data('picture-path');
 
 				return params;
 			},
-			success: function(data)
+			success: function(response)
 			{
-				intelli.notifFloatBox({msg: _t('saved'), type: 'success', autohide: true});
+				var success = ('boolean' == typeof response.error && !response.error);
+				intelli.notifFloatBox({msg: success ? _t('saved') : response.message, type: success ? 'success' : 'error', autohide: true});
 			}
 		});
 	}
@@ -133,7 +132,8 @@ $(function()
 	// add/delete pictures fields
 	function detectFilename()
 	{
-		$('.upload-wrap').on('change', 'input[type="file"]', function() {
+		$('.upload-wrap').on('change', 'input[type="file"]', function()
+		{
 			var filename = $(this).val();
 			var lastIndex = filename.lastIndexOf("\\");
 			if (lastIndex >= 0) {
@@ -162,7 +162,7 @@ $(function()
 		}
 		else
 		{
-			intelli.notifFloatBox({msg: intelli.lang.no_more_files, type: 'notification', autohide: true, pause: 2500});
+			intelli.notifFloatBox({msg: intelli.lang.no_more_files, type: 'notif', autohide: true, pause: 2500});
 		}
 
 		detectFilename();
@@ -181,18 +181,20 @@ $(function()
 		}
 	};
 
-	$('.js-add-img').on('click', function(e) {
+	$('.js-add-img').on('click', function(e)
+	{
 		e.preventDefault();
 		addImgItem(this);
 	});
 
-	$('.js-remove-img').on('click', function(e) {
+	$('.js-remove-img').on('click', function(e)
+	{
 		e.preventDefault();
 		removeImgItem(this);
 	});
 });
 
-function inputPlaceholder (input, color)
+function inputPlaceholder(input, color)
 {
   if (!input) return null;
 
