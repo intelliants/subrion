@@ -1,0 +1,25 @@
+{
+	"name": "intelliants/subrion",
+	"type": "cms",
+	"description": "Opensource content management system.",
+	"keywords": ["subrion","intelliants","cms","framework"],
+	"homepage": "https://github.com/intelliants/subrion",
+	"license": "GPLv3",
+	"authors": [
+		{
+			"name": "The Subrion Community",
+			"email": "tech@subrion.com",
+			"homepage": "http://www.subrion.org",
+			"role": "Developer"
+		},
+		{
+			"name": "Intelliants LLC",
+			"email": "support@intelliants.com",
+			"homepage": "http://www.intelliants.com",
+			"role": "Owner"
+		}
+	],
+	"require": {
+		"php": ">=5.3.0"
+	}
+}
