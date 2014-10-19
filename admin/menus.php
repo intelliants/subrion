@@ -24,42 +24,35 @@
  *
  ******************************************************************************/
 
-$iaBlock = $iaCore->factory('block', iaCore::ADMIN);
-
-$iaDb->setTable(iaBlock::getTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	$iaGrid = $iaCore->factory('grid', iaCore::ADMIN);
+	protected $_name = 'menus';
 
-	switch ($pageAction)
+	protected $_gridColumns = array('title', 'name', 'status', 'order', 'position', 'delete' => 'removable');
+	protected $_gridFilters = array('position' => 'equal', 'status' => 'equal');
+
+	protected $_phraseGridEntryDeleted = 'menu_deleted';
+	protected $_phraseGridEntriesDeleted = 'menus_deleted';
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			$output = $iaGrid->gridRead($_GET,
-				array('title', 'name', 'status', 'order', 'position', 'delete' => 'removable'),
-				array(),
-				array("`type` = 'menu'")
-			);
+		parent::__construct();
 
-			break;
+		$iaBlock = $this->_iaCore->factory('block', iaCore::ADMIN);
+		$this->setHelper($iaBlock);
 
-		case iaCore::ACTION_EDIT:
-			$output = $iaGrid->gridUpdate($_POST);
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = $iaGrid->gridDelete($_POST, 'menu_removed');
+		$this->setTable(iaBlock::getTable());
 	}
 
-	if (isset($_GET['action']))
+	protected function _gridRead($params)
 	{
 		$output = array();
 
-		switch($_GET['action'])
+		switch ($params['action'])
 		{
 			case 'pages':
-				$pageGroups = $iaCore->factory('page', iaCore::ADMIN)->getGroups();
+				$pageGroups = $this->_iaCore->factory('page', iaCore::ADMIN)->getGroups();
 
 				foreach ($pageGroups as $groupId => $group)
 				{
@@ -121,30 +114,28 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 					return $result;
 				}
 
-				$list = array();
+				$output = array();
 
-				if ($name = (int)$_GET['id'])
+				if ($name = (int)$params['id'])
 				{
-					$rows = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '`menu_id` = ' . $name . ' ORDER BY `id`', null, null, 'menus');
+					$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '`menu_id` = ' . $name . ' ORDER BY `id`', null, null, 'menus');
 					foreach ($rows as $row)
 					{
-						$list[$row['parent_id']][] = $row;
+						$output[$row['parent_id']][] = $row;
 					}
+					$output = recursiveRead($output);
 				}
-
-				$output = recursiveRead($list);
 
 				break;
 
 			case 'titles':
-
 				$output['languages'] = array();
 
-				$languagesList = $iaCore->languages;
-				$node = isset($_GET['id']) ? iaSanitize::sql($_GET['id']) : false;
-				$entry = isset($_GET['menu']) ? iaSanitize::sql($_GET['menu']) : false;
+				$languagesList = $this->_iaCore->languages;
+				$node = isset($params['id']) ? iaSanitize::sql($params['id']) : false;
+				$entry = isset($params['menu']) ? iaSanitize::sql($params['menu']) : false;
 
-				if (isset($_GET['new']) && $_GET['new'])
+				if (isset($params['new']) && $params['new'])
 				{
 					ksort($languagesList);
 					foreach ($languagesList as $code => $lang)
@@ -164,12 +155,12 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 					{
 						if ($pageId = (int)$node)
 						{
-							$page = $iaDb->one('`name`', iaDb::convertIds($pageId), 'pages');
+							$page = $this->_iaDb->one('`name`', iaDb::convertIds($pageId), 'pages');
 							$key = 'page_title_' . $page;
 						}
 						else
 						{
-							$current = isset($_GET['current']) ? $_GET['current'] : '';
+							$current = isset($params['current']) ? $params['current'] : '';
 							ksort($languagesList);
 							foreach ($languagesList as $code => $lang)
 							{
@@ -180,7 +171,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 					if ($key)
 					{
-						$titles = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = '$key' ORDER BY `code`", null, null, iaLanguage::getTable());
+						$titles = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = '$key' ORDER BY `code`", null, null, iaLanguage::getTable());
 						foreach ($titles as $row)
 						{
 							if (isset($languagesList[$row['code']]))
@@ -202,267 +193,210 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			case 'save':
 				$output['message'] = iaLanguage::get('invalid_parameters');
 
-				$entry = isset($_GET['menu']) ? iaSanitize::sql($_GET['menu']) : null;
-				$node = isset($_GET['node']) ? iaSanitize::sql($_GET['node']) : null;
+				$menu = isset($params['menu']) ? $params['menu'] : null;
+				$node = isset($params['node']) ? $params['node'] : null;
 
-				if ($entry && $node)
+				if ($menu && $node)
 				{
 					$rows = array();
 					foreach ($_POST as $code => $value)
 					{
 						$rows[] = array(
 							'code' => $code,
-							'value' => iaSanitize::sql($value),
-							'extras' => $entry,
+							'value' => $value,
+							'extras' => $menu,
 							'key' => 'page_title_' . $node,
-							'category' => iaLanguage::CATEGORY_COMMON
+							'category' => iaLanguage::CATEGORY_PAGE
 						);
 					}
 
-					$iaDb->setTable(iaLanguage::getTable());
-					$iaDb->delete('`key` = :key', null, array('key' => 'page_title_' . $node));
-					$iaDb->insert($rows);
-					$iaDb->resetTable();
+					$this->_iaDb->setTable(iaLanguage::getTable());
+					$this->_iaDb->delete('`key` = :key', null, array('key' => 'page_title_' . $node));
+					$this->_iaDb->insert($rows);
+					$this->_iaDb->resetTable();
 
 					$output['message'] = iaLanguage::get('saved');
 					$output['success'] = true;
 
-					$iaCore->factory('cache')->remove('menu_' . $entry . '.inc');
+					$this->_iaCore->factory('cache')->remove('menu_' . $menu . '.inc');
 				}
+
+				break;
+
+			default:
+				$output = parent::_gridRead($params);
 		}
+
+		return $output;
 	}
 
-	$iaView->assign($output);
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if (iaCore::ACTION_READ == $pageAction)
+	protected function _entryAdd(array $entryData)
 	{
-		$iaView->grid('admin/menus');
+		return $this->getHelper()->insert($entryData);
 	}
-	else
-	{
-		$pageTitle = iaLanguage::get($pageAction . '_menu');
-		iaBreadcrumb::toEnd($pageTitle);
-		$iaView->title($pageTitle);
 
-		if ($pageAction == iaCore::ACTION_EDIT)
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		return $this->getHelper()->update($entryData, $entryId);
+	}
+
+	protected function _modifyGridParams(&$conditions, &$values)
+	{
+		if (!empty($_GET['name']))
 		{
-			if (isset($_GET['id']) && is_numeric($_GET['id']) && $_GET['id'])
+			$conditions[] = '(`name` LIKE :name OR `title` LIKE :name)';
+			$values['name'] = '%' . $_GET['name'] . '%';
+		}
+
+		$conditions[] = "`type` = 'menu'";
+	}
+
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		if ($data['name'])
+		{
+			if ($name = iaSanitize::paranoid(iaSanitize::tags($data['name'])))
 			{
-				$entry = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`id` = :id', array('id' => $_GET['id']));
-				if (empty($entry))
-				{
-					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-				}
+				$entry['name'] = $name;
 			}
 			else
 			{
-				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+				$this->addMessage('incorrect_menu_name');
+
+				return false;
 			}
+		}
+
+		$entry['title'] = empty($data['title']) ? iaLanguage::get('without_title') : $data['title'];
+		$entry['position'] = empty($data['position']) ? 'left' : $data['position'];
+		$entry['classname'] = $data['classname'];
+		$entry['sticky'] = (int)$data['sticky'];
+		$entry['visible_on_pages'] = empty($data['pages']) ? array() : $data['pages'];
+		$entry['header'] = (int)$data['header'];
+		$entry['collapsible'] = (int)$data['collapsible'];
+		$entry['collapsed'] = (int)$data['collapsed'];
+
+		$menuExists = $this->_iaDb->exists('`name` = :name', $entry);
+
+		if (iaCore::ACTION_EDIT == $action)
+		{
+			$menuExists || $this->addMessage('menu_doesnot_exists');
 		}
 		else
 		{
-			$entry = array(
-				'name' => '',
-				'position' => '',
-				'status' => iaCore::STATUS_ACTIVE,
-				'sticky' => false,
-				'title' => '',
-				'tpl' => iaBlock::DEFAULT_MENU_TEMPLATE,
-				'type' => iaBlock::TYPE_MENU
-			);
+			empty($menuExists) || $this->addMessage('menu_exists');
 		}
 
-		if (isset($_POST['name']))
+		return !$this->getMessages();
+	}
+
+	protected function _postSaveEntry(array $entry, array $data, $action)
+	{
+		function recursive_read_menu($menus, $pages, &$list, $menuId)
 		{
-			$error = false;
-			$messages = array();
-
-			$entry['name'] = isset($_POST['name']) ? iaSanitize::sql(iaSanitize::paranoid(strip_tags($_POST['name']))) : 'menu_' . mt_rand(1000, 9999);
-			$entry['title'] = isset($_POST['title']) ? iaSanitize::html($_POST['title']) : 'Menu "' . $entry['name'] . '"';
-			$entry['position'] = isset($_POST['position']) ? iaSanitize::sql($_POST['position']) : 'left';
-			$entry['sticky'] = (int)$_POST['sticky'];
-
-			if (empty($entry['title']))
+			foreach ($menus as $menu)
 			{
-				$entry['title'] = iaLanguage::get('without_title');
-			}
-
-			$shownPagesList = isset($_POST['pages']) ? $_POST['pages'] : '';
-
-			if (trim($entry['name']))
-			{
-				$iaDb->setTable('blocks_pages');
-				$menuExists = $iaDb->exists('`name` = :name', $entry, iaBlock::getTable());
-
-				if (iaCore::ACTION_EDIT == $pageAction)
-				{
-					if ($menuExists)
-					{
-						$iaDb->update($entry, "`name` = '" . $entry['name'] . "'", null, iaBlock::getTable());
-						$iaDb->delete('`block_id` = :id', null, $entry);
-
-						$iaCore->factory('cache')->remove('menu_' . $entry['id'] . '.inc');
-					}
-					else
-					{
-						$messages = iaLanguage::get('menu_doesnot_exists');
-						$error = true;
-					}
-				}
-				else
-				{
-					if ($menuExists)
-					{
-						$messages = iaLanguage::get('menu_exists');
-						$error = true;
-						$entry = null;
-					}
-					else
-					{
-						$entry['id'] = $iaDb->insert($entry, null, iaBlock::getTable());
-					}
-				}
-
-				if ($entry['id'])
-				{
-					function recursive_read_menu($menus, $pages, &$list, $menuId)
-					{
-						foreach ($menus as $menu)
-						{
-							$pageId = reset(explode('_', $menu['id']));
-							$list[] = array(
-								'parent_id' => ('root' == $menu['parentId']) ? 0 : $menu['parentId'],
-								'menu_id' => $menuId,
-								'el_id' => $menu['id'],
-								'level' => $menu['depth'] - 1,
-								'page_name' => ($pageId > 0 && isset($pages[$pageId])) ? $pages[$pageId] : 'node',
-							);
-						}
-					}
-
-					$menus = isset($_POST['menus']) && $_POST['menus'] ? $_POST['menus'] : '';
-					$menus = $iaCore->util()->jsonDecode($menus);
-					array_shift($menus);
-
-					$rows = array();
-					$pages = $iaDb->keyvalue(array('id', 'name'), null, 'pages');
-					recursive_read_menu($menus, $pages, $rows, $entry['id']);
-
-					$iaDb->setTable(iaBlock::getMenusTable());
-					$iaDb->delete('`menu_id` = :id', null, $entry);
-					if ($rows)
-					{
-						$iaDb->insert($rows);
-					}
-					$iaDb->resetTable();
-				}
-
-				// FIXME: functionality below is already exist in iaBlock::insert. Class method should be used instead
-				if (isset($shownPagesList) && is_array($shownPagesList) && $shownPagesList)
-				{
-					$data = array();
-					foreach ($shownPagesList as $key => $page)
-					{
-						$data[] = array('block_id' => $entry['id'], 'page_name' => $page);
-					}
-
-					$iaDb->insert($data);
-				}
-				//
-
-				$messages = iaLanguage::get('saved');
-				$error = false;
-
-				$iaDb->resetTable();
-			}
-			else
-			{
-				$messages = iaLanguage::get('error_save');
-				$error = true;
-			}
-
-			$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
-
-			if (!$error)
-			{
-				$url = IA_ADMIN_URL . 'menus/';
-				$goto = array(
-					'add' => $url . 'add/',
-					'list' => $url,
-					'stay' => $url . 'edit/?id=' . $entry['id'],
+				$pageId = reset(explode('_', $menu['id']));
+				$list[] = array(
+					'parent_id' => ('root' == $menu['parentId']) ? 0 : $menu['parentId'],
+					'menu_id' => $menuId,
+					'el_id' => $menu['id'],
+					'level' => $menu['depth'] - 1,
+					'page_name' => ($pageId > 0 && isset($pages[$pageId])) ? $pages[$pageId] : 'node',
 				);
-				iaUtil::post_goto($goto);
-			}
-			else
-			{
-				$iaView->assign('tree_data', $_POST['menus']);
 			}
 		}
 
-		if ($pageAction == iaCore::ACTION_EDIT)
+		$menus = isset($data['menus']) && $data['menus'] ? $data['menus'] : '';
+		$menus = iaUtil::jsonDecode($menus);
+		array_shift($menus);
+
+		$rows = array();
+		$pages = $this->_iaDb->keyvalue(array('id', 'name'), null, 'pages');
+		recursive_read_menu($menus, $pages, $rows, $this->getEntryId());
+
+		$this->_iaDb->setTable(iaBlock::getMenusTable());
+		$this->_iaDb->delete(iaDb::convertIds($this->getEntryId(), 'menu_id'));
+		empty($rows) || $this->_iaDb->insert($rows);
+		$this->_iaDb->resetTable();
+
+		if (iaCore::ACTION_EDIT == $action)
 		{
-			if (!isset($_GET['id']))
-			{
-				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-			}
-			$menuId = (int)$_GET['id'];
+			$iaCache = $this->_iaCore->factory('cache');
+			$iaCache->remove('menu_' . $this->getEntryId() . '.inc');
 		}
+	}
 
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry = array(
+			'name' => 'menu_' . iaUtil::generateToken(5),
+			'position' => '',
+			'classname' => '',
+			'status' => iaCore::STATUS_ACTIVE,
+			'sticky' => false,
+			'title' => '',
+			'tpl' => iaBlock::DEFAULT_MENU_TEMPLATE,
+			'type' => iaBlock::TYPE_MENU
+		);
+
+		$entry['header'] = $entry['collapsible'] = $entry['collapsed'] = false;
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
 		$pageGroups = array();
-		$extras = array();
 		$visibleOn = array();
 
-		if (empty($entry['name']))
-		{
-			$entry['name'] = 'menu_' . iaUtil::generateToken(5);
-		}
-
-		// get pages
-		//$pages = $iaDb->all('*', "`status`='active' AND `service`=0 ORDER BY `name`", 0,  0, 'pages');
-		$sql = "SELECT DISTINCTROW p.*, if (t.`value` is null, p.`name`, t.`value`) as `title`
-			FROM `{$iaDb->prefix}pages` as p
-				LEFT JOIN `{$iaDb->prefix}language` as t
-					ON `key` = CONCAT('page_title_', p.`name`) AND t.`code` = '" . $iaView->language . "'
-			WHERE p.`status` = 'active'
-				AND p.`service` = 0
-			ORDER BY t.`value`";
-		$pages = $iaDb->getAll($sql);
-
 		// get groups
-		$groups = $iaDb->onefield('`group`', '1=1 GROUP BY `group`', null, null, 'pages');
-		$rows = $iaDb->all(array('id', 'name', 'title'), null, null, null, 'admin_pages_groups');
+		$groups = $this->_iaDb->onefield('`group`', '1 GROUP BY `group`', null, null, 'pages');
+		$rows = $this->_iaDb->all(array('id', 'name', 'title'), null, null, null, 'admin_pages_groups');
 		foreach ($rows as $row)
 		{
 			if (in_array($row['id'], $groups))
 			{
 				$pageGroups[$row['id']] = $row;
-				$extras[$row['id']] = $row['title'];
 			}
 		}
 
-		if ($pageAction == iaCore::ACTION_EDIT)
+		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
-			if ($array = $iaDb->onefield('page_name', "`block_id` = " . (int)$_GET['id'], null, null, 'blocks_pages'))
+			if ($array = $this->_iaDb->onefield('page_name', "`object_type` = 'blocks' && " . iaDb::convertIds($this->getEntryId(), 'object'), null, null, 'objects_pages'))
 			{
 				$visibleOn = $array;
 			}
 		}
-		elseif (isset($_POST['visible_on_pages']) && $_POST['visible_on_pages'])
+		elseif (!empty($_POST['visible_on_pages']))
 		{
 			$visibleOn = $_POST['visible_on_pages'];
 		}
 
-		$iaView->assign('visibleOn', $visibleOn);
-		$iaView->assign('form', $entry);
-		$iaView->assign('pages', $pages);
-		$iaView->assign('pages_group', $pageGroups);
-		$iaView->assign('positions', explode(',', $iaCore->get('block_positions', '')));
+		if (!empty($_POST['menus']))
+		{
+			$iaView->assign('treeData', iaSanitize::html(iaUtil::jsonEncode($_POST['menus'])));
+		}
 
-		$iaView->display('menus');
+		$iaView->assign('visibleOn', $visibleOn);
+		$iaView->assign('pages', $this->_getPages());
+		$iaView->assign('pagesGroup', $pageGroups);
+		$iaView->assign('positions', $this->getHelper()->getPositions());
+	}
+
+	private function _getPages()
+	{
+		$sql = 'SELECT DISTINCTROW p.*, IF(t.`value` is null, p.`name`, t.`value`) `title` '
+			. 'FROM `:prefixpages` p '
+			. 'LEFT JOIN `:prefix:table_language` t '
+				. "ON (`key` = CONCAT('page_title_', p.`name`) AND t.`code` = ':language') "
+			. "WHERE p.`status` = ':status' AND p.`service` = 0 "
+			. 'ORDER BY t.`value`';
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_language' => iaLanguage::getTable(),
+			'language' => $this->_iaCore->iaView->language,
+			'status' => iaCore::STATUS_ACTIVE
+		));
+
+		return $this->_iaDb->getAll($sql);
 	}
 }
-
-$iaDb->resetTable();

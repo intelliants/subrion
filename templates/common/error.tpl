@@ -1,6 +1,4 @@
-<div class="alert alert-error">{$message}</div>
-
-{if 404 == $code}
+{if iaView::ERROR_NOT_FOUND == $code}
 	<div class="google_suggestions" id="google_suggestions">
 		<script type="text/javascript">
 			var GOOG_FIXURL_LANG = '{$smarty.const.IA_LANGUAGE}';

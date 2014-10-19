@@ -26,8 +26,6 @@
 
 class iaCaptcha extends abstractUtil
 {
-
-
 	public function getImage()
 	{
 		$html =

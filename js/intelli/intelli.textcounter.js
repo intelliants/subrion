@@ -27,13 +27,12 @@ intelli.textcounter = function(conf)
 		this.count.size = '3';
 		this.count.maxLength = '3';
 
-		if((this.minLength >= 0 && this.maxLength >= 0) || (isNaN(this.minLength) && this.maxLength >= 0))
+		if ((this.minLength >= 0 && this.maxLength >= 0) || (isNaN(this.minLength) && this.maxLength >= 0))
 		{
 			this.count.value = this.maxLength;
-
 			this.counting(true);
 
-			// atach event for text form
+			// attach event for text form
 			this.element.onkeydown = function()
 			{
 				obj.counting(true);
@@ -45,7 +44,7 @@ intelli.textcounter = function(conf)
 			}
 		}
 
-		if((this.minLength >= 0 && isNaN(this.maxLength)))
+		if ((this.minLength >= 0 && isNaN(this.maxLength)))
 		{
 			this.count.value = this.minLength;
 
@@ -63,12 +62,12 @@ intelli.textcounter = function(conf)
 			}
 		}
 	};
-	
+
 	this.counting = function(decrease)
 	{
-		if(decrease)
+		if (decrease)
 		{
-			if(this.element.value.length > this.maxLength)
+			if (this.element.value.length > this.maxLength)
 			{
 				this.element.value = this.element.value.substring(0, this.maxLength);
 			}

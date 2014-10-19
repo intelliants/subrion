@@ -1,0 +1,253 @@
+
+//
+// Navigation
+//
+// see responsive-navbar.less for nav-bar styles on 
+// small devices
+// --------------------------------------------------
+
+.navigation {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.brand {
+  float: left;
+  margin-right: 60px;
+  line-height: @navMainHeight;
+}
+
+.nav-mainmenu {
+  margin-bottom: 0;
+  float: left;
+
+  > li {
+
+    > a {
+      text-transform: uppercase;
+      text-decoration: none;
+      margin: 0 20px 0 0;
+      padding: 0;
+      line-height: @navMainHeight;
+      color: @navMainLinkColor;
+      position: relative;
+
+      &:hover {
+        color: @navMainLinkHoverColor;
+        background: none;
+      }
+
+      &.dropdown-toggle .caret {
+        margin-top: @navMainHeight / 2 - 3;
+        border-top-color: @navMainLinkColor;
+        border-bottom-color: @navMainLinkColor;
+      }
+    }
+
+    &.active > a,
+    &.active > a:hover,
+    &.active > a:focus {
+      color: @navMainLinkActiveColor;
+      background: none;
+      font-weight: bold;
+    }
+
+    &.dropdown.open > a.dropdown-toggle {
+      background: none;
+      color: @navMainLinkHoverColor;
+      
+      > .caret {
+        border-top-color: @navMainLinkHoverColor;
+        border-bottom-color: @navMainLinkHoverColor;
+      }
+    }
+  }
+}
+
+.social {
+  margin: (@navMainHeight - 30)/2 0 (@navMainHeight - 30)/2 30px;
+  padding: 0;
+  float: right;
+  list-style-type: none;
+
+  > li {
+    float: left;
+    margin: 0;
+
+    > a {
+      display: block;
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      font-size: 16px;
+      background: fade(#000, 10%);
+      .border-radius(50%);
+      color: fade(#000, 50%);
+      text-decoration: none;
+      margin-left: 10px;
+
+      &:hover {
+        color: #fff;
+      }
+
+      &.twitter:hover {
+        background: #55acee;
+      }
+
+      &.facebook:hover {
+        background: #3b5998;
+      }
+
+      &.google-plus:hover {
+        background: #dd4b39;
+      }
+    }
+  }
+
+  &--dark {
+    margin: 0 0 0 30px;
+
+    > li {
+
+      > a {
+        background: fade(#fff, 10%);
+        color: fade(#fff, 30%);
+      }
+    }
+  }
+}
+
+.nav-account {
+  margin: (@navMainHeight - 30)/2 0 (@navMainHeight - 30)/2 30px;
+  padding: 0;
+  float: right;
+  list-style-type: none;
+  position: relative;
+
+  > li {
+    float: left;
+    margin: 0;
+
+    > a {
+      display: block;
+      color: fade(#000, 50%);
+      text-decoration: none;
+      margin-left: 10px;
+      line-height: 30px;
+
+      &:hover {
+        color: fade(#000, 70%);
+      }
+    }
+  }
+
+  .caret {
+    margin-top: 14px;
+    margin-left: 5px;
+    border-top-color: fade(#000, 10%);
+    border-bottom-color: fade(#000, 10%);
+  }
+
+  &__avatar {
+    float: left;
+    margin-right: 12px;
+    height: 30px;
+    
+    img {
+      width: 30px;
+      height: 30px;
+      .border-radius(50%);
+    }
+  }
+
+  &__name {
+    float: left;
+    color: fade(#000, 50%);
+    line-height: 30px;
+  }
+
+  &__menu {
+    margin-top: 6px;
+
+    border: 0 none;
+    .border-radius(@baseBorderRadius);
+
+    ul {
+      margin: 0;
+    }
+  }
+}
+
+.btn-account {
+  border: 2px solid fade(#000, 10%);
+  line-height: 26px !important;
+  .border-radius(@baseBorderRadius);
+  text-align: center;
+  padding: 0 12px;
+
+  &:hover {
+    border-color: fade(#000, 20%);
+  }
+}
+
+
+.navigation-sticky {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 7000;
+  padding-top: 0;
+  padding-bottom: 0;
+  .box-shadow(0 0 10px rgba(0,0,0,.3));
+}
+
+// search form in navbar
+.nav-search {
+  float: right;
+  margin: 0;
+  line-height: @navMainHeight - 1;
+  padding: 0;
+
+  .control-group {
+    margin: 0;
+    position: relative;
+  }
+
+  input {
+    padding-right: 30px;
+  }
+
+  button {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    margin: -10px 5px 0 0;
+    color: @linkColor;
+    border: 0 none;
+    background: none;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+  }
+}
+
+// toggler for collapsed main nav
+// see responsive-navbar.less for nav-bar styles on small devices
+
+.nav-toggle {
+  line-height: @navMainHeight;
+  width: @navMainHeight;
+  padding: 0;
+  text-align: center;
+  margin: 0;
+  float: right;
+  color: @navMainBg;
+  background: @linkColor;
+  display: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}

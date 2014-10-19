@@ -8,8 +8,7 @@ Options -MultiViews
 	RewriteRule ^(.+[^/])$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]
 
 	# Google sitemap controller
-	RewriteRule ^sitemap.xml$ tmp/sitemap.xml [L]
-	RewriteRule ^tmp/sitemap.xml$ tmp/sitemap.xml [L]
+	RewriteRule ^(tmp/)?sitemap.xml$ tmp/sitemap.xml [L]
 
 	RewriteCond %{REQUEST_FILENAME} -f
 	RewriteRule ^(.*)(\.xml|\.php([0-9]*)|\.tpl|\.phtml|\.ini|\.inc|/)$ index.php?_p=$1 [QSA,L]

@@ -1,7 +1,7 @@
 $(function()
 {
 	$('.widget:not(.widget-medium,.widget-small,.widget-package) .widget-content').mCustomScrollbar({theme: 'dark-thin'});
-	$('.widget-small-config').bind('click', function(e){window.location = intelli.config.admin_url + '/plugins';});
+	$('.widget-small-config').on('click', function(e){window.location = intelli.config.admin_url + '/plugins';});
 
 	$('.widget-medium .js-stats').each(function(i, obj)
 	{
@@ -47,7 +47,6 @@ $(function()
 			    '<a href="#" class="js-dc-disable"><i class="i-switch"></i></a> '+
 			  '</div>'+
 			'</div>';
-		//var dc_quick_link_tools = $('<li class="dc-form"><form class="sap-form"><label>Add quick link</label><input type="text" placeholder="Shor name ..." class="input-small"><select class="input-small"><option>-- Choose link --</option><option>sadfasdfsadf</option><option>sadfasdfsadf</option></select><a href="#" class="js-dc-add-link btn btn-primary btn-small btn-block">Add</a></form></li>');
 
 		$('.widget')
 			.css({bottom: 0, opacity: 1})

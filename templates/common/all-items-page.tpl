@@ -1,10 +1,8 @@
 <div class="ia-items">
-	{foreach $all_items as $oneitem}
+	{foreach $all_items as $item}
 		<div class="media ia-item ia-item-bordered">
-			{assign var='item' value=$oneitem}
-
 			{if !empty($item.title)}
-				{ia_url item=$all_item_type data=$oneitem type='link' text=$item.title}
+				{ia_url item=$all_item_type data=$item type='link' text=$item.title}
 			{/if}
 
 			{foreach $all_item_fields as $onefield}
@@ -14,11 +12,11 @@
 			{/foreach}
 
 			<div class="ia-item-panel">
-				{ia_url item=$all_item_type data=$oneitem type='icon' classname='btn-info'}
+				{ia_url item=$all_item_type data=$item type='icon' classname='btn-info'}
 
 				{if $member}
-					{printFavorites item=$oneitem itemtype=$all_item_type classname='btn-info'}
-					{accountActions item=$oneitem itemtype=$all_item_type classname='btn-info'}
+					{printFavorites item=$item itemtype=$all_item_type classname='btn-info'}
+					{accountActions item=$item itemtype=$all_item_type classname='btn-info'}
 				{/if}
 			</div>
 		</div>

@@ -1,0 +1,44 @@
+
+//
+// Groups / positions
+// --------------------------------------------------
+
+.groupWrapper {
+	position: relative;
+	min-height: 100px;
+	box-shadow: 0 0 0 6px @group-bg;
+	background: @group-bg;
+
+	&__header {
+		.clearfix();
+		padding: 0 6px 6px;
+
+		&__title {
+			font-size: 12px;
+			float: left;
+			color: @group-link-color;
+		}
+
+		> a {
+			float: right;
+			color: @group-link-color;
+			font-size: 16px;
+			text-decoration: none;
+
+			&:hover {
+				color: @group-link-hover-color;
+				text-decoration: none;
+			}
+		}
+	}
+
+	&:hover {
+		background: @group-hover-bg;
+		box-shadow: 0 0 0 6px @group-hover-bg;
+	}
+
+	&--hidden {
+		background: fade(pink, 20%);
+		box-shadow: 0 0 0 6px fade(pink, 20%);
+	}
+}

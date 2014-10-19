@@ -1,0 +1,67 @@
+
+//
+// Boxes / blocks
+// --------------------------------------------------
+
+.box-visual {
+	position: relative;
+
+	&:hover {
+		outline: 2px dashed @vm-link-color;
+
+		.box-visual__actions {
+			display: block;
+		}
+	}
+
+	&__actions {
+		position: absolute;
+		display: none;
+		top: 2px;
+		right: 2px;
+
+		&__item {
+			.border-radius(4px);
+			background: @vm-link-color;
+			color: #fff;
+			width: 24px;
+			height: 24px;
+			font-size: 16px;
+			text-align: center;
+			line-height: 24px;
+			float: left;
+			margin-left: 2px;
+			text-decoration: none;
+
+			.v-icon {
+				line-height: 24px;
+			}
+
+			&--move {
+				cursor: move;
+			}
+
+			&:hover {
+				background: @vm-link-hover-color;
+				text-decoration: none;
+				color: #fff;
+			}
+		}
+	}
+
+	&__placeholder {
+		outline: 2px dashed @box-placeholder-outline;
+
+		& + .box {
+			margin-top: 20px;
+		}
+	}
+
+	&--hidden {
+		background: fade(pink, 20%) !important;
+
+		> .box-caption {
+			background: none;
+		}
+	}
+}

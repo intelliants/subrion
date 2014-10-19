@@ -1,0 +1,41 @@
+//
+// Breadcrumbs
+// --------------------------------------------------
+
+.breadcrumbs {
+  padding: 10px 0;
+  background: #f0f0f0;
+
+  &__actions {
+    float: right;
+  }
+}
+
+.nav-breadcrumbs {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  float: left;
+
+  > li {
+    margin: 0;
+    float: left;
+
+    > a {
+      color: @breadcrumbLinkColor;
+
+      &:hover {
+        color: @breadcrumbLinkHoverColor;
+      }
+    }
+
+    > .divider {
+      padding: 0 5px;
+      color: @breadcrumbDividerColor;
+    }
+
+    &.active {
+      color: @breadcrumbActiveColor;
+    }
+  }
+}

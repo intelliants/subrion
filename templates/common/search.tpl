@@ -17,7 +17,7 @@
 				{foreach $items as $item}
 					<div class="span4">
 						<label class="checkbox">
-							<input type="checkbox" name="items[]" value="{$item}" {if $search.terms.items && $item|array_key_exists:$search.terms.items}checked="checked"{/if}>
+							<input type="checkbox" name="items[]" value="{$item}"{if $search.terms.items && $item|array_key_exists:$search.terms.items} checked{/if}>
 							{lang key=$item default=$item}
 						</label>
 					</div>
@@ -36,41 +36,41 @@
 					<h3 class="title">{lang key=$k default=$k}</h3>
 					<div class="content">
 						{foreach $item_fields as $f}
-							{assign var='title' value='field_'|cat:$f.name}
+							{assign title "field_{$f.name}"}
 							<div class="control-group">
 								<label class="control-label">{lang key=$title}</label>
 								<div class="controls">
 									<div class="row-fluid">
+										{assign fieldType $f.type}
 										<div class="span4">
 											<select class="input-block-level" name="cond[{$f.item}][{$f.name}]">
-												{assign var='ftype' value=$f.type}
-												{foreach $conditions.$ftype as $value => $cond}
-													<option value="{$value}"{if isset($f.cond) && $cond == $f.cond} selected="selected"{/if}>{$cond}</option>
+												{foreach $conditions.$fieldType as $value => $cond}
+													<option value="{$value}"{if isset($f.cond) && $cond == $f.cond} selected{/if}>{$cond}</option>
 												{/foreach}
 											</select>
 										</div>
 										<div class="span8">
-											{if 'combo' == $f.type}
+											{if 'combo' == $fieldType}
 												<select class="input-block-level" name="f[{$f.item}][{$f.name}][]" multiple="multiple">
 													{foreach $f.values as $key => $val}
-														<option value="{$key}" {if isset($f.val) && is_array($f.val) && ($key|in_array:$f.val || isset($val) && $val|in_array:$f.val)}selected="selected"{/if}>{$val}</option>
+														<option value="{$key}"{if isset($f.val) && is_array($f.val) && ($key|in_array:$f.val || isset($val) && $val|in_array:$f.val)} selected{/if}>{$val}</option>
 													{/foreach}
 												</select>
-											{elseif 'radio' == $f.type}
+											{elseif 'radio' == $fieldType}
 												{foreach $f.values as $key => $val}
 													<label class="radio horizontal">
-														<input type="radio" name="f[{$f.item}][{$f.name}]" value="{$key}" {if isset($f.val) && ($key == $f.val || isset($val) && $val == $f.val)}checked="checked"{/if}> 
+														<input type="radio" name="f[{$f.item}][{$f.name}]" value="{$key}"{if isset($f.val) && ($key == $f.val || isset($val) && $val == $f.val)} checked{/if}>
 														{$val}
 													</label>
 												{/foreach}
-											{elseif 'checkbox' == $f.type}
+											{elseif 'checkbox' == $fieldType}
 												{foreach $f.values as $key => $val}
 													<label class="checkbox horizontal">
-														<input type="checkbox" name="f[{$f.item}][{$f.name}][]" value="{$key}" {if isset($f.val) && is_array($f.val) && ($key|in_array:$f.val || isset($val) && $val|in_array:$f.val)}checked="checked"{/if}> 
+														<input type="checkbox" name="f[{$f.item}][{$f.name}][]" value="{$key}"{if isset($f.val) && is_array($f.val) && ($key|in_array:$f.val || isset($val) && $val|in_array:$f.val)} checked{/if}>
 														{$val}
 													</label>
 												{/foreach}
-											{elseif 'image' == $f.type || 'storage' == $f.type}
+											{elseif 'image' == $fieldType || 'storage' == $fieldType}
 												<input type="hidden" name="f[{$f.item}][{$f.name}]" value="">
 											{else}
 												<input class="input-block-level" type="text" name="f[{$f.item}][{$f.name}]" value="{if isset($f.val)}{$f.val}{/if}">

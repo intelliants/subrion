@@ -24,281 +24,203 @@
  *
  ******************************************************************************/
 
-$iaField = $iaCore->factory('field');
-
-$iaDb->setTable(iaField::getTableGroups());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	$iaGrid = $iaCore->factory('grid', iaCore::ADMIN);
+	protected $_name = 'fieldgroups';
 
-	switch ($pageAction)
+	protected $_gridColumns = array('name', 'extras', 'item', 'collapsible', 'order', 'tabview');
+	protected $_gridFilters = array('id' => 'equal', 'item' => 'equal');
+
+	protected $_phraseAddSuccess = 'fieldgroup_added';
+	protected $_phraseGridEntryDeleted = 'fieldgroup_deleted';
+
+	protected $_systemFieldsEnabled = false;
+	protected $_permissionsEdit = true;
+
+	private $_itemsList;
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
+		parent::__construct();
 
-			if (isset($_GET['action']) && 'gettabs' == $_GET['action'])
+		$iaField = $this->_iaCore->factory('field');
+		$this->setHelper($iaField);
+
+		$this->setTable(iaField::getTableGroups());
+
+		$this->_itemsList = $this->_iaCore->factory('item')->getItems();
+	}
+
+	protected function _gridRead($params)
+	{
+		return (isset($params['get']) && 'tabs' == $params['get'])
+			? $this->_iaDb->onefield('name', "`item` = '{$params['item']}' AND `name` != '{$params['name']}' AND `tabview` = 1")
+			: parent::_gridRead($params);
+	}
+
+	protected function _modifyGridResult(array &$entries)
+	{
+		foreach ($entries as &$entry)
+		{
+			$entry['title'] = iaLanguage::get('fieldgroup_' . $entry['name'], $entry['name']);
+		}
+	}
+
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		// first, check if administrator changed the title
+		if (count($entryData) == 1 && isset($entryData['title']))
+		{
+			if ($name = $this->_iaDb->one(array('name'), iaDb::convertIds($entryId)))
 			{
-				$output = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`item` = '{$_GET['item']}' AND `name` != '{$_GET['name']}' AND `tabview` = 1");
+				$phraseKey = 'fieldgroup_' . $name;
+
+				return iaLanguage::addPhrase($phraseKey, iaSanitize::html($entryData['title']), null, '', iaLanguage::CATEGORY_COMMON, true);
+			}
+
+			return false;
+		}
+		else
+		{
+			return parent::_entryUpdate($entryData, $entryId);
+		}
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		$row = $this->_iaDb->row(array('name', 'item'), iaDb::convertIds($entryId));
+		$result = parent::_entryDelete($entryId);
+
+		if ($result && $row)
+		{
+			$stmt = iaDb::printf("`key` = 'fieldgroup_:name' OR `key` = 'fieldgroup_description_:item_:name'", $row);
+
+			$this->_iaDb->delete($stmt, iaLanguage::getTable());
+		}
+
+		return $result;
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry['name'] = iaUtil::checkPostParam('name');
+		$entry['tabcontainer'] = iaUtil::checkPostParam('tabcontainer');
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		if (!empty($entryData['name'])) // generate title & description for all available languages
+		{
+			$this->_iaDb->setTable(iaLanguage::getTable());
+
+			$entryData['description'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_description_{$entryData['item']}_{$entryData['name']}'");
+			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_{$entryData['name']}'");
+
+			$this->_iaDb->resetTable();
+		}
+
+		$iaView->assign('items', $this->_itemsList);
+	}
+
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		$entry = array(
+			'name' => iaUtil::checkPostParam('name'),
+			'item' => iaUtil::checkPostParam('item'),
+			'collapsible' => iaUtil::checkPostParam('collapsible'),
+			'collapsed' => iaUtil::checkPostParam('collapsed'),
+			'tabview' => iaUtil::checkPostParam('tabview'),
+			'tabcontainer' => iaUtil::checkPostParam('tabcontainer')
+		);
+
+		iaUtil::loadUTF8Functions('ascii', 'bad', 'validation');
+
+		if (iaCore::ACTION_ADD == $action)
+		{
+			if (!utf8_is_ascii($entry['name']))
+			{
+				$this->addMessage('ascii_required');
 			}
 			else
 			{
-				$output = $iaGrid->gridRead($_GET,
-					array('name', 'extras', 'item', 'collapsible', 'order', 'tabview'),
-					array('id' => 'equal', 'item' => 'equal')
-				);
-
-				if ($output['data'])
-				{
-					foreach ($output['data'] as &$row)
-					{
-						$row['title'] = iaLanguage::get('fieldgroup_' . $row['name'], $row['name']);
-					}
-				}
+				$entry['name'] = strtolower($entry['name']);
 			}
 
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = $iaGrid->gridUpdate($_POST);
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = $iaGrid->gridDelete($_POST, 'fieldgroup_deleted');
-	}
-
-	$iaView->assign($output);
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	switch ($pageAction)
-	{
-		case iaCore::ACTION_ADD:
-		case iaCore::ACTION_EDIT:
-
-			$title = iaLanguage::get('field_group_' . $pageAction);
-			iaBreadcrumb::toEnd($title, IA_SELF);
-			$iaView->title($title);
-
-			if (iaCore::ACTION_ADD == $pageAction)
+			if (!$this->getMessages() && !preg_match('/^[a-z0-9\-_]{2,50}$/', $entry['name']))
 			{
-				$group = array('tabview' => false, 'collapsed' => false, 'tabcontainer' => '');
+				$this->addMessage('name_is_incorrect');
+			}
+
+			if (empty($data['item']))
+			{
+				$this->addMessage('at_least_one_item_should_be_checked');
+			}
+
+			$entry['order'] = $this->_iaDb->getMaxOrder(iaField::getTableGroups()) + 1;
+		}
+
+		foreach ($this->_iaCore->languages as $code => $l)
+		{
+			if ($data['titles'][$code])
+			{
+				if (!utf8_is_valid($data['titles'][$code]))
+				{
+					$data['titles'][$code] = utf8_bad_replace($data['titles'][$code]);
+				}
 			}
 			else
 			{
-				if (!isset($_GET['id']))
-				{
-					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-				}
-
-				$group = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($_GET['id']));
-
-				// generate title & description for all available languages
-				$iaDb->setTable(iaLanguage::getTable());
-				$desc = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = 'fieldgroup_description_{$group['item']}_{$group['name']}'");
-				$titles = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = 'fieldgroup_{$group['name']}'");
-				$iaDb->resetTable();
-
-				foreach ($desc as $key => $val)
-				{
-					$group['description'][$val['code']] = $val['value'];
-				}
-
-				foreach ($titles as $key => $val)
-				{
-					$group['titles'][$val['code']] = $val['value'];
-				}
+				$this->addMessage($l . ': ' . iaLanguage::get('title_incorrect'), false);
 			}
 
-			// get list of all available items
-			$items = $iaCore->factory('item')->getItems();
-			$iaView->assign('items', $items);
-
-			if ($_POST)
+			if ($data['description'][$code])
 			{
-				$group['collapsible'] = iaUtil::checkPostParam('collapsible');
-				$group['collapsed'] = iaUtil::checkPostParam('collapsed');
-				$group['tabview'] = iaUtil::checkPostParam('tabview');
-				$group['tabcontainer'] = iaUtil::checkPostParam('tabcontainer');
-
-				$error = false;
-				$messages = array();
-
-				$languages = $iaCore->languages;
-
-				iaUtil::loadUTF8Functions('ascii', 'bad', 'validation');
-
-				if (iaCore::ACTION_ADD == $pageAction)
+				if (!utf8_is_valid($data['description'][$code]))
 				{
-					$group['name'] = iaUtil::checkPostParam('name');
-					$group['item'] = iaUtil::checkPostParam('item');
-
-					if (!utf8_is_ascii($group['name']))
-					{
-						$error = true;
-						$messages[] = iaLanguage::get('ascii_required');
-					}
-					else
-					{
-						$group['name'] = strtolower($group['name']);
-					}
-
-					if (!$error && !preg_match('/^[a-z0-9\-_]{2,50}$/', $group['name']))
-					{
-						$error = true;
-						$messages[] = iaLanguage::get('name_is_incorrect');
-					}
-
-					if (!isset($_POST['item']) || empty($_POST['item']))
-					{
-						$error = true;
-						$messages[] = iaLanguage::get('at_least_one_item_should_be_checked');
-					}
+					$data['description'][$code] = utf8_bad_replace($data['description'][$code]);
 				}
-
-				foreach ($languages as $code => $l)
-				{
-					if ($_POST['titles'][$code])
-					{
-						if (!utf8_is_valid($_POST['titles'][$code]))
-						{
-							$_POST['titles'][$code] = utf8_bad_replace($_POST['titles'][$code]);
-						}
-					}
-					else
-					{
-						$error = true;
-						$messages[] = $l . ' ' . iaLanguage::get('title_incorrect');
-					}
-					if ($_POST['description'][$code])
-					{
-						if (!utf8_is_valid($_POST['description'][$code]))
-						{
-							$_POST['description'][$code] = utf8_bad_replace($_POST['description'][$code]);
-						}
-					}
-				}
-
-				if (!$error)
-				{
-					$name = $group['name'];
-
-					if (iaCore::ACTION_EDIT == $pageAction)
-					{
-						// update multilingual values
-						$iaDb->setTable(iaLanguage::getTable());
-						foreach ($languages as $code => $l)
-						{
-							if ($iaDb->exists("`key` = 'fieldgroup_{$name}' AND `code` = '{$code}'"))
-							{
-								$iaDb->update(array('value' => iaSanitize::html($_POST['titles'][$code])), "`key` = 'fieldgroup_{$name}' AND `code` = '{$code}'");
-							}
-							else
-							{
-								iaLanguage::addPhrase(
-									'fieldgroup_' . $name,
-									iaSanitize::html($_POST['titles'][$code]),
-									$code,
-									false,
-									iaLanguage::CATEGORY_COMMON
-								);
-							}
-
-							if ($_POST['description'][$code])
-							{
-								$lang_key = "fieldgroup_description_{$group['item']}_{$name}";
-
-								if ($iaDb->exists("`key` = '{$lang_key}' AND `code` = '{$code}'"))
-								{
-									$iaDb->update(array("value" => iaSanitize::html($_POST['description'][$code])),
-										"`key` = '{$lang_key}' AND `code`='{$code}'");
-								}
-								else
-								{
-									iaLanguage::addPhrase(
-										$lang_key,
-										iaSanitize::html($_POST['description'][$code]),
-										$code,
-										false,
-										iaLanguage::CATEGORY_COMMON
-									);
-								}
-							}
-						}
-						$iaDb->resetTable();
-
-						// update group values
-						unset($group['titles']);
-						unset($group['description']);
-
-						$iaDb->update($group);
-
-						$messages = iaLanguage::get('saved');
-					}
-					else
-					{
-						foreach ($languages as $code => $l)
-						{
-							iaLanguage::addPhrase(
-								'fieldgroup_' . $group['name'],
-								iaSanitize::html($_POST['titles'][$code]),
-								$code
-							);
-
-							if ($_POST['description'][$code])
-							{
-								$lang_key = "fieldgroup_description_{$group['item']}_{$name}";
-								iaLanguage::addPhrase(
-									$lang_key,
-									iaSanitize::html($_POST['description'][$code]),
-									$code
-								);
-							}
-						}
-
-						if (!$iaDb->exists("`name` = '{$group['name']}' AND `item` = '{$group['item']}'") && in_array($group['item'], $items))
-						{
-							$group['order'] = $iaDb->getMaxOrder(iaField::getTableGroups()) + 1;
-							$iaDb->insert($group);
-						}
-
-						$messages = iaLanguage::get('fieldgroup_added');
-
-						$iaCore->factory('cache')->clearAll();
-					}
-
-					$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
-
-					if (isset($_POST['goto']))
-					{
-						switch($_POST['goto'])
-						{
-							case 'add':
-								iaUtil::go_to(IA_ADMIN_URL . 'fields/group/add/');
-								break;
-							case 'list':
-								iaUtil::go_to(IA_ADMIN_URL . 'fields/group/');
-						}
-					}
-					else
-					{
-						iaUtil::go_to(IA_ADMIN_URL . 'fields/group/');
-					}
-				}
-
-				$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
 			}
+		}
 
-			$iaView->assign('group', $group);
+		return !$this->getMessages();
+	}
 
-			$iaView->display('fieldgroups');
+	protected function _postSaveEntry(array $entry, array $data, $action)
+	{
+		$this->_savePhrases($data, $entry['name'], $entry['item']);
 
-			break;
+		$iaCache = $this->_iaCore->factory('cache');
+		$iaCache->clearAll();
+	}
 
-		default:
-			$iaView->grid('admin/fieldgroups');
+	private function _savePhrases(array &$data, $name, $item)
+	{
+		$this->_iaDb->setTable(iaLanguage::getTable());
+
+		$phraseKeyTitle = 'fieldgroup_' . $name;
+		$phraseKeyDescription = "fieldgroup_description_{$item}_{$name}";
+
+		foreach ($this->_iaCore->languages as $code => $l)
+		{
+			$stmt = '`key` = :phrase AND `code` = :language';
+			$this->_iaDb->bind($stmt, array('phrase' => $phraseKeyTitle, 'language' => $code));
+
+			$this->_iaDb->exists($stmt)
+				? $this->_iaDb->update(array('value' => iaSanitize::html($data['titles'][$code])), $stmt)
+				: iaLanguage::addPhrase($phraseKeyTitle, iaSanitize::html($data['titles'][$code]), $code);
+
+			if ($data['description'][$code])
+			{
+				$stmt = '`key` = :phrase AND `code` = :language';
+				$this->_iaDb->bind($stmt, array('phrase' => $phraseKeyDescription, 'language' => $code));
+
+				$this->_iaDb->exists($stmt)
+					? $this->_iaDb->update(array('value' => iaSanitize::html($data['description'][$code])), $stmt)
+					: iaLanguage::addPhrase($phraseKeyDescription, iaSanitize::html($data['description'][$code]), $code);
+			}
+		}
+
+		$this->_iaDb->resetTable();
 	}
 }
-
-$iaDb->resetTable();

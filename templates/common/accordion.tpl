@@ -1,7 +1,7 @@
 {ia_add_media files='jstree, js:intelli/intelli.accordion'}
 <div id="{$accordion_params.name}" class="accordion">{lang key='loading'}</div>
 
-{assign var=accordion_name value=$accordion_params.name}
+{assign accordion_name $accordion_params.name}
 
 <input type="hidden" class="tree_name" value="{$accordion_name}">
 <input type="hidden" id="{$accordion_name}_json_url" value="{$accordion_params.json_url}">

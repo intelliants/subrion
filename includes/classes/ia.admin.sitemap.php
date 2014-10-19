@@ -95,7 +95,7 @@ class iaSitemap extends abstractCore
 		$result = array('pages' => array());
 
 		// 1. first process the core content
-		$extrasList = $this->iaCore->iaDb->keyvalue(array('name', 'type'), "`status` = 'active'", 'extras');
+		$extrasList = $this->iaDb->keyvalue(array('name', 'type'), "`status` = 'active'", 'extras');
 		$homePageName = $this->iaCore->get('home_page');
 
 		$stmt = '`nofollow` = 0 AND `service` = 0 AND `status` = :status AND `passw` = :password ORDER BY `order`';

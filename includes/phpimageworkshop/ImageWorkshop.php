@@ -15,7 +15,7 @@ require_once(IA_INCLUDES . 'phpimageworkshop/Exception/ImageWorkshopException.ph
  * @license http://en.wikipedia.org/wiki/MIT_License
  * @copyright Clément Guillemain
  */
-class ImageWorkshop extends abstractUtil
+class ImageWorkshop extends abstractCore
 {
     /**
      * @var integer

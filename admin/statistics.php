@@ -24,40 +24,51 @@
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	$packageName = explode('_stats', $iaView->name());
-	$packageName = array_shift($packageName);
+	const GETTER_METHOD_NAME = 'getDashboardStatistics';
 
-	$iaCore->startHook('phpAdminPackageStatistics', array('package' => $packageName));
+	protected $_name = 'statistics';
 
-	$statistics = array();
+	protected $_processAdd = false;
+	protected $_processEdit = false;
 
-	$iaItem = $iaCore->factory('item');
-	if ($packageItems = $iaItem->getItemsByPackage($packageName))
+
+	protected function _indexPage(&$iaView)
 	{
-		foreach ($packageItems as $itemName)
+		$packageName = explode('_stats', $iaView->name());
+		$packageName = array_shift($packageName);
+
+		$this->_iaCore->startHook('phpAdminPackageStatistics', array('package' => $packageName));
+
+		$statistics = array();
+
+		$iaItem = $this->_iaCore->factory('item');
+		if ($packageItems = $iaItem->getItemsByPackage($packageName))
 		{
-			$itemName = substr($itemName, 0, -1);
-			$itemClass = $iaCore->factoryPackage($itemName, $packageName, iaCore::ADMIN);
-			if (method_exists($itemClass, 'getDashboardStatistics'))
+			foreach ($packageItems as $itemName)
 			{
-				if ($itemClass->dashboardStatistics)
+				$itemName = substr($itemName, 0, -1);
+				$itemClass = $this->_iaCore->factoryPackage($itemName, $packageName, iaCore::ADMIN);
+				if (method_exists($itemClass, self::GETTER_METHOD_NAME))
 				{
-					if ($data = $itemClass->getDashboardStatistics(false))
+					if ($itemClass->dashboardStatistics)
 					{
-						$statistics[$itemName] = $data;
+						if ($data = $itemClass->{self::GETTER_METHOD_NAME}(false))
+						{
+							$statistics[$itemName] = $data;
+						}
 					}
 				}
 			}
 		}
+
+		$timeline = $this->_iaCore->factory('log')->get($packageName);
+
+		$iaView->assign('package', $packageName);
+		$iaView->assign('statistics', $statistics);
+		$iaView->assign('timeline', $timeline);
+
+		$iaView->display($this->getName());
 	}
-
-	$timeline = $iaCore->factory('log')->get($packageName);
-
-	$iaView->assign('package', $packageName);
-	$iaView->assign('statistics', $statistics);
-	$iaView->assign('timeline', $timeline);
-
-	$iaView->display('statistics');
 }

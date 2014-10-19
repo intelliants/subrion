@@ -269,3 +269,106 @@
 	+ Feature #1552: phpListingRemoved should be called in package's abstract classes
 	+ Feature #1555: Add GPLv3 license to the core files
 	+ Feature #1575: Hooks from template install
+
+>> From 3.1.6 to 3.1.7 <<
+
+	- Bug #1330: Administrator is not notified when a new member is registered
+	- Bug #1512: Admin Panel: editable fields in grid can't be edited
+	- Bug #1579: Incorrect breadcrumb and page title for Edit Member
+	- Bug #1580: admin_payment_notification email template is missing
+	- Bug #1591: Allow to open pages in new window
+	- Bug #1592: Images are processed but not saved if error appears on submission
+	- Bug #1593: Pages are not deleted from menus
+	- Bug #1599: Admin login screen
+	- Bug #1610: Parsing of templates install.xml file
+	+ Feature #1596: Provide a hook to catch the change of configuration options
+	+ Feature #1597: Sanitize HTML on debug outputs
+	+ Feature #1600: Update packages icons
+	+ Feature #1609: Upgrade PHPMailer to the latest version
+
+>> From 3.1.7 to 3.1.8 <<
+
+	- Bug #1616: Collapsed state for fieldgroups
+	- Bug #1618: Review all existing templates
+	- Bug #1621: HTML output is not properly sanitized
+	- Bug #1626: Resolve some W3C errors
+	- Bug #1636: Admin Panel: wrong template configuration link
+	- Bug #1637: Stay on the same page when switching language
+	- Bug #1638: DropDown field type
+	- Bug #1645: Thumbnail default size option doesn't work
+	- Bug #1664: Improve debug functions
+	- Bug #1676: There is no way to look through the view entry page of any plugin if plugin's index page is set as Home page
+	- Bug #1680: Account balance increased twice
+	- Bug #1687: Getting error after set 'Searchable' field's value to ON for any company field
+	- Bug #1715: Inconsistent values for IA_SELF
+	- Bug #1718: There is now way to show 401 error (UNAUTHORIZED) with error message
+	+ Feature #80: Default collapsed state
+	+ Feature #1622: Add preview icon for templates in PNG format
+	+ Feature #1633: Allow adding classnames for menu blocks
+	+ Feature #1634: Add new hooks
+	+ Feature #1641: Add styles for CKEditor
+	+ Feature #1642: New skin for CKEditor
+	+ Feature #1668: Add max length attribute to field-type-content-manage.tpl
+
+>> From 3.1.8 to 3.2.0 <<
+
+	- Bug #716: Permissions issue for extras' pages
+	- Bug #862: Moderators Cannot Approve / Edit Users
+	- Bug #1259: Make it possible to pass smarty variables into blocks
+	- Bug #1382: Issue with action buttons: privileges are not applied for them
+	- Bug #1670: Incorrect generating of URL for static pages during adding extensions
+	- Bug #1704: html_radio_switcher generates 2 inputs with the same name
+	- Bug #1716: There is no way to look through the view entry page of any package if package's index page is set as Home page
+	- Bug #1719: Incorrect adding of new phrases via Admin Panel
+	- Bug #1724: There is no way to change hook values in grid of Admin Panel
+	- Bug #1733: User's name is not escaped in Member menu
+	- Bug #1743: Incorrect field type when creating a storage field
+	- Bug #1746: User confirmation is not working
+	- Bug #1753: Installation: specify default values in DB scheme
+	- Bug #1757: Inventory does not look good in Skeleton
+	- Bug #1767: Get rid of IE6 notices
+	- Bug #1768: Incorrect working of 'movable=false' feature when Visual Mode is enabled
+	- Bug #1769: Incorrect breadcrumb on PHPINFO
+	- Bug #1776: Several issues when installed to HTTPS domain
+	- Bug #1783: Get rid of favorites confirmation
+	- Bug #1787: CKEditor not showing up on mobile devices (Android Phones, iPhone, iPad etc.)
+	- Bug #1789: Add to balance does not work
+	- Bug #1793: Get rid of obsolete auth code
+	- Bug #1799: Error when template does not have configs
+	- Bug #1800: Hide admin menu pages group if no items
+	- Bug #1802: Incorrect link to edit page created by Logger
+	- Bug #1805: Dependent configurations
+	- Bug #1816: Option to disable remote templates
+	+ Feature #40: Columns layout improvements
+	+ Feature #69: Javascript tree improvements
+	+ Feature #81: Improve block positions
+	+ Feature #90: Visual mode improvements
+	+ Feature #92: Improve blocks / pages relations
+	+ Feature #132: Show header for custom menus
+	+ Feature #314: Improve usergroup permissions page
+	+ Feature #336: Blocks/menus relations
+	+ Feature #337: All pages except few of them for blocks
+	+ Feature #341: Template suggestions
+	+ Feature #464: Add a way to setup different fieldgroups for usergroups
+	+ Feature #751: Implement a function to send emails to administrators
+	+ Feature #898: Load data for existing blocks only
+	+ Feature #1014: Implement infinite scroll as core js component
+	+ Feature #1436: Add description/help-block config field
+	+ Feature #1564: Add 'Show header' ability to every Menu
+	+ Feature #1583: Review caching items
+	+ Feature #1614: Refactor notification float box
+	+ Feature #1630: intelliGrid: exclude dashboard path chunk
+	+ Feature #1659: Update the JS Tree library to the latest version
+	+ Feature #1671: Make it possible to disable all blocks for certain pages by changing only one setting
+	+ Feature #1689: Update Date/Time picker library
+	+ Feature #1700: Pass toolbar config name to ia_wysiwyg
+	+ Feature #1717: Implement method to update user session information
+	+ Feature #1751: Get rid of protocols for JS / CSS
+	+ Feature #1756: Refactor templates structure
+	+ Feature #1759: Assignable usergroups
+	+ Feature #1770: Better access to Visual Mode
+	+ Feature #1790: Improve debug
+	+ Feature #1798: Disabled positions/blocks status
+	+ Feature #1803: Add iaDb::replace() method
+	+ Feature #1814: Recurring payments
+	+ Feature #1815: Permissions filters

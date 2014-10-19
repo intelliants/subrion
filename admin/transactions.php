@@ -24,287 +24,242 @@
  *
  ******************************************************************************/
 
-$iaTransaction = $iaCore->factory('transaction');
-
-$iaDb->setTable(iaTransaction::getTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	switch ($pageAction)
+	protected $_name = 'transactions';
+
+	protected $_processAdd = false;
+	protected $_processEdit = false;
+
+	protected $_phraseGridEntryDeleted = 'transaction_deleted';
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			switch ($_GET['get'])
+		parent::__construct();
+
+		$iaTransaction = $this->_iaCore->factory('transaction');
+		$this->setHelper($iaTransaction);
+	}
+
+	protected function _gridRead($params)
+	{
+		switch ($_GET['get'])
+		{
+			case 'items':
+				$output = array('data' => null);
+
+				if ($items = $this->_iaCore->factory('item')->getItems(true))
+				{
+					foreach ($items as $key => $item)
+					{
+						$output['data'][] = array('title' => iaLanguage::get($item), 'value' => $item);
+					}
+				}
+
+				break;
+
+			case 'plans':
+				$output = array('data' => null);
+
+				$stmt = '';
+/*				if (isset($_POST['itemname']) && $_POST['itemname'])
+				{
+					$stmt = "`item` = '{$_POST['itemname']}' ";
+				}
+				if (!empty($_POST['itemname']) && 'accounts' == $_POST['itemname'])
+				{
+					$output['data'][] = array('title' => iaLanguage::get('member_balance'), 'value' => 0);
+				}
+				elseif (!isset($_POST['itemname']))
+				{*/
+				$output['data'][] = array('title' => iaLanguage::get('member_balance'), 'value' => 0);
+//				}
+
+				if ($planIds = $this->_iaDb->onefield(iaDb::ID_COLUMN_SELECTION, $stmt, null, null, 'plans'))
+				{
+					foreach ($planIds as $planId)
+					{
+						$output['data'][] = array('title' => iaLanguage::get('plan_title_' . $planId), 'value' => $planId);
+					}
+				}
+
+				break;
+
+			case 'gateways':
+				$output = array('data' => null);
+
+				if ($items = $this->_iaDb->keyvalue(array('name', 'title'), null, $this->getHelper()->getTableGateways()))
+				{
+					foreach ($items as $name => $title)
+					{
+						$output['data'][] = array('value' => $name, 'title' => $title);
+					}
+				}
+
+				break;
+
+			case 'members':
+				$output = array('data' => null);
+
+				if (isset($_GET['query']) && $_GET['query'])
+				{
+					$where[] = 'CONCAT(`username`, `fullname`) LIKE :username';
+					$values['username'] = '%' . iaSanitize::sql($_GET['query']) . '%';
+				}
+
+				$where || $where[] = iaDb::EMPTY_CONDITION;
+				$where = implode(' AND ', $where);
+				$this->_iaDb->bind($where, $values);
+
+				if ($members = $this->_iaDb->all(array('id', 'username', 'fullname'), $where, null, null, iaUsers::getTable()))
+				{
+					foreach ($members as $member)
+					{
+						$output['data'][] = array('title' => $member['username'], 'value' => $member['id']);
+					}
+				}
+
+				break;
+
+			default:
+				$output = parent::_gridRead($params);
+		}
+
+		return $output;
+	}
+
+	protected function _entryUpdate(array $values, $entryId)
+	{
+		return $this->getHelper()->update($values, $entryId);
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		return $this->getHelper()->delete($entryId);
+	}
+
+	protected function _gridQuery($columns, $where, $order, $start, $limit)
+	{
+		$sql =
+			'SELECT SQL_CALC_FOUND_ROWS '
+				. 't.`id`, t.`item`, t.`item_id`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, '
+				. 't.`date`, t.`status`, t.`currency`, t.`operation`, t.`plan_id`, t.`reference_id`, '
+				. "m.`username`, IF(t.`status` != 'passed', 1, 0) `delete` " .
+			'FROM `:prefix:transactions` t ' .
+			'LEFT JOIN `:prefix:plans` p ON (p.`id` = t.`plan_id`) ' .
+			'LEFT JOIN `:prefix:members` m ON (m.`id` = t.`member_id`) ' .
+			($where ? 'WHERE ' . $where . ' ' : '') . $order .
+			'LIMIT :start, :limit';
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'plans' => $this->getTable(),
+			'members' => iaUsers::getTable(),
+			'transactions' => iaTransaction::getTable(),
+			'start' => $start,
+			'limit' => $limit
+		));
+
+		return $this->_iaDb->getAll($sql);
+	}
+
+	protected function _modifyGridParams(&$conditions, &$values)
+	{
+		if (isset($_GET['email']) && $_GET['email'])
+		{
+			$conditions[] = 't.`email` = :email';
+			$values['email'] = $_GET['email'];
+		}
+		if (isset($_GET['reference_id']) && $_GET['reference_id'])
+		{
+			$conditions[] = 't.`reference_id` LIKE :reference';
+			$values['reference'] = '%' . $_GET['reference_id'] . '%';
+		}
+		if (isset($_GET['item']) && $_GET['item'])
+		{
+			$conditions[] = ('members' == $_GET['item']) ? "(t.`item` = :item OR t.`item` = 'balance') " : 't.`item` = :item';
+			$values['item'] = $_GET['item'];
+		}
+		if (isset($_GET['username']) && $_GET['username'])
+		{
+			$conditions[] = 'a.`username` LIKE :username';
+			$values['username'] = '%' . $_GET['username'] . '%';
+		}
+		if (isset($_GET['status']) && $_GET['status'] && in_array($_GET['status'], array('pending', 'passed', 'failed', 'refunded')))
+		{
+			$conditions[] = 't.`status` = :status';
+			$values['status'] = $_GET['status'];
+		}
+	}
+
+	protected function _jsonAction() // ADD action is handled here
+	{
+		$output = array('error' => false, 'message' => array());
+
+		$transaction = array(
+			'member_id' => (int)$_POST['member'],
+			'plan_id' => (int)$_POST['plan'],
+			//'email' => $_POST['email'],
+			'item_id' => (int)$_POST['itemid'],
+			'gateway' => (string)$_POST['payment'],
+			'sec_key' => uniqid('t'),
+			'reference_id' => empty($_POST['order']) ? date('mdyHis') : $_POST['order'],
+			'amount' => (float)$_POST['amount'],
+			'currency' => $this->_iaCore->get('currency'),
+			'date' => $_POST['date'] . ' ' . $_POST['time']
+		);
+
+		if ($transaction['plan_id'])
+		{
+			if ($plan = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($transaction['plan_id']), 'plans'))
 			{
-				case 'items':
-					$output = array('data' => null);
-
-					if ($items = $iaCore->factory('item')->getItems(true))
-					{
-						foreach ($items as $key => $item)
-						{
-							$output['data'][] = array('title' => iaLanguage::get($item), 'value' => $item);
-						}
-					}
-
-					break;
-
-				case 'plans':
-					$output = array('data' => null);
-
-					$stmt = '';
-/*					if (isset($_POST['itemname']) && $_POST['itemname'])
-					{
-						$stmt = "`item` = '{$_POST['itemname']}' ";
-					}
-					if (!empty($_POST['itemname']) && 'accounts' == $_POST['itemname'])
-					{
-						$output['data'][] = array('title' => iaLanguage::get('member_balance'), 'value' => 0);
-					}
-					elseif (!isset($_POST['itemname']))
-					{*/
-						$output['data'][] = array('title' => iaLanguage::get('member_balance'), 'value' => 0);
-//					}
-
-					if ($plans = $iaDb->all(array('id'), $stmt, null, null, 'plans'))
-					{
-						foreach ($plans as $key => $plan)
-						{
-							$output['data'][] = array('title' => iaLanguage::get('plan_title_' . $plan['id']), 'value' => $plan['id']);
-						}
-					}
-
-					break;
-
-				case 'gateways':
-					$output = array('data' => null);
-
-					if ($items = $iaDb->onefield('gateway', null, null, null, $iaTransaction->getTableGateways()))
-					{
-						foreach ($items as $key => $item)
-						{
-							$output['data'][] = array('title' => $item, 'value' => $item);
-						}
-					}
-
-					break;
-
-				case 'members':
-					$output = array('data' => null);
-
-					if (isset($_GET['query']) && $_GET['query'])
-					{
-						$where[] = 'CONCAT(`username`, `fullname`) LIKE :username';
-						$values['username'] = '%' . iaSanitize::sql($_GET['query']) . '%';
-					}
-
-					$where || $where[] = iaDb::EMPTY_CONDITION;
-					$where = implode(' AND ', $where);
-					$iaDb->bind($where, $values);
-
-					if ($members = $iaDb->all(array('id', 'username', 'fullname'), $where, null, null, iaUsers::getTable()))
-					{
-						foreach ($members as $member)
-						{
-							$output['data'][] = array('title' => $member['username'], 'value' => $member['id']);
-						}
-					}
-
-					break;
-
-				default:
-					$sort = $_GET['sort'];
-					$dir = in_array($_GET['dir'], array('ASC', 'DESC')) ? $_GET['dir'] : 'ASC';
-					$order = ($sort && $dir) ? " ORDER BY `{$sort}` {$dir} " : '';
-
-					$values = array();
-					$conditions = array();
-
-					if (isset($_GET['email']) && $_GET['email'])
-					{
-						$conditions[] = 't.`email` = :email';
-						$values['email'] = $_GET['email'];
-					}
-					if (isset($_GET['order_number']) && $_GET['order_number'])
-					{
-						$conditions[] = '`t`.`order_number` LIKE :order';
-						$values['order'] = '%' . $_GET['order_number'] . '%';
-					}
-					if (isset($_GET['item']) && $_GET['item'])
-					{
-						$conditions[] = ('members' == $_GET['item']) ? "(t.`item` = :item OR t.`item` = 'balance') " : 't.`item` = :item';
-						$values['item'] = $_GET['item'];
-					}
-					if (isset($_GET['username']) && $_GET['username'])
-					{
-						$conditions[] = 'a.`username` LIKE :username';
-						$values['username'] = '%' . $_GET['username'] . '%';
-					}
-					if (isset($_GET['status']) && $_GET['status'] && in_array($_GET['status'], array('pending', 'passed', 'failed', 'refunded')))
-					{
-						$conditions[] = 't.`status` = :status';
-						$values['status'] = $_GET['status'];
-					}
-
-					$condition = isset($_GET['condition']) && in_array($_GET['condition'], array('OR', 'AND')) ? $_GET['condition'] : 'AND';
-					$where = '';
-
-					if ($condition && $conditions)
-					{
-						$where = implode(' ' . $condition . ' ', $conditions);
-						$iaDb->bind($where, $values);
-					}
-
-					$sql =
-						'SELECT SQL_CALC_FOUND_ROWS ' .
-						't.*, a.`username`, p.`id` `plan_id`, a.`id` `delete` ' .
-						'FROM `:prefix:transactions` t ' .
-						'LEFT JOIN `:prefixplans` p ON (p.`id` = t.`plan_id`) ' .
-						'LEFT JOIN `:prefix:members` a ON (a.`id` = t.`member_id`) ' .
-						($where ? 'WHERE ' . $where : '') . $order .
-						'LIMIT :start, :limit';
-					$sql = iaDb::printf($sql, array(
-						'prefix' => $iaDb->prefix,
-						'members' => iaUsers::getTable(),
-						'transactions' => iaTransaction::getTable(),
-						'start' => isset($_GET['start']) ? (int)$_GET['start'] : 0,
-						'limit' => isset($_GET['limit']) ? (int)$_GET['limit'] : 15
-					));
-
-					$output = array(
-						'data' => $iaDb->getAll($sql),
-						'total' => $iaDb->foundRows()
-					);
-
-					if ($output['data'])
-					{
-						foreach ($output['data'] as &$entry)
-						{
-							$entry['plan_title'] = $entry['operation_name'];
-							$entry['total'] .= ' ' . $entry['currency'];
-						}
-					}
-			}
-
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = array(
-				'result' => false,
-				'message' => iaLanguage::get('invalid_parameters')
-			);
-
-			$params = $_POST;
-
-			if (isset($params['id']) && is_array($params['id']) && count($params) > 1)
-			{
-				$ids = $params['id'];
-				unset($params['id']);
-
-				$total = count($ids);
-				$affected = 0;
-
-				foreach ($ids as $id)
-				{
-					if ($iaTransaction->update($params, $id))
-					{
-						$affected++;
-					}
-				}
-
-				if ($affected)
-				{
-					$output['result'] = true;
-					$output['message'] = ($affected == $total)
-						? iaLanguage::get('saved')
-						: iaLanguage::getf('items_updated_of', array('num' => $affected, 'total' => $total));
-				}
-				else
-				{
-					$output['message'] = iaLanguage::get('db_error');
-				}
-			}
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = $iaCore->factory('grid', iaCore::ADMIN)->gridDelete($_POST, 'transaction_deleted');
-
-			break;
-
-		case iaCore::ACTION_ADD:
-			$output = array('error' => false, 'message' => array());
-
-			$transaction = array(
-				'member_id' => (int)$_POST['member'],
-				'plan_id' => (int)$_POST['plan'],
-				'email' => $_POST['email'],
-				'item_id' => (int)$_POST['itemid'],
-				'gateway_name' => (string)$_POST['payment'],
-				'sec_key' => uniqid('t'),
-				'order_number' => $_POST['order'],
-				'total' => $_POST['total'],
-				'currency' => $iaCore->get('currency'),
-				'date' => $_POST['date'] . ' ' . $_POST['time']
-			);
-
-			if ($transaction['plan_id'])
-			{
-				if ($plan = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`id` = :id', array('id' => $transaction['plan_id']), 'plans'))
-				{
-					$transaction['item'] = $plan['item'];
-					$transaction['operation_name'] = iaLanguage::get('plan_title_' . $plan['id']);
-				}
-				else
-				{
-					$output['error'] = true;
-					$output['message'][] = iaLanguage::get('error_plan_not_exists');
-				}
+				$transaction['item'] = $plan['item'];
+				$transaction['operation'] = iaLanguage::get('plan_title_' . $plan['id']);
 			}
 			else
 			{
-				$transaction['item'] = 'balance';
-				$transaction['operation_name'] = iaLanguage::get('member_balance');
+				$output['error'] = true;
+				$output['message'][] = iaLanguage::get('error_plan_not_exists');
 			}
+		}
+		else
+		{
+			$transaction['item'] = 'balance';
+			$transaction['operation'] = iaLanguage::get('member_balance');
+		}
 
-			if (isset($_POST['username']) && $_POST['username'])
+		if (isset($_POST['username']) && $_POST['username'])
+		{
+			if ($memberId = $this->_iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`username` = :user', array('user' => $_POST['username']), iaUsers::getTable()))
 			{
-				if ($memberId = $iaDb->one_bind('`id`', '`username` = :user', array('user' => $_POST['username']), iaUsers::getTable()))
-				{
-					$transaction['member_id'] = $memberId;
-				}
-				else
-				{
-					$output['error'] = true;
-					$output['message'][] = iaLanguage::get('incorrect_username');
-				}
+				$transaction['member_id'] = $memberId;
 			}
-
-			if (!iaValidate::isEmail($transaction['email']))
+			else
 			{
 				$output['error'] = true;
-				$output['message'][] = iaLanguage::get('error_email_incorrect');
+				$output['message'][] = iaLanguage::get('incorrect_username');
 			}
+		}
 
-			if (isset($transaction['item']) && in_array($transaction['item'], array('balance', 'members')))
-			{
-				$transaction['item_id'] = $transaction['member_id'];
-			}
+/*		if (!iaValidate::isEmail($transaction['email']))
+		{
+			$output['error'] = true;
+			$output['message'][] = iaLanguage::get('error_email_incorrect');
+		}*/
 
-			if (!$output['error'])
-			{
-				$output['success'] = (bool)$iaDb->insert($transaction, null, iaTransaction::getTable());
-				$output['message'] = $output['success']
-					? iaLanguage::get('transaction_added')
-					: iaLanguage::get('invalid_parameters');
-			}
+		if (isset($transaction['item']) && in_array($transaction['item'], array('balance', 'members')))
+		{
+			$transaction['item_id'] = $transaction['member_id'];
+		}
+
+		if (!$output['error'])
+		{
+			$output['success'] = (bool)$this->_iaDb->insert($transaction);
+			$output['message'] = $output['success']
+				? iaLanguage::get('transaction_added')
+				: iaLanguage::get('invalid_parameters');
+		}
+
+		return $output;
 	}
-
-	$iaView->assign($output);
 }
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$iaView->grid('admin/transactions');
-}
-
-$iaDb->resetTable();

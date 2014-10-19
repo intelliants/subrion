@@ -1,6 +1,22 @@
 <form method="post" enctype="multipart/form-data" class="ia-form">
 	{preventCsrf}
 
+	{if !empty($assignableGroups)}
+		{capture append='fieldset_content_before' name='general'}
+			<div class="control-group">
+				<label class="control-label" for="input-group">{lang key='group'}</label>
+				<div class="controls">
+					<select name="usergroup_id" id="input-group">
+						<option value="8">{lang key='default'}</option>
+						{foreach $assignableGroups as $id => $title}
+							<option value="{$id}"{if $id == $item.usergroup_id} selected{/if}>{$title}</option>
+						{/foreach}
+					</select>
+				</div>
+			</div>
+		{/capture}
+	{/if}
+
 	{capture append='tabs_content' name='password'}
 		<div class="fieldset-wrapper">
 			<div class="fieldset">

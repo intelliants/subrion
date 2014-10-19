@@ -2,9 +2,9 @@
 	{foreach $item_sections as $key => $section}
 		{if !empty($section.fields) && isset($section.name)}
 			{if '___empty___' != $key}
-				{assign var='grouptitle' value="fieldgroup_{$section.name}"}
+				{assign grouptitle "fieldgroup_{$section.name}"}
 			{else}
-				{assign var='grouptitle' value='other'}
+				{assign grouptitle 'other'}
 			{/if}
 
 			<div class="wrap-group">
@@ -18,8 +18,8 @@
 
 				{if isset($fieldset_before[$section.name])}{$fieldset_before[$section.name]}{/if}
 
-				{foreach $section.fields as $variable}
-					{if !isset($exceptions) || !in_array($variable.name, $exceptions)}
+				{foreach $section.fields as $field}
+					{if !isset($exceptions) || !in_array($field.name, $exceptions)}
 						{include file='field-type-content-manage.tpl'}
 					{/if}
 				{/foreach}

@@ -66,7 +66,7 @@
 					<p>
 						<select name="_lang" id="_lang">
 							{foreach $languages as $code => $language}
-							<option value="{$code}"{if $code == $smarty.const.IA_LANGUAGE} selected="selected"{/if}>{$language}</option>
+							<option value="{$code}"{if $code == $smarty.const.IA_LANGUAGE} selected{/if}>{$language}</option>
 							{/foreach}
 						</select>
 					</p>
@@ -91,8 +91,8 @@
 				Powered by <a href="http://www.subrion.org/" title="Subrion CMS">Subrion CMS v{$config.version}</a><br />
 				Copyright &copy; 2008-{$smarty.now|date_format:'%Y'} <a href="http://www.intelliants.com/" title="Intelligent Web Solutions">Intelliants LLC</a>
 			</p>
+			<a href="{$smarty.const.IA_URL}" class="back-to-home"><span>←</span> {lang key='back_to_homepage'}</a>
 		</div>
-		<a href="{$smarty.const.IA_URL}" class="back-to-home"><span>←</span> {lang key='back_to_homepage'}</a>
 	</div>
 
 	{ia_hooker name='smartyAdminFooterBeforeJsDisplay'}

@@ -24,16 +24,53 @@
  *
  ******************************************************************************/
 
-$iaExtra = $iaCore->factory('extra', iaCore::ADMIN);
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	if ('info' == $_POST['action'])
-	{
-		$output = array('tabs' => null);
-		$packageName = $_POST['name'];
+	protected $_name = 'packages';
 
-		if (file_exists($documentationPath = IA_PACKAGES . $packageName . IA_DS . 'docs' . IA_DS))
+	protected $_processAdd = false;
+	protected $_processEdit = false;
+
+	private $_folder;
+
+
+	public function __construct()
+	{
+		parent::__construct();
+
+		$iaExtra = $this->_iaCore->factory('extra', iaCore::ADMIN);
+
+		$this->setHelper($iaExtra);
+		$this->setTable(iaExtra::getTable());
+
+		$this->_folder = IA_PACKAGES;
+	}
+
+	protected function _indexPage(&$iaView)
+	{
+		if (2 == count($this->_iaCore->requestPath))
+		{
+			$this->_processAction($iaView);
+		}
+
+		$iaView->assign('packages', $this->_getList());
+
+		$iaView->display($this->getName());
+	}
+
+	protected function _gridRead($params)
+	{
+		return (1 == count($this->_iaCore->requestPath) && 'documentation' == $this->_iaCore->requestPath[0])
+			? $this->_getDocumentation($params['name'], $this->_iaCore->iaView)
+			: array();
+	}
+
+
+	private function _getDocumentation($packageName, &$iaView)
+	{
+		$result = array();
+
+		if (file_exists($documentationPath = $this->_folder . $packageName . IA_DS . 'docs' . IA_DS))
 		{
 			$docs = scandir($documentationPath);
 
@@ -45,7 +82,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 					{
 						$tab = substr($doc, 0, count($doc) - 6);
 						$contents = file_get_contents($documentationPath . $doc);
-						$output['tabs'][] = array(
+						$result['tabs'][] = array(
 							'title' => iaLanguage::get('extra_' . $tab, ucfirst($tab)),
 							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 							'cls' => 'extension-docs'
@@ -54,8 +91,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 				}
 			}
 
-			$iaExtra->setXml(file_get_contents(IA_PACKAGES . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME));
-			$iaExtra->parse();
+			$this->getHelper()->setXml(file_get_contents($this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME));
+			$this->getHelper()->parse();
 
 			$search = array(
 				'{icon}',
@@ -66,419 +103,463 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 				'{date}',
 				'{compatibility}',
 			);
+
 			$icon = '';
-			if (file_exists(IA_PACKAGES . $packageName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png'))
+			if (file_exists($this->_folder . $packageName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png'))
 			{
-				$icon = '<tr><td class="plugin-icon"><img src="' . IA_CLEAR_URL . 'packages/' . $packageName . '/docs/img/icon.png" alt="" /></td></tr>';
+				$icon = '<tr><td class="plugin-icon"><img src="' . $iaView->assetsUrl . 'packages/' . $packageName . '/docs/img/icon.png" alt=""></td></tr>';
 			}
+			$data = &$this->getHelper()->itemData;
+
 			$replacement = array(
 				$icon,
-				$iaExtra->itemData['info']['title'],
-				$iaExtra->itemData['info']['author'],
-				$iaExtra->itemData['info']['contributor'],
-				$iaExtra->itemData['info']['version'],
-				$iaExtra->itemData['info']['date'],
-				$iaExtra->itemData['compatibility']
+				$data['info']['title'],
+				$data['info']['author'],
+				$data['info']['contributor'],
+				$data['info']['version'],
+				$data['info']['date'],
+				$data['compatibility']
 			);
 
-			$output['info'] = str_replace($search, $replacement,
-				file_get_contents(IA_ADMIN . 'templates' . IA_DS . $iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl'));
+			$result['info'] = str_replace($search, $replacement,
+				file_get_contents(IA_ADMIN . 'templates' . IA_DS . $this->_iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl'));
 		}
 
-		$iaView->assign($output);
+		return $result;
 	}
-}
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$iaDb->setTable(iaExtra::getTable());
-
-	if (isset($iaCore->requestPath[0]) && isset($iaCore->requestPath[1]))
+	private function _processAction(&$iaView)
 	{
-		$package = iaSanitize::sql($iaCore->requestPath[0]);
-		$action = $iaCore->requestPath[1];
-		$message = iaLanguage::get('invalid_parameters');
-		$error = true;
+		$iaAcl = $this->_iaCore->factory('acl');
+		$iaLog = $this->_iaCore->factory('log');
+
+		$package = iaSanitize::sql($this->_iaCore->requestPath[0]);
+		$action = $this->_iaCore->requestPath[1];
+		$error = false;
 
 		switch ($action)
 		{
 			case 'activate':
-				$iaAcl->checkPage($permission . 'activate');
-				$message = iaLanguage::get('package_activated');
-				$error = false;
-
-				if ($iaDb->update(array('status' => iaCore::STATUS_ACTIVE), "`name` = '{$package}' AND `type` = 'package'"))
+			case 'deactivate':
+				if (!$iaAcl->isAccessible($this->getName(), 'activate'))
 				{
-					$iaCore->factory('log')->write(iaLog::ACTION_ENABLE, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
+					return iaView::accessDenied();
 				}
 
-				break;
-
-			case 'deactivate':
-				$iaAcl->checkPage($permission . 'activate');
-				$message = iaLanguage::get('package_deactivated');
-				$error = false;
-
-				if ($iaDb->update(array('status' => iaCore::STATUS_INACTIVE), "`name` = '{$package}' AND `type` = 'package'"))
+				if ($this->_activate($package, 'deactivate' == $action))
 				{
-					$iaCore->factory('log')->write(iaLog::ACTION_DISABLE, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
+					$type = ('deactivate' == $action) ? iaLog::ACTION_DISABLE : iaLog::ACTION_ENABLE;
+					$iaLog->write($type, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
+				}
+				else
+				{
+					$error = true;
 				}
 
 				break;
 
 			case 'set_default':
-				$iaAcl->checkPage($permission . 'set_default');
-
-				change_default((isset($_GET['url']) ? $_GET['url'][0] : ''), $package);
-
-				$extraInstallFile = IA_PACKAGES . $package . IA_DS . iaExtra::INSTALL_FILE_NAME;
-				if (!file_exists($extraInstallFile))
+				if (!$iaAcl->isAccessible($this->getName(), $action))
 				{
-					$message = iaLanguage::get('file_doesnt_exist');
-				}
-				else
-				{
-					$iaExtra->setXml(file_get_contents($extraInstallFile));
-					$error = false;
+					return iaView::accessDenied();
 				}
 
-				$iaExtra->setUrl(IA_URL_DELIMITER);
-				$iaExtra->setXml(file_get_contents(IA_PACKAGES . $package . IA_DS . iaExtra::INSTALL_FILE_NAME));
-				$iaExtra->parse();
-				$iaExtra->checkValidity();
-
-				$pages = $iaExtra->itemData['pages']['front'];
-				foreach ($pages as $page)
-				{
-					$iaDb->update(array('alias' => $page['alias']), "`name` = '{$page['name']}' AND `extras` = '$package'", null, 'pages');
-				}
-
-				$message = array(iaLanguage::get('set_default_success'));
-
-				if ($iaCore->get('default_package', '') == '')
-				{
-					$message[] = iaLanguage::get('reset_previous_default_success');
-				}
-				$error = false;
+				$error = !$this->_setDefault($package);
 
 				break;
 
 			case 'reset':
-				$iaAcl->checkPage($permission . 'set_default');
-				$_GET['type'] = isset($_GET['type']) ? $_GET['type'] : 2;
-				$url = '';
-				switch($_GET['type'])
+				if (!$iaAcl->isAccessible($this->getName(), 'set_default'))
 				{
-					case 1:
-						$url = 'http://' . iaSanitize::sql(str_replace('www.', '', $_GET['url'][1])) . '.' . $iaView->domain . IA_URL_DELIMITER;
-						break;
-					case 2:
-						$url = $_GET['url'][2];
+					return iaView::accessDenied();
 				}
 
-				if ($url)
-				{
-					$url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
-					change_default($url);
-				}
-
-				$message = iaLanguage::get('reset_default_success');
-				$error = false;
+				$error = !$this->_reset($iaView->domain);
 
 				break;
 
 			case iaExtra::ACTION_INSTALL:
 			case iaExtra::ACTION_UPGRADE:
-				$iaAcl->checkPage($permission . $action);
-				$extraInstallFile = IA_PACKAGES . $package . IA_DS . iaExtra::INSTALL_FILE_NAME;
-
-				if (!file_exists($extraInstallFile))
+				if (!$iaAcl->isAccessible($this->getName(), $action))
 				{
-					$message = iaLanguage::get('file_doesnt_exist');
+					return iaView::accessDenied();
+				}
+
+				if ($this->_install($package, $action, $iaView->domain))
+				{
+					// log this event
+					$action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
+					$iaLog->write($action, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package, 'to' => $this->getHelper()->itemData['info']['version']), $package);
+					//
+
+					$iaSitemap = $this->_iaCore->factory('sitemap', iaCore::ADMIN);
+					$iaSitemap->generate();
 				}
 				else
 				{
-					$iaExtra->setXml(file_get_contents($extraInstallFile));
-					$error = false;
-				}
-
-				if (!$error)
-				{
-					$url = '';
-					$_GET['type'] = isset($_GET['type']) ? $_GET['type'] : 2;
-
-					switch($_GET['type'])
-					{
-						case 1:
-							$url = 'http://' . iaSanitize::sql(str_replace('www.', '', $_GET['url'][1])) . '.' . $iaView->domain . IA_URL_DELIMITER;
-							break;
-						case 2:
-							$url = ($action == iaExtra::ACTION_UPGRADE)
-								? $iaDb->one('`url`', "`name` = '{$package}' AND `type` = 'package'")
-								: $_GET['url'][2];
-					}
-
-					$url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
-
-					$iaExtra->doAction(iaExtra::ACTION_INSTALL, $url);
-
-					if ($iaExtra->error)
-					{
-						$message = $iaExtra->getMessage();
-						$error = true;
-					}
-					else
-					{
-						if ($_GET['type'] == 0)
-						{
-							change_default(isset($_GET['url'][0]) ? $_GET['url'][0] : '', $package);
-						}
-
-						$message = $iaExtra->isUpgrade
-							? iaLanguage::get('package_updated')
-							: iaLanguage::get('package_installed');
-
-						// log this event
-						$iaLog = $iaCore->factory('log');
-						$action = $iaExtra->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
-						$iaLog->write($action, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package, 'to' => $iaExtra->itemData['info']['version']), $package);
-						//
-
-						$iaCore->factory('sitemap', iaCore::ADMIN)->generate();
-					}
+					$error = true;
 				}
 
 				break;
 
-			case 'uninstall':
-				$iaAcl->checkPage($permission . 'uninstall');
-				$message = iaLanguage::get($action);
-				$error = false;
-				if ($iaDb->exists("`name` = :name AND `type` = :type", array('name' => $package, 'type' => iaExtra::TYPE_PACKAGE)))
+			case iaExtra::ACTION_UNINSTALL:
+				if (!$iaAcl->isAccessible($this->getName(), $action))
 				{
-					$extraInstallFile = IA_PACKAGES . $package . IA_DS . iaExtra::INSTALL_FILE_NAME;
-
-					if (!file_exists($extraInstallFile))
-					{
-						$message = iaLanguage::get('file_doesnt_exist');
-						$error = true;
-					}
-					else
-					{
-						$iaExtra->setXml(file_get_contents($extraInstallFile));
-						$error = false;
-					}
-
-					if (!$error)
-					{
-						$iaExtra->uninstall($package);
-
-						$message = iaLanguage::get('package_uninstalled');
-						$error = false;
-
-						// log this event
-						$iaCore->factory('log')->write(iaLog::ACTION_UNINSTALL, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
-						//
-					}
+					return iaView::accessDenied();
 				}
-		}
 
-		$iaCore->factory('cache')->clearAll();
-
-		$iaView->setMessages($message, $error ? iaView::ERROR : iaView::SUCCESS);
-
-		iaCore::util();
-		iaUtil::go_to(IA_ADMIN_URL . 'packages/');
-	}
-
-	$stmt = "`type` = 'package'";
-	$existPackages = $iaDb->keyvalue(array('name', 'version'), $stmt);
-	$statuses = $iaDb->keyvalue(array('name', 'status'), $stmt);
-	$dates = $iaDb->keyvalue(array('name', 'date'), $stmt);
-
-	if (empty($existPackages))
-	{
-		$existPackages = array();
-	}
-
-	$directory = opendir(IA_PACKAGES);
-	$packages = array();
-
-	while ($file = readdir($directory))
-	{
-		$installationFile = IA_PACKAGES . $file . IA_DS . iaExtra::INSTALL_FILE_NAME;
-		if (substr($file, 0, 1) != '.' && is_dir(IA_PACKAGES . $file) && file_exists($installationFile))
-		{
-			if ($fileContents = file_get_contents($installationFile))
-			{
-				$iaExtra->itemData['screenshots'] = array();
-				$iaExtra->itemData['url'] = '';
-
-				$iaExtra->setXml($fileContents);
-				$iaExtra->parse();
-
-				$buttons = false;
-
-				$version = explode('-', $iaExtra->itemData['compatibility']);
-				if (!isset($version[1]))
+				if ($this->_uninstall($package))
 				{
-					if (version_compare($version[0], IA_VERSION, '<='))
-					{
-						$buttons = true;
-					}
+					$iaLog->write(iaLog::ACTION_UNINSTALL, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
 				}
 				else
 				{
-					if (version_compare($version[0], IA_VERSION, '<=')
-						&& version_compare($version[1], IA_VERSION, '>='))
-					{
-						$buttons = true;
-					}
+					$error = true;
 				}
+		}
 
-				if (false === $buttons)
-				{
-					$iaExtra->itemData['compatibility'] = '<span style="color:red">' . $iaExtra->itemData['compatibility'] . ' ' . iaLanguage::get('incompatible') . '</span>';
-				}
+		$iaCache = $this->_iaCore->factory('cache');
+		$iaCache->clearAll();
 
-				$status = 'notinstall';
-				$preview = array();
-				$screenshots = array();
-				$items = array(
-					'readme' => true,
-					'activate' => false,
-					'set_default' => false,
-					'deactivate' => false,
-					'install' => false,
-					'uninstall' => false,
-					'upgrade' => false,
-					'config' => false,
-					'manage' => false,
-					'import' => false
-				);
-				if (isset($existPackages[$iaExtra->itemData['name']]))
-				{
-					$status = $statuses[$iaExtra->itemData['name']];
-				}
+		$iaView->setMessages($this->getMessages(), $error ? iaView::ERROR : iaView::SUCCESS);
 
-				if ($array = $iaExtra->itemData['screenshots'])
-				{
-					foreach ($array as $key => $value)
-					{
-						('preview' == $value['type'])
-							? $preview[] = $value
-							: $screenshots[] = $value;
-					}
-				}
+		iaUtil::go_to($this->getPath());
+	}
 
-				switch ($status)
-				{
-					case 'install':
-					case 'active':
-						$items['deactivate'] = true;
-						$items['set_default'] = true;
+	private function _install($packageName, $action, $domain)
+	{
+		$extraInstallFile = $this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME;
 
-						if (is_dir(IA_PACKAGES . $file . IA_DS . 'includes' . IA_DS . 'dumps'))
-						{
-							$items['import'] = true;
-						}
+		if (file_exists($extraInstallFile))
+		{
+			$this->getHelper()->setXml(file_get_contents($extraInstallFile));
 
-						if ($extraConfig = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`extras` = :name ORDER BY `order` ASC', array('name' => $iaExtra->itemData['name']), iaCore::getConfigTable()))
-						{
-							$items['config'] = array(
-								'url' => $extraConfig['config_group'],
-								'anchor' => $extraConfig['name']
-							);
-						}
+			$url = '';
+			$_GET['type'] = isset($_GET['type']) ? $_GET['type'] : 2;
 
-						if ($alias = $iaDb->one_bind('alias', '`name` = :name', array('name' => $iaExtra->itemData['name'] . '_manage'), 'admin_pages'))
-						{
-							$items['manage'] = $alias;
-						}
-
-						if ($buttons && version_compare($iaExtra->itemData['info']['version'], $existPackages[$iaExtra->itemData['name']], '>')
-						)
-						{
-							$items['upgrade'] = true;
-						}
-
-						break;
-
-					case 'inactive':
-						$items['activate'] = true;
-						$items['uninstall'] = true;
-
-						break;
-
-					case 'notinstall':
-						$items['install'] = true;
-				}
-
-				$packages[] = array(
-					'title' => $iaExtra->itemData['info']['title'],
-					'version' => $iaExtra->itemData['info']['version'],
-					'description' => $iaExtra->itemData['info']['title'],
-					'contributor' => $iaExtra->itemData['info']['contributor'],
-					'compatibility' => $iaExtra->itemData['compatibility'],
-					'author' => $iaExtra->itemData['info']['author'],
-					'summary' => $iaExtra->itemData['info']['summary'],
-					'date' => $iaExtra->itemData['info']['date'],
-					'name' => $iaExtra->itemData['name'],
-					'buttons' => $buttons,
-					'url' => $iaExtra->itemData['url'],
-					'preview' => $preview,
-					'screenshots' => $screenshots,
-					'file' => $file,
-					'items' => $items,
-					'status' => $status,
-					'date_updated' => ($status != 'notinstall') ? $dates[$iaExtra->itemData['name']] : false,
-					'install' => true
-				);
+			switch($_GET['type'])
+			{
+				case 1:
+					$url = 'http://' . iaSanitize::sql(str_replace('www.', '', $_GET['url'][1])) . '.' . $domain . IA_URL_DELIMITER;
+					break;
+				case 2:
+					$url = ($action == iaExtra::ACTION_UPGRADE)
+						? $this->_iaDb->one('url', "`name` = '{$packageName}' AND `type` = 'package'")
+						: $_GET['url'][2];
 			}
+
+			$url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
+
+			$this->getHelper()->doAction(iaExtra::ACTION_INSTALL, $url);
+
+			if ($this->getHelper()->error)
+			{
+				$this->addMessage($this->getHelper()->getMessage());
+			}
+			else
+			{
+				if ($_GET['type'] == 0)
+				{
+					$this->_changeDefault(isset($_GET['url'][0]) ? $_GET['url'][0] : '', $packageName);
+				}
+
+				$messagePhrase = $this->getHelper()->isUpgrade ? 'package_updated' : 'package_installed';
+				$this->addMessage($messagePhrase);
+
+				return true;
+			}
+		}
+		else
+		{
+			$this->addMessage('file_doesnt_exist');
+		}
+
+		return false;
+	}
+
+	private function _uninstall($packageName)
+	{
+		if ($this->_iaDb->exists('`name` = :name AND `type` = :type', array('name' => $packageName, 'type' => iaExtra::TYPE_PACKAGE)))
+		{
+			$extraInstallFile = $this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME;
+
+			if (!file_exists($extraInstallFile))
+			{
+				$this->addMessage('file_doesnt_exist');
+			}
+			else
+			{
+				$this->getHelper()->setXml(file_get_contents($extraInstallFile));
+				$this->getHelper()->uninstall($packageName);
+
+				$this->addMessage('package_uninstalled');
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function _activate($packageName, $deactivate)
+	{
+		$stmt = '`name` = :name AND `type` = :type';
+		$this->_iaDb->bind($stmt, array('name' => $packageName, 'type' => iaExtra::TYPE_PACKAGE));
+
+		$status = $deactivate ? iaCore::STATUS_INACTIVE : iaCore::STATUS_ACTIVE;
+
+		return (bool)$this->_iaDb->update(array('status' => $status), $stmt);
+	}
+
+	private function _reset($domain)
+	{
+		$_GET['type'] = isset($_GET['type']) ? $_GET['type'] : 2;
+		$url = '';
+
+		switch($_GET['type'])
+		{
+			case 1:
+				$url = 'http://' . iaSanitize::sql(str_replace('www.', '', $_GET['url'][1])) . '.' . $domain . IA_URL_DELIMITER;
+				break;
+			case 2:
+				$url = $_GET['url'][2];
+		}
+
+		if ($url)
+		{
+			$url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
+			$this->_changeDefault($url);
+
+			$this->addMessage('reset_default_success');
+
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 
-	$iaView->assign('packages_list', $packages);
-
-	$iaDb->resetTable();
-}
-
-function change_default($url = '', $package = '')
-{
-	$iaCore = iaCore::instance();
-	$iaDb = &$iaCore->iaDb;
-
-	$defaultPackage = $iaCore->get('default_package', false);
-
-	if ($defaultPackage != $package)
+	private function _setDefault($packageName)
 	{
-		if ($defaultPackage)
+		$this->_changeDefault((isset($_GET['url']) ? $_GET['url'][0] : ''), $packageName);
+
+		$extraInstallFile = $this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME;
+		if (!file_exists($extraInstallFile))
 		{
-			$oldExtras = $iaCore->factory('extra', iaCore::ADMIN);
+			$this->addMessage('file_doesnt_exist');
 
-			$oldExtras->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
-			$oldExtras->setXml(file_get_contents(IA_PACKAGES . $defaultPackage . IA_DS . iaExtra::INSTALL_FILE_NAME));
-			$oldExtras->parse();
-			$oldExtras->checkValidity();
+			return false;
+		}
 
-			$iaDb->update(array('url' => $oldExtras->getUrl()), "`name` = '$defaultPackage'", null, iaExtra::getTable());
+		$this->getHelper()->setUrl(IA_URL_DELIMITER);
+		$this->getHelper()->setXml(file_get_contents($extraInstallFile));
+		$this->getHelper()->parse();
+		$this->getHelper()->checkValidity();
 
-			if ($oldExtras->itemData['pages']['front'])
+		$pages = $this->getHelper()->itemData['pages']['front'];
+		foreach ($pages as $page)
+		{
+			$this->_iaDb->update(array('alias' => $page['alias']), "`name` = '{$page['name']}' AND `extras` = '$packageName'", null, 'pages');
+		}
+
+		$this->addMessage('set_default_success');
+
+		if (!$this->_iaCore->get('default_package', false))
+		{
+			$this->addMessage('reset_previous_default_success');
+		}
+
+		return true;
+	}
+
+	private function _getList()
+	{
+		$stmt = iaDb::convertIds(iaExtra::TYPE_PACKAGE, 'type');
+
+		$existPackages = $this->_iaDb->keyvalue(array('name', 'version'), $stmt);
+		$existPackages || $existPackages = array();
+		$statuses = $this->_iaDb->keyvalue(array('name', 'status'), $stmt);
+		$dates = $this->_iaDb->keyvalue(array('name', 'date'), $stmt);
+
+		$directory = opendir($this->_folder);
+		$result = array();
+
+		while ($file = readdir($directory))
+		{
+			$installationFile = $this->_folder . $file . IA_DS . iaExtra::INSTALL_FILE_NAME;
+			if (substr($file, 0, 1) != '.' && is_dir($this->_folder . $file) && file_exists($installationFile))
 			{
-				$iaDb->setTable('pages');
-				foreach ($oldExtras->itemData['pages']['front'] as $page)
+				if ($fileContents = file_get_contents($installationFile))
 				{
-					$iaDb->update(array('alias' => $page['alias']), "`name` = '{$page['name']}' AND `extras` = '$defaultPackage'");
+					$this->getHelper()->itemData['screenshots'] = array();
+					$this->getHelper()->itemData['url'] = '';
+
+					$this->getHelper()->setXml($fileContents);
+					$this->getHelper()->parse();
+
+					$buttons = false;
+
+					$version = explode('-', $this->getHelper()->itemData['compatibility']);
+					if (!isset($version[1]))
+					{
+						if (version_compare($version[0], IA_VERSION, '<='))
+						{
+							$buttons = true;
+						}
+					}
+					else
+					{
+						if (version_compare($version[0], IA_VERSION, '<=')
+							&& version_compare($version[1], IA_VERSION, '>='))
+						{
+							$buttons = true;
+						}
+					}
+
+					if (false === $buttons)
+					{
+						$this->getHelper()->itemData['compatibility'] = '<span style="color:red">' . $iaExtra->itemData['compatibility'] . ' ' . iaLanguage::get('incompatible') . '</span>';
+					}
+
+					$data = &$this->getHelper()->itemData;
+					$status = 'notinstall';
+					$preview = array();
+					$screenshots = array();
+					$items = array(
+						'readme' => true,
+						'activate' => false,
+						'set_default' => false,
+						'deactivate' => false,
+						'install' => false,
+						'uninstall' => false,
+						'upgrade' => false,
+						'config' => false,
+						'manage' => false,
+						'import' => false
+					);
+					if (isset($existPackages[$data['name']]))
+					{
+						$status = $statuses[$data['name']];
+					}
+
+					if ($array = $data['screenshots'])
+					{
+						foreach ($array as $key => $value)
+						{
+							('preview' == $value['type'])
+								? $preview[] = $value
+								: $screenshots[] = $value;
+						}
+					}
+
+					switch ($status)
+					{
+						case 'install':
+						case 'active':
+							$items['deactivate'] = true;
+							$items['set_default'] = true;
+
+							if (is_dir($this->_folder . $file . IA_DS . 'includes' . IA_DS . 'dumps'))
+							{
+								$items['import'] = true;
+							}
+
+							if ($extraConfig = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`extras` = :name ORDER BY `order` ASC', array('name' => $data['name']), iaCore::getConfigTable()))
+							{
+								$items['config'] = array(
+									'url' => $extraConfig['config_group'],
+									'anchor' => $extraConfig['name']
+								);
+							}
+
+							if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', array('name' => $data['name'] . '_manage'), 'admin_pages'))
+							{
+								$items['manage'] = $alias;
+							}
+
+							if ($buttons && version_compare($data['info']['version'], $existPackages[$data['name']], '>')
+							)
+							{
+								$items['upgrade'] = true;
+							}
+
+							break;
+
+						case 'inactive':
+							$items['activate'] = true;
+							$items['uninstall'] = true;
+
+							break;
+
+						case 'notinstall':
+							$items['install'] = true;
+					}
+
+					$result[] = array(
+						'title' => $data['info']['title'],
+						'version' => $data['info']['version'],
+						'description' => $data['info']['title'],
+						'contributor' => $data['info']['contributor'],
+						'compatibility' => $data['compatibility'],
+						'author' => $data['info']['author'],
+						'summary' => $data['info']['summary'],
+						'date' => $data['info']['date'],
+						'name' => $data['name'],
+						'buttons' => $buttons,
+						'url' => $data['url'],
+						'preview' => $preview,
+						'screenshots' => $screenshots,
+						'file' => $file,
+						'items' => $items,
+						'status' => $status,
+						'date_updated' => ($status != 'notinstall') ? $dates[$data['name']] : false,
+						'install' => true
+					);
 				}
-				$iaDb->resetTable();
 			}
 		}
-		$iaDb->update(array('url' => IA_URL_DELIMITER), "`name` = '$package'", null, iaExtra::getTable());
-		$iaCore->set('default_package', $package, true);
 
-		$iaDb->setTable('hooks');
-		$iaDb->update(array('status' => iaCore::STATUS_INACTIVE), "`name` = 'phpCoreUrlRewrite'");
-		$iaDb->update(array('status' => iaCore::STATUS_ACTIVE), "`name` = 'phpCoreUrlRewrite' AND `extras` = '$package'");
-		$iaDb->resetTable();
+		return $result;
+	}
+
+	private function _changeDefault($url = '', $package = '')
+	{
+		$iaDb = &$this->_iaDb;
+
+		$defaultPackage = $this->_iaCore->get('default_package', false);
+
+		if ($defaultPackage != $package)
+		{
+			if ($defaultPackage)
+			{
+				$oldExtras = $this->_iaCore->factory('extra', iaCore::ADMIN);
+
+				$oldExtras->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
+				$oldExtras->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaExtra::INSTALL_FILE_NAME));
+				$oldExtras->parse();
+				$oldExtras->checkValidity();
+
+				$iaDb->update(array('url' => $oldExtras->getUrl()), iaDb::convertIds($defaultPackage, 'name'));
+
+				if ($oldExtras->itemData['pages']['front'])
+				{
+					$iaDb->setTable('pages');
+					foreach ($oldExtras->itemData['pages']['front'] as $page)
+					{
+						$iaDb->update(array('alias' => $page['alias']), "`name` = '{$page['name']}' AND `extras` = '$defaultPackage'");
+					}
+					$iaDb->resetTable();
+				}
+			}
+
+			$iaDb->update(array('url' => IA_URL_DELIMITER), iaDb::convertIds($package, 'name'));
+			$this->_iaCore->set('default_package', $package, true);
+
+			$iaDb->setTable('hooks');
+			$iaDb->update(array('status' => iaCore::STATUS_INACTIVE), "`name` = 'phpCoreUrlRewrite'");
+			$iaDb->update(array('status' => iaCore::STATUS_ACTIVE), "`name` = 'phpCoreUrlRewrite' AND `extras` = '$package'");
+			$iaDb->resetTable();
+		}
 	}
 }

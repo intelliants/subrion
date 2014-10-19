@@ -1,4 +1,9 @@
 intelli = {
+	/**
+	 * Name of the current page
+	 */
+	pageName: '',
+
 	lang: {},
 
 	/**
@@ -20,8 +25,6 @@ intelli = {
 					return true;
 				}
 			}
-
-			return false;
 		}
 
 		return false;
@@ -144,16 +147,16 @@ intelli = {
 		return obj;
 	},
 
-	notifFloatBox: function(opt)
+	notifFloatBox: function(options)
 	{
-		var msg = opt.msg,
-			type = opt.type || 'notif',
-			pause = opt.pause || 2000,
-			autohide = opt.autohide,
+		var msg = options.msg,
+			type = options.type || 'info',
+			pause = options.pause || 3000,
+			autohide = options.autohide,
 			html = '';
 
 		// building message box
-		html += '<div id="msg_box" class="msg_box-' + type + '"><a href="#" class="close">&times;</a>';
+		html += '<div id="notifFloatBox" class="notifFloatBox notifFloatBox--' + type + '"><a href="#" class="close">&times;</a>';
 		if ($.isArray(msg))
 		{
 			html += '<ul>';
@@ -168,33 +171,27 @@ intelli = {
 		}
 		else
 		{
-			html += ['<ul><li>', msg, '</li></ul>'].join('');
+			html += '<ul><li>' + msg + '</li></ul>';
 		}
 		html += '</div>';
 
 		// placing message box
-		if (!$('#msg_box').length > 0)
+		if (!$('#notifFloatBox').length > 0)
 		{
-			$('body').append(html);
+			$(html).appendTo('body').css('display', 'block').addClass('animated bounceInDown');
 
 			if (autohide)
 			{
 				setTimeout(function()
 				{
-					$('#msg_box').fadeOut(function()
-					{
-						$(this).remove();
-					});
+					$('#notifFloatBox').fadeOut(function(){$(this).remove();});
 				}, pause);
 			}
 
-			$('.close', '#msg_box').on('click', function(e)
+			$('.close', '#notifFloatBox').on('click', function(e)
 			{
 				e.preventDefault();
-				$('#msg_box').fadeOut(function()
-				{
-					$(this).remove();
-				});
+				$('#notifFloatBox').fadeOut(function(){$(this).remove();});
 			});
 		}
 	},
@@ -213,6 +210,11 @@ intelli = {
 
 		params = params || {};
 		params.baseHref = intelli.config.ia_url;
+
+		if ('1' == intelli.config.ckeditor_mobile)
+		{
+			CKEDITOR.env.isCompatible = true;
+		}
 
 		CKEDITOR.replace(name, params);
 	},
@@ -234,26 +236,19 @@ intelli = {
 
 	actionFavorites: function(item_id, item, action)
 	{
-		var msg = ('add' == action) ? intelli.lang.add_to_favorites : intelli.lang.remove_favorite;
-
-		if (confirm(msg))
+		$.ajax(
 		{
-			$.ajax(
+			url: intelli.config.ia_url + 'profile/favorites/read.json',
+			type: 'get',
+			data: {item: item, item_id: item_id, action: action},
+			success: function(data)
 			{
-				url: 'favorites.json',
-				type: 'get',
-				data: {item: item, item_id: item_id, action: action},
-				success: function(data)
+				if (!data.error)
 				{
-					if (!data.error)
-					{
-						window.location.href = window.location.href;
-					}
+					window.location.href = window.location.href;
 				}
-			});
-		}
-
-		return false;
+			}
+		});
 	}
 };
 

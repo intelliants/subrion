@@ -1,11 +1,11 @@
 <div class="ia-items">
 	{foreach $all_items as $oneitem}
 		<div class="media ia-item ia-item-bordered">
-			{assign var='item' value=$oneitem}
+			{assign item $oneitem}
 
 			<div class="pull-left">
 				{if $oneitem.avatar}
-					{assign var='avatar' value=$oneitem.avatar|unserialize}
+					{assign avatar $oneitem.avatar|unserialize}
 					{if $avatar}
 						{printImage imgfile=$avatar.path width=100 height=100 title=$oneitem.fullname|default:$oneitem.username class='media-object'}
 					{/if}

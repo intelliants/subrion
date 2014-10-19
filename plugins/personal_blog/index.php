@@ -24,10 +24,10 @@
  *
  ******************************************************************************/
 
+$iaDb->setTable('blog_entries');
+
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
-	$iaDb->setTable('blog_entries');
-
 	if (isset($iaCore->requestPath[0]))
 	{
 		$id = (int)$iaCore->requestPath[0];
@@ -55,24 +55,60 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$page = empty($_GET['page']) ? 0 : (int)$_GET['page'];
 		$page = ($page < 1) ? 1 : $page;
 
+		$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
+
 		$pagination = array(
 			'start' => ($page - 1) * $iaCore->get('blog_number'),
 			'limit' => (int)$iaCore->get('blog_number'),
-			'template' => $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog') . '?page={page}'
+			'template' => $pageUrl . '?page={page}'
 		);
 
-		$order = ('date' == $iaCore->get('blog_order')) ? 'ORDER BY `date` DESC' : 'ORDER BY `title` ASC';
+		$order = ('date' == $iaCore->get('blog_order')) ? 'ORDER BY `date_added` DESC' : 'ORDER BY `title` ASC';
 
 		$stmt = '`status` = :status AND `lang` = :language';
 		$iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'language' => $iaView->language));
-		$rows = $iaDb->all('SQL_CALC_FOUND_ROWS `id`, `title`, `date`, `body`, `alias`, `image`', $stmt . ' ' . $order, $pagination['start'], $pagination['limit']);
+		$rows = $iaDb->all('SQL_CALC_FOUND_ROWS `id`, `title`, `date_added`, `body`, `alias`, `image`', $stmt . ' ' . $order, $pagination['start'], $pagination['limit']);
 		$pagination['total'] = $iaDb->foundRows();
 
 		$iaView->assign('blog_entries', $rows);
 		$iaView->assign('pagination', $pagination);
 	}
 
-	$iaView->display('index');
+	$pageActions[] = array(
+		'icon' => 'icon-rss',
+		'title' => '',
+		'url' => IA_URL . 'blog.xml',
+		'classes' => 'btn-warning'
+	);
 
-	$iaDb->resetTable();
+	$iaView->assign('page_actions', $pageActions);
+
+	$iaView->display('index');
 }
+
+if (iaView::REQUEST_XML == $iaView->getRequestType())
+{
+	$output = array(
+		'title' => $iaCore->get('site') . ' :: ' . $iaView->title(),
+		'description' => '',
+		'url' => IA_URL . 'blog',
+		'item' => array()
+	);
+
+	$listings = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, 0, 20);
+	$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
+
+	foreach ($listings as $entry)
+	{
+		$output['item'][] = array(
+			'title' => $entry['title'],
+			'link' => $pageUrl . $entry['id'] . '-' . $entry['alias'],
+			'pubDate' => date('D, d M Y H:i:s T', strtotime($entry['date_modified'])),
+			'description' => iaSanitize::tags($entry['body'])
+		);
+	}
+
+	$iaView->assign('channel', $output);
+}
+
+$iaDb->resetTable();

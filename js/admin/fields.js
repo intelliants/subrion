@@ -9,7 +9,7 @@ Ext.onReady(function()
 				{name: 'title', title: _t('title'), sortable: false, width: 2},
 				{name: 'item', title: _t('item'), width: 100, renderer: function(value){return _t(value, value);}},
 				{name: 'group', title: _t('field_group'), width: 120},
-				{name: 'type', title: _t('fields_type'), width: 130, renderer: function(value){return _t('fields_type_'+value, value);}},
+				{name: 'type', title: _t('field_type'), width: 130, renderer: function(value){return _t('field_type_'+value, value);}},
 				{name: 'relation', title: _t('field_relation'), hidden: true, width: 80},
 				{name: 'length', title: _t('field_length'), width: 80},
 				{name: 'order', title: _t('order'), width: 50, editor: 'number'},
@@ -25,19 +25,12 @@ Ext.onReady(function()
 						this.store.rejectChanges();
 						e.cancel = true;
 
-						intelli.notifFloatBox({autohide: true, msg: _t('status_change_not_allowed'), pause: 1400, type: 'info'});
+						intelli.notifFloatBox({autohide: true, msg: _t('status_change_not_allowed'), pause: 1400});
 					}
 				}
 			},
-			texts: {delete_single: _t('are_you_sure_to_delete_field')},
-			url: intelli.config.admin_url + '/fields/'
+			texts: {delete_single: _t('are_you_sure_to_delete_field')}
 		};
-
-		var currentItem = $('#js-current-item-ph').val();
-		if (currentItem)
-		{
-			intelli.fields.storeParams = {item: currentItem};
-		}
 
 		intelli.fields = new IntelliGrid(intelli.fields, false);
 		intelli.fields.toolbar = Ext.create('Ext.Toolbar', {items:[
@@ -193,7 +186,7 @@ $(function()
 	};
 */
 
-	$('#type').on('change', function()
+	$('#input-type').on('change', function()
 	{
 		var type = $(this).val();
 
@@ -220,9 +213,13 @@ $(function()
 		(type && $.inArray(type, ['text', 'number', 'image', 'date', 'combo', 'radio']) !== -1)
 			? $('#link-to-details').show()
 			: $('#link-to-details').hide();
+
+		var annotation = $('option:selected', this).data('annotation');
+		var $helpBlock = $(this).next();
+		annotation ? $helpBlock.text(annotation).show() : $helpBlock.hide();
 	}).change();
 
-	$('#relation').change(function()
+	$('#js-field-relation').change(function()
 	{
 		var value = $(this).val();
 		(value == 'dependent') ? $('#regular_field').show() : $('#regular_field').hide();
@@ -231,10 +228,11 @@ $(function()
 
 	$('#searchable').on('change', function()
 	{
-		($(this).val() == 1) ? $('#show_in_search_as').show() : $('#show_in_search_as').hide();
+		var $ctl = $('#show_in_search_as');
+		($(this).val() == 1) ? $ctl.show() : $ctl.hide();
 	}).change();
 
-	$('#add_item').on('click', function(e)
+	$('#js-cmd-add-value').on('click', function(e)
 	{
 		e.preventDefault();
 
@@ -247,16 +245,9 @@ $(function()
 		intelli.displayUpdown();
 	});
 
-	$('select[name="pic_resize_mode"]').on('change', function()
+	$('select[name="resize_mode"], select[name="pic_resize_mode"]').on('change', function()
 	{
-		$('.help-block[id^="pic_resize_mode_tip_"]').hide();
-		$('#pic_resize_mode_tip_'+$(this).val()).show();
-	}).change();
-
-	$('select[name="resize_mode"]').on('change', function()
-	{
-		$('.help-block[id^="resize_mode_tip_"]').hide();
-		$('#resize_mode_tip_'+$(this).val()).show();
+		$(this).next().text($('option:selected', this).data('annotation'));
 	}).change();
 
 	$('.js-actions').on('click', function(e)
@@ -264,7 +255,7 @@ $(function()
 		e.preventDefault();
 
 		var action = $(this).data('action');
-		var type = $('#type').val();
+		var type = $('#input-type').val();
 		var val = $(this).parent().parent().find('input[name="values[]"]:first').val();
 		var defaultVal = $('#multiple_default').val();
 		var allDefault = defaultVal.split('|');
@@ -390,12 +381,6 @@ $(function()
 
 	$('.js-filter-numeric').numeric();
 
-	$('#type').on('change', function()
-	{
-		$('.help-block', '#field_type_tip').hide();
-		$('#type_tip_' + $(this).val()).show();
-	});
-
 	intelli.displayUpdown();
 
 	$('#toggle-pages')
@@ -438,9 +423,9 @@ $(function()
 	});
 
 	// populate & activate field groups select
-	$('#js-item-name').on('change', function()
+	$('#input-item').on('change', function()
 	{
-		var $fieldGroup = $('#js-fieldgroup-selectbox');
+		var $fieldGroup = $('#input-fieldgroup');
 		$fieldGroup.empty().append('<option selected="selected" value="">' + _t('_select_') + '</option>').prop('disabled', true);
 
 		var $pagesList = $('#js-pages-list-row');
@@ -462,7 +447,7 @@ $(function()
 			});
 
 			// get item field groups
-			$.get(intelli.config.admin_url + '/fields.json', {get: 'groups', item: itemName}, function(response)
+			$.get(intelli.config.admin_url + '/fields/read.json', {get: 'groups', item: itemName}, function(response)
 			{
 				if (response.length > 0)
 				{
@@ -484,22 +469,22 @@ $(function()
 	}).trigger('change');
 
 	// accordion for host fields
+	$('.js-dependent-fields-list').on('click', 'a.list-group-item', function(e)
+	{
+		e.preventDefault();
 
-	$('.js-dependent-fields-list').on('click', 'a.list-group-item', function(event) {
-		event.preventDefault();
+		var $this = $(this);
 
-		var _this = $(this);
-
-		if(!_this.hasClass('active'))
+		if (!$this.hasClass('active'))
 		{
-			_this
+			$this
 				.siblings('.active')
 				.removeClass('active')
 				.next()
 				.slideUp('fast', function()
-					{
-						_this.addClass('active').next().slideDown('fast');
-					});
+				{
+					$this.addClass('active').next().slideDown('fast');
+				});
 		}
 		
 	});

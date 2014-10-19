@@ -30,21 +30,22 @@ $iaDb->delete('`date` < (UNIX_TIMESTAMP() - 172800)', 'views_log'); // 48 hours
 $iaCore->factory('log')->cleanup();
 
 // check sponsored items for expiration
+$iaPlan = $iaCore->factory('plan');
 $iaItem = $iaCore->factory('item');
-$items = $iaDb->onefield('item', "`status` = 'active' AND `days` > 0 GROUP BY `item`", null, null, 'plans');
 
-foreach ($items as $itemName)
+$itemNames = $iaDb->onefield('item', "`status` = 'active' AND `duration` > 0 GROUP BY `item`", null, null, iaPlan::getTable());
+
+foreach ($itemNames as $itemName)
 {
-	$values = array(
-		'sponsored' => 0,
-		'sponsored_end' => null,
-		'sponsored_plan_id' => 0
-	);
+	$tableName = $iaItem->getItemTable($itemName);
+	$itemIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, '`sponsored` = 1 AND `sponsored_end` < NOW()', null, null, $tableName);
 
-	if ($itemName == 'members')
+	if ($itemIds)
 	{
-		$values['status'] = 'suspended';
+		foreach ($itemIds as $itemId)
+		{
+			$iaPlan->cancelSubscription($itemName, $itemId);
+		}
 	}
-
-	$iaDb->update($values, '`sponsored` != 0 AND `sponsored_end` < CURDATE()', null, $iaItem->getItemTable($itemName));
 }
+//

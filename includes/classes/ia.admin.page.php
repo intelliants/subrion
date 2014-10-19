@@ -54,7 +54,9 @@ class iaPage extends abstractPlugin
 			return false;
 		}
 
-		$order = $iaDb->getMaxOrder(self::getTable()) + 1;
+		$iaDb->setTable(self::getTable());
+
+		$order = $iaDb->getMaxOrder() + 1;
 		$page['order'] = $order ? $order : 1;
 
 		$existPage = false;
@@ -86,6 +88,7 @@ class iaPage extends abstractPlugin
 			if (iaCore::STATUS_DRAFT == $page['status'])
 			{
 				$iaDb->update($page, iaDb::convertIds($existPage['id']));
+
 				return $existPage['id'];
 			}
 			else
@@ -93,17 +96,21 @@ class iaPage extends abstractPlugin
 				if (iaCore::STATUS_DRAFT == $existPage['status'])
 				{
 					$iaDb->update($page, iaDb::convertIds($existPage['id']));
+
 					return $existPage['id'];
 				}
 				else
 				{
 					$this->setMessage(iaLanguage::get('page_exists'));
+
 					return false;
 				}
 			}
 		}
 
 		$id = $iaDb->insert($page, array('last_updated' => iaDb::FUNCTION_NOW));
+
+		$iaDb->resetTable();
 
 		if ($id)
 		{
@@ -156,14 +163,14 @@ class iaPage extends abstractPlugin
 
 			if (!empty($currentData['alias']) && $itemData['alias'] && $currentData['alias'] != $itemData['alias'])
 			{
-				$this->_massUpdateAlias($currentData['alias'], $itemData['alias']);
+				$this->_massUpdateAlias($currentData['alias'], $itemData['alias'], $id);
 			}
 		}
 
 		return $result;
 	}
 
-	protected function _massUpdateAlias($previous, $new)
+	protected function _massUpdateAlias($previous, $new, $entryId)
 	{
 		$previous = iaSanitize::sql($previous);
 		$previous = (IA_URL_DELIMITER == $previous[strlen($previous) - 1]) ? substr($previous, 0, -1) : $previous;
@@ -171,7 +178,7 @@ class iaPage extends abstractPlugin
 		$new = iaSanitize::sql($new);
 		$new = (IA_URL_DELIMITER == $new[strlen($new) - 1]) ? substr($new, 0, -1) : $new;
 
-		$cond = iaDb::printf("`alias` LIKE ':alias%'", array('alias' => $previous));
+		$cond = iaDb::printf("`alias` LIKE ':alias%' AND `id` != :id", array('alias' => $previous, 'id' => $entryId));
 		$stmt = array('alias' => "REPLACE(`alias`, '$previous', '$new')");
 
 		$this->iaDb->update(null, $cond, $stmt, self::getTable());
@@ -200,7 +207,12 @@ class iaPage extends abstractPlugin
 			{
 				$pageName = $row['name'];
 
+				// remove associated entries as well
 				$iaDb->delete("`key` IN ('page_title_{$pageName}', 'page_content_{$pageName}')", iaLanguage::getTable());
+
+				$this->iaCore->factory('block', iaCore::ADMIN);
+				$iaDb->delete('`page_name` = :page', iaBlock::getMenusTable(), array('page' => $pageName));
+				//
 
 				$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'page', 'name' => iaLanguage::get('page_title_' . $pageName), 'id' => (int)$id));
 			}
@@ -230,7 +242,7 @@ class iaPage extends abstractPlugin
 		$stmt = '`status` = :status AND `service` = 0';
 		if ($exclusions)
 		{
-			$stmt.= " AND `name` NOT IN ('" . implode("','", $exclusions) . "')";
+			$stmt.= " AND `name` NOT IN ('" . implode("','", array_map(array('iaSanitize', 'sql'), $exclusions)) . "')";
 		}
 		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE));
 

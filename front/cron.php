@@ -47,7 +47,7 @@ if ($iaCore->get('cron'))
 		else
 		{
 			// disable cron job
-			$iaDb->update(array('active' => 0), iaDb::convertIds($job['id']));
+			$iaDb->update(array('active' => false), iaDb::convertIds($job['id']));
 		}
 	}
 

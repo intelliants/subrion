@@ -178,7 +178,7 @@
 				</ul>
 			</div>
 			<div class="widget-content">
-				<table class="table">
+				<table class="table table-light">
 					<thead>
 						<tr>
 							<th>#</th>
@@ -252,5 +252,6 @@
 
 {ia_hooker name='smartyDashboardAfterContent'}
 
-{ia_print_js files='admin/index, jquery/plugins/jquery.sparkline.min, jquery/plugins/scrollbars/jquery.mCustomScrollbar.min, jquery/plugins/scrollbars/jquery.mousewheel.min'}
+{ia_add_media files='css: _IA_URL_js/jquery/plugins/scrollbars/jquery.mCustomScrollbar'}
+{ia_print_js files='admin/index, jquery/plugins/jquery.sparkline.min, jquery/plugins/scrollbars/jquery.mCustomScrollbar.concat.min'}
 {/if}

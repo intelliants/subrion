@@ -30,8 +30,9 @@ class iaMailer extends PHPMailer
 {
 	protected $_table = 'mailer';
 
-	public $iaCore;
-	public $replace = array(); // fill replace rules in the constructor
+	protected $_replacements = array();
+
+	protected $_iaCore;
 
 
 	public function getTable()
@@ -39,253 +40,139 @@ class iaMailer extends PHPMailer
 		return $this->_table;
 	}
 
+	/*
+	 * Set replacements for email body
+	 *
+	 * @param array of key/value pairs or $key, $value parameters
+	 */
+	public function setReplacements()
+	{
+		$replacements = array();
+
+		switch (func_num_args())
+		{
+			case 1:
+				$values = func_get_arg(0);
+				if (is_array($values))
+				{
+					$replacements = $values;
+				}
+				break;
+
+			case 2:
+				$key = func_get_arg(0);
+				$value = func_get_arg(1);
+
+				if (is_string($key) && is_string($value))
+				{
+					$replacements[$key] = $value;
+				}
+		}
+
+		if ($replacements)
+		{
+			foreach ($replacements as $key => $value)
+			{
+				$keyPattern = '{%' . strtoupper($key) . '%}';
+				$this->_replacements[$keyPattern] = $value;
+			}
+		}
+	}
+
+	protected function _applyReplacements()
+	{
+		$this->Body = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Body);
+		$this->Subject = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Subject);
+	}
+
 	public function init()
 	{
-		$this->iaCore = iaCore::instance();
+		$this->_iaCore = iaCore::instance();
 
-		$this->Mailer = 'sendmail' == $this->iaCore->get('mail_function') || 'smtp' == $this->iaCore->get('mail_function')
-			? $this->iaCore->get('mail_function') : 'mail';
-		$this->CharSet = $this->iaCore->get('charset');
-		$this->IsHTML($this->iaCore->get('mimetype') ? true : false);
-		$this->From = $this->iaCore->get('site_email');
-		$this->FromName = $this->iaCore->get('site_from_name', 'Subrion CMS');
-		$this->Sendmail = $this->iaCore->get('sendmail_path');
+		$this->CharSet = $this->_iaCore->get('charset');
+		$this->From = $this->_iaCore->get('site_email');
+		$this->FromName = $this->_iaCore->get('site_from_name', 'Subrion CMS');
 		$this->SingleTo = true;
 
-		// PROPERTIES FOR SMTP
-		$this->Host = $this->iaCore->get('smtp_server');
-		$this->SMTPAuth = (bool)$this->iaCore->get('smtp_auth');
-		$this->Username = $this->iaCore->get('smtp_user');
-		$this->Port = (int)$this->iaCore->get('smtp_port');
-		$this->Port || $this->Port = 25;
-		$this->Password = $this->iaCore->get('smtp_password');
+		$this->isHTML($this->_iaCore->get('mimetype'));
 
-		// replace templates
-		$this->replace = array(
-			'{%SITE_URL%}' => IA_URL,
-			'{%SITE_NAME%}' => $this->iaCore->get('site'),
-			'{%SITE_EMAIL%}' => $this->iaCore->get('site_email')
-		);
+		switch ($this->_iaCore->get('mail_function'))
+		{
+			case 'smtp':
+				$this->isSMTP();
+
+				$this->Host = $this->_iaCore->get('smtp_server');
+				$this->SMTPAuth = (bool)$this->_iaCore->get('smtp_auth');
+				$this->Username = $this->_iaCore->get('smtp_user');
+				$this->Password = $this->_iaCore->get('smtp_password');
+				$this->SMTPSecure = 'ssl';
+
+				if ($port = $this->_iaCore->get('smtp_port'))
+				{
+					$this->Port = (int)$port;
+				}
+
+				break;
+
+			case 'sendmail':
+				$this->isSendmail();
+				$this->Sendmail = $this->_iaCore->get('sendmail_path');
+
+				break;
+
+			default: // PHP's mail function
+				$this->isMail();
+		}
+
+		// global patterns
+		$this->setReplacements(array(
+			'site_url' => IA_URL,
+			'site_name' => $this->_iaCore->get('site'),
+			'site_email' => $this->_iaCore->get('site_email')
+		));
 	}
 
 	/*
-	 * Load Subrion email template
-	 * Mail subject loads also
+	 * Load email template
+	 * Mail subject loaded as well
 	 *
 	 * @param string $name template name
 	 */
-	public function load_template($name)
+	public function loadTemplate($name)
 	{
-		$this->Subject = $this->iaCore->get($name . '_subject');
-		$this->Body = $this->iaCore->get($name . '_body');
+		$this->Subject = $this->_iaCore->get($name . '_subject');
+		$this->Body = $this->_iaCore->get($name . '_body');
 	}
 
-	/**
-	 * Append mail to mass mailer queue
-	 * {%FULLNAME%} in the body will be replaced with user full name
-	 *
-	 * @param mixed $aRctp recipients
-	 * @param string $aSubj mail subject
-	 * @param string $aBody mail body
-	 * @param string $aFrom from address
-	 */
-
-	// ACTUALLY NOT USED
-	/*
-	public function queue($aRctp, $aSubj, $aBody, $aFrom = '')
+	public function sendToAdministrators()
 	{
-		$iaDb = &$this->iaCore->iaDb;
-		$name_replace = false; // insert full name in the body
-		$aRctp = (array)$aRctp;
-
-		$aSubj = str_replace(array_keys($this->replace), array_values($this->replace), $aSubj);
-		$aBody = str_replace(array_keys($this->replace), array_values($this->replace), $aBody);
-
-		$mail = array(
-			'subj' => $aSubj,
-			'body' => $aBody,
-			'from' => $this->From,
-			'html' => (false !== strpos($this->ContentType, 'html')),
-			'group_id' => time()
-		);
-
-		// fetch full names from DB
-		if (false !== strpos($aBody, '{%FULLNAME%}')) {
-			$names = $iaDb->keyvalue(
-				'`email`, `fullname`',
-				"`email` IN ('" . implode("','", $aRctp) . "')",
-				iaUsers::getTable()
-			);
-			$name_replace = true;
-		}
-
-		// append mails to queue
-		foreach ($aRctp as $to)
+		if ($administrators = $this->_iaCore->iaDb->keyvalue(array('email', 'fullname'), '`usergroup_id` = ' . iaUsers::MEMBERSHIP_ADMINISTRATOR, iaUsers::getTable()))
 		{
-			$mail['to'] = $to;
-			if ($name_replace) {
-				$mail['body'] = str_replace(
-					'{%FULLNAME%}',
-					(array_key_exists($to, $names) ? $names[$to] : $to),
-					$aBody
-				);
-			}
-
-			$iaDb->insert($mail, null, 'mailer');
-		}
-	}
-*/
-	public function Send($ClearAddresses = false)
-	{
-		$this->Body = str_replace(array_keys($this->replace), array_values($this->replace), $this->Body);
-		$this->Subject = str_replace(array_keys($this->replace), array_values($this->replace), $this->Subject);
-		$this->isHTML(true);
-
-		$return = parent::Send();
-
-		if ($ClearAddresses)
-		{
-			parent::ClearAddresses();
-		}
-
-		return $return;
-	}
-
-	/**
-	 * dispatcher
-	 *
-	 * Sends email by the given action
-	 *
-	 * @param arr $event event info (listing, category etc)
-	 * @access public
-	 * @return void
-	 */
-/*	function dispatcher(&$event)
-	{
-		if (!empty($event['params']['from']))
-		{
-			$this->From = $event['params']['from'];
-		}
-
-		if (!empty($event['params']['fromname']))
-		{
-			$this->FromName	= $event['params']['fromname'];
-		}
-
-		switch ($event['action'])
-		{
-			case 'admin_password_restoration':
-				$this->_setAdminPasswordRestorationOptions($event);
-				break;
-
-			case 'admin_new_password_send':
-				$this->_setAdminNewPasswordOptions($event);
-				break;
-		}
-
-		// set recipients
-		if (!empty($event['params']['rcpts']) && is_array($event['params']['rcpts']))
-		{
-			foreach ($event['params']['rcpts'] as $addr)
+			foreach ($administrators as $email => $name)
 			{
-				$this->AddAddress($addr);
-			}
-		}
-		elseif (isset($event['params']['item']) && !empty($event['params']['item']['email']))
-		{
-			$this->AddAddress($event['params']['item']['email']);
-		}
-	    elseif (isset($event['params']['item']) && !empty($event['params']['item']['email']))
-		{
-			$this->AddAddress($event['params']['item']['email']);
-		}
-		elseif(empty($event['params']['bccs']) && empty($event['params']['ccs']))
-		{
-			trigger_error("No recipient specified", E_USER_WARNING);
-		}
-
-		if (!empty($event['params']['bccs']))
-		{
-			foreach ($event['params']['bccs'] as $b)
-			{
-				$this->AddBCC($b);
+				$this->addAddress($email, $name);
 			}
 		}
 
-		if (!empty($event['params']['ccs']))
-		{
-			foreach ($event['params']['ccs'] as $b)
-			{
-				$this->AddCC($b);
-			}
-		}
-
-		$r = $this->Send();
-
-	    if (!$r)
-		{
-			trigger_error("Error occured when sending email with subject \n Subject: '" . $this->Subject."'", E_USER_WARNING);
-			if ($this->IsError())
-			{
-				trigger_error("PHPMAILER Error '" . $this->ErrorInfo."'", E_USER_WARNING);
-			}
-		}
-
-		$this->ClearAllRecipients();
-
-		// Administrator notifying section
-		/*
-		switch($event['action'])
-		{
-			case "listing_submit":
-				if (!empty($this->admins))
-				{
-					foreach ($this->admins as $key=>$value)
-					{
-						if ($value['submit_notif'])
-						{
-							$this->notifyAdministrator($event, $value['email'], $value['fullname']);
-						}
-					}
-				}
-				break;
-		}
-		*//*
-		return $r;
-	}
-*/
-	/**
-	 * setAdminPasswordRestorationOptions
-	 *
-	 * Sends email when user requests admin password
-	 *
-	 * @param mixed $event
-	 * @access public
-	 * @return bool
-	 */
-	protected function _setAdminPasswordRestorationOptions(&$event)
-	{
-		$subject = 'Admin password restoration';
-		$body = 'Please follow this URL: {url} in order to reset your password.';
-
-		$url = $this->iaCore->get('admin_url') . "/login/?action=success&code=" . urlencode($event['params']['code']);
-
-		$body = str_replace('{url}', $url, $body);
-
-		$this->Subject = $subject;
-		$this->IsHtml(false);
-		$this->Body = $body;
+		return self::send();
 	}
 
-	protected function _setAdminNewPasswordOptions(&$event)
+	public function send($clearAddresses = true)
 	{
-		$subject = "Admin password restoration";
-		$body = "Your new password: {password}";
+		$this->_applyReplacements();
 
-		$body = str_replace('{password}', $event['params']['password'], $body);
+		$result = (bool)parent::send();
 
-		$this->Subject = $subject;
-		$this->IsHtml(false);
-		$this->Body = $body;
+		if ($clearAddresses)
+		{
+			parent::clearAddresses();
+		}
+
+		if (!$result)
+		{
+			iaDebug::debug($this->ErrorInfo, 'Email submission');
+		}
+
+		return $result;
 	}
 }

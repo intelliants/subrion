@@ -41,18 +41,16 @@ $(function()
 
 			$(this).parent().addClass('active').siblings().removeClass('active');
 			$('#' + toggler).addClass('active').siblings().removeClass('active');
-			
-			if($(window).scrollTop() > 0) {
-				$('html, body').animate({ scrollTop: 0 }, 'fast');
+
+			if ($(window).scrollTop() > 0)
+			{
+				$('html, body').animate({scrollTop: 0}, 'fast');
 			}
 		}
 	});
 
-	
-
 	// minmax
 	var widgetsState = JSON.parse(intelli.cookie.read('widgetsState'));
-
 	if (typeof widgetsState == 'undefined' || widgetsState == null)
 	{
 		widgetsState = {};
@@ -88,7 +86,10 @@ $(function()
 			objContent.slideDown('fast', function()
 			{
 				$obj.removeClass('collapsed');
-				objContent.mCustomScrollbar('update');
+				if (objContent.hasClass('mCustomScrollbar'))
+				{
+					objContent.mCustomScrollbar('update');
+				}
 			});
 
 			widgetsState[objId] = '';
@@ -114,7 +115,7 @@ $(function()
 
 
 	// Tree toggle
-	$('.js-categories-toggle').click(function(e)
+	$('.js-categories-toggle').on('click', function(e)
 	{
 		e.preventDefault();
 
@@ -122,7 +123,6 @@ $(function()
 
 		$(toggleWhat).toggle();
 	});
-	
 
 	$('textarea.js-code-editor').each(function()
 	{
@@ -137,9 +137,8 @@ $(function()
 
 	$('textarea.js-wysiwyg').each(function()
 	{
-		intelli.ckeditor($(this).attr('id'), {toolbar: 'Extended', height: '200px'});
+		intelli.ckeditor($(this).attr('id'), {height: '200px'});
 	});
-
 
 	// quick search
 	$('.dropdown-menu a', '#quick-search').on('click', function(e)
@@ -213,7 +212,7 @@ $(function()
 		}
 		else
 		{
-			intelli.notifFloatBox({msg: intelli.admin.lang.no_more_files, type: 'notification', autohide: true, pause: 2500});
+			intelli.notifFloatBox({msg: intelli.admin.lang.no_more_files, type: 'error', autohide: true, pause: 2500});
 		}
 	};
 
@@ -280,27 +279,33 @@ $(function()
 				name = rand;
 			}
 			$(this).find('.box-content').attr('id', name).show();
-			items.push({
+			items.push(
+			{
 				contentEl: name,
 				title: '<div class="tab-caption">'+$(this).find('.box-caption').text()+'</div>'
 			});
 		}).hide();
+
+
 		$('.right-column .box:first').before('<div id="ext_tabs"></div>');
-		intelli.box_tabs = new Ext.TabPanel(
-		{
-			renderTo: 'ext_tabs',
-			activeTab: 0,
-			shim: false,
-			defaults: {autoHeight: true},
-			items: items
-		});
 		$('.x-tab-panel > div').removeClass('x-tab-panel-header');
 	}
 
-	$('.js-datetimepicker-toggle').on('click', function()
+	if ($().datepicker)
 	{
-		$(this).prev().datetimepicker('show');
-	});
+		$('.js-datepicker').datepicker({
+			showTime: true,
+			format: 'yyyy-mm-dd H:i:s',
+			language: intelli.config.lang
+		});
+
+		$('.js-datepicker-toggle').on('click', function(e)
+		{
+			e.preventDefault();
+
+			$(this).prev().datepicker('show');
+		});
+	}
 
 	/* header-menu show/hide START */
 	if ($('#alert').length)
@@ -375,7 +380,7 @@ $(function()
 				success: function(response)
 				{
 					$('#feedback-modal').modal('hide');
-					intelli.notifFloatBox({msg: response.message, type: response.result ? 'notif' : 'error', autohide: true});
+					intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
 				},
 				type: 'POST',
 				url: intelli.config.admin_url + '.json'
@@ -387,7 +392,7 @@ $(function()
 		}
 	});
 
-	$('#clearFeedback').click(function()
+	$('#clearFeedback').on('click', function()
 	{
 		$('#feedback_body').val('');
 	});
@@ -395,7 +400,7 @@ $(function()
 
 	$('div.minmax').each(function()
 	{
-		$(this).click(function()
+		$(this).on('click', function()
 		{
 			if ($(this).next('.box-content').css('display') == 'block')
 			{
@@ -410,11 +415,6 @@ $(function()
 			$(this).toggleClass('white-close white-open');
 		});
 	});
-
-	// $('.js-filter-numeric').each(function()
-	// {
-		// $(this).numeric();
-	// });
 
 	function getMousePosition(e)
 	{
@@ -443,8 +443,8 @@ $(function()
 
 	textareaResizer = function()
 	{
-	  $('textarea.resizable').each(function()
-	  {
+		$('textarea.resizable').each(function()
+		{
 		var obj = $(this);
 
 		cl = obj.attr('class');
@@ -482,21 +482,21 @@ $(function()
 
 		function dragBegins(e)
 		{
-		  offset = obj.height() - getMousePosition(e).y;
-		  if ($.browser.opera)
-		  {
-			offset -= 6;
-		  }
-		  $(document)
-			  .bind('mousemove', doDrag)
-			  .bind('mouseup', dragEnds);
-		  stopPropagation(e);
+			offset = obj.height() - getMousePosition(e).y;
+			if ($.browser.opera)
+			{
+				offset -= 6;
+			}
+			$(document)
+				.bind('mousemove', doDrag)
+				.bind('mouseup', dragEnds);
+			stopPropagation(e);
 		}
 
 		function doDrag(e)
 		{
-		  obj.height(Math.max(15, offset + getMousePosition(e).y) + 'px');
-		  stopPropagation(e);
+			obj.height(Math.max(15, offset + getMousePosition(e).y) + 'px');
+			stopPropagation(e);
 		}
 
 		function dragEnds(e)
@@ -530,7 +530,7 @@ $(function()
 	/*
 	 * Init AJAX notification box
 	 */
-	$('.collapsed[rel]').click(function()
+	$('.collapsed[rel]').on('click', function()
 	{
 		$($(this).attr('rel')).toggle();
 	});
@@ -554,19 +554,24 @@ $(function()
 
 				if (!$this.hasClass('disabled'))
 				{
-					$this.animate({
+					$this.animate(
+					{
 						left: '10px',
 						opacity: 0
-					}, 150, function() {
-						$this.hide().prev().show(function() {
+					}, 150, function()
+					{
+						$this.hide().prev().show(function()
+						{
 							$.post(intelli.config.admin_url + '/actions/read.json', {action: 'remove-installer'}, function(response)
 							{
 								if (!response.error)
 								{
-									$this.prev().animate({
+									$this.prev().animate(
+									{
 										left: '10px',
 										opacity: 0
-									}, 150, function() {
+									}, 150, function()
+									{
 										$this.prev().hide().prev().show();
 									});
 
@@ -574,7 +579,8 @@ $(function()
 										.removeClass('alert-danger')
 										.addClass('alert-info');
 
-									setTimeout(function() {
+									setTimeout(function()
+									{
 										clearNotification($installerAlert);
 									}, 2000);
 								}
@@ -607,10 +613,12 @@ function clearNotification(el)
 
 	if ($('.alert', $nBlock).length >= 2)
 	{
-		el.animate({
+		el.animate(
+		{
 			top: '-10px',
 			opacity: 0
-		}, 150, function() {
+		}, 150, function()
+		{
 			el.hide();
 		})
 	}

@@ -35,19 +35,14 @@ class iaBlock extends abstractPlugin
 	const DEFAULT_MENU_TEMPLATE = 'render-menu.tpl';
 
 	protected static $_table = 'blocks';
-	protected static $_pagesTable = 'blocks_pages';
+	protected static $_pagesTable = 'objects_pages';
 	protected static $_menusTable = 'menus';
+	protected static $_positionsTable = 'positions';
 
-	protected $_types = array(self::TYPE_PLAIN, self::TYPE_MENU, self::TYPE_HTML, self::TYPE_SMARTY, 'php');
+	protected $_types = array(self::TYPE_PLAIN, self::TYPE_MENU, self::TYPE_HTML, self::TYPE_SMARTY, self::TYPE_PHP);
 
-	protected $_positions = array();
+	protected $_positions;
 
-
-	public function init()
-	{
-		parent::init();
-		$this->_positions = explode(',', $this->iaCore->get('block_positions'));
-	}
 
 	public static function getPagesTable()
 	{
@@ -66,6 +61,11 @@ class iaBlock extends abstractPlugin
 
 	public function getPositions()
 	{
+		if (is_null($this->_positions))
+		{
+			$this->_positions = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::$_positionsTable);
+		}
+
 		return $this->_positions;
 	}
 
@@ -95,7 +95,7 @@ class iaBlock extends abstractPlugin
 
 		if (isset($blockData['visible_on_pages']))
 		{
-			$visibleOn = $blockData['visible_on_pages'];
+			$pagesList = $blockData['visible_on_pages'];
 			unset($blockData['visible_on_pages']);
 		}
 
@@ -124,10 +124,7 @@ class iaBlock extends abstractPlugin
 				}
 			}
 
-			if (isset($visibleOn))
-			{
-				$this->setVisiblePages($id, $visibleOn);
-			}
+			$this->setVisiblePages($id, $pagesList, $blockData['sticky']);
 		}
 
 		return $id;
@@ -139,9 +136,7 @@ class iaBlock extends abstractPlugin
 
 		$row = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
 		$title = 'block_title_blc' . $id;
-		$title = iaLanguage::exists($title)
-			? iaLanguage::get($title)
-			: $row['title'];
+		$title = iaLanguage::exists($title) ? iaLanguage::get($title) : $row['title'];
 
 		$this->iaCore->startHook('beforeBlockDelete', array('block' => &$row));
 
@@ -149,10 +144,10 @@ class iaBlock extends abstractPlugin
 
 		if ($result)
 		{
-			$iaDb->delete('`block_id` = :id', self::getPagesTable(), array('id' => $id));
+			$iaDb->delete('`object_type` = :object && `object` = :id', self::getPagesTable(), array('id' => $id, 'object' => 'blocks'));
 			$iaDb->delete("`key` = 'block_title_blc{$id}' OR `key` = 'block_content_blc{$id}'", iaLanguage::getTable());
 
-			$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'block', 'name' => $title, 'id' => (int)$_POST['id']));
+			$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'block', 'name' => $title, 'id' => $id));
 		}
 
 		$this->iaCore->startHook('afterBlockDelete', array('block' => &$row));
@@ -170,18 +165,6 @@ class iaBlock extends abstractPlugin
 		{
 			$pagesList = $itemData['visible_on_pages'];
 			unset($itemData['visible_on_pages']);
-		}
-
-		if (self::TYPE_MENU == $itemData['type'])
-		{
-			$sql = "UPDATE `{$iaDb->prefix}pages` SET `menus` = REPLACE(`menus`, '{$row['name']}', '')";
-			$iaDb->query($sql);
-			if ($_POST['pages'])
-			{
-				$sql = "UPDATE `{$iaDb->prefix}pages` SET `menus` = CONCAT(`menus`, '{$row['name']}')";
-				$sql .= sprintf("WHERE `name` IN('%s')", implode("', '", $_POST['pages']));
-				$iaDb->query($sql);
-			}
 		}
 
 		if (isset($itemData['multi_language']) && !$itemData['multi_language'])
@@ -203,10 +186,7 @@ class iaBlock extends abstractPlugin
 
 		$result = parent::update($itemData, $id);
 
-		if (isset($pagesList))
-		{
-			$this->setVisiblePages($id, $pagesList);
-		}
+		$this->setVisiblePages($id, $pagesList, $itemData['sticky']);
 
 		if (isset($itemData['multi_language']) && !$itemData['multi_language'])
 		{
@@ -248,65 +228,37 @@ class iaBlock extends abstractPlugin
 
 		if ($result)
 		{
-			$this->iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array('item' => 'block', 'name' => $row['title'], 'id' => $id));
+			$this->iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array(
+				'item' => (self::TYPE_MENU == $row['type']) ? 'menu' : 'block',
+				'name' => $row['title'],
+				'id' => $id
+			));
 		}
 
 		return $result;
 	}
 
-
-
-	public function gridRead($params, $columns, array $filterParams = array(), array $persistentConditions = array())
-	{
-		$result = parent::gridRead($params, $columns, $filterParams, $persistentConditions);
-
-		if ($result['data'])
-		{
-			foreach ($result['data'] as &$block)
-			{
-				$block['contents'] = htmlspecialchars($block['contents']);
-				if (!$block['multi_language'])
-				{
-					if ($titleLanguages = $this->iaDb->keyvalue(array('code', 'value'), "`key` = 'block_title_blc{$block['id']}'", iaLanguage::getTable()))
-					{
-						if ($titleLanguages[$this->iaView->language])
-						{
-							$block['title'] = $titleLanguages[$this->iaView->language];
-						}
-						else
-						{
-							unset($titleLanguages[$this->iaView->language]);
-
-							foreach ($titleLanguages as $languageTitle)
-							{
-								if ($languageTitle)
-								{
-									$block['title'] = $languageTitle;
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return $result;
-	}
-
-	public  function setVisiblePages($blockId, array $pagesList)
+	public function setVisiblePages($blockId, array $pagesList, $accessLevel = 1)
 	{
 		$this->iaDb->setTable(self::getPagesTable());
 
-		$this->iaDb->delete(iaDb::convertIds($blockId, 'block_id'));
+		$this->iaDb->delete("`object_type` = 'blocks' && " . iaDb::convertIds($blockId, 'object'));
 
-		$rows = array();
-		foreach ($pagesList as $pageName)
+		// set global visibility for disabled blocks
+		if (!$accessLevel)
 		{
-			$rows[] = array('block_id' => $blockId, 'page_name' => $pageName);
+			$this->iaDb->insert(array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => '', 'access' => '0'));
 		}
 
-		$this->iaDb->insert($rows);
+		if ($pagesList)
+		{
+			$rows = array();
+			foreach ($pagesList as $pageName)
+			{
+				$rows[] = array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => $pageName, 'access' => !$accessLevel);
+			}
+			$this->iaDb->insert($rows);
+		}
 
 		$this->iaDb->resetTable();
 	}

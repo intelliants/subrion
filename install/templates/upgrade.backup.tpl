@@ -52,7 +52,7 @@ $(function()
 		$btnStart.addClass('disabled');
 		$notificationArea
 			.css('font-weight', 'bold')
-			.html('Started to create backup... <img src="<?php echo URL_HOME ?>templates/common/img/preloader.gif"> This may take a while depending on your script\'s contents.');
+			.html('Started to create backup... <img src="<?php echo URL_HOME ?>templates/common/img/preloader.gif"> This may take a while depending on your script\'s content.');
 
 		$.ajax(
 		{

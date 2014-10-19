@@ -4,22 +4,26 @@
 			<h3 class="title">{lang key='plans'}</legend></h3>
 
 			<div class="content">
-				<div id="plans_container" class="plans well-subrion">
+				<div id="js-plans-list" class="plans well-subrion">
 					<div class="plan well-item">
-						<label for="plan_0" class="radio">
-							<input type="radio" name="plan_id" value="0" {if isset($item.plan) && $item.plan == 0}checked="checked"{/if} id="plan_0">
+						<label for="input-plan0" class="radio">
+							<input type="radio" name="plan_id" value="0"{if empty($item.sponsored_plan_id)} checked{/if}
+								id="input-plan0" data-fields="">
 							<strong>{lang key='_not_assigned_'}</strong>
+							{if isset($item.sponsored_plan_id) && $item.sponsored_plan_id > 0}
+							<span class="label label-info">{lang key='paid_subscription_will_cancel'}</span>
+							{/if}
 						</label>
-						<input type="hidden" id="fields_0">
 					</div>
 					{foreach $plans as $plan}
 						<div class="plan well-item">
-							<label for="plan_{$plan.id}" class="radio">
-								<input type="radio" name="plan_id" value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} checked="checked"{/if} id="plan_{$plan.id}">
+							<label for="input-plan{$plan.id}" class="radio">
+								<input type="radio" name="plan_id" value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} checked{/if}
+									id="input-plan{$plan.id}"
+									data-fields="{if isset($plan.fields)}{$plan.fields|escape:'html'}{/if}">
 								<strong>{lang key="plan_title_{$plan.id}"} - {$plan.cost} {$config.currency}</strong>
 							</label>
 							<div class="description">{lang key="plan_description_{$plan.id}"}</div>
-							<input type="hidden" id="fields_{$plan.id}" value="{if isset($plan.fields)}{$plan.fields}{/if}" />
 						</div>
 					{/foreach}
 				</div>
@@ -30,8 +34,8 @@
 {ia_add_js}
 $(function()
 {
-	var container = $('#plans_container');
-	$('input[type="radio"]', container).click(function()
+	var $container = $('#js-plans-list');
+	$('input[type="radio"]', $container).on('click', function()
 	{
 		var plan = $(this).val();
 		var fields = $('#fields_'+plan).val().split(',');
@@ -50,14 +54,9 @@ $(function()
 		});
 	});
 
-	if ($(':checked', container).length)
-	{
-		$(':checked', container).click();
-	}
-	else
-	{
-		$('input[type="radio"]:first', container).click();
-	}
+	$(':checked', $container).length
+		? $(':checked', $container).click()
+		: $('input[type="radio"]:first', $container).click();
 });
 {/ia_add_js}
 {/if}

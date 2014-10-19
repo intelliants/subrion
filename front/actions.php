@@ -28,15 +28,13 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 {
 	$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
 
-	$iaUsers = $iaCore->factory('users');
-
 	switch ($_POST['action'])
 	{
 		case 'edit-picture-title':
-			$title = isset($_POST['value']) ? iaSanitize::sql($_POST['value']) : '';
-			$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : false;
-			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : false;
-			$path = isset($_POST['path']) ? iaSanitize::sql($_POST['path']) : false;
+			$title = empty($_POST['value']) ? '' : $_POST['value'];
+			$item = isset($_POST['item']) ? $_POST['item'] : null;
+			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : null;
+			$path = isset($_POST['path']) ? $_POST['path'] : null;
 			$itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
 
 			if ($itemId && $item && $field && $path)
@@ -112,7 +110,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 							// update current profile data
 							if ($itemId == iaUsers::getIdentity()->id)
 							{
-								$iaUsers->getAuth($itemId);
+								iaUsers::reloadIdentity();
 							}
 						}
 					}
@@ -214,7 +212,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 							// update current profile data
 							if ($itemId == iaUsers::getIdentity()->id)
 							{
-								$iaUsers->getAuth($itemId);
+								iaUsers::reloadIdentity();
 							}
 						}
 					}
@@ -225,7 +223,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 
 		case 'send_email':
 			$output['message'] = array();
-			$memberInfo = $iaUsers->getInfo((int)$_POST['author_id']);
+			$memberInfo = $iaCore->factory('users')->getInfo((int)$_POST['author_id']);
 
 			if (empty($memberInfo) || $memberInfo['status'] != iaCore::STATUS_ACTIVE)
 			{

@@ -1,15 +1,8 @@
 Ext.onReady(function()
 {
-	var pageUrl = intelli.config.admin_url + '/blocks/';
-
 	if (Ext.get('js-grid-placeholder'))
 	{
-		var positions = [];
-		if ('string' == typeof intelli.config.block_positions)
-		{
-			var array = intelli.config.block_positions.split(',');
-			for (i in array) positions.push([array[i], array[i]]);
-		}
+		var positionsStore = intelli.gridHelper.store.ajax(intelli.config.admin_url + '/blocks/positions.json');
 
 		intelli.blocks = new IntelliGrid(
 		{
@@ -22,7 +15,7 @@ Ext.onReady(function()
 					typeAhead: true,
 					editable: false,
 					lazyRender: true,
-					store: Ext.create('Ext.data.SimpleStore', {fields: ['value','title'], data: positions}),
+					store: positionsStore,
 					displayField: 'title',
 					valueField: 'value'
 				})},
@@ -35,8 +28,7 @@ Ext.onReady(function()
 			],
 			expanderTemplate: '<pre style="font-size: 0.9em">{contents}</pre>',
 			fields: ['contents'],
-			texts: {delete_single: _t('are_you_sure_to_delete_this_block')},
-			url: pageUrl
+			texts: {delete_single: _t('are_you_sure_to_delete_this_block')}
 		}, false);
 
 		intelli.blocks.toolbar = Ext.create('Ext.Toolbar', {items:[
@@ -73,7 +65,7 @@ Ext.onReady(function()
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
-			store: new Ext.data.SimpleStore({fields: ['value','title'], data: positions}),
+			store: positionsStore,
 			displayField: 'title',
 			valueField: 'value'
 		},{
@@ -143,17 +135,23 @@ Ext.onReady(function()
 			});
 		}).change();
 
+
+		// Block visibility
+
 		$('#sticky').on('change', function()
 		{
-			var obj = $('#acos');
-			$(this).val() == 0 ? obj.show() : obj.hide();
-		}).change();
+			var $this = $(this);
 
-		$('input[name="visible_on_pages[]"]').change(function()
-		{
-			$(this).is(':checked')
-				? $($(this).parent().children('.subpages').get(0)).show()
-				: $($(this).parent().children('.subpages').get(0)).hide()
+			if ($this.is(':checked'))
+			{
+				$('.js-visibility-hidden').show();
+				$('.js-visibility-visible').hide();
+			}
+			else
+			{
+				$('.js-visibility-hidden').hide();
+				$('.js-visibility-visible').show();
+			}
 		}).change();
 
 		$('input[name="external"]').change(function()
@@ -169,6 +167,8 @@ Ext.onReady(function()
 				$('#external_filename').show();
 			}
 		}).change();
+
+/* TEMPORARILY DISABLED FOR FUTURE IMPLEMENTATION
 
 		$('.subpages').click(function()
 		{
@@ -274,6 +274,7 @@ Ext.onReady(function()
 
 			win.show();
 		});
+*/
 
 		var pagesCount = $('#acos input[name^="visible_on_pages"]').length;
 		var selectedPagesCount = $("#acos input[name^='visible_on_pages']:checked").length;
@@ -314,7 +315,16 @@ Ext.onReady(function()
 
 		$('#header').on('change', function()
 		{
-			var obj = $('input[name="collapsible"]').closest('.row');
+			var collapsible = $('input[name="collapsible"]').closest('.row');
+			$(this).val() == 1 ? collapsible.show() : collapsible.hide();
+
+			var collapsed = $('input[name="collapsed"]').closest('.row');
+			$(this).val() == 1 && $('#collapsible').val() == 1 ? collapsed.show() : collapsed.hide();
+		}).change();
+
+		$('#collapsible').on('change', function()
+		{
+			var obj = $('input[name="collapsed"]').closest('.row');
 			$(this).val() == 1 ? obj.show() : obj.hide();
 		}).change();
 
@@ -351,9 +361,10 @@ Ext.onReady(function()
 			var type = $(this).val();
 
 			eAL.toggle_off('multi_contents');
+			$('#EditAreaArroundInfos_multi_contents').hide();
 			if ('html' == type)
 			{
-				$("textarea.js-wysiwyg:visible").each(function()
+				$('textarea.js-ckeditor').each(function()
 				{
 					intelli.ckeditor($(this).attr("id"), {toolbar: 'Extended', height: '400px'});
 				});
@@ -373,9 +384,7 @@ Ext.onReady(function()
 				{
 					$('#box-multi_language').click();
 				}
-				//$multiLanguage.parents('div').hide();
-				//multi_language.val(1).change();
-				//eAL.toggle_on('multi_contents');
+
 				editAreaLoader.init(
 				{
 					id: 'multi_contents',
@@ -386,6 +395,7 @@ Ext.onReady(function()
 					toolbar: 'search, go_to_line, |, undo, redo',
 					min_height: 350
 				});
+				// $('#EditAreaArroundInfos_multi_contents').hide();
 
 				$('#external_file_row').show();
 			}
@@ -395,7 +405,7 @@ Ext.onReady(function()
 				{
 					$('#box-multi_language').click();
 				}
-				//$multiLanguage.parents('div').show();
+
 				last_multi = false;
 
 				$('#external_file_row').hide();
@@ -424,6 +434,7 @@ Ext.onReady(function()
 		{
 			if (btn == 'yes')
 			{
+				var pageUrl = window.location.href;
 				$.ajax(
 				{
 					data: {'id[]': $('input[name="id"]').val()},
@@ -456,7 +467,7 @@ function initContentBox(o)
 
 	if ('html' == blockType)
 	{
-		CKEDITOR.instances[name] || intelli.ckeditor(name, {toolbar: 'Extended', height: '400px'});
+		CKEDITOR.instances[name] || intelli.ckeditor(name, {toolbar: 'Extended'});
 	}
 	else
 	{

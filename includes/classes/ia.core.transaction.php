@@ -42,6 +42,11 @@ class iaTransaction extends abstractCore
 	public $dashboardStatistics = true;
 
 
+	/**
+	 * Return array of installed payment gateways
+	 *
+	 * @return string
+	 */
 	public function getTableGateways()
 	{
 		return $this->_tableGateways;
@@ -56,7 +61,7 @@ class iaTransaction extends abstractCore
 	{
 		if (is_null($this->_gateways))
 		{
-			$this->_gateways = $this->iaDb->keyvalue(array('name', 'gateway'), null, $this->getTableGateways());
+			$this->_gateways = $this->iaDb->keyvalue(array('name', 'title'), null, $this->getTableGateways());
 		}
 
 		return $this->_gateways;
@@ -65,27 +70,23 @@ class iaTransaction extends abstractCore
 	/**
 	 * Checks if payment gateway installed
 	 *
-	 * @param string $aGateway payment gateway name
+	 * @param string $gatewayName payment gateway name
 	 *
 	 * @return boolean
 	 */
 	public function isPaymentGateway($gatewayName)
 	{
-		return $this->iaDb->exists('`name` = :gateway', array('gateway' => $gatewayName), $this->getTableGateways());
+		return $this->iaDb->exists('`name` = :name', array('name' => $gatewayName), $this->getTableGateways());
 	}
 
 	/**
-	 * Return payment gateways
+	 * Update transaction record
 	 *
-	 * @param string $aGateway payment gateway name
+	 * @param array $transactionData transaction data
+	 * @param int $id transaction id
 	 *
-	 * @return string
+	 * @return bool
 	 */
-	public function getPaymentGatewayByName($gatewayName)
-	{
-		return $this->one_bind('gateway', '`name` = :gateway', array('gateway' => $gatewayName), $this->getTableGateways());
-	}
-
 	public function update(array $transactionData, $id)
 	{
 		$result = false;
@@ -100,7 +101,7 @@ class iaTransaction extends abstractCore
 				if (self::TRANSACTION_MEMBER_BALANCE == $operation)
 				{
 					$itemId = empty($transactionData['item_id']) ? $transaction['item_id'] : $transactionData['item_id'];
-					$amount = empty($transactionData['total']) ? $transaction['total'] : $transactionData['total'];
+					$amount = empty($transactionData['amount']) ? $transaction['amount'] : $transactionData['amount'];
 
 					if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
 					{
@@ -117,17 +118,31 @@ class iaTransaction extends abstractCore
 		return $result;
 	}
 
-	public function delete($aId)
+	/**
+	 * Delete transaction record
+	 *
+	 * @param int $transactionId transaction id
+	 *
+	 * @return bool
+	 */
+	public function delete($transactionId)
 	{
-		$res = false;
-		if ($aId)
+		$result = false;
+		if ($transactionId)
 		{
-			$res = $this->iaDb->delete("`id` = '{$aId}' AND `status` != 'passed'", self::getTable());
+			$result = (bool)$this->iaDb->delete('`id` = :id AND `status` != :status', self::getTable(), array('id' => (int)$transactionId, 'status' => self::PASSED));
 		}
 
-		return $res;
+		return $result;
 	}
 
+	/**
+	 * Return transaction details by id
+	 *
+	 * @param int $transactionId transaction id
+	 *
+	 * @return mixed
+	 */
 	public function getById($transactionId)
 	{
 		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($transactionId), self::getTable());
@@ -135,7 +150,7 @@ class iaTransaction extends abstractCore
 
 	public function getBy($key, $id)
 	{
-		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id', array('id' => $id), self::getTable());
+		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id, $key), self::getTable());
 	}
 
 	public function createIpn($transaction)
@@ -147,18 +162,18 @@ class iaTransaction extends abstractCore
 		return $this->iaDb->getInsertId();
 	}
 
-	/*
+	/**
 	 * Generates invoice for an item
 	 *
-	 * @param string $title     plan title
-	 * @param double $cost      plan cost
-	 * @param string $aItem     item name
-	 * @param array $aItemInfo  item details
+	 * @param string $title plan title
+	 * @param double $cost plan cost
+	 * @param string $itemName item name
+	 * @param array $itemData item details
 	 * @param string $returnUrl return URL
-	 * @param integer $aPlan    plan id
-	 * @param boolean $return   true redirects to invoice payment URL
+	 * @param int $planId plan id
+	 * @param bool $return true redirects to invoice payment URL
 	 *
-	 * @return string invoice unique ID
+	 * @return string
 	 */
 	public function createInvoice($title, $cost, $itemName = 'members', $itemData = array(), $returnUrl = '', $planId = 0, $return = false)
 	{
@@ -168,29 +183,30 @@ class iaTransaction extends abstractCore
 		}
 		$title = empty($title) ? iaLanguage::get('plan_title_' . $planId) : $title;
 		$transactionId = uniqid('t');
-		$pay = array(
+		$transaction = array(
 			'member_id' => (int)(isset($itemData['member_id']) && $itemData['member_id'] ? $itemData['member_id'] : iaUsers::getIdentity()->id),
 			'item' => $itemName,
 			'item_id' => $itemData['id'],
-			'total' => $cost,
+			'amount' => $cost,
 			'currency' => $this->iaCore->get('currency'),
 			'sec_key' => $transactionId,
 			'status' => self::PENDING,
 			'plan_id' => $planId,
 			'return_url' => $returnUrl,
-			'operation_name' => $title
+			'operation' => $title
 		);
-		$this->iaDb->insert($pay, array('date' => iaDb::FUNCTION_NOW), self::getTable());
 
-		if (!$return)
-		{
-			iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
-		}
+		$result = (bool)$this->iaDb->insert($transaction, array('date' => iaDb::FUNCTION_NOW), self::getTable());
+		$return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 
-		return $transactionId;
+		return $result ? $transactionId : false;
 	}
 
-
+	/**
+	 * Filling admin dashboard statistics with the financial information
+	 *
+	 * @return array
+	 */
 	public function getDashboardStatistics()
 	{
 		$this->iaDb->setTable(self::getTable());
@@ -206,12 +222,11 @@ class iaTransaction extends abstractCore
 		$weekDay = $weekDay['wday'];
 		$stmt = '`status` = :status AND DATE(`date`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date`)';
 		$this->iaDb->bind($stmt, array('status' => self::PASSED));
-		$rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date`)), SUM(`total`)', $stmt);
+		$rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date`)), SUM(`amount`)', $stmt);
 		for ($i = 0; $i < 7; $i++)
 		{
 			$data[$i] = isset($rows[$i]) ? $rows[$i] : 0;
 		}
-
 
 		$statuses = array(self::PASSED, self::PENDING, self::REFUNDED, self::FAILED);
 		$rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status`');
@@ -221,7 +236,7 @@ class iaTransaction extends abstractCore
 			isset($rows[$status]) || $rows[$status] = 0;
 		}
 
-		$total = $this->iaDb->one_bind('ROUND(SUM(`total`)) `total`', '`status` = :status', array('status' => self::PASSED));
+		$total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', '`status` = :status', array('status' => self::PASSED));
 		$total || $total = 0;
 
 		$this->iaDb->resetTable();

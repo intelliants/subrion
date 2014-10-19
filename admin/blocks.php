@@ -24,177 +24,277 @@
  *
  ******************************************************************************/
 
-$iaBlock = $iaCore->factory('block', iaCore::ADMIN);
-
-$iaDb->setTable(iaBlock::getTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	switch ($pageAction)
+	protected $_name = 'blocks';
+
+	protected $_gridColumns = array('title', 'contents', 'position', 'extras', 'type', 'status', 'order', 'multi_language', 'delete' => 'removable');
+	protected $_gridFilters = array('status' => 'equal', 'title' => 'like', 'type' => 'equal', 'position' => 'equal');
+
+	protected $_phraseAddSuccess = 'block_created';
+
+	protected $_permissionsEdit = true;
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			$output = $iaBlock->gridRead($_GET,
-				array('title', 'contents', 'position', 'extras', 'type', 'status', 'order', 'multi_language', 'delete' => 'removable'),
-				array('status' => 'equal', 'title' => 'like', 'type' => 'equal', 'position' => 'equal'),
-				array("`type` != 'menu'")
-			);
+		parent::__construct();
 
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = $iaBlock->gridUpdate($_POST);
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = $iaBlock->gridDelete($_POST);
+		$iaBlock = $this->_iaCore->factory('block', iaCore::ADMIN);
+		$this->setHelper($iaBlock);
 	}
 
-	$iaView->assign($output);
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$blockData = array();
-
-	if (isset($_POST['data-block']))
+	protected function _entryAdd(array $entryData)
 	{
-		$iaCore->startHook('adminAddBlockValidation');
+		return $this->getHelper()->insert($entryData);
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		return $this->getHelper()->delete($entryId);
+	}
+
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		if (isset($entryData['type']))
+		{
+			if (iaBlock::TYPE_MENU == $entryData['type']
+				|| iaBlock::TYPE_MENU == $this->_iaDb->one('`type`', iaDb::convertIds($entryId)))
+			{
+				return false;
+			}
+		}
+
+		return $this->getHelper()->update($entryData, $entryId);
+	}
+
+	protected function _modifyGridParams(&$conditions, &$values)
+	{
+		if (isset($_GET['pos']) && $_GET['pos'])
+		{
+			$conditions[] = '`position` = :position';
+			$values['position'] = $_GET['pos'];
+		}
+
+		$conditions[] = "`type` != 'menu'";
+	}
+
+	protected function _modifyGridResult(array &$entries)
+	{
+		$currentLanguage = $this->_iaCore->iaView;
+
+		foreach ($entries as &$entry)
+		{
+			$entry['contents'] = iaSanitize::tags($entry['contents']);
+
+			if (!$entry['multi_language'])
+			{
+				if ($titleLanguages = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'block_title_blc{$entry['id']}'", iaLanguage::getTable()))
+				{
+					if ($titleLanguages[$currentLanguage])
+					{
+						$entry['title'] = $titleLanguages[$currentLanguage];
+					}
+					else
+					{
+						unset($titleLanguages[$currentLanguage]);
+
+						foreach ($titleLanguages as $languageTitle)
+						{
+							if ($languageTitle)
+							{
+								$entry['title'] = $languageTitle;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry['status'] = iaCore::STATUS_ACTIVE;
+		$entry['collapsed'] = false;
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		$sql =
+			'SELECT DISTINCTROW p.*, IF(t.`value` IS NULL, p.`name`, t.`value`) `title` '
+			. 'FROM `' . $this->_iaDb->prefix . 'pages` p '
+			. 'LEFT JOIN `' . $this->_iaDb->prefix . 'language` t '
+				. "ON (`key` = CONCAT('page_title_', p.`name`) AND t.`code` = '" . $iaView->language . "') "
+			. "WHERE p.`status` = 'active' AND p.`service` = 0 "
+			. 'ORDER BY t.`value`';
+
+		$pages = $this->_iaDb->getAll($sql);
+		$groupList = $this->_iaDb->onefield('`group`', '1 = 1 GROUP BY `group`', null, null, 'pages');
+
+		$this->_iaDb->setTable('admin_pages_groups');
+		$array = $this->_iaDb->all(array('id', 'name', 'title'));
+		$pagesGroups = array();
+		foreach ($array as $row)
+		{
+			if (in_array($row['id'], $groupList))
+			{
+				$pagesGroups[$row['id']] = $row;
+			}
+		}
+		$this->_iaDb->resetTable();
+
+		$menuPages = array();
+
+		if (iaCore::ACTION_EDIT == $iaView->get('action'))
+		{
+			if (!$entryData['multi_language'])
+			{
+				$this->_iaDb->setTable(iaLanguage::getTable());
+
+				$entry['block_languages'] = $this->_iaDb->onefield('code', "`key` = 'block_content_blc{$entryData['id']}'");
+
+				$entry['title'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'block_title_blc{$entryData['id']}'");
+				$entry['contents'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'block_content_blc{$entryData['id']}'");
+
+				$this->_iaDb->resetTable();
+			}
+
+			$menuPages = $this->_iaDb->onefield('`name`', "FIND_IN_SET('{$entryData['name']}', `menus`)", null, null, 'pages');
+			$visibleOn = $this->_iaDb->onefield('page_name', "`object_type` = 'blocks' && " . iaDb::convertIds($this->getEntryId(), 'object'), 0, null, iaBlock::getPagesTable());
+		}
+		else
+		{
+			$visibleOn = isset($_POST['visible_on_pages']) ? $_POST['visible_on_pages'] : array();
+		}
+
+		$iaView->assign('menuPages', $menuPages);
+		$iaView->assign('pagesGroup', $pagesGroups);
+		$iaView->assign('pages', $pages);
+		$iaView->assign('positions', $this->getHelper()->getPositions());
+		$iaView->assign('types', $this->getHelper()->getTypes());
+		$iaView->assign('visibleOn', $visibleOn);
+
+		isset($entryData['type']) || $entryData['type'] = iaBlock::TYPE_PLAIN;
+		isset($entryData['header']) || $entryData['header'] = true;
+		isset($entryData['collapsible']) || $entryData['collapsible'] = true;
+		isset($entryData['multi_language']) || $entryData['multi_language'] = true;
+		isset($entryData['sticky']) || $entryData['sticky'] = true;
+		isset($entryData['external']) || $entryData['external'] = false;
+		empty($entryData['subpages']) || $entryData['subpages'] = unserialize($entryData['subpages']);
+
+		$iaView->add_js('ckeditor/ckeditor, admin/blocks');
+	}
+
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		$this->_iaCore->startHook('adminAddBlockValidation');
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
-		$error = false;
-
 		// validate block name
-		if (!empty($_POST['name']) && iaCore::ACTION_ADD == $_POST['do'])
+		if (iaCore::ACTION_ADD == $action)
 		{
-			$blockData['name'] = strtolower(iaSanitize::paranoid($_POST['name']));
-			if (!iaValidate::isAlphaNumericValid($blockData['name']))
+			if (empty($data['name']))
 			{
-				$error = true;
-				$messages[] = iaLanguage::get('error_block_name');
+				$entry['name'] = 'block_' . mt_rand(1000, 9999);
 			}
-			elseif ($iaBlock->iaDb->exists('`name` = :name', array('name' => $blockData['name'])))
+			else
 			{
-				$error = true;
-				$messages[] = iaLanguage::get('error_block_name_duplicate');
-			}
-		}
-		else
-		{
-			$blockData['name'] = 'block_' . mt_rand(1000, 9999);
-		}
-
-		$blockData['classname'] = $_POST['classname'];
-		$blockData['position'] = $_POST['position'];
-		$blockData['type'] = $_POST['type'];
-		$blockData['status'] = isset($_POST['status']) ? (in_array($_POST['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $_POST['status'] : iaCore::STATUS_ACTIVE) : iaCore::STATUS_ACTIVE;
-
-		if (isset($_POST['header']))
-		{
-			$blockData['header'] = (int)$_POST['header'];
-		}
-		if (isset($_POST['collapsible']))
-		{
-			$blockData['collapsible'] = (int)$_POST['collapsible'];
-		}
-		if (isset($_POST['multi_language']))
-		{
-			$blockData['multi_language'] = (int)$_POST['multi_language'];
-		}
-		if (isset($_POST['sticky']))
-		{
-			$blockData['sticky'] = (int)$_POST['sticky'];
-			if (!$blockData['sticky'])
-			{
-				$blockData['visible_on_pages'] = isset($_POST['visible_on_pages']) ? $_POST['visible_on_pages'] : '';
-			}
-		}
-		if (isset($_POST['external']))
-		{
-			$blockData['external'] = (int)$_POST['external'];
-		}
-		if (isset($_POST['filename']))
-		{
-			$blockData['filename'] = $_POST['filename'];
-		}
-
-		$blockData['subpages'] = isset($_POST['subpages']) ? serialize($_POST['subpages']) : '';
-
-		if ($blockData['multi_language'])
-		{
-			$blockData['title'] = $_POST['multi_title'];
-
-			if (empty($blockData['title']))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('title_is_empty');
-			}
-			elseif (!utf8_is_valid($blockData['title']))
-			{
-				$blockData['title'] = utf8_bad_replace($blockData['title']);
-			}
-
-			$blockData['contents'] = $_POST['multi_contents'];
-
-			if (iaBlock::TYPE_MENU != $blockData['type'])
-			{
-				if(empty($blockData['contents']) && 0 == $blockData['external'])
+				$entry['name'] = strtolower(iaSanitize::paranoid($data['name']));
+				if (!iaValidate::isAlphaNumericValid($entry['name']))
 				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_contents');
+					$this->addMessage('error_block_name');
 				}
-				elseif (empty($blockData['filename']) && 1 == $blockData['external'])
+				elseif ($this->_iaDb->exists('`name` = :name', array('name' => $entry['name'])))
 				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_filename');
+					$this->addMessage('error_block_name_duplicate');
+				}
+			}
+		}
+
+		$entry['classname'] = $data['classname'];
+		$entry['position'] = $data['position'];
+		$entry['type'] = $data['type'];
+		$entry['status'] = isset($data['status']) ? (in_array($data['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $data['status'] : iaCore::STATUS_ACTIVE) : iaCore::STATUS_ACTIVE;
+		$entry['header'] = (int)$data['header'];
+		$entry['collapsible'] = (int)$data['collapsible'];
+		$entry['collapsed'] = (int)$data['collapsed'];
+		$entry['multi_language'] = (int)$data['multi_language'];
+		$entry['sticky'] = (int)$data['sticky'];
+		$entry['external'] = (int)$data['external'];
+		$entry['filename'] = $data['filename'];
+		$entry['visible_on_pages'] = isset($data['visible_on_pages']) ? $data['visible_on_pages'] : array();
+
+		if ($entry['multi_language'])
+		{
+			$entry['title'] = $data['multi_title'];
+
+			if (empty($entry['title']))
+			{
+				$this->addMessage('title_is_empty');
+			}
+			elseif (!utf8_is_valid($entry['title']))
+			{
+				$entry['title'] = utf8_bad_replace($entry['title']);
+			}
+
+			$entry['contents'] = $data['multi_contents'];
+
+			if (iaBlock::TYPE_MENU != $entry['type'])
+			{
+				if (empty($entry['contents']) && !$entry['external'])
+				{
+					$this->addMessage('error_contents');
+				}
+				elseif (empty($entry['filename']) && $entry['external'])
+				{
+					$this->addMessage('error_filename');
 				}
 			}
 
-			if (iaBlock::TYPE_HTML != $blockData['type'])
+			if (iaBlock::TYPE_HTML != $entry['type'])
 			{
-				if (!utf8_is_valid($blockData['contents']))
+				if (!utf8_is_valid($entry['contents']))
 				{
-					$blockData['contents'] = utf8_bad_replace($blockData['contents']);
+					$entry['contents'] = utf8_bad_replace($entry['contents']);
 				}
 			}
 		}
 		else
 		{
-			if (isset($_POST['block_languages']) && $_POST['block_languages'])
+			if (isset($data['block_languages']) && $data['block_languages'])
 			{
-				$blockData['block_languages'] = $_POST['block_languages'];
-				$blockData['title'] = $_POST['title'];
-				$blockData['contents'] = $_POST['contents'];
+				$entry['block_languages'] = $data['block_languages'];
+				$entry['title'] = $data['title'];
+				$entry['contents'] = $data['contents'];
 
-				foreach ($blockData['block_languages'] as $block_language)
+				foreach ($entry['block_languages'] as $block_language)
 				{
-					if (isset($blockData['title'][$block_language]))
+					if (isset($entry['title'][$block_language]))
 					{
-						if (empty($blockData['title'][$block_language]))
+						if (empty($entry['title'][$block_language]))
 						{
-							$error = true;
-							$messages[] = iaLanguage::getf('error_lang_title', array('lang' => $iaCore->languages[$block_language]));
+							$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $this->_iaCore->languages[$block_language])), false);
 						}
-						elseif (!utf8_is_valid($blockData['title'][$block_language]))
+						elseif (!utf8_is_valid($entry['title'][$block_language]))
 						{
-							$blockData['title'][$block_language] = utf8_bad_replace($blockData['title'][$block_language]);
+							$entry['title'][$block_language] = utf8_bad_replace($entry['title'][$block_language]);
 						}
 					}
 
-					if (isset($blockData['contents'][$block_language]))
+					if (isset($entry['contents'][$block_language]))
 					{
-						if (empty($blockData['contents'][$block_language]))
+						if (empty($entry['contents'][$block_language]))
 						{
-							$error = true;
-							$messages[] = iaLanguage::getf('error_lang_contents', array('lang' => $iaCore->languages[$block_language]));
+							$this->addMessage(iaLanguage::getf('error_lang_contents', array('lang' => $this->_iaCore->languages[$block_language])), false);
 						}
 
-						if (iaBlock::TYPE_HTML != $blockData['type'])
+						if (iaBlock::TYPE_HTML != $entry['type'])
 						{
-							if (!utf8_is_valid($blockData['contents'][$block_language]))
+							if (!utf8_is_valid($entry['contents'][$block_language]))
 							{
-								$blockData['contents'][$block_language] = utf8_bad_replace($blockData['contents'][$block_language]);
+								$entry['contents'][$block_language] = utf8_bad_replace($entry['contents'][$block_language]);
 							}
 						}
 					}
@@ -202,157 +302,42 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			}
 			else
 			{
-				$error = true;
-				$messages[] = iaLanguage::get('block_languages_empty');
+				$this->addMessage('block_languages_empty');
 			}
 		}
 
-		$iaCore->startHook('phpAdminBlocksEdit', array('block' => &$blockData));
+		$this->_iaCore->startHook('phpAdminBlocksEdit', array('block' => &$entry));
 
-		if (!$error)
-		{
-			if (iaCore::ACTION_EDIT == $_POST['do'])
-			{
-				unset($blockData['name']);
-				$id = (int)$_POST['id'];
-				$result = $iaBlock->update($blockData, $id);
-				if ($result)
-				{
-					$messages[] = iaLanguage::get('saved');
-					$result = $_POST['id'];
-				}
-				else
-				{
-					$error = true;
-					$messages[] = $iaBlock->getMessage();
-				}
-			}
-			else
-			{
-				$id = $iaBlock->insert($blockData);
+		return !$this->getMessages();
+	}
 
-				if ($id)
-				{
-					$messages[] = iaLanguage::get('block_created');
-					$iaCore->factory('log')->write(iaLog::ACTION_CREATE, array('item' => 'block', 'name' => $blockData['title'], 'id' => $id));
-				}
-				else
-				{
-					$error = true;
-					$messages[] = $iaBlock->getMessage();
-				}
-			}
-			$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
-			if (isset($_POST['goto']))
-			{
-				$url = IA_ADMIN_URL . 'blocks/';
-				$goto = array(
-					'add'	=> $url . 'add/',
-					'list'	=> $url,
-					'stay'	=> $url . 'edit/?id=' . $id,
-				);
-				iaUtil::post_goto($goto);
-			}
-			else
-			{
-				iaUtil::go_to(IA_ADMIN_URL . 'blocks/edit/?id=' . $id);
-			}
-		}
-		else
+	protected function _postSaveEntry(array $entry, array $data, $action)
+	{
+		if (iaCore::ACTION_ADD == $action)
 		{
-			$iaView->setMessages($messages, iaView::ERROR);
+			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, array(
+				'item' => 'block',
+				'name' => $entry['title'],
+				'id' => $this->getEntryId()
+			));
 		}
 	}
 
-	switch ($pageAction)
+	protected function _gridRead($params)
 	{
-		case iaCore::ACTION_READ:
-			$iaView->grid('admin/blocks');
-			break;
+		return (count($this->_iaCore->requestPath) == 1 && 'positions' == $this->_iaCore->requestPath[0])
+			? $this->_getPositions()
+			: parent::_gridRead($params);
+	}
 
-		case iaCore::ACTION_ADD:
-		case iaCore::ACTION_EDIT:
-			$visibleOn = array();
-			$menuPages = array();
+	private function _getPositions()
+	{
+		$output = array();
+		foreach ($this->getHelper()->getPositions() as $entry)
+		{
+			$output[] = array('value' => $entry['name'], 'title' => $entry['name']);
+		}
 
-			if (iaCore::ACTION_EDIT == $pageAction)
-			{
-				$title = iaLanguage::get('edit_block');
-				$blockData = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($_GET['id']));
-				if (empty($blockData))
-				{
-					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-				}
-
-				if (0 == $blockData['multi_language'])
-				{
-					$iaDb->setTable(iaLanguage::getTable());
-
-					$blockData['block_languages'] = $iaDb->onefield('code', "`key` = 'block_content_blc{$blockData['id']}'");
-
-					$blockData['title'] = $iaDb->keyvalue(array('code', 'value'), "`key` = 'block_title_blc{$blockData['id']}'");
-					$blockData['contents'] = $iaDb->keyvalue(array('code', 'value'), "`key` = 'block_content_blc{$blockData['id']}'");
-
-					$iaDb->resetTable();
-				}
-
-				$menuPages = $iaDb->onefield('`name`', "FIND_IN_SET('{$blockData['name']}', `menus`)", null, null, 'pages');
-				if (!$blockData['sticky'])
-				{
-					$visibleOn = $iaDb->onefield('page_name', '`block_id` = ' . $blockData['id'], null, null, iaBlock::getPagesTable());
-				}
-			}
-			elseif (iaCore::ACTION_ADD == $pageAction)
-			{
-				$title = iaLanguage::get('add_block');
-				$visibleOn = isset($_POST['visible_on_pages']) ? $_POST['visible_on_pages'] : array();
-				$menuPages = array();
-			}
-			$iaDb->resetTable();
-
-			iaBreadcrumb::preEnd(iaLanguage::get('blocks'), IA_ADMIN_URL . 'blocks/');
-
-			$sql =
-				'SELECT DISTINCTROW p.*, IF(t.`value` IS NULL, p.`name`, t.`value`) `title` ' .
-				"FROM `{$iaCore->iaDb->prefix}pages` p " .
-					"LEFT JOIN `{$iaCore->iaDb->prefix}language` t " .
-						"ON `key` = CONCAT('page_title_', p.`name`) AND t.`code` = '" . $iaView->language . "' " .
-				"WHERE p.`status` = 'active' AND p.`service` = 0 " .
-				"ORDER BY t.`value`";
-			$pages = $iaDb->getAll($sql);
-			$groupList = $iaDb->onefield('`group`', '1 = 1 GROUP BY `group`', null, null, 'pages');
-
-			$iaDb->setTable('admin_pages_groups');
-			$array = $iaDb->all(array('id', 'name', 'title'));
-			$pagesGroups = array();
-			foreach ($array as $row)
-			{
-				if (in_array($row['id'], $groupList))
-				{
-					$pagesGroups[$row['id']] = $row;
-				}
-			}
-			$iaDb->resetTable();
-
-			$iaView->assign('menuPages', $menuPages);
-			$iaView->assign('visibleOn', $visibleOn);
-			$iaView->assign('types', $iaBlock->getTypes());
-			$iaView->assign('positions', $iaBlock->getPositions());
-			$iaView->assign('pages_group', $pagesGroups);
-			$iaView->assign('pages', $pages);
-
-			isset($blockData['type']) || $blockData['type'] = iaBlock::TYPE_PLAIN;
-			isset($blockData['header']) || $blockData['header'] = true;
-			isset($blockData['collapsible']) || $blockData['collapsible'] = true;
-			isset($blockData['multi_language']) || $blockData['multi_language'] = true;
-			isset($blockData['sticky']) || $blockData['sticky'] = true;
-			isset($blockData['external']) || $blockData['external'] = false;
-			empty($blockData['subpages']) || $blockData['subpages'] = unserialize($blockData['subpages']);
-
-			$iaView->assign('block', $blockData);
-
-			$iaView->display('blocks');
+		return $output;
 	}
 }
-
-$iaDb->resetTable();

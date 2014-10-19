@@ -1,0 +1,94 @@
+
+//
+// Forms
+// --------------------------------------------------
+
+
+// Global
+
+.vm-form {
+	margin: 0;
+}
+
+.vm-control-label {
+	display: block;
+	margin-bottom: 5px;
+}
+
+.vm-input,
+.vm-input[type="text"],
+.vm-select {
+	#font > .shorthand(@vm-font-size,normal,@input-height);
+	font-family: @vm-font;
+	display: inline-block;
+	height: @input-height;
+	padding: 4px 6px;
+	margin-bottom: @vm-line-height / 2;
+	color: @vm-link-color;
+	background-color: @input-bg-color;
+	.border-radius(@vm-border-radius);
+	vertical-align: middle;
+	width: 206px;
+	border: 2px solid @input-border-color;
+	.transition(border linear .2s);
+	.box-shadow(none);
+
+	&:focus {
+		border-color: @vm-link-hover-color;
+		outline: 0 none;
+	}
+}
+
+.vm-select {
+
+}
+
+.vm-control-group {
+	margin-bottom: @vm-line-height;
+	.clearfix();
+}
+.vm-control-label {
+	float: left;
+	width: 130px;
+	padding-top: 5px;
+	font-size: 12px;
+}
+.vm-controls {
+	margin-left: 150px;
+}
+
+
+// Special checkbox
+
+.vm-checkbox {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  float: left;
+  padding-top: 5px;
+
+  .v-icon {
+    color: fade(@vm-link-color, 60%);
+    font-size: 20px;
+    line-height: 20px;
+  }
+
+  &:hover {
+
+    .v-icon {
+      color: fade(@vm-link-color, 80%);
+    }
+  }
+
+  &--checked {
+    .v-icon,
+    &:hover .v-icon {
+      color: @vm-link-color;
+    }
+  }
+
+  input {
+    position: absolute;
+    left: -9999px;
+  }
+}

@@ -14,7 +14,7 @@
 				{assign var='dependent_fields' value=''}
 			{/if}
 
-			{if $value.type == 'divider'}
+			{if 'divider' == $value.type}
 				{if !$value@first}
 					</div>
 					<div class="wrap-group" {$dependent_fields}>
@@ -22,8 +22,12 @@
 				<a name="{$value.name}"></a>
 				<div class="wrap-group-heading" {$dependent_fields}>
 					{$value.value|escape:'html'}
+
+					{if isset($tooltips[$value.name])}
+						<a href="#" class="js-tooltip" data-placement="right" title="{$tooltips[$value.name]}"><i class="i-info"></i></a>
+					{/if}
 				</div>
-			{elseif $value.type != 'hidden'}
+			{elseif 'hidden' != $value.type}
 				<div class="row {if $pageAction == 'custom'}custom{/if}" {$dependent_fields}>
 					<label class="col col-lg-2 control-label" for="{$value.name}">
 						{$value.description|escape:'html'}
@@ -38,7 +42,7 @@
 						<div class="col col-lg-4">
 					{/if}
 
-						{if $pageAction == 'custom'}
+						{if 'custom' == $pageAction}
 							<div class="pull-right">
 								<span class="js-set-custom">{lang key='config_set_custom'}</span>
 								<span class="js-set-default">{lang key='config_set_default'}</span>
@@ -56,17 +60,17 @@
 						{elseif $value.type == 'text'}
 							{if $value.name == 'expiration_action'}
 								<select name="param[expiration_action]">
-									<option value=""{if $value.value == ''} selected="selected"{/if}>{lang key='nothing'}</option>
-									<option value="remove"{if $value.value == 'remove'} selected="selected"{/if}>{lang key='remove'}</option>
+									<option value=""{if $value.value == ''} selected{/if}>{lang key='nothing'}</option>
+									<option value="remove"{if $value.value == 'remove'} selected{/if}>{lang key='remove'}</option>
 									<optgroup label="Status">
-										<option value="approval"{if $value.value == 'approval'} selected="selected"{/if}>{lang key='approval'}</option>
-										<option value="banned"{if $value.value == 'banned'} selected="selected"{/if}>{lang key='banned'}</option>
-										<option value="suspended"{if $value.value == 'suspended'} selected="selected"{/if}>{lang key='suspended'}</option>
+										<option value="approval"{if $value.value == 'approval'} selected{/if}>{lang key='approval'}</option>
+										<option value="banned"{if $value.value == 'banned'} selected{/if}>{lang key='banned'}</option>
+										<option value="suspended"{if $value.value == 'suspended'} selected{/if}>{lang key='suspended'}</option>
 									</optgroup>
 									<optgroup label="Type">
-										<option value="regular"{if $value.value == 'regular'} selected="selected"{/if}>{lang key='regular'}</option>
-										<option value="featured"{if $value.value == 'featured'} selected="selected"{/if}>{lang key='featured'}</option>
-										<option value="partner"{if $value.value == 'partner'} selected="selected"{/if}>{lang key='partner'}</option>
+										<option value="regular"{if $value.value == 'regular'} selected{/if}>{lang key='regular'}</option>
+										<option value="featured"{if $value.value == 'featured'} selected{/if}>{lang key='featured'}</option>
+										<option value="partner"{if $value.value == 'partner'} selected{/if}>{lang key='partner'}</option>
 									</optgroup>
 								</select>
 							{elseif $value.name == 'captcha_preview'}
@@ -93,9 +97,9 @@
 								{if !empty($value.value) || $value.name == 'site_logo'}
 									<div class="thumbnail">
 										{if !empty($value.value)}
-											<img src="{$smarty.const.IA_CLEAR_URL}uploads/{$value.value}">
+											<img src="{$nonProtocolUrl}uploads/{$value.value}">
 										{elseif $value.name == 'site_logo'}
-											<img src="{$smarty.const.IA_CLEAR_URL}templates/{$config.tmpl}/img/logo.png">
+											<img src="{$nonProtocolUrl}templates/{$config.tmpl}/img/logo.png">
 										{/if}
 									</div>
 
@@ -129,11 +133,11 @@
 										{if is_array($value2)}
 											<optgroup label="{$key}">
 												{foreach from=$value2 key=subkey item=subvalue}
-													<option value="{$subkey}"{if $subkey == $value.value} selected="selected"{/if}>{$subvalue}</option>
+													<option value="{$subkey}"{if $subkey == $value.value} selected{/if}>{$subvalue}</option>
 												{/foreach}
 											</optgroup>
 										{else}
-											<option value="{if $value.name == 'lang'}{$key}{else}{$value2|trim:"'"}{/if}"{if ($value.name == 'lang' && $key == $value.value) || $value2|trim:"'" == $value.value} selected="selected"{/if}>{$value2|trim:"'"}</option>
+											<option value="{if $value.name == 'lang'}{$key}{else}{$value2|trim:"'"}{/if}"{if ($value.name == 'lang' && $key == $value.value) || $value2|trim:"'" == $value.value} selected{/if}>{$value2|trim:"'"}</option>
 										{/if}
 									{/foreach}
 								</select>
@@ -144,7 +148,7 @@
 									<input type="hidden" name="param[{$value.name}][]">
 									{foreach $value.items as $item name=items}
 									<p>
-										<input type="checkbox" id="icb_{$value.name}_{$smarty.foreach.items.iteration}" name="param[{$value.name}][]" value="{$item.name}"{if $item.checked} checked="checked"{/if} />
+										<input type="checkbox" id="icb_{$value.name}_{$smarty.foreach.items.iteration}" name="param[{$value.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
 										<label for="icb_{$value.name}_{$smarty.foreach.items.iteration}">{$item.title}</label>
 									</p>
 									{/foreach}

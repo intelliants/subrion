@@ -1,18 +1,18 @@
-{if $packages_list}
+{if $packages}
 	<input type="hidden" id="js-default-package-value" value="{$config.default_package}">
 	<div class="plates-list">
-	{foreach $packages_list as $package}
+	{foreach $packages as $package}
 		<div class="media">
 			{if isset($package.preview) && count($package.preview) > 0}
 				{foreach $package.preview as $preview}
 					<a class="pull-left" href="{$smarty.const.IA_CLEAR_URL}packages/{$package.name}/docs/screenshots/{$preview.name}" rel="ia_lightbox[{$package.name}]" title="{$package.title}">
-						<img title="{$preview.title}" class="media-object" src="{$smarty.const.IA_CLEAR_URL}packages/{$package.name}/docs/img/icon.png">
+						<img title="{$preview.title}" class="media-object" src="{$nonProtocolUrl}packages/{$package.name}/docs/img/icon.png">
 					</a>
 				{/foreach}
 				<div class="screenshots hidden">
 					{foreach $package.screenshots as $screenshot}
 						<a rel="ia_lightbox[{$package.name}]" title="{$package.title}. {$screenshot.title}" href="{$smarty.const.IA_CLEAR_URL}packages/{$package.name}/docs/screenshots/{$screenshot.name}">
-							<img width="150" height="150" src="{$smarty.const.IA_CLEAR_URL}packages/{$package.name}/docs/screenshots/{$screenshot.name}">
+							<img width="150" height="150" src="{$nonProtocolUrl}packages/{$package.name}/docs/screenshots/{$screenshot.name}">
 						</a>
 					{/foreach}
 				</div>
@@ -33,7 +33,7 @@
 					<div class="plate-actions clearfix">
 						{if $package.items.install}
 							{access object='admin_pages' id='packages' action='install'}
-							<a url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/install/" href="javascript:;" onclick="installPackage(this, '{$package.url}', '{$package.name}')" title="{lang key='install'}" class="btn btn-success btn-small"><i class="i-plus-alt"></i></a>
+							<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/install/" href="javascript:;" onclick="installPackage(this,'{$package.name}')" title="{lang key='install'}" class="btn btn-success btn-small"><i class="i-plus-alt"></i></a>
 							{/access}
 						{/if}
 						{if $package.items.readme}
@@ -42,9 +42,9 @@
 						{if $package.items.set_default}
 							{access object='admin_pages' id='packages' action='set_default'}
 								{if $config.default_package != $package.name}
-								<a url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/set_default/" href="javascript:;" onclick="setDefault(this, intelli.config.default_package, intelli.config.default_package)" class="btn btn-primary btn-small" title="{lang key='set_as_default_package'}"><i class="i-loop"></i></a>
+								<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/set_default/" href="javascript:;" onclick="setDefault(this)" class="btn btn-primary btn-small" title="{lang key='set_as_default_package'}"><i class="i-loop"></i></a>
 								{else}
-								<a url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/reset/" href="javascript:;" onclick="resetUrl(this, '{$package.url}', '{$package.name}')" class="btn btn-primary btn-small" title="{lang key='reset_default'}"><i class="i-loop"></i></a>
+								<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$package.name}')" class="btn btn-primary btn-small" title="{lang key='reset_default'}"><i class="i-loop"></i></a>
 								{/if}
 							{/access}
 						{/if}

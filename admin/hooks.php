@@ -24,65 +24,53 @@
  *
  ******************************************************************************/
 
-$iaDb->setTable('hooks');
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	if (isset($_POST['action']))
+	protected $_name = 'hooks';
+
+	protected $_processAdd = false;
+	protected $_processEdit = false;
+
+	protected $_gridColumns = "`id`, `name`, `extras`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`";
+	protected $_gridFilters = array('name' => 'like', 'type' => 'equal');
+
+
+	protected function _gridRead($params)
 	{
-		switch ($_POST['action'])
+		if (isset($_POST['action']))
 		{
-			case 'get':
-				$iaView->assign('code', $iaDb->one_bind('`code`', '`id` = :id', array('id' => (int)$_POST['hook'])));
-				break;
+			$output = array();
 
-			case 'set':
-				$iaDb->update(array('code' => $_POST['code']), iaDb::convertIds($_POST['hook']));
-		}
-
-		return;
-	}
-
-	$iaGrid = $iaCore->factory('grid', iaCore::ADMIN);
-
-	switch ($pageAction)
-	{
-		case iaCore::ACTION_READ:
-			$conditions = array();
-			if (isset($_GET['item']) && $_GET['item'])
+			switch ($_POST['action'])
 			{
-				$value = ('core' == strtolower($_GET['item']) ? '' : iaSanitize::sql($_GET['item']));
+				case 'get':
+					$output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_POST['id']));
+					break;
 
-				$stmt = '`extras` = :extras';
-				$iaDb->bind($stmt, array('extras' => $value));
-
-				$conditions[] = $stmt;
+				case 'set':
+					$output['result'] = (bool)$this->_iaDb->update(array('code' => $_POST['code']), iaDb::convertIds($_POST['id']));
 			}
 
-			$output = $iaGrid->gridRead($_GET,
-				"`id`, `name`, `extras`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`",
-				array('name' => 'like', 'type' => 'equal'),
-				$conditions
-			);
+			return $output;
+		}
 
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = $iaGrid->gridUpdate($_POST);
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = $iaGrid->gridDelete($_POST);
+		return parent::_gridRead($params);
 	}
 
-	$iaView->assign($output);
-}
+	protected function _modifyGridParams(&$conditions, &$values)
+	{
+		if (isset($_GET['item']) && $_GET['item'])
+		{
+			$value = ('core' == strtolower($_GET['item']) ? '' : iaSanitize::sql($_GET['item']));
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$iaView->grid('admin/hooks');
-	$iaView->display('hooks');
-}
+			$conditions[] = '`extras` = :extras';
+			$values['extras'] = $value;
+		}
+	}
 
-$iaDb->resetTable();
+	protected function _indexPage(&$iaView)
+	{
+		parent::_indexPage($iaView);
+		$iaView->display($this->getName());
+	}
+}

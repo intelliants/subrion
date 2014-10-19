@@ -29,9 +29,11 @@ class iaDebug
 	const STATE_OPENED = 'opened';
 	const STATE_CLOSED = 'closed';
 
-	protected static $_logger;
-
 	protected static $_data = array();
+
+	protected static $_fileHandle;
+
+	protected static $_fileName = null;
 
 
 	public function __construct()
@@ -60,25 +62,22 @@ class iaDebug
 		empty(self::$_data['debug']) || $this->_box('debug', self::STATE_OPENED);
 	}
 
-	public static function logger($destinationDirectory = null)
-	{
-		if (is_null(self::$_logger))
-		{
-			require IA_INCLUDES . 'utils' . IA_DS . 'KLogger.php';
-
-			self::$_logger = new KLogger(is_null($destinationDirectory) ? IA_TMP : $destinationDirectory, KLogger::INFO);
-		}
-
-		return self::$_logger;
-	}
-
 	protected function _debugCss()
 	{
+		if (defined('INSTALL'))
+		{
+			$assetsUrl = URL_HOME;
+		}
+		else
+		{
+			$assetsUrl = &iaCore::instance()->iaView->assetsUrl;
+		}
+
 		echo '
-<link href="' . IA_CLEAR_URL . 'js/debug/hl.css" type="text/css" rel="stylesheet">
-<link href="' . IA_CLEAR_URL . 'js/debug/debug.css" type="text/css" rel="stylesheet">
-<script type="text/javascript" src="' . IA_CLEAR_URL . 'js/debug/hl.js"></script>
-<script type="text/javascript" src="' . IA_CLEAR_URL . 'js/debug/debug.js"></script>
+<link href="' . $assetsUrl . 'js/debug/hl.css" type="text/css" rel="stylesheet">
+<link href="' . $assetsUrl . 'js/debug/debug.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" src="' . $assetsUrl . 'js/debug/hl.js"></script>
+<script type="text/javascript" src="' . $assetsUrl . 'js/debug/debug.js"></script>
 ';
 	}
 
@@ -379,7 +378,8 @@ class iaDebug
 				{
 					echo '<pre>';
 				}
-				print_r($value);
+
+				print_r(iaSanitize::html($value));
 				echo '</pre>';
 			}
 		}
@@ -468,5 +468,107 @@ class iaDebug
 				self::$_data[$type][$key] = $value;
 			}
 		}
+	}
+
+	/**
+	 * Logs
+	 *
+	 * @param string $message
+	 * @param array|object $context
+	 * @param string $fileName filename to write to
+	 *
+	 * @return null
+	 */
+	public static function log($message, $context = null, $fileName = '')
+	{
+		$message = self::_formatMessage($message, $context);
+		self::write($message, $fileName);
+	}
+
+	/**
+	 * Writes a line to the log without prepending a status or timestamp
+	 *
+	 * @param string $message Line to write to the log
+	 * @param string $fileName filename to write to
+	 *
+	 * @return void
+	 */
+	public static function write($message, $fileName = '')
+	{
+		if (is_null(self::$_fileName))
+		{
+			self::$_fileName = $fileName ? $fileName : date('Y-m-d_H_i_s');
+		}
+		elseif ($fileName)
+		{
+			self::$_fileName = $fileName;
+		}
+		if (is_null(self::$_fileHandle))
+		{
+			self::$_fileHandle = fopen(IA_TMP . self::$_fileName . '.txt', 'a');
+		}
+
+		return fwrite(self::$_fileHandle, $message);
+	}
+
+	/**
+	 * Formats the message for logging.
+	 *
+	 * @param  string $message The message to log * @param  array  $context The context
+	 *
+	 * @return string
+	 */
+	private function _formatMessage($message, $context = null)
+	{
+		if (!empty($context))
+		{
+			$message .= PHP_EOL . self::_indent(self::_contextToString($context));
+		}
+
+		return '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL . PHP_EOL;
+	}
+
+	/**
+	 * Takes the given context and coverts it to a string.
+	 *
+	 * @param  array $context The Context
+	 * @return string
+	 */
+	private function _contextToString($context)
+	{
+		$export = '';
+		if (is_object($context))
+		{
+			$context = json_decode(json_encode($context), true);
+		}
+
+		foreach ($context as $key => $value)
+		{
+			$export .= "{$key}: ";
+			$export .= preg_replace(array(
+				'/=>\s+([a-zA-Z])/im',
+				'/array\(\s+\)/im',
+				'/^  |\G  /m',
+			), array(
+				'=> $1',
+				'array()',
+				'    ',
+			), str_replace('array (', 'array(', var_export($value, true)));
+			$export .= PHP_EOL;
+		}
+		return str_replace(array('\\\\', '\\\''), array('\\', '\''), rtrim($export));
+	}
+
+	/**
+	 * Indents the given string with the given indent.
+	 *
+	 * @param  string $string The string to indent
+	 * @param  string $indent What to use as the indent.
+	 *
+	 * @return string
+	 */
+	private function _indent($string, $indent = '    ')
+	{
+		return $indent.str_replace("\n", "\n" . $indent, $string);
 	}
 }

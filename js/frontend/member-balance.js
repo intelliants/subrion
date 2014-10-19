@@ -1,6 +1,6 @@
 $(function()
 {
-	$('#js-add-funds').click(function()
+	$('#js-add-funds').on('click', function()
 	{
 		var amount = prompt(_f('howmuch_funds'));
 		if (amount)
@@ -11,18 +11,13 @@ $(function()
 				{
 					return;
 				}
-				if (response.error === false)
+				if (false === response.error)
 				{
 					window.location = response.url;
 				}
 				else
 				{
-					intelli.notifBox(
-					{
-						id: 'notification',
-						msg: response.error,
-						type: 'error'
-					});
+					intelli.notifBox({msg: response.error, type: 'error'});
 				}
 			});
 		}

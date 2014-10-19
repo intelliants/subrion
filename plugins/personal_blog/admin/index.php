@@ -24,214 +24,145 @@
  *
  ******************************************************************************/
 
-$iaBlog = $iaCore->factoryPlugin('personal_blog', iaCore::ADMIN, 'blog');
-
-$iaDb->setTable(iaBlog::getTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerPluginBackend
 {
-	switch ($pageAction)
+	protected $_name = 'blog';
+	protected $_table = 'blog_entries';
+
+	protected $_pluginName = 'personal_blog';
+
+	protected $_gridColumns = array('title', 'alias', 'date_added', 'status');
+	protected $_gridFilters = array('status' => 'equal');
+
+	protected $_phraseAddSuccess = 'blog_entry_added';
+	protected $_phraseGridEntryDeleted = 'blog_entry_deleted';
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
+		parent::__construct();
 
-			switch ($_GET['get'])
-			{
-				case 'alias':
-					// url part is hardcoded since the main page is marked as non-editable,
-					// so the alias couldn't be changed by user/admin
-					$output['url'] = IA_URL . 'blog' . IA_URL_DELIMITER . $iaDb->getNextId() . '-' . $iaBlog->titleAlias($_GET['title']);
-
-					break;
-
-				default:
-					$params = array();
-					if (isset($_GET['text']) && $_GET['text'])
-					{
-						$stmt = '(`title` LIKE :text OR `body` LIKE :text)';
-						$iaDb->bind($stmt, array('text' => '%' . $_GET['text'] . '%'));
-
-						$params[] = $stmt;
-					}
-
-					$output = $iaBlog->gridRead($_GET,
-						array('title', 'alias', 'date', 'status'),
-						array('status' => 'equal'),
-						$params
-					);
-			}
-
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = $iaBlog->gridUpdate($_POST);
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = $iaBlog->gridDelete($_POST, 'blog_entry_deleted');
+		$iaBlog = $this->_iaCore->factoryPlugin($this->getPluginName(), iaCore::ADMIN, $this->getName());
+		$this->setHelper($iaBlog);
 	}
 
-	$iaView->assign($output);
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if (iaCore::ACTION_ADD == $pageAction || iaCore::ACTION_EDIT == $pageAction)
+	protected function _modifyGridParams(&$conditions, &$values)
 	{
-		$blogEntry = array(
-			'lang' => $iaView->language,
-			'status' => iaCore::STATUS_ACTIVE
+		if (!empty($_GET['text']))
+		{
+			$conditions[] = '(`title` LIKE :text OR `body` LIKE :text)';
+			$values['text'] = '%' . iaSanitize::sql($_GET['text']) . '%';
+		}
+	}
+
+	protected function _gridRead($params)
+	{
+		return (isset($params['get']) && 'alias' == $params['get'])
+			? array('url' => IA_URL . 'blog' . IA_URL_DELIMITER . $this->_iaDb->getNextId() . '-' . $this->getHelper()->titleAlias($params['title']))
+			: parent::_gridRead($params);
+	}
+
+	protected function _setPageTitle(&$iaView)
+	{
+		if (in_array($iaView->get('action'), array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT)))
+		{
+			$iaView->title(iaLanguage::get($iaView->get('action') . '_blog_entry'));
+		}
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry['title'] = $entry['body'] = '';
+		$entry['lang'] = $this->_iaCore->iaView->language;
+		$entry['date_added'] = date(iaDb::DATETIME_FORMAT);
+		$entry['status'] = iaCore::STATUS_ACTIVE;
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		return (bool)$this->getHelper()->delete($entryId);
+	}
+
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		parent::_preSaveEntry($entry, $data, $action);
+
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+		if (!utf8_is_valid($entry['title']))
+		{
+			$entry['title'] = utf8_bad_replace($entry['title']);
+		}
+		if (empty($entry['title']))
+		{
+			$this->addMessage('title_is_empty');
+		}
+
+		if (!utf8_is_valid($entry['body']))
+		{
+			$entry['body'] = utf8_bad_replace($entry['body']);
+		}
+		if (empty($entry['body']))
+		{
+			$this->addMessage('body_is_empty');
+		}
+
+		if (empty($entry['date_added']))
+		{
+			$entry['date_added'] = date(iaDb::DATETIME_FORMAT);
+		}
+
+		$entry['alias'] = $this->getHelper()->titleAlias(empty($entry['alias']) ? $entry['title'] : $entry['alias']);
+
+		if ($this->getMessages())
+		{
+			return false;
+		}
+
+		if (isset($_FILES['image']['tmp_name']) && $_FILES['image']['tmp_name'])
+		{
+			$iaPicture = $this->_iaCore->factory('picture');
+
+			$path = iaUtil::getAccountDir();
+			$file = $_FILES['image'];
+			$token = iaUtil::generateToken();
+			$info = array(
+				'image_width' => 1000,
+				'image_height' => 750,
+				'thumb_width' => 250,
+				'thumb_height' => 250,
+				'resize_mode' => iaPicture::CROP
+			);
+
+			if ($image = $iaPicture->processImage($file, $path, $token, $info))
+			{
+				if ($entry['image']) // it has an already assigned image
+				{
+					$iaPicture = $this->_iaCore->factory('picture');
+					$iaPicture->delete($entry['image']);
+				}
+
+				$entry['image'] = $image;
+			}
+		}
+
+		return true;
+	}
+
+	protected function _postSaveEntry(array &$entry, array $data, $action)
+	{
+		$iaLog = $this->_iaCore->factory('log');
+
+		$actionCode = (iaCore::ACTION_ADD == $action)
+			? iaLog::ACTION_CREATE
+			: iaLog::ACTION_UPDATE;
+		$params = array(
+			'module' => 'blog',
+			'item' => 'blog',
+			'name' => $entry['title'],
+			'id' => $this->getEntryId()
 		);
 
-		if (iaCore::ACTION_EDIT == $pageAction)
-		{
-			if (!isset($_GET['id']))
-			{
-				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-			}
-
-			$id = (int)$_GET['id'];
-			$blogEntry = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
-			if (empty($blogEntry))
-			{
-				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-			}
-		}
-
-		$iaCore->factory('util');
-
-		$blogEntry = array(
-			'id' => isset($id) ? $id : 0,
-			'lang' => iaUtil::checkPostParam('lang', $blogEntry),
-			'title' => iaUtil::checkPostParam('title', $blogEntry),
-			'status' => iaUtil::checkPostParam('status', $blogEntry),
-			'alias' => iaUtil::checkPostParam('alias', $blogEntry),
-			'body' => iaUtil::checkPostParam('body', $blogEntry),
-			'image' => iaUtil::checkPostParam('image', $blogEntry),
-			'date' => iaUtil::checkPostParam('date', $blogEntry)
-		);
-
-		if (empty($blogEntry['date']))
-		{
-			$blogEntry['date'] = date(iaDb::DATETIME_FORMAT);
-		}
-
-		if (isset($_POST['save']))
-		{
-			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-			$error = false;
-			$messages = array();
-
-			$blogEntry['status'] = in_array($blogEntry['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $blogEntry['status'] : iaCore::STATUS_INACTIVE;
-
-			if (!array_key_exists($blogEntry['lang'], $iaCore->languages))
-			{
-				$blogEntry['lang'] = $iaView->language;
-			}
-
-			if (!utf8_is_valid($blogEntry['title']))
-			{
-				$blogEntry['title'] = utf8_bad_replace($blogEntry['title']);
-			}
-
-			if (!utf8_is_valid($blogEntry['body']))
-			{
-				$blogEntry['body'] = utf8_bad_replace($blogEntry['body']);
-			}
-
-			if (empty($blogEntry['title']))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('title_is_empty');
-			}
-
-			if (empty($blogEntry['body']))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('body_is_empty');
-			}
-
-			$blogEntry['alias'] = $iaBlog->titleAlias(empty($blogEntry['alias']) ? $blogEntry['title'] : $blogEntry['alias']);
-
-			if (!$error)
-			{
-				if (isset($_FILES['image']['tmp_name']) && $_FILES['image']['tmp_name'])
-				{
-					$iaPicture = $iaCore->factory('picture');
-
-					$path = iaUtil::getAccountDir();
-					$file = $_FILES['image'];
-					$token = iaUtil::generateToken();
-					$info = array(
-						'image_width' => 1000,
-						'image_height' => 750,
-						'thumb_width' => 250,
-						'thumb_height' => 250,
-						'resize_mode' => iaPicture::CROP
-					);
-
-					$blogEntry['image'] = $iaPicture->processImage($file, $path, $token, $info);
-				}
-
-				if (iaCore::ACTION_EDIT == $pageAction)
-				{
-					$blogEntry['id'] = (int)$_GET['id'];
-					$error = !$iaDb->update($blogEntry);
-
-					if (!$error)
-					{
-						$messages[] = iaLanguage::get('saved');
-						$iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array('module' => 'blog', 'item' => 'blog', 'name' => $blogEntry['title'], 'id' => $blogEntry['id']));
-					}
-				}
-				else
-				{
-					$blogEntry['id'] = $iaDb->insert($blogEntry);
-					$error = empty($blogEntry['id']);
-
-					if (!$error)
-					{
-						$messages[] = iaLanguage::get('blog_entry_added');
-						$iaCore->factory('log')->write(iaLog::ACTION_CREATE, array('module' => 'blog', 'item' => 'blog', 'name' => $blogEntry['title'], 'id' => $blogEntry['id']));
-					}
-				}
-
-				if ($error)
-				{
-					$messages[] = iaLanguage::get('db_error');
-				}
-
-				$iaView->setMessages($messages, ($error ? iaView::ERROR : iaView::SUCCESS));
-
-				if (isset($_POST['goto']))
-				{
-					$url = IA_ADMIN_URL . 'blog/';
-					iaUtil::post_goto(array(
-						'add' => $url . 'add/',
-						'list' => $url,
-						'stay' => $url . 'edit/?id=' . $blogEntry['id'],
-					));
-				}
-				else
-				{
-					iaUtil::go_to(IA_ADMIN_URL . 'blog/edit/?id=' . $blogEntry['id']);
-				}
-			}
-			else
-			{
-				$iaView->setMessages($messages, ($error ? iaView::ERROR : iaView::SUCCESS));
-			}
-		}
-
-		$iaView->assign('entry', $blogEntry);
-
-		$iaView->display('manage');
-	}
-	else
-	{
-		$iaView->grid('_IA_URL_plugins/personal_blog/js/admin/index');
+		$iaLog->write($actionCode, $params);
 	}
 }
-
-$iaDb->resetTable();

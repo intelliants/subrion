@@ -1,15 +1,15 @@
 {if isset($breadcrumb) && $breadcrumb|count}
-	<section class="section section-light section-narrow ia-breadcrumb--wrapper">
+	<div class="section section-light section-narrow ia-breadcrumb--wrapper">
 		<div class="container" xmlns:v="http://rdf.data-vocabulary.org/#">
 			<ul class="ia-breadcrumb pull-left">
-				{foreach $breadcrumb as $item}
-					{if $item.url && !$item@last}
+				{foreach $breadcrumb as $entry}
+					{if $entry.url && !$entry@last}
 						<li typeof="v:Breadcrumb">
-							<a href="{$item.url}"{if isset($item.no_follow) && $item.no_follow} rel="nofollow"{/if} rel="v:url" property="v:title">{$item.caption}</a>
+							<a href="{$entry.url}"{if isset($entry.no_follow) && $entry.no_follow} rel="nofollow"{/if} rel="v:url" property="v:title">{$entry.caption}</a>
 							<span class="divider">/</span>
 						</li>
 					{else}
-						<li class="active">{$item.caption}</li>
+						<li class="active">{$entry.caption}</li>
 					{/if}
 				{/foreach}
 			</ul>
@@ -38,5 +38,5 @@
 				</div>
 			{/if}
 		</div>
-	</section>
+	</div>
 {/if}

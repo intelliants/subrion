@@ -26,8 +26,8 @@
 
 class iaHelper
 {
-	const PLUGINS_LIST_SOURCE = 'http://tools.subrion.com/plugins-list/?version=%s';
-	const PLUGINS_DOWNLOAD_SOURCE = 'http://tools.subrion.com/download-plugin/?plugin=%s&version=%s';
+	const PLUGINS_LIST_SOURCE = 'http://tools.subrion.org/list/plugin/%s';
+	const PLUGINS_DOWNLOAD_SOURCE = 'http://tools.subrion.org/install/%s/%s';
 
 	const USER_AGENT = 'Subrion CMS Bot';
 
@@ -182,6 +182,7 @@ class iaHelper
 			if (empty($_POST[$name]) && $notEmpty) return $default;
 			return $_POST[$name];
 		}
+
 		return $default;
 	}
 
@@ -286,9 +287,9 @@ class iaHelper
 		if ($response !== false)
 		{
 			$response = json_decode($response);
-			if (isset($response->plugins) && count($response->plugins))
+			if (isset($response->extensions) && count($response->extensions))
 			{
-				$result = $response->plugins;
+				$result = $response->extensions;
 			}
 		}
 
@@ -343,7 +344,7 @@ class iaHelper
 					require_once self::_composePath(array(IA_HOME, 'includes', 'utils')) . 'pclzip.lib.php';
 					$zipSource = new PclZip($savePath);
 
-					if ($zipSource->extract(PCLZIP_OPT_PATH, $extrasFolder))
+					if ($zipSource->extract(PCLZIP_OPT_PATH, $extrasFolder . $pluginName))
 					{
 						$installationFile = file_get_contents($pluginFolder . self::INSTALLATION_FILE_NAME);
 						if ($installationFile !== false)

@@ -13,7 +13,7 @@
 			<div class="control-group">
 				<div class="controls">
 					<label class="checkbox" for="disable_fields">
-						<input type="checkbox" id="disable_fields" name="disable_fields" value="1"{if isset($smarty.post.disable_fields) && $smarty.post.disable_fields} checked="checked"{/if}> {lang key='auto_generate_password'}
+						<input type="checkbox" id="disable_fields" name="disable_fields" value="1"{if isset($smarty.post.disable_fields) && $smarty.post.disable_fields} checked{/if}> {lang key='auto_generate_password'}
 					</label>
 				</div>
 			</div>

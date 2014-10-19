@@ -4,8 +4,8 @@
 			<div class="user-type">
 				<form method="get" id="sort_form" class="form-inline">
 					<select name="account_by" onchange="$('#sort_form').submit()">
-						<option value="fullname"{if $filter == 'fullname'} selected="selected"{/if}>{lang key='by_fullname'}</option>
-						<option value="username"{if $filter == 'username'} selected="selected"{/if}>{lang key='by_username'}</option>
+						<option value="fullname"{if $filter == 'fullname'} selected{/if}>{lang key='by_fullname'}</option>
+						<option value="username"{if $filter == 'username'} selected{/if}>{lang key='by_username'}</option>
 					</select>
 					&nbsp;<b>{lang key='starts_with'}</b>
 				</form>

@@ -24,157 +24,129 @@
  *
  ******************************************************************************/
 
-$iaUsers = $iaCore->factory('users');
-
-$iaDb->setTable(iaUsers::getUsergroupsTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	switch ($pageAction)
+	protected $_name = 'usergroups';
+
+	protected $_processEdit = false;
+	protected $_tooltipsEnabled = true;
+
+	protected $_phraseAddSuccess = 'usergroup_added';
+	protected $_phraseGridEntryDeleted = 'usergroup_deleted';
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			switch ($iaCore->requestPath[0])
-			{
-				case 'store':
-					$output = array('data' => array());
-					foreach ($iaUsers->getUsergroups() as $id => $title)
-					{
-						$output['data'][] = array('value' => $id, 'title' => $title);
-					}
-					break;
-				default:
-					$start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
-					$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 15;
-					$order = '';
-					$sort = $_GET['sort'];
-					$dir = in_array($_GET['dir'], array('ASC', 'DESC')) ? $_GET['dir'] : 'ASC';
+		parent::__construct();
 
-					if ($sort && $dir)
-					{
-						$order = " ORDER BY `{$sort}` {$dir} ";
-					}
-					$users = 'FROM `' . iaUsers::getTable(true) . '` a WHERE a.`usergroup_id` = u.`id` GROUP BY a.`usergroup_id`';
-
-					$sql = 'SELECT u.*, IF(u.`id` = 1, 0, u.`id`) `permissions`, u.`id` `config`, IF(u.`system` = 1, 0, 1) `delete` '
-						. ',if (u.`id`=1,1,p.`access`) as `admin` '
-						. ',(SELECT CONCAT(a.`fullname`,\', \') ' . $users . ' LIMIT 10) `members` '
-						. ',(SELECT COUNT(a.`id`) ' . $users . ') `count`'
-						. 'FROM `' . $iaCore->iaDb->prefix . 'usergroups` u '
-						. 'LEFT JOIN `' . $iaCore->iaDb->prefix . 'acl_privileges` p '
-						. 'ON (p.`type` = \'group\' '
-						. 'AND p.`type_id` = u.`id` '
-						. 'AND `object` = \'admin_login\' '
-						. 'AND `action` = \'read\' '
-						. ')'
-						. $order
-						. 'LIMIT ' . $start . ', ' . $limit;
-
-					$output = array(
-						'data' => $iaDb->getAll($sql),
-						'total' => $iaDb->one(iaDb::STMT_COUNT_ROWS)
-					);
-
-					foreach ($output['data'] as $key => $row)
-					{
-						$output['data'][$key]['members'] = trim($row['members'], ',');
-						if (empty($row['count']))
-						{
-							$output['data'][$key]['count'] = 0;
-						}
-					}
-			}
-
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = $iaCore->factory('grid', iaCore::ADMIN)->gridUpdate($_POST);
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = $iaCore->factory('grid', iaCore::ADMIN)->gridDelete($_POST, 'usergroup_deleted');
-
-			if ($output['result'])
-			{
-				$iaDb->update(array('usergroup_id' => iaUsers::MEMBERSHIP_REGULAR), iaDb::convertIds((int)$_POST['id'][0], 'usergroup_id'), null, iaUsers::getTable());
-			}
+		$this->setTable(iaUsers::getUsergroupsTable());
 	}
 
-	$iaView->assign($output);
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$objectId = 0;
-
-	if (iaCore::ACTION_ADD == $pageAction)
+	protected function _gridRead($params)
 	{
-		iaBreadcrumb::toEnd(iaLanguage::get('add_usergroup'), IA_SELF);
-
-		$title = false;
-		if ($objectId != 0)
-		{
-			$title = $iaDb->one('title', iaDb::convertIds($objectId));
-		}
-
-		if (isset($_POST['action']) && iaCore::ACTION_ADD == $_POST['action'])
-		{
-			$data = array();
-			$data['title'] = isset($_POST['title']) ? iaSanitize::sql($_POST['title']) : '';
-			$data['id']	= $iaAcl->obtainFreeId();
-
-			if (empty($data['title']))
-			{
-				$error = true;
-				$iaView->setMessages(iaLanguage::get('error_usergroup_incorrect'));
-			}
-
-			if ($iaDb->exists('`title` = :title', $data))
-			{
-				$error = true;
-				$iaView->setMessages(iaLanguage::get('error_usergroup_exists'));
-			}
-
-			if (!isset($error))
-			{
-				$objectId = $data['id'];
-				$iaDb->insert($data);
-
-				$copyFrom = isset($_POST['copy_from']) ? (int)$_POST['copy_from'] : 0;
-				if ($copyFrom > 1)
-				{
-					$iaDb->setTable('acl_privileges');
-					$rows = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`type_id` = '{$copyFrom}' AND `type` = 'group'");
-					foreach ($rows as $index => $row)
-					{
-						$rows[$index]['type_id'] = $objectId;
-						unset($all[$index]['id']);
-					}
-
-					$iaDb->insert($rows);
-					$iaDb->resetTable();
-				}
-
-				if ($objectId)
-				{
-					$title = $iaDb->one('title', iaDb::convertIds($objectId));
-					$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
-
-					iaCore::util()->go_to(IA_ADMIN_URL . 'usergroups/');
-				}
-				else
-				{
-					$iaView->setMessages(iaLanguage::get('not_saved') . $objectId);
-				}
-			}
-		}
-
-		$iaView->assign('groups', $iaDb->keyvalue(array('id', 'title')));
-
-		$iaView->display('usergroups');
+		return ($this->_iaCore->requestPath && 'store' == end($this->_iaCore->requestPath))
+			? $this->_getUsergroups()
+			: parent::_gridRead($params);
 	}
-	else
+
+	protected function _entryAdd(array $entryData)
 	{
-		$iaView->grid('admin/usergroups');
+		parent::_entryAdd($entryData);
+
+		return $this->_iaDb->getAffected() ? $entryData['id'] : false;
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		$result = parent::_entryDelete($entryId);
+
+		if ($result)
+		{
+			$this->_iaDb->delete('`type` = :type AND `type_id` = :id', 'acl_privileges', array('type' => 'group', 'id' => $entryId)); // TODO: use the class method for this
+			$this->_iaDb->update(array('usergroup_id' => iaUsers::MEMBERSHIP_REGULAR), iaDb::convertIds((int)$entryId, 'usergroup_id'), null, iaUsers::getTable());
+		}
+
+		return $result;
+	}
+
+	protected function _gridQuery($columns, $where, $order, $start, $limit)
+	{
+		$sql = 'SELECT u.*, IF(u.`id` = 1, 0, u.`id`) `permissions`, u.`id` `config`, IF(u.`system` = 1, 0, 1) `delete` '
+			. ', IF(u.`id` = 1, 1, p.`access`) `admin` '
+			. ',(SELECT GROUP_CONCAT(m.`fullname` SEPARATOR \', \') FROM `' . iaUsers::getTable(true) . '` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id` LIMIT 10) `members` '
+			. ',(SELECT COUNT(m.`id`) FROM `' . iaUsers::getTable(true) . '` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id`) `count`'
+			. 'FROM `' . $this->_iaDb->prefix . $this->getTable() . '` u '
+			. 'LEFT JOIN `' . $this->_iaDb->prefix . 'acl_privileges` p '
+			. "ON (p.`type` = 'group' "
+			. 'AND p.`type_id` = u.`id` '
+			. "AND `object` = 'admin_access' "
+			. "AND `action` = 'read' "
+			. ')'
+			. $order
+			. 'LIMIT ' . $start . ', ' . $limit;
+
+		return $this->_iaDb->getAll($sql);
+	}
+
+	protected function _preSaveEntry(array &$entry, array $data)
+	{
+		$iaAcl = $this->_iaCore->factory('acl');
+
+		$entry['title'] = empty($data['title']) ? '' : $data['title'];
+		$entry['id'] = $iaAcl->obtainFreeId();
+		$entry['assignable'] = (int)$_POST['assignable'];
+
+		if (empty($entry['title']))
+		{
+			$this->addMessage('error_usergroup_incorrect');
+		}
+
+		if ($this->_iaDb->exists('`title` = :title', $entry))
+		{
+			$this->addMessage('error_usergroup_exists');
+		}
+
+		return !$this->getMessages();
+	}
+
+	protected function _postSaveEntry(array $entry, array $data, $action)
+	{
+		// copying privileges
+		$copyFrom = isset($data['copy_from']) ? (int)$data['copy_from'] : 0;
+		if ($copyFrom)
+		{
+			$this->_iaDb->setTable('acl_privileges');
+
+			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`type_id` = '{$copyFrom}' AND `type` = 'group'");
+			foreach ($rows as $key => &$row)
+			{
+				$row['type_id'] = $entry['id'];
+				unset($rows[$key]['id']);
+			}
+			$this->_iaDb->insert($rows);
+
+			$this->_iaDb->resetTable();
+		}
+		//
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		iaBreadcrumb::replaceEnd(iaLanguage::get('add_usergroup'), IA_SELF);
+
+		$iaView->assign('groups', $this->_iaDb->keyvalue(array('id', 'title')));
+	}
+
+	private function _getUsergroups()
+	{
+		$result = array('data' => array());
+
+		$iaUsers = $this->_iaCore->factory('users');
+		foreach ($iaUsers->getUsergroups() as $id => $title)
+		{
+			$result['data'][] = array('value' => $id, 'title' => $title);
+		}
+
+		return $result;
 	}
 }

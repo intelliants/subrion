@@ -27,6 +27,7 @@
 class iaUtil extends abstractUtil
 {
 	const JSON_SERVICES_FILE = 'Services_JSON.php';
+	const REMOTE_TOOLS_URL = 'http://tools.subrion.org/';
 
 
 	public static function jsonEncode($data)
@@ -136,7 +137,7 @@ class iaUtil extends abstractUtil
 
 		// allow YouTube and Vimeo
 		$config->set('HTML.SafeIframe', true);
-		$config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/)%');
+		$config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|www\.google\.com/maps/embed\?)%');
 
 		$purifier = new HTMLPurifier($config);
 
@@ -208,7 +209,7 @@ class iaUtil extends abstractUtil
 	public static function redirect($title, $message, $url = null, $isAjax = false)
 	{
 		$url = $url ? $url : IA_URL;
-		$message = is_array($message) ? implode('<br />', $message) : $message;
+		$message = is_array($message) ? implode('<br>', $message) : $message;
 		unset($_SESSION['redir']);
 
 		$_SESSION['redir'] = array(
@@ -259,16 +260,6 @@ class iaUtil extends abstractUtil
 		if ($_GET || $params)
 		{
 			$url .= '?';
-		}
-		foreach ($_GET as $k => $v)
-		{
-			// Unfort. At this time we delete an individual items using GET requests instead of POST
-			// so when reloading we should skip delete action
-			if ($k == 'action' && $v == 'delete')
-			{
-				continue;
-			}
-			$url .= $k . '=' . urlencode($v) . '&';
 		}
 
 		if ($params)

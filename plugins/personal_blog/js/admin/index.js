@@ -1,11 +1,7 @@
 Ext.onReady(function()
 {
-	var pageUrl = intelli.config.admin_url + '/blog/';
-
 	if (Ext.get('js-grid-placeholder'))
 	{
-		var urlParam = intelli.urlVal('status');
-
 		intelli.blog =
 		{
 			columns: [
@@ -13,12 +9,10 @@ Ext.onReady(function()
 				{name: 'title', title: _t('title'), width: 2, editor: 'text'},
 				{name: 'alias', title: _t('title_alias'), width: 220},
 				'status',
-				{name: 'date', title: _t('date'), width: 120, editor: 'date'},
+				{name: 'date_added', title: _t('date'), width: 120, editor: 'date'},
 				'update',
 				'delete'
-			],
-			storeParams: urlParam ? {status: urlParam} : null,
-			url: pageUrl
+			]
 		};
 		intelli.blog = new IntelliGrid(intelli.blog, false);
 		intelli.blog.toolbar = Ext.create('Ext.Toolbar', {items:[
@@ -46,16 +40,17 @@ Ext.onReady(function()
 			handler: function(){intelli.gridHelper.search(intelli.blog, true);},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
-		if (urlParam)
-		{
-			Ext.getCmp('fltStatus').setValue(urlParam);
-		}
 		intelli.blog.init();
+
+		var searchStatus = intelli.urlVal('status');
+		if (searchStatus)
+		{
+			Ext.getCmp('fltStatus').setValue(searchStatus);
+			intelli.gridHelper.search(intelli.blog);
+		}
 	}
 	else
 	{
-		$('.js-date-field').datetimepicker({format: 'yyyy-mm-dd', autoclose: true, todayBtn: true, startView: 2, pickerPosition: 'top-left', minView: 2, maxView: 4});
-
 		$('#input-title, #input-alias').on('blur', function()
 		{
 			var alias = $('#input-alias').val();
@@ -63,7 +58,7 @@ Ext.onReady(function()
 
 			if ('' != title)
 			{
-				$.get(pageUrl + 'read.json', {get: 'alias', title: title}, function(data)
+				$.get(intelli.config.admin_url + '/blog/read.json', {get: 'alias', title: title}, function(data)
 				{
 					if ('' != data.url)
 					{

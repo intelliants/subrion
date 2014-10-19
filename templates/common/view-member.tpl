@@ -1,6 +1,6 @@
 <div class="media ia-item view-account">
 	{if $item.avatar}
-		{assign var='avatar' value=$item.avatar|unserialize}
+		{assign avatar $item.avatar|unserialize}
 		{if $avatar}
 			<div class="media-object pull-left">
 				{printImage imgfile=$avatar.path title=$item.fullname|default:$item.username class='img-circle'}
@@ -9,7 +9,7 @@
 	{/if}
 
 	<div class="media-body">
-		{if !empty($item.featured) || !empty($item.sponsored)}
+		{if $item.featured || $item.sponsored}
 			<p>
 				{if $item.featured}<span class="label label-info">{lang key='featured'}<span>{/if}
 				{if $item.sponsored}<span class="label label-warning">{lang key='sponsored'}<span>{/if}

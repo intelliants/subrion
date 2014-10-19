@@ -1,0 +1,157 @@
+
+//
+// Boxes / blocks
+// --------------------------------------------------
+
+.box {
+  margin-bottom: @boxMarginBottom;
+  background: @boxBgColor;
+  color: @boxTextColor;
+
+  .box-caption {
+    color: @boxCaptionColor;
+    background: @boxCaptionBgColor;
+    padding: @boxCaptionPadding;
+    font-size: 18px;
+    line-height: 18px;
+    font-weight: bold;
+    // text-transform: uppercase;
+    margin: 0;
+    position: relative;
+  }
+
+  .box-content {
+    padding: @boxContentPadding;
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+
+//
+// Box variations
+// --------------------------------------------------
+
+.box-clear {
+  background: @boxClearCaptionBgColor;
+  border: 1px solid @boxClearBorderColor;
+
+  .box-caption {
+    background: @boxClearCaptionBgColor
+  }
+}
+
+.box.no-header {
+  border: 0 none;
+  background: none;
+
+  .box-content {
+    padding: 0;
+  }
+}
+
+.box-center {
+  text-align: center;
+}
+
+
+// Box styles for backgrounds rather than white
+//---------------------------
+
+.verytop,
+.verybottom {
+
+  .box {
+    background: @boxLightBgColor;
+    color: @boxLightTextColor;
+
+    .box-caption {
+      color: @boxLightCaptionColor;
+      background: @boxLightCaptionBgColor;
+      padding: @boxLightCaptionPadding;
+    }
+
+    .box-content {
+      padding: @boxLightContentPadding;
+    }
+
+    &-clear {
+      border: 0 none;
+    }
+  }
+}
+
+.footer-blocks {
+
+  .box {
+    background: @boxDarkBgColor;
+    color: @boxDarkTextColor;
+
+    .box-caption {
+      color: @boxDarkCaptionColor;
+      background: @boxDarkCaptionBgColor;
+      padding: @boxDarkCaptionPadding;
+    }
+
+    .box-content {
+      padding: @boxDarkContentPadding;
+    }
+
+    &-clear {
+      border: 0 none;
+    }
+  }
+}
+
+
+// Tweaks for perfect layout
+//---------------------------
+
+.groupWrapper + .groupWrapper,
+.groupWrapper + .row,
+.row + .groupWrapper {
+  margin-top: @boxMarginBottom;
+}
+
+
+// SPECIAL STYLING for certain boxes type
+//---------------------------
+
+// statistics box
+
+.table.statistics {
+
+  thead th {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  td {
+    border: 0 none;
+    background: none !important;
+    padding-left: 0;
+    padding-right: 0;
+
+    &:last-child {
+      width: 10%;
+      text-align: right;
+    }
+  }
+
+  .user-list {
+    padding-top: 10px;
+    text-align: left;
+
+    a {
+      .label();
+      background: @linkColor;
+      border: 0 none;
+    }
+  }
+}

@@ -24,572 +24,197 @@
  *
  ******************************************************************************/
 
-$iaField = $iaCore->factory('field');
-
-$iaDb->setTable(iaField::getTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	switch ($pageAction)
+	protected $_name = 'fields';
+
+	protected $_gridColumns = array('name', 'item', 'group', 'fieldgroup_id', 'type', 'relation', 'length', 'order', 'status', 'delete' => 'editable');
+	protected $_gridFilters = array('status' => 'equal', 'id' => 'equal', 'item' => 'equal', 'relation' => 'equal');
+
+	protected $_tooltipsEnabled = true;
+
+	protected $_phraseAddSuccess = 'field_added';
+	protected $_phraseGridEntryDeleted = 'field_deleted';
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			$output = array();
+		parent::__construct();
 
-			if (isset($_GET['get']) && 'groups' == $_GET['get'])
-			{
-				$output = $iaDb->all(array('id', 'name'), "`item` = '" . iaSanitize::sql($_GET['item']) . "'", null, null, iaField::getTableGroups());
-			}
-/*			elseif (isset($_GET['a']))
-			{
-				$ids = isset($_GET['ids']) ? explode(',', $_GET['ids']) : array();
-				$item = isset($_GET['item']) ? " AND `item` = '{$_GET['item']}'" : '';
-				$fields = $iaDb->all(array('id', 'item', 'name', 'extras', 'relation'), "`relation` != 'parent'" . $item);
-
-				foreach ($fields as $c)
-				{
-					if ('fields' == $_GET['a'])
-					{
-						$item = array(
-							'id' => $c['name'],
-							'text' => iaLanguage::get('field_' . $c['name']),
-							'leaf' => true,
-							'cls' => 'none',
-							'checked' => (in_array($c['name'], $ids) ? true : false),
-						);
-						$output[] = $item;
-					}
-				}
-			}*/
-			else
-			{
-				$iaGrid = $iaCore->factory('grid', iaCore::ADMIN);
-
-				$output = $iaGrid->gridRead($_GET,
-					array('name', 'item', 'group', 'fieldgroup_id', 'type', 'relation', 'length', 'order', 'status', 'delete' => 'editable'),
-					array('status' => 'equal', 'id' => 'equal', 'item' => 'equal', 'relation' => 'equal')
-				);
-
-				if ($output['data'])
-				{
-					$groups = $iaDb->keyvalue(array('id', 'name'), '1 ORDER BY `item`, `name`', iaField::getTableGroups());
-
-					foreach ($output['data'] as &$row)
-					{
-						$row['title'] = iaLanguage::get('field_' . $row['name'], $row['name']);
-						$row['group'] = isset($groups[$row['fieldgroup_id']]) ? iaLanguage::get('fieldgroup_' . $groups[$row['fieldgroup_id']], $row['fieldgroup_id']) : iaLanguage::get('other');
-					}
-				}
-			}
-
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = $iaCore->factory('grid', iaCore::ADMIN)->gridUpdate($_POST);
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = array(
-				'result' => false,
-				'message' => iaLanguage::get('invalid_parameters')
-			);
-
-			if (isset($_POST['id']) && is_array($_POST['id']))
-			{
-				$affected = 0;
-				foreach ($_POST['id'] as $id)
-				{
-					if ($iaField->delete($id))
-					{
-						$affected++;
-					}
-				}
-
-				if (1 == count($_POST['id']))
-				{
-					$output['result'] = (1 == $affected);
-					$output['message'] = $output['result']
-						? iaLanguage::get('field_deleted')
-						: iaLanguage::get('db_error');
-				}
-				else
-				{
-					$total = count($_POST['id']);
-
-					$output['result'] = ($affected == $total);
-					$output['message'] = $output['result']
-						? iaLanguage::getf('items_deleted', array('num' => $affected))
-						: iaLanguage::getf('items_deleted_of', array('num' => $affected, 'total' => $total));
-				}
-			}
+		$iaField = $this->_iaCore->factory('field');
+		$this->setHelper($iaField);
 	}
 
-	$iaView->assign($output);
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$fieldItem = null;
-
-	if ($pageAction == iaCore::ACTION_EDIT || $pageAction == iaCore::ACTION_ADD)
+	// support displaying of custom item's fields
+	protected function _htmlAction(&$iaView)
 	{
-		iaBreadcrumb::toEnd(iaLanguage::get('field_' . $pageAction), IA_ADMIN_URL . 'fields/' . $pageAction);
+		$this->_indexPage($iaView);
 	}
-	if ($iaView->name() != 'fields')
+
+	protected function _jsonAction(&$iaView)
 	{
-		$fieldItem = str_replace('_fields', '', $iaView->name());
-		if ('members' == $fieldItem)
+		$itemName = str_replace('_fields', '', $iaView->get('action'));
+		$params = array_merge($_GET, array('item' => $itemName));
+
+		return parent::_gridRead($params);
+	}
+	//
+
+	protected function _gridRead($params)
+	{
+		if (isset($params['get']) && 'groups' == $params['get'])
 		{
-			iaBreadcrumb::preEnd(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
-		}
-	}
-	$iaView->assign('field_item', $fieldItem);
-
-	$iaUtil = $iaCore->factory('util');
-
-	if ($pageAction == iaCore::ACTION_ADD || $pageAction == iaCore::ACTION_EDIT)
-	{
-		$fieldId = 0;
-		$pages = array();
-		$groups = array();
-		$titles = array();
-		$error = false;
-		$messages = array();
-
-		if ($pageAction == iaCore::ACTION_EDIT)
-		{
-			$fieldId = (int)$_GET['id'];
+			return $this->_iaDb->all(array('id', 'name'), iaDb::convertIds($_GET['item'], 'item'), null, null, iaField::getTableGroups());
 		}
 
-		$field = array(
-			'item' => iaUtil::checkPostParam('item'),
-			'default' => iaUtil::checkPostParam('default'),
-			'lang_values' => iaUtil::checkPostParam('lang_values'),
-			'text_default' => iaSanitize::html(iaUtil::checkPostParam('text_default')),
-			'type' => iaUtil::checkPostParam('field_type'),
-			'annotation' => iaUtil::checkPostParam('annotation'),
-			'fieldgroup_id' => (int)iaUtil::checkPostParam('fieldgroup_id'),
-			'name' => iaSanitize::alias(iaUtil::checkPostParam('name')),
-			'text_length' => (int)iaUtil::checkPostParam('text_length', 100),
-			'length' => iaUtil::checkPostParam('length', false),
-			'title' => iaSanitize::html(iaUtil::checkPostParam('title')),
-			'pages' => iaUtil::checkPostParam('pages', array()),
-			'required' => iaUtil::checkPostParam('required'),
-			'use_editor' => (int)iaUtil::checkPostParam('use_editor'),
-			'empty_field' => iaSanitize::html(iaUtil::checkPostParam('empty_field')),
-			'groups' => iaUtil::checkPostParam('groups'),
-			'searchable' => (int)iaUtil::checkPostParam('searchable'),
-			'adminonly' => (int)iaUtil::checkPostParam('adminonly'),
-			'for_plan' => (int)iaUtil::checkPostParam('for_plan'),
-			'required_checks' => iaUtil::checkPostParam('required_checks'),
-			'extra_actions' => iaUtil::checkPostParam('extra_actions'),
-			'link_to' => (int)iaUtil::checkPostParam('link_to'),
-			'extras' => '',
-			'values' => '',
-			'relation' => iaUtil::checkPostParam('relation', iaField::RELATION_REGULAR),
-			'parents' => isset($_POST['parents']) && is_array($_POST['parents']) ? $_POST['parents'] : array(),
-			'children' => isset($_POST['children']) && is_array($_POST['children']) ? $_POST['children'] : array(),
-			'status' => iaUtil::checkPostParam('status', iaCore::STATUS_ACTIVE)
+		if ($this->getName() != $this->_iaCore->iaView->name())
+		{
+			$params['item'] = str_replace('_fields', '', $this->_iaCore->iaView->name());
+		}
+
+		return parent::_gridRead($params);
+	}
+
+	protected function _modifyGridResult(array &$entries)
+	{
+		$groups = $this->_iaDb->keyvalue(array('id', 'name'), '1 ORDER BY `item`, `name`', iaField::getTableGroups());
+
+		foreach ($entries as &$entry)
+		{
+			$entry['title'] = iaLanguage::get('field_' . $entry['name'], $entry['name']);
+			$entry['group'] = isset($groups[$entry['fieldgroup_id']]) ? iaLanguage::get('fieldgroup_' . $groups[$entry['fieldgroup_id']], $entry['fieldgroup_id']) : iaLanguage::get('other');
+		}
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry = array(
+			'fieldgroup_id' => 0,
+			'name' => '',
+			'title' => '',
+			'item' => null,
+			'type' => null,
+			'relation' => iaField::RELATION_REGULAR,
+			'required' => false,
+			'length' => iaField::DEFAULT_LENGTH,
+			'searchable' => false,
+			'default' => null,
+			'status' => iaCore::STATUS_ACTIVE,
+			'values' => array(),
+			'pages' => array()
 		);
+	}
 
-		$iaItem = $iaCore->factory('item');
+	protected function _entryDelete($entryId)
+	{
+		$result = false;
 
-		if ($packageName = $iaItem->getPackageByItem($field['item']))
+		if ($this->_iaDb->exists('`id` = :id AND `editable` = :editable', array('id' => $entryId, 'editable' => 1)))
 		{
-			$field['extras'] = $packageName;
-		}
+			$field = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($entryId));
 
-		if (isset($_POST['data-field']))
-		{
-			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad');
+			$result = (bool)$this->_iaDb->delete(iaDb::convertIds($entryId));
+			$this->_iaDb->delete(iaDb::convertIds($entryId, 'field_id'), iaField::getTablePages());
 
-			if (!$iaDb->exists(iaDb::convertIds($field['fieldgroup_id']), null, iaField::getTableGroups()))
+			// we will delete language entries if there is no similar field for another package
+			if (!$this->_iaDb->exists('`name` = :name', $field))
 			{
-				$field['fieldgroup_id'] = 0;
+				$this->_iaDb->delete("`key` LIKE 'field_{$field['name']}%' ", iaLanguage::getTable());
 			}
 
-			$relationType = iaUtil::checkPostParam('relation_type', -1);
-			if ($relationType != -1)
+			if ($field['item'])
 			{
-				if ($relationType == 0 && !empty($field['children']))
-				{
-					$field['relation'] = iaField::RELATION_DEPENDENT;
-				}
-				else
-				{
-					$field['relation'] = iaField::RELATION_REGULAR;
-					unset($field['parents']);
-				}
-				unset($field['children']);
-			}
-			else
-			{
-				if (!in_array($field['relation'], array(iaField::RELATION_REGULAR, iaField::RELATION_DEPENDENT, iaField::RELATION_PARENT)))
-				{
-					$field['relation'] = iaField::RELATION_REGULAR;
-				}
+				$itemTable = $this->_iaCore->factory('item')->getItemTable($field['item']);
+				// just an additional check
+				$fields = $this->_iaDb->describe($itemTable);
 
-				if ($field['relation'] != iaField::RELATION_DEPENDENT)
+				foreach ($fields as $f)
 				{
-					unset($field['parents']);
-				}
-				if ($field['relation'] != iaField::RELATION_PARENT)
-				{
-					unset($field['children']);
-				}
-			}
-
-			foreach ($iaCore->languages as $code => $l)
-			{
-				if (!empty($field['annotation'][$code]))
-				{
-					if (!utf8_is_valid($field['annotation'][$code]))
+					if ($f['Field'] == $field['name'])
 					{
-						$field['annotation'][$code] = utf8_bad_replace($field['annotation'][$code]);
+						$this->_iaDb->query("ALTER TABLE `{$this->_iaDb->prefix}{$itemTable}` DROP `{$field['name']}`");
+						break;
 					}
 				}
-				if (!empty($field['title'][$code]))
-				{
-					if (!utf8_is_valid($field['title'][$code]))
-					{
-						$field['title'][$code] = utf8_bad_replace($field['title'][$code]);
-					}
-				}
-				else
-				{
-					$error = true;
-					$messages[] = iaLanguage::getf('field_is_empty', array('field' => $l . ' ' . iaLanguage::get('title')));
-					break;
-				}
-			}
-
-			if ($pageAction == iaCore::ACTION_ADD)
-			{
-				$field['name'] = trim(strtolower(iaSanitize::paranoid($field['name'])));
-				if (empty($field['name']))
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('field_name_incorrect');
-				}
-			}
-			else
-			{
-				unset($field['name']);
-			}
-
-			$fieldTypes = $iaDb->getEnumValues(iaField::getTable(), 'type');
-			if ($fieldTypes['values'] && !in_array($field['type'], $fieldTypes['values']))
-			{
-				$error = true;
-				$messages[] = 'Field type not supported!';
-			}
-			else
-			{
-				if (!$field['length'])
-				{
-					$field['length'] = iaField::DEFAULT_LENGTH;
-				}
-
-				switch($field['type'])
-				{
-					case iaField::TEXT:
-						if (empty($field['text_length']))
-						{
-							$field['text_length'] = 100;
-						}
-						$field['length'] = min(255, max(1, $field['text_length']));
-						$field['default'] = $field['text_default'];
-
-						break;
-
-					case iaField::TEXTAREA:
-						$field['default'] = '';
-
-						break;
-
-					case iaField::COMBO:
-					case iaField::RADIO:
-					case iaField::CHECKBOX:
-						if (!empty($_POST['values']) && is_array($_POST['values']))
-						{
-							$keys = array();
-							$lang_values = array();
-
-							$multiDefault = explode('|', iaUtil::checkPostParam('multiple_default'));
-							$_keys = iaUtil::checkPostParam('keys');
-							$_values = iaUtil::checkPostParam('values');
-							$_lang_values = iaUtil::checkPostParam('lang_values');
-
-							foreach ($_keys as $index => $key)
-							{
-								if (trim($key) == '') // add key if not exists
-								{
-									$key = $index + 1;
-									$_keys[$index] = $key;
-								}
-
-								if (isset($_values[$index]) && trim($_values[$index]) != '') // add values if not exists
-								{
-									$values[$key] = $_values[$index];
-									$keys[$key] = $key;
-								}
-								else
-								{
-									unset($_keys[$index], $_values[$index]);
-								}
-
-								if ($_lang_values)
-								{
-									foreach ($iaCore->languages as $lang_code => $lang_title)
-									{
-										if ($lang_code != $iaView->language)
-										{
-											if (!isset($_values[$index]))
-											{
-												unset($_lang_values[$lang_code][$index]);
-											}
-											elseif (!isset($_lang_values[$lang_code][$index]) || trim($_lang_values[$lang_code][$index]) == '') // add values if not exists
-											{
-												$lang_values[$lang_code][$key] = $values[$key];
-											}
-											else
-											{
-												$lang_values[$lang_code][$key] = $_lang_values[$lang_code][$index];
-											}
-										}
-									}
-								}
-
-							}
-
-							// delete default values if not exists in values
-							foreach ($multiDefault as $index => $default)
-							{
-								if (!in_array($default, $values))
-								{
-									unset($multiDefault[$index]);
-								}
-								else
-								{
-									$k = array_search($default, $values);
-									$multiDefault[$index] = $k;
-								}
-							}
-							$multiDefault = array_values($multiDefault);
-
-							if ($field['type'] == iaField::CHECKBOX)
-							{
-								$multiDefault = implode(',', $multiDefault);
-							}
-							elseif (isset($multiDefault[0]))
-							{
-								// multiple default is available for checkboxes only
-								$_POST['multiple_default'] = $multiDefault = $multiDefault[0];
-							}
-							else
-							{
-								$_POST['multiple_default'] = $multiDefault = '';
-							}
-
-							$field['default'] = $multiDefault;
-							$field['keys'] = $keys;
-							$field['values'] = $values;
-							$field['lang_values'] = $lang_values;
-						}
-						else
-						{
-							$error = true;
-							$messages[] = iaLanguage::get('one_value');
-						}
-
-						break;
-
-					case iaField::STORAGE:
-						if (!empty($_POST['file_types']))
-						{
-							$field['file_prefix'] = iaUtil::checkPostParam('file_prefix');
-							$field['file_types'] = str_replace(' ', '', iaUtil::checkPostParam('file_types'));
-							$field['length'] = (int)iaUtil::checkPostParam('max_files', 5);
-						}
-						else
-						{
-							$error = true;
-							$messages[] = iaLanguage::get('file_types_empty');
-						}
-
-						break;
-
-					case iaField::URL:
-						$field['url_nofollow'] = (int)iaUtil::checkPostParam('url_nofollow');
-
-						break;
-
-					case iaField::IMAGE:
-						$field['length'] = 1;
-						$field['image_height'] = (int)iaUtil::checkPostParam('image_height');
-						$field['image_width'] = (int)iaUtil::checkPostParam('image_width');
-						$field['thumb_height'] = (int)iaUtil::checkPostParam('thumb_height');
-						$field['thumb_width'] = (int)iaUtil::checkPostParam('thumb_width');
-						$field['file_prefix'] = iaUtil::checkPostParam('file_prefix');
-						$field['resize_mode'] = iaUtil::checkPostParam('resize_mode');
-
-						break;
-
-					case iaField::NUMBER:
-						$field['length'] = (int)iaUtil::checkPostParam('number_length', 8);
-						$field['default'] = iaUtil::checkPostParam('number_default');
-
-						break;
-
-					case iaField::PICTURES:
-						$field['length'] = (int)iaUtil::checkPostParam('pic_max_images', 5);
-						$field['file_prefix'] = iaUtil::checkPostParam('pic_file_prefix');
-						$field['image_height'] = (int)iaUtil::checkPostParam('pic_image_height');
-						$field['image_width'] = (int)iaUtil::checkPostParam('pic_image_width');
-						$field['thumb_height'] = (int)iaUtil::checkPostParam('pic_thumb_height');
-						$field['thumb_width'] = (int)iaUtil::checkPostParam('pic_thumb_width');
-						$field['resize_mode'] = iaUtil::checkPostParam('pic_resize_mode');
-				}
-
-				unset($field['text_length'], $field['text_default']);
-			}
-
-			if (empty($field['pages']) && !$field['adminonly'])
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('mark_at_least_one_page');
-			}
-
-			$field['required'] = (int)iaUtil::checkPostParam('required');
-			if ($field['required'])
-			{
-				$field['required_checks'] = iaUtil::checkPostParam('required_checks');
-			}
-			$field['extra_actions'] = iaUtil::checkPostParam('extra_actions');
-
-			if ($field['searchable'])
-			{
-				if (isset($_POST['show_as']) && $field['type'] != iaField::NUMBER && in_array($_POST['show_as'], array(iaField::COMBO, iaField::RADIO, iaField::CHECKBOX)))
-				{
-					$field['show_as'] = $_POST['show_as'];
-				}
-				elseif ($field['type'] == 'number' && !empty($_POST['_values']))
-				{
-					$field['sort_order'] = ('asc' == $_POST['sort_order']) ? $_POST['sort_order'] : 'desc';
-					$field['_numberRangeForSearch'] = $_POST['_values'];
-				}
-			}
-
-			$iaCore->startHook('phpAdminFieldsEdit', array('field' => &$field));
-
-			if (!$error)
-			{
-				if (iaCore::ACTION_EDIT == $pageAction)
-				{
-					$iaField->update($field, $fieldId);
-
-					$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
-				}
-				else
-				{
-					if (!$iaDb->exists("`name` = '" . $field['name'] . "' AND `item` = '" . iaSanitize::sql($_POST['item']) . "'", array(), iaField::getTable()))
-					{
-						$field['id'] = $iaField->insert($field);
-						if ($field['id'])
-						{
-							$iaView->setMessages(iaLanguage::get('field_added'), iaView::SUCCESS);
-							$url = IA_ADMIN_URL . 'fields/';
-							iaUtil::post_goto(array(
-								'add' => $url . 'add/',
-								'list' => $url,
-								'stay' => $url . 'edit/?id=' . $field['id'],
-							));
-						}
-						else
-						{
-							$iaView->setMessages(iaLanguage::get('db_error'), iaView::ERROR);
-						}
-					}
-					else
-					{
-						$error = true;
-						$messages[] = iaLanguage::get('field_exists');
-					}
-				}
-			}
-			else
-			{
-				$iaView->setMessages($messages, iaView::ERROR);
 			}
 		}
 
-		if ($pageAction == iaCore::ACTION_EDIT)
+		return $result;
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
-			$field = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($fieldId), iaField::getTable());
-			$values = $field['values'] = explode(',', $field['values']);
-			$rows = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = 'field_" . $field['name'] . "' AND `category` = 'common'", null, null, iaLanguage::getTable());
+			$entryData = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($this->getEntryId()));
+			$values = $entryData['values'] = explode(',', $entryData['values']);
+			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = 'field_" . $entryData['name'] . "' AND `category` = 'common'", null, null, iaLanguage::getTable());
 			foreach ($rows as $row)
 			{
 				$titles[$row['code']] = $row['value'];
 			}
 
-			$field['values_titles'] = array();
-			if ($field['default'] != '')
+			$entryData['values_titles'] = array();
+			if ($entryData['default'] != '')
 			{
-				if (iaField::CHECKBOX == $field['type'])
+				if (iaField::CHECKBOX == $entryData['type'])
 				{
-					$field['default'] = explode(',', $field['default']);
-					foreach ($field['default'] as $key_d => $key)
+					$entryData['default'] = explode(',', $entryData['default']);
+					foreach ($entryData['default'] as $key_d => $key)
 					{
-						$field['default'][$key_d] = iaLanguage::get('field_' . $field['name'] . '_' . $key, $key);
+						$entryData['default'][$key_d] = iaLanguage::get('field_' . $entryData['name'] . '_' . $key, $key);
 					}
 				}
 				else
 				{
-					$field['default'] = iaLanguage::get('field_' . $field['name'] . '_' . $field['default'], $field['default']);
+					$entryData['default'] = iaLanguage::get('field_' . $entryData['name'] . '_' . $entryData['default'], $entryData['default']);
 				}
 			}
 			foreach ($values as $key)
 			{
-				$rows = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = 'field_{$field['name']}_$key'", null, null, iaLanguage::getTable());
+				$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = 'field_{$entryData['name']}_$key'", null, null, iaLanguage::getTable());
 				foreach ($rows as $row)
 				{
-					$field['values_titles'][$key][$row['code']] = $row['value'];
+					$entryData['values_titles'][$key][$row['code']] = $row['value'];
 				}
-
 			}
 
-			if (is_array($field['default']))
+			if (is_array($entryData['default']))
 			{
-				$field['default'] = implode('|', $field['default']);
+				$entryData['default'] = implode('|', $entryData['default']);
 			}
 
-			if (empty($field['values_titles']))
+			if (empty($entryData['values_titles']))
 			{
-				unset($field['values_titles']);
+				unset($entryData['values_titles']);
 			}
 
-			if (!$field['editable'])
+			if (!$entryData['editable'])
 			{
-				unset($field['status']);
+				unset($entryData['status']);
+				$iaView->assign('noSystemFields', true);
 			}
 
-			foreach ($iaCore->languages as $code => $val)
+			foreach ($this->_iaCore->languages as $code => $val)
 			{
-				$field['title'][$code] = (isset($titles[$code]) ? $titles[$code] : '');
+				$entryData['title'][$code] = (isset($titles[$code]) ? $titles[$code] : '');
 			}
 
-			$field['pages'] = empty($fieldId)
-				? array()
-				: $iaDb->keyvalue(array('id', 'page_name'), iaDb::convertIds($fieldId, 'field_id'), iaField::getTablePages());
+			$entryData['pages'] = $this->getEntryId()
+				? $this->_iaDb->keyvalue(array('id', 'page_name'), iaDb::convertIds($this->getEntryId(), 'field_id'), iaField::getTablePages())
+				: array();
 		}
 
-		$stmt = (iaCore::ACTION_ADD == $pageAction)
+		$iaItem = $this->_iaCore->factory('item');
+
+		$pages = $groups = array();
+
+		$stmt = (iaCore::ACTION_ADD == $iaView->get('action'))
 			? isset($_POST['item']) ? "`item` = '{$_POST['item']}'" : (isset($_GET['item']) ? "`item` = '{$_GET['item']}'" : iaDb::EMPTY_CONDITION)
-			: "`item` = '" . $field['item'] . "'";
+			: "`item` = '" . $entryData['item'] . "'";
 
 		// get items pages
-		$itemPagesList = $iaDb->all(array('id', 'page_name', 'item'), $stmt . ' ORDER BY `item`, `page_name`', null, null, 'items_pages');
+		$itemPagesList = $this->_iaDb->all(array('id', 'page_name', 'item'), $stmt . ' ORDER BY `item`, `page_name`', null, null, 'items_pages');
 		foreach ($itemPagesList as $entry)
 		{
 			$pages[$entry['id']] = array(
@@ -600,7 +225,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		}
 
 		// get field groups
-		$fieldGroups = $iaDb->all(array('id', 'name', 'item'), $stmt . ' ORDER BY `item`, `name`', null, null, iaField::getTableGroups());
+		$fieldGroups = $this->_iaDb->all(array('id', 'name', 'item'), $stmt . ' ORDER BY `item`, `name`', null, null, iaField::getTableGroups());
 		foreach ($fieldGroups as $entry)
 		{
 			$groups[$entry['id']] = array(
@@ -609,107 +234,846 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			);
 		}
 
-		// Set default length for field
-		if ($field['type'])
-		{
-			if ($field['type'] == iaField::PICTURES)
-			{
-				$field['pic_max_images'] = ($field['length'] === false) ? 10 : $field['length'];
-			}
-			else
-			{
-				$field['length'] = ($field['length'] === false) ? iaField::DEFAULT_LENGTH : $field['length'];
-			}
-		}
-		else
-		{
-			$field['pic_max_images'] = 5;
-		}
-
-		// Check for default values for some columns
-		isset($field['url_nofollow']) || $field['url_nofollow'] = false;
-
-		$fieldTypes = $iaDb->getEnumValues(iaField::getTable(), 'type');
+		$fieldTypes = $this->_iaDb->getEnumValues(iaField::getTable(), 'type');
 		$items = $iaItem->getItems();
 		$parents = array();
 
-		if (iaCore::ACTION_EDIT == $pageAction)
-		{
-			$iaDb->setTable(iaField::getTableRelations());
-			$list = array();
-			$rows = $iaDb->all(array('field', 'element'), "`item` = '{$field['item']}' AND `child` = '{$field['name']}'");
-			foreach ($rows as $row)
-			{
-				$list[$field['item']][$row['field']][$row['element']] = 1;
-			}
-			$field['parents'] = $list;
-
-			$list = array();
-			$titles = array();
-			$rows = $iaDb->all(array('child', 'element'), "`item` = '{$field['item']}' AND `field` = '{$field['name']}'");
-			foreach ($rows as $row)
-			{
-				$list[$row['element']][] = $row['child'];
-				$titles[$row['element']][] = iaLanguage::get('field_' . $row['child']);
-			}
-			foreach ($list as $element => $row)
-			{
-				$key = array_search($element, $field['values']);
-				$list[$key] = array(
-					'values' => implode(',', $row),
-					'titles' => implode(', ', $titles[$element])
-				);
-			}
-
-			$field['children'] = $list;
-			$iaDb->resetTable();
-		}
-
-		if (!isset($field['children']))
-		{
-			$field['children'] = array();
-		}
-
-		// Get all fields
-		$fieldsList = $iaDb->all(array('item', 'name'), ($field['name'] ? "`name` != '{$field['name']}' AND "  : '') . " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox') AND " . $stmt);
+		$fieldsList = $this->_iaDb->all(array('item', 'name'), (empty($entryData['name']) ? '' : "`name` != '{$entryData['name']}' AND ") . " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox') AND " . $stmt);
 		foreach ($fieldsList as $row)
 		{
 			isset($parents[$row['item']]) || $parents[$row['item']] = array();
-			$array = $iaDb->getEnumValues($iaItem->getItemTable($row['item']), $row['name']);
+			$array = $this->_iaDb->getEnumValues($iaItem->getItemTable($row['item']), $row['name']);
 			$parents[$row['item']][$row['name']] = $array['values'];
 		}
 
-		if (empty($field['pages']))
-		{
-			$field['pages'] = array();
-		}
+		$entryData['pages'] || $entryData['pages'] = array();
+		$entryData['regular_field'] = (iaField::RELATION_REGULAR == $entryData['relation']);
 
-		if (iaField::RELATION_PARENT == $field['relation'])
-		{
-			$field['main_field'] = 1;
-			$field['regular_field'] = 0;
-		}
-		else
-		{
-			$field['main_field'] = 0;
-			$field['regular_field'] = (int)($field['relation'] == iaField::RELATION_REGULAR);
-		}
 
-		$iaView->title(iaLanguage::getf($pageAction . '_field', array('field' => $field['name'] ? iaLanguage::get('field_' . $field['name']) : '')));
-
-		$iaView->assign('field', $field);
 		$iaView->assign('parents', $parents);
-		$iaView->assign('field_types', $fieldTypes['values']);
+		$iaView->assign('fieldTypes', $fieldTypes['values']);
 		$iaView->assign('groups', $groups);
 		$iaView->assign('items', $items);
 		$iaView->assign('pages', $pages);
 	}
-	else
+
+	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		$iaView->grid('admin/fields');
+		$entry = array(
+			'item' => iaUtil::checkPostParam('item'),
+			'default' => iaUtil::checkPostParam('default'),
+			'lang_values' => iaUtil::checkPostParam('lang_values'),
+			'text_default' => iaSanitize::html(iaUtil::checkPostParam('text_default')),
+			'type' => iaUtil::checkPostParam('type'),
+			'annotation' => iaUtil::checkPostParam('annotation'),
+			'fieldgroup_id' => (int)iaUtil::checkPostParam('fieldgroup_id'),
+			'name' => iaSanitize::alias(iaUtil::checkPostParam('name')),
+			'text_length' => (int)iaUtil::checkPostParam('text_length', 100),
+			'length' => iaUtil::checkPostParam('length', false),
+			'title' => iaSanitize::html(iaUtil::checkPostParam('title')),
+			'pages' => iaUtil::checkPostParam('pages', array()),
+			'required' => iaUtil::checkPostParam('required'),
+			'use_editor' => (int)iaUtil::checkPostParam('use_editor'),
+			'empty_field' => iaSanitize::html(iaUtil::checkPostParam('empty_field')),
+			'url_nofollow' => (int)iaUtil::checkPostParam('url_nofollow'),
+			'groups' => iaUtil::checkPostParam('groups'),
+			'searchable' => (int)iaUtil::checkPostParam('searchable'),
+			'adminonly' => (int)iaUtil::checkPostParam('adminonly'),
+			'for_plan' => (int)iaUtil::checkPostParam('for_plan'),
+			'required_checks' => iaUtil::checkPostParam('required_checks'),
+			'extra_actions' => iaUtil::checkPostParam('extra_actions'),
+			'link_to' => (int)iaUtil::checkPostParam('link_to'),
+			'extras' => '',
+			'values' => '',
+			'relation' => iaUtil::checkPostParam('relation', iaField::RELATION_REGULAR),
+			'parents' => isset($data['parents']) && is_array($data['parents']) ? $data['parents'] : array(),
+			'children' => isset($data['children']) && is_array($data['children']) ? $data['children'] : array(),
+			'status' => iaUtil::checkPostParam('status', iaCore::STATUS_ACTIVE)
+		);
+
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad');
+
+		if (!$this->_iaDb->exists(iaDb::convertIds($entry['fieldgroup_id']), null, iaField::getTableGroups()))
+		{
+			$entry['fieldgroup_id'] = 0;
+		}
+
+		$relationType = iaUtil::checkPostParam('relation_type', -1);
+		if ($relationType != -1)
+		{
+			if (0 == $relationType && !empty($entry['children']))
+			{
+				$entry['relation'] = iaField::RELATION_DEPENDENT;
+			}
+			else
+			{
+				$entry['relation'] = iaField::RELATION_REGULAR;
+				unset($entry['parents']);
+			}
+			unset($entry['children']);
+		}
+		else
+		{
+			if (!in_array($entry['relation'], array(iaField::RELATION_REGULAR, iaField::RELATION_DEPENDENT, iaField::RELATION_PARENT)))
+			{
+				$entry['relation'] = iaField::RELATION_REGULAR;
+			}
+
+			if ($entry['relation'] != iaField::RELATION_DEPENDENT)
+			{
+				unset($entry['parents']);
+			}
+			if ($entry['relation'] != iaField::RELATION_PARENT)
+			{
+				unset($entry['children']);
+			}
+		}
+
+		foreach ($this->_iaCore->languages as $code => $l)
+		{
+			if (!empty($entry['annotation'][$code]))
+			{
+				if (!utf8_is_valid($entry['annotation'][$code]))
+				{
+					$entry['annotation'][$code] = utf8_bad_replace($entry['annotation'][$code]);
+				}
+			}
+			if (!empty($entry['title'][$code]))
+			{
+				if (!utf8_is_valid($entry['title'][$code]))
+				{
+					$entry['title'][$code] = utf8_bad_replace($entry['title'][$code]);
+				}
+			}
+			else
+			{
+				$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => $l . ' ' . iaLanguage::get('title'))), false);
+
+				break;
+			}
+		}
+
+		if (iaCore::ACTION_ADD == $action)
+		{
+			$entry['name'] = trim(strtolower(iaSanitize::paranoid($entry['name'])));
+			if (empty($entry['name']))
+			{
+				$this->addMessage('field_name_incorrect');
+			}
+		}
+		else
+		{
+			unset($entry['name']);
+		}
+
+		$fieldTypes = $this->_iaDb->getEnumValues(iaField::getTable(), 'type');
+		if ($fieldTypes['values'] && !in_array($entry['type'], $fieldTypes['values']))
+		{
+			$this->addMessage('field_type_invalid');
+		}
+		else
+		{
+			if (!$entry['length'])
+			{
+				$entry['length'] = iaField::DEFAULT_LENGTH;
+			}
+
+			switch ($entry['type'])
+			{
+				case iaField::TEXT:
+					if (empty($entry['text_length']))
+					{
+						$entry['text_length'] = 100;
+					}
+					$entry['length'] = min(255, max(1, $entry['text_length']));
+					$entry['default'] = $entry['text_default'];
+
+					break;
+
+				case iaField::TEXTAREA:
+					$entry['default'] = '';
+
+					break;
+
+				case iaField::COMBO:
+				case iaField::RADIO:
+				case iaField::CHECKBOX:
+					if (!empty($data['values']) && is_array($data['values']))
+					{
+						$keys = array();
+						$lang_values = array();
+
+						$multiDefault = explode('|', iaUtil::checkPostParam('multiple_default'));
+						$_keys = iaUtil::checkPostParam('keys');
+						$_values = iaUtil::checkPostParam('values');
+						$_langValues = iaUtil::checkPostParam('lang_values');
+
+						foreach ($_keys as $index => $key)
+						{
+							if (trim($key) == '') // add key if not exists
+							{
+								$key = $index + 1;
+								$_keys[$index] = $key;
+							}
+
+							if (isset($_values[$index]) && trim($_values[$index]) != '') // add values if not exists
+							{
+								$values[$key] = $_values[$index];
+								$keys[$key] = $key;
+							}
+							else
+							{
+								unset($_keys[$index], $_values[$index]);
+							}
+
+							if ($_langValues)
+							{
+								foreach ($this->_iaCore->languages as $lang_code => $lang_title)
+								{
+									if ($lang_code != $this->_iaCore->iaView->language)
+									{
+										if (!isset($_values[$index]))
+										{
+											unset($_langValues[$lang_code][$index]);
+										}
+										elseif (!isset($_langValues[$lang_code][$index]) || trim($_langValues[$lang_code][$index]) == '') // add values if not exists
+										{
+											$lang_values[$lang_code][$key] = $values[$key];
+										}
+										else
+										{
+											$lang_values[$lang_code][$key] = $_langValues[$lang_code][$index];
+										}
+									}
+								}
+							}
+
+						}
+
+						// delete default values if not exists in values
+						foreach ($multiDefault as $index => $default)
+						{
+							if (!in_array($default, $values))
+							{
+								unset($multiDefault[$index]);
+							}
+							else
+							{
+								$k = array_search($default, $values);
+								$multiDefault[$index] = $k;
+							}
+						}
+						$multiDefault = array_values($multiDefault);
+
+						if (iaField::CHECKBOX == $entry['type'])
+						{
+							$multiDefault = implode(',', $multiDefault);
+						}
+						elseif (isset($multiDefault[0]))
+						{
+							// multiple default is available for checkboxes only
+							$_POST['multiple_default'] = $multiDefault = $multiDefault[0];
+						}
+						else
+						{
+							$_POST['multiple_default'] = $multiDefault = '';
+						}
+
+						$entry['default'] = $multiDefault;
+						$entry['keys'] = $keys;
+						$entry['values'] = $values;
+						$entry['lang_values'] = $lang_values;
+					}
+					else
+					{
+						$this->addMessage('one_value');
+					}
+
+					break;
+
+				case iaField::STORAGE:
+					if (!empty($data['file_types']))
+					{
+						$entry['file_types'] = str_replace(' ', '', iaUtil::checkPostParam('file_types'));
+						$entry['length'] = (int)iaUtil::checkPostParam('max_files', 5);
+					}
+					else
+					{
+						$this->addMessage('file_types_empty');
+					}
+
+					break;
+
+				case iaField::URL:
+					$entry['url_nofollow'] = (int)iaUtil::checkPostParam('url_nofollow');
+
+					break;
+
+				case iaField::IMAGE:
+					$entry['length'] = 1;
+					$entry['image_height'] = (int)iaUtil::checkPostParam('image_height');
+					$entry['image_width'] = (int)iaUtil::checkPostParam('image_width');
+					$entry['thumb_height'] = (int)iaUtil::checkPostParam('thumb_height');
+					$entry['thumb_width'] = (int)iaUtil::checkPostParam('thumb_width');
+					$entry['file_prefix'] = iaUtil::checkPostParam('file_prefix');
+					$entry['resize_mode'] = iaUtil::checkPostParam('resize_mode');
+
+					break;
+
+				case iaField::NUMBER:
+					$entry['length'] = (int)iaUtil::checkPostParam('number_length', 8);
+					$entry['default'] = iaUtil::checkPostParam('number_default');
+
+					break;
+
+				case iaField::PICTURES:
+					$entry['length'] = (int)iaUtil::checkPostParam('pic_max_images', 5);
+					$entry['file_prefix'] = iaUtil::checkPostParam('pic_file_prefix');
+					$entry['image_height'] = (int)iaUtil::checkPostParam('pic_image_height');
+					$entry['image_width'] = (int)iaUtil::checkPostParam('pic_image_width');
+					$entry['thumb_height'] = (int)iaUtil::checkPostParam('pic_thumb_height');
+					$entry['thumb_width'] = (int)iaUtil::checkPostParam('pic_thumb_width');
+					$entry['resize_mode'] = iaUtil::checkPostParam('pic_resize_mode');
+			}
+
+			unset($entry['text_length'], $entry['text_default']);
+		}
+
+		if (empty($entry['pages']) && !$entry['adminonly'])
+		{
+			$this->addMessage('mark_at_least_one_page');
+		}
+
+		$entry['required'] = (int)iaUtil::checkPostParam('required');
+		if ($entry['required'])
+		{
+			$entry['required_checks'] = iaUtil::checkPostParam('required_checks');
+		}
+		$entry['extra_actions'] = iaUtil::checkPostParam('extra_actions');
+
+		if ($entry['searchable'])
+		{
+			if (isset($data['show_as']) && $entry['type'] != iaField::NUMBER && in_array($data['show_as'], array(iaField::COMBO, iaField::RADIO, iaField::CHECKBOX)))
+			{
+				$entry['show_as'] = $data['show_as'];
+			}
+			elseif ($entry['type'] == iaField::NUMBER && !empty($data['_values']))
+			{
+				$entry['sort_order'] = ('asc' == $data['sort_order']) ? $data['sort_order'] : 'desc';
+				$entry['_numberRangeForSearch'] = $data['_values'];
+			}
+		}
+
+		$this->_iaCore->startHook('phpAdminFieldsEdit', array('field' => &$entry));
+
+		return !$this->getMessages();
 	}
 
-	$iaView->display('fields');
-}
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		return (count($entryData) == 1)
+			? $this->_iaDb->update($entryData, iaDb::convertIds($entryId))
+			: $this->_update($entryData, $entryId);
+	}
 
-$iaDb->resetTable();
+	protected function _entryAdd(array $entryData)
+	{
+		if (!$this->_iaDb->exists('`name` = :name AND `item` = :item', $entryData))
+		{
+			return $this->_insert($entryData);
+		}
+		else
+		{
+			$this->addMessage('field_exists');
+
+			return false;
+		}
+	}
+
+	private function _update(array $fieldData, $id)
+	{
+		$iaDb = &$this->_iaDb;
+
+		$field = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
+		if (empty($field) || $field['type'] != $fieldData['type'])
+		{
+			return false;
+		}
+
+		if (isset($fieldData['parents']))
+		{
+			$this->_setParents($field['name'], $fieldData['parents']);
+			$fieldData['relation'] = iaField::RELATION_DEPENDENT;
+
+			unset($fieldData['parents']);
+		}
+
+		if (isset($fieldData['children']))
+		{
+			$this->_setChildren($field['name'], $field['item'], $fieldData['values'], $fieldData['children']);
+			unset($fieldData['children']);
+		}
+
+		$this->_setRelations();
+
+		$iaDb->setTable(iaLanguage::getTable());
+		$iaDb->delete("`key` LIKE 'field\_" . $field['name'] . "\_%'");
+
+		foreach ($this->_iaCore->languages as $code => $l)
+		{
+			iaLanguage::addPhrase('field_' . $field['name'], $fieldData['title'][$code], $code, $fieldData['extras']);
+
+			if (isset($fieldData['annotation'][$code]) && $fieldData['annotation'][$code])
+			{
+				iaLanguage::addPhrase('field_' . $field['name'] . '_annotation', $fieldData['annotation'][$code], $code, $fieldData['extras']);
+			}
+		}
+
+		unset($fieldData['title'], $fieldData['annotation']);
+
+		$keys = array();
+		if (isset($fieldData['values']) && is_array($fieldData['values']))
+		{
+			$newKeys = array();
+			foreach ($fieldData['values'] as $key => $value)
+			{
+				$key = $keys[$key] = isset($fieldData['keys'][$key]) ? $fieldData['keys'][$key] : $key;
+				iaLanguage::addPhrase('field_' . $field['name'] . '_' . $key, $value, null, $fieldData['extras']);
+
+				$newKeys[] = $key;
+			}
+			$fieldData['values'] = implode(',', $newKeys);
+		}
+		unset($fieldData['keys']);
+
+		if (isset($fieldData['lang_values']) && is_array($fieldData['lang_values']))
+		{
+			foreach ($fieldData['lang_values'] as $languageCode => $phrases)
+			{
+				foreach ($phrases as $phraseKey => $phraseValue)
+				{
+					iaLanguage::addPhrase('field_' . $field['name'] . '_' . $phraseKey, $phraseValue, $languageCode, $fieldData['extras']);
+				}
+			}
+		}
+		if (isset($fieldData['lang_values']))
+		{
+			unset($fieldData['lang_values']);
+		}
+
+		if ($fieldData['searchable'] && $fieldData['type'] == iaField::NUMBER && isset($fieldData['_numberRangeForSearch']) && is_array($fieldData['_numberRangeForSearch']) && !empty($fieldData['_numberRangeForSearch']))
+		{
+			$iaDb->delete("`key` LIKE 'field\_" . $field['name'] . "\_range\_%'");
+
+			foreach ($fieldData['_numberRangeForSearch'] as $value)
+			{
+				iaLanguage::addPhrase('field_' . $field['name'] . '_range_' . $value, $value, null, $fieldData['extras']);
+			}
+			unset($fieldData['_numberRangeForSearch']);
+		}
+		else
+		{
+			$iaDb->delete("`key` LIKE 'field\_" . $field['name'] . "\_range\_%'");
+		}
+
+		$iaDb->resetTable();
+
+		$tableName = $this->_iaCore->factory('item')->getItemTable($fieldData['item']);
+
+		// avoid making fulltext second time
+		if (!$field['searchable'] && $fieldData['searchable'] && in_array($fieldData['type'], array(iaField::TEXT, iaField::TEXTAREA)))
+		{
+			$indexes = $iaDb->getAll("SHOW INDEX FROM `{$iaDb->prefix}{$tableName}`");
+			$keyExists = false;
+			foreach ($indexes as $i)
+			{
+				if ($i['Key_name'] == $field['name'] && $i['Index_type'] == 'FULLTEXT')
+				{
+					$keyExists = true;
+					break;
+				}
+			}
+
+			if (!$keyExists)
+			{
+				$iaDb->query("ALTER TABLE `{$iaDb->prefix}{$tableName}` ADD FULLTEXT (`{$field['name']}`)");
+			}
+		}
+		if ($field['searchable'] && !$fieldData['searchable'] && in_array($fieldData['type'], array(iaField::TEXT, iaField::TEXTAREA)))
+		{
+			$indexes = $iaDb->getAll("SHOW INDEX FROM `{$iaDb->prefix}{$tableName}`");
+			$keyExists = false;
+			foreach ($indexes as $i)
+			{
+				if ($i['Key_name'] == $field['name'] && $i['Index_type'] == 'FULLTEXT')
+				{
+					$keyExists = true;
+					break;
+				}
+			}
+
+			if ($keyExists)
+			{
+				$iaDb->query("ALTER TABLE `{$iaDb->prefix}{$tableName}` DROP INDEX `{$field['name']}`");
+			}
+		}
+
+		$pagesList = $fieldData['pages'];
+
+		unset($fieldData['pages'], $fieldData['groups'], $fieldData['item']);
+
+		$result = parent::_entryUpdate($fieldData, $id);
+
+		if ($pagesList)
+		{
+			$this->_setPagesList($id, $pagesList, $fieldData['extras']);
+		}
+
+		if ($result)
+		{
+			if (in_array($fieldData['type'], array(iaField::TEXT, iaField::COMBO, iaField::RADIO, iaField::CHECKBOX)))
+			{
+				$sql = "ALTER TABLE `{$this->iaDb->prefix}{$tableName}` ";
+				$sql .= "CHANGE `{$field['name']}` `{$field['name']}` ";
+
+				switch ($fieldData['type'])
+				{
+					case iaField::TEXT:
+						$sql .= "VARCHAR ({$fieldData['length']}) ";
+						$sql .= $fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '';
+						break;
+					default:
+						if (isset($fieldData['values']))
+						{
+							$values = explode(',', $fieldData['values']);
+
+							$sql .= $fieldData['type'] == iaField::CHECKBOX ? 'SET' : 'ENUM';
+							$sql .= "('" . implode("','", $values) . "')";
+
+							if (!empty($fieldData['default']))
+							{
+								$sql .= " DEFAULT '{$fieldData['default']}' ";
+							}
+						}
+						break;
+				}
+				$sql .= 'NOT NULL';
+				$iaDb->query($sql);
+			}
+		}
+
+		return $result;
+	}
+
+	private function _insert(array $fieldData)
+	{
+		$iaDb = &$this->_iaDb;
+
+		if (isset($fieldData['parents']))
+		{
+			$this->_setParents($fieldData['name'], $fieldData['parents']);
+			$fieldData['relation'] = iaField::RELATION_DEPENDENT;
+			unset($fieldData['parents']);
+		}
+
+		if (isset($fieldData['children']))
+		{
+			$this->_setChildren($fieldData['name'], $fieldData['item'], $fieldData['values'], $fieldData['children']);
+			unset($fieldData['children']);
+		}
+
+		$this->_setRelations();
+
+		$pagesList = $fieldData['pages'];
+
+		unset($fieldData['pages'], $fieldData['groups']);
+
+		foreach ($this->_iaCore->languages as $code => $l)
+		{
+			if (!empty($fieldData['title'][$code]))
+			{
+				iaLanguage::addPhrase('field_' . $fieldData['name'], $fieldData['title'][$code], $code, $fieldData['extras']);
+			}
+
+			if (isset($fieldData['annotation'][$code]) && !empty($fieldData['annotation'][$code]))
+			{
+				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_annotation', $fieldData['annotation'][$code], $code, $fieldData['extras']);
+			}
+		}
+		unset($fieldData['title'], $fieldData['annotation']);
+
+		if (!isset($fieldData['relation']) || $fieldData['relation'] != iaField::RELATION_PARENT)
+		{
+			$fieldData['relation'] = iaField::RELATION_REGULAR;
+		}
+		if (isset($fieldData['parents']))
+		{
+			$this->_setParents($fieldData['name'], $fieldData['parents']);
+			$fieldData['relation'] = iaField::RELATION_DEPENDENT;
+
+			unset($fieldData['parents']);
+		}
+
+		if (isset($fieldData['group']) && !isset($fieldData['fieldgroup_id']))
+		{
+			$fieldData['fieldgroup_id'] = 0;
+
+			$rows = $iaDb->all(array('id', 'name', 'item'), "`item` = '{$fieldData['name']}' ORDER BY `item`, `name`", null, null, iaField::getTableGroups());
+			foreach ($rows as $val)
+			{
+				if ($fieldData['group'] == $val['name'])
+				{
+					$fieldData['fieldgroup_id'] = $val['id'];
+				}
+			}
+			unset($fieldData['group']);
+		}
+
+		//add language number field search ranges
+		if (isset($fieldData['_numberRangeForSearch']) && is_array($fieldData['_numberRangeForSearch']))
+		{
+			foreach ($fieldData['_numberRangeForSearch'] as $number)
+			{
+				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_range_' . $number, $number, null, $fieldData['extras']);
+			}
+		}
+		unset($fieldData['_numberRangeForSearch']);
+		$keys = array();
+		if (isset($fieldData['values']) && is_array($fieldData['values']))
+		{
+			foreach ($fieldData['values'] as $key => $value)
+			{
+				$key = $keys[$key] = isset($fieldData['keys'][$key]) ? $fieldData['keys'][$key] : $key;
+				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $key, $value, null, $fieldData['extras']);
+			}
+		}
+		else
+		{
+			unset($fieldData['values']);
+		}
+
+		if (isset($fieldData['lang_values']) && is_array($fieldData['lang_values']))
+		{
+			foreach ($fieldData['lang_values'] as $lng_code => $lng_phrases)
+			{
+				foreach ($lng_phrases as $ph_key => $ph_value)
+				{
+					iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $ph_key, $ph_value, $lng_code, $fieldData['extras']);
+				}
+			}
+			unset($fieldData['lang_values']);
+		}
+
+		if (isset($fieldData['values']) && $fieldData['values'] && isset($fieldData['keys']))
+		{
+			$fieldData['values'] = implode(',', $fieldData['keys']);
+		}
+		unset($fieldData['keys']);
+
+		if (isset($fieldData['lang_values']))
+		{
+			unset($fieldData['lang_values']);
+		}
+
+		$fieldData['order'] = $iaDb->getMaxOrder() + 1;
+
+		$fieldId = $iaDb->insert($fieldData);
+
+		if ($fieldId && $pagesList)
+		{
+			$this->_setPagesList($fieldId, $pagesList, $fieldData['extras']);
+		}
+
+		$fieldData['table_name'] = $this->_iaCore->factory('item')->getItemTable($fieldData['item']);
+
+		$fields = $iaDb->describe($fieldData['table_name']);
+		$exists = false;
+		foreach ($fields as $f)
+		{
+			if ($f['Field'] == $fieldData['name'])
+			{
+				$exists = true;
+				break;
+			}
+		}
+
+		$exists || $this->_alterDbTable($fieldData);
+
+		return $fieldId;
+	}
+
+	protected function _setPageTitle(&$iaView, array $entryData, $action)
+	{
+		if (in_array($action, array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT)))
+		{
+			$entryName = empty($entryData['name']) ? '' : iaLanguage::get('field_' . $entryData['name']);
+			$title = iaLanguage::getf($action . '_field', array('field' => $entryName));
+
+			$iaView->title($title);
+		}
+	}
+
+
+	private function _setParents($name, $parents = array())
+	{
+		$iaDb = &$this->_iaDb;
+
+		$iaDb->setTable(iaField::getTableRelations());
+		foreach ($parents as $item => $item_list)
+		{
+			$iaDb->delete('`child` = :name AND `item` = :item', null, array('name' => $name, 'item' => $item));
+			foreach ($item_list as $field => $field_list)
+			{
+				foreach ($field_list as $element => $value)
+				{
+					$iaDb->insert(array(
+						'field' => $field,
+						'element' => $element,
+						'child' => $name,
+						'extras' => '',
+						'item' => $item
+					));
+				}
+			}
+		}
+
+		$iaDb->resetTable();
+	}
+
+	protected function _setChildren($name, $item, $values, $children = array())
+	{
+		$iaDb = &$this->_iaDb;
+
+		$values = array_keys($values);
+
+		$iaDb->setTable(iaField::getTableRelations());
+		$iaDb->delete('`field` = :field AND `item` = :item', null, array('field' => $name, 'item' => $item));
+
+		foreach ($children as $index => $fieldsList)
+		{
+			$fieldsList = explode(',', $fieldsList);
+
+			foreach ($fieldsList as $field)
+			{
+				if (trim($field))
+				{
+					$iaDb->insert(array(
+						'field' => $name,
+						'element' => $values[$index],
+						'child' => $field,
+						'extras' => '',
+						'item' => $item
+					));
+				}
+			}
+		}
+
+		$iaDb->resetTable();
+	}
+
+	protected function _setRelations()
+	{
+		$sql =
+			'UPDATE `:prefix:table` f ' .
+			"SET f.relation = ':dependent' " .
+			'WHERE (' .
+			'SELECT COUNT(*) FROM `:prefix:table_relations` fr WHERE fr.`child` = f.`name`' .
+			') > 0';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table' => iaField::getTable(),
+			'dependent' => iaField::RELATION_DEPENDENT,
+			'table_relations' => iaField::getTableRelations()
+		));
+
+		$this->_iaDb->query($sql);
+	}
+
+	protected function _setPagesList($fieldId, array $pages, $extras)
+	{
+		$this->_iaDb->setTable(iaField::getTablePages());
+
+		$this->_iaDb->delete(iaDb::convertIds($fieldId, 'field_id'));
+
+		foreach ($pages as $pageName)
+		{
+			if (trim($pageName))
+			{
+				$this->_iaDb->insert(array('page_name' => $pageName, 'field_id' => $fieldId, 'extras' => $extras));
+			}
+		}
+
+		$this->_iaDb->resetTable();
+	}
+
+
+	protected function _alterDbTable(array $fieldData)
+	{
+		$prefix = $this->_iaDb->prefix;
+
+		$sql = sprintf('ALTER TABLE `%s%s` ', $prefix, $fieldData['table_name']);
+		$sql .= 'ADD `' . $fieldData['name'] . '` ';
+
+		switch ($fieldData['type'])
+		{
+			case iaField::DATE:
+				$sql .= 'DATE ';
+				break;
+			case iaField::NUMBER:
+				$sql .= 'DOUBLE ';
+				break;
+			case iaField::TEXT:
+				$sql .= 'VARCHAR(' . $fieldData['length'] . ') '
+					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
+				break;
+			case iaField::URL:
+				$sql .= 'TINYTEXT ';
+				break;
+			case iaField::IMAGE:
+			case iaField::STORAGE:
+			case iaField::PICTURES:
+			case iaField::TEXTAREA:
+				$sql .= 'TEXT ';
+				break;
+			default:
+				if (isset($fieldData['values']))
+				{
+					$values = explode(',', $fieldData['values']);
+
+					$sql .= ($fieldData['type'] == iaField::CHECKBOX) ? 'SET' : 'ENUM';
+					$sql .= "('" . implode("','", $values) . "')";
+
+					if (!empty($fieldData['default']))
+					{
+						$sql .= " DEFAULT '{$fieldData['default']}' ";
+					}
+				}
+		}
+		$sql .= 'NOT null';
+
+		$this->_iaDb->query($sql);
+
+		if ($fieldData['searchable'] && in_array($fieldData['type'], array(iaField::TEXT, iaField::TEXTAREA)))
+		{
+			$indexes = $this->_iaDb->getAll("SHOW INDEX FROM `" . $prefix . $fieldData['table_name'] . "`");
+			$keyExists = false;
+			if ($indexes)
+			{
+				foreach ($indexes as $i)
+				{
+					if ($i['Key_name'] == $fieldData['name'] && $i['Index_type'] == 'FULLTEXT')
+					{
+						$keyExists = true;
+						break;
+					}
+				}
+			}
+
+			if (!$keyExists)
+			{
+				$this->_iaDb->query("ALTER TABLE `" . $prefix . $fieldData['table_name'] . "` ADD FULLTEXT (`{$fieldData['name']}`)");
+			}
+		}
+	}
+}

@@ -1,0 +1,216 @@
+
+//
+// Overall styles for positions and blocks
+// --------------------------------------------------
+
+// hakzzz
+
+@-moz-document url-prefix() {
+  body {
+    overflow-x: hidden !important;
+  }
+}
+
+.visual-mode { 
+  // margin-top: @vm-bar-height;
+}
+
+
+
+//
+// Visual mode Config section
+// --------------------------------------------------
+
+.vm-bar {
+  height: @vm-bar-height;
+  line-height: @vm-bar-height;
+  background: @vm-bar-bg;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 200px;
+  z-index: 50000;
+  .box-sizing(border-box);
+  padding: 0 20px;
+
+  &__title {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: @vm-link-color;
+    float: left;
+  }
+
+  &__exit {
+    float: right;
+
+  }
+}
+
+.vm-config {
+  color: @slidebar-color;
+  font-family: @vm-font;
+  font-size: @vm-font-size;
+  line-height: @vm-line-height;
+
+  &__toggle {
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 10px;
+    display: block;
+    width: 40px;
+    height: 40px;
+    background: @slidebar-bg;
+    .border-radius(0 6px 6px 0);
+
+    &:before {
+      content: '';
+      display: block;
+      width: 22px;
+      height: 22px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin-top: -11px;
+      margin-left: -11px;
+      background: url(../img/slide-toggle.png) right top no-repeat;
+      .transition(all .2s ease-in-out);
+    }
+
+    &--active:before {
+      background-position: left top;
+    }
+  }
+
+  &__heading {
+    z-index: 1000;
+    padding: 10px;
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    background: fade(#000, 70%);
+
+    h4 {
+      text-transform: uppercase;
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 18px;
+      margin: 0;
+      color: @vm-link-color;
+    }
+  }
+
+  &__exit {
+    text-transform: none;
+    color: lighten(@slidebar-bg, 30%);
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 10px;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  &__item {
+    padding: 0 20px 20px;
+    // border-bottom: 1px solid lighten(@slidebar-bg, 10%);
+    font-size: 12px;
+    background: lighten(@slidebar-bg, 3%);
+
+    &__title {
+      font-weight: bold;
+      font-size: 14px;
+      color: lighten(@slidebar-color, 3%);
+      // border-bottom: 1px solid lighten(@slidebar-bg, 10%);
+      margin: 0 -20px 10px;
+      padding: 10px 20px 10px;
+      background: lighten(@slidebar-bg, 6%);
+
+      .v-icon {
+        float: right;
+        font-size: 20px;
+      }
+    }
+
+    &--hidden {
+      display: none;
+    }
+
+    &--help {
+      border-bottom: 0 none;
+
+      .vm-config__item__title {
+        background: none;
+        border-bottom: 0 none;
+        padding: 20px 20px 0;
+      }
+    }
+  }
+
+  hr {
+    border-top-color: lighten(@slidebar-bg, 7%);
+  }
+
+  .form-horizontal {
+    margin-bottom: 0;
+
+    .control-label {
+      width: 130px;
+      text-align: left;
+      font-size: 12px;
+      margin: 0;
+    }
+
+    .controls {
+      margin-left: 150px;
+    }
+
+    .control-group {
+      margin-bottom: 10px;
+    }
+
+    input,
+    select {
+      background: lighten(@slidebar-bg, 6%);
+      border: 2px solid fade(@vm-link-color, 60%);
+      .border-radius(4px);
+      padding-left: 10px;
+      padding-right: 10px;
+      // border-color: lighten(@slidebar-bg, 12%);
+      color: @vm-link-color;
+
+      &:focus {
+        border-color: @vm-link-color;
+        outline: 0 none;
+      }
+    }
+
+    .actions {
+      margin-top: 20px;
+      // margin-left: 150px;
+      .clearfix();
+
+      .btn-primary {
+        border: 0 none;
+        background-color: #454545;
+        .border-radius(4px);
+        padding: 5px 14px;
+
+        &:hover {
+          background-color: @vm-link-color;
+        }
+      }
+
+      .btn-link {
+        color: lighten(@slidebar-bg, 20%);
+        text-decoration: underline;
+
+        &:hover {
+          color: #fff;
+          text-decoration: none;
+        }
+      }
+    }
+  }
+}

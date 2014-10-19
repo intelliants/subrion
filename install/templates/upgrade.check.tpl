@@ -54,7 +54,7 @@
 	$(function()
 	{
 		$('#changelog-details').appendTo('body');
-		$.getJSON('http://tools.subrion.com/changelog.json?fn=?', {version: '<?php echo $this->version ?>'}, function(response)
+		$.getJSON('http://tools.subrion.org/changelog.json?fn=?', {version: '<?php echo $this->version ?>'}, function(response)
 		{
 			$('.modal-body:first', '#changelog-details').html(response.html);
 		});

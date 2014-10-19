@@ -345,6 +345,17 @@ input[type="checkbox"],
   color: lighten(@text-color, 25%); // lighten the text some for contrast
 }
 
+.has-support-text {
+  .make-switch {
+    float: left;
+
+    + .help-block {
+      float: left;
+      margin: 10px 0 0 10px;
+    }
+  }
+
+}
 
 
 // Inline forms

@@ -119,7 +119,7 @@ class iaPicture extends ImageWorkshop
 
 		if (empty($ext))
 		{
-			$this->iaCore->setMessage(iaLanguage::get('file_type_error', array('extension' => implode(',', array_unique(self::$_typesMap)))));
+			$this->setMessage(iaLanguage::getf('file_type_error', array('extension' => implode(', ', array_unique(self::$_typesMap)))));
 
 			return false;
 		}
@@ -197,6 +197,7 @@ class iaPicture extends ImageWorkshop
 		// generate thumbnail
 		$thumbWidth = $imageInfo['thumb_width'] ? $imageInfo['thumb_width'] : $this->iaCore->get('thumb_w');
 		$thumbHeight = $imageInfo['thumb_height'] ? $imageInfo['thumb_height'] : $this->iaCore->get('thumb_h');
+
 		if ($thumbWidth || $thumbHeight)
 		{
 			$thumb = self::initFromPath($aFile['tmp_name']);

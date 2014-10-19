@@ -21,15 +21,14 @@ Ext.onReady(function()
 			{name: 'filename', title: _t('filename'), width: 120, editor: 'text'},
 			{name: 'open', title: _t('edit'), icon: 'pencil', click: function(record, field)
 			{
-				$.post(intelli.config.admin_url + '/hooks.json', {action: 'get', hook: record.get('id')}, function(response)
+				$.post(intelli.config.admin_url + '/hooks.json', {action: 'get', id: record.get('id')}, function(response)
 				{
 					$('.wrap-list').show();
 					editAreaLoader.openFile('codeContainer', {id: record.get('id'), text: response.code, syntax: record.get('type'), title: record.get('name') + ' | ' + record.get('extras')});
 				});
 			}},
 			'delete'
-		],
-		url: intelli.config.admin_url + '/hooks/'
+		]
 	}, false);
 
 	intelli.hooks.toolbar = Ext.create('Ext.Toolbar', {items:[
@@ -79,14 +78,8 @@ Ext.onReady(function()
 		allow_toggle: false
 	});
 
-	$('#js-save-cmd').click(function()
-	{
-		var code = editAreaLoader.getValue('codeContainer');
-		var save_hook = editAreaLoader.getCurrentFile('codeContainer').id;
-		saveHook(save_hook, code);
-	});
-
-	$('#js-close-cmd').click(function()
+	$('#js-save-cmd').on('click', saveHook);
+	$('#js-close-cmd').on('click', function()
 	{
 		var hooks = editAreaLoader.getAllFiles('codeContainer');
 		if (hooks)
@@ -102,8 +95,8 @@ Ext.onReady(function()
 
 function saveHook(id, code)
 {
-	$.post(intelli.config.admin_url + '/hooks.json', {action: 'set', hook: editAreaLoader.getCurrentFile('codeContainer').id, code: code}, function()
+	$.post(intelli.config.admin_url + '/hooks.json', {action: 'set', id: editAreaLoader.getCurrentFile('codeContainer').id, code: editAreaLoader.getValue('codeContainer')}, function(response)
 	{
-		intelli.notifFloatBox({msg: _t('saved'), type: 'notification', autohide: true});
+		intelli.notifFloatBox({msg: _t(response.result ? 'saved' : 'db_error'), type: response.result ? 'success' : 'error', autohide: true});
 	});
 }

@@ -1,6 +1,6 @@
 {if isset($blog_entry)}
 	<div class="media ia-item blog-entry">
-		<p class="ia-item-date">{lang key='posted_on'} {$blog_entry.date|date_format:$config.date_format}</p>
+		<p class="ia-item-date">{lang key='posted_on'} {$blog_entry.date_added|date_format:$config.date_format}</p>
 
 		{if $blog_entry.image}
 			<div class="ia-item-image">{printImage imgfile=$blog_entry.image fullimage=true title=$blog_entry.title}</div>
@@ -30,9 +30,9 @@
 				{/if}
 				<div class="media-body">
 					<h4 class="media-heading">
-						<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}" id="blog_{$blog_entry.id}">{$blog_entry.title}</a>
+						<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}">{$blog_entry.title}</a>
 					</h4>
-					<p class="ia-item-date">{lang key='posted_on'} {$blog_entry.date|date_format:$config.date_format}</p>
+					<p class="ia-item-date">{lang key='posted_on'} {$blog_entry.date_added|date_format:$config.date_format}</p>
 					<div class="ia-item-body">{$blog_entry.body|strip_tags:false|truncate:$config.blog_max:'...'}</div>
 				</div>
 			</div>

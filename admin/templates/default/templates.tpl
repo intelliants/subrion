@@ -16,7 +16,7 @@
 						{if isset($template.screenshots) && $template.screenshots}
 							<div class="screenshots hidden">
 								{foreach $template.screenshots as $screenshot}
-									<a href="{$smarty.const.IA_CLEAR_URL|cat:'templates/'|cat:$template.name|cat:'/info/screenshots/'|cat:$screenshot.name}" rel="ia_lightbox[{$template.name}]" title="{$screenshot.title}"></a>
+									<a href="{$nonProtocolUrl}templates/{$template.name}/docs/img/{$screenshot.name}" rel="ia_lightbox[{$template.name}]" title="{$screenshot.title}"></a>
 								{/foreach}
 							</div>
 						{/if}
@@ -39,14 +39,13 @@
 								{preventCsrf}
 								<input type="hidden" name="template" value="{$template.name}">
 								{if $template.name != $tmpl}
-									<button type="submit" name="set_template" class="btn btn-success btn-sm"><i class="i-checkmark"></i> {lang key='set_as_default_template'}</button>
+									<button type="submit" name="install" class="btn btn-success btn-sm"><i class="i-checkmark"></i> {lang key='set_as_default_template'}</button>
 								{else}
 									{if $smarty.const.INTELLI_DEBUG}
 										<button type="submit" name="reinstall" class="btn btn-warning btn-sm"><i class="i-loop"></i></button>
 									{/if}
-									<!-- <a href="#" class="btn btn-warning btn-sm disabled"><i class="i-checkmark"></i> {lang key='active'}</a> -->
-									{if $template.config}
-										<a href="{$smarty.const.IA_ADMIN_URL}configuration/template_{$tmpl}/" class="btn btn-sm btn-default" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
+									{if $template.config_groups}
+										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$template.config_groups[0].name}/" class="btn btn-sm btn-default" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
 									{/if}
 								{/if}
 								<a href="#" rel="{$template.name}" class="btn btn-sm btn-default js-cmd-info" title="{lang key='details'}"><i class="i-info"></i></a>
@@ -56,7 +55,7 @@
 							</form>
 						{elseif isset($template.remote)}
 							<form method="post" class="clearfix">
-								<button type="submit" name="download_template" value="{$template.name}" class="btn btn-success btn-sm"><i class="i-box-add"></i> {lang key='download'}</button>
+								<button type="submit" name="download" value="{$template.name}" class="btn btn-success btn-sm"><i class="i-box-add"></i> {lang key='download'}</button>
 								<a href="{$template.url}" class="btn btn-default btn-sm" target="_blank" title="{lang key='preview'}"><i class="i-eye"></i></a>
 							</form>
 						{else}
@@ -75,7 +74,7 @@
 </div>
 
 {ia_add_js}
-$('.preview').click(function(e)
+$('.preview').on('click', function(e)
 {
 	e.preventDefault();
 	$(this).parent().find('.screenshots a:first').trigger('click');

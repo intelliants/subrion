@@ -35,7 +35,9 @@ abstract class abstractPlugin extends iaGrid
 
 	public function update(array $itemData, $id)
 	{
-		return (bool)$this->iaDb->update($itemData, iaDb::convertIds($id));
+		$this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
+
+		return (0 == $this->iaDb->getErrorNumber());
 	}
 
 	public function delete($id)

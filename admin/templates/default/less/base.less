@@ -624,6 +624,32 @@ a:focus {
     .col-lg-4 {
     	width: 480px;
     }
+
+    &--in-tab {
+    	.wrap-group {
+    		padding: 30px 15px 30px;
+    		background-color: @widget-bg;
+    		margin: -10px -10px 15px;
+    		.box-shadow(none);
+
+    		&-heading {
+    			font-size: (@font-size-base * 1.25);
+    			font-weight: 500;
+    			background-color: @widget-header-bg;
+    			border-bottom: 1px solid #ddd;
+    			margin-top: -30px;
+    			margin-bottom: 30px;
+    			margin-left: -15px;
+    			margin-right: -15px;
+    			padding: 10px 15px;
+
+    			h4 {
+    				margin: 0;
+    				line-height: @line-height-base;
+    			}
+    		}
+    	}
+    }
 }
 
 // thumbnails with delete actions
@@ -779,7 +805,7 @@ a:focus {
 	}
 }
 
-// quick-stts
+// quick-stats
 
 .quick-stats-block {
 	position: relative;
@@ -813,4 +839,3 @@ a:focus {
 		font-weight: normal;
 	}
 }
-

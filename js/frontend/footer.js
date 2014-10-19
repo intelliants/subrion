@@ -69,6 +69,22 @@ $(function()
 		setTimeout(function(){$this.removeClass('open');});
 	});
 
+	if ($().datepicker)
+	{
+		$('.js-datepicker').datepicker({
+			showTime: true,
+			format: 'yyyy-mm-dd H:i:s',
+			language: intelli.config.lang
+		});
+
+		$('.js-datepicker-toggle').on('click', function(e)
+		{
+			e.preventDefault();
+
+			$(this).prev().datepicker('show');
+		});
+	}
+
 	// update picture titles
 	var pictureTitles = $('.js-edit-picture-title');
 	if (pictureTitles.length)
@@ -111,7 +127,7 @@ $(function()
 
 		if (confirm(_t('sure_rm_file')))
 		{
-			$.post(intelli.config.ia_url + 'actions.json', {action: 'delete-file', item: item, field: field, path: path, itemid: id}, function(data)
+			$.post(intelli.config.ia_url + 'actions/read.json', {action: 'delete-file', item: item, field: field, path: path, itemid: id}, function(data)
 			{
 				if ('boolean' == typeof data.error && !data.error)
 				{
@@ -162,7 +178,7 @@ $(function()
 		}
 		else
 		{
-			intelli.notifFloatBox({msg: intelli.lang.no_more_files, type: 'notif', autohide: true, pause: 2500});
+			intelli.notifFloatBox({msg: intelli.lang.no_more_files, autohide: true, pause: 2500});
 		}
 
 		detectFilename();

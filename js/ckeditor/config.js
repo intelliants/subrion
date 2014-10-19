@@ -9,6 +9,7 @@ CKEDITOR.editorConfig = function(config)
 	config.language = 'en';
 	config.filebrowserImageUploadUrl = intelli.config.ia_url + 'actions/?action=ckeditor_upload&Type=Image';
 	config.extraPlugins = 'mediaembed';
+	config.skin = 'bootstrapck';
 
 	if (intelli.config.ckeditor_css)
 	{
@@ -20,17 +21,21 @@ CKEDITOR.editorConfig = function(config)
 		config.extraPlugins += ',syntaxhighlight';
 	}
 
-	if (typeof intelli.admin == 'undefined')
-	{
-		config.toolbar = 'Simple';
-	}
-	else
-	{
-		config.toolbar = 'Extended';
-		config.extraPlugins += ',codemirror';
-	}
+	config.toolbar_extended = [
+		['Source', '-', 'Maximize'], 
+		['Cut', 'Copy', 'Paste','PasteText','PasteFromWord','-','Undo','Redo'],
+		['Link','Unlink'],
+		['Image','MediaEmbed','Table','HorizontalRule','SpecialChar'],
+		['Form','Checkbox','Radio','TextField','Textarea','Select','Button','ImageButton','HiddenField'],
+		'/',
+		['Bold','Italic','Underline','Strike','-','Subscript','Superscript'], 
+		['Styles','Format','Font','FontSize'],
+		['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', '-', 'BidiLtr', 'BidiRtl'], 
+		['NumberedList','BulletedList', '-', 'Outdent', 'Indent'], 
+		['TextColor','BGColor']
+	];
 
-	config.toolbar_Extended = [
+	config.toolbar_dashboard = [
 		['Source', '-', 'Maximize'],
 		['Cut', 'Copy', 'Paste','PasteText','PasteFromWord','-','Undo','Redo'],
 		['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
@@ -42,11 +47,21 @@ CKEDITOR.editorConfig = function(config)
 		['Image','MediaEmbed','Table','HorizontalRule','SpecialChar']
 	];
 
-	config.toolbar_Simple = [
+	config.toolbar_simple = [
 		['Cut', 'Copy', 'Paste','PasteText','PasteFromWord'],
 		['Bold','Italic','Underline','Strike'],
 		['TextColor','BGColor'],
 		['Link','Unlink'],
 		['Image','MediaEmbed','Code']
 	];
+
+	if (typeof intelli.admin == 'undefined')
+	{
+		config.toolbar = 'simple';
+	}
+	else
+	{
+		config.toolbar = 'dashboard';
+		config.extraPlugins += ',codemirror';
+	}
 };

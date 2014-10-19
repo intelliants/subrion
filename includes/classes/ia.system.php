@@ -49,7 +49,10 @@ final class iaSystem
 			// plugins/packages
 			'abstractPlugin' => 'ia.base.plugin',
 			'abstractPackageAdmin' => 'ia.base.package.admin',
-			'abstractPackageFront' => 'ia.base.package.front'
+			'abstractPackageFront' => 'ia.base.package.front',
+			// backend controllers
+			'iaAbstractControllerBackend' => 'ia.base.controller.admin',
+			'iaAbstractControllerPluginBackend' => 'ia.base.controller.plugin.admin',
 		);
 
 		if (isset($systemClasses[$className]))
@@ -131,7 +134,7 @@ final class iaSystem
 			case E_PARSE:
 			case E_ERROR:
 			case E_USER_ERROR:
-				$text = '<span style="font-weight:bold;text-shadow:1px 1px 1px red;color:red;">' . $errortype[$errno] . ':</span> ' . $error . '<br>';
+				$text = '<span style="font-weight:bold;color:red;">' . $errortype[$errno] . ':</span> ' . $error . '<br>';
 				$exit = true;
 				break;
 
@@ -275,9 +278,9 @@ final class iaSystem
 
 	public static function forceUpgrade($version)
 	{
-		iaCore::util();
+		iaCore::instance()->factory('util');
 
-		$patchUrl = 'http://tools.subrion.com/download/patch/%s/%s/';
+		$patchUrl = iaUtil::REMOTE_TOOLS_URL . 'get/patch/%s/%s/';
 		$patchUrl = sprintf($patchUrl, IA_VERSION, $version);
 
 		$filePath = IA_TMP . 'patch.iap';

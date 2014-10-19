@@ -24,7 +24,10 @@
 	width: 31px;
 	background: #333;
 	border-top: 1px solid #252525;
-	border-left: 1px solid #252525;	
+	border-left: 1px solid #252525;
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
 }
 #debug-toggle a {
 	display: block;
@@ -55,7 +58,6 @@
 	position: relative;
 	height: 30px;
 	z-index: 100;
-	position: relative;
 }
 
 .debug-btn:after {
@@ -64,8 +66,8 @@
 	position: absolute;
 	right: 0;
 	top: 0;
-	width: 0px;
-	height: 0px;
+	width: 0;
+	height: 0;
 	border-style: solid;
 	border-width: 0 5px 5px 0;
 	border-color: transparent #007bff transparent transparent;

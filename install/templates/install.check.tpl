@@ -42,6 +42,6 @@
 	<?php if ($this->nextButton): ?>
 	<a href="<?php echo URL_INSTALL . $this->module ?>/license/" class="btn btn-lg btn-primary">Next <i class="i-chevron-right"></i></a>
 	<?php else: ?>
-	<a href="<?php echo URL_INSTALL . $this->module ?>/" class="btn btn-lg btn-danger disabled">Next <i class="i-remove"></i></a>
+	<a href="<?php echo URL_INSTALL . $this->module ?>/" class="btn btn-lg btn-danger disabled">Next <i class="i-remove-sign"></i></a>
 	<?php endif ?>
 </div>

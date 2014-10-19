@@ -63,8 +63,11 @@ class iaView extends abstractUtil
 
 	public $resources;
 
+	public $positions = array();
+
 	public $blocks = array();
 
+	public $assetsUrl;
 	public $domain = 'localhost';
 	public $domainUrl;
 	public $extrasUrl;
@@ -82,6 +85,7 @@ class iaView extends abstractUtil
 	public function init()
 	{
 		parent::init();
+
 		$this->resources = new iaStore(array('css' => new iaStore(), 'js' => new iaStore()));
 	}
 
@@ -157,7 +161,7 @@ class iaView extends abstractUtil
 		return (bool)in_array($blockName, $this->_existBlocks);
 	}
 
-	public function inHome($name = false)
+	public function isHomepage($name = false)
 	{
 		return (false === $name)
 			? ($this->homePage == $this->name())
@@ -176,49 +180,7 @@ class iaView extends abstractUtil
 	{
 		if (self::REQUEST_HTML == $this->getRequestType())
 		{
-			$files = is_string($files) ? array($files) : (array)$files;
-			foreach ($files as $file)
-			{
-				$file = trim($file);
-				$local = true;
-
-				// NOTE: this check may treat an inclusion of a single local file
-				// with name starting from "http..." as remote
-				if ('http' == substr($file, 0, 4))
-				{
-					$url = $file;
-					$local = false;
-				}
-				elseif (strpos($file, '_IA_URL_') !== false)
-				{
-					$url = str_replace('_IA_URL_', IA_CLEAR_URL, $file);
-				}
-				else
-				{
-					$url = IA_TPL_URL . 'css/' . $file;
-					if (defined('IA_CURRENT_PACKAGE'))
-					{
-						$suffix = 'templates' . IA_DS . $this->theme . IA_DS . 'packages' . IA_DS . $this->get('extras') . IA_DS . 'css/' . $file;
-						if (is_file(IA_HOME . $suffix . '.css') && iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
-						{
-							$url = IA_CLEAR_URL . $suffix;
-						}
-					}
-				}
-
-				$url.= iaSmartyPlugins::EXTENSION_CSS;
-
-				if ($local)
-				{
-					$file = str_replace(IA_CLEAR_URL, IA_HOME, $url);
-					if ($modifiedTime = filemtime($file))
-					{
-						$url .= '?fm=' . $modifiedTime;
-					}
-				}
-
-				$this->resources->css->$url = is_numeric($order) ? (int)$order : self::RESOURCE_ORDER_REGULAR;
-			}
+			$this->iaSmarty->add_css(array('files' => $files, 'order' => $order));
 		}
 	}
 
@@ -300,7 +262,7 @@ class iaView extends abstractUtil
 			$menuGroups[$row['id']] = array_merge($row, array('items' => array()));
 		}
 
-		$iaItem = $this->iaCore->factory('item');
+		$this->iaCore->factory('item');
 
 		$sql =
 			'SELECT g.`name` `config`, e.`type`, ' .
@@ -362,6 +324,11 @@ class iaView extends abstractUtil
 
 		foreach ($menuGroups as $group)
 		{
+			if (!$group['items'])
+			{
+				continue;
+			}
+
 			$menuEntry = $group;
 			$menuEntry['items'] = array();
 
@@ -372,7 +339,7 @@ class iaView extends abstractUtil
 
 			foreach ($group['items'] as $item)
 			{
-				if ($iaAcl->checkAccess('admin_pages' . iaAcl::SEPARATOR . iaAcl::ACTION_READ, 0, 0, $item['name'] ))
+				if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE . iaAcl::SEPARATOR . iaCore::ACTION_READ, $item['name']))
 				{
 					$title = iaLanguage::get($item['title'], $item['title']);
 					$data = array(
@@ -391,7 +358,7 @@ class iaView extends abstractUtil
 					{
 						$data['config'] = $item['config'];
 					}
-					if ('templates' == $item['name']) // custom processing for template configuration
+					if ('templates' == $item['name'] && isset($configGroups['template'])) // custom processing for template configuration
 					{
 						$data['config'] = $configGroups['template'];
 					}
@@ -405,7 +372,7 @@ class iaView extends abstractUtil
 				}
 			}
 
-			if ($menuEntry['items'][0]['name'])
+			if (isset($menuEntry['items'][0]['name']) && $menuEntry['items'][0]['name'])
 			{
 				$menuHeading = array('name' => '', 'title' => iaLanguage::get('global'));
 				if (iaItem::TYPE_PACKAGE == $item['type'])
@@ -430,76 +397,138 @@ class iaView extends abstractUtil
 	{
 		$result = array();
 
-		if ($rows = $this->iaCore->iaDb->all(array('name', 'title', 'alias'), "FIND_IN_SET('header', `menus`) AND `status` = 'active' ORDER BY `order`", null, null, 'admin_pages'))
+		if ($rows = $this->iaCore->iaDb->all(array('name', 'title', 'alias', 'attr'), "FIND_IN_SET('header', `menus`) AND `status` = 'active' ORDER BY `order`", null, null, 'admin_pages'))
 		{
-			foreach ($rows as $row)
+			$iaAcl = $this->iaCore->factory('acl');
+
+			foreach ($rows as $entry)
 			{
-				$item = array(
-					'name' => $row['name'],
-					'title' => $row['title'],
-					'url' => IA_ADMIN_URL . ($row['alias'] ? $row['alias'] : $row['name'] . IA_URL_DELIMITER)
-				);
-
-				if (isset($row['attr']) && $row['attr'])
+				if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE . iaAcl::SEPARATOR . iaCore::ACTION_READ, $entry['name']))
 				{
-					$item['attr'] = $row['attr'];
+					$result[] = array(
+						'name' => $entry['name'],
+						'title' => $entry['title'],
+						'url' => IA_ADMIN_URL . ($entry['alias'] ? $entry['alias'] : $entry['name'] . IA_URL_DELIMITER),
+						'attr' => $entry['attr']
+					);
 				}
-
-				$result[] = $item;
 			}
 		}
 
 		return $result;
 	}
 
-	protected function _setBlocks()
+	protected function _getDisabledPositions()
 	{
-		$blocks = $this->iaCore->iaDb->all(iaDb::ALL_COLUMNS_SELECTION,
-			"`status` = 'active' AND `extras` IN ('', '" . implode("','", $this->iaCore->get('extras')) . "') ORDER BY `order`",
-			null, null, 'blocks');
+		$sql = "SELECT `object` `name`, `access` FROM `{$this->iaCore->iaDb->prefix}objects_pages` ";
+		$sql .= "WHERE (`object_type` = 'positions' && `page_name` = '" . $this->name() . "') || (`object_type` = 'positions' && `page_name` = '' && `access` = 0) ORDER BY `access` DESC";
+		$related = $this->iaCore->iaDb->getAssoc($sql, false);
 
-		$iaAcl = $this->iaCore->factory('acl');
-		$shownOn = $this->iaCore->iaDb->keyvalue(array('block_id', 'id'), "`page_name` = '" . $this->name() . "'", 'blocks_pages');
-		foreach ($blocks as $block)
+		$return = array();
+		foreach ($related as $position => $value)
 		{
-			if (!$iaAcl->checkAccess('menu' == $block['type'] ? 'menu' : 'block', 0, 0, $block['name']))
+			if (!$value[0]['access'])
 			{
-				continue;
-			}
-			if ($block['sticky'] || (!$block['sticky'] && isset($shownOn[$block['id']])))
-			{
-				if ('menu' == $block['type'])
-				{
-					$block['contents'] = $this->_getMenuItems($block['id']);
-				}
-				else
-				{
-					if (!$block['multi_language'])
-					{
-						$block['contents'] = iaLanguage::get('block_content_blc' . $block['id']);
-						$block['title'] = iaLanguage::get('block_title_blc' . $block['id']);
-					}
-				}
-				$block['display'] = !isset($_COOKIE['box_content_' . $block['name']]) || $_COOKIE['box_content_' . $block['name']] != 'none';
-
-				$this->blocks[$block['position']][] = $block;
-				$this->_existBlocks[] = $block['name'];
+				$return[] = $position;
 			}
 		}
 
-		if ($this->manageMode)
+		return $return;
+	}
+
+	protected function _getDisabledBlocks()
+	{
+		$table = $this->iaCore->iaDb->prefix . 'objects_pages';
+		$page = $this->name();
+
+		$sql = <<<SQL
+SELECT `object` FROM `{$table}`
+	WHERE `object_type` = 'blocks' && `page_name` = '' && `access` = 0
+	&& `object` NOT IN (SELECT `object` FROM `{$table}` WHERE `object_type` = 'blocks' && `page_name` = '{$page}' && `access` = 1)
+UNION ALL
+SELECT `object` FROM `{$table}`
+	WHERE `object_type` = 'blocks' && `page_name` = '{$page}' && `access` = 0
+UNION ALL
+SELECT `object` FROM `{$table}`
+	WHERE `object_type` = 'blocks' && `page_name` != '{$page}' && `access` = 1
+	&& `object` NOT IN (
+		SELECT `object` FROM `{$table}`
+			WHERE `object_type` = 'blocks' && `page_name` = '' && `access` = 0
+	)
+	GROUP BY `object`
+SQL;
+
+		$disabledBlocks = $this->iaCore->iaDb->getAssoc($sql, true);
+
+		return array_keys($disabledBlocks);
+	}
+
+	protected function _setBlocks()
+	{
+		$positions = $this->iaCore->iaDb->assoc(array('name', 'menu', 'movable'), null, 'positions');
+		$this->positions = array_keys($positions);
+
+		$disabledPositions = $this->_getDisabledPositions();
+
+		$blocks = $this->iaCore->iaDb->all(iaDb::ALL_COLUMNS_SELECTION,
+			"`status` = 'active' AND `extras` IN ('', '" . implode("','", $this->iaCore->get('extras')) . "') ORDER BY `order`",
+			null, null, 'blocks');
+		$disabledBlocks = $this->_getDisabledBlocks();
+
+		$iaAcl = $this->iaCore->factory('acl');
+
+		foreach ($blocks as $block)
 		{
-			if ($positions = $this->iaCore->get('block_positions'))
+			// get rid of disabled blocks
+			$disabledBlock = (int)in_array($block['id'], $disabledBlocks);
+			if (!$this->manageMode && $disabledBlock)
 			{
-				$positions = explode(',', $positions);
-				foreach ($positions as $position)
+				continue;
+			}
+
+			// get rid of blocks in disabled positions
+			if (!$this->manageMode && in_array($block['position'], $disabledPositions))
+			{
+				continue;
+			}
+
+			if (!$iaAcl->checkAccess('menu' == $block['type'] ? 'menu' : 'block', $block['name']))
+			{
+				continue;
+			}
+
+			if ('menu' == $block['type'])
+			{
+				$block['contents'] = $this->_getMenuItems($block['id']);
+			}
+			else
+			{
+				if (!$block['multi_language'])
 				{
-					if (!in_array($position, array_keys($this->blocks)))
-					{
-						$this->blocks[$position] = array();
-					}
+					$block['contents'] = iaLanguage::get('block_content_blc' . $block['id']);
+					$block['title'] = iaLanguage::get('block_title_blc' . $block['id']);
 				}
 			}
+			$block['display'] = !isset($_COOKIE['box_content_' . $block['name']]) || $_COOKIE['box_content_' . $block['name']] != 'none';
+			$block['hidden'] = $disabledBlock;
+
+			$this->blocks[$block['position']][] = $block;
+			$this->_existBlocks[] = $block['name'];
+		}
+
+		if ($this->manageMode && $this->positions)
+		{
+			foreach ($this->positions as $position)
+			{
+				if (!in_array($position, array_keys($this->blocks)))
+				{
+					$this->blocks[$position] = array();
+				}
+
+				$positions[$position]['hidden'] = (int)in_array($position, $disabledPositions);
+			}
+
+			$this->iaSmarty->assign('iaPositions', $positions);
 		}
 
 		$this->iaCore->startHook('phpCoreSmartyAfterBlockGenerated', array('blocks' => &$this->blocks));
@@ -534,7 +563,7 @@ class iaView extends abstractUtil
 						$url = $row['name'] . IA_URL_DELIMITER;
 				}
 
-				if ($this->inHome($row['name']))
+				if ($this->isHomepage($row['name']))
 				{
 					$url = '';
 				}
@@ -554,7 +583,7 @@ class iaView extends abstractUtil
 			else
 			{
 				$sql =
-					'SELECT m.*, p.`nofollow`, p.`new_window` ' .
+					'SELECT m.*, p.`nofollow`, p.`new_window`, p.`action` ' .
 					'FROM `:prefixmenus` m ' .
 					'LEFT JOIN `:prefixpages` p ON (p.`name` = m.`page_name`) ' .
 					'WHERE m.`menu_id` = :menu ORDER BY m.`level`, m.`id`';
@@ -565,7 +594,7 @@ class iaView extends abstractUtil
 				$rows = $this->iaCore->iaDb->getAll($sql);
 			}
 
-			$list = array(0 => array());
+			$list = array();
 			foreach ($rows as $row)
 			{
 				$pageName = $row['page_name'];
@@ -583,7 +612,7 @@ class iaView extends abstractUtil
 
 					if ($pageName != 'node' && isset($pages[$pageName]))
 					{
-						$row['url'] = $this->inHome($pageName) ? IA_URL : $pages[$pageName];
+						$row['url'] = $this->isHomepage($pageName) ? IA_URL : $pages[$pageName];
 						$list[$row['parent_id']][$row['id']] = $row;
 					}
 				}
@@ -592,7 +621,7 @@ class iaView extends abstractUtil
 			$iaAcl = $this->iaCore->factory('acl');
 			foreach ($rows as $row)
 			{
-				if (!$iaAcl->checkAccess('pages', 0, 0, $row['page_name']))
+				if (!$iaAcl->isAccessible($row['page_name'], $row['action'], iaAcl::OBJECT_PAGE))
 				{
 					if (isset($list[$row['id']]))
 					{
@@ -758,36 +787,29 @@ class iaView extends abstractUtil
 			}
 
 			$requestPath = $this->iaCore->requestPath;
-			if (self::DEFAULT_HOMEPAGE != $pageName)
-			{
-				array_unshift($requestPath, $pageName);
+			array_unshift($requestPath, $pageName);
+			$requestPath[count($requestPath) - 1] .= $pageExtension;
 
-				$requestPath[count($requestPath) - 1] .= $pageExtension;
-			}
-
-			$homepageName = $this->iaCore->get('home_page');
+			$this->homePage = $this->iaCore->get('home_page');
 
 			foreach ($pages as $page)
 			{
 				$found = true;
-				$requestChunks = false;
+				$requestChunks = $requestPath;
+				$index = 0;
+				$url = $this->isHomepage($page['name'])
+					? array($page['name'])
+					: explode(IA_URL_DELIMITER, trim(str_replace(array($this->domainUrl, $baseUrl), 'domain/', $page['alias']), IA_URL_DELIMITER));
 
-				if ($page['name'] != $homepageName)
+				foreach ($url as $urlChunk)
 				{
-					$requestChunks = $requestPath;
-					$url = explode(IA_URL_DELIMITER, trim(str_replace(array($this->domainUrl, $baseUrl), 'domain/', $page['alias']), IA_URL_DELIMITER));
-					$index = 0;
-
-					foreach ($url as $urlChunk)
+					if (trim($urlChunk) && $found)
 					{
-						if (trim($urlChunk) && $found)
-						{
-							$found = isset($requestChunks[$index])
-								? ($requestChunks[$index] == $urlChunk)
-								: false;
-							unset($requestChunks[$index]);
-							$index++;
-						}
+						$found = isset($requestChunks[$index])
+							? ($requestChunks[$index] == $urlChunk)
+							: false;
+						unset($requestChunks[$index]);
+						$index++;
 					}
 				}
 
@@ -804,11 +826,6 @@ class iaView extends abstractUtil
 
 					break;
 				}
-			}
-
-			if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() && empty($pageParams))
-			{
-				$page404 = true;
 			}
 		}
 
@@ -860,15 +877,8 @@ class iaView extends abstractUtil
 
 		if (self::REQUEST_HTML == $this->getRequestType())
 		{
-			$isIE6 = (stristr($_SERVER['HTTP_USER_AGENT'], 'MSIE 6.0') !== false);
-
 			if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
 			{
-				if ($isIE6)
-				{
-					return self::errorPage(self::ERROR_INTERNAL, 'Unfortunately, Internet Explorer 6 is not supported for backend.');
-				}
-
 				if (preg_match('/MSIE 7/', $_SERVER['HTTP_USER_AGENT']))
 				{
 					$this->setMessages(iaLanguage::get('ie_update_warning'), self::ALERT);
@@ -902,48 +912,26 @@ class iaView extends abstractUtil
 				$currentItem = $this->getValues('quick_search_item');
 				$currentItem = isset($items[$currentItem]) ? $currentItem : 'users';
 
-				$this->assign('quick_search', $items);
-				$this->assign('quick_search_item', $currentItem);
+				$this->assign('quickSearch', $items);
+				$this->assign('quickSearchItem', $currentItem);
 				//
 
 				$adminActions = array();
-
 				if (self::PAGE_ERROR != $this->name())
 				{
-					// actions links
-					$iaAcl = $this->iaCore->factory('acl');
-					$rows = $this->iaCore->iaDb->all(array('attributes', 'name', 'icon', 'text', 'url'), "`pages` REGEXP('[[:<:]]" . $this->name() . "[[:>:]]') AND `type` = 'regular' ORDER BY `order` DESC", null, null, 'admin_actions');
-					foreach ($rows as $entry)
-					{
-						if ($iaAcl->checkAccess('admin_pages', 0, 0, $entry['name']))
-						{
-							$adminActions[] = array(
-								'attributes' => $entry['attributes'],
-								'icon' => empty($entry['icon']) ? '' : 'i-' . $entry['icon'],
-								'title' => iaLanguage::get($entry['text'], $entry['text']),
-								'url' => $entry['url']
-							);
-						}
-					}
-					//
-
-					$this->assign('goto', array('list' => 'go_to_list', 'add' => 'add_another_one', 'stay' => 'stay_here'));
-					$this->assign('tooltips', iaLanguage::getTooltips());
+					$adminActions = $this->_getToolbarActions();
 				}
 
-				$this->assign('admin_actions', $adminActions);
-				$this->assign('header_menu', $this->_getAdminHeaderMenu());
+				$this->assign('toolbarActions', $adminActions);
+				$this->assign('headerMenu', $this->_getAdminHeaderMenu());
 				$this->assign('menu', $this->getAdminMenu());
 			}
 			else
 			{
-				$this->assign('ie6', $isIE6);
-
 				$this->_existBlocks || $this->_setBlocks();
 			}
 
-			$this->assign('config', $this->iaCore->getConfig());
-			$this->assign('customConfig', $this->iaCore->getCustomConfig());
+			$this->assign('nonProtocolUrl', $this->assetsUrl);
 			$this->assign('img', IA_TPL_URL . 'img/');
 			$this->assign('languages', $this->iaCore->languages);
 			$this->assign('pageAction', $this->get('action'));
@@ -1026,6 +1014,8 @@ class iaView extends abstractUtil
 
 				$iaSmarty->assign('breadcrumb', iaBreadcrumb::render());
 				$iaSmarty->assign('gTitle', $pageTitle);
+				$iaSmarty->assign('config', $this->iaCore->getConfig());
+				$iaSmarty->assign('customConfig', $this->iaCore->getCustomConfig());
 				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
 				$iaSmarty->assign('notifications', $notifications);
 				$iaSmarty->assign('page', $this->getParams());
@@ -1168,6 +1158,15 @@ class iaView extends abstractUtil
 		$iaCore = iaCore::instance();
 		$iaView = &$iaCore->iaView;
 
+		$iaView->name(self::PAGE_ERROR);
+		$iaView->_setParams(array(
+			'caption' => iaLanguage::get('error', 'Error page') . ' ' . $errorCode,
+			'filename' => null,
+			'name' => self::PAGE_ERROR,
+			'parent' => '',
+			'title' => $errorCode
+		));
+
 		switch ($iaView->getRequestType())
 		{
 			case self::REQUEST_JSON:
@@ -1176,32 +1175,16 @@ class iaView extends abstractUtil
 				break;
 
 			case self::REQUEST_HTML:
-/*				if (self::ERROR_UNAUTHORIZED == $errorCode && !isset($_SERVER['HTTP_REFERER']) && !$iaView->inHome())
-				{
-					$iaCore->factory('util');
-					iaUtil::go_to(iaCore::ACCESS_FRONT == $iaCore->getAccessType() ? IA_URL : IA_ADMIN_URL);
-				}*/
-
 				// http://dev.subrion.com/issues/842
 				// some Apache servers stop with Authorization Required error
 				// because of enabled DEFLATE directives in the .htaccess file
-				// below is the temporary solution
+				// below is the workaround
 				if (self::ERROR_UNAUTHORIZED != $errorCode && iaCore::ACCESS_ADMIN != $iaCore->getAccessType())
 				{
 					header('HTTP/1.0 ' . $errorCode);
 				}
 
-				$iaView->name(self::PAGE_ERROR);
-				$iaView->_setParams(array(
-					'caption' => iaLanguage::get('error', 'Error page') . ' ' . $errorCode,
-					'filename' => null,
-					'name' => self::PAGE_ERROR,
-					'parent' => '',
-					'group' => 0,
-					'title' => $errorCode
-				));
-
-				$iaView->assign('message', $message);
+				$iaView->setMessages($message);
 				$iaView->assign('code', $errorCode);
 
 				$body = self::PAGE_ERROR;
@@ -1350,7 +1333,7 @@ class iaView extends abstractUtil
 		$this->iaCore->factory('breadcrumb');
 
 		if (iaBreadcrumb::total() > 0
-			|| ($this->inHome() && empty($this->iaCore->requestPath)))
+			|| ($this->isHomepage() && empty($this->iaCore->requestPath)))
 		{
 			return;
 		}
@@ -1391,9 +1374,6 @@ class iaView extends abstractUtil
 			case iaCore::ACCESS_ADMIN:
 				$iaPage = $this->iaCore->factory('page', iaCore::ADMIN);
 
-				$url = $iaPage->getUrlByName($this->name());
-				iaBreadcrumb::toEnd($this->get('title', $this->name()), $url);
-
 				if ($pluginName)
 				{
 					if ('package' == $this->get('type'))
@@ -1404,16 +1384,44 @@ class iaView extends abstractUtil
 						($pluginName . '_stats' != $this->name())
 							? iaBreadcrumb::add($title, $url)
 							: iaBreadcrumb::replaceEnd($title, $url);
-
-					}
-					elseif ('plugin' == $this->get('type') && iaCore::ACTION_READ != $this->get('action'))
-					{
-						$url = $iaPage->getUrlByName($pluginName);
-						$url = empty($url) ? IA_ADMIN_URL . $pluginName . IA_URL_DELIMITER : $url;
-
-						iaBreadcrumb::add(iaLanguage::get($pluginName), $url);
 					}
 				}
+
+				$url = $iaPage->getUrlByName($this->name());
+				iaBreadcrumb::add($this->get('title', $this->name()), $url);
+
+				if (in_array($this->get('action'), array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT)))
+				{
+					iaBreadcrumb::toEnd(iaLanguage::get($this->get('action')), IA_SELF);
+				}
 		}
+	}
+
+	private function _getToolbarActions()
+	{
+		$result = array();
+
+		$stmt = "`pages` REGEXP('[[:<:]]:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
+		$stmt = iaDb::printf($stmt, array(
+			'page' => $this->name(),
+			'action' => $this->get('action')
+		));;
+
+		$iaAcl = $this->iaCore->factory('acl');
+		$rows = $this->iaCore->iaDb->all(array('attributes', 'name', 'icon', 'text', 'url'), $stmt, null, null, 'admin_actions');
+		foreach ($rows as $entry)
+		{
+			if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE, $entry['name']))
+			{
+				$result[] = array(
+					'attributes' => $entry['attributes'],
+					'icon' => empty($entry['icon']) ? '' : 'i-' . $entry['icon'],
+					'title' => iaLanguage::get($entry['text'], $entry['text']),
+					'url' => $entry['url']
+				);
+			}
+		}
+
+		return $result;
 	}
 }

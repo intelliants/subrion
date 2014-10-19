@@ -1,10 +1,10 @@
 <div id="js-page-initial">
-	<div class="widget widget-default">
-		<div class="widget-header">
-			Available plugins
-		</div>
-		<div class="widget-content">
-			<?php if ($this->plugins): ?>
+	<?php if ($this->plugins): ?>
+		<div class="widget widget-default">
+			<div class="widget-header">
+				Available plugins
+			</div>
+			<div class="widget-content">
 				<div class="row">
 					<div class="col col-lg-8">
 						<div class="plugins-list">
@@ -43,9 +43,9 @@
 						</div>
 					</div>
 				</div>
-			<?php endif ?>
+			</div>
 		</div>
-	</div>
+	<?php endif ?>
 
 	<div class="form-actions">
 		<a href="<?php echo URL_HOME ?>admin/" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>

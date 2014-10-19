@@ -30,6 +30,7 @@ class iaUsers extends abstractCore
 
 	const MEMBERSHIP_REGULAR = 8;
 	const MEMBERSHIP_GUEST = 4;
+	const MEMBERSHIP_MODERATOR = 2;
 	const MEMBERSHIP_ADMINISTRATOR = 1;
 
 	const STATUS_UNCONFIRMED = 'unconfirmed';
@@ -98,6 +99,31 @@ class iaUsers extends abstractCore
 		self::_setIdentity(null);
 	}
 
+	public static function reloadIdentity()
+	{
+		$sql =
+			'SELECT u.*, g.`title` `usergroup` ' .
+			'FROM `:prefix_:table_users` u ' .
+			'LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) ' .
+			"WHERE u.`id` = :id AND u.`status` = ':status' " .
+			'LIMIT 1';
+
+		$iaDb = iaCore::instance()->iaDb;
+		$sql = iaDb::printf($sql, array(
+			'prefix_' => $iaDb->prefix,
+			'table_users' => self::getTable(),
+			'table_groups' => self::getUsergroupsTable(),
+			'id' => self::getIdentity()->id,
+			'status' => iaCore::STATUS_ACTIVE
+		));
+
+		$row = $iaDb->getRow($sql);
+
+		self::_setIdentity($row);
+
+		return (bool)$row;
+	}
+
 	private static function _setIdentity($identityInfo)
 	{
 		$_SESSION[self::SESSION_KEY] = $identityInfo;
@@ -121,17 +147,16 @@ class iaUsers extends abstractCore
 
 			$iaMailer = $this->iaCore->factory('mailer');
 
-			$iaMailer->load_template($action);
+			$iaMailer->loadTemplate($action);
 			$body = $iaMailer->Body;
 
 			$members = $this->iaDb->all(array('email', 'fullname'), $condition);
 			foreach ($members as $member)
 			{
-				$iaMailer->ClearAddresses();
-				$iaMailer->AddAddress($member['email']);
+				$iaMailer->addAddress($member['email']);
 				$iaMailer->Body = str_replace('{%FULLNAME%}', $member['fullname'], $body);
 
-				$iaMailer->Send();
+				$iaMailer->send();
 			}
 		}
 
@@ -140,30 +165,31 @@ class iaUsers extends abstractCore
 
 	public function delete($statement = null)
 	{
-		$actionName = 'member_removal';
+		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $statement, null, null, self::getTable());
 		$result = $this->iaDb->delete($statement, self::getTable());
 
-		if ($result && $this->iaCore->get($actionName))
+		if ($result)
 		{
+			$actionName = 'member_removal';
+			$emailNotificationEnabled = $this->iaCore->get($actionName);
+
 			$iaMailer = $this->iaCore->factory('mailer');
-
-			$iaMailer->load_template($actionName);
-			$body = $iaMailer->Body;
-
 			$iaLog = $this->iaCore->factory('log');
 
-			$members = $this->iaDb->all(array('id', 'email', 'fullname'), $statement, null, null, self::getTable());
-			foreach ($members as $member)
+			foreach ($rows as $entry)
 			{
-				$this->iaCore->startHook('userDelete', array('memberInfo' => $member));
+				$iaLog->write(iaLog::ACTION_DELETE, array('item' => 'member', 'name' => $entry['fullname'], 'id' => $entry['id']));
 
-				// send email notification
-				$iaMailer->ClearAddresses();
-				$iaMailer->AddAddress($member['email']);
-				$iaMailer->Body = str_replace('{%FULLNAME%}', $member['fullname'], $body);
-				$iaMailer->Send();
+				$this->iaCore->startHook('phpUserDelete', array('userInfo' => $entry));
 
-				$iaLog->write(iaLog::ACTION_DELETE, array('item' => 'member', 'name' => $member['fullname'], 'id' => $member['id']));
+				if ($emailNotificationEnabled)
+				{
+					$iaMailer->loadTemplate($actionName);
+					$iaMailer->addAddress($entry['email'], $entry['fullname']);
+					$iaMailer->setReplacements('fullname', $entry['fullname']);
+
+					$iaMailer->send();
+				}
 			}
 		}
 
@@ -180,7 +206,14 @@ class iaUsers extends abstractCore
 	 */
 	public function changePassword($memberId, $password)
 	{
-		return $this->iaDb->update(array('password' => $this->encodePassword($password)), iaDb::convertIds($memberId), null, self::getTable());
+		$result = $this->iaDb->update(array('password' => $this->encodePassword($password)), iaDb::convertIds($memberId), null, self::getTable());
+
+		if ($result)
+		{
+			$this->iaCore->startHook('phpUserPasswordUpdate', array('id' => $memberId, 'password' => $password));
+		}
+
+		return $result;
 	}
 
 	/**
@@ -201,13 +234,15 @@ class iaUsers extends abstractCore
 		$this->iaDb->resetTable();
 
 		$iaMailer = $this->iaCore->factory('mailer');
-		$iaMailer->load_template('password_changement');
-		$iaMailer->AddAddress($memberInfo['email'], $memberInfo['fullname']);
-		$iaMailer->replace['{%FULLNAME%}'] = $memberInfo['fullname'];
-		$iaMailer->replace['{%USERNAME%}'] = $memberInfo['username'];
-		$iaMailer->replace['{%PASSWORD%}'] = $pass;
+		$iaMailer->loadTemplate('password_changement');
+		$iaMailer->addAddress($memberInfo['email'], $memberInfo['fullname']);
+		$iaMailer->setReplacements(array(
+			'fullname' => $memberInfo['fullname'],
+			'username' => $memberInfo['username'],
+			'password' => $pass
+		));
 
-		$iaMailer->Send();
+		$iaMailer->send();
 
 		return $x;
 	}
@@ -248,27 +283,48 @@ class iaUsers extends abstractCore
 		{
 			$iaMailer = $this->iaCore->factory('mailer');
 
-			$iaMailer->load_template($action);
-			$iaMailer->AddAddress($memberInfo['email']);
-			$iaMailer->replace['{%FULLNAME%}'] = $memberInfo['fullname'];
-			$iaMailer->replace['{%EMAIL%}'] = $memberInfo['email'];
-			$iaMailer->replace['{%PASSWORD%}'] = $password;
-			$iaMailer->replace['{%LINK%}'] = IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key'];
+			$iaMailer->loadTemplate($action);
+			$iaMailer->addAddress($memberInfo['email']);
+			$iaMailer->setReplacements(array(
+				'fullname' => $memberInfo['fullname'],
+				'email' => $memberInfo['email'],
+				'password' => $password,
+				'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
+			));
 
-			$iaMailer->Send();
+			$iaMailer->send(true);
 		}
 
 		$this->iaCore->startHook('memberPreAdd', array('member' => &$memberInfo, 'password' => $password));
 
 		$this->iaDb->setTable(self::getTable());
-		$memberId = $this->iaDb->one_bind('id', '`username` = :username', array('username' => $memberInfo['username']));
+		$memberId = $this->iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`username` = :username', array('username' => $memberInfo['username']));
 		if (empty($memberId))
 		{
 			$memberId = $this->iaDb->insert($memberInfo, array('date_reg' => iaDb::FUNCTION_NOW, 'date_update' => iaDb::FUNCTION_NOW));
 		}
 		$this->iaDb->resetTable();
 
-		$this->iaCore->startHook('memberAdded', array('member' => $memberInfo, 'password' => $password));
+		$this->iaCore->startHook('phpUserRegister', array('userInfo' => $memberInfo, 'password' => $password));
+
+		// sending the admin notification
+		$action = 'member_registration_admin';
+		if ($this->iaCore->get($action) && $memberInfo['email'])
+		{
+			$iaMailer = $this->iaCore->factory('mailer');
+
+			$iaMailer->loadTemplate($action);
+			$iaMailer->setReplacements(array(
+				'id' => $memberId,
+				'username' => $memberInfo['username'],
+				'fullname' => $memberInfo['fullname'],
+				'email' => $memberInfo['email'],
+				'password' => $password
+			));
+
+			$iaMailer->sendToAdministrators();
+		}
+		//
 
 		return $memberId;
 	}
@@ -279,7 +335,11 @@ class iaUsers extends abstractCore
 
 		// here we can be pretty sure that email contains @
 		$result = substr($email, 0, strpos($email, '@'));
-		$result = $result . '@' . time();
+		if ($this->getInfo($result, 'username'))
+		{
+			$this->iaCore->factory('util');
+			$result = $result . '_' . iaUtil::generateToken(5);
+		}
 
 		return $result;
 	}
@@ -301,12 +361,12 @@ class iaUsers extends abstractCore
 
 	public function confirmation($email, $key)
 	{
-		$status = $this->iaCore->get('members_autoapproval')
-			? iaCore::STATUS_ACTIVE
-			: iaCore::STATUS_APPROVAL;
-		$condition = iaDb::printf("`email` = ':email' AND `sec_key` = ':key'", array('email' => iaSanitize::sql($email), 'key' => iaSanitize::sql($key)));
+		$status = $this->iaCore->get('members_autoapproval') ? iaCore::STATUS_ACTIVE : iaCore::STATUS_APPROVAL;
 
-		return (bool)$this->iaDb->update(array('sec_key' => '', 'status' => $status), $condition, null, self::getTable());
+		$stmt = '`email` = :email AND `sec_key` = :key';
+		$this->iaDb->bind($stmt, array('email' => $email, 'key' => $key));
+
+		return (bool)$this->iaDb->update(array('sec_key' => '', 'status' => $status), $stmt, array('date_update' => iaDb::FUNCTION_NOW), self::getTable());
 	}
 
 	public function getInfo($id, $key = 'id')
@@ -350,6 +410,7 @@ class iaUsers extends abstractCore
 		if (iaCore::STATUS_ACTIVE == $row['status'])
 		{
 			self::_setIdentity($row);
+			$this->iaCore->startHook('phpUserLogin', array('userInfo' => $row, 'password' => $_POST['password']));
 
 			$this->iaDb->update(null, iaDb::convertIds($row['id']), array('date_logged' => iaDb::FUNCTION_NOW), self::getTable());
 
@@ -387,21 +448,21 @@ class iaUsers extends abstractCore
 			}
 		}
 
-		$session = session_id();
+		$sessionId = session_id();
 
 		$iaDb = &$this->iaCore->iaDb;
 		$iaDb->setTable('online');
-		$count = (int)$iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`session_id` = :session', array('session' => $session));
+		$count = (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, iaDb::convertIds($sessionId, 'session_id'));
 
 		$rawValues = array('date' => iaDb::FUNCTION_NOW);
 
 		if ($count > 0)
 		{
-			$iaDb->update($entryData, "`session_id` = '$session'", $rawValues);
+			$iaDb->update($entryData, "`session_id` = '$sessionId'", $rawValues);
 		}
 		else
 		{
-			$entryData['session_id'] = $session;
+			$entryData['session_id'] = $sessionId;
 			$entryData['ip'] = iaUtil::getIp();
 
 			$iaDb->insert($entryData, $rawValues);
@@ -452,16 +513,6 @@ class iaUsers extends abstractCore
 		return $password;
 	}
 
-	public function postPayment($plan, $transaction)
-	{
-		if (isset($plan['usergroup']) && $plan['usergroup'] > 0)
-		{
-			$this->iaDb->update(array('usergroup_id' => $plan['usergroup'],'id' => $transaction['item_id']), null, null, self::getTable());
-		}
-
-		return true;
-	}
-
 	public function getUsergroups()
 	{
 		return $this->iaDb->keyvalue(array('id', 'title'), null, self::getUsergroupsTable());
@@ -505,7 +556,7 @@ class iaUsers extends abstractCore
 		);
 	}
 
-	public function getOnlineMembers()
+	public function getVisitorsInfo()
 	{
 		$rows = $this->iaDb->all("`username`, IF(`fullname` != '', `fullname`, `username`) `fullname`, `page`, `ip`", "`username` != '' AND `status` = 'active' GROUP BY `username`", null, null, 'online');
 
@@ -518,5 +569,27 @@ class iaUsers extends abstractCore
 		}
 
 		return $rows;
+	}
+
+	// this called by core when paid plan cancelled
+	public function planCancelling($itemId)
+	{
+		self::reloadIdentity();
+	}
+
+	// called by core when subscription has been paid
+	public function postPayment($plan, $transaction)
+	{
+		if (isset($plan['usergroup']) && $plan['usergroup'] > 0)
+		{
+			$this->iaDb->update(array('usergroup_id' => $plan['usergroup'],'id' => $transaction['item_id']), null, null, self::getTable());
+		}
+
+		self::reloadIdentity();
+	}
+
+	public function getStatuses()
+	{
+		return array(iaCore::STATUS_APPROVAL, iaCore::STATUS_ACTIVE, self::STATUS_UNCONFIRMED, self::STATUS_SUSPENDED);
 	}
 }

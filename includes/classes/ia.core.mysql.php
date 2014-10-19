@@ -97,25 +97,12 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $function();
 	}
 
-	/**
-	 * Sets table to work with (in most cases resetTable should be called after calling this method)
-	 *
-	 * @param string $tableName table name
-	 * @param bool $addPrefix true - use prefix for the table name
-	 *
-	 * @return void
-	 */
 	public function setTable($tableName, $addPrefix = true)
 	{
 		$this->_table = ($addPrefix ? $this->prefix : '') . $tableName;
 		array_unshift($this->_tableList, $this->_table);
 	}
 
-	/**
-	 * Resets table name to the previous state
-	 *
-	 * @return void
-	 */
 	public function resetTable()
 	{
 		if (empty($this->_tableList) || 1 == count($this->_tableList))
@@ -182,13 +169,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		}
 	}
 
-	/**
-	 * Executes MySQL query
-	 *
-	 * @param string $sql sql query to be executed
-	 *
-	 * @return resource
-	 */
 	public function query($sql)
 	{
 		if (!$this->_link)
@@ -223,53 +203,26 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $rs;
 	}
 
-	/**
-	 * Returns last executed query
-	 *
-	 * @return string
-	 */
 	public function getLastQuery()
 	{
 		return $this->_lastQuery;
 	}
 
-	/**
-	 * Returns list of executed queries
-	 *
-	 * @return array
-	 */
 	public function getQueriesList()
 	{
 		return $this->_queryList;
 	}
 
-	/**
-	 * Returns number of queries
-	 *
-	 * @return int
-	 */
 	public function getCount()
 	{
 		return $this->_counter;
 	}
 
-	/**
-	 * Returns table prefix
-	 *
-	 * @return string
-	 */
 	public function getPrefix()
 	{
 		return $this->prefix;
 	}
 
-	/**
-	 * Returns one table row as array
-	 *
-	 * @param string $sql sql query
-	 *
-	 * @return array|bool
-	 */
 	public function getRow($sql)
 	{
 		$result = false;
@@ -283,15 +236,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Returns table rows as array
-	 *
-	 * @param string $sql sql query
-	 * @param int $start start position
-	 * @param int $limit number of rows to be returned
-	 *
-	 * @return array
-	 */
 	public function getAll($sql, $start = 0, $limit = 0)
 	{
 		if ($limit != 0)
@@ -313,14 +257,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Returns associative array of rows, first column of the query is used as a key
-	 *
-	 * @param string $sql sql query
-	 * @param bool $singleRow
-	 *
-	 * @return array
-	 */
 	public function getAssoc($sql, $singleRow = false)
 	{
 		$result = array();
@@ -345,13 +281,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Returns key => value pair array of rows
-	 *
-	 * @param string $sql sql query
-	 *
-	 * @return array
-	 */
 	public function getKeyValue($sql)
 	{
 		$result = array();
@@ -380,13 +309,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Returns field value of a row
-	 *
-	 * @param string $sql sql query
-	 *
-	 * @return mixed
-	 */
 	public function getOne($sql)
 	{
 		$query = $this->query($sql);
@@ -404,25 +326,11 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return mysql_error();
 	}
 
-	/**
-	 * Returns the numerical value of the error message from previous MySQL operation
-	 *
-	 * @return int
-	 */
 	public function getErrorNumber()
 	{
 		return mysql_errno($this->_link);
 	}
 
-	/**
-	 * Returns a formatted string according to replacements
-	 * Does NOT sanitize any input (!)
-	 *
-	 * @param string $pattern replacement pattern
-	 * @param array $replacements new values
-	 *
-	 * @return string
-	 */
 	public static function printf($pattern, array $replacements)
 	{
 		if ($replacements)
@@ -440,15 +348,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $pattern;
 	}
 
-	/**
-	 * Returns true if at least 1 record exists
-	 *
-	 * @param string $where condition
-	 * @param array $values
-	 * @param null $tableName table name
-	 *
-	 * @return bool
-	 */
 	public function exists($where, $values = array(), $tableName = null)
 	{
 		$this->bind($where, $values);
@@ -466,11 +365,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return ($this->getNumRows($result) > 0);
 	}
 
-	/**
-	 * Returns the ID generated in the last query
-	 *
-	 * @return int
-	 */
 	public function getInsertId()
 	{
 		return mysql_insert_id($this->_link);
@@ -489,34 +383,16 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $row['Auto_increment'];
 	}
 
-	/**
-	 * Returns a number of affected rows in previous MySQL operation
-	 *
-	 * @return int
-	 */
 	public function getAffected()
 	{
 		return mysql_affected_rows($this->_link);
 	}
 
-	/**
-	 * Returns number of found rows of the previous query with SQL_CALC_FOUND_ROWS
-	 * Note: this SQL function is MySQL specific
-	 *
-	 * @return int
-	 */
 	public function foundRows()
 	{
 		return (int)$this->getOne('SELECT ' . self::FUNCTION_FOUND_ROWS);
 	}
 
-	/**
-	 * Returns a number of rows in result
-	 *
-	 * @param resource $resource query resource
-	 *
-	 * @return int
-	 */
 	public function getNumRows($resource)
 	{
 		if (is_resource($resource))
@@ -571,13 +447,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return mysql_fetch_row($result);
 	}
 
-	/**
-	 * Provides information about the columns in a table
-	 *
-	 * @param null $tableName table name
-	 * @param bool $addPrefix avoid prefix addition if false
-	 * @return array
-	 */
 	public function describe($tableName = null, $addPrefix = true)
 	{
 		if (empty($tableName))
@@ -594,13 +463,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $this->getAll($sql);
 	}
 
-	/**
-	 * Truncates table
-	 *
-	 * @param null|string $table table name
-	 *
-	 * @return bool
-	 */
 	public function truncate($table = null)
 	{
 		if (is_null($table))
@@ -612,16 +474,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $this->query($sql);
 	}
 
-	/**
-	 * Returns field value of a row
-	 *
-	 * @param string $field field to be selected
-	 * @param string $condition condition for the selection
-	 * @param string|null $tableName table name to select records from, null uses current set table
-	 * @param int $start starting position
-	 *
-	 * @return bool|mixed
-	 */
 	public function one($field, $condition = '', $tableName = null, $start = 0)
 	{
 		$result = $this->row($field, $condition, $tableName, $start);
@@ -629,17 +481,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return is_bool($result) ? $result : array_shift($result);
 	}
 
-	/**
-	 * Returns table column values as an array
-	 *
-	 * @param string $field field name column to be selected
-	 * @param string $condition condition for the selection
-	 * @param int $start start position
-	 * @param int|null $limit number of records to be returned
-	 * @param string|null $tableName table name to select records from, null uses current set table
-	 *
-	 * @return array
-	 */
 	public function onefield($field = self::ID_COLUMN_SELECTION, $condition = null, $start = 0, $limit = null, $tableName = null)
 	{
 		if (false !== strpos($field, ','))
@@ -674,16 +515,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Returns one table row as array
-	 *
-	 * @param string $fields fields to be selected
-	 * @param string $condition condition for the selection
-	 * @param string|null $tableName table name to select records from, null uses current set table
-	 * @param int $start start position
-	 *
-	 * @return array
-	 */
 	public function row($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0)
 	{
 		if (is_null($tableName))
@@ -700,17 +531,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Returns table rows as array
-	 *
-	 * @param string $fields fields to be selected
-	 * @param string $condition condition for the selection
-	 * @param int $start start position
-	 * @param int|null $limit number of records to be returned
-	 * @param string|null $tableName table name to select records from, null uses current set table
-	 *
-	 * @return array
-	 */
 	public function all($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $start = 0, $limit = null, $tableName = null)
 	{
 		if (is_null($tableName))
@@ -727,17 +547,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Returns associative array of rows, first column of the query is used as a key
-	 *
-	 * @param string $fields fields to be selected
-	 * @param string $condition condition for the selection
-	 * @param string|null $tableName table name to select records from, null uses current set table
-	 * @param int $start start position
-	 * @param int|null $limit number of records to be returned
-	 *
-	 * @return array
-	 */
 	public function assoc($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0, $limit = null)
 	{
 		if (is_null($tableName))
@@ -754,17 +563,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Returns key => value pair array of rows
-	 *
-	 * @param string $fields fields to be selected
-	 * @param string $condition condition for the selection
-	 * @param string|null $tableName table name to select records from, null uses current set table
-	 * @param int $start start position
-	 * @param int|null $limit number of records to be returned
-	 *
-	 * @return array
-	 */
 	public function keyvalue($fields = self::ALL_COLUMNS_SELECTION, $condition = null, $tableName = null, $start = 0, $limit = null)
 	{
 		if (is_null($tableName))
@@ -781,21 +579,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $result;
 	}
 
-	/**
-	 * Inserts a new record in a table and returns id of the inserted row
-	 *
-	 * Ex:  the code below inserts a new record in 'table_name'
-	 * 		$iaCore->iaDb->insert(array('title' => 'My Row Title', 'text' => 'My Row Text'), array('date' => 'NOW()'), 'table_name');
-	 *
-	 * 		generated sql code looks like:
-	 * 		INSERT INTO `prefix_table_name` SET `title` = 'My Row Title', `text` = 'My Row Text', `date` = NOW();
-	 *
-	 * @param array $values key=>value array for the record
-	 * @param array|null $rawValues key=>value array for the record without sanitizing, commonly used for date insert
-	 * @param string|null $tableName table name to perform insertion, null uses current set table
-	 *
-	 * @return int
-	 */
 	public function insert(array $values, $rawValues = null, $tableName = null)
 	{
 		$table = $tableName ? $this->prefix . $tableName : $this->_table;
@@ -813,22 +596,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $this->getInsertId();
 	}
 
-	/**
-	 * Updates a record in a table and returns a number of affected rows
-	 *
-	 * Ex:  the code below updates a record in 'table_name'
-	 * 		$iaCore->iaDb->update(array('id' => '50', 'title' => 'My Row Title', 'text' => 'My Row Text'), null, array('date' => 'NOW()'), 'table_name');
-	 *
-	 * 		generated sql code looks like:
-	 * 		UPDATE `prefix_table_name` SET `title` = 'My Row Title', `text` = 'My Row Text', `date` = NOW() WHERE `id` = '50';
-	 *
-	 * @param array $fields fields key=>value array to be updated
-	 * @param string $condition condition used for the update query, if empty tries to update using id field from $fields array
-	 * @param array|null $rawValues key=>value array for the record without sanitizing, commonly used for date insert
-	 * @param string|null $tableName table name to perform update, null uses current set table
-	 *
-	 * @return bool|int
-	 */
 	public function update($values, $condition = null, $rawValues = null, $tableName = null)
 	{
 		if (empty($values) && empty($rawValues))
@@ -866,15 +633,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $this->getAffected();
 	}
 
-	/**
-	 * Deletes records in a table and returns number of affected rows by the query
-	 *
-	 * @param string $condition condition to perform deletion
-	 * @param string|null $tableName table name where to perform deletion, null - deletes currently set table
-	 * @param array $values real values key=>value array to be replaced in condition
-	 *
-	 * @return int
-	 */
 	public function delete($condition, $tableName = null, $values = array())
 	{
 		if (empty($condition))
@@ -893,18 +651,23 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $this->getAffected();
 	}
 
-	/**
-	 * Binds queries to make SQL more readable
-	 *
-	 * Ex: 	$sql = "SELECT * FROM users WHERE user = :user AND password = :password";
-	 * 		mysql_bind($sql, array('user' => $user, 'password' => $password));
-	 * 		mysql_query($sql);
-	 *
-	 * @param string $sql sql query to be processed
-	 * @param array $values real values key=>value array to be replaced in sql query
-	 *
-	 * @return void
-	 */
+	public function replace(array $values, $rawValues = null, $tableName = null)
+	{
+		$table = $tableName ? $this->prefix . $tableName : $this->_table;
+		$queue = is_array(current($values)) ? $values : array($values);
+
+		foreach ($queue as $entryValues)
+		{
+			if ($stmtSet = $this->_wrapValues($entryValues, $rawValues))
+			{
+				$sql = sprintf('REPLACE INTO `%s` SET %s', $table, $stmtSet);
+				$this->query($sql);
+			}
+		}
+
+		return $this->getAffected();
+	}
+
 	public function bind(&$sql, $values)
 	{
 		if (is_array($values) && $values)
@@ -916,17 +679,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		}
 	}
 
-	/**
-	 * Returns single row array on binding completion
-	 *
-	 * @param string $fields fields to be returned
-	 * @param string $condition condition to be used for the selection
-	 * @param array $values values key=>value array to be replaced in sql query
-	 * @param null $tableName table name to select a record from, null uses current set table
-	 * @param int $start start position
-	 *
-	 * @return array
-	 */
 	public function row_bind($fields, $condition, array $values, $tableName = null, $start = 0)
 	{
 		$this->bind($condition, $values);
@@ -934,17 +686,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $this->row($fields, $condition, $tableName, $start);
 	}
 
-	/**
-	 * Returns one field value on binding completion
-	 *
-	 * @param string $field field name value to be returned
-	 * @param string $condition condition to be used for the selection
-	 * @param array $values values key=>value array to be replaced in sql query
-	 * @param null $tableName table name to select a record from, null uses current set table
-	 * @param int $start start position
-	 *
-	 * @return array
-	 */
 	public function one_bind($field, $condition, array $values, $tableName = null, $start = 0)
 	{
 		$this->bind($condition, $values);
@@ -952,18 +693,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $this->one($field, $condition, $tableName, $start);
 	}
 
-	/**
-	 * Converts various condition params to a mysql formatted WHERE case string
-	 *
-	 * Ex: 	$where = $iaCore->iaDb->convertIds('id', array('1', '3', '5', '6'));
-	 * 		echo $where; // `id` = IN('1', '3', '5', '6')
-	 *
-	 * @param array|string|int $ids
-	 * @param string $columnName field name
-	 * @param boolean $equal operand type
-	 *
-	 * @return bool|string
-	 */
 	public static function convertIds($ids, $columnName = 'id', $equal = true)
 	{
 		if (empty($columnName))
@@ -993,14 +722,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		}
 	}
 
-	/**
-	 * Accepts array of table names and deletes records in them
-	 *
-	 * @param string|array $tbl table name(s)
-	 * @param string $where sql condition to perform deletion
-	 *
-	 * @return bool|int
-	 */
 	public function cascadeDelete($tbl, $where = '')
 	{
 		if (empty($tbl) || empty($where))
@@ -1026,14 +747,6 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $totalDeleted;
 	}
 
-	/**
-	 * Returns all ENUM and SET values for selected table and field
-	 *
-	 * @param string $table table name
-	 * @param string $field field name
-	 *
-	 * @return array|bool
-	 */
 	public function getEnumValues($table, $field)
 	{
 		$result = $this->getRow('SHOW COLUMNS FROM `' . $this->prefix . $table . '` LIKE "' . $field . '"');
@@ -1063,28 +776,11 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return false;
 	}
 
-	/**
-	 * Returns max value for `order` column
-	 *
-	 * @param string $table table name
-	 *
-	 * @return bool|mixed
-	 */
 	public function getMaxOrder($table = null)
 	{
 		return (int)$this->one('MAX(`order`)', null, $table);
 	}
 
-	/*
-	 * Optimizes random records selection
-	 *
-	 * @param int|string $max max order or table name
-	 * @param string $id_name id column
-	 * @param int $pieces
-	 * @param int $delimiter
-	 *
-	 * @return string
-	 */
 	public function orderByRand($max, $id_name = '`id`', $pieces = 12, $delimiter = 100)
 	{
 		// we get max order value if $max is a table name
@@ -1119,7 +815,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $where;
 	}
 
-	/*
+	/**
 	 * Internal utility function used to generate SET stmt
 	 *
 	 * @param array $values values to be set checking by type
@@ -1146,17 +842,16 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
 				switch (true) // an order of statements is important!
 				{
-					case is_numeric($value):
-//						$pattern = '`%s` = %s';
-						break;
 					case is_bool($value):
+						$pattern = '`%s` = %s';
 						$value = $value ? 1 : 0;
+						break;
+					case is_null($value):
+						$pattern = '`%s` = %s';
+						$value = 'NULL';
 						break;
 					case is_scalar($value):
 						$value = iaSanitize::sql($value);
-						break;
-					case is_null($value):
-						$value = 'NULL';
 						break;
 					default: // arrays, objects & resources are now actually ignored
 						continue;

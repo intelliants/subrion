@@ -353,6 +353,7 @@ if ($search)
 					$iaView->iaSmarty->assign('all_items', $rows);
 					$iaView->iaSmarty->assign('all_item_fields', $fieldsList);
 					$iaView->iaSmarty->assign('all_item_type', $v['type']);
+					$iaView->iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
 
 					$results['num'] += 1;
 					$results['html'][$v['name']] = $iaView->iaSmarty->fetch('all-items-page.tpl');

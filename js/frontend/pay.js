@@ -6,7 +6,7 @@ $(function()
 		{
 			$('#gw_wrap').show();
 		}
-        else
+		else
 		{
 			$('#gw_wrap').hide();
 		}

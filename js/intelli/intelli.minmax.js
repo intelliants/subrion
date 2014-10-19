@@ -1,15 +1,16 @@
-jQuery(document).ready(function($) {
+$(function($) {
 	var boxesState = JSON.parse(intelli.cookie.read('boxesState'));
-	if (typeof boxesState == 'undefined' || boxesState == null) {
+	if (typeof boxesState == 'undefined' || boxesState == null)
+	{
 		boxesState = {};
 	}
-	
+
 	$('.collapsible').each(function()
 	{
-		var blockId = $(this).attr("id");
+		var blockId = $(this).attr('id');
 
 		if (!$('.minmax-toggle', this).length > 0) {
-			$('.box-caption', this).append('<a href="#" class="minmax-toggle"><i></i></a>');
+			$('.box-caption, > .title', this).append('<a href="#" class="minmax-toggle"><i></i></a>');
 		}
 
 		if (boxesState[blockId] == 'visible') {
@@ -20,7 +21,7 @@ jQuery(document).ready(function($) {
 		}
 	});
 
-	$('.minmax-toggle').click(function(e)
+	$('.minmax-toggle').on('click', function(e)
 	{
 		e.preventDefault();
 
@@ -29,7 +30,7 @@ jQuery(document).ready(function($) {
 
 		if (o.hasClass('collapsed'))
 		{
-			$('.box-content', o).slideDown('fast', function()
+			$('.box-content, > .content', o).slideDown('fast', function()
 			{
 				o.removeClass('collapsed');
 			});
@@ -38,7 +39,7 @@ jQuery(document).ready(function($) {
 		}
 		else
 		{
-			$('.box-content', o).slideUp('fast', function()
+			$('.box-content, > .content', o).slideUp('fast', function()
 			{
 				o.addClass('collapsed');
 			});

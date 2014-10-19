@@ -103,6 +103,9 @@ final class iaCore
 
 		$this->_parseUrl();
 
+		$this->factory('language');
+		iaLanguage::load($this->iaView->language);
+
 		$this->_retrieveHooks();
 		iaSystem::renderTime('core', 'Hooks Loaded');
 
@@ -110,11 +113,6 @@ final class iaCore
 		$this->_setConstants();
 
 		$this->startHook('init');
-
-		$this->factory('language');
-		iaLanguage::load($this->iaView->language);
-
-		$this->startHook('phpCoreBeforeAuth');
 
 		$this->_authorize();
 		$this->_forgeryCheck();
@@ -154,7 +152,7 @@ final class iaCore
 		{
 			if (is_object($this->iaView) && iaView::REQUEST_HTML == $this->iaView->getRequestType())
 			{
-				if (!$this->iaView->get('nodebug') && !$this->iaView->get('nocsrf'))
+				if (!$this->iaView->get('nodebug'))
 				{
 					new iaDebug();
 				}
@@ -185,11 +183,10 @@ final class iaCore
 			$this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
 		}
 
+		$iaView->assetsUrl = '//' . $domain . IA_URL_DELIMITER . FOLDER_URL;
 		$iaView->domain = $domain;
-		$iaView->domainUrl = 'http://' . $domain . IA_URL_DELIMITER . FOLDER_URL;
+		$iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
 		$iaView->language = $this->get('lang');
-
-		define('IA_CLEAR_URL', $iaView->domainUrl);
 
 		$doExit = false;
 		$changeLang = false;
@@ -230,9 +227,9 @@ final class iaCore
 		}
 		$iaView->set('extension', $extension);
 
-		if (isset($_GET['_lang']) && isset($this->languages[$_GET['_lang']]))
+		if (isset($_POST['_lang']) && isset($this->languages[$_POST['_lang']]))
 		{
-			$iaView->language = $_GET['_lang'];
+			$iaView->language = $_POST['_lang'];
 			$changeLang = true;
 		}
 
@@ -260,6 +257,7 @@ final class iaCore
 					if (isset($this->languages[$value]))
 					{
 						$changeLang || $iaView->language = $value;
+						array_shift($url); // #1715
 						continue 2;
 					}
 				default:
@@ -276,13 +274,8 @@ final class iaCore
 			}
 		}
 
-		$iaView->url = $url;
+		$iaView->url = empty($url[0]) ? array() : $url;
 		$this->requestPath = $array;
-
-		if (isset($_POST['_lang']) && isset($this->languages[$_POST['_lang']]))
-		{
-			$iaView->language = $_POST['_lang'];
-		}
 
 		define('IA_EXIT', $doExit);
 	}
@@ -342,16 +335,7 @@ final class iaCore
 
 	protected function _checkPermissions()
 	{
-		$object = (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin_' : '') . 'pages';
-		$objectId = $this->iaView->get('name');
-		if ($parent = $this->iaView->get('parent'))
-		{
-			$object .= '-' . $parent;
-			$objectId = null;
-		}
-
 		$iaAcl = $this->factory('acl');
-		$accessGranted = $iaAcl->checkAccess($object . iaAcl::SEPARATOR . $this->iaView->get('action'), 0, 0, $objectId);
 
 		if (self::ACCESS_ADMIN == $this->getAccessType())
 		{
@@ -359,16 +343,23 @@ final class iaCore
 			{
 				iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
 			}
-			elseif (!$iaAcl->isAdmin() || !$accessGranted)
+			elseif (!$iaAcl->isAdmin())
 			{
 				iaView::accessDenied();
 			}
 		}
+
+		$iaAcl->isAccessible($this->iaView->get('name'), $this->iaView->get('action')) || iaView::accessDenied();
 	}
 
 	protected function _executeModule()
 	{
 		$module = $this->iaView->get('filename');
+
+		if (empty($module))
+		{
+			return;
+		}
 
 		if (!file_exists($module))
 		{
@@ -389,6 +380,17 @@ final class iaCore
 		$this->startHook('phpCoreCodeBeforeStart');
 
 		require $module;
+
+		// temporary stub
+		if (self::ACCESS_ADMIN == $this->getAccessType())
+		{
+			if (class_exists('iaBackendController'))
+			{
+				$iaModule = new iaBackendController();
+				$iaModule->process();
+			}
+		}
+		//
 
 		$this->startHook('phpCoreCodeAfterAll');
 	}
@@ -411,6 +413,7 @@ final class iaCore
 				$extras[] = $this->_config['tmpl'];
 
 				$this->_config['extras'] = $extras;
+				$this->_config['block_positions'] = $this->iaView->positions;
 
 				$iaCache->write('config', $this->_config);
 				iaSystem::renderTime('config', 'Configuration written to cache file');
@@ -530,8 +533,8 @@ final class iaCore
 
 	private function _authorize()
 	{
-		$auth = false;
-		$domains = array();
+		$this->startHook('phpCoreBeforeAuth');
+
 		$authorized = 0;
 
 		if (isset($_POST['register']))
@@ -569,7 +572,7 @@ final class iaCore
 		if (IA_EXIT && $authorized != 2)
 		{
 			// use this hook to logout
-			$this->startHook('phpUserLogout');
+			$this->startHook('phpUserLogout', array('userInfo' => iaUsers::getIdentity(true)));
 
 			iaUsers::clearIdentity();
 
@@ -600,7 +603,7 @@ final class iaCore
 				}
 				else
 				{
-					$this->iaView->setMessages(iaLanguage::get('error_login'), iaView::ERROR);
+					$this->iaView->setMessages(iaLanguage::get('error_login'));
 					$this->iaView->name('login');
 				}
 			}
@@ -622,7 +625,7 @@ final class iaCore
 				}
 			}
 		}
-		elseif ($authorized == 2)
+		elseif (2 == $authorized)
 		{
 			if ($isBackend)
 			{
@@ -630,69 +633,8 @@ final class iaCore
 			}
 			else
 			{
-				$this->iaView->setMessages(iaLanguage::get('empty_login'), iaView::ERROR);
+				$this->iaView->setMessages(iaLanguage::get('empty_login'));
 				$this->iaView->name('login');
-			}
-		}
-		elseif (iaUsers::hasIdentity())
-		{
-			$auth = (bool)iaUsers::getIdentity(true);
-		}
-
-		if (!isset($_SESSION['_achkych']) && $isBackend && $auth)
-		{
-			$msg	= 'L' . 'ic' . 'en' . 'se nee' . 'ded!';
-			$login	= '';
-			$_host = $this->iaView->domain;
-			if (strpos($_host, ':'))
-			{
-				$_host = substr($_host, 0, strpos($_host, ':'));
-			}
-			if (0 === strpos($_host, 'www.'))
-			{
-				$_host = substr($_host, 4);
-			}
-			$jnm = (false !== strpos($_host, '.'));
-
-			if ($jnm)
-			{
-				$auth = true;
-				if (!in_array(str_rot13($_host), $domains) && !in_array(str_rot13('www.' . $_host), $domains))
-				{
-					$auth = false;
-					$sbr_rmt_host = 'h' . 't' . 't'
-						. 'p' . ':' . '//t'	. 'oo'
-						. 'ls.s' . 'ub' . 'ri' . 'on.c' . 'om/p' . 'in' . 'g.p' . 'hp'
-						. '?g' . 'name=' . ${'lo' . 'g' . 'in'} . '&do' . 'main=' . $_host;
-
-					$rmt_rst = $this->factory('util')->getPageContent($sbr_rmt_host);
-					if (false !== $rmt_rst)
-					{
-						$auth = true;
-						$sbr_rmt_rst = unserialize($rmt_rst);
-						if (!$sbr_rmt_rst['passed'])
-						{
-							$auth = false;
-							$msg = $sbr_rmt_rst['msg'];
-						}
-					}
-				}
-			}
-
-			if (!$jnm)
-			{
-				$auth = true;
-			}
-
-			$auth = true;
-
-			if ($auth)
-			{
-				$_SESSION['_achkych'] = $auth;
-			}
-			else
-			{
-				return iaView::accessDenied($msg);
 			}
 		}
 	}
@@ -708,7 +650,7 @@ final class iaCore
 		$stmt = "`extras` IN('', '" . implode("','", $this->get('extras')) . "') AND `status` = :status AND `page_type` IN ('both', :type) ORDER BY `order`";
 		$this->iaDb->bind($stmt, array(
 			'status' => iaCore::STATUS_ACTIVE,
-			'type' => (self::ACCESS_FRONT == $this->getAccessType()) ? 'front' : 'admin'
+			'type' => (self::ACCESS_FRONT == $this->getAccessType()) ? iaCore::FRONT : iaCore::ADMIN
 		));
 
 		if ($rows = $this->iaDb->all($columns, $stmt, null, null, 'hooks'))
@@ -729,7 +671,7 @@ final class iaCore
 	{
 		// FIXME: this implementation provides a basic (!) forgery protection only.
 		// Referrer info could be faked easily
-		if ($this->get('prevent_csrf') && $_POST)
+		if ($_POST && $this->get('prevent_csrf') && $this->iaView->get('nocsrf'))
 		{
 			if (isset($_SERVER['HTTP_REFERER']))
 			{
@@ -1021,17 +963,20 @@ final class iaCore
 	{
 		$iaView = &$this->iaView;
 
-		$languagesEnabled = $this->get('language_switch') && count($this->languages) > 1;
+		$languagesEnabled = (iaCore::ACCESS_FRONT == $this->getAccessType())
+			? ($this->get('language_switch') && count($this->languages) > 1)
+			: (count($this->languages) > 1);
 
+		define('IA_CANONICAL', preg_replace('/\?(.*)/', '', 'http://' . $iaView->domain . IA_URL_DELIMITER . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
+		define('IA_CLEAR_URL', $iaView->domainUrl);
+		define('IA_LANGUAGE', $iaView->language);
 		define('IA_TEMPLATES', IA_HOME . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . 'templates' . IA_DS);
 		define('IA_URL_LANG', $languagesEnabled ? $iaView->language . IA_URL_DELIMITER : '');
 		define('IA_URL', IA_CLEAR_URL . IA_URL_LANG);
 		define('IA_ADMIN_URL', IA_URL . $this->get('admin_page') . IA_URL_DELIMITER);
-		define('IA_LANGUAGE', $iaView->language);
-		define('IA_SELF', rtrim($iaView->domainUrl . implode(IA_URL_DELIMITER, $iaView->url), IA_URL_DELIMITER) . $iaView->get('extension'));
-		define('IA_CANONICAL', preg_replace('/\?(.*)/', '', 'http://' . $iaView->domain . IA_URL_DELIMITER . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
+		define('IA_SELF', rtrim($iaView->domainUrl . IA_URL_LANG . implode(IA_URL_DELIMITER, $iaView->url), IA_URL_DELIMITER) . $iaView->get('extension'));
 
 		$iaView->theme = $this->get((self::ACCESS_ADMIN == $this->getAccessType() ? 'admin_' : '') . 'tmpl', 'default');
-		define('IA_TPL_URL', IA_CLEAR_URL . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin/' : '') . 'templates/' . $iaView->theme . IA_URL_DELIMITER);
+		define('IA_TPL_URL', $iaView->assetsUrl . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin/' : '') . 'templates/' . $iaView->theme . IA_URL_DELIMITER);
 	}
 }

@@ -36,7 +36,7 @@ class iaValidate extends abstractUtil
 	const FLOAT_PATTERN = '/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/';
 	const ALPHA_NUMERIC_PATTERN = '/^[A-Za-z0-9_]+$/';
 
-	/*
+	/**
 	 * Checks if input string is a valid username
 	 *
 	 * @param string $value text to be processed

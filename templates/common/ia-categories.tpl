@@ -1,6 +1,6 @@
 {if isset($categories) && $categories}
 	{assign var='num_columns' value=((isset($num_columns)) ? $num_columns : 2)}
-	{assign var='class_names' value=array('span12', 'span6', 'span4', 'span3')}
+	{assign class_names ['span12', 'span6', 'span4', 'span3']}
 
 	<div class="row-fluid cats">
 		{foreach $categories as $category}
@@ -8,7 +8,7 @@
 				<div class="cat-wrap">
 					{if isset($icons) && $icons}
 						{if isset($category.icon) && $category.icon}
-							<img src="{$smarty.const.IA_CLEAR_URL}uploads/{$category.icon.path}" alt="{$category.icon.title}">
+							<img src="{$nonProtocolUrl}uploads/{$category.icon.path}" alt="{$category.icon.title}">
 						{else}
 							<i class="icon-folder-open"></i>
 						{/if}

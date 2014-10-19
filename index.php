@@ -20,20 +20,20 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org
+ * @link http://www.subrion.org/
  *
  ******************************************************************************/
 
-define('IA_VERSION', '3.1.6');
+define('IA_VERSION', '3.2.0');
 
 if (isset($ia_version))
 {
 	return IA_VERSION;
 }
 
-if (version_compare('5.2', PHP_VERSION, '>'))
+if (version_compare('5.3', PHP_VERSION, '>'))
 {
-	exit('Subrion ' . IA_VERSION . ' requires PHP 5.2 or higher to run properly.');
+	exit('Subrion ' . IA_VERSION . ' requires PHP 5.3 or higher to run properly.');
 }
 if (function_exists('apache_get_modules') && !in_array('mod_rewrite', apache_get_modules()))
 {

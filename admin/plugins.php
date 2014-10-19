@@ -24,513 +24,541 @@
  *
  ******************************************************************************/
 
-$iaExtra = $iaCore->factory('extra', iaCore::ADMIN);
-$iaUtil = $iaCore->factory('util');
-
-$iaDb->setTable(iaExtra::getTable());
-
-$pluginsFolder = IA_PLUGINS;
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	switch ($pageAction)
+	protected $_name = 'plugins';
+
+	protected $_processAdd = false;
+	protected $_processEdit = false;
+
+	protected $_phraseSaveError = 'plugin_status_may_not_be_changed';
+
+	private $_folder;
+
+	private $_iaCache;
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			$start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
-			$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 15;
-			$sort = isset($_GET['sort']) ? $_GET['sort'] : '';
-			$dir = in_array($_GET['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $_GET['dir'] : iaDb::ORDER_ASC;
-			$filter = isset($_GET['filter']) ? $_GET['filter'] : '';
+		parent::__construct();
 
-			switch ($_GET['type'])
+		$iaExtra = $this->_iaCore->factory('extra', iaCore::ADMIN);
+
+		$this->setHelper($iaExtra);
+		$this->setTable(iaExtra::getTable());
+
+		$this->_iaCache = $this->_iaCore->factory('cache');
+		$this->_folder = IA_PLUGINS;
+	}
+
+	protected function _indexPage(&$iaView)
+	{
+		parent::_indexPage($iaView);
+
+		$iaView->display($this->getName());
+	}
+
+	protected function _gridRead($params)
+	{
+		if (1 == count($this->_iaCore->requestPath))
+		{
+			switch ($this->_iaCore->requestPath[0])
 			{
-				case 'available':
-					$output = array();
-					$mode = isset($_GET['mode']) && $_GET['mode'] ? $_GET['mode'] : '';
+				case 'documentation':
+					return $this->_getDocumentation($params['name']);
 
-					// get array of installed plugins
-					$installedExtras = $iaDb->keyvalue(array('name', 'version'), "`type` = '" . iaExtra::TYPE_PLUGIN . "'");
+				case 'install':
+				case 'reinstall':
+				case 'uninstall':
+					$action = $this->_iaCore->requestPath[0];
+					$iaAcl = $this->_iaCore->factory('acl');
 
-					if ('remote' == $mode)
+					if (!$iaAcl->isAccessible($this->getName(), $action))
 					{
-						// get plugins list from cache, cache lives for 1 hour
-						$iaCache = $iaCore->factory('cache');
+						return iaView::accessDenied();
+					}
 
-						$pluginsArray = array();
-						if ($cachedData = $iaCache->get('subrion_plugins', 3600, true))
+					$pluginName = $_POST['name'];
+
+					return ('uninstall' == $action)
+						? $this->_uninstall($pluginName)
+						: $this->_install($pluginName, $action);
+			}
+		}
+
+		$output = array();
+
+		$start = isset($params['start']) ? (int)$params['start'] : 0;
+		$limit = isset($params['limit']) ? (int)$params['limit'] : 15;
+		$sort = isset($params['sort']) ? $params['sort'] : '';
+		$dir = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $params['dir'] : iaDb::ORDER_ASC;
+		$filter = empty($params['filter']) ? '' : $params['filter'];
+
+		switch ($params['type'])
+		{
+			case 'installed':
+				$output = $this->_getInstalledPlugins($start, $limit, $sort, $dir, $filter);
+				break;
+
+			case 'local':
+				$output = $this->_getLocalPlugins($start, $limit, $dir, $filter);
+				break;
+
+			case 'remote':
+				$output = $this->_getRemotePlugins($start, $limit);
+		}
+
+		return $output;
+	}
+
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		$stmt = '`removable` = 1 AND `id` = :id';
+		$this->_iaDb->bind($stmt, array('id' => (int)$entryId));
+
+		$result = (bool)$this->_iaDb->update($entryData, $stmt);
+
+		empty($result) || $this->_iaCore->getConfig(true);
+
+		return $result;
+	}
+
+
+	private function _getRemotePlugins($start, $limit)
+	{
+		$entries = false;
+
+		if ($cachedData = $this->_iaCache->get('subrion_plugins', 3600, true))
+		{
+			$entries = $cachedData;
+		}
+		else
+		{
+			if ($response = iaUtil::getPageContent(iaUtil::REMOTE_TOOLS_URL . 'list/plugin/' . IA_VERSION))
+			{
+				$response = iaUtil::jsonDecode($response);
+				if (!empty($response['error']))
+				{
+					$this->addMessage($response['error']);
+				}
+				elseif ($response['total'] > 0)
+				{
+					if (isset($response['extensions']) && is_array($response['extensions']))
+					{
+						$entries = array();
+						$installedPlugins = $this->_iaDb->keyvalue(array('name', 'version'), iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
+
+						foreach ($response['extensions'] as $entry)
 						{
-							$pluginsArray = $cachedData;
-						}
-						else
-						{
-							if ($response = $iaUtil->getPageContent('http://tools.subrion.com/plugins-list/?version=' . IA_VERSION))
+							$pluginInfo = (array)$entry;
+							$pluginInfo['install'] = 0;
+
+							// exclude installed plugins
+							if (!array_key_exists($pluginInfo['name'], $installedPlugins))
 							{
-								$response = $iaUtil->jsonDecode($response);
-								if (!empty($response['error']))
+								if (isset($pluginInfo['compatibility']) && version_compare($pluginInfo['compatibility'], IA_VERSION, '<='))
 								{
-									$output['msg'][] = $response['error'];
-									$output['error'] = true;
+									$pluginInfo['install'] = 1;
 								}
-								elseif ($response['total'] > 0)
+								$pluginInfo['date'] = gmdate('Y-m-d H:i', $pluginInfo['date']);
+								$pluginInfo['file'] = $pluginInfo['name'];
+								$pluginInfo['readme'] = false;
+								$pluginInfo['reinstall'] = false;
+								$pluginInfo['uninstall'] = false;
+								$pluginInfo['remove'] = false;
+								$pluginInfo['removable'] = false;
+
+								$entries[] = $pluginInfo;
+							}
+						}
+
+						// cache well-formed results
+						$this->_iaCache->write('subrion_plugins', $entries);
+					}
+					else
+					{
+						$this->addMessage('error_incorrect_format_from_subrion');
+					}
+				}
+			}
+			else
+			{
+				$this->addMessage('error_incorrect_response_from_subrion');
+			}
+		}
+
+		return $this->getMessages()
+			? array('result' => false, 'message' => $this->getMessages())
+			: array('total' => count($entries), 'data' => array_slice($entries, $start, $limit));
+	}
+
+	private function _getLocalPlugins($start, $limit, $dir, $filter)
+	{
+		$result = array();
+
+		$total = 0;
+		$pluginsList = array();
+		$pluginsData = array();
+		$installedPlugins = $this->_iaDb->keyvalue(array('name', 'version'), iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
+
+		$directory = opendir($this->_folder);
+		while ($file = readdir($directory))
+		{
+			if (substr($file, 0, 1) != '.' && is_dir($this->_folder . $file))
+			{
+				if (is_file($installationFile = $this->_folder . $file . IA_DS . iaExtra::INSTALL_FILE_NAME))
+				{
+					if ($fileContent = file_get_contents($installationFile))
+					{
+						$this->getHelper()->setXml($fileContent);
+						$this->getHelper()->parse(true);
+/*
+						$installationPossible = false;
+						if (!$this->getHelper()->getNotes())
+						{
+							$version = explode('-', $this->getHelper()->itemData['compatibility']);
+							if (!isset($version[1]))
+							{
+								if (version_compare($version[0], IA_VERSION, '<='))
 								{
-									if (isset($response['plugins']) && is_array($response['plugins']))
-									{
-										foreach ($response['plugins'] as $entry)
-										{
-											$pluginInfo = (array)$entry;
-
-											$pluginInfo['install'] = 0;
-
-											// exclude installed plugins
-											if (!array_key_exists($pluginInfo['name'], $installedExtras))
-											{
-												if (isset($pluginInfo['compatibility']) && version_compare($pluginInfo['compatibility'], IA_VERSION, '<='))
-												{
-													$pluginInfo['install'] = 1;
-												}
-												$pluginInfo['date'] = gmdate('Y-m-d H:i', $pluginInfo['date']);
-												$pluginInfo['file'] = $pluginInfo['name'];
-												$pluginInfo['readme'] = false;
-												$pluginInfo['reinstall'] = false;
-												$pluginInfo['uninstall'] = false;
-												$pluginInfo['remove'] = false;
-												$pluginInfo['removable'] = false;
-
-												$pluginsArray[] = $pluginInfo;
-											}
-										}
-
-										// cache well-formed results
-										$iaCache->write('subrion_plugins', $pluginsArray);
-									}
-									else
-									{
-										$output['message'][] = iaLanguage::get('error_incorrect_format_from_subrion');
-										$output['error'] = true;
-									}
+									$installationPossible = true;
 								}
 							}
 							else
 							{
-								$output['message'][] = iaLanguage::get('error_incorrect_response_from_subrion');
-								$output['error'] = true;
-							}
-						}
-
-						if ($pluginsArray)
-						{
-							$output['total'] = count($pluginsArray);
-							$output['data'] = array_slice($pluginsArray, $start, $limit);
-						}
-					}
-					elseif ('local' == $mode)
-					{
-						$total = 0;
-						$pluginsList = array();
-						$pluginsData = array();
-
-						$directory = opendir($pluginsFolder);
-						while ($file = readdir($directory))
-						{
-							if (substr($file, 0, 1) != '.' && is_dir($pluginsFolder . $file))
-							{
-								if (is_file($installationFile = $pluginsFolder . $file . IA_DS . iaExtra::INSTALL_FILE_NAME))
+								if (version_compare($version[0], IA_VERSION, '<=')
+									&& version_compare($version[1], IA_VERSION, '>='))
 								{
-									if ($fileContent = file_get_contents($installationFile))
-									{
-										$iaExtra->setXml($fileContent);
-										$iaExtra->parse(true);
-
-										$installationPossible = false;
-										if (!$iaExtra->getNotes())
-										{
-											$version = explode('-', $iaExtra->itemData['compatibility']);
-											if (!isset($version[1]))
-											{
-												if (version_compare($version[0], IA_VERSION, '<='))
-												{
-													$installationPossible = true;
-												}
-											}
-											else
-											{
-												if (version_compare($version[0], IA_VERSION, '<=')
-													&& version_compare($version[1], IA_VERSION, '>='))
-												{
-													$installationPossible = true;
-												}
-											}
-										}
-
-										if (!array_key_exists($iaExtra->itemData['name'], $installedExtras))
-										{
-											$notes = $iaExtra->getNotes();
-											if ($notes)
-											{
-												$notes = implode(PHP_EOL, $notes);
-												$notes.= PHP_EOL . PHP_EOL . iaLanguage::get('installation_impossible');
-											}
-
-											$pluginsList[$file] = $iaExtra->itemData['info']['title'];
-											$pluginsData[$file] = array(
-												'title' => $iaExtra->itemData['info']['title'],
-												'version' => $iaExtra->itemData['info']['version'],
-												'compatibility' => $iaExtra->itemData['compatibility'],
-												'description' => $iaExtra->itemData['info']['summary'],
-												'author' => $iaExtra->itemData['info']['author'],
-												'date' => $iaExtra->itemData['info']['date'],
-												'file' => $file,
-												'notes' => $notes,
-												'info' => true,
-												'install' => true
-											);
-
-											$total++;
-										}
-									}
+									$installationPossible = true;
 								}
 							}
 						}
-
-						closedir($directory);
-
-						$output['total'] = $total;
-
-						if ($pluginsList) // sort plugins
+*/
+						if (!array_key_exists($this->getHelper()->itemData['name'], $installedPlugins))
 						{
-							natcasesort($pluginsList);
-							('DESC' != $dir) || $pluginsList = array_reverse($pluginsList, true);
-
-							if ($filter)
+							$notes = $this->getHelper()->getNotes();
+							if ($notes)
 							{
-								foreach ($pluginsList as $pluginName => $pluginTitle)
-								{
-									if (false === stripos($pluginName . $pluginTitle, $filter))
-									{
-										unset($pluginsList[$pluginName]);
-									}
-								}
-
-								$output['total'] = count($pluginsList);
+								$notes = implode(PHP_EOL, $notes);
+								$notes.= PHP_EOL . PHP_EOL . iaLanguage::get('installation_impossible');
 							}
 
-							$pluginsList = array_splice($pluginsList, $start, $limit);
+							$pluginsList[$file] = $this->getHelper()->itemData['info']['title'];
+							$pluginsData[$file] = array(
+								'title' => $this->getHelper()->itemData['info']['title'],
+								'version' => $this->getHelper()->itemData['info']['version'],
+								'compatibility' => $this->getHelper()->itemData['compatibility'],
+								'description' => $this->getHelper()->itemData['info']['summary'],
+								'author' => $this->getHelper()->itemData['info']['author'],
+								'date' => $this->getHelper()->itemData['info']['date'],
+								'file' => $file,
+								'notes' => $notes,
+								'info' => true,
+								'install' => true
+							);
 
-							foreach ($pluginsList as $pluginName => $pluginTitle)
-							{
-								$output['data'][] = $pluginsData[$pluginName];
-							}
+							$total++;
 						}
 					}
-					break;
-				case 'installed':
-					$where = "`type` = '" . iaExtra::TYPE_PLUGIN . "'" . (empty($filter) ? '' : " AND `title` LIKE '%{$filter}%'");
-					$order = ($sort && $dir) ? " ORDER BY `{$sort}` {$dir}" : '';
-
-					$output = array(
-						'data' => $iaDb->all(array('id', 'name', 'title', 'version', 'status', 'author', 'summary', 'removable', 'date'), $where . $order, $start, $limit),
-						'total' => $iaDb->one(iaDb::STMT_COUNT_ROWS, $where)
-					);
-
-					if ($output['data'])
-					{
-						foreach ($output['data'] as &$entry)
-						{
-							if ($row = $iaDb->row_bind(array('name', 'config_group'), '`extras` = :plugin ORDER BY `order` ASC', array('plugin' => $entry['name']), iaCore::getConfigTable()))
-							{
-								$entry['config'] = $row['config_group'] . '/#' . $row['name'] . '';
-							}
-
-							if ($alias = $iaDb->one_bind('alias', '`name` = :name', array('name' => $entry['name']), 'admin_pages'))
-							{
-								$entry['manage'] = $alias;
-							}
-
-							$entry['file'] = $entry['name'];
-							$entry['info'] = true;
-							$entry['reinstall'] = true;
-							$entry['uninstall'] = $entry['removable'];
-							$entry['remove'] = $entry['removable'];
-
-							if (is_dir(IA_PLUGINS . $entry['name']))
-							{
-								$installationFile = IA_PLUGINS . $entry['name'] . IA_DS . iaExtra::INSTALL_FILE_NAME;
-
-								if (file_exists($installationFile))
-								{
-									$fileContent = file_get_contents($installationFile);
-
-									$iaExtra->setXml($fileContent);
-									$iaExtra->parse();
-
-									if (($iaExtra->itemData['compatibility'] && version_compare(IA_VERSION, $iaExtra->itemData['compatibility'], '>=')) && version_compare($iaExtra->itemData['info']['version'], $entry['version'], '>'))
-									{
-										$entry['upgrade'] = $entry['name'];
-									}
-								}
-							}
-						}
-					}
+				}
 			}
+		}
 
-			switch ($_GET['get'])
+		closedir($directory);
+
+		$result['total'] = $total;
+
+		if ($pluginsList) // sort plugins
+		{
+			natcasesort($pluginsList);
+			(iaDb::ORDER_DESC != $dir) || $pluginsList = array_reverse($pluginsList, true);
+
+			if ($filter)
 			{
-				case 'info':
-					$plugin = $_GET['name'];
-
-					if (file_exists($documentationPath = IA_PLUGINS . $plugin . IA_DS . 'docs' . IA_DS))
+				foreach ($pluginsList as $pluginName => $pluginTitle)
+				{
+					if (false === stripos($pluginName . $pluginTitle, $filter))
 					{
-						$docs = scandir($documentationPath);
-
-						foreach ($docs as $doc)
-						{
-							if (substr($doc, 0, 1) != '.' && is_file($documentationPath . $doc))
-							{
-								if (!is_null($contents = file_get_contents($documentationPath . $doc)))
-								{
-									$contents = str_replace('{IA_URL}', IA_CLEAR_URL, $contents);
-									$n = substr($doc, 0, count($doc) - 6);
-									$output['tabs'][] = array(
-										'title' => iaLanguage::get('extra_' . $n, $n),
-										'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
-										'cls' => 'extension-docs'
-									);
-								}
-							}
-						}
-
-						$iaExtra->setXml(file_get_contents(IA_PLUGINS . $plugin . IA_DS . iaExtra::INSTALL_FILE_NAME));
-						$iaExtra->parse();
-
-						$search = array(
-							'{icon}',
-							'{name}',
-							'{author}',
-							'{contributor}',
-							'{version}',
-							'{date}',
-							'{compatibility}'
-						);
-
-						$icon = file_exists(IA_PLUGINS . $plugin . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
-							? '<tr><td class="plugin-icon"><img src="' . IA_CLEAR_URL . 'plugins/' . $plugin . '/docs/img/icon.png" alt="" /></td></tr>'
-							: '';
-
-						$replace = array(
-							$icon,
-							$iaExtra->itemData['info']['title'],
-							$iaExtra->itemData['info']['author'],
-							$iaExtra->itemData['info']['contributor'],
-							$iaExtra->itemData['info']['version'],
-							$iaExtra->itemData['info']['date'],
-							$iaExtra->itemData['compatibility']
-						);
-
-						$template = file_get_contents(IA_ADMIN . 'templates' . IA_DS . $iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl');
-
-						$output['info'] = str_replace($search, $replace, $template);
+						unset($pluginsList[$pluginName]);
 					}
+				}
+
+				$result['total'] = count($pluginsList);
 			}
 
-			break;
+			$pluginsList = array_splice($pluginsList, $start, $limit);
 
-		case iaCore::ACTION_EDIT:
-			$iaAcl->checkPage($permission . 'update');
+			foreach ($pluginsList as $pluginName => $pluginTitle)
+			{
+				$result['data'][] = $pluginsData[$pluginName];
+			}
+		}
 
-			$output = array(
-				'result' => false,
-				'message' => iaLanguage::get('invalid_parameters')
+		return $result;
+	}
+
+	private function _getInstalledPlugins($start, $limit, $sort, $dir, $filter)
+	{
+		$where = "`type` = '" . iaExtra::TYPE_PLUGIN . "'" . (empty($filter) ? '' : " AND `title` LIKE '%{$filter}%'");
+		$order = ($sort && $dir) ? " ORDER BY `{$sort}` {$dir}" : '';
+
+		$result = array(
+			'data' => $this->_iaDb->all(array('id', 'name', 'title', 'version', 'status', 'author', 'summary', 'removable', 'date'), $where . $order, $start, $limit),
+			'total' => $this->_iaDb->one(iaDb::STMT_COUNT_ROWS, $where)
+		);
+
+		if ($result['data'])
+		{
+			foreach ($result['data'] as &$entry)
+			{
+				if ($row = $this->_iaDb->row_bind(array('name', 'config_group'), '`extras` = :plugin ORDER BY `order` ASC', array('plugin' => $entry['name']), iaCore::getConfigTable()))
+				{
+					$entry['config'] = $row['config_group'] . '/#' . $row['name'] . '';
+				}
+
+				if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', array('name' => $entry['name']), 'admin_pages'))
+				{
+					$entry['manage'] = $alias;
+				}
+
+				$entry['file'] = $entry['name'];
+				$entry['info'] = true;
+				$entry['reinstall'] = true;
+				$entry['uninstall'] = $entry['removable'];
+				$entry['remove'] = $entry['removable'];
+
+				if (is_dir(IA_PLUGINS . $entry['name']))
+				{
+					$installationFile = IA_PLUGINS . $entry['name'] . IA_DS . iaExtra::INSTALL_FILE_NAME;
+
+					if (file_exists($installationFile))
+					{
+						$fileContent = file_get_contents($installationFile);
+
+						$this->getHelper()->setXml($fileContent);
+						$this->getHelper()->parse();
+
+						if (($this->getHelper()->itemData['compatibility'] && version_compare(IA_VERSION, $iaExtra->itemData['compatibility'], '>=')) && version_compare($this->getHelper()->itemData['info']['version'], $entry['version'], '>'))
+						{
+							$entry['upgrade'] = $entry['name'];
+						}
+					}
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	private function _getDocumentation($pluginName)
+	{
+		$result = array();
+
+		if (file_exists($documentationPath = IA_PLUGINS . $pluginName . IA_DS . 'docs' . IA_DS))
+		{
+			$docs = scandir($documentationPath);
+
+			foreach ($docs as $doc)
+			{
+				if (substr($doc, 0, 1) != '.' && is_file($documentationPath . $doc))
+				{
+					if (!is_null($contents = file_get_contents($documentationPath . $doc)))
+					{
+						$contents = str_replace('{IA_URL}', IA_CLEAR_URL, $contents);
+						$tab = substr($doc, 0, count($doc) - 6);
+						$result['tabs'][] = array(
+							'title' => iaLanguage::get('extra_' . $tab, $tab),
+							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
+							'cls' => 'extension-docs'
+						);
+					}
+				}
+			}
+
+			$this->getHelper()->setXml(file_get_contents($this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME));
+			$this->getHelper()->parse();
+
+			$search = array(
+				'{icon}',
+				'{name}',
+				'{author}',
+				'{contributor}',
+				'{version}',
+				'{date}',
+				'{compatibility}'
 			);
 
-			if (isset($_POST['id']) && count($_POST) > 1)
+			$data = $this->getHelper()->itemData;
+			$icon = file_exists(IA_PLUGINS . $pluginName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
+				? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'plugins/' . $pluginName . '/docs/img/icon.png" alt="' . $data['info']['title'] . '"></td></tr>'
+				: '';
+
+			$replace = array(
+				$icon,
+				$data['info']['title'],
+				$data['info']['author'],
+				$data['info']['contributor'],
+				$data['info']['version'],
+				$data['info']['date'],
+				$data['compatibility']
+			);
+
+			$template = file_get_contents(IA_ADMIN . 'templates' . IA_DS . $this->_iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl');
+
+			$result['info'] = str_replace($search, $replace, $template);
+		}
+
+		return $result;
+	}
+
+	private function _install($pluginName, $action)
+	{
+		$result = array('error' => true);
+
+		if (isset($_POST['mode']) && 'remote' == $_POST['mode'])
+		{
+			$pluginsTempFolder = IA_TMP . 'plugins' . IA_DS;
+			is_dir($pluginsTempFolder) || mkdir($pluginsTempFolder);
+
+			$filePath = $pluginsTempFolder . $pluginName;
+			$fileName = $filePath . '.zip';
+
+			// save remote plugin file
+			iaUtil::downloadRemoteContent(iaUtil::REMOTE_TOOLS_URL . 'install/' . $pluginName . IA_URL_DELIMITER . IA_VERSION, $fileName);
+
+			if (file_exists($fileName))
 			{
-				$ids = is_array($_POST['id']) ? $_POST['id'] : array($_POST['id']);
-				$stmt = sprintf('`removable` = 1 AND `id` IN (%s)', implode(',', $ids));
-
-				unset($_POST['id']);
-
-				$output['result'] = ($iaDb->update($_POST, $stmt) != -1);
-
-				if ($output['result'])
+				if (is_writable($this->_folder))
 				{
-					$iaCore->getConfig(true);
-					$output['message'] = iaLanguage::get('saved');
+					// delete previous folder
+					if (is_dir($this->_folder . $pluginName))
+					{
+						unlink($this->_folder . $pluginName);
+					}
+
+					include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
+
+					$pclZip = new PclZip($fileName);
+					$pclZip->extract(PCLZIP_OPT_PATH, IA_PLUGINS . $pluginName);
 				}
 				else
 				{
-					$output['message'] = iaLanguage::get('plugin_status_may_not_be_changed');
+					$result['message'] = iaLanguage::get('upload_plugin_error');
 				}
 			}
+		}
+
+		$iaExtra = $this->getHelper();
+
+		$installationFile = $this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME;
+		if (!file_exists($installationFile))
+		{
+			$result['message'] = iaLanguage::get('file_doesnt_exist');
+		}
+		else
+		{
+			$iaExtra->setXml(file_get_contents($installationFile));
+			$result['error'] = false;
+		}
+
+		$iaExtra->parse();
+
+		$installationPossible = false;
+		$version = explode('-', $iaExtra->itemData['compatibility']);
+		if (!isset($version[1]))
+		{
+			if (version_compare($version[0], IA_VERSION, '<='))
+			{
+				$installationPossible = true;
+			}
+		}
+		else
+		{
+			if (version_compare($version[0], IA_VERSION, '<=')
+				&& version_compare($version[1], IA_VERSION, '>='))
+			{
+				$installationPossible = true;
+			}
+		}
+
+		if (!$installationPossible)
+		{
+			$result['message'] = iaLanguage::get('incompatible');
+			$result['error'] = true;
+		}
+
+		if (!$result['error'])
+		{
+			$iaExtra->doAction(iaExtra::ACTION_INSTALL);
+			if ($iaExtra->error)
+			{
+				$result['message'] = $iaExtra->getMessage();
+				$result['error'] = true;
+			}
+			else
+			{
+				$iaLog = $this->_iaCore->factory('log');
+
+				if ($iaExtra->isUpgrade)
+				{
+					$result['message'] = iaLanguage::get('plugin_updated');
+
+					$iaLog->write(iaLog::ACTION_UPGRADE, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title'], 'to' => $iaExtra->itemData['info']['version']));
+				}
+				else
+				{
+					$result['message'] = ('install' == $action)
+						? iaLanguage::getf('plugin_installed', array('name' => $iaExtra->itemData['info']['title']))
+						: iaLanguage::getf('plugin_reinstalled', array('name' => $iaExtra->itemData['info']['title']));
+
+					$iaLog->write(iaLog::ACTION_INSTALL, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title']));
+				}
+
+				empty($iaExtra->itemData['notes']) || $result['message'][] = $iaExtra->itemData['notes'];
+
+				$this->_iaCore->getConfig(true);
+			}
+		}
+
+		$result['result'] = !$result['error'];
+		unset($result['error']);
+
+		return $result;
 	}
 
-	switch ($_POST['action'])
+	private function _uninstall($pluginName)
 	{
-		case 'install':
-		case 'reinstall':
-			$iaAcl->checkPage($permission . $_POST['action']);
+		$result = array('result' => false, 'message' => iaLanguage::get('invalid_parameters'));
 
-			$output = array('error' => true);
-			$pluginFolder = isset($_POST['name']) ? $_POST['name'] : '';
+		if ($this->_iaDb->exists('`name` = :plugin AND `type` = :type AND `removable` = 1', array('plugin' => $pluginName, 'type' => iaExtra::TYPE_PLUGIN)))
+		{
+			$installationFile = $this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME;
 
-			if (isset($_POST['mode']) && 'remote' == $_POST['mode'] && $pluginFolder)
-			{
-				$pluginsTempFolder = IA_TMP . 'plugins' . IA_DS;
-				if (!is_dir($pluginsTempFolder))
-				{
-					mkdir($pluginsTempFolder);
-				}
-
-				$filePath = $pluginsTempFolder . $pluginFolder;
-				$fileName = $filePath . '.zip';
-
-				// save remote plugin file
-				$iaUtil->downloadRemoteContent('http://tools.subrion.com/download-plugin/?plugin=' . $pluginFolder . '&version=' . IA_VERSION, $fileName);
-
-				if (file_exists($fileName))
-				{
-					if (is_writable(IA_PLUGINS))
-					{
-						// delete previous folder
-						if (is_dir(IA_PLUGINS . $pluginFolder))
-						{
-							unlink(IA_PLUGINS . $pluginFolder);
-						}
-
-						include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
-
-						$pclZip = new PclZip($fileName);
-						$files = $pclZip->extract(PCLZIP_OPT_PATH, IA_PLUGINS);
-					}
-					else
-					{
-						$output['message'] = iaLanguage::get('upload_plugin_error');
-					}
-				}
-			}
-
-			$installationFile = $pluginsFolder . $pluginFolder . IA_DS . iaExtra::INSTALL_FILE_NAME;
 			if (!file_exists($installationFile))
 			{
-				$output['message'] = iaLanguage::get('file_doesnt_exist');
-			}
-			else
-			{
-				$iaExtra->setXml(file_get_contents($installationFile));
-				$output['error'] = false;
+				$result['message'] = array(iaLanguage::get('plugin_files_physically_missed'));
 			}
 
-			$iaExtra->parse();
+			$this->getHelper()->uninstall($pluginName);
 
-			$installationPossible = false;
-			$version = explode('-', $iaExtra->itemData['compatibility']);
-			if (!isset($version[1]))
-			{
-				if (version_compare($version[0], IA_VERSION, '<='))
-				{
-					$installationPossible = true;
-				}
-			}
-			else
-			{
-				if (version_compare($version[0], IA_VERSION, '<=')
-					&& version_compare($version[1], IA_VERSION, '>='))
-				{
-					$installationPossible = true;
-				}
-			}
-	
-			if (!$installationPossible)
-			{
-				$output['message'] = iaLanguage::get('incompatible');
-				$output['error'] = true;
-			}
-	
-			if (!$output['error'])
-			{
-				$iaExtra->doAction(iaExtra::ACTION_INSTALL);
-				if ($iaExtra->error)
-				{
-					$output['message'] = $iaExtra->getMessage();
-					$output['error'] = true;
-				}
-				else
-				{
-					$iaLog = $iaCore->factory('log');
+			is_array($result['message'])
+				? $result['message'][] = iaLanguage::get('plugin_uninstalled')
+				: $result['message'] = iaLanguage::get('plugin_uninstalled');
 
-					if ($iaExtra->isUpgrade)
-					{
-						$output['message'] = iaLanguage::get('plugin_updated');
+			$result['result'] = true;
 
-						$iaLog->write(iaLog::ACTION_UPGRADE, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title'], 'to' => $iaExtra->itemData['info']['version']));
-					}
-					else
-					{
-						$output['message'] = ('install' == $_POST['action'])
-							? iaLanguage::getf('plugin_installed', array('name' => $iaExtra->itemData['info']['title']))
-							: iaLanguage::getf('plugin_reinstalled', array('name' => $iaExtra->itemData['info']['title']));
+			// log this event
+			$iaLog = $this->_iaCore->factory('log');
+			$iaLog->write(iaLog::ACTION_UNINSTALL, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $pluginName));
+			//
 
-						$iaLog->write(iaLog::ACTION_INSTALL, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title']));
-					}
+			$this->_iaCore->getConfig(true);
+		}
+		else
+		{
+			$result['message'] = iaLanguage::get('plugin_may_not_be_removed');
+		}
 
-					empty($iaExtra->itemData['notes']) || $output['message'][] = $iaExtra->itemData['notes'];
-
-					$iaCore->getConfig(true);
-				}
-			}
-
-			$output['result'] = !$output['error'];
-			unset($output['error']);
-
-			break;
-
-		case 'uninstall':
-			$iaAcl->checkPage($permission . $_POST['action']);
-			$output = array('result' => false, 'message' => iaLanguage::get('invalid_parameters'));
-
-			if (isset($_POST['name']) && $_POST['name'])
-			{
-				$pluginName = $_POST['name'];
-
-				if ($iaDb->exists('`name` = :plugin AND `type` = :type AND `removable` = 1', array('plugin' => $pluginName, 'type' => iaExtra::TYPE_PLUGIN)))
-				{
-					$installationFile = $pluginsFolder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME;
-
-					if (!file_exists($installationFile))
-					{
-						$output['message'] = array(iaLanguage::get('plugin_files_physically_missed'));
-					}
-
-					$iaExtra->uninstall($pluginName);
-
-					is_array($output['message'])
-						? $output['message'][] = iaLanguage::get('plugin_uninstalled')
-						: $output['message'] = iaLanguage::get('plugin_uninstalled');
-
-					$output['result'] = true;
-
-					// log this event
-					$iaCore->factory('log')->write(iaLog::ACTION_UNINSTALL, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $pluginName));
-					//
-
-					$iaCore->getConfig(true);
-				}
-				else
-				{
-					$output['message'] = iaLanguage::get('plugin_may_not_be_removed');
-				}
-			}
-	}
-
-	if (isset($output))
-	{
-		$iaView->assign($output);
+		return $result;
 	}
 }
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$iaView->grid('admin/plugins');
-	$iaView->display('plugins');
-}
-
-$iaDb->resetTable();

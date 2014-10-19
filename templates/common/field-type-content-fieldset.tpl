@@ -2,9 +2,9 @@
 	{if !empty($section.fields) && isset($section.name) && !($section.name == 'plans' && $isView)}
 
 		{if '___empty___' != $section.name}
-			{assign var='grouptitle' value="fieldgroup_{$section.name}"}
+			{assign grouptitle "fieldgroup_{$section.name}"}
 		{else}
-			{assign var='grouptitle' value='other'}
+			{assign grouptitle 'other'}
 		{/if}
 
 		{capture name='field_text'}
@@ -17,7 +17,7 @@
 			{else}
 				{foreach $section.fields as $variable}
 					<div class="field field-plan">
-						<input type="radio" name="plan" value="{$variable.id}" id="plan_{$variable.id}"{if !$smarty.post && $variable@first} checked="checked"{elseif $smarty.post.plan == $variable.id} checked="checked"{/if}><label for="plan_{$variable.id}">{$variable.description}</label> - <b>${$variable.cost}</b>
+						<input type="radio" name="plan" value="{$variable.id}" id="plan_{$variable.id}"{if !$smarty.post && $variable@first} checked{elseif $smarty.post.plan == $variable.id} checked{/if}><label for="plan_{$variable.id}">{$variable.description}</label> - <b>${$variable.cost}</b>
 					</div>
 				{/foreach}
 

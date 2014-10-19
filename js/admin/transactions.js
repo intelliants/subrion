@@ -2,19 +2,19 @@ intelli.transactions = {
 	columns: [
 		'selection',
 		{name: 'username', title: _t('username'), width: 1},
-		{name: 'plan_title', title: _t('plan'), width: 120, renderer: function(value, metadata, record)
+		{name: 'operation', title: _t('plan'), width: 1, renderer: function(value, metadata, record)
 		{
 			return (value && record.get('plan_id') > 0)
-				? '<b><a href="' + intelli.config.admin_url + '/plans/edit/?id=' + record.get('plan_id') + '">' + value + '</a></b>'
+				? '<b><a href="' + intelli.config.admin_url + '/plans/edit/' + record.get('plan_id') + '/">' + value + '</a></b>'
 				: '<b>' + value + '</b>';
 		}},
 		{name: 'item', title: _t('item'), width: 100},
 		{name: 'item_id', title: _t('item_id'), width: 60},
-		{name: 'email', title: _t('email'), width: 150, editor: 'text'},
-		{name: 'order_number', title: _t('order_number'), editor: 'text', width: 100},
-		{name: 'total', title: _t('total'), width: 80},
+		//{name: 'email', title: _t('email'), width: 150, editor: 'text'},
+		{name: 'reference_id', title: _t('reference_id'), editor: 'text', width: 1},
+		{name: 'amount', title: _t('total'), width: 100},
 		'status',
-		{name: 'date', title: _t('date'), width: 120},
+		{name: 'date', title: _t('date'), width: 135},
 		'delete'
 	],
 	fields: ['plan_id'],
@@ -22,8 +22,7 @@ intelli.transactions = {
 	texts:{
 		delete_single: _t('are_you_sure_to_delete_this_transaction'),
 		delete_multiple: _t('are_you_sure_to_delete_transactions')
-	},
-	url: intelli.config.admin_url + '/transactions/'
+	}
 };
 
 intelli.visual = {form: null, panel: null};
@@ -39,46 +38,44 @@ Ext.onReady(function()
 		}
 
 		intelli.transactions = new IntelliGrid(intelli.transactions, false);
-		intelli.transactions.toolbar = Ext.create('Ext.Toolbar', {items:
-		[
-			{
-				xtype: 'textfield',
-				name: 'username',
-				emptyText: _t('username'),
-				listeners: intelli.gridHelper.listener.specialKey
-			}, {
-				xtype: 'textfield',
-				name: 'order_number',
-				emptyText: _t('order_number'),
-				listeners: intelli.gridHelper.listener.specialKey
-			}, {
-				emptyText: _t('item'),
-				xtype: 'combo',
-				typeAhead: true,
-				editable: false,
-				store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/transactions.json?get=items'),
-				displayField: 'title',
-				name: 'item',
-				valueField: 'value'
-			}, {
-				emptyText: _t('status'),
-				name: 'status',
-				id: 'fltStatus',
-				xtype: 'combo',
-				typeAhead: true,
-				editable: false,
-				store: intelli.transactions.stores.statuses,
-				displayField: 'title',
-				valueField: 'value'
-			}, {
-				handler: function(){intelli.gridHelper.search(intelli.transactions)},
-				id: 'fltBtn',
-				text: '<i class="i-search"></i> ' + _t('search')
-			}, {
-				handler: function(){intelli.gridHelper.search(intelli.transactions, true)},
-				text: '<i class="i-close"></i> ' + _t('reset')
-			}
-		]});
+		intelli.transactions.toolbar = Ext.create('Ext.Toolbar', {items:[
+		{
+			xtype: 'textfield',
+			name: 'username',
+			emptyText: _t('username'),
+			listeners: intelli.gridHelper.listener.specialKey
+		}, {
+			xtype: 'textfield',
+			name: 'reference_id',
+			emptyText: _t('reference_id'),
+			listeners: intelli.gridHelper.listener.specialKey
+		}, {
+			emptyText: _t('item'),
+			xtype: 'combo',
+			typeAhead: true,
+			editable: false,
+			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/transactions.json?get=items'),
+			displayField: 'title',
+			name: 'item',
+			valueField: 'value'
+		}, {
+			emptyText: _t('status'),
+			name: 'status',
+			id: 'fltStatus',
+			xtype: 'combo',
+			typeAhead: true,
+			editable: false,
+			store: intelli.transactions.stores.statuses,
+			displayField: 'title',
+			valueField: 'value'
+		}, {
+			handler: function(){intelli.gridHelper.search(intelli.transactions)},
+			id: 'fltBtn',
+			text: '<i class="i-search"></i> ' + _t('search')
+		}, {
+			handler: function(){intelli.gridHelper.search(intelli.transactions, true)},
+			text: '<i class="i-close"></i> ' + _t('reset')
+		}]});
 
 		if (searchParam)
 		{
@@ -88,7 +85,7 @@ Ext.onReady(function()
 		intelli.transactions.init();
 	}
 
-	$('#js-add-transaction-cmd').bind('click', function(e)
+	$('#js-add-transaction-cmd').on('click', function(e)
 	{
 		e.preventDefault();
 
@@ -99,7 +96,8 @@ Ext.onReady(function()
 				fieldLabel: _t('item'),
 				typeAhead: true,
 				allowBlank: false,
-				width: '100%',
+				anchor: '100%',
+				labelWidth: 140,
 				editable: false,
 				id: 'item_name',
 				name: 'item_name',
@@ -126,13 +124,14 @@ Ext.onReady(function()
 				fieldLabel: _t('plan'),
 				typeAhead: true,
 				allowBlank: false,
-				width: '100%',
 				id: 'item_plan',
 				editable: false,
 				name: 'plan',
 				lazyRender: true,
 				store: intelli.gridHelper.store.ajax(intelli.transactions.url + 'read.json?get=plans'),
-				displayField: 'title'
+				displayField: 'title',
+				anchor: '100%',
+				labelWidth: 140
 			});
 
 			var gateways = new Ext.form.ComboBox(
@@ -140,12 +139,13 @@ Ext.onReady(function()
 				fieldLabel: _t('payment_gateway'),
 				typeAhead: true,
 				allowBlank: true,
-				width: '100%',
-				editable: false,
+				//editable: false,
 				name: 'payment',
 				lazyRender: true,
 				store: intelli.gridHelper.store.ajax(intelli.transactions.url + 'read.json?get=gateways'),
-				displayField: 'title'
+				displayField: 'title',
+				anchor: '100%',
+				labelWidth: 140
 			});
 
 			var members = new Ext.form.ComboBox(
@@ -153,12 +153,13 @@ Ext.onReady(function()
 				fieldLabel: _t('member'),
 				typeAhead: true,
 				allowBlank: false,
-				width: '100%',
 				editable: true,
 				name: 'username',
 				lazyRender: true,
 				store: intelli.gridHelper.store.ajax(intelli.transactions.url + 'read.json?get=members'),
-				displayField: 'title'
+				displayField: 'title',
+				anchor: '100%',
+				labelWidth: 140
 			});
 
 			var dateFields = [
@@ -167,15 +168,19 @@ Ext.onReady(function()
 					name: 'date',
 					editable: true,
 					format: 'Y-m-d',
-					width: 100
-				}),
+					value: new Date(),
+					flex: 1
+				}), {
+					xtype: 'splitter'
+				},
 				new Ext.form.TimeField(
 				{
 					name: 'time',
 					editable: true,
 					format: 'H:i:s',
 					increment: 30,
-					width: 80
+					value: new Date(),
+					flex: 1
 				})
 			];
 
@@ -187,38 +192,40 @@ Ext.onReady(function()
 				renderTo: Ext.getCmp('visual_panel'),
 				items: [items, plans, gateways,
 				{
-					fieldLabel: _t('order_number'),
-					name: 'order',
-					width: '100%',
-					allowBlank: false,
-					xtype: 'textfield'
-				}, members, {
+					fieldLabel: _t('reference_id'),
+					name: 'reference_id',
+					xtype: 'textfield',
+					anchor: '100%',
+					labelWidth: 140
+				}, members,/* {
 					fieldLabel: _t('email'),
 					name: 'email',
 					width: '100%',
 					vtype: 'email',
 					allowBlank: false,
 					xtype: 'textfield'
-				}, {
+				}, */{
 					fieldLabel: _t('total'),
-					name: 'total',
-					width: '100%',
+					name: 'amount',
 					allowBlank: false,
-					xtype: 'textfield'
-				}, {
+					xtype: 'textfield',
+					anchor: '100%',
+					labelWidth: 140,
+
+				},{
 					fieldLabel: _t('id'),
 					name: 'itemid',
 					allowBlank: true,
 					hidden: true,
 					id: 'itemid',
-					width: '100%',
 					xtype: 'numberfield'
-				}, {
+				},{
 					fieldLabel: _t('date'),
-					xtype: 'container',
-					layout: 'column',
+					xtype: 'fieldcontainer',
+					layout: 'hbox',
+					labelWidth: 140,
 					width: '100%',
-					defaultType: 'field',
+					// defaultType: 'field',
 					items: dateFields
 				}]
 			});
@@ -280,23 +287,5 @@ Ext.onReady(function()
 		}
 
 		intelli.visual.panel.show();
-
-		$('.x-form-text[name="username"]').typeahead(
-		{
-			source: function(query, process)
-			{
-				return $.ajax(
-				{
-					url: intelli.config.admin_url + '/members/search.json',
-					type: 'get',
-					dataType: 'json',
-					data: {q: query},
-					success: function(data)
-					{
-						process(data.options);
-					}
-				});
-			}
-		});
 	});
 });

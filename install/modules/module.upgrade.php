@@ -86,7 +86,7 @@ switch ($step)
 		break;
 
 	case 'download':
-		$patchUrl = 'http://tools.subrion.com/download/patch/%s/%s/';
+		$patchUrl = 'http://tools.subrion.org/get/patch/%s/%s/';
 		$patchUrl = sprintf($patchUrl, IA_VERSION, $_SESSION['upgrade_to']);
 
 		$patchFileContent = iaHelper::getRemoteContent($patchUrl);

@@ -1,8 +1,5 @@
-<form action="{$url}members/{$pageAction}/{if $pageAction == 'edit'}?id={$id}{/if}" method="post" enctype="multipart/form-data" class="sap-form form-horizontal">
+<form method="post" enctype="multipart/form-data" class="sap-form form-horizontal">
 	{preventCsrf}
-
-	<input type="hidden" name="old_name" value="{if isset($item.username)}{$item.username|escape:'html'}{/if}">
-	<input type="hidden" name="id" value="{if 'edit' == $pageAction}{$id}{/if}">
 
 	{capture name='email' append='field_after'}
 		{access object='admin_pages' id='members' action='password'}
@@ -34,7 +31,7 @@
 			{else}
 				<select name="usergroup_id" id="input-usergroup">
 					{foreach $usergroups as $value => $usergroup}
-					<option{if $item.usergroup_id == $value} selected="selected"{/if} value="{$value}">{$usergroup}</option>
+					<option{if $item.usergroup_id == $value} selected{/if} value="{$value}">{$usergroup}</option>
 					{/foreach}
 				</select>
 			{/if}
@@ -43,5 +40,5 @@
 		{/access}
 	{/capture}
 
-	{include file='field-type-content-fieldset.tpl' item_sections=$sections isSystem=true statuses=['active', 'approval']}
+	{include file='field-type-content-fieldset.tpl' item_sections=$sections isSystem=true}
 </form>

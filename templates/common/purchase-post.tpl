@@ -31,7 +31,7 @@
 			<td>{$order.payer_email}</td>
 		</tr>
 		<tr>
-			<td>{lang key='order_number'}:</td>
+			<td>{lang key='reference_id'}:</td>
 			<td>{$order.txn_id}</td>
 		</tr>
 	</tbody>

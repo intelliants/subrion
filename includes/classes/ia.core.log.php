@@ -65,10 +65,7 @@ class iaLog extends abstractCore
 			$params['user'] = iaUsers::getIdentity()->fullname;
 		}
 
-		if (isset($params['title']))
-		{
-			$params['title'] = iaSanitize::html($params['title']);
-		}
+		empty($params['title']) || $params['title'] = iaSanitize::html($params['title']);
 
 		$row = array(
 			'date' => date(iaDb::DATETIME_FORMAT),
@@ -120,7 +117,6 @@ class iaLog extends abstractCore
 		return $result;
 	}
 
-
 	// TODO: use DB language strings
 	private function _humanize(array $logEntry)
 	{
@@ -128,7 +124,11 @@ class iaLog extends abstractCore
 
 		if (isset($params['user']))
 		{
-			$params['user'] = sprintf('<a href="%s" target="_blank">%s</a>', IA_ADMIN_URL . 'members/edit/?id=' . $logEntry['user_id'], $params['user']);
+			$params['user'] = sprintf('<a href="%s" target="_blank">%s</a>', IA_ADMIN_URL . 'members/edit/' . $logEntry['user_id'] . '/', $params['user']);
+		}
+		if (isset($params['name']))
+		{
+			$params['name'] = iaSanitize::html($params['name']);
 		}
 
 		$style = 'added';
@@ -148,13 +148,14 @@ class iaLog extends abstractCore
 					'page' => 'copy',
 					'member' => 'members',
 					'blog' => 'quill',
-					'listing' => 'link'
+					'listing' => 'link',
+					'menu' => 'menu'
 				);
 
 				if (isset($params['item']) && isset($params['id']) && isset($params['name']) && self::ACTION_DELETE != $logEntry['action'])
 				{
 					$urlPart = isset($params['path']) ? $params['path'] : $params['item'] . 's';
-					$params['name'] = sprintf(self::LINK_PATTERN, IA_ADMIN_URL . $urlPart . '/edit/?id=' . $params['id'], $params['name']);
+					$params['name'] = sprintf(self::LINK_PATTERN, IA_ADMIN_URL . $urlPart . '/edit/' . $params['id'] . '/', $params['name']);
 				}
 
 				if (self::ACTION_DELETE == $logEntry['action'])
@@ -170,13 +171,13 @@ class iaLog extends abstractCore
 					{
 						case self::ACTION_CREATE == $logEntry['action'] && isset($params['type']) && iaCore::FRONT == $params['type']:
 							return array(
-								'New member signed up: ' . sprintf(self::LINK_PATTERN, IA_ADMIN_URL . 'members/edit/?id=' . $params['id'], $params['name']) . '.',
+								'New member signed up: ' . sprintf(self::LINK_PATTERN, IA_ADMIN_URL . 'members/edit/' . $params['id'] . '/', $params['name']) . '.',
 								$iconsMap[$params['item']],
 								'default'
 							);
 						case self::ACTION_UPDATE == $logEntry['action'] && iaUsers::getIdentity()->id == $params['id']:
 							return array(
-								sprintf('You updated ' . self::LINK_PATTERN . '.', IA_ADMIN_URL . 'members/edit/?id=' . iaUsers::getIdentity()->id, 'profile of yourself'),
+								sprintf('You updated ' . self::LINK_PATTERN . '.', IA_ADMIN_URL . 'members/edit/' . iaUsers::getIdentity()->id . '/', 'profile of yourself'),
 								$iconsMap[$params['item']],
 								$style
 							);
@@ -191,7 +192,7 @@ class iaLog extends abstractCore
 
 			case self::ACTION_LOGIN:
 				$text = ':user logged in <small class="text-muted"><em>from :ip.</em></small>';
-				$text.= (iaUsers::getIdentity()->id == $logEntry['user_id']) ? ' — you' : '';
+				$text.= ($logEntry['user_id'] == iaUsers::getIdentity()->id) ? ' — you' : '';
 				$text.= '.';
 
 				return array(

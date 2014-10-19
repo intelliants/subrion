@@ -1,56 +1,66 @@
-intelli.menus = function()
-{
-	var positions = [];
-	if ('string' == typeof intelli.config.block_positions)
-	{
-		var array = intelli.config.block_positions.split(',');
-		for (i in array) positions.push([array[i], array[i]]);
-	}
-
-	return {
-		columns: [
-			'selection',
-			{name: 'title', title: _t('title'), width: 1, editor: 'text'},
-			{name: 'name', title: _t('name'), width: 150},
-			'status',
-			{name: 'position', title: _t('position'), width: 150, editor: Ext.create('Ext.form.ComboBox',
-			{
-				typeAhead: true,
-				editable: false,
-				lazyRender: true,
-				store: Ext.create('Ext.data.SimpleStore', {fields: ['value', 'title'], data: positions}),
-				displayField: 'title',
-				valueField: 'value'
-			})},
-			{name: 'order', title: _t('order'), width: 75, editor: 'number'},
-			'update',
-			'delete'
-		],
-		texts: {
-			delete_single: _t('are_you_sure_to_delete_this_menu'),
-			delete_multiple: _t('are_you_sure_to_delete_selected_menus')
-		},
-		url: intelli.config.admin_url + '/menus/'
-	}
-}();
-
-function menusSave()
-{
-	var items = [];
-	Ext.getCmp('menus').getRootNode().cascadeBy(function(node)
-	{
-		items.push(node.data)
-	});
-
-	$('#js-menu-data').val(JSON.stringify(items));
-	$('#js-form-menus').submit();
-}
-
 Ext.onReady(function()
 {
 	if (Ext.get('js-grid-placeholder'))
 	{
-		intelli.menus = new IntelliGrid(intelli.menus);
+		var positionsStore = intelli.gridHelper.store.ajax(intelli.config.admin_url + '/blocks/positions.json');
+
+		intelli.menus = new IntelliGrid(
+		{
+			columns: [
+				'selection',
+				{name: 'title', title: _t('title'), width: 1, editor: 'text'},
+				{name: 'name', title: _t('name'), width: 150},
+				{name: 'position', title: _t('position'), width: 150, editor: Ext.create('Ext.form.ComboBox',
+				{
+					typeAhead: true,
+					editable: false,
+					lazyRender: true,
+					store: positionsStore,
+					displayField: 'title',
+					valueField: 'value'
+				})},
+				{name: 'order', title: _t('order'), width: 70, editor: 'number'},
+				'status',
+				'update',
+				'delete'
+			],
+			texts: {
+				delete_single: _t('are_you_sure_to_delete_this_menu'),
+				delete_multiple: _t('are_you_sure_to_delete_selected_menus')
+			}
+		}, false);
+		intelli.menus.toolbar = new Ext.Toolbar({items:[
+		{
+			xtype: 'textfield',
+			name: 'name',
+			emptyText: _t('name'),
+			listeners: intelli.gridHelper.listener.specialKey
+		},{
+			displayField: 'title',
+			emptyText: _t('position'),
+			name: 'position',
+			store: positionsStore,
+			typeAhead: true,
+			valueField: 'value',
+			xtype: 'combo'
+		},{
+			displayField: 'title',
+			editable: false,
+			emptyText: _t('status'),
+			name: 'status',
+			store: intelli.menus.stores.statuses,
+			typeAhead: true,
+			valueField: 'value',
+			xtype: 'combo'
+		},{
+			handler: function(){intelli.gridHelper.search(intelli.menus)},
+			id: 'fltBtn',
+			text: '<i class="i-search"></i> ' + _t('search')
+		},{
+			handler: function(){intelli.gridHelper.search(intelli.menus, true)},
+			text: '<i class="i-close"></i> ' + _t('reset')
+		}]});
+		intelli.menus.init();
 	}
 	else
 	{
@@ -74,7 +84,7 @@ Ext.onReady(function()
 						action: 'titles',
 						id: selectedNode.data.id,
 						current: text,
-						menu: $('#name').val(),
+						menu: $('#input-name').val(),
 						'new': (menu == 'add') ? 1 : 0
 					},
 					success: function(response)
@@ -98,7 +108,7 @@ Ext.onReady(function()
 							{
 								id: 'form-panel',
 								labelWidth: 75,
-								url: intelli.config.admin_url + '/menus.json?action=save&menu=' + $('#name').val() + '&node=' + nodeId,
+								url: intelli.config.admin_url + '/menus.json?action=save&menu=' + $('#input-name').val() + '&node=' + nodeId,
 								frame: true,
 								width: 350,
 								autoHeight: true,
@@ -170,14 +180,14 @@ Ext.onReady(function()
 		var menus = new Ext.tree.TreePanel(
 		{
 			id: 'menus',
-            listeners:
+			listeners:
 			{
 				itemcontextmenu: function(view, record, item, index, e)
 				{
 					contextMenu.showAt(e.getXY());
 					e.stopEvent();
 				}
-            },
+			},
 			renderTo: 'js-placeholder-menus',
 			root: {id: 0, text: _t('menus'), expanded: true},
 			store: Ext.create('Ext.data.TreeStore',
@@ -185,7 +195,7 @@ Ext.onReady(function()
 				proxy:
 				{
 					type: 'ajax',
-					url: intelli.config.admin_url + '/menus.json?id=' + intelli.urlVal('id') + '&action=menus'
+					url: intelli.config.admin_url + '/menus.json?id=' + $('#js-input-id').val() + '&action=menus'
 				}
 			}),
 			viewConfig:
@@ -251,14 +261,16 @@ Ext.onReady(function()
 			}
 		});
 
-		$('input[name="visible_on_pages[]"]').change(function()
+		$('input[name="visible_on_pages[]"]').on('change', function()
 		{
 			$(this).is(':checked')
 				? $($(this).parent().children('.subpages').get(0)).show()
 				: $($(this).parent().children('.subpages').get(0)).hide();
 		}).change();
 
-		$('.subpages').click(function()
+/* TEMPORARILY DISABLED FOR FUTURE IMPLEMENTATION
+
+		$('.subpages').on('click', function()
 		{
 			var temp = $(this).attr('rel').split('::');
 			var div = $('#subpage_'+temp[1]);
@@ -368,25 +380,69 @@ Ext.onReady(function()
 			tree.getRootNode().expand();
 			win.show();
 		});
+*/
 
-		$('input[name="sticky"]').change(function()
+		$('#header').on('change', function()
 		{
-			var obj = $('#acos');
-			$(this).val() == 0 ? obj.show() : obj.hide();
+			var $collapsible = $('input[name="collapsible"]').closest('.row');
+			$(this).val() == 1 ? $collapsible.show() : $collapsible.hide();
+
+			var $collapsed = $('input[name="collapsed"]').closest('.row');
+			$(this).val() == 1 && $('#collapsible').val() == 1 ? $collapsed.show() : $collapsed.hide();
+		}).change();
+
+		$('#collapsible').on('change', function()
+		{
+			var $obj = $('input[name="collapsed"]').closest('.row');
+			$(this).val() == 1 ? $obj.show() : $obj.hide();
+		}).change();
+
+		$('#sticky').on('change', function()
+		{
+			var $this = $(this);
+
+			if ($this.is(':checked'))
+			{
+				$('.js-visibility-hidden').show();
+				$('.js-visibility-visible').hide();
+			}
+			else
+			{
+				$('.js-visibility-hidden').hide();
+				$('.js-visibility-visible').show();
+			}
 		}).change();
 
 		$('#js-select-all-pages').on('click', function()
 		{
-			$('input[type="checkbox"]:not(#all_pages)', '#acos')
+			$('input[type="checkbox"]:not(#all_pages)', '#js-pages-list')
 				.prop('checked', $(this).is(':checked'))
 				.change();
 		});
 
-		$('input[name^="all_pages_"]', '#acos').on('click', function()
+		$('input[name^="all_pages_"]', '#js-pages-list').on('click', function()
 		{
 			$('input.' + $(this).data('group'))
-				.prop('checked', $(this).is(':checked'))
-				.change();
+				.prop('checked', $(this).prop('checked'))
+				.trigger('change');
 		});
-    }
+
+		$('#js-form-menus').on('submit', function()
+		{
+			var items = [];
+			Ext.getCmp('menus').getRootNode().cascadeBy(function(node)
+			{
+				items.push(node.data)
+			});
+
+			$('#js-menu-data').val(JSON.stringify(items));
+		});
+
+		// var menuItems = $('#js-menu-data').val();
+		// if (menuItems)
+		// {
+		// 	menuItems = JSON.parse(menuItems);
+		// 	Ext.getCmp('menus').getRootNode().childNodes = menuItems;
+		// }
+	}
 });

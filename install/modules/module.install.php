@@ -24,8 +24,8 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '3.1.6');
-define('IA_VER', '316');
+define('IA_VERSION', '3.2.0');
+define('IA_VER', '320');
 
 $error = false;
 $message = '';
@@ -61,7 +61,7 @@ switch ($step)
 			'name' => 'Mysql version',
 			'value' => function_exists('mysql_connect')
 				? '<td class="success">' . substr(mysql_get_client_info(), 0, (false === $pos = strpos(mysql_get_client_info(), '-')) ? 10 : $pos) . '</td>'
-				: '<td class="danger">MySQL 4.x or upper required</td>'
+				: '<td class="danger">MySQL 5.x or upper required</td>'
 		);
 		$checks['server']['php_version'] = array(
 			'required' => version_compare('5.0', PHP_VERSION, '<'),
@@ -249,21 +249,21 @@ switch ($step)
 				if (!$link)
 				{
 					$error = true;
-					$message = 'MySQL server: ' . mysql_error() . '<br />';
+					$message = 'MySQL server: ' . mysql_error() . '<br>';
 				}
 
 				if (!$error && !mysql_select_db(iaHelper::getPost('dbname'), $link))
 				{
 					$error = true;
-					$message = 'Could not select database ' . iaHelper::_html($_POST['dbname']) . ': ' . mysql_error();
+					$message = 'Could not select database ' . iaHelper::_html(iaHelper::getPost('dbname')) . ': ' . mysql_error();
 				}
 
 				if (!$error && !iaHelper::getPost('delete_tables', false))
 				{
-					$res = mysql_query('SHOW TABLES', $link);
-					if (mysql_num_rows($res) > 0)
+					$query = mysql_query('SHOW TABLES', $link);
+					if (mysql_num_rows($query) > 0)
 					{
-						while ($array = mysql_fetch_row($res))
+						while ($array = mysql_fetch_row($query))
 						{
 							if (strpos($array[0], iaHelper::_sql($prefix)) !== false)
 							{
@@ -275,27 +275,18 @@ switch ($step)
 							}
 						}
 					}
-					unset($res);
+					unset($query);
 				}
 
 				if (!$error)
 				{
-					$mysql_ver = version_compare('4.1', mysql_get_server_info($link), '<=') ? '41' : '40';
-					$mysql_ver_data = ($mysql_ver == '41') ? 'ENGINE=MyISAM DEFAULT CHARSET=utf8' : 'TYPE=MyISAM';
-					$filename = IA_INSTALL . 'dump' . IA_DS . 'install_v' . IA_VER . ($mysql_ver == "41" ? '' : '_mysql5') . '.sql';
-					$default = IA_INSTALL . 'dump' . IA_DS . 'install' . ($mysql_ver == "41" ? '' : '_mysql5') . '.sql';
+					$dbOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
+					$dumpFile = IA_INSTALL . 'dump' . IA_DS . 'install.sql';
 
-					if (!file_exists($filename))
+					if (!file_exists($dumpFile))
 					{
-						if (!file_exists($default))
-						{
-							$error = true;
-							$message = 'Could not open file with sql instructions: [install_v' . IA_VER . '.sql] or [install.sql]';
-						}
-						else
-						{
-							$filename = $default;
-						}
+						$error = true;
+						$message = 'Could not open file with sql instructions: install.sql';
 					}
 				}
 
@@ -309,14 +300,14 @@ switch ($step)
 						'{install:lang}' => 'en',
 						'{install:admin_username}' => iaHelper::_sql(iaHelper::getPost('admin_username')),
 						'{install:email}' => iaHelper::_sql(iaHelper::getPost('admin_email')),
-						'{install:mysql_version}' => $mysql_ver_data,
+						'{install:db_options}' => $dbOptions,
 						'{install:version}' => IA_VERSION,
 						'{install:drop_tables}' => ('on' == iaHelper::getPost('delete_tables')) ? '' : '#',
 						'{install:prefix}' => iaHelper::_sql(iaHelper::getPost('prefix', '', false))
 					);
 					$message = $s_sql = '';
-					$cnt = 0;
-					$file = file($filename);
+					$counter = 0;
+					$file = file($dumpFile);
 					if (count($file) > 0)
 					{
 						foreach ($file as $s)
@@ -339,17 +330,16 @@ switch ($step)
 
 							$s_sql = str_replace(array_keys($search), array_values($search), $s_sql);
 
-							$query = mysql_query($s_sql, $link);
-							if (!$query)
+							if (!mysql_query($s_sql, $link))
 							{
 								$error = true;
-								if ($cnt == 0)
+								if ($counter == 0)
 								{
-									$cnt++;
+									$counter++;
 									$message .= '<div class="db_errors">';
 								}
 								$message .= "<div class=\"qerror\">'" . mysql_errno() . " " . mysql_error()
-										. "' during the following query:</div> <div class=\"query\"><pre>{$s_sql}</pre></div>";
+									. "' during the following query:</div> <div class=\"query\"><pre>{$s_sql}</pre></div>";
 							}
 							$s_sql = '';
 						}
@@ -392,8 +382,8 @@ Mysql configuration
  Prefix: {dbprefix}
 ----------------------------
 
-Useful information regarding the Subrion CMS can be found on Subrion.com's support page -
-http://www.subrion.com/support.html
+Useful information regarding the Subrion CMS can be found in Subrion User Forums -
+http://www.subrion.org/forums/
 __________________________
 The Subrion Support Team
 http://www.subrion.org
@@ -402,7 +392,6 @@ HTML;
 					$params = array(
 						'{version}' => IA_VERSION,
 						'{date}' => date('d F Y H:i:s'),
-						'{mysql_version}' => version_compare('4.1', mysql_get_server_info(), '<=') ? '41' : '40',
 						'{dbconnector}' => in_array('mysqli', get_loaded_extensions()) && function_exists('mysqli_connect') ? 'mysqli' : 'mysql',
 						'{dbhost}' => iaHelper::getPost('dbhost'),
 						'{dbuser}' => iaHelper::getPost('dbuser'),
@@ -413,7 +402,7 @@ HTML;
 						'{salt}' => '#' . strtoupper(substr(md5(IA_HOME), 21, 10)),
 						'{debug}' => iaHelper::getPost('debug', 0, false),
 						'{username}' => iaHelper::_sql(iaHelper::getPost('admin_username')),
-						'{password}' => iaHelper::_sql(iaHelper::getPost('admin_password')),
+						'{password}' =>  iaHelper::_sql(iaHelper::getPost('admin_password')),
 						'{url}' => URL_HOME . 'admin/'
 					);
 					$body = str_replace(array_keys($params), array_values($params), $body);
@@ -436,9 +425,12 @@ HTML;
 							$error = true;
 							$configMsg = 'Cannot write to file: ' . $filename;
 						}
+
+						fclose($handle);
 					}
 					else
 					{
+						$error = true;
 						$configMsg = 'Cannot write to folder.';
 					}
 
@@ -462,21 +454,21 @@ HTML;
 
 				if (!$error)
 				{
-					$iaTemplateInstaller = iaHelper::loadCoreClass('template');
+					$iaTemplate = iaHelper::loadCoreClass('template');
 
-					$templateInstallationFile = IA_HOME . 'templates' . IA_DS . iaHelper::getPost('tmpl', '') . IA_DS . 'info' . IA_DS . 'install.xml';
-					$iaTemplateInstaller->getFromPath($templateInstallationFile);
+					$templateInstallationFile = IA_HOME . 'templates' . IA_DS . iaHelper::getPost('tmpl', '') . IA_DS . 'install.xml';
+					$iaTemplate->getFromPath($templateInstallationFile);
 
-					$iaTemplateInstaller->parse();
-					$iaTemplateInstaller->check();
+					$iaTemplate->parse();
+					$iaTemplate->check();
 
-					if ($notes = $iaTemplateInstaller->getNotes())
+					if ($notes = $iaTemplate->getNotes())
 					{
 						$error = true;
 						$message = implode('<br>', $notes);
 					}
 
-					$iaTemplateInstaller->install(iaTemplate::SETUP_INITIAL);
+					$iaTemplate->install(iaTemplate::SETUP_INITIAL);
 
 					// writing it to the system log
 					$iaLog = iaHelper::loadCoreClass('log', 'core');

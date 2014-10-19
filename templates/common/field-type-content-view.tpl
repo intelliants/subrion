@@ -6,85 +6,87 @@
 
 {if trim($item.$varname)}
 	{capture assign='_field_text'}
-		{* display as link to view details page *}
+		{* display as a link to view details page *}
 		{if trim($item.$varname) && $variable.link_to && isset($all_item_type) && in_array($type, array('text', 'number', 'combo', 'radio', 'date'))}
-			<a href="{ia_url data=$oneitem item=$all_item_type attr='class="view-details-link"' type='url'}">
+		<a href="{ia_url data=$oneitem item=$all_item_type attr='class="view-details-link"' type='url'}">
 		{/if}
 
-		{if 'text' == $type}
-			{$item.$varname}
+		{switch $type}
+		{case 'text' break}
+			{$item.$varname|escape:'html'}
 
-		{elseif 'textarea' == $type}
+		{case 'textarea' break}
 			{if $variable.use_editor}
 				{$item.$varname}
 			{else}
-				{$item.$varname|nl2br}
+				{$item.$varname|escape:'html'|nl2br}
 			{/if}
 
-		{elseif 'number' == $type}
-			{$item.$varname}
+		{case 'number' break}
+			{$item.$varname|escape:'html'}
 
-		{elseif 'checkbox' == $type}
+		{case 'checkbox' break}
 			{arrayToLang values=$item.$varname name=$varname}
 
-		{elseif 'storage' == $type}
-			{assign var='chosen' value=$item.$varname|unserialize}
+		{case 'storage' break}
+			{assign value $item.$varname|unserialize}
 
-			{if $chosen}
-				{foreach $chosen as $file}
-					<a href="{$smarty.const.IA_CLEAR_URL}uploads/{$file.path}">{if $file.title}{$file.title}{else}{lang key='download'} {$file@iteration}{/if}</a>{if !$file@last}, {/if}
+			{if $value}
+				{foreach $value as $entry}
+					<a href="{$nonProtocolUrl}uploads/{$entry.path}">{if $entry.title}{$entry.title|escape:'html'}{else}{lang key='download'} {$entry@iteration}{/if}</a>{if !$entry@last}, {/if}
 				{/foreach}
 			{/if}
 
-		{elseif 'image' == $type}
-			{assign var='chosen' value=$item.$varname|unserialize}
+		{case 'image' break}
+			{assign var='entry' value=$item.$varname|unserialize}
 			<div class="thumbnail" style="width: {$variable.thumb_width}px;">
 				{if $variable.link_to && isset($all_item_type)}
-					<a href="{ia_url data=$oneitem item=$all_item_type type='url'}" title="{$chosen.title|default:''}">
-						{printImage imgfile=$chosen.path|default:'' title=$chosen.title|default:''}
-						{if !empty($chosen.title)}<span class="caption">{$chosen.title|default:''}</span>{/if}
+					<a href="{ia_url data=$oneitem item=$all_item_type type='url'}" title="{$entry.title|default:''}">
+						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:''}
+						{if !empty($entry.title)}<span class="caption">{$entry.title|default:''}</span>{/if}
 					</a>
 				{elseif $variable.thumb_width == $variable.image_width && $variable.thumb_height == $variable.image_height}
-					{printImage imgfile=$chosen.path|default:'' title=$chosen.title|default:'' width=$variable.thumb_width height=$variable.thumb_height}
+					{printImage imgfile=$entry.path|default:'' title=$entry.title|default:'' width=$variable.thumb_width height=$variable.thumb_height}
 				{else}
-					<a href="{printImage imgfile=$chosen.path|default:'' url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$varname}]" title="{$chosen.title|default:''}">
-						{printImage imgfile=$chosen.path|default:'' title=$chosen.title|default:''}
-						{if !empty($chosen.title)}<span class="caption">{$chosen.title|default:''}</span>{/if}
+					<a href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$varname}]" title="{$entry.title|default:''}">
+						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:''}
+						{if !empty($entry.title)}<span class="caption">{$entry.title|default:''}</span>{/if}
 					</a>
 				{/if}
 			</div>
 
-		{elseif 'combo' == $type || 'radio' == $type}
-			{assign var='field_combo' value="{$name}_{$item.$varname}"}
-
+		{case 'combo'}
+		{case 'radio' break}
+			{assign field_combo "{$name}_{$item.$varname}"}
 			{lang key=$field_combo default='&nbsp;'}
 
-		{elseif 'date' == $type}
+		{case 'date' break}
 			{$item.$varname|date_format:$config.date_format}
 
-		{elseif 'url' == $type}
-			{assign var='chosen' value='|'|explode:$item.$varname}
-			<a href="{$chosen[0]}"{if $variable.url_nofollow == '1'} rel="nofollow"{/if} target="_blank">{$chosen[1]}</a>
+		{case 'url' break}
+			{assign value '|'|explode:$item.$varname}
+			<a href="{$value[0]}"{if $variable.url_nofollow} rel="nofollow"{/if} target="_blank">{$value[1]|escape:'html'}</a>
 
-		{elseif 'pictures' == $type}
+		{case 'pictures' break}
 			{if $item.$varname}
 				<ul id="{$varname}" class="thumbnails">
-					{foreach $item.$varname|unserialize as $pic}
+					{foreach $item.$varname|unserialize as $entry}
 						<li class="thumbnail">
-							<a href="{printImage imgfile=$pic.path|default:'' url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$varname}]" title="{$pic.title}">
-								{printImage imgfile=$pic.path|default:'' title=$pic.title}
-								{if !empty($pic.title)}<div class="caption">{$pic.title}</div>{/if}
+							<a href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$varname}]" title="{$entry.title|escape:'html'}">
+								{printImage imgfile=$entry.path|default:'' title=$entry.title}
+								{if !empty($entry.title)}<div class="caption">{$entry.title|escape:'html'}</div>{/if}
 							</a>
 						</li>
 					{/foreach}
 				</ul>
 			{/if}
-		{/if}
+		{/switch}
 
-		{* display as link to view details page *}
+		{* display as a link to view details page *}
 		{if trim($item.$varname) && $variable.link_to && isset($all_item_type) && in_array($type, array('text', 'number', 'combo', 'radio', 'date'))}
 			</a>
 		{/if}
+
 	{/capture}
 
 	{if !isset($wrappedValues)}

@@ -1,0 +1,54 @@
+
+//
+// Buttons
+// --------------------------------------------------
+
+.vm-btn {
+  display: inline-block;
+  padding: 4px 12px;
+  margin-bottom: 0; // For input.btn
+  font-size: @vm-font-size - 2px;
+  line-height: @vm-line-height;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 0 none;
+  .border-radius(@vm-border-radius);
+  .transition(all .3s ease);
+
+  background: @btn-default-bg;
+  color: @btn-default-color;
+  
+  // Hover/focus state
+  &:hover,
+  &:focus {
+    color: #fff;
+    background: @vm-link-color;
+    text-decoration: none;
+  }
+
+  // Focus state for keyboard and accessibility
+  &:focus {
+    outline: 0 none;
+  }
+
+  // Active state
+  &.active,
+  &:active {
+    background-image: none;
+    outline: 0;
+  }
+
+  // Disabled state
+  &.disabled,
+  &[disabled] {
+    cursor: default;
+    background-image: none;
+    .opacity(65);
+    .box-shadow(none);
+  }
+}
+
+
+// Colors
+

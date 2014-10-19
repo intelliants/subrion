@@ -37,7 +37,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$itemName = $tableName = iaUsers::getTable();
 	$messages = array();
 
-	$iaPlan = $iaCore->factory('plan', iaCore::FRONT);
+	$assignableGroups = $iaDb->keyvalue(array('id', 'title'), '`assignable` = 1', iaUsers::getUsergroupsTable());
+
+	$iaPlan = $iaCore->factory('plan');
 	$plans = $iaPlan->getPlans($iaUsers->getItemName());
 
 	$iaDb->setTable($tableName);
@@ -79,37 +81,47 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		if (isset($_POST['change_info']))
 		{
 			$item = array();
-			if ($fields = iaField::getAcoFieldsList(false, $itemName, null, true, iaUsers::getIdentity(true)))
+			$fields = iaField::getAcoFieldsList(false, $itemName, null, true, iaUsers::getIdentity(true));
+
+			list($item, $error, $messages, $error_fields) = $iaField->parsePost($fields, iaUsers::getIdentity(true));
+
+			if (!$error)
 			{
-				list($item, $error, $messages, $error_fields) = $iaField->parsePost($fields, iaUsers::getIdentity(true));
-
-				if (!$error)
+				if ($assignableGroups && in_array((int)$_POST['usergroup_id'], array_keys($assignableGroups)))
 				{
-					$item['id'] = iaUsers::getIdentity()->id;
+					$item['usergroup_id'] = $_POST['usergroup_id'];
+				}
 
-					$iaDb->update($item);
+				$iaDb->update($item, iaDb::convertIds(iaUsers::getIdentity()->id));
+
+				if (0 == $iaDb->getErrorNumber())
+				{
+					$iaCore->startHook('phpUserProfileUpdate', array('userInfo' => $item, 'username' => iaUsers::getIdentity()->username));
+					iaUsers::reloadIdentity();
+
 					$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
-
-					// update current profile data
-					if ($item['id'] == iaUsers::getIdentity()->id)
-					{
-						$iaUsers->getAuth($item['id']);
-					}
 				}
 				else
 				{
-					$iaView->setMessages($messages);
+					$iaView->setMessages(iaLanguage::get('db_error'));
 				}
+			}
+			else
+			{
+				$iaView->setMessages($messages);
 			}
 		}
 
-		if (!empty($_POST['plan_id']) && $_POST['plan_id'] != iaUsers::getIdentity()->sponsored_plan_id)
+		if (isset($_POST['plan_id']) && $_POST['plan_id'] != iaUsers::getIdentity()->sponsored_plan_id)
 		{
-			$plan = $iaPlan->getPlanById((int)$_POST['plan_id']);
-			if ($plan && $plan['cost'] > 0)
+			if ($plan = $iaPlan->getById((int)$_POST['plan_id']))
 			{
-				$url = $iaPlan->prePayment($itemName, iaUsers::getIdentity(true), $plan['id'], false, 0, IA_SELF);
-				$iaCore->util()->redirect(iaLanguage::get('thanks'), iaLanguage::get('plan_added'), $url);
+				$url = $iaPlan->prePayment($itemName, iaUsers::getIdentity(true), $plan['id'], IA_SELF);
+				iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('plan_added'), $url);
+			}
+			else
+			{
+				$iaPlan->cancelSubscription(iaUsers::getItemName(), iaUsers::getIdentity()->id);
 			}
 		}
 	}
@@ -127,6 +139,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$extraTabs = array();
 	$iaCore->startHook('editProfileExtraTabs', array('tabs' => &$extraTabs, 'item' => &$item));
 	$sections = array_merge($sections, $extraTabs);
+
+	if (iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id)
+	{
+		$iaView->assign('assignableGroups', $assignableGroups);
+	}
 
 	$iaView->assign('sections', $sections);
 	$iaView->assign('plans_count', (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, null, iaPlan::getTable()));

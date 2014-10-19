@@ -18,7 +18,7 @@
 					{if $section || isset($tabs_content.$section_name)}
 						{* define active tab *}
 						{if !isset($active)}
-							{assign var='active' value=$section_name}
+							{assign active $section_name}
 						{/if}
 
 						<li{if $active == $section_name} class="active"{/if}><a data-toggle="tab" href="#tab-{$section_name}"><span>{lang key=$section_name}</span></a></li>
@@ -31,7 +31,7 @@
 					{if $section || isset($tabs_content.$section_name)}
 						{* define active tab *}
 						{if !isset($active)}
-							{assign var='active' value=$section_name}
+							{assign active $section_name}
 						{/if}
 
 						<li{if $active == $section_name} class="active"{/if}><a data-toggle="tab" href="#tab-{$section_name}"><span>{lang key=$section_name}</span></a></li>

@@ -26,47 +26,42 @@
 
 if (!iaUsers::hasIdentity())
 {
-	return iaView::accessDenied();
+	return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
 }
 
 $iaTransaction = $iaCore->factory('transaction');
+$profilePageUrl = IA_URL . 'profile/';
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 {
-	if (isset($_GET['amount']))
+	$output = array('error' => false);
+	$amount = (float)$_GET['amount'];
+
+	if ($amount > 0)
 	{
-		$output = array('error' => false);
-		$amount = (float)$_GET['amount'];
-
-		if ($amount > 0)
+		if ($amount >= (float)$iaCore->get('balance_min_amount'))
 		{
-			if ($amount >= (float)$iaCore->get('balance_min_amount'))
-			{
-				$transactionId = $iaTransaction->createInvoice(iaLanguage::get('member_balance'), $amount, 'balance', iaUsers::getIdentity(true), $profilePageUrl, 0, true);
-
-				$output['url'] = IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER;
-			}
-			else
-			{
-				$output['error'] = iaLanguage::get('amount_less_min');
-			}
+			$transactionId = $iaTransaction->createInvoice(iaLanguage::get('member_balance'), $amount, 'balance', iaUsers::getIdentity(true), $profilePageUrl, 0, true);
+			$transactionId
+				? $output['url'] = IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER
+				: $output['error'] = iaLanguage::get('db_error');
 		}
 		else
 		{
-			$output['error'] = iaLanguage::get('amount_incorrect');
+			$output['error'] = iaLanguage::get('amount_less_min');
 		}
-
-		$iaView->assign($output);
 	}
+	else
+	{
+		$output['error'] = iaLanguage::get('amount_incorrect');
+	}
+
+	$iaView->assign($output);
 }
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
-	$profilePageUrl = IA_URL . 'profile/';
-
-	// forced update of funds
-	$iaCore->factory('users')->getAuth(iaUsers::getIdentity()->id);
-	//
+	iaUsers::reloadIdentity();
 
 	if (isset($_POST['amount']))
 	{

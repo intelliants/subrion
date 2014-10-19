@@ -40,11 +40,11 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 					iaUtil::loadUTF8Functions('ascii', 'utf8_to_ascii');
 
 					$name = $_GET['name'];
-					$name = !utf8_is_ascii($name) ? utf8_to_ascii($name) : $name;
+					$name = utf8_is_ascii($name) ? $name : utf8_to_ascii($name);
 					$name = preg_replace('#[^a-z0-9-_]#iu', '', $name);
 
 					$url = $_GET['url'];
-					$url = !utf8_is_ascii($url) ? utf8_to_ascii($url) : $url;
+					$url = utf8_is_ascii($url) ? $url : utf8_to_ascii($url);
 					$url = preg_replace('#[^a-z0-9-_]#iu', '', $url);
 
 					$url = $url ? $url : $name;
@@ -162,7 +162,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$messages = array();
 
 		$newPage = array(
-			'name' => iaSanitize::sql(strtolower($_POST['name'] = !utf8_is_ascii($_POST['name']) ? utf8_to_ascii($_POST['name']) : $_POST['name'])),
+			'name' => iaSanitize::sql(strtolower($_POST['name'] =! utf8_is_ascii($_POST['name']) ? utf8_to_ascii($_POST['name']): $_POST['name'])),
 			'alias' => empty($_POST['alias']) ? $_POST['name'] : $_POST['alias']
 		);
 
@@ -196,7 +196,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$newPage['name'] = preg_replace('#[^a-z0-9-_]#iu', '', $newPage['name']);
 		$newPage['custom_url'] = empty($_POST['custom_url']) ? '' : $_POST['custom_url'];
 
-		$newPage['alias'] = !utf8_is_ascii($newPage['alias']) ? utf8_to_ascii($newPage['alias']) : $newPage['alias'];
+		$newPage['alias'] = utf8_is_ascii($newPage['alias']) ? $newPage['alias'] : utf8_to_ascii($newPage['alias']);
 		$newPage['alias'] = empty($newPage['alias']) ? '' : iaSanitize::alias($newPage['alias']);
 		$newPage['alias'].= $_POST['extension'];
 
@@ -349,7 +349,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if (!$error)
 			{
-				if ($iaAcl->checkAccess('admin_pages:add', 0, 0, 'menus'))
+				if ($iaAcl->checkAccess('admin_page:add', 'menus'))
 				{
 					$menus = (isset($_POST['menus']) && is_array($_POST['menus'])) ? $_POST['menus'] : array();
 					$iaDb->setTable('menus');
@@ -397,7 +397,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					iaUtil::post_goto(array(
 						'add' => $url . 'add/',
 						'list' => $url,
-						'stay' => $url . 'edit/?id=' . $id,
+						'stay' => $url . 'edit/' . $id . '/',
 					));
 				}
 				else
@@ -419,9 +419,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		case iaCore::ACTION_ADD:
 		case iaCore::ACTION_EDIT:
-			iaBreadcrumb::add(iaLanguage::get('pages'), IA_ADMIN_URL . 'pages/');
-
-			$pageId = (isset($_GET['id']) && is_numeric($_GET['id'])) ? (int)$_GET['id'] : null;
+			$pageId = (isset($iaCore->requestPath[0]) && is_numeric($iaCore->requestPath[0])) ? (int)$iaCore->requestPath[0] : null;
 			$menus = array();
 			$displayableInMenus = array();
 
@@ -432,7 +430,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
 
-				$pageId = (int)$_GET['id'];
 				$page = $iaPage->getById($pageId);
 
 				$iaDb->setTable(iaLanguage::getTable());
@@ -460,7 +457,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			else
 			{
 				$page = array(
-					'name' => '',
+					'name' => iaUtil::checkPostParam('name'),
 					'extension' => '',
 					'parent' => '',
 					'readonly' => false,
@@ -470,7 +467,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$iaView->assign('home_page', 0);
 			}
 
-			if ($iaAcl->checkAccess('admin_pages:add', 0, 0, 'menus'))
+			if ($iaAcl->checkAccess('admin_page:add', 0, 0, 'menus'))
 			{
 				$displayableInMenus[0] = array('title' => iaLanguage::get('core_menus', 'Core menus'), 'list' => array());
 				$displayableInMenus[1] = array('title' => iaLanguage::get('custom_menus', 'Custom menus'), 'list' => array());
@@ -525,6 +522,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$parentPage = $iaPage->getByName($page['parent'], false);
 
 			$groups = $iaPage->getGroups(array($iaCore->get('home_page'), $page['name']));
+
+			/* temporary */
+			$options = array('list' => 'go_to_list', 'add' => 'add_another_one', 'stay' => 'stay_here');
+			$iaView->assign('goto', $options);
+			//
 
 			$iaView->assign('item', $page);
 			$iaView->assign('pages', $iaPage->getNonServicePages(array('index')));

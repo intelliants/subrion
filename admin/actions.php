@@ -24,183 +24,117 @@
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+	protected $_name = 'actions';
 
-	$iaUsers = $iaCore->factory('users');
 
-	switch ($_POST['action'])
+	protected function _gridRead($params)
 	{
-		case 'edit-picture-title':
-			$title = isset($_POST['value']) ? iaSanitize::sql($_POST['value']) : '';
-			$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : false;
-			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : false;
-			$path = isset($_POST['path']) ? iaSanitize::sql($_POST['path']) : false;
-			$itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
+		switch ($_POST['action'])
+		{
+			case 'delete-file':
+				return $this->_deleteFile($_POST);
 
-			if ($itemId && $item && $field && $path)
+			case 'remove-installer':
+				$result = iaUtil::deleteFile(IA_HOME . 'install/modules/module.install.php');
+
+				return array(
+					'error' => !$result,
+					'message' => iaLanguage::get($result ? 'deleted' : 'error')
+				);
+
+			default:
+				$result = array();
+				$this->_iaCore->startHook('phpAdminActionsJsonHandle', array('action' => $_POST['action'], 'output' => &$result));
+
+				return $result;
+		}
+	}
+
+	protected function _indexPage(&$iaView)
+	{
+		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+	}
+
+	private function _deleteFile($params)
+	{
+		$result = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+
+		$item = isset($params['item']) ? iaSanitize::sql($params['item']) : null;
+		$field = isset($params['field']) ? iaSanitize::sql($params['field']) : null;
+		$path = isset($params['path']) ? iaSanitize::sql($params['path']) : null;
+		$itemId = isset($params['itemid']) ? (int)$params['itemid'] : null;
+
+		if ($itemId && $item && $field && $path)
+		{
+			$tableName = $this->_iaCore->factory('item')->getItemTable($item);
+			$itemValue = $this->_iaDb->one($field, iaDb::convertIds($itemId), $tableName);
+
+			$iaAcl = $this->_iaCore->factory('acl');
+			if ($iaAcl->isAdmin() && $itemValue)
 			{
-				$tableName = $iaCore->factory('item')->getItemTable($item);
+				$pictures = ($itemValue[1] == ':') ? unserialize($itemValue) : $itemValue;
+				$key = null;
 
-				if ($item == iaUsers::getItemName())
+				if (is_array($pictures)) // picture gallery
 				{
-					$itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
-					$memberId = $itemId;
+					if ($primitive = !is_array($pictures[key($pictures)]))// used to correctly handle the Image type fields (holds the single image)
+					{
+						$pictures = array($pictures);
+					}
+					foreach ($pictures as $k => $v)
+					{
+						if ($path == $v['path'])
+						{
+							$key = $k;
+							break;
+						}
+					}
+					if (!is_null($key))
+					{
+						unset($pictures[$key]);
+					}
+
+					$newItemValue = $primitive ? '' : serialize($pictures);
 				}
 				else
 				{
-					$row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName);
-					$itemValue = $row[$field];
-					$memberId = $row['id'];
+					// single image
+					$newItemValue = '';
+					if ($pictures == $path)
+					{
+						$key = true;
+					}
 				}
 
-				if (iaUsers::hasIdentity() && $memberId == iaUsers::getIdentity()->id && $itemValue)
+				if (!is_null($key))
 				{
-					$pictures = null;
-					if ($itemValue[1] == ':')
+					if ($this->_iaCore->factory('picture')->delete($path))
 					{
-						$array = unserialize($itemValue);
-						if (is_array($array) && $array)
+						if ($this->_iaDb->update(array($field => $newItemValue), iaDb::convertIds($itemId), null, $tableName))
 						{
-							$pictures = $array;
+							if (iaUsers::getItemName() == $item)
+							{
+								// update current profile data
+								if ($itemId == iaUsers::getIdentity()->id)
+								{
+									iaUsers::reloadIdentity();
+								}
+							}
 						}
+
+						$result['error'] = false;
+						$result['message'] = iaLanguage::get('deleted');
 					}
 					else
 					{
-						if ($array = explode(',', $itemValue))
-						{
-							$pictures = $array;
-						}
-					}
-
-					if (is_array($pictures))
-					{
-						foreach ($pictures as $i => $value)
-						{
-							if (is_array($value))
-							{
-								if ($path == $value['path'])
-								{
-									$pictures[$i]['title'] = $title;
-								}
-							}
-							else
-							{
-								if ($path == $value)
-								{
-									$key = $i;
-								}
-							}
-						}
-
-						$newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
-						$iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), false, $tableName);
-
-						if ($item == iaUsers::getItemName())
-						{
-							// update current profile data
-							if ($itemId == iaUsers::getIdentity()->id)
-							{
-								$iaUsers->getAuth($itemId);
-							}
-						}
-
-						$output['error'] = false;
-						$output['message'] = iaLanguage::get('saved');
+						$result['message'] = iaLanguage::get('error');
 					}
 				}
 			}
+		}
 
-			break;
-
-		case 'delete-file':
-			$item = isset($_POST['item']) ? iaSanitize::sql($_POST['item']) : null;
-			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : null;
-			$path = isset($_POST['path']) ? iaSanitize::sql($_POST['path']) : null;
-			$itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : null;
-
-			if ($itemId && $item && $field && $path)
-			{
-				$tableName = $iaCore->factory('item')->getItemTable($item);
-				$itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
-
-				if ($iaAcl->isAdmin() && $itemValue)
-				{
-					$pictures = ($itemValue[1] == ':') ? unserialize($itemValue) : $itemValue;
-					$key = null;
-
-					if (is_array($pictures)) // picture gallery
-					{
-						if ($primitive = !is_array($pictures[key($pictures)]))// used to correctly handle the Image type fields (holds the single image)
-						{
-							$pictures = array($pictures);
-						}
-						foreach ($pictures as $k => $v)
-						{
-							if ($path == $v['path'])
-							{
-								$key = $k;
-								break;
-							}
-						}
-						if (!is_null($key))
-						{
-							unset($pictures[$key]);
-						}
-
-						$newItemValue = $primitive ? '' : serialize($pictures);
-					}
-					else
-					{
-						// single image
-						$newItemValue = '';
-						if ($pictures == $path)
-						{
-							$key = true;
-						}
-					}
-
-					if (!is_null($key))
-					{
-						if ($iaCore->factory('picture')->delete($path))
-						{
-							if ($iaDb->update(array($field => $newItemValue), iaDb::convertIds($itemId), null, $tableName))
-							{
-								if (iaUsers::getItemName() == $item)
-								{
-									// update current profile data
-									if ($itemId == iaUsers::getIdentity()->id)
-									{
-										$iaUsers->getAuth($itemId);
-									}
-								}
-							}
-
-							$output['error'] = false;
-							$output['message'] = iaLanguage::get('deleted');
-						}
-						else
-						{
-							$output['message'] = iaLanguage::get('error');
-						}
-					}
-				}
-			}
-
-			break;
-
-		case 'remove-installer':
-			$iaCore->factory('util');
-
-			$output['error'] = !iaUtil::deleteFile(IA_HOME . 'install/modules/module.install.php');
-			$output['message'] = iaLanguage::get($output['error'] ? 'error' : 'deleted');
-
-			break;
-
-		default:
-			$iaCore->startHook('phpAdminActionsJsonHandle', array('action' => $_POST['action'], 'output' => &$output));
+		return $result;
 	}
-
-	$iaView->assign($output);
 }

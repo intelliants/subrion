@@ -115,21 +115,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		{
 			if ($class = $iaCore->factoryPackage('item', $itemsList[$itemName], iaCore::FRONT, $itemName))
 			{
-				if (method_exists($class, iaUsers::METHOD_NAME_GET_LISTINGS))
-				{
-					$result = $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit);
-				}
-				// TODO: this section will be removed from the 3.1.7 core
-				// packages should implement the method above instead
-				elseif (method_exists($class, 'addAccountTab'))
-				{
-					$result = $class->addAccountTab(null, $start, $limit, $member['id']);
-				}
-				//
-				else
-				{
-					$result = null;
-				}
+				$result = method_exists($class, iaUsers::METHOD_NAME_GET_LISTINGS)
+					? $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit)
+					: null;
 
 				if (!is_null($result))
 				{

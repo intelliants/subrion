@@ -3,7 +3,7 @@
 	<table class="table table-striped table-bordered">
 	<thead>
 		<tr>
-			<th>{lang key='order_number'}</th>
+			<th>{lang key='reference_id'}</th>
 			<th>{lang key='operation'}</th>
 			<th>{lang key='status'}</th>
 			<th>{lang key='date'}</th>
@@ -15,15 +15,15 @@
 	<tbody>
 	{foreach $transactions as $transaction}
 		<tr>
-			<td>{$transaction.order_number}</td>
-			<td>{$transaction.operation_name}</td>
+			<td>{$transaction.reference_id}</td>
+			<td>{$transaction.operation}</td>
 			<td class="{$transaction.status}">{$transaction.status}</td>
 			<td>{$transaction.date|date_format:$config.date_format}</td>
-			<td>{$transaction.gateway_name}</td>
-			<td>{$transaction.total} {$transaction.currency}</td>
+			<td>{$transaction.gateway}</td>
+			<td>{$transaction.amount} {$transaction.currency}</td>
 			<td>
-				{if 'pending' == $transaction.status && empty($transaction.pending_reason)}
-					{if empty($transaction.gateway_name)}
+				{if iaTransaction::PENDING == $transaction.status}
+					{if empty($transaction.gateway)}
 						<a href="pay/{$transaction.sec_key}/" class="btn btn-mini btn-primary">{lang key='pay'}</a>
 					{else}
 						<a href="pay/{$transaction.sec_key}/?repay" class="btn btn-mini">{lang key='change_gateway'}</a>

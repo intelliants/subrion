@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template name="startup">
+	<title>Startup</title>
+	<summary>Nice template for Subrion CMS to start with. Based on Bootstrap 2.3.</summary>
+	<author>Intelliants LLC</author>
+	<contributor>Intelliants LLC</contributor>
+	<version>3.2.0</version>
+	<date>2014-10-20</date>
+	<compatibility>3.2.0</compatibility>
+
+	<layout>
+		<position menu="1" movable="0">inventory</position>
+		<position menu="1" movable="0">account</position>
+		<position menu="1" movable="0">mainmenu</position>
+		<position menu="1" movable="0">copyright</position>
+
+		<position movable="0">header</position>
+		<position>verytop</position>
+		<position>top</position>
+		<position>bottom</position>
+		<position>verybottom</position>
+
+		<section name="header">
+			<position width="3">header1</position>
+			<position width="3">header2</position>
+			<position width="3">header3</position>
+			<position width="3">header4</position>
+		</section>
+		<section name="content">
+			<position fixed="1">left</position>
+			<position width="6">center</position>
+			<position fixed="1">right</position>
+		</section>
+		<section name="user-blocks">
+			<position width="6">user1</position>
+			<position width="6">user2</position>
+		</section>
+		<section name="footer">
+			<position width="3">footer1</position>
+			<position width="3">footer2</position>
+			<position width="3">footer3</position>
+			<position width="3">footer4</position>
+		</section>
+	</layout>
+
+	<screenshots>
+		<screenshot name="index.jpg"><![CDATA[Frontend -> Home Page]]></screenshot>
+		<screenshot name="2.jpg"><![CDATA[Frontend -> Blog]]></screenshot>
+	</screenshots>
+
+	<configgroup name="template_startup">Template</configgroup>
+
+	<config group="template_startup" 
+		    name="startup_divider1" 
+		    type="divider" 
+		    order="3000">General</config>
+
+	<config group="template_startup"
+		    name="sticky_navbar" 
+		    type="radio"
+		    order="3001" 
+		    values="1,0" 
+		    description="Sticky navbar">1</config>
+
+	<config group="template_startup" 
+		    name="max_top_menu_items" 
+		    type="text" 
+		    description="Max number of items in Main Menu"
+		    order="3002">5</config>
+
+	<config group="template_startup"
+		    name="startup_font" 
+		    type="select"
+		    order="3003" 
+		    multiplevalues="Default,PT Sans,PT Serif,Roboto" 
+		    description="Font">PT Sans</config>
+
+	<config group="template_startup"
+		    name="startup_font_subset" 
+		    type="radio"
+		    order="3004" 
+		    values="1,0" 
+		    description="Add cyrillic subset">0</config>
+
+	<config group="template_startup" 
+		    name="startup_divider2" 
+		    type="divider" 
+		    order="3030">Social links</config>
+	
+	<config group="template_startup"
+			name="startup_social"
+		    type="radio" 
+		    order="3031"
+		    values="1,0" 
+		    description="Show links">1</config>
+	<config group="template_startup"
+			name="startup_social_t"
+		    type="text"
+		    order="3032"
+		    show="startup_social|1" 
+		    description="Twitter Link">https://twitter.com/IntelliantsLLC</config>
+	<config group="template_startup"
+			name="startup_social_f"
+		    type="text" 
+		    order="3033" 
+		    show="startup_social|1" 
+		    description="Facebook Link">https://www.facebook.com/Intelliants</config>
+	<config group="template_startup"
+			name="startup_social_g"
+		    type="text" 
+		    order="3034" 
+		    show="startup_social|1" 
+		    description="Google+ Link">https://plus.google.com/102500660503219569194/posts</config>
+
+	<config group="template_startup" 
+		    name="ckeditor_css" 
+		    type="hidden" 
+		    description="CKEditor CSS"
+		    order="3099">ckeditor.css</config>
+
+	<phrases>
+		<phrase category="frontend" key="su_menu">Menu</phrase>
+		<phrase category="frontend" key="su_login">Log in</phrase>
+		<phrase category="frontend" key="su_signup">Sign up</phrase>
+		<phrase category="frontend" key="su_admin_dashboard">Admin Dashboard</phrase>
+	</phrases>
+
+	<changeset>
+		<menu position="account" status="active">account</menu>
+
+		<block sticky="1" pages="index">new_blog_posts</block>
+		<block sticky="0" pages="index" classname="box-blog" position="verybottom">blogroll</block>
+	</changeset>
+
+	<blocks>
+		<block name="header" 
+			   title="Teaser block" 
+			   position="header" 
+			   header="0"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<div class="h-block">
+	<div class="h-block__title">Attention heading</div>
+	<div class="h-block__subtitle">place any text here to gather more attention</div>
+	<p class="h-block__btn"><a href="#" class="btn btn-light btn-large">Get started</a></p>
+</div>
+			]]>
+		</block>
+		<block name="header1" 
+			   title="Header block #1" 
+			   position="header1"
+			   header="0"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<div class="th-block">
+	<a href="#" class="th-block__icon">
+		<i class="cool-icon-flash"></i>
+	</a>
+	<h3 class="th-block__title">Headline block #1</h3>
+	<p class="th-block__body">You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+</div>
+			]]>
+		</block>
+		<block name="header2" 
+			   title="Header block #2" 
+			   position="header2"
+			   header="0"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<div class="th-block">
+	<a href="#" class="th-block__icon">
+		<i class="cool-icon-settings"></i>
+	</a>
+	<h3 class="th-block__title">Headline block #2</h3>
+	<p class="th-block__body">You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+</div>
+			]]>
+		</block>
+		<block name="header3" 
+			   title="Header block #3" 
+			   position="header3"
+			   header="0"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<div class="th-block">
+	<a href="#" class="th-block__icon">
+		<i class="cool-icon-pulse"></i>
+	</a>
+	<h3 class="th-block__title">Headline block #3</h3>
+	<p class="th-block__body">You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+</div>
+			]]>
+		</block>
+		<block name="header4" 
+			   title="Header block #4" 
+			   position="header4"
+			   header="0"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<div class="th-block">
+	<a href="#" class="th-block__icon">
+		<i class="cool-icon-gamepad"></i>
+	</a>
+	<h3 class="th-block__title">Headline block #4</h3>
+	<p class="th-block__body">You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+</div>
+			]]>
+		</block>
+		<block name="verytop" 
+			   title="Call to action" 
+			   position="verytop" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<div class="row">
+	<div class="span8">
+		<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block. You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+	</div>
+	<div class="span4">
+		<p class="text-right"><a class="btn btn-large btn-primary" href="#">Learn more</a></p>
+	</div>
+</div>
+			]]>
+		</block>
+		<block name="top" 
+			   title="Top block position" 
+			   position="top" 
+			   header="1"
+			   collapsible="1" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+<p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod incorrupte, brute laoreet at pri, eam antiopam honestatis efficiantur ea. Velit atomorum voluptaria ad nam, hinc aperiam accumsan ne est, ut dictas dissentias his.</p>
+			]]>
+		</block>
+		<block name="bottom_block" 
+			   title="Bottom block position" 
+			   position="bottom" 
+			   header="1"
+			   collapsible="1" 
+			   sticky="0"
+			   pages="index" 
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+<p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod incorrupte, brute laoreet at pri, eam antiopam honestatis efficiantur ea. Velit atomorum voluptaria ad nam, hinc aperiam accumsan ne est, ut dictas dissentias his.</p>
+			]]>
+		</block>
+		<block name="user1" 
+			   title="User #1 block position" 
+			   position="user1" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="0"
+			   pages="index" 
+			   status="active" 
+			   classname="box-clear" 
+			   type="smarty">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+			]]>
+		</block>
+		<block name="user2" 
+			   title="User #2 block position" 
+			   position="user2" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="0"
+			   pages="index" 
+			   status="active" 
+			   classname="box-clear" 
+			   type="smarty">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+			]]>
+		</block>
+		<block name="html_block1" 
+			   title="HTML block #1" 
+			   position="left" 
+			   header="1"
+			   collapsible="1" 
+			   sticky="1" 
+			   status="active" 
+			   order="99"
+			   type="smarty">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+<p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod.</p>
+			]]>
+		</block>
+		<block name="footer1" 
+			   title="Footer block #1" 
+			   position="footer1" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="1" 
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+			]]>
+		</block>
+		<block name="footer2" 
+			   title="Footer block #2" 
+			   position="footer2" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="1" 
+			   status="active" 
+			   type="smarty">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+			]]>
+		</block>
+	</blocks>
+</template>

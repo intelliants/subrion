@@ -99,8 +99,8 @@ class iaDbControl extends abstractCore
 					{
 						$query = trim(implode('', $query));
 						$query = str_replace(
-							array('{prefix}', '{mysql_version}'),
-							array($this->iaDb->prefix, $this->iaDb->tableOptions),
+							array('{prefix}', '{mysql_version}', '{db_options}'),
+							array($this->iaDb->prefix, $this->iaDb->tableOptions, $this->iaDb->tableOptions),
 							$query
 						);
 

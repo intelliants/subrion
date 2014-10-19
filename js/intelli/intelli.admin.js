@@ -126,27 +126,6 @@ intelli.admin = function()
 			});
 		},
 
-		updatePictureTitle: function(object, title)
-		{
-			var $this = $(object);
-
-			var field = $this.data('field');
-			var item = $this.data('item');
-			var itemid = $this.data('item-id');
-			var path = $this.data('picture-path');
-
-			$.post(intelli.config.admin_url + '/actions.json',
-				{action: 'edit-picture-title', item: item, field: field, path: path, itemid: itemid, value: title},
-				function(response)
-				{
-					if ('boolean' == typeof response.error && !response.error)
-					{
-						intelli.notifFloatBox({msg: data.message, type: 'success', autohide: true});
-						$this.hide();
-					}
-			});
-		},
-
 		removeFile: function(path, link, item, field, itemid)
 		{
 			Ext.Msg.confirm(_t('confirm'), _t('sure_rm_file'), function(btn, text)

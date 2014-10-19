@@ -1,6 +1,6 @@
-{if isset($pay_message) && !empty($pay_message)}
+{if isset($pay_message) && $pay_message}
 	<div class="alert alert-warning">{$pay_message}</div>
-{elseif isset($transaction) && !empty($transaction) && is_array($transaction)}
+{elseif isset($transaction) && $transaction && is_array($transaction)}
 	<table class="table table-striped table-bordered">
 	<thead>
 		<tr>
@@ -12,10 +12,10 @@
 	</thead>
 	<tbody>
 		<tr>
-			<td>{$transaction.operation_name}</td>
-			<td>{$transaction.item}</td>
+			<td>{$transaction.operation}</td>
+			<td>{lang key=$transaction.item}</td>
 			<td>{$transaction.item_id}</td>
-			<td>{$transaction.total}&nbsp;{$config.currency}</td>
+			<td>{$transaction.amount}&nbsp;{$config.currency}</td>
 		</tr>
 	</tbody>
 	</table>
@@ -24,7 +24,7 @@
 		{preventCsrf}
 		{if !$balance}
 			<label class="radio">
-				<input type="radio" name="source" value="internal" {if $enough_funds}checked="checked"{else}disabled="disabled"{/if}>
+				<input type="radio" name="source" value="internal"{if $enough_funds} checked{else} disabled{/if}>
 				<strong>{lang key='pay_using_account_funds'}</strong>
 			</label>
 			<div class="plan_description">{lang key='balance_in_your_account'}</div>
@@ -32,7 +32,7 @@
 
 		<div class="plan">
 			<label class="radio">
-				<input type="radio" name="source" value="external" {if !$enough_funds && $gateways}checked="checked"{elseif !$gateways}disabled="disabled"{/if}>
+				<input type="radio" name="source" value="external"{if !$enough_funds && $gateways} checked{elseif !$gateways} disabled{/if}>
 				<strong>{lang key='pay_external'}</strong>
 			</label>
 			<div class="plan_description">{lang key='pay_via_payment_gateways'}</div>
@@ -44,7 +44,7 @@
 				{ia_hooker name='paymentButtons'}
 			</div>
 			<hr />
-		{elseif $member && 1 == $member.usergroup_id}
+		{elseif $member && iaUsers::MEMBERSHIP_ADMINISTRATOR == $member.usergroup_id}
 			<div class="alert alert-warning">{lang key='no_gateway'}</div>
 		{/if}
 		<button type="submit" class="btn btn-primary"{if !$gateways && !$enough_funds} disabled="disabled"{/if}>{lang key='proceed_pay'}</button>

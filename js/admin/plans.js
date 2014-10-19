@@ -1,35 +1,42 @@
 Ext.onReady(function()
 {
-	if ($('#js-grid-placeholder').length)
+	if (Ext.get('js-grid-placeholder'))
 	{
 		intelli.plans = new IntelliGrid(
 		{
 			columns: [
 				'selection',
+				'expander',
 				{name: 'title', title: _t('title'), sortable: false, width: 1},
 				{name: 'item', title: _t('item'), width: 100},
-				{name: 'cost', title: _t('cost'), width: 100},
-				{name: 'days', title: _t('days'), editor: 'text', width: 70},
-				{name: 'order', title: _t('order'), editor: 'text', width: 70},
+				{name: 'cost', title: _t('cost'), width: 100, editor: 'decimal'},
+				{name: 'duration', title: _t('duration'), width: 150},
+				{name: 'recurring', title: _t('recurring'), width: 70, renderer: intelli.gridHelper.renderer.check},
+				{name: 'order', title: _t('order'), editor: 'number', width: 70},
 				'status',
 				'update',
 				'delete'
 			],
-			texts: {delete_single: _t('are_you_sure_to_delete_this_plan')},
-			url: intelli.config.admin_url + '/plans/'
+			expanderTemplate: '{description}',
+			fields: ['description'],
+			texts: {delete_single: _t('are_you_sure_to_delete_this_plan')}
 		});
 	}
-	else
-	{
-		var checkAll = true;
-		$('input[name="fields[]"]').each(function()
-		{
-			if (!$(this).prop('checked')) checkAll = false;
-		});
+});
 
-		$('#check_all_fields')
+$(function()
+{
+	'use_strict';
+
+	var checkAll = true;
+	$('input[name="fields[]"]').each(function()
+	{
+		if (!$(this).prop('checked')) checkAll = false;
+	});
+
+	$('#check_all_fields')
 		.prop('checked', checkAll)
-		.click(function()
+		.on('click', function()
 		{
 			var checked = $(this).prop('checked');
 			$('input[name="fields[]"]').each(function()
@@ -38,21 +45,53 @@ Ext.onReady(function()
 			});
 		});
 
-		$('select[name="item"]').change(function()
+	$('select[name="item"]').on('change', function()
+	{
+		$('.js-fields-list, .js-items-list').hide();
+		$('#js-fields-empty').hide();
+
+		var value = $(this).val();
+		if ('' == value) value = 'empty';
+
+		$('#js-fields-' + value).show();
+		$('#js-item-' + value).show();
+	}).change().on('change', function()
+	{
+		var $statusesSelect = $('select[name="expiration_status"]');
+		$('option[value!=""]', $statusesSelect).remove();
+		var statuses = $statusesSelect.data($(this).val());
+		if (typeof statuses != 'undefined')
 		{
-			$('.js-fields-list, .js-items-list').hide();
-			$('#js-fields-empty').hide();
+			statuses = statuses.split(',');
+			for (var i in statuses)
+			{
+				$statusesSelect.append('<option value="' + statuses[i] + '">' + _t(statuses[i]) + '</option>');
+			}
+		}
+	});
 
-			var value = $(this).val();
-			if ('' == value) value = 'empty';
+	$('textarea.cked').each(function()
+	{
+		intelli.ckeditor($(this).attr('id'), {toolbar: 'Simple', height: '200px'});
+	});
 
-			$('#js-fields-' + value).show();
-			$('#js-item-' + value).show();
-		}).change();
-
-		$('textarea.cked').each(function()
+	$('#recurring').on('change', function()
+	{
+		if (1 == $(this).val())
 		{
-			intelli.ckeditor($(this).attr('id'), {toolbar: 'Simple', height: '200px'});
-		});
-	}
+			var $tip = $('#js-cycles-tip');
+			$tip.length ? $tip.show() : $('#js-cycles-option').show();
+		}
+		else
+		{
+			$('#js-cycles-tip, #js-cycles-option').hide();
+		}
+	});
+
+	$('a', '#js-cycles-tip').on('click', function(e)
+	{
+		e.preventDefault();
+		$('#js-cycles-tip').remove();
+		$('#js-cycles-option').show();
+	});
 });

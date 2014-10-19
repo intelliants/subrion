@@ -24,419 +24,289 @@
  *
  ******************************************************************************/
 
-$iaUsers = $iaCore->factory('users');
-$iaUtil = $iaCore->factory('util');
-
-$iaDb->setTable(iaUsers::getTable());
-
-$userGroups = $iaUsers->getUsergroups();
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	switch ($pageAction)
+	protected $_name = 'members';
+
+	protected $_gridColumns = array('username', 'fullname', 'usergroup_id', 'email', 'status', 'date_reg');
+	protected $_gridFilters = array('status' => 'equal', 'usergroup_id' => 'equal', 'id' => 'equal');
+
+	protected $_phraseAddSuccess = 'member_added';
+	protected $_phraseGridEntryDeleted = 'member_deleted';
+
+	private $_itemName;
+	private $_userGroups;
+
+	private $_password;
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			if ('usergroup' == $_GET['sort'])
-			{
-				$_GET['sort'] = 'usergroup_id';
-			}
+		parent::__construct();
 
-			$conditions = array();
-			if (isset($_GET['name']) && $_GET['name'])
-			{
-				$conditions[] = "CONCAT(`username`, `fullname`, `email`) LIKE '%" . iaSanitize::sql($_GET['name']) . "%'";
-			}
+		$iaUsers = $this->_iaCore->factory('users');
+		$this->setHelper($iaUsers);
 
-			$output = $iaCore->factory('grid', iaCore::ADMIN)->gridRead($_GET,
-				array('username', 'fullname', 'usergroup_id', 'email', 'status', 'date_reg'),
-				array('status' => 'equal', 'usergroup_id' => 'equal', 'id' => 'equal'),
-				$conditions
-			);
-
-			if ($output['data'])
-			{
-				$userId = iaUsers::getIdentity()->id;
-				foreach ($output['data'] as $key => &$entry)
-				{
-					$entry['usergroup'] = isset($userGroups[$entry['usergroup_id']]) ? $userGroups[$entry['usergroup_id']] : '';
-					$entry['permissions'] = $entry['config'] = $entry['update'] = true;
-					$entry['delete'] = ($entry['id'] != $userId);
-				}
-			}
-
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = array(
-				'result' => false,
-				'message' => iaLanguage::get('invalid_parameters')
-			);
-
-			if (isset($_POST['id']) && is_array($_POST['id']) && count($_POST) > 1)
-			{
-				$error = false;
-				$values = $_POST;
-
-				$ids = $values['id'];
-				unset($values['id']);
-
-				$total = count($ids);
-				$currentUserId = iaUsers::getIdentity()->id;
-				$totalAdminsCount = (int)$iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status AND `id` != :id', array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE, 'id' => $currentUserId));
-
-				if (1 == $total && in_array($currentUserId, $ids))
-				{
-					if (0 == $totalAdminsCount && isset($values['status']) && $values['status'] != iaCore::STATUS_ACTIVE)
-					{
-						$error = true;
-						$output['message'] = iaLanguage::get('action_not_allowed_since_you_only_admin');
-					}
-				}
-
-				if (!$error)
-				{
-					$affected = 0;
-
-					foreach ($ids as $userId)
-					{
-						if ($userId == $currentUserId)
-						{
-							if (0 == $totalAdminsCount && isset($values['status']) && $values['status'] != iaCore::STATUS_ACTIVE)
-							{
-								continue;
-							}
-						}
-
-						$success = $iaUsers->update($values, '`id` = ' . $userId);
-						empty($success) || $affected++;
-
-						if ($userId == $currentUserId && $success)
-						{
-							$iaUsers->getAuth($userId);
-						}
-					}
-
-					if (1 == $total)
-					{
-						$output['result'] = ($affected == $total);
-						$output['message'] = iaLanguage::get($output['result'] ? 'saved' : 'db_error');
-					}
-					else
-					{
-						$output['result'] = true;
-						$output['message'] = ($affected == $total)
-							? iaLanguage::get('saved')
-							: iaLanguage::getf('items_updated_of', array('num' => $affected, 'total' => $total));
-					}
-				}
-			}
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = array(
-				'result' => false,
-				'message' => iaLanguage::get('invalid_parameters')
-			);
-
-			if (isset($_POST['id']) && is_array($_POST['id']) && $_POST['id'])
-			{
-				$affected = 0;
-				$currentUserId = (int)iaUsers::getIdentity()->id;
-
-				foreach ($_POST['id'] as $id)
-				{
-					$stmt = '`id` = :id AND `id` != :admin';
-					$iaDb->bind($stmt, array('id' => (int)$id, 'admin' => $currentUserId));
-
-					if ($iaUsers->delete($stmt))
-					{
-						$affected++;
-					}
-				}
-
-				$total = count($_POST['id']);
-				if (1 == $total)
-				{
-					$output['result'] = ($affected == $total);
-					$output['message'] = iaLanguage::get($output['result'] ? 'member_deleted' : 'db_error');
-				}
-				else
-				{
-					$output['result'] = (bool)$affected;
-					if ($output['result'])
-					{
-						$output['message'] = ($affected == $total)
-							? iaLanguage::get('items_deleted')
-							: iaLanguage::getf('items_deleted_of', array('num' => $affected, 'total' => $total));
-					}
-					else
-					{
-						$output['message'] = iaLanguage::get('db_error');
-					}
-				}
-			}
+		$this->_itemName = $iaUsers->getItemName();
+		$this->_userGroups = $iaUsers->getUsergroups();
 	}
 
-	$iaView->assign($output);
-
-/*
-	if (isset($_GET['a']))
+	protected function _entryDelete($entryId)
 	{
-		$data = array();
-		$a = $_GET['a'];
-		$ids = isset($_GET['ids']) ? explode('-', $_GET['ids']) : array();
-		$letters = iaUtil::getLetters();
+		$stmt = '`id` = :id AND `id` != :user';
+		$stmt = iaDb::printf($stmt, array('id' => (int)$entryId, 'user' => (int)iaUsers::getIdentity()->id));
 
-		foreach ($letters as $key => $c)
+		return $this->getHelper()->delete($stmt);
+	}
+
+	protected function _gridRead($params)
+	{
+		if ('usergroup' == $params['sort'])
 		{
-			if ($a == 'subpages')
+			$params['sort'] = 'usergroup_id';
+		}
+
+		return parent::_gridRead($params);
+	}
+
+	protected function _modifyGridParams(&$conditions, &$values)
+	{
+		if (!empty($_GET['name']))
+		{
+			$conditions[] = "CONCAT(`username`, `fullname`, `email`) LIKE '%" . iaSanitize::sql($_GET['name']) . "%'";
+		}
+	}
+
+	protected function _modifyGridResult(array &$entries)
+	{
+		$userId = iaUsers::getIdentity()->id;
+
+		foreach ($entries as &$entry)
+		{
+			$entry['usergroup'] = isset($this->_userGroups[$entry['usergroup_id']]) ? $this->_userGroups[$entry['usergroup_id']] : '';
+			$entry['permissions'] = $entry['config'] = $entry['update'] = true;
+			$entry['delete'] = ($entry['id'] != $userId);
+		}
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		if (iaCore::ACTION_EDIT == $iaView->get('action'))
+		{
+			$adminsCount = $this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status', array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
+			$iaView->assign('admin_count', $adminsCount);
+
+			if (1 == $adminsCount && iaUsers::MEMBERSHIP_ADMINISTRATOR == $entryData['usergroup_id'])
 			{
-				$item = array(
-					'id' => $key + 1,
-					'text' => '&nbsp;' . $c,
-					'cls' => 'folder',
-					'leaf' => true,
-					'checked' => (in_array($key + 1, $ids) ? true : false),
-				);
-				$data[] = $item;
+				unset($entryData['status']);
 			}
 		}
-		$iaView->assign($data);
+
+		$this->_iaCore->startHook('editItemSetSystemDefaults', array('item' => &$entryData));
+
+		$iaPlan = $this->_iaCore->factory('plan');
+		$plans = $iaPlan->getPlans($this->_itemName);
+
+		$iaField = $this->_iaCore->factory('field');
+		$sections = $iaField->filterByGroup($entryData, $this->_itemName, array('page' => iaCore::ADMIN, 'selection' => "f.*, IF(f.`name` = 'avatar', 4, `order`) `order`", 'order' => '`order`'));
+
+		unset($this->_userGroups[iaUsers::MEMBERSHIP_GUEST]);
+
+		$iaView->assign('plans', $plans);
+		$iaView->assign('sections', $sections);
+		$iaView->assign('statuses', $this->getHelper()->getStatuses());
+		$iaView->assign('usergroups', $this->_userGroups);
 	}
-*/
-}
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$iaField = $iaCore->factory('field');
-
-	$error = false;
-	$messages = array();
-
-	if (isset($_POST['save']))
+	protected function _setDefaultValues(array &$entry)
 	{
-		$iaCore->startHook('adminAddMemberValidation');
-
-		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-		if (iaCore::ACTION_EDIT == $pageAction)
+		if ($_POST)
 		{
-			$member = $iaUsers->getInfo((int)$_GET['id']);
+			$entry = $_POST;
 		}
 		else
 		{
-			$member = array('sponsored' => false, 'featured' => false);
+			$entry = array(
+				'featured' => false,
+				'sponsored' => false,
+				'sponsored_plan_id' => 0,
+				'sponsored_end' => '',
+				'status' => iaCore::STATUS_ACTIVE,
+				'usergroup_id' => iaUsers::MEMBERSHIP_REGULAR
+			);
 		}
+	}
 
-		$fields = iaField::getAcoFieldsList(iaCore::ADMIN, $iaUsers->getItemName());
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		$this->_iaCore->startHook('adminAddMemberValidation');
+
+		$iaField = $this->_iaCore->factory('field');
+		$fields = iaField::getAcoFieldsList(iaCore::ADMIN, $this->_itemName);
 
 		// this is a hack to force the script to upload files to the appropriate folder
 		// FIXME
 		$activeUser = iaUsers::getIdentity(true);
 		$_SESSION[iaUsers::SESSION_KEY] = array(
-			'id' => isset($_GET['id']) ? (int)$_GET['id'] : 0,
-			'username' => $_POST['username']
+			'id' => $this->getEntryId(),
+			'username' => $data['username']
 		);
-		list($member, $error, $messages, ) = $iaField->parsePost($fields, $member, true);
+		list($entry, $error, $this->_messages, ) = $iaField->parsePost($fields, $entry, true);
 		$_SESSION[iaUsers::SESSION_KEY] = $activeUser;
 		//
 
-		if (isset($_POST['status']))
+		if ($error)
 		{
-			$member['status'] = $_POST['status'];
+			return false;
+		}
+
+		if (isset($data['status']))
+		{
+			$entry['status'] = $data['status'];
 		}
 
 		$stmt = '`email` = :email';
-
-		if ($pageAction == iaCore::ACTION_EDIT)
+		if (iaCore::ACTION_EDIT == $action)
 		{
-			if (isset($member['status']))
+			if (isset($entry['status']) && $entry['status'] == $this->_iaDb->one('status', iaDb::convertIds((int)$this->getEntryId())))
 			{
-				if ($iaDb->one('status', iaDb::convertIds((int)$_GET['id'])) == $member['status'])
-				{
-					unset($member['status']);
-				}
+				unset($entry['status']);
 			}
 
-			$stmt .= ' AND `id` != ' . (int)$_GET['id'];
+			$stmt .= ' AND `id` != ' . (int)$this->getEntryId();
 		}
 
-		if ($iaDb->exists($stmt, array('email' => $member['email'])))
+		if ($this->_iaDb->exists($stmt, $entry))
 		{
-			$error = true;
-			$messages[] = iaLanguage::get('error_duplicate_email');
+			$this->addMessage('error_duplicate_email');
 		}
 
-		if ($iaAcl->checkAccess($permission . 'password') || iaCore::ACTION_ADD == $pageAction)
+		if ($this->_iaDb->exists('`username` = :username AND `id` != :id', array('username' => $entry['username'], 'id' => $this->getEntryId())))
 		{
-			$_POST['_password'] = trim($_POST['_password']);
-			if ($_POST['_password'] || !empty($_POST['_password2']))
+			$this->addMessage('username_already_taken');
+		}
+
+		$iaAcl = $this->_iaCore->factory('acl');
+		if ($iaAcl->checkAccess($this->getName(), 'password') || iaCore::ACTION_ADD == $action)
+		{
+			$this->_password = trim($data['_password']);
+			if ($this->_password || !empty($data['_password2']))
 			{
-				$member['password'] = $iaUsers->encodePassword($_POST['_password']);
+				$entry['password'] = $this->getHelper()->encodePassword($this->_password);
 
-				if (empty($member['password']))
+				iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+				if (empty($entry['password']))
 				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_password_empty');
+					$this->addMessage('error_password_empty');
 				}
-				elseif (!utf8_is_ascii($member['password']))
+				elseif (!utf8_is_ascii($entry['password']))
 				{
-					$error = true;
-					$messages[] = 'Password: ' . iaLanguage::get('ascii_required');
+					$this->addMessage(iaLanguage::get('password') . ': ' . iaLanguage::get('ascii_required'));
 				}
-				elseif ($member['password'] != $iaUsers->encodePassword($_POST['_password2']))
+				elseif ($entry['password'] != $this->getHelper()->encodePassword($data['_password2']))
 				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_password_match');
+					$this->addMessage('error_password_match');
 				}
 			}
 		}
 
-		if (empty($_POST['_password']) && $pageAction == iaCore::ACTION_ADD)
+		if (empty($data['_password']) && iaCore::ACTION_ADD == $action)
 		{
-			$error = true;
-			$messages[] = iaLanguage::get('error_password_empty');
+			$this->addMessage('error_password_empty');
 		}
 
-		if ($iaAcl->checkAccess($permission . 'usergroup'))
+		if ($iaAcl->isAccessible($this->getName(), 'usergroup'))
 		{
-			if (isset($_POST['usergroup_id']))
+			if (isset($data['usergroup_id']))
 			{
-				$member['usergroup_id'] = isset($userGroups[$_POST['usergroup_id']]) ? $_POST['usergroup_id'] : iaUsers::MEMBERSHIP_REGULAR;
+				$entry['usergroup_id'] = array_key_exists($data['usergroup_id'], $this->_userGroups) ? $data['usergroup_id'] : iaUsers::MEMBERSHIP_REGULAR;
 			}
 		}
-		elseif ($pageAction == iaCore::ACTION_ADD)
+		elseif (iaCore::ACTION_ADD == $action)
 		{
-			$member['usergroup_id'] = iaUsers::MEMBERSHIP_REGULAR;
+			$entry['usergroup_id'] = iaUsers::MEMBERSHIP_REGULAR;
 		}
 
-		if (!$error)
+		return !$this->getMessages();
+	}
+
+	protected function _postSaveEntry(array $entry, array $data, $action)
+	{
+		if (iaCore::ACTION_ADD == $action)
 		{
-			if (iaCore::ACTION_EDIT == $pageAction)
+			$action = 'member_registration';
+			if ($this->_iaCore->get($action))
 			{
-				$id = (int)$_POST['id'];
-				$error = !$iaUsers->update($member, iaDb::convertIds($id), array('date_update' => iaDb::FUNCTION_NOW));
+				$iaMailer = $this->_iaCore->factory('mailer');
 
-				$messages[] = iaLanguage::get($error ? 'db_error' : 'saved');
-
-				if ($id == iaUsers::getIdentity()->id && !$error) // update current profile data
-				{
-					$iaUsers->getAuth($id);
-				}
-
-				$error || $iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array('item' => 'member', 'name' => $member['fullname'], 'id' => $id));
-			}
-			else
-			{
-				if ($id = $iaUsers->insert($member))
-				{
-					$messages[] = (iaUsers::MEMBERSHIP_ADMINISTRATOR == $member['usergroup_id'])
-						? iaLanguage::get('administrator_added')
-						: iaLanguage::get('member_added');
-
-					$action = 'member_registration';
-					if ($iaCore->get($action) && $member['email'])
-					{
-						$iaMailer = $iaCore->factory('mailer');
-
-						$iaMailer->load_template($action . '_admin');
-
-						$iaMailer->ClearAddresses();
-						$iaMailer->AddAddress($member['email']);
-						$iaMailer->Body = str_replace('{%FULLNAME%}', $member['fullname'], $iaMailer->Body);
-						$iaMailer->replace['{%USERNAME%}'] = $member['username'];
-						$iaMailer->replace['{%PASSWORD%}'] = $_POST['_password'];
-						$iaMailer->replace['{%EMAIL%}'] = $member['email'];
-
-						$iaMailer->Send();
-					}
-
-					$iaCore->factory('log')->write(iaLog::ACTION_CREATE, array('item' => 'member', 'name' => $member['fullname'], 'id' => $id));
-				}
-				else
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('member_already_exist');
-				}
-			}
-
-			$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
-
-			if (!$error)
-			{
-				$url = IA_ADMIN_URL . 'members/';
-				iaUtil::post_goto(array(
-					'add' => $url . 'add/',
-					'list' => $url,
-					'stay' => $url . 'edit/?id=' . $id,
+				$iaMailer->loadTemplate($action . '_notification');
+				$iaMailer->addAddress($entry['email']);
+				$iaMailer->setReplacements(array(
+					'fullname' => $entry['fullname'],
+					'username' => $entry['username'],
+					'password' => $this->_password,
+					'email' => $entry['email']
 				));
+
+				$iaMailer->send();
+			}
+
+			if (iaUsers::MEMBERSHIP_ADMINISTRATOR == $entry['usergroup_id'])
+			{
+				$this->_phraseAddSuccess = 'administrator_added';
 			}
 		}
-		else
+
+		$iaLog = $this->_iaCore->factory('log');
+
+		$actionCode = (iaCore::ACTION_ADD == $action) ? iaLog::ACTION_CREATE : iaLog::ACTION_UPDATE;
+		$params = array(
+			'item' => 'member',
+			'name' => $entry['fullname'],
+			'id' => $this->getEntryId()
+		);
+
+		$iaLog->write($actionCode, $params);
+	}
+
+	protected function _entryAdd(array $entryData)
+	{
+		return $this->getHelper()->insert($entryData);
+	}
+
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		$result = $this->getHelper()->update($entryData, iaDb::convertIds($entryId), array('date_update' => iaDb::FUNCTION_NOW));
+
+		if ($result && $entryId == iaUsers::getIdentity()->id)
 		{
-			$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
+			iaUsers::reloadIdentity();
 		}
+
+		return $result;
 	}
 
-	if (iaCore::ACTION_ADD == $pageAction || iaCore::ACTION_EDIT == $pageAction)
+	protected function _gridUpdate($params)
 	{
-		iaBreadcrumb::preEnd(iaLanguage::get('members'), 'members/');
-
-		unset($userGroups[iaUsers::MEMBERSHIP_GUEST]);
-		$iaView->assign('usergroups', $userGroups);
-	}
-
-	switch ($pageAction)
-	{
-		case iaCore::ACTION_ADD:
-		case iaCore::ACTION_EDIT:
-			if (iaCore::ACTION_EDIT == $pageAction)
+		if (isset($params['id']) && is_array($params['id'])
+			&& 2 == count($params) && isset($params['status']))
+		{
+			$currentUserId = iaUsers::getIdentity()->id;
+			if (in_array($currentUserId, $params['id']))
 			{
-				$adminsCount = $iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status', array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
-				$iaView->assign('admin_count', $adminsCount);
+				$totalAdminsCount = (int)$this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status AND `id` != :id', array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE, 'id' => $currentUserId));
 
-				$member = $error
-					? $_POST
-					: $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($_GET['id']));
-
-				if (1 == $adminsCount && iaUsers::MEMBERSHIP_ADMINISTRATOR == $member['usergroup_id'])
+				if (0 == $totalAdminsCount && $params['status'] != iaCore::STATUS_ACTIVE)
 				{
-					unset($member['status']);
+					return array(
+						'result' => false,
+						'message' => iaLanguage::get('action_not_allowed_since_you_only_admin')
+					);
 				}
-
-				$iaView->assign('id', (int)$_GET['id']);
 			}
-			elseif (iaCore::ACTION_ADD == $pageAction)
-			{
-				$member = $_POST;
+		}
 
-				$member['usergroup_id'] = isset($_POST['usergroup_id']) ? (int)$_POST['usergroup_id'] : iaUsers::MEMBERSHIP_REGULAR;
-				$member['sponsored'] = false;
-				$member['featured'] = false;
-				$member['status'] = iaCore::STATUS_ACTIVE;
-			}
-
-			$iaCore->startHook('editItemSetSystemDefaults', array('item' => &$member));
-
-			$sections = $iaField->filterByGroup($member, $iaUsers->getItemName(), array('page' => iaCore::ADMIN, 'selection' => "f.*, IF(f.`name` = 'avatar', 4, `order`) `order`", 'order' => '`order`'));
-
-			$iaPlans = $iaCore->factory('plan', iaCore::FRONT);
-			$plans = $iaPlans->getPlans($iaUsers->getItemName());
-
-			$iaView->assign('item', $member);
-
-			$iaView->assign('sections', $sections);
-			$iaView->assign('statuses', array(iaCore::STATUS_ACTIVE, iaCore::STATUS_APPROVAL, iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED));
-			$iaView->assign('plans', $plans);
-
-			$iaView->display('members');
-
-			break;
-
-		case iaCore::ACTION_READ:
-			$iaView->grid('admin/members');
+		return parent::_gridUpdate($params);
 	}
 }
-
-$iaDb->resetTable();

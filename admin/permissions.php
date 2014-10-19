@@ -24,295 +24,247 @@
  *
  ******************************************************************************/
 
-$target = 'all';
-$user = 0;
-$id = 0;
-$group = 0;
-$actionType = 2;
-
-$objects = $iaAcl->getObjects();
-
-$iaDb->setTable('acl_privileges');
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	if (isset($_POST['action']) || isset($_GET['action']))
+	protected $_name = 'permissions';
+
+	private $_objects = array();
+
+
+	public function __construct()
 	{
-		$_action = isset($_POST['action']) ? $_POST['action'] : $_GET['action'];
-		switch ($_action)
+		parent::__construct();
+
+		$iaAcl = $this->_iaCore->factory('acl');
+		$this->setHelper($iaAcl);
+
+		$this->_objects = $iaAcl->getObjects();
+	}
+
+	private function _getSettings()
+	{
+		$settings = array(
+			'target' => 'all',
+			'id' => 0,
+			'action' => 2,
+			'user' => 0,
+			'group' => 0,
+			'item' => null
+		);
+
+		if (isset($_GET['user']))
 		{
-			case 'save':
-				$actionsList = $_POST['acts'];
-				$objectName = $_POST['obj'];
-				$objectId = 0;
-				$type = in_array($_POST['type'], array('admin_pages', 'pages', 'all')) ? $_POST['type'] : 'all';
-				// clear permissions
-				if ($type != 'all')
+			$settings['action'] = 0;
+			$settings['target'] = iaAcl::USER;
+			$settings['user'] = $settings['id'] = (isset($_GET[$settings['target']]) ? (int)$_GET[$settings['target']] : 0);
+			$settings['item'] = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($settings['id']), iaUsers::getTable());
+
+			if (!empty($settings['item']['usergroup_id']))
+			{
+				$settings['group'] = (int)$settings['item']['usergroup_id'];
+			}
+		}
+		elseif (isset($_GET['group']))
+		{
+			$settings['action'] = 1;
+			$settings['target'] = iaAcl::GROUP;
+			$settings['group'] = $settings['id'] = (isset($_GET[$settings['target']]) ? (int)$_GET[$settings['target']] : 0);
+			$settings['item'] = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($settings['id']), iaUsers::getUsergroupsTable());
+		}
+
+		return $settings;
+	}
+
+	protected function _gridRead($params)
+	{
+		$output = array('result' => false, 'message' => iaLanguage::get('invalid_parameters'));
+		$settings = $this->_getSettings();
+
+		if ($settings['action'] != 2 && $_POST)
+		{
+			$params = $_POST;
+
+			if (isset($params['access']))
+			{
+				$result = true;
+				is_array($params['action']) || $params['action'] = array($params['action']);
+				foreach ($params['action'] as $action)
 				{
-					$objectId = $objectName;
-					$objectName = $type;
-					$iaDb->delete("`object` = '$objectName-$objectId' AND `object_id` = '0' AND `type` = '$target' AND `type_id` = '$id'");
-				}
-				$iaDb->delete("`object` = '$objectName' AND `object_id` = '$objectId' AND `type` = '$target' AND `type_id` = '$id'");
-				if (($_POST['modified'] == 'true' || $_POST['modified'] === true)
-					&& is_array($actionsList))
-				{
-					foreach ($actionsList as $action => $access)
+					$set = $this->getHelper()->set($params['object'], $params['id'], $settings['target'], $settings['id'], $params['access'], $action);
+					if (!$set && $result)
 					{
-						$entry = array(
-							'object' => $objectName,
-							'object_id' => 0,
-							'type' => $target,
-							'type_id' => $id,
-							'action' => $action,
-							'access' => $access
-						);
-
-						if (isset($objects[$objectName . iaAcl::DELIMITER . $action])
-							&& isset($objects[$objectName . '-' . $objectId . iaAcl::DELIMITER . $action]))
-						{
-							$entry['object_id'] = $objectId;
-						}
-						else
-						{
-							$entry['object'] .= '-' . $objectId;
-						}
-
-						$iaDb->insert($entry);
+						$result = false;
 					}
 				}
-				$iaView->assign('msg', iaLanguage::get('_saved') . '. Time: ' . date('H:i:s'));
-				$iaView->assign('type', iaView::SUCCESS);
-				break;
-
-			case 'search':
-				$search = isset($_GET['text']) ? $_GET['text'] : '';
-				$type = isset($_GET['type']) && in_array($_GET['type'], array(iaAcl::USER, iaAcl::GROUP, iaAcl::PLAN)) ? $_GET['type'] : iaAcl::USER;
-				$all = array();
-				switch($type)
-				{
-					case 'user':
-						$all = $iaDb->all('SQL_CALC_FOUND_ROWS `id`, `username` `title`', "(`username` LIKE '%{$search}%' OR `fullname` LIKE '%{$search}%' OR `id` LIKE '%{$search}%')", 0, 10, iaUsers::getTable());
-						break;
-					case 'group':
-						$all = $iaDb->all('SQL_CALC_FOUND_ROWS `id`, `title`', "(`title` LIKE '%{$search}%' OR `id` LIKE '%{$search}%')", 0, 10, 'usergroups');
-						break;
-					case 'plan':
-						$rows = $iaDb->all('SQL_CALC_FOUND_ROWS `key`, `value`', "(`value` LIKE '%{$search}%' AND `key` LIKE 'plan_title_%' OR `key` LIKE 'plan_title_{$search}%')", 0, 10, iaLanguage::getTable());
-						foreach ($rows as $row)
-						{
-							$all[] = array(
-								'title' => $row['value'],
-								'id' => str_replace('plan_title_', '', $row['key'])
-							);
-						}
-				}
-				$iaView->assign('count', $iaDb->foundRows);
-				$iaView->assign('list', $all);
-		}
-	}
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if (isset($_GET['user']))
-	{
-		$target = 'user';
-		$actionType = 0;
-		$user = $id = isset($_GET[$target]) ? (int)$_GET[$target] : 0;
-		$item = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`id` = :id', array('id' => $id), iaUsers::getTable());
-		if ($item)
-		{
-			$group = $item['usergroup_id'];
-		}
-		iaBreadcrumb::add(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
-		$iaView->title(iaLanguage::getf('permissions_members', array('member' => '"' . $item['username'] . '"')));
-	}
-	elseif (isset($_GET['group']))
-	{
-		$target = 'group';
-		$actionType = 1;
-		$group = $id = isset($_GET[$target]) ? (int)$_GET[$target] : 0;
-		$item = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), iaUsers::getUsergroupsTable());
-
-		iaBreadcrumb::add(iaLanguage::get('usergroups'), IA_ADMIN_URL . 'usergroups/');
-
-		$iaView->title(iaLanguage::getf('permissions_usergroups', array('usergroup' => '"' . $item['title'] . '"')));
-	}
-	if (!isset($item) || empty($item))
-	{
-		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-	}
-
-	$userPermissions = $iaAcl->getPermissions($id, $group);
-	$actions = $iaAcl->getActions();
-	$groups = array(
-		'all' => array(),
-		'pages' => array(),
-		'admin_pages' => array()
-	);
-	$custom = array(
-		'user' => $user,
-		'group' => $group,
-		'perms' => $userPermissions
-	);
-
-	$pageTypes = array('admin_pages', 'pages');
-
-	foreach ($pageTypes as $i => $pageType)
-	{
-		$fieldsList = array('name', 'action', 'group', 'parent');
-		if (0 == $i) $fieldsList[] = 'title';
-		$pages = $iaDb->all($fieldsList, '`' . (0 == $i ? 'readonly' : 'service') . '` = 0 ORDER BY `parent` DESC, `id`', null, null, $pageType);
-
-		foreach ($pages as $page)
-		{
-			if ($page['parent'])
-			{
-				$key = $pageType . '-' . $page['parent'];
-				isset($actions[$key]) || $actions[$key] = array();
-				in_array($page['action'], $actions[$key]) || $actions[$key][] = $page['action'];
 			}
 			else
 			{
-				$list = array();
-				$info = array();
-				$modified = false;
-				$key = $pageType . '-' . $page['name'];
-
-				if ($page['group'] == 0)
-				{
-					$page['group'] = 1;
-				}
-
-				if (!isset($groups[$pageType][$page['group']]))
-				{
-					$groups[$pageType][$page['group']] = array();
-				}
-				if (!isset($page['title']))
-				{
-					$page['title'] = iaLanguage::get('page_title_' . $page['name'], ucfirst($page['name']));
-				}
-
-				foreach (array(iaCore::ACTION_READ, iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE) as $action)
-				{
-					$actionCode = $key . iaAcl::DELIMITER . $action;
-					if (isset($objects[$actionCode]) || $action == iaCore::ACTION_READ)
-					{
-						isset($actions[$key]) || $actions[$key] = array();
-						in_array($action, $actions[$key]) || array_unshift($actions[$key], $action);
-					}
-				}
-
-				foreach ($actions[$key] as $action)
-				{
-					$objectId = null;
-					$actionCode = $key . iaAcl::DELIMITER . $action;
-					$title = iaLanguage::get($actionCode, iaLanguage::getf('action-' . $action, array('page' => $page['title'])));
-					$param = $key . iaAcl::SEPARATOR . $action;
-
-					if (isset($objects[$pageType . '-' . $page['name'] . iaAcl::DELIMITER . $action])
-						&& in_array($action, array(iaCore::ACTION_READ, iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE)))
-					{
-						$objectId = $page['name'];
-						$param = $pageType . iaAcl::SEPARATOR . $action;
-					}
-
-					$list[$action] = array(
-						'title' => $title,
-						'default' => (int)$iaAcl->checkAccess($param, 0, 0, $objectId, true),
-						'access' => (int)$iaAcl->checkAccess($param, 0, 0, $objectId, $custom),
-						'custom' => isset($userPermissions[$iaAcl->encodeAction($pageType, $action, $page['name'])][$actionType]) // check user privileges
-					);
-					$info[$action] = array(
-						'title' => $title,
-						'classname' => $list[$action]['access'] ? 'act-true' : 'act-false'
-					);
-
-					if ($list[$action]['custom'])
-					{
-						$modified = true;
-					}
-					if (isset($objects[$actionCode]))
-					{
-						unset($objects[$actionCode]);
-					}
-				}
-
-				$groups[$pageType][$page['group']][$page['name']] = array(
-					'title' => $page['title'],
-					'modified' => $modified,
-					'list' => $list,
-					'info' => $info
-				);
+				$result = $this->getHelper()->drop($params['object'], $params['id'], $settings['target'], $settings['id'], empty($params['action']) ? null : $params['action']);
 			}
+
+			$output['result'] = $result;
+			$output['message'] = $output['result']
+				? iaLanguage::get('saved')
+				: iaLanguage::get('db_error');
 		}
+
+		return $output;
 	}
 
-	foreach ($objects as $actionCode => $access)
+	protected function _indexPage(&$iaView)
 	{
-		list($object, ) = explode('--', $actionCode);
-		$list = array();
-		$info = array();
-		$modified = false;
+		$settings = $this->_getSettings();
 
-		foreach (array(iaCore::ACTION_READ, iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE) as $action)
+		if (in_array($settings['target'], array(iaAcl::USER, iaAcl::GROUP)))
 		{
-			$actionCode = $object . iaAcl::DELIMITER . $action;
-
-			if (isset($objects[$actionCode]) || $action == iaCore::ACTION_READ)
+			if (iaAcl::USER == $settings['target'])
 			{
-				isset($actions[$object]) || $actions[$object] = array();
-				in_array($action, $actions[$object]) || array_unshift($actions[$object], $action);
+				iaBreadcrumb::add(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
+				$iaView->title(iaLanguage::getf('permissions_members', array('member' => '"' . $settings['item']['fullname'] . '"')));
 			}
-		}
+			else
+			{
+				iaBreadcrumb::add(iaLanguage::get('usergroups'), IA_ADMIN_URL . 'usergroups/');
+				$iaView->title(iaLanguage::getf('permissions_usergroups', array('usergroup' => '"' . $settings['item']['title'] . '"')));
+			}
 
-		foreach ($actions[$object] as $action)
+			$userPermissions = $this->getHelper()->getPermissions($settings['id'], $settings['group']);
+			$custom = array(
+				'user' => $settings['user'],
+				'group' => $settings['group'],
+				'perms' => $userPermissions
+			);
+
+			$actionCode = 'admin_access--read';
+			list($object,) = explode(iaAcl::DELIMITER, $actionCode);
+
+			$adminAccess = array(
+				'title' => iaLanguage::get($actionCode, $actionCode),
+				'modified' => isset($userPermissions[$this->getHelper()->encodeAction($object, iaCore::ACTION_READ, '0')][$settings['action']]),
+				'default' => $this->_objects[$actionCode],
+				'access' => (int)$this->getHelper()->checkAccess($object, null, 0, 0, $custom)
+			);
+
+			$iaView->assign('adminAccess', $adminAccess);
+			$iaView->assign('pageGroupTitles', $this->_iaDb->keyvalue(array('id', 'title'), null, 'admin_pages_groups'));
+			$iaView->assign('permissions', $this->_getPermissionsInfo($settings, $userPermissions, $custom));
+		}
+		else
 		{
-			$actionCode = $object . iaAcl::DELIMITER . $action;
-			$defaultAccess = in_array($action, array(iaCore::ACTION_READ, iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE))
-				? $access
-				: (int)$iaAcl->checkAccess($object . ':' . $action, 0, 0, null, true);
-
-			$title = iaLanguage::get($actionCode, $actionCode);
-			$list[$action] = array(
-				'title' => $title,
-				'default' => $defaultAccess,
-				'access' => (int)$iaAcl->checkAccess($object . ':' . $action, 0, 0, null, $custom),
-				'custom' => isset($userPermissions[$iaAcl->encodeAction($object, $action)][$actionType]) // check user privileges
-			);
-			$info[$action] = array(
-				'title' => $title,
-				'classname' => $list[$action]['access'] ? 'act-true' : 'act-false'
-			);
-			if ($list[$action]['custom'])
-			{
-				$modified = true;
-			}
-			if (isset($objects[$actionCode]))
-			{
-				unset($objects[$actionCode]);
-			}
+			$this->_list($iaView);
 		}
-		$groups['all'][0][$object] = array(
-			'title' => iaLanguage::get($object, $object),
-			'modified' => $modified,
-			'list' => $list,
-			'info' => $info
-		);
 	}
-	ksort($groups['admin_pages']);
-	ksort($groups['pages']);
 
-	$iaView->assign('admin_login', $groups['all'][0]['admin_login']['list']['read']);
+	private function _getPermissionsInfo($settings, $userPermissions, $custom)
+	{
+		$iaAcl = $this->getHelper();
 
-	unset($groups['all']); // FIXME:
+		$actions = $iaAcl->getActions();
+		$groups = array();
 
-	$iaView->assign('titles', $iaDb->keyvalue(array('id', 'title'), null, 'admin_pages_groups'));
-	$iaView->assign('groups', $groups);
-	$iaView->assign('page_types', $pageTypes);
+		foreach (array(iaAcl::OBJECT_PAGE, iaAcl::OBJECT_ADMIN_PAGE) as $i => $pageType)
+		{
+			$fieldsList = array('name', 'action', 'group', 'parent');
+			if (1 == $i) $fieldsList[] = 'title';
+			$pages = $this->_iaDb->all($fieldsList, '`' . (1 == $i ? 'readonly' : 'service') . "` = 0 AND `name` != '' ORDER BY `parent` DESC, `id`", null, null, $pageType . 's');
 
-	$iaView->display('permissions');
+			foreach ($pages as $page)
+			{
+				if ($page['parent'])
+				{
+					$key = $pageType . '-' . $page['parent'];
+					isset($actions[$key]) || $actions[$key] = array();
+					in_array($page['action'], $actions[$key]) || $actions[$key][] = $page['action'];
+				}
+				else
+				{
+					$list = array();
+					$key = $pageType . '-' . $page['name'];
+
+					$page['group'] || $page['group'] = 1;
+
+					if (!isset($page['title']))
+					{
+						$page['title'] = iaLanguage::get('page_title_' . $page['name'], ucfirst($page['name']));
+					}
+
+					foreach (array(iaCore::ACTION_READ, iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE) as $action)
+					{
+						$actionCode = $key . iaAcl::DELIMITER . $action;
+						if (isset($this->_objects[$actionCode]) || iaCore::ACTION_READ == $action)
+						{
+							isset($actions[$key]) || $actions[$key] = array();
+							in_array($action, $actions[$key]) || array_unshift($actions[$key], $action);
+						}
+					}
+
+					foreach ($actions[$key] as $action)
+					{
+						$actionCode = $key . iaAcl::DELIMITER . $action;
+						$param = $pageType . iaAcl::SEPARATOR . $action;
+
+						$list[$action] = array(
+							'title' => iaLanguage::get($actionCode, iaLanguage::getf('action-' . $action, array('page' => $page['title']))),
+							'modified' => isset($userPermissions[$iaAcl->encodeAction($pageType, $action, $page['name'])][$settings['action']]),
+							'default' => (int)$iaAcl->checkAccess($param, $page['name'], 0, 0, true),
+							'access' => (int)$iaAcl->checkAccess($param, $page['name'], 0, 0, $custom)
+						);
+					}
+
+					if (!isset($groups[$pageType][$page['group']]))
+					{
+						$groups[$pageType][$page['group']] = array();
+					}
+
+					$groups[$pageType][$page['group']][$page['name']] = array(
+						'title' => $page['title'],
+						'list' => $list
+					);
+				}
+			}
+
+			ksort($groups[$pageType]);
+		}
+
+		return $groups;
+	}
+
+	private function _list(&$iaView)
+	{
+		$iaView->assign('members', $this->_listMembers());
+		$iaView->assign('usergroups', $this->_listUsergroups());
+	}
+
+	private function _listUsergroups()
+	{
+		$sql = 'SELECT u.`id`, u.`title`, IF(u.`id` = 1, 1, p.`access`) `admin_access` '
+			. 'FROM `:prefix:table_usergroups` u '
+			. "LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = u.`id` AND p.`type` = 'group' AND p.`object` = 'admin_access')";
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_usergroups' => iaUsers::getUsergroupsTable(),
+			'table_privileges' => 'acl_privileges'
+		));
+
+		return $this->_iaDb->getAll($sql);
+	}
+
+	private function _listMembers()
+	{
+		$sql = 'SELECT m.`id`, m.`fullname`, g.`title` `usergroup`, IF(m.`usergroup_id` = 1, 1, p.`access`) `admin_access` '
+			. 'FROM `:prefix:table_members` m '
+			. 'LEFT JOIN `:prefix:table_groups` g ON (m.`usergroup_id` = g.`id`) '
+			. "LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = m.`id` AND p.`type` = 'user' AND p.`object` = 'admin_access')"
+			. 'WHERE m.`id` IN ('
+				. "SELECT DISTINCT `type_id` FROM `:prefix:table_privileges` WHERE `type` = 'user'"
+			. ')';
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_members' => iaUsers::getTable(),
+			'table_groups' => iaUsers::getUsergroupsTable(),
+			'table_privileges' => 'acl_privileges'
+		));
+
+		return $this->_iaDb->getAll($sql);
+	}
 }
-
-$iaDb->resetTable();

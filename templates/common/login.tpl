@@ -1,7 +1,3 @@
-{if isset($msg)}
-	{ia_notification type=$type msg=$msg ordered=false}
-{/if}
-
 <form action="{$smarty.const.IA_URL}login/" method="post" id="login_form" class="ia-form">
 	{preventCsrf}
 

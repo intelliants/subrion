@@ -7,7 +7,7 @@ intelli.plugins = {
 	url: intelli.config.admin_url + '/plugins/',
 	refresh: function(response)
 	{
-		intelli.notifFloatBox({msg: response.message, type: response.result ? 'notif' : 'error', autohide: true});
+		intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
 
 		if (response.result)
 		{
@@ -27,7 +27,7 @@ intelli.plugins = {
 	}
 };
 
-var installClick = function(record, field)
+var installClick = function(record, action)
 {
 	if (record.get('notes'))
 	{
@@ -38,7 +38,7 @@ var installClick = function(record, field)
 	Ext.Msg.show(
 	{
 		title: _t('confirm'),
-		msg: _t('are_you_sure_' + field + '_plugin'),
+		msg: _t('are_you_sure_' + action + '_plugin'),
 		buttons: Ext.Msg.YESNO,
 		icon: Ext.Msg.QUESTION,
 		fn: function(btn)
@@ -48,7 +48,7 @@ var installClick = function(record, field)
 				return;
 			}
 
-			var params = {action: field, name: record.get('file')};
+			var params = {name: record.get('file')};
 			if (Ext.getCmp('modeFilter'))
 			{
 				if ('remote' == Ext.getCmp('modeFilter').getValue())
@@ -60,10 +60,9 @@ var installClick = function(record, field)
 			$.ajax(
 			{
 				data: params,
-				dataType: 'json',
 				failure: intelli.plugins.failure,
 				type: 'POST',
-				url: intelli.plugins.url + 'read.json',
+				url: intelli.plugins.url + action + '.json',
 				success: intelli.plugins.refresh
 			});
 		}
@@ -121,17 +120,15 @@ var install_click_multiple = function()
 	installRequest();
 };
 */
-var helpClick = function(record, field)
+var helpClick = function(record)
 {
-	Ext.Ajax.request(
+	$.ajax(
 	{
-		url: intelli.plugins.url + 'read.json',
-		method: 'GET',
-		params: {get: 'info', name: (record.get('file') ? record.get('file') : record.get('name'))},
-		failure: intelli.plugins.failure,
-		success: function(data)
+		url: intelli.plugins.url + 'documentation.json',
+		data: {name: (record.get('file') ? record.get('file') : record.get('name'))},
+		error: intelli.plugins.failure,
+		success: function(response)
 		{
-			var response = Ext.decode(data.responseText);
 			if (response.tabs)
 			{
 				var win = new Ext.Window(
@@ -144,25 +141,25 @@ var helpClick = function(record, field)
 					plain: true,
 					layout: 'border',
 					items:
-					[
-						new Ext.TabPanel(
-						{
-							region: 'center',
-							bodyStyle: 'padding: 5px;',
-							activeTab: 0,
-							defaults: {autoScroll: true},
-							items: response.tabs
-						}),
-						new Ext.Panel(
-						{
-							region: 'east',
-							split: true,
-							minWidth: 200,
-							collapsible: true,
-							html: response.info,
-							bodyStyle: 'padding: 5px;'
-						})
-					]
+						[
+							new Ext.TabPanel(
+								{
+									region: 'center',
+									bodyStyle: 'padding: 5px;',
+									activeTab: 0,
+									defaults: {autoScroll: true},
+									items: response.tabs
+								}),
+							new Ext.Panel(
+								{
+									region: 'east',
+									split: true,
+									minWidth: 200,
+									collapsible: true,
+									html: response.info,
+									bodyStyle: 'padding: 5px;'
+								})
+						]
 				});
 
 				win.show();
@@ -180,10 +177,9 @@ var upgradeClick = function(record, field)
 	$.ajax(
 	{
 		data: {action: 'install', name: record.get('file')},
-		dataType: 'json',
 		failure: intelli.plugins.failure,
 		type: 'POST',
-		url: intelli.plugins.url + 'read.json',
+		url: intelli.plugins.url + 'install.json',
 		success: intelli.plugins.refresh
 	});
 };
@@ -205,11 +201,10 @@ var uninstallClick = function(record, field)
 
 			$.ajax(
 			{
-				data: {action: 'uninstall', name: record.get('file')},
-				dataType: 'json',
+				data: {name: record.get('file')},
 				failure: intelli.plugins.failure,
 				type: 'POST',
-				url: intelli.plugins.url + 'read.json',
+				url: intelli.plugins.url + 'uninstall.json',
 				success: intelli.plugins.refresh
 			});
 		}
@@ -251,9 +246,8 @@ intelli.available = {
 	sort: 'date',
 	sortDir: 'DESC',
 	statusBar: false,
-	storeParams: {type: 'available', mode: 'local'},
-	target: 'js-grid-available',
-	url: intelli.plugins.url
+	storeParams: {type: 'local'},
+	target: 'js-grid-available'
 };
 
 Ext.onReady(function()
@@ -326,7 +320,7 @@ Ext.onReady(function()
 						{
 							Ext.getCmp('availableFilter').reset();
 
-							intelli.available.store.getProxy().extraParams = {type: 'available', mode: 'local'};
+							intelli.available.store.getProxy().extraParams = {type: 'local'};
 							intelli.available.store.loadPage(1);
 						}
 					},'->',_t('mode') + ':',{
@@ -366,7 +360,7 @@ Ext.onReady(function()
 									Ext.getCmp('reset2').enable();
 								}
 
-								intelli.available.store.getProxy().extraParams.mode = this.getValue();
+								intelli.available.store.getProxy().extraParams.type = this.getValue();
 								intelli.available.store.loadPage(1);
 							}
 						}
@@ -395,7 +389,7 @@ Ext.onReady(function()
 			'status',
 			{name: 'upgrade', title: _t('upgrade'), icon: 'box-remove', click: upgradeClick},
 			{name: 'config', title: _t('go_to_config'), icon: 'cog', href: intelli.config.admin_url + '/configuration/{value}'},
-			{name: 'manage', title: _t('go_to_manage'), icon: 'th-list', href: intelli.config.admin_url + '/{value}'},
+			{name: 'manage', title: _t('manage_entries'), icon: 'th-list', href: intelli.config.admin_url + '/{value}'},
 			{name: 'info', title: _t('documentation'), icon: 'info', click: helpClick},
 			{name: 'reinstall', title: _t('reinstall_plugin'), icon: 'loop', click: installClick},
 			{name: 'uninstall', title: _t('uninstall'), icon: 'remove', click: uninstallClick}
@@ -406,8 +400,7 @@ Ext.onReady(function()
 		sort: 'date',
 		sortDir: 'DESC',
 		storeParams: {type: 'installed'},
-		target: 'js-grid-installed',
-		url: intelli.plugins.url
+		target: 'js-grid-installed'
 	}, false);
 	intelli.installed.toolbar = new Ext.Toolbar({items:[
 	{

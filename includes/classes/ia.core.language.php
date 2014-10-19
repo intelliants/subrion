@@ -188,4 +188,11 @@ class iaLanguage
 
 		return (bool)$result;
 	}
+
+	public static function delete($key)
+	{
+		$iaDb = iaCore::instance()->iaDb;
+
+		return (bool)$iaDb->delete(iaDb::convertIds($key, 'key'), self::getTable());
+	}
 }

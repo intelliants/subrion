@@ -1,60 +1,50 @@
 intelli.database = [];
-Ext.onReady(function()
+
+$(function()
 {
 	if ($('#query_out').text())
 	{
 		setTimeout( (function(){ $('#query_out').height(window.screen.height - $('#query_out').offset().top - 300) }), 1000);
 	}
-	
-	$('.js-selecting a').click(function(e)
+
+	$('a', '.js-selecting').on('click', function(e)
 	{
 		e.preventDefault();
+
+		var $ctl = $('#tbl option');
+
 		switch ($(this).data('action'))
 		{
 			case 'select':
-				$('#tbl option').prop('selected', true);
+				$ctl.prop('selected', true);
 				break;
 			case 'drop':
-				$('#tbl option').prop('selected', false);
+				$ctl.prop('selected', false);
 				break;
 			case 'invert':
-				$('#tbl option').each(function(i, obj)
+				$ctl.each(function(i, obj)
 				{
-					$(obj).prop('selected')	? $(obj).prop('selected', false) : $(obj).prop('selected', true);
+					$(obj).prop('selected', !$(obj).prop('selected'));
 				});
-				break;
 		}
 	});
 
 	$('#save_file').on('change', function()
 	{
-		var obj = $('#save_to');
-		$(this).val() == 1 ? obj.show() : obj.hide();
+		var obj = $('#js-save-options');
+		(1 == $(this).val()) ? obj.show() : obj.hide();
 	});
 
-	$('#exportAction').click(function()
+	$('#form-dump').on('submit', function(e)
 	{
-		if ($('#sql_structure').prop('checked') || $('#sql_data').prop('checked'))
+		if (!$('#sql_structure').prop('checked') && !$('#sql_data').prop('checked'))
 		{
-			$('#export').val('1');
-			$('#form-dump').submit();
-
-			return true;
+			e.preventDefault();
+			intelli.admin.alert({title: _t('error'), type: 'error', msg: _t('export_not_checked')});
 		}
-		else
-		{
-			intelli.admin.alert(
-			{
-				title: _t('error'),
-				type: 'error',
-				msg: _t('export_not_checked')
-			});
-		}
-
-		return false;
 	});
 
-	$('#importAction').click(function()
+	$('#js-cmd-import').on('click', function()
 	{
 		if ($('#sql_file').val().length > 0)
 		{
@@ -66,17 +56,18 @@ Ext.onReady(function()
 		else
 		{
 			intelli.admin.alert(
-			{
-				title: _t('error'),
-				type: 'error',
-				msg: _t('choose_import_file')
-			});
+				{
+					title: _t('error'),
+					type: 'error',
+					msg: _t('choose_import_file')
+				});
 		}
-		
+
 		return false;
 	});
 
-	$('#addTableButton').click(function(e){
+	$('#addTableButton').on('click', function(e)
+	{
 		e.preventDefault();
 		addData('table');
 	});
@@ -92,39 +83,38 @@ Ext.onReady(function()
 			if (!intelli.database[table])
 			{
 				$.ajax(
-				{
-					type: 'GET',
-					url: intelli.config.admin_url + '/database.json',
-					data: 'action=fields&table=' + table,
-					success: function(data){
-						var fields = $('#field')[0];
+					{
+						url: intelli.config.admin_url + '/database.json',
+						data: {table: table},
+						success: function(data){
+							var fields = $('#field')[0];
 
-						intelli.database[table] = data;
+							intelli.database[table] = data;
 
-						fields.options.length = 0;
-						for (var i = 0; i < data.length; i++) {
-							fields.options[fields.options.length] = new Option(data[i], data[i]);
+							fields.options.length = 0;
+							for (var i = 0; i < data.length; i++) {
+								fields.options[fields.options.length] = new Option(data[i], data[i]);
+							}
+							fields.options[0].selected = true;
+
+							// Show dropdown and the button
+							$('#field').parent().fadeIn();
 						}
-						fields.options[0].selected = true;
-						
-						// Show dropdown and the button
-						$('#field').parent().fadeIn();
-					}
-				});
+					});
 			}
 			else
 			{
 				var items = intelli.database[table];
 				var fields = $('#field')[0];
-				
+
 				fields.options.length = 0;
-				
+
 				for (var i = 0; i < items.length; i++) {
 					fields.options[fields.options.length] = new Option(items[i], items[i]);
 				}
-				
+
 				fields.options[0].selected = true;
-				
+
 				// Show dropdown and the button
 				$('#field').parent().fadeIn();
 			}
@@ -142,13 +132,14 @@ Ext.onReady(function()
 		addData('field');
 	});
 
-	$('#query_history a').click(function(e){
+	$('a', '#query_history').on('click', function(e)
+	{
 		e.preventDefault();
 		$('#query').val($(this).closest('li').find('span').text()).focus();
 		$(window).scrollTop(0);
 	});
-	
-	$('#clearButton').click(function()
+
+	$('#clearButton').on('click', function()
 	{
 		Ext.Msg.confirm(_t('confirm'), _t('clear_confirm'), function(btn, text)
 		{
@@ -158,15 +149,9 @@ Ext.onReady(function()
 				$('#field').parent().fadeOut();
 			}
 		});
-		
+
 		return true;
 	});
-
-	// disable server backup if non writable
-	if ($('#backup_message').length > 0)
-	{
-		$('#server').prop('disabled', true);
-	}
 
 	function addData(item)
 	{
@@ -179,16 +164,16 @@ Ext.onReady(function()
 		else
 		{
 			intelli.admin.alert(
-			{
-				title: _t('error'),
-				type: 'error',
-				msg: 'Please choose any ' + item + '.'
-			});
+				{
+					title: _t('error'),
+					type: 'error',
+					msg: 'Please choose any ' + item + '.'
+				});
 		}
 	}
 
 	// add text to query
-	function addText(text)  
+	function addText(text)
 	{
 		text = ' ' + text + ' ';
 		var query = $('#query');
@@ -216,44 +201,41 @@ Ext.onReady(function()
 		}
 
 		focusCampo('query');
-	}  	  
+	}
 
 	// sql template click
-	$('#sqlButtons a').click(function(e)
+	$('a', '#sqlButtons').on('click', function(e)
 	{
 		e.preventDefault();
 		addText($(this).text());
 	});
-	
-	// reset tables
-	$('#js-reset-all, #js-reset').click(function()
-	{
-		var $_this = $(this);
 
+	// reset tables
+	$('#js-reset-all, #js-reset').on('click', function(e)
+	{
 		if ($(this).attr('id') == 'js-reset-all')
 		{
-			var checked = $(this).prop('checked') ? 'checked' : '';
-
-			$("input[name='options[]']").each(function()
+			$('input[name="options[]"]').each(function()
 			{
-				$(this).prop('checked', checked);
+				$(this).prop('checked', true);
 			});
 		}
 		else
 		{
-			if ($("input:checkbox[name='options[]']:checked").length == 0)
+			if (!$('input:checkbox[name="options[]"]:checked').length)
 			{
-				intelli.notifBox({msg: _t('reset_choose_table'), type: 'error'})
+				intelli.notifBox({msg: _t('reset_choose_table'), type: 'error'});
 
 				return false;
 			}
 		}
 
+		var $self = $(this);
 		Ext.Msg.confirm(_t('confirm'), _t('clear_reset'), function(btn, text)
 		{
 			if ('yes' == btn)
 			{
-				$_this.closest('form').submit();
+				$self.closest('form').submit();
 			}
 		});
 	});

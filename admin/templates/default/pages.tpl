@@ -12,7 +12,7 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='name'}</label>
 				<div class="col col-lg-4">
-					<input type="text" name="name" value="{if isset($item.name)}{$item.name}{elseif isset($smarty.post.name)}{$smarty.post.name|escape:'html'}{/if}"{if $pageAction == 'edit'} readonly="readonly"{/if}>
+					<input type="text" name="name" value="{$item.name|escape:'html'}"{if $pageAction == 'edit'} readonly="readonly"{/if}>
 					{if 'add' == $pageAction}<p class="help-block">{lang key='unique_name'}</p>{/if}
 				</div>
 			</div>
@@ -46,7 +46,7 @@
 							{foreach $menu_list.list as $menu}
 								<div class="checkbox">
 									<label>
-										<input type="checkbox" name="menus[]" value="{$menu.name}" id="p_{$menu.id}"{if in_array($menu.name, $menus)} checked="checked"{/if}> {$menu.title}
+										<input type="checkbox" name="menus[]" value="{$menu.name}" id="p_{$menu.id}"{if in_array($menu.name, $menus)} checked{/if}> {$menu.title}
 									</label>
 								</div>
 							{/foreach}
@@ -67,7 +67,7 @@
 						{foreach $pages_group as $page_group}
 							<optgroup label="{$page_group.title}">
 								{foreach $page_group.children as $pageId => $pageTitle}
-									<option value="{$pageId}"{if $parent_page == $pageId} selected="selected"{/if}>{$pageTitle}</option>
+									<option value="{$pageId}"{if $parent_page == $pageId} selected{/if}>{$pageTitle}</option>
 								{/foreach}
 							</optgroup>
 						{/foreach}
@@ -79,8 +79,8 @@
 				<label class="col col-lg-2 control-label">{lang key='status'}</label>
 				<div class="col col-lg-4">
 					<select name="status">
-						<option value="active"{if isset($item.status) && $item.status == 'active'} selected="selected"{/if}>{lang key='active'}</option>
-						<option value="inactive"{if isset($item.status) && $item.status == 'inactive'} selected="selected"{/if}>{lang key='inactive'}</option>
+						<option value="active"{if isset($item.status) && $item.status == 'active'} selected{/if}>{lang key='active'}</option>
+						<option value="inactive"{if isset($item.status) && $item.status == 'inactive'} selected{/if}>{lang key='inactive'}</option>
 					</select>
 				</div>
 			</div>
@@ -97,7 +97,7 @@
 				</div>
 			</div>
 
-			{if !isset($item) || $item === false || !isset($item.service) && !isset($item.readonly) || $item.service == 0 && $item.readonly == '0'}
+			{if !isset($item) || $item === false || (!isset($item.service) && !isset($item.readonly)) || !$item.service && !$item.readonly}
 
 				{if isset($item.nofollow)}
 					{assign nofollow $item.nofollow}
@@ -129,9 +129,9 @@
 					<label class="col col-lg-2 control-label">{lang key='external_url'}</label>
 					<div class="col col-lg-4">
 						{if isset($item.custom_url) && $item.custom_url != '' || isset($smarty.post.unique) && $smarty.post.unique == 1}
-							{assign var='custom_url' value=1}
+							{assign custom_url 1}
 						{else}
-							{assign var='custom_url' value=0}
+							{assign custom_url 0}
 						{/if}
 						{html_radio_switcher value=$custom_url name='unique'}
 					</div>

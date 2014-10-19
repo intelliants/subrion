@@ -49,6 +49,7 @@ class iaSmartyPlugins extends Smarty
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_add_media', array(__CLASS__, 'ia_add_media'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_css', array(__CLASS__, 'ia_print_css'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_js', array(__CLASS__, 'ia_print_js'));
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_page_url', array(__CLASS__, 'ia_page_url'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'lang', array(__CLASS__, 'lang'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'preventCsrf', array(__CLASS__, 'preventCsrf'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'printImage', array(__CLASS__, 'printImage'));
@@ -90,6 +91,14 @@ class iaSmartyPlugins extends Smarty
 		return iaLanguage::get($key, $default);
 	}
 
+	public static function ia_page_url($params)
+	{
+		$isoCode = isset($params['code']) ? $params['code'] : '';
+		$currentUrl = isset($params['url']) ? $params['url'] : IA_SELF;
+
+		return IA_CLEAR_URL . $isoCode . IA_URL_DELIMITER . str_replace(IA_URL, '', $currentUrl);
+	}
+
 	public static function ia_wysiwyg($params)
 	{
 		if (empty($params['name']))
@@ -99,12 +108,15 @@ class iaSmartyPlugins extends Smarty
 
 		$name = $params['name'];
 		$value = isset($params['value']) ? iaSanitize::html($params['value']) : '';
+		$toolbar = (isset($params['toolbar']) && in_array($params['toolbar'], array('simple', 'dashboard', 'extended')))
+			? ",{toolbar:'{$params['toolbar']}'}"
+			: '';
 
 		$iaView = iaCore::instance()->iaView;
 
 		$iaView->add_js('ckeditor/ckeditor');
 		$iaView->resources->js->{'code:$(function(){if(!window.CKEDITOR)'
-			. "$('textarea[id=\"{$name}\"]').show();else CKEDITOR.replace('{$name}');});"} = iaView::RESOURCE_ORDER_REGULAR;
+			. "$('textarea[id=\"{$name}\"]').show();else CKEDITOR.replace('{$name}'$toolbar);});"} = iaView::RESOURCE_ORDER_REGULAR;
 
 		return sprintf(
 			'<textarea style="display: none;" name="%s" id="%s">%s</textarea>',
@@ -119,7 +131,7 @@ class iaSmartyPlugins extends Smarty
 		switch ($block['type'])
 		{
 			case 'menu':
-				if (isset($block['contents'][0]) && $block['contents'][0])
+				if ($block['contents'])
 				{
 					$smarty->assign('menu', $block);
 
@@ -410,18 +422,18 @@ class iaSmartyPlugins extends Smarty
 				}
 				elseif (strstr($filename, '_IA_URL_'))
 				{
-					$url = str_replace('_IA_URL_', IA_CLEAR_URL, $filename) . self::EXTENSION_JS;
+					$url = str_replace('_IA_URL_', $iaView->assetsUrl, $filename) . self::EXTENSION_JS;
 					$file = str_replace('_IA_URL_', IA_HOME, $filename) . self::EXTENSION_JS;
 					$tmp = str_replace('_IA_URL_', 'compress/', $filename);
 				}
 				else
 				{
-					$url = IA_CLEAR_URL . 'js/' . $filename . self::EXTENSION_JS;
+					$url = $iaView->assetsUrl . 'js/' . $filename . self::EXTENSION_JS;
 					$file = IA_HOME . 'js/' . $filename . self::EXTENSION_JS;
 					$tmp = 'compress/' . $filename;
 				}
 
-				$modifiedTime = 0;
+				$lastModified = 0;
 
 				if ($compress)
 				{
@@ -430,11 +442,11 @@ class iaSmartyPlugins extends Smarty
 					// lang cache
 					if (file_exists($file))
 					{
-						$modifiedTime = filemtime($file);
+						$lastModified = filemtime($file);
 					}
 					if ($filename == '_IA_URL_tmp/cache/intelli.admin.lang.en')
 					{
-						$url = str_replace('_IA_URL_', IA_CLEAR_URL, $filename) . self::EXTENSION_JS;
+						$url = str_replace('_IA_URL_', $iaView->assetsUrl, $filename) . self::EXTENSION_JS;
 						$file = str_replace('_IA_URL_', IA_HOME, $filename) . self::EXTENSION_JS;
 						$tmp = str_replace('_IA_URL_', 'compress/', $filename);
 					}
@@ -442,13 +454,15 @@ class iaSmartyPlugins extends Smarty
 					// start compress
 					if ($iaCore->get('compress_js', false) && !in_array($filename, $excludedFiles))
 					{
-						$time = 0;
+						$minifiedFilename = IA_TMP . $tmp . self::EXTENSION_JS;
+						$minifiedLastModifiedTime = 0;
 
 						// modified time of the compressed file
-						if (file_exists(IA_TMP . $tmp . self::EXTENSION_JS))
+						if (file_exists($minifiedFilename))
 						{
-							$time = filemtime(IA_TMP . $tmp . self::EXTENSION_JS);
+							$minifiedLastModifiedTime = filemtime($minifiedFilename);
 						}
+
 						// create directory for compressed files
 						else
 						{
@@ -458,28 +472,28 @@ class iaSmartyPlugins extends Smarty
 
 						if (file_exists($file))
 						{
-							$modifiedTime = filemtime($file);
+							$lastModified = filemtime($file);
 						}
 
-						if (($modifiedTime > $time || $time == 0) && $modifiedTime != 0)
+						if (($lastModified > $minifiedLastModifiedTime || $minifiedLastModifiedTime == 0) && $lastModified != 0)
 						{
 							// need to compress
-							iaDebug::debug(IA_TMP . $tmp . self::EXTENSION_JS . ' - ' . $modifiedTime . ' - ' . $time, 'compress', 'info');
+							iaDebug::debug($minifiedFilename . ' - ' . $lastModified . ' - ' . $minifiedLastModifiedTime, 'compress', 'info');
 
-							$iaJsmin = $iaCore->factory('jsmin');
-							$text = $iaJsmin->minify(file_get_contents($file));
+							require_once IA_INCLUDES . 'utils' . IA_DS . 'Minifier.php';
+							$minifiedCode = \JShrink\Minifier::minify(file_get_contents($file));
 
-							file_put_contents(IA_TMP . $tmp . self::EXTENSION_JS, $text);
-							$modifiedTime = time();
+							file_put_contents($minifiedFilename, $minifiedCode);
+							$lastModified = time();
 						}
 
-						$url = IA_CLEAR_URL . 'tmp/' . $tmp . self::EXTENSION_JS;
+						$url = $iaView->assetsUrl . 'tmp/' . $tmp . self::EXTENSION_JS;
 					}
 				}
 
-				if (!$remote && $modifiedTime > 0)
+				if (!$remote && $lastModified > 0)
 				{
-					$url .= '?fm=' . $modifiedTime;
+					$url .= '?fm=' . $lastModified;
 				}
 
 				$iaView->resources->js->$url = $order;
@@ -492,6 +506,65 @@ class iaSmartyPlugins extends Smarty
 		elseif (isset($params['text']))
 		{
 			$iaView->resources->js->{'text:' . $params['text']} = $order;
+		}
+	}
+
+	public function add_css(array $params)
+	{
+		$iaView = &iaCore::instance()->iaView;
+
+		if (isset($params['files']))
+		{
+			$iaCore = iaCore::instance();
+
+			$files = $params['files'];
+			if (is_string($files))
+			{
+				$files = explode(',', $files);
+			}
+
+			foreach ($files as $file)
+			{
+				$file = trim($file);
+				$local = true;
+
+				// NOTE: this check may treat an inclusion of a single local file
+				// with name starting from "http..." as remote
+				if ('http' == substr($file, 0, 4))
+				{
+					$url = $file;
+					$local = false;
+				}
+				elseif (strpos($file, '_IA_URL_') !== false)
+				{
+					$url = str_replace('_IA_URL_', $iaView->assetsUrl, $file);
+				}
+				else
+				{
+					$url = IA_TPL_URL . 'css/' . $file;
+					if (defined('IA_CURRENT_PACKAGE'))
+					{
+						$suffix = 'templates' . IA_DS . $iaView->theme . IA_DS . 'packages' . IA_DS . $iaView->get('extras') . IA_DS . 'css/' . $file;
+						if (is_file(IA_HOME . $suffix . self::EXTENSION_CSS) && iaCore::ACCESS_FRONT == $iaCore->getAccessType())
+						{
+							$url = IA_CLEAR_URL . $suffix;
+						}
+					}
+				}
+
+				$url .= self::EXTENSION_CSS;
+
+				if ($local)
+				{
+					$file = str_replace($iaView->assetsUrl, IA_HOME, $url);
+					if ($modifiedTime = filemtime($file))
+					{
+						$url .= '?fm=' . $modifiedTime;
+					}
+				}
+
+				$iaView->resources->css->$url = isset($params['order']) ? (int)$params['order'] : iaView::RESOURCE_ORDER_REGULAR;
+			}
 		}
 	}
 
@@ -527,9 +600,7 @@ class iaSmartyPlugins extends Smarty
 	 */
 	public static function printImage($params)
 	{
-		isset($params['url']) || $params['url'] = null;
-
-		$thumbUrl = IA_CLEAR_URL;
+		$thumbUrl = iaCore::instance()->iaView->assetsUrl;
 
 		// temporary solution
 		// TODO: remove
@@ -562,7 +633,7 @@ class iaSmartyPlugins extends Smarty
 			$thumbUrl .= 'templates/' . iaCore::instance()->iaView->theme . '/img/no-preview.png';
 		}
 
-		if ($params['url'])
+		if (!empty($params['url']))
 		{
 			return $thumbUrl;
 		}
@@ -688,12 +759,14 @@ class iaSmartyPlugins extends Smarty
 		if (trim($content))
 		{
 			$smarty->assign('collapsible', isset($params['collapsible']) ? $params['collapsible'] : false);
+			$smarty->assign('collapsed', isset($params['collapsed']) ? $params['collapsed'] : false);
+			$smarty->assign('hidden', isset($params['hidden']) ? $params['hidden'] : false);
 			$smarty->assign('icons', isset($params['icons']) ? $params['icons'] : array());
 			$smarty->assign('id', isset($params['id']) ? $params['id'] : null);
 			$smarty->assign('header', isset($params['header']) ? $params['header'] : true);
 			$smarty->assign('name', isset($params['name']) ? $params['name'] : '');
 			$smarty->assign('classname', isset($params['classname']) ? $params['classname'] : '');
-			$smarty->assign('style', isset($params['style']) ? $params['style'] : 'movable');
+			$smarty->assign('style', isset($params['style']) ? $params['style'] : '');
 			$smarty->assign('title', isset($params['title']) ? $params['title'] : '');
 			$smarty->assign('_block_content_', $content);
 
@@ -718,22 +791,12 @@ class iaSmartyPlugins extends Smarty
 		$user = isset($params['user']) ? (int)$params['user'] : 0;
 		$group = isset($params['group']) ? (int)$params['group'] : 0;
 		$objectId = isset($params['id']) ? $params['id'] : 0;
-		$action = isset($params['action']) ? $params['action'] : 'read';
+		$action = isset($params['action']) ? $params['action'] : iaCore::ACTION_READ;
 		$object = $params['object'];
 
-		if (!in_array($action, array(iaCore::ACTION_ADD, iaCore::ACTION_DELETE, iaCore::ACTION_EDIT, iaCore::ACTION_READ)))
-		{
-			$object = $object . '-' . $objectId;
-			$objectId = 0;
-		}
-
-		$iaAcl = iaCore::instance()->factory('acl');
-		if ($iaAcl->checkAccess($object . ':' . $action, $user, $group, $objectId))
-		{
-			return $content;
-		}
-
-		return '';
+		return iaCore::instance()->factory('acl')->checkAccess($object . ':' . $action, $objectId, $user, $group)
+			? $content
+			: '';
 	}
 
 	public static function ia_add_js($params, $content)
@@ -756,8 +819,8 @@ class iaSmartyPlugins extends Smarty
 			return '';
 		}
 
-		$iaView = &iaCore::instance()->iaView;
-		$resources = self::_arrayCopyKeysSorted($iaView->resources->js->toArray());
+		$iaCore = &iaCore::instance();
+		$resources = self::_arrayCopyKeysSorted($iaCore->iaView->resources->js->toArray());
 
 		$output = '';
 		foreach ($resources as $resource)
@@ -835,8 +898,6 @@ class iaSmartyPlugins extends Smarty
 		if ($blocks || $iaView->manageMode)
 		{
 			// define if this position should be movable in visual mode
-			$smarty->assign('manage', $iaView->manageMode);
-			$smarty->assign('movable', isset($params['movable']));
 			$smarty->assign('position', $position);
 			$smarty->assign('blocks', $blocks);
 
@@ -855,7 +916,6 @@ class iaSmartyPlugins extends Smarty
 	{
 		$position = isset($params['position']) ? $params['position'] : 'center';
 		$section = isset($params['section']) ? $params['section'] : 'content';
-		$movable = isset($params['movable']);
 
 		$iaCore = iaCore::instance();
 
@@ -869,7 +929,7 @@ class iaSmartyPlugins extends Smarty
 			{
 				if (!isset(self::$_positionsContent[$positionName]))
 				{
-					self::ia_blocks(array('block' => $positionName, 'movable' => $movable, self::DIRECT_CALL_MARKER => true), $smarty);
+					self::ia_blocks(array('block' => $positionName, self::DIRECT_CALL_MARKER => true), $smarty);
 				}
 			}
 		}
@@ -955,6 +1015,7 @@ class iaSmartyPlugins extends Smarty
 
 		$limit = $params['aItemsPerPage'];
 		$total = $params['aTotal'];
+		$ignoreParams = isset($params['aIgnore']) ? (bool)$params['aIgnore'] : false;
 
 		if ($total > $limit)
 		{
@@ -970,10 +1031,19 @@ class iaSmartyPlugins extends Smarty
 			$urlPattern = $params['aTemplate'];
 			foreach (range($first, $last) as $pageNumber)
 			{
-				$url = str_replace('{page}', $pageNumber, $urlPattern);
+				if (false == $ignoreParams)
+				{
+					$url = str_replace('{page}', $pageNumber, $urlPattern);
+				}
+
 				if (1 == $pageNumber)
 				{
-					$url = preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern);
+					$url = true == $ignoreParams ? $urlPattern : preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern);
+				}
+				
+				if (true == $ignoreParams)
+				{
+					$url = str_replace('{page}', $pageNumber, $urlPattern);
 				}
 
 				$pages[$pageNumber] = $url;
@@ -981,11 +1051,16 @@ class iaSmartyPlugins extends Smarty
 
 			$params = array(
 				'current_page' => $currentPage,
-				'first_page' => preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern),
+				'first_page' => true == $ignoreParams ? $urlPattern : preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern),
 				'last_page' => str_replace('{page}', $pagesCount, $urlPattern),
 				'pages_count' => $pagesCount,
 				'pages_range' => $pages
 			);
+
+			if (true == $ignoreParams)
+			{
+				$params['first_page'] = str_replace('{page}', 1, $params['first_page']);
+			}
 
 			$smarty->assign('_pagination', $params);
 

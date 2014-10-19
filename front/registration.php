@@ -66,14 +66,16 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 				$iaMailer = $iaCore->factory('mailer');
 
-				$iaMailer->load_template('password_restoration');
-				$iaMailer->AddAddress($member['email'], $member['fullname']);
-				$iaMailer->replace['{%FULLNAME%}'] = $member['fullname'];
-				$iaMailer->replace['{%URL%}'] = $confirmationUrl;
-				$iaMailer->replace['{%CODE%}'] = $token;
-				$iaMailer->replace['{%EMAIL%}'] = $email;
+				$iaMailer->loadTemplate('password_restoration');
+				$iaMailer->addAddress($member['email'], $member['fullname']);
+				$iaMailer->setReplacements(array(
+					'fullname' => $member['fullname'],
+					'url' => $confirmationUrl,
+					'code' => $token,
+					'email' => $email
+				));
 
-				$iaMailer->Send();
+				$iaMailer->send();
 
 				$message = iaLanguage::get('restore_pass_confirm');
 				$iaDb->update(array('id' => $member['id'], 'sec_key' => $token), null, null, iaUsers::getTable());
@@ -104,7 +106,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
-	iaCore::util();
+	$iaCore->factory('util');
 
 	if (iaUsers::hasIdentity())
 	{
@@ -155,14 +157,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				$iaMailer = $iaCore->factory('mailer');
 
-				$iaMailer->load_template('password_restoration');
-				$iaMailer->AddAddress($member['email'], $member['fullname']);
-				$iaMailer->replace['{%FULLNAME%}'] = $member['fullname'];
-				$iaMailer->replace['{%URL%}'] = $confirmationUrl;
-				$iaMailer->replace['{%CODE%}'] = $token;
-				$iaMailer->replace['{%EMAIL%}'] = $member['email'];
+				$iaMailer->loadTemplate('password_restoration');
+				$iaMailer->addAddress($member['email'], $member['fullname']);
+				$iaMailer->setReplacements(array(
+					'fullname' => $member['fullname'],
+					'url' => $confirmationUrl,
+					'code' => $token,
+					'email' => $member['email']
+				));
 
-				$iaMailer->Send();
+				$iaMailer->send();
 
 				$messages[] = iaLanguage::get('restore_pass_confirm');
 				$iaDb->update(array('id' => $member['id'], 'sec_key' => $token), 0, 0, iaUsers::getTable());
@@ -194,7 +198,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	else
 	{
 		$iaField = $iaCore->factory('field');
-		$iaPlan = $iaCore->factory('plan', iaCore::FRONT);
+		$iaPlan = $iaCore->factory('plan');
 
 		$iaView->assign('plans', $iaPlan->getPlans($iaUsers->getItemName()));
 		$iaView->assign('sections', $iaField->filterByGroup($itemData, $iaUsers->getItemName()));
@@ -262,7 +266,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			else
 			{
 				iaField::keepValues($itemData, $fields);
-				$iaView->setMessages($messages, iaView::ERROR);
+				$iaView->setMessages($messages);
 			}
 
 			if (!$error)
@@ -277,7 +281,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				// process sponsored plan
 				if ($memberId && isset($_POST['plan_id']) && is_numeric($_POST['plan_id']))
 				{
-					$plan = $iaPlan->getPlanById($_POST['plan_id']);
+					$plan = $iaPlan->getById($_POST['plan_id']);
 
 					$usergroup = $plan['usergroup'] ? $plan['usergroup'] : iaUsers::MEMBERSHIP_REGULAR;
 

@@ -24,40 +24,72 @@
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	switch ($pageAction)
+	protected $_name = 'email-templates';
+
+	protected $_processAdd = false;
+	protected $_processEdit = false;
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			$template = $_GET['id'];
-			$result = array(
-				'config' => (bool)$iaCore->get($template, null, false, true),
-				'signature' => (bool)$iaCore->iaDb->one_bind('`show`', '`name` = :template', array('template' => $template), iaCore::getConfigTable()),
-				'subject' => $iaCore->get($template . '_subject', null, false, true),
-				'body' => $iaCore->get($template . '_body', null, false, true)
-			);
-			$iaView->assign($result);
-			break;
+		parent::__construct();
 
-		case iaCore::ACTION_EDIT:
-			$template = $_POST['id'];
-
-			$iaCore->set($template . '_subject', $_POST['subject'], true);
-			$iaCore->set($template . '_body', $_POST['body'], true);
-
-			$iaCore->set($template, (int)$_POST['enable_template'], true);
-
-			$signature = $_POST['enable_signature'] ? '1' : '';
-			$iaDb->update(array('show' => $signature), "`name` = '{$template}'", null, iaCore::getConfigTable());
-
-			die('ok');
+		$this->setTable(iaCore::getConfigTable());
 	}
-}
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$templates = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`config_group` = 'email_templates' AND `type` IN ('radio', 'divider') ORDER BY `order`", null, null, iaCore::getConfigTable());
-	$iaView->assign('templates', $templates);
+	protected function _indexPage(&$iaView)
+	{
+		$iaView->display($this->getName());
 
-	$iaView->display('email-templates');
+		$templates = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`config_group` = 'email_templates' AND `type` IN ('radio', 'divider') ORDER BY `order`");
+
+		$iaView->assign('templates', $templates);
+	}
+
+	protected function _gridRead($params)
+	{
+		$template = $params['id'];
+
+		$result = array(
+			'config' => (bool)$this->_iaCore->get($template, null, false, true),
+			'signature' => (bool)$this->_iaDb->one_bind('`show`', '`name` = :template', array('template' => $template)),
+			'subject' => $this->_iaCore->get($template . '_subject', null, false, true),
+			'body' => $this->_iaCore->get($template . '_body', null, false, true)
+		);
+
+		// composing the patterns description
+		if ($array = $this->_iaDb->one_bind('multiple_values', '`name` = :name', array('name' => $template . '_body')))
+		{
+			$array = array_filter(explode(',', $array));
+			$patterns = array();
+
+			foreach ($array as $entry)
+			{
+				list($key, $value) = explode('|', $entry);
+				$patterns[$key] = $value;
+			}
+
+			$result['patterns'] = $patterns;
+		}
+
+		return $result;
+	}
+
+	protected function _gridUpdate($params)
+	{
+		$template = $params['id'];
+
+		$this->_iaCore->set($template . '_subject', $params['subject'], true);
+		$this->_iaCore->set($template . '_body', $params['body'], true);
+		$this->_iaCore->set($template, (int)$params['enable_template'], true);
+
+		$signature = $params['enable_signature'] ? '1' : '';
+		$this->_iaDb->update(array('show' => $signature), iaDb::convertIds($template, 'name'));
+
+		$result = (0 == $this->_iaDb->getErrorNumber());
+
+		return array('result' => $result);
+	}
 }

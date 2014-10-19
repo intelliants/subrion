@@ -21,13 +21,21 @@ intelli.gridHelper = {
 			url: caller.url + (action ? action : 'edit') + '.json',
 			success: function(response)
 			{
-				if ('boolean' == typeof response.result)
+				var result = false;
+				switch (true)
 				{
-					response.result
-						? caller.store.reload()
-						: caller.store.rejectChanges();
+					case ('boolean' == typeof response.result):
+						result = response.result;
+						break;
+					case ('boolean' == typeof response.error):
+						result = !response.error;
+				}
 
-					intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
+				result ? caller.store.reload() : caller.store.rejectChanges();
+
+				if ('undefined' != typeof response.message)
+				{
+					intelli.notifFloatBox({msg: response.message, type: result ? 'success' : 'error', autohide: true});
 				}
 			}
 		});
@@ -156,7 +164,7 @@ function IntelliGrid(params, autoInit)
 		delete_multiple: _t('are_you_sure_to_delete_selected_items')
 	};
 	this.toolbar = null;
-	this.url = params.url;
+	this.url = params.url || window.location.pathname;
 
 	if (params.texts)
 	{
@@ -390,10 +398,9 @@ function IntelliGrid(params, autoInit)
 
 		Ext.state.Manager.setProvider(Ext.create('Ext.state.CookieProvider'));
 
-		var stateId = window.location.pathname;
-		stateId = stateId.substring(1);
-		stateId = stateId.substring(stateId.indexOf('/'));
-		stateId = 'IG-' + stateId.replace(/\//g, '');
+		var stateId = window.location.href;
+		stateId = stateId.replace(intelli.config.admin_url, '');
+		stateId = 'IG' + stateId.replace(/\//g, '');
 
 		self.grid = Ext.create('Ext.grid.Panel',
 		{
@@ -430,7 +437,7 @@ function IntelliGrid(params, autoInit)
 			switch (field)
 			{
 				case 'update':
-					window.location = self.url + 'edit/?id=' + record.get('id');
+					window.location = self.url + 'edit/' + record.get('id') + '/';
 					return;
 				case 'delete':
 					Ext.Msg.show(
@@ -616,6 +623,7 @@ function IntelliGrid(params, autoInit)
 			case 'text-wide': return Ext.create('Ext.form.field.TextArea', {allowBlank: false, grow: true});
 			case 'date': return Ext.create('Ext.form.DateField', {allowBlank: false, format: 'Y-m-d'});
 			case 'number': return Ext.create('Ext.form.NumberField', {allowBlank: false, allowDecimals: false, allowNegative: false});
+			case 'decimal': return Ext.create('Ext.form.NumberField', {allowBlank: false, allowDecimals: true, allowNegative: false});
 		}
 	};
 
@@ -634,7 +642,7 @@ function IntelliGrid(params, autoInit)
 					width: intelli.gridHelper.constants.WIDTH_ICON
 				};
 			case 'expander':
-				self.plugins.push({ptype: 'rowexpander', rowBodyTpl: [self.params.expanderTemplate]});
+				self.plugins.push({ptype: 'rowexpander', expandOnDblClick: false, rowBodyTpl: [self.params.expanderTemplate]});
 				break;
 			case 'numberer':
 				return Ext.create('Ext.grid.RowNumberer', {width: 30});

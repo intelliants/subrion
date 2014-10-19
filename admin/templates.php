@@ -24,135 +24,227 @@
  *
  ******************************************************************************/
 
-$iaTemplate = $iaCore->factory('template', iaCore::ADMIN);
-
-// process ajax actions
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	if ('info' == $_POST['get'])
+	protected $_name = 'templates';
+
+	private $_error = false;
+
+
+	public function __construct()
 	{
-		$output = array('tabs' => null);
-		$template = $_POST['name'];
+		parent::__construct();
 
-		$documentationPath = IA_FRONT_TEMPLATES . $template . IA_DS . 'info' . IA_DS;
+		$iaTemplate = $this->_iaCore->factory('template', iaCore::ADMIN);
+		$this->setHelper($iaTemplate);
+	}
 
-		// make sure template information exists
-		if (file_exists($documentationPath) && is_dir($documentationPath))
+	protected function _indexPage(&$iaView)
+	{
+		$iaCache = $this->_iaCore->factory('cache');
+
+		// set default template
+		if (isset($_POST['install']) || isset($_POST['reinstall']))
 		{
-			$docs = scandir($documentationPath);
-
-			foreach ($docs as $doc)
+			if ($this->_installTemplate())
 			{
-				if (substr($doc, 0, 1) != '.' && 'html' == substr($documentationPath . $doc, -4))
+				$iaView->setMessages(iaLanguage::getf('template_installed', array('name' => $this->getHelper()->title)), iaView::SUCCESS);
+
+				$iaCache->clearAll();
+
+				$this->_iaCore->factory('log')->write(iaLog::ACTION_INSTALL, array('type' => 'template', 'name' => $this->getHelper()->title));
+
+				iaUtil::go_to(IA_SELF);
+			}
+		}
+
+		// download template
+		if (isset($_POST['download']))
+		{
+			if ($this->_downloadTemplate())
+			{
+				$iaCache->remove('subrion_templates.inc');
+			}
+		}
+
+		$templates = $this->_getList($iaCache);
+
+		if ($this->_messages)
+		{
+			$iaView->setMessages($this->_messages, $this->_error ? iaView::ERROR : iaView::SUCCESS);
+		}
+
+		$iaView->assign('templates', $templates);
+		$iaView->assign('tmpl', $this->_iaCore->get('tmpl'));
+	}
+
+	protected function _gridRead()
+	{
+		$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+
+		if (isset($_POST['get']) && 'info' == $_POST['get'])
+		{
+			$output = array('tabs' => array());
+			$template = $_POST['name'];
+
+			$documentationPath = IA_FRONT_TEMPLATES . $template . IA_DS . 'docs' . IA_DS;
+
+			// make sure template information exists
+			if (file_exists($documentationPath) && is_dir($documentationPath))
+			{
+				$docs = scandir($documentationPath);
+
+				foreach ($docs as $doc)
 				{
-					if (is_file($documentationPath . $doc))
+					if (substr($doc, 0, 1) != '.' && 'html' == substr($documentationPath . $doc, -4))
 					{
-						$tab = substr($doc, 0, count($doc) - 6);
-						$contents = file_get_contents($documentationPath . $doc);
-						$output['tabs'][] = array(
-							'title' => iaLanguage::get('extra_' . $tab, $tab),
-							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
-							'cls' => 'extension-docs'
-						);
+						if (is_file($documentationPath . $doc))
+						{
+							$tab = substr($doc, 0, count($doc) - 6);
+							$contents = file_get_contents($documentationPath . $doc);
+							$output['tabs'][] = array(
+								'title' => iaLanguage::get('extra_' . $tab, $tab),
+								'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
+								'cls' => 'extension-docs'
+							);
+						}
 					}
 				}
+
+				$iaTemplate = $this->getHelper();
+
+				$iaTemplate->getFromPath(IA_FRONT_TEMPLATES . $template . IA_DS . iaTemplate::INSTALL_FILE_NAME);
+				$iaTemplate->parse();
+
+				$replacements = array(
+					'{icon}' => file_exists(IA_FRONT_TEMPLATES . $template . IA_DS . 'docs' . IA_DS . 'img/icon.png') ? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'templates/' . $template . '/docs/img/icon.png" alt=""></td></tr>' : '',
+					'{name}' => $iaTemplate->title,
+					'{author}' => $iaTemplate->author,
+					'{contributor}' => $iaTemplate->contributor,
+					'{version}' => $iaTemplate->version,
+					'{date}' => $iaTemplate->date,
+					'{compatibility}' => $iaTemplate->compatibility,
+				);
+
+				$output['info'] = str_replace(array_keys($replacements), array_values($replacements),
+					file_get_contents(IA_ADMIN . 'templates' . IA_DS . $this->_iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl'));
 			}
-
-			$iaTemplate->getFromPath($documentationPath . iaTemplate::INSTALL_FILE_NAME);
-			$iaTemplate->parse();
-
-			$search = array(
-				'{icon}',
-				'{name}',
-				'{author}',
-				'{contributor}',
-				'{version}',
-				'{date}',
-				'{compatibility}',
-			);
-
-			$icon = '&nbsp;';
-
-			$replacement = array(
-				$icon,
-				$iaTemplate->title,
-				$iaTemplate->author,
-				$iaTemplate->contributor,
-				$iaTemplate->version,
-				$iaTemplate->date,
-				$iaTemplate->compatibility
-			);
-
-			$output['info'] = str_replace($search, $replacement,
-				file_get_contents(IA_ADMIN . 'templates' . IA_DS . $iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl'));
 		}
 
-		$iaView->assign($output);
+		return $output;
 	}
-}
 
-// process page display
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$messages = array();
-	$error = false;
-
-	$iaCache = $iaCore->factory('cache');
-
-	// set default template
-	if (isset($_POST['set_template']) || isset($_POST['reinstall']))
+	private function _getList(&$iaCache)
 	{
-		$template = $_POST['template'];
+		$templates = $this->getHelper()->getList(); // get list of available local templates
+		$remoteTemplates = array();
 
-		if (empty($template))
+		if ($this->_iaCore->get('allow_remote_templates'))
 		{
-			$error = true;
-			$messages[] = iaLanguage::get('template_empty');
+			if ($cachedData = $iaCache->get('subrion_templates', 3600, true))
+			{
+				$remoteTemplates = $cachedData; // get templates list from cache, cache lives for 1 hour
+			}
+			else
+			{
+				if ($response = iaUtil::getPageContent(iaUtil::REMOTE_TOOLS_URL . 'list/template/' . IA_VERSION))
+				{
+					$response = iaUtil::jsonDecode($response);
+					if (!empty($response['error']))
+					{
+						$this->_messages[] = $response['error'];
+						$this->_error = true;
+					}
+					elseif ($response['total'] > 0)
+					{
+						if (isset($response['extensions']) && is_array($response['extensions']))
+						{
+							foreach ($response['extensions'] as $entry)
+							{
+								$templateInfo = (array)$entry;
+
+								// exclude installed templates
+								if (!array_key_exists($templateInfo['name'], $templates))
+								{
+									$templateInfo['date'] = gmdate(iaDb::DATE_FORMAT, $templateInfo['date']);
+									$templateInfo['buttons'] = '';
+									$templateInfo['notes'] = array();
+									$templateInfo['remote'] = true;
+
+									$remoteTemplates[] = $templateInfo;
+								}
+							}
+
+							// cache well-formed results
+							$iaCache->write('subrion_templates', $remoteTemplates);
+						}
+						else
+						{
+							$this->addMessage('error_incorrect_format_from_subrion');
+							$this->_error = true;
+						}
+					}
+				}
+				else
+				{
+					$this->addMessage('error_incorrect_response_from_subrion');
+					$this->_error = true;
+				}
+			}
 		}
-		if (!is_dir(IA_FRONT_TEMPLATES . $template) && !$error)
+
+		return array_merge($templates, $remoteTemplates);
+	}
+
+	private function _installTemplate()
+	{
+		if (empty($_POST['template']))
 		{
-			$error = true;
-			$messages[] = iaLanguage::get('template_folder_error');
+			$this->_error = true;
+			$this->_messages[] = iaLanguage::get('template_name_empty');
 		}
 
-		$infoXmlFile = IA_FRONT_TEMPLATES . $template . IA_DS . 'info' . IA_DS . iaTemplate::INSTALL_FILE_NAME;
+		$templateName = $_POST['template'];
 
-		if (!file_exists($infoXmlFile) && !$error)
+		if (!is_dir(IA_FRONT_TEMPLATES . $templateName) && !$this->_error)
 		{
-			$error = true;
-			$messages[] = iaLanguage::getf('template_file_error', array('file' => $template));
+			$this->_error = true;
+			$this->_messages[] = iaLanguage::get('template_folder_error');
 		}
 
-		if (!$error)
+		$infoXmlFile = IA_FRONT_TEMPLATES . $templateName . IA_DS . iaTemplate::INSTALL_FILE_NAME;
+
+		if (!file_exists($infoXmlFile) && !$this->_error)
 		{
+			$this->_error = true;
+			$this->_messages[] = iaLanguage::getf('template_file_error', array('file' => $templateName));
+		}
+
+		if (!$this->_error)
+		{
+			$iaTemplate = $this->getHelper();
+
 			$iaTemplate->getFromPath($infoXmlFile);
 			$iaTemplate->parse();
 			$iaTemplate->check();
 			$iaTemplate->rollback();
 			$iaTemplate->install();
 
-			if ($iaTemplate->error)
+			if (!$iaTemplate->error)
 			{
-				$error = true;
-				$messages[] = $iaTemplate->getMessage();
+				return true;
 			}
-			else
-			{
-				$iaView->setMessages(iaLanguage::getf('template_installed', array('name' => $iaTemplate->title)), iaView::SUCCESS);
 
-				$iaCache->clearAll();
-
-				$iaCore->factory('log')->write(iaLog::ACTION_INSTALL, array('type' => 'template', 'name' => $iaTemplate->title));
-
-				iaUtil::go_to(IA_SELF);
-			}
+			$this->_error = true;
+			$this->_messages[] = $iaTemplate->getMessage();
 		}
+
+		return false;
 	}
 
-	// download template
-	if (isset($_POST['download_template']))
+	private function _downloadTemplate()
 	{
-		$templateName = $_POST['download_template'];
+		$templateName = $_POST['download'];
 		$templatesTempFolder = IA_TMP . 'templates' . IA_DS;
 		if (!is_dir($templatesTempFolder))
 		{
@@ -163,7 +255,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$fileName = $filePath . '.zip';
 
 		// save remote template file
-		$iaCore->util()->downloadRemoteContent('http://tools.subrion.com/download-template/?name=' . $templateName . '&version=' . IA_VERSION, $fileName);
+		iaUtil::downloadRemoteContent(iaUtil::REMOTE_TOOLS_URL . 'install/' . $templateName . IA_URL_DELIMITER . IA_VERSION, $fileName);
 
 		if (file_exists($fileName))
 		{
@@ -178,83 +270,19 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
 
 				$pclZip = new PclZip($fileName);
-				$files = $pclZip->extract(PCLZIP_OPT_PATH, IA_FRONT_TEMPLATES);
+				$pclZip->extract(PCLZIP_OPT_PATH, IA_FRONT_TEMPLATES . $templateName);
 
-				$messages[] = iaLanguage::getf('template_downloaded', array('name' => $templateName));
+				$this->addMessage(iaLanguage::getf('template_downloaded', array('name' => $templateName)), false);
 
-				$iaCache->remove('subrion_templates.inc');
+				return true;
 			}
 			else
 			{
-				$error = true;
-				$messages[] = iaLanguage::get('upload_template_error');
+				$this->_error = true;
+				$this->addMessage('upload_template_error');
 			}
 		}
+
+		return false;
 	}
-
-	// get list of available local templates
-	$templates = $iaTemplate->getList();
-
-	// get templates list from cache, cache lives for 1 hour
-	$remoteTemplates = array();
-	if ($cachedData = $iaCache->get('subrion_templates', 3600, true))
-	{
-		$remoteTemplates = $cachedData;
-	}
-	else
-	{
-		if ($response = $iaCore->util()->getPageContent('http://tools.subrion.com/downloads/?type=templates&version=' . IA_VERSION))
-		{
-			$response = $iaCore->util()->jsonDecode($response);
-			if (!empty($response['error']))
-			{
-				$messages[] = $response['error'];
-				$error = true;
-			}
-			elseif ($response['total'] > 0)
-			{
-				if (isset($response['extensions']) && is_array($response['extensions']))
-				{
-					foreach ($response['extensions'] as $entry)
-					{
-						$templateInfo = (array)$entry;
-
-						// exclude installed templates
-						if (!array_key_exists($templateInfo['name'], $templates))
-						{
-							$templateInfo['date'] = gmdate("Y-m-d", $templateInfo['date']);
-							$templateInfo['buttons'] = '';
-							$templateInfo['notes'] = array();
-							$templateInfo['remote'] = 1;
-
-							$remoteTemplates[] = $templateInfo;
-						}
-					}
-
-					// cache well-formed results
-					$iaCache->write('subrion_templates', $remoteTemplates);
-				}
-				else
-				{
-					$messages[] = iaLanguage::get('error_incorrect_format_from_subrion');
-					$error = true;
-				}
-			}
-		}
-		else
-		{
-			$messages[] = iaLanguage::get('error_incorrect_response_from_subrion');
-			$error = true;
-		}
-	}
-
-	if ($messages)
-	{
-		$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
-	}
-
-	$iaView->assign('templates', isset($remoteTemplates) ? array_merge($templates, $remoteTemplates) : $templates);
-	$iaView->assign('tmpl', $iaCore->get('tmpl'));
-
-	$iaView->display('templates');
 }

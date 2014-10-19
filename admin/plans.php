@@ -24,56 +24,239 @@
  *
  ******************************************************************************/
 
-$iaPlan = $iaCore->factory('plan', iaCore::ADMIN);
-
-$iaDb->setTable(iaPlan::getTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	$iaGrid = $iaCore->factory('grid', iaCore::ADMIN);
+	const PATTERN_TITLE = 'plan_title_';
+	const PATTERN_DESCRIPTION = 'plan_description_';
 
-	switch ($pageAction)
+	protected $_name = 'plans';
+
+	protected $_tooltipsEnabled = true;
+
+	protected $_gridColumns = array('item', 'cost', 'duration', 'recurring', 'cycles', 'unit', 'order', 'status');
+
+	protected $_phraseAddSuccess = 'plan_added';
+	protected $_phraseGridEntryDeleted = 'plan_deleted';
+
+	private $_fields;
+	private $_items;
+	private $_languages;
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			$output = $iaGrid->gridRead($_GET,
-				array('item', 'cost', 'days', 'order', 'status')
-			);
+		parent::__construct();
 
-			if ($output['data'])
+		$iaPlan = $this->_iaCore->factory('plan');
+		$this->setHelper($iaPlan);
+
+		$this->setTable(iaPlan::getTable());
+
+		$this->_fields = $this->_getFieldsList();
+		$this->_items = $this->_iaCore->factory('item')->getItems(true);
+	}
+
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		if (empty($data['item']))
+		{
+			$this->addMessage('incorrect_item');
+			return false;
+		}
+
+		$entry['item'] = in_array($data['item'], $this->_items) ? $data['item'] : false;
+		if ($entry['item'] == iaUsers::getItemName())
+		{
+			if (isset($data['usergroup']))
 			{
-				foreach ($output['data'] as &$row)
+				$entry['usergroup'] = (int)$data['usergroup'];
+			}
+		}
+
+		if (isset($this->_fields[$entry['item']]))
+		{
+			$entry['data'] = array();
+			if (!empty($data['fields']))
+			{
+				$f = $this->_fields[$entry['item']];
+				$array = array();
+				foreach ($data['fields'] as $field)
 				{
-					$row['title'] = iaLanguage::get('plan_title_' . $row['id']);
-					$row['description'] = iaLanguage::get('plan_description_' . $row['id']);
+					if (in_array($field, $f[0]))
+					{
+						$entry['data']['fields'][] = $field;
+						$array[] = $field;
+					}
+					elseif (in_array($field, $f[1]))
+					{
+						$entry['data']['fields'][] = $field;
+					}
+				}
+				if ($array)
+				{
+					$this->_iaDb->update(array('for_plan' => 1), "`name` IN ('" . implode("','", $entry['data']['fields']) . "')", null, iaField::getTable());
+				}
+			}
+			$entry['data'] = serialize($entry['data']);
+		}
+
+		$this->_iaCore->startHook('phpAdminAddPlanValidation');
+
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+		$lang = array(
+			'title' => $data['title'],
+			'description' => $data['description']
+		);
+
+		foreach ($this->_iaCore->languages as $languageCode => $languageTitle)
+		{
+			if (isset($lang['title'][$languageCode]))
+			{
+				if (empty($lang['title'][$languageCode]))
+				{
+					$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $languageTitle)), false);
+				}
+				elseif (!utf8_is_valid($lang['title'][$languageCode]))
+				{
+					$block['title'][$languageCode] = utf8_bad_replace($lang['title'][$languageCode]);
 				}
 			}
 
-			break;
+			if (isset($lang['description'][$languageCode]))
+			{
+				if (empty($lang['description'][$languageCode]))
+				{
+					$this->addMessage(iaLanguage::getf('error_lang_description', array('lang' => $languageTitle)), false);
+				}
+				elseif (!utf8_is_valid($lang['description'][$languageCode]))
+				{
+					$lang['description'][$languageCode] = utf8_bad_replace($lang['description'][$languageCode]);
+				}
+			}
+		}
+		$this->_languages = $lang;
 
-		case iaCore::ACTION_EDIT:
-			$output = $iaGrid->gridUpdate($_POST);
+		$entry['duration'] = isset($data['duration']) ? $data['duration'] : 0;
+		if (!is_numeric($entry['duration']))
+		{
+			$this->addMessage('error_plan_duration');
+		}
 
-			break;
+		$entry['cost'] = (float)$data['cost'];
+		$entry['cycles'] = (int)$data['cycles'];
+		$entry['unit'] = $data['unit'];
+		$entry['status'] = $data['status'];
+		$entry['recurring'] = (int)$data['recurring'];
+		$entry['expiration_status'] = $data['expiration_status'];
 
-		case iaCore::ACTION_DELETE:
-			$output = $iaGrid->gridDelete($_POST, 'plan_deleted');
+		$this->_iaCore->startHook('phpAdminPlanCommonFieldFilled', array('item' => &$entry));
+
+		$entry['cost'] || $this->_phraseAddSuccess = 'free_plan_added';
+
+		return !$this->getMessages();
 	}
 
-	$iaView->assign($output);
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if (iaCore::ACTION_ADD == $pageAction || iaCore::ACTION_EDIT == $pageAction)
+	protected function _postSaveEntry(array $entry, array $data, $action)
 	{
-		iaBreadcrumb::add(iaLanguage::get('plans'), IA_ADMIN_URL . $iaPlan->getModuleUrl());
+		foreach ($this->_iaCore->languages as $code => $title)
+		{
+			iaLanguage::addPhrase(self::PATTERN_TITLE . $this->getEntryId(), iaSanitize::tags($this->_languages['title'][$code]), $code);
+			iaLanguage::addPhrase(self::PATTERN_DESCRIPTION . $this->getEntryId(), $this->_languages['description'][$code], $code);
+		}
+	}
 
-		$iaCore->factory('field');
+	protected function _modifyGridResult(array &$entries)
+	{
+		foreach ($entries as $key => &$entry)
+		{
+			$entry['title'] = iaLanguage::get(self::PATTERN_TITLE . $entry['id']);
+			$entry['description'] = iaSanitize::tags(iaLanguage::get(self::PATTERN_DESCRIPTION . $entry['id']));
 
-		$items = $iaCore->factory('item')->getItems(true);
+			$entry['duration'].= ' ' . iaLanguage::get($entry['unit'] . ($entry['duration'] > 1 ? 's' : ''));
+			if ($entry['recurring'] && $entry['cycles'] != -1)
+			{
+				$entry['duration'].= ' (' . $entry['cycles'] . ' ' . iaLanguage::get('cycles') . ')';
+			}
+			$entry['duration'] = strtolower($entry['duration']);
+
+			unset($entries[$key]['unit'], $entries[$key]['cycles']);
+		}
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry = array(
+			'cost' => '0.00',
+			'duration' => 30,
+			'unit' => iaPlan::UNIT_DAY,
+			'status' => iaCore::STATUS_ACTIVE,
+			'usergroup' => 0,
+			'recurring' => false,
+			'cycles' => 0
+		);
+	}
+
+	protected function _entryAdd(array $entryData)
+	{
+		$order = $this->_iaDb->getMaxOrder() + 1;
+		$entryData['order'] = $order ? $order : 1;
+
+		return $this->_iaDb->insert($entryData);
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		$this->_iaCore->startHook('phpAdminBeforePlanDelete', array('entryId' => $entryId));
+
+		$result = parent::_entryDelete($entryId);
+
+		if ($result)
+		{
+			// here we should drop the "for_plan" column of fields
+			// if there are no more plans exist
+			if (0 === (int)$this->_iaDb->one(iaDb::STMT_COUNT_ROWS))
+			{
+				$this->_iaDb->update(array('for_plan' => 0), iaDb::convertIds(1, 'for_plan'), null, iaField::getTable());
+			}
+
+			iaLanguage::delete(self::PATTERN_TITLE . $entryId);
+			iaLanguage::delete(self::PATTERN_DESCRIPTION . $entryId);
+		}
+
+		return $result;
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		if (isset($entryData['data']))
+		{
+			$entryData['data'] = unserialize($entryData['data']);
+			empty($entryData['data']['fields']) || $entryData['data']['fields'] = array_reverse($entryData['data']['fields']);
+		}
+		else
+		{
+			$entryData['data'] = array();
+		}
+
+		$units = $this->_iaDb->getEnumValues($this->getTable(), 'unit');
+		$units = $units ? array_values($units['values']) : array();
+
+		$usergroups = $this->_iaDb->keyvalue(array(iaDb::ID_COLUMN_SELECTION, 'title'), iaDb::convertIds(array(iaUsers::MEMBERSHIP_ADMINISTRATOR, iaUsers::MEMBERSHIP_GUEST), 'id', false), iaUsers::getUsergroupsTable());
+
+		$iaView->assign('usergroups', $usergroups);
+		$iaView->assign('fields', $this->_fields);
+		$iaView->assign('items', $this->_items);
+		$iaView->assign('expiration_statuses', $this->_getItemsStatuses());
+		$iaView->assign('units', $units);
+	}
+
+	private function _getFieldsList()
+	{
+		$this->_iaCore->factory('field');
 
 		$fields = array();
-		$rows = $iaDb->all(array('name', 'item', 'for_plan', 'required'), ' 1=1 ORDER BY `for_plan` DESC', null, null, iaField::getTable());
+		$rows = $this->_iaDb->all(array('name', 'item', 'for_plan', 'required'), ' 1=1 ORDER BY `for_plan` DESC', null, null, iaField::getTable());
 		foreach ($rows as $row)
 		{
 			$type = $row['for_plan'];
@@ -89,199 +272,31 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$fields[$row['item']][$type][] = $row['name'];
 		}
 
-		if (isset($_POST['save']))
-		{
-			$error = false;
-			$data = array();
-			$messages = array();
-
-			if (empty($_POST['item']))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('incorrect_item');
-			}
-			else
-			{
-				$data['item'] = in_array($_POST['item'], $items) ? $_POST['item'] : false;
-				if ($data['item'] == iaUsers::getItemName())
-				{
-					if (isset($_POST['usergroup']))
-					{
-						$data['usergroup'] = (int)$_POST['usergroup'];
-					}
-				}
-
-				if (isset($fields[$data['item']]))
-				{
-					if (isset($_POST['fields']) && $_POST['fields'])
-					{
-						$f = $fields[$data['item']];
-						$array = array();
-						foreach ($_POST['fields'] as $field)
-						{
-							if (in_array($field, $f[0]))
-							{
-								$data['data']['fields'][] = $field;
-								$array[] = $field;
-							}
-							elseif (in_array($field, $f[1]))
-							{
-								$data['data']['fields'][] = $field;
-							}
-						}
-						if ($array)
-						{
-							$iaDb->update(array('for_plan' => 1), "`name` IN ('" . implode("','", $data['data']['fields']) . "')", null, iaField::getTable());
-						}
-					}
-					else
-					{
-						$data['data']['fields'] = array();
-					}
-				}
-				$iaCore->startHook('phpAdminAddPlanValidation');
-
-				iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-				$lang = array(
-					'title' => $_POST['title'],
-					'description' => $_POST['description']
-				);
-
-				foreach ($iaCore->languages as $plan_language => $plan_language_title)
-				{
-					if (isset($lang['title'][$plan_language]))
-					{
-						if (empty($lang['title'][$plan_language]))
-						{
-							$error = true;
-							$messages[] = iaLanguage::getf('error_lang_title', array('lang' => $plan_language_title));
-						}
-						elseif (!utf8_is_valid($lang['title'][$plan_language]))
-						{
-							$block['title'][$plan_language] = utf8_bad_replace($lang['title'][$plan_language]);
-						}
-					}
-
-					if (isset($lang['description'][$plan_language]))
-					{
-						if (empty($lang['description'][$plan_language]))
-						{
-							$error = true;
-							$messages[] = iaLanguage::getf('error_lang_description', array('lang' => $plan_language_title));
-						}
-
-						if (!utf8_is_valid($lang['description'][$plan_language]))
-						{
-							$lang['description'][$plan_language] = utf8_bad_replace($lang['description'][$plan_language]);
-						}
-					}
-				}
-
-				$data['days'] = isset($_POST['days']) ? $_POST['days'] : 0;
-				if (!is_numeric($data['days']))
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_plan_number_days');
-				}
-
-				$data['cost'] = isset($_POST['cost']) ? (float)$_POST['cost'] : 0;
-				if (empty($data['cost']) && $data['cost'] != 0)
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_plan_cost');
-				}
-				$data['status'] = $_POST['status'];
-				$data['email_expire'] = isset($_POST['email_expire']) ? $_POST['email_expire'] : '';
-
-				$iaCore->startHook('phpAdminPlanCommonFieldFilled', array('item' => &$data));
-
-				if (!$error)
-				{
-					if (isset($data['data']) && is_array($data['data']))
-					{
-						$data['data'] = serialize($data['data']);
-					}
-					if ($pageAction == iaCore::ACTION_ADD)
-					{
-						$result = $iaPlan->insert($data);
-						$planId = $result;
-
-						if ($result)
-						{
-							$messages[] = iaLanguage::get('plan_added');
-						}
-						else
-						{
-							$error = true;
-							$messages[] = $iaPlan->getMessage();
-						}
-					}
-					elseif ($pageAction == iaCore::ACTION_EDIT)
-					{
-						$planId = (int)$_GET['id'];
-						$result = $iaPlan->update($data, $planId);
-
-						if ($result)
-						{
-							$messages[] = iaLanguage::get('saved');
-						}
-						else
-						{
-							$error = true;
-							$messages[] = $iaPlan->getMessage();
-						}
-					}
-
-					$iaPlan->updatePlanLanguage($planId, $lang);
-
-					$iaView->setMessages($messages, iaView::SUCCESS);
-
-					$baseUrl = IA_ADMIN_URL . $iaPlan->getModuleUrl();
-
-					iaUtil::post_goto(array(
-						'add' => $baseUrl . 'add/',
-						'list' => $baseUrl,
-						'stay' => $baseUrl . 'edit/?id=' . $planId,
-					));
-				}
-			}
-			$iaView->setMessages($messages, iaView::ERROR);
-		}
-
-		if (iaCore::ACTION_EDIT == $pageAction)
-		{
-			$planId = empty($_GET['id']) ? false : (int)$_GET['id'];
-			$plan = $planId ? $iaPlan->getById($planId) : false;
-		}
-		else
-		{
-			$plan = array('usergroup' => 0);
-		}
-
-		if (isset($plan['data']))
-		{
-			$plan['data'] = unserialize($plan['data']);
-			$plan['data']['fields'] = array_reverse($plan['data']['fields']);
-		}
-		else
-		{
-			$plan['data'] = array();
-		}
-
-		$usergroups = $iaDb->keyvalue(array(iaDb::ID_COLUMN_SELECTION, 'title'), $iaDb->convertIds(array(iaUsers::MEMBERSHIP_ADMINISTRATOR, iaUsers::MEMBERSHIP_GUEST), 'id', false), iaUsers::getUsergroupsTable());
-
-		$iaView->assign('usergroups', $usergroups);
-		$iaView->assign('plan', $plan);
-		$iaView->assign('fields', $fields);
-		$iaView->assign('items', $items);
-
-		$iaView->display('plans');
+		return $fields;
 	}
-	else
+
+	private function _getItemsStatuses()
 	{
-		$iaView->grid('admin/plans');
+		$result = array();
+
+		$iaItem = $this->_iaCore->factory('item');
+
+		foreach ($this->_items as $itemName)
+		{
+			$statuses = array();
+
+			$className = ucfirst(substr($itemName, 0, -1));
+			$itemClassInstance = (iaUsers::getItemName() == $itemName)
+				? $this->_iaCore->factory('users')
+				: $this->_iaCore->factoryPackage($className, $iaItem->getPackageByItem($itemName));
+			if ($itemClassInstance && method_exists($itemClassInstance, 'getStatuses'))
+			{
+				$statuses = $itemClassInstance->getStatuses();
+			}
+
+			$result[$itemName] = implode(',', $statuses);
+		}
+
+		return $result;
 	}
 }
-
-$iaDb->resetTable();

@@ -71,7 +71,6 @@ Ext.onReady(function()
 				delete_single: _t('are_you_sure_to_delete_this_page'),
 				delete_multiple: _t('are_you_sure_to_delete_selected_pages')
 			},
-			url: intelli.pagesUrl
 		}, false);
 		intelli.pages.toolbar = new Ext.Toolbar({items:[
 		{
@@ -179,7 +178,7 @@ $(function()
 	$('a[data-toggle="tab"]', '#ckeditor').on('shown.bs.tab', function(e)
 	{
 		CKEDITOR.instances['contents['+$(this).text()+']']
-			|| intelli.ckeditor('contents['+$(this).text()+']', {toolbar: 'User'});
+			|| intelli.ckeditor('contents['+$(this).text()+']', {toolbar: 'Extended'});
 
 		$('#js-active-language').val($(this).data('language'));
 	});

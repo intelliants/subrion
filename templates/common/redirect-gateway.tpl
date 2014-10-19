@@ -5,24 +5,23 @@
 		<meta http-equiv="Content-Type" content="text/html;charset={$config.charset}">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="generator" content="Subrion CMS {$config.version}">
-		<base href="{$smarty.const.IA_URL}">
 
-		<link rel="shortcut icon" href="{$smarty.const.IA_CLEAR_URL}favicon.ico">
+		<link rel="shortcut icon" href="{$nonProtocolUrl}favicon.ico">
 
-		<link href="{$smarty.const.IA_CLEAR_URL}templates/{$config.tmpl}/css/iabootstrap{if isset($smarty.cookies.template_color_scheme)}-{$smarty.cookies.template_color_scheme}{elseif isset($config.template_color_scheme)}-{$config.template_color_scheme}{/if}.css" rel="stylesheet">
-		<link href="{$smarty.const.IA_CLEAR_URL}templates/{$config.tmpl}/css/iabootstrap-responsive.css" rel="stylesheet">
+		<link href="{$nonProtocolUrl}templates/{$config.tmpl}/css/iabootstrap{if isset($smarty.cookies.template_color_scheme)}-{$smarty.cookies.template_color_scheme}{elseif isset($config.template_color_scheme)}-{$config.template_color_scheme}{/if}.css" rel="stylesheet">
+		<link href="{$nonProtocolUrl}templates/{$config.tmpl}/css/iabootstrap-responsive.css" rel="stylesheet">
 	</head>
 
 	<body>
 		{ia_hooker name='smartyRedirectPage'}
 
 		<div class="redirect-block">
-		{if isset($redir)}
-			<h3>{$redir.caption}</h3>
-			<div class="alert alert-info">{$redir.msg}</div>
+			{if isset($redir)}
+				<h3>{$redir.caption}</h3>
+				<div class="alert alert-info">{$redir.msg}</div>
 
-			{include file=$redir.form}
-		{/if}
+				{include file=$redir.form}
+			{/if}
 		</div>
 
 		{ia_add_js}

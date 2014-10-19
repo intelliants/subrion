@@ -65,526 +65,6 @@ class iaField extends abstractCore
 		return self::$_tableRelations;
 	}
 
-	public function insert(array $fieldData)
-	{
-		$iaDb = &$this->iaDb;
-
-		if (isset($fieldData['parents']))
-		{
-			if ($this->_setParents($fieldData['name'], $fieldData['parents']))
-			{
-				$fieldData['relation'] = self::RELATION_DEPENDENT;
-			}
-			unset($fieldData['parents']);
-		}
-
-		if (isset($fieldData['children']))
-		{
-			$this->_setChildren($fieldData['name'], $fieldData['item'], $fieldData['values'], $fieldData['children']);
-			unset($fieldData['children']);
-		}
-
-		$this->_setRelations();
-
-		$pagesList = $fieldData['pages'];
-
-		unset($fieldData['pages'], $fieldData['groups']);
-
-		foreach ($this->iaCore->languages as $code => $l)
-		{
-			if (!empty($fieldData['title'][$code]))
-			{
-				iaLanguage::addPhrase('field_' . $fieldData['name'], $fieldData['title'][$code], $code, $fieldData['extras']);
-			}
-
-			if (isset($fieldData['annotation'][$code]) && !empty($fieldData['annotation'][$code]))
-			{
-				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_annotation', $fieldData['annotation'][$code], $code, $fieldData['extras']);
-			}
-		}
-		unset($fieldData['title'], $fieldData['annotation']);
-
-		if (!isset($fieldData['relation']) || $fieldData['relation'] != self::RELATION_PARENT)
-		{
-			$fieldData['relation'] = self::RELATION_REGULAR;
-		}
-		if (isset($fieldData['parents']))
-		{
-			if ($this->_setParents($fieldData['name'], $fieldData['parents']))
-			{
-				$fieldData['relation'] = self::RELATION_DEPENDENT;
-			}
-			unset($fieldData['parents']);
-		}
-
-		if (isset($fieldData['group']) && !isset($fieldData['fieldgroup_id']))
-		{
-			$fieldData['fieldgroup_id'] = 0;
-
-			$rows = $iaDb->all(array('id', 'name', 'item'), "`item` = '{$fieldData['name']}' ORDER BY `item`, `name`", null, null, self::getTableGroups());
-			foreach ($rows as $val)
-			{
-				if ($fieldData['group'] == $val['name'])
-				{
-					$fieldData['fieldgroup_id'] = $val['id'];
-				}
-			}
-			unset($fieldData['group']);
-		}
-
-		//add language number field search ranges
-		if (isset($fieldData['_numberRangeForSearch']) && is_array($fieldData['_numberRangeForSearch']))
-		{
-			foreach ($fieldData['_numberRangeForSearch'] as $number)
-			{
-				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_range_' . $number, $number, null, $fieldData['extras']);
-			}
-		}
-		unset($fieldData['_numberRangeForSearch']);
-		$keys = array();
-		if (isset($fieldData['values']) && is_array($fieldData['values']))
-		{
-			foreach ($fieldData['values'] as $key => $value)
-			{
-				$key = $keys[$key] = isset($fieldData['keys'][$key]) ? $fieldData['keys'][$key] : $key;
-				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $key, $value, null, $fieldData['extras']);
-			}
-		}
-		else
-		{
-			unset($fieldData['values']);
-		}
-
-		if (isset($fieldData['lang_values']) && is_array($fieldData['lang_values']))
-		{
-			foreach ($fieldData['lang_values'] as $lng_code => $lng_phrases)
-			{
-				foreach ($lng_phrases as $ph_key => $ph_value)
-				{
-					iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $ph_key, $ph_value, $lng_code, $fieldData['extras']);
-				}
-			}
-			unset($fieldData['lang_values']);
-		}
-
-		if (isset($fieldData['values']) && $fieldData['values'] && isset($fieldData['keys']))
-		{
-			$fieldData['values'] = implode(',', $fieldData['keys']);
-		}
-		unset($fieldData['keys']);
-
-		if (isset($fieldData['lang_values']))
-		{
-			unset($fieldData['lang_values']);
-		}
-
-		$fieldData['order'] = $iaDb->getMaxOrder(self::getTable()) + 1;
-
-		$fieldId = $iaDb->insert($fieldData, null, self::getTable());
-
-		if ($fieldId && $pagesList)
-		{
-			$this->_setPagesList($fieldId, $pagesList, $fieldData['extras']);
-		}
-
-		$fieldData['table_name'] = $this->iaCore->factory('item')->getItemTable($fieldData['item']);
-
-		$fields = $iaDb->describe($fieldData['table_name']);
-		$exist = false;
-		foreach ($fields as $f)
-		{
-			if ($f['Field'] == $fieldData['name'])
-			{
-				$exist = true;
-				break;
-			}
-		}
-
-		if (!$exist)
-		{
-			$this->_alterAdd($fieldData);
-		}
-
-		return $fieldId;
-	}
-
-	protected function _alterAdd($fieldData)
-	{
-		$iaDb = &$this->iaDb;
-
-		$sql = 'ALTER TABLE `' . INTELLI_DBPREFIX . $fieldData['table_name'] . '` ';
-		$sql .= 'ADD `' . $fieldData['name'] . '` ';
-
-		switch ($fieldData['type'])
-		{
-			case self::DATE:
-				$sql .= 'DATE ';
-				break;
-			case self::NUMBER:
-				$sql .= 'DOUBLE ';
-				break;
-			case self::TEXT:
-				$sql .= "VARCHAR(" . $fieldData['length'] . ") ";
-				$sql .= $fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '';
-				break;
-			case self::URL:
-				$sql .= 'TINYTEXT ';
-				break;
-			case self::IMAGE:
-			case self::STORAGE:
-			case self::PICTURES:
-			case self::TEXTAREA:
-				$sql .= 'TEXT ';
-				break;
-			default:
-				if (isset($fieldData['values']))
-				{
-					$values = explode(',', $fieldData['values']);
-
-					$sql .= ($fieldData['type'] == self::CHECKBOX) ? 'SET' : 'ENUM';
-					$sql .= "('" . implode("','", $values) . "')";
-
-					if (!empty($fieldData['default']))
-					{
-						$sql .= " DEFAULT '{$fieldData['default']}' ";
-					}
-				}
-		}
-		$sql .= 'NOT null';
-
-		$iaDb->query($sql);
-
-		if ($fieldData['searchable'] && in_array($fieldData['type'], array(self::TEXT, self::TEXTAREA)))
-		{
-			$indexes = $iaDb->getAll("SHOW INDEX FROM `" . INTELLI_DBPREFIX . $fieldData['table_name'] . "`");
-			$keyExists = false;
-			if ($indexes)
-			{
-				foreach ($indexes as $i)
-				{
-					if ($i['Key_name'] == $fieldData['name'] && $i['Index_type'] == 'FULLTEXT')
-					{
-						$keyExists = true;
-						break;
-					}
-				}
-			}
-
-			if (!$keyExists)
-			{
-				$iaDb->query("ALTER TABLE `" . INTELLI_DBPREFIX . $fieldData['table_name'] . "` ADD FULLTEXT (`{$fieldData['name']}`)");
-			}
-		}
-		return true;
-	}
-
-	/**
-	* Deletes item field from database
-	*
-	* @param str $aName field name
-	*
-	* @return bool
-	*/
-	public function delete($id)
-	{
-		$iaDb = &$this->iaDb;
-
-		$iaDb->setTable(self::getTable());
-		if ($iaDb->exists('`id` = :id AND `editable` = :editable', array('id' => $id, 'editable' => 1)))
-		{
-			$field = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
-
-			$iaDb->delete(iaDb::convertIds($id));
-			$iaDb->delete(iaDb::convertIds($id, 'field_id'), self::getTablePages());
-
-			// we will delete language entries if there isn't similar field for another package
-			if (!$iaDb->exists('`name` = :name', $field))
-			{
-				$iaDb->delete("`key` LIKE 'field_{$field['name']}%' ", iaLanguage::getTable());
-			}
-			if ($field['item'])
-			{
-				$itemTable = $this->iaCore->factory('item')->getItemTable($field['item']);
-
-				// just additional checking
-				$iaDb->setTable($itemTable);
-				$fields = $iaDb->describe();
-				$iaDb->resetTable();
-
-				foreach ($fields as $f)
-				{
-					if ($f['Field'] == $field['name'])
-					{
-						$iaDb->query("ALTER TABLE `{$this->iaDb->prefix}{$itemTable}` DROP `{$field['name']}`");
-						break;
-					}
-				}
-			}
-		}
-		$iaDb->resetTable();
-
-		return true;
-	}
-
-	protected function _setParents($name, $parents = array())
-	{
-		$iaDb = &$this->iaDb;
-
-		$iaDb->setTable(self::getTableRelations());
-		foreach ($parents as $item => $item_list)
-		{
-			$iaDb->delete('`child` = :name AND `item` = :item', null, array('name' => $name, 'item' => $item));
-			foreach ($item_list as $field => $field_list)
-			{
-				foreach ($field_list as $element => $value)
-				{
-					$iaDb->insert(array(
-						'field' => $field,
-						'element' => $element,
-						'child' => $name,
-						'extras' => '',
-						'item' => $item
-					));
-				}
-			}
-		}
-
-		$iaDb->resetTable();
-
-		return true;
-	}
-
-	protected function _setChildren($name, $item, $values, $children = array())
-	{
-		$iaDb = &$this->iaDb;
-
-		$values = array_keys($values);
-
-		$iaDb->setTable(self::getTableRelations());
-		$iaDb->delete('`field` = :field AND `item` = :item', null, array('field' => $name, 'item' => $item));
-		foreach ($children as $index => $fieldsList)
-		{
-			$fieldsList = explode(',', $fieldsList);
-
-			foreach ($fieldsList as $field)
-			{
-				if (trim($field))
-				{
-					$iaDb->insert(array(
-						'field' => $name,
-						'element' => $values[$index],
-						'child' => $field,
-						'extras' => '',
-						'item' => $item,
-					));
-				}
-			}
-		}
-		$iaDb->resetTable();
-
-		return true;
-	}
-
-	protected function _setRelations()
-	{
-		$sql =
-			'UPDATE `:prefix:table` f ' .
-			"SET f.relation = ':dependent' " .
-			'WHERE (' .
-				'SELECT COUNT(*) FROM `:prefix:table_relations` fr WHERE fr.`child` = f.`name`' .
-			') > 0';
-
-		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->iaDb->prefix,
-			'table' => self::getTable(),
-			'dependent' => self::RELATION_DEPENDENT,
-			'table_relations' => self::getTableRelations()
-		));
-
-		$this->iaDb->query($sql);
-	}
-
-	/**
-	* Updates field information
-	*
-	* @param array $fieldData field data
-	*
-	* @return bool
-	*/
-	public function update(array $fieldData, $id)
-	{
-		$iaDb = &$this->iaCore->iaDb;
-
-		$field = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
-		if (empty($field) || $field['type'] != $fieldData['type'])
-		{
-			return false;
-		}
-
-		if (isset($fieldData['parents']))
-		{
-			if ($this->_setParents($field['name'], $fieldData['parents']))
-			{
-				$fieldData['relation'] = self::RELATION_DEPENDENT;
-			}
-			unset($fieldData['parents']);
-		}
-
-		if (isset($fieldData['children']))
-		{
-			$this->_setChildren($field['name'], $field['item'], $fieldData['values'], $fieldData['children']);
-			unset($fieldData['children']);
-		}
-
-		$this->_setRelations();
-
-		$iaDb->setTable(iaLanguage::getTable());
-		$iaDb->delete("`key` LIKE 'field\_" . $field['name'] . "\_%'");
-
-		foreach ($this->iaCore->languages as $code => $l)
-		{
-			iaLanguage::addPhrase('field_' . $field['name'], $fieldData['title'][$code], $code, $fieldData['extras']);
-
-			if (isset($fieldData['annotation'][$code]) && $fieldData['annotation'][$code])
-			{
-				iaLanguage::addPhrase('field_' . $field['name'] . '_annotation', $fieldData['annotation'][$code], $code, $fieldData['extras']);
-			}
-		}
-
-		unset($fieldData['title'], $fieldData['annotation']);
-
-		$keys = array();
-		if (isset($fieldData['values']) && is_array($fieldData['values']))
-		{
-			$newKeys = array();
-			foreach ($fieldData['values'] as $key => $value)
-			{
-				$key = $keys[$key] = isset($fieldData['keys'][$key]) ? $fieldData['keys'][$key] : $key;
-				iaLanguage::addPhrase('field_' . $field['name'] . '_' . $key, $value, null, $fieldData['extras']);
-
-				$newKeys[] = $key;
-			}
-			$fieldData['values'] = implode(',', $newKeys);
-		}
-		unset($fieldData['keys']);
-
-		if (isset($fieldData['lang_values']) && is_array($fieldData['lang_values']))
-		{
-			foreach ($fieldData['lang_values'] as $languageCode => $phrases)
-			{
-				foreach ($phrases as $phraseKey => $phraseValue)
-				{
-					iaLanguage::addPhrase('field_' . $field['name'] . '_' . $phraseKey, $phraseValue, $languageCode, $fieldData['extras']);
-				}
-			}
-		}
-		if (isset($fieldData['lang_values']))
-		{
-			unset($fieldData['lang_values']);
-		}
-
-		if ($fieldData['searchable'] && $fieldData['type'] == self::NUMBER && isset($fieldData['_numberRangeForSearch']) && is_array($fieldData['_numberRangeForSearch']) && !empty($fieldData['_numberRangeForSearch']))
-		{
-			$iaDb->delete("`key` LIKE 'field\_" . $field['name'] . "\_range\_%'");
-
-			foreach ($fieldData['_numberRangeForSearch'] as $value)
-			{
-				iaLanguage::addPhrase('field_' . $field['name'] . '_range_' . $value, $value, null, $fieldData['extras']);
-			}
-			unset($fieldData['_numberRangeForSearch']);
-		}
-		else
-		{
-			$iaDb->delete("`key` LIKE 'field\_" . $field['name'] . "\_range\_%'");
-		}
-
-		$iaDb->resetTable();
-
-		// avoid making fulltext second time
-		if (!$field['searchable'] && $fieldData['searchable'] && in_array($fieldData['type'], array(self::TEXT, self::TEXTAREA)))
-		{
-			$indexes = $iaDb->getAll("SHOW INDEX FROM `{$this->iaDb->prefix}{$field['item']}`");
-			$keyExists = false;
-			foreach ($indexes as $i)
-			{
-				if ($i['Key_name'] == $field['name'] && $i['Index_type'] == 'FULLTEXT')
-				{
-					$keyExists = true;
-					break;
-				}
-			}
-
-			if (!$keyExists)
-			{
-				$iaDb->query("ALTER TABLE `{$this->iaDb->prefix}{$field['item']}` ADD FULLTEXT (`{$field['name']}`)");
-			}
-		}
-		if ($field['searchable'] && !$fieldData['searchable'] && in_array($fieldData['type'], array(self::TEXT, self::TEXTAREA)))
-		{
-			$indexes = $iaDb->getAll("SHOW INDEX FROM `{$this->iaDb->prefix}{$field['item']}`");
-			$keyExists = false;
-			foreach ($indexes as $i)
-			{
-				if ($i['Key_name'] == $field['name'] && $i['Index_type'] == 'FULLTEXT')
-				{
-					$keyExists = true;
-					break;
-				}
-			}
-
-			if ($keyExists)
-			{
-				$iaDb->query("ALTER TABLE `{$this->iaDb->prefix}{$field['item']}` DROP INDEX `{$field['name']}`");
-			}
-		}
-
-		$pagesList = $fieldData['pages'];
-
-		unset($fieldData['pages'], $fieldData['groups'], $fieldData['item']);
-
-		$result = (bool)$iaDb->update($fieldData, iaDb::convertIds($id), null, self::getTable());
-
-		if ($pagesList)
-		{
-			$this->_setPagesList($id, $pagesList, $fieldData['extras']);
-		}
-
-		if ($result)
-		{
-			if (in_array($fieldData['type'], array(self::TEXT, self::COMBO, self::RADIO, self::CHECKBOX)))
-			{
-				$sql = "ALTER TABLE `{$this->iaDb->prefix}{$field['item']}` ";
-				$sql .= "CHANGE `{$field['name']}` `{$field['name']}` ";
-
-				switch ($fieldData['type'])
-				{
-					case self::TEXT:
-						$sql .= "VARCHAR ({$fieldData['length']}) ";
-						$sql .= $fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '';
-						break;
-					default:
-						if (isset($fieldData['values']))
-						{
-							$values = explode(',', $fieldData['values']);
-
-							$sql .= $fieldData['type'] == self::CHECKBOX ? 'SET' : 'ENUM';
-							$sql .= "('" . implode("','", $values) . "')";
-
-							if (!empty($fieldData['default']))
-							{
-								$sql .= " DEFAULT '{$fieldData['default']}' ";
-							}
-						}
-						break;
-				}
-				$sql .= 'NOT NULL';
-				$iaDb->query($sql);
-			}
-		}
-
-		return $result;
-	}
-
 	public function getByItemName($itemName)
 	{
 		$fields = array();
@@ -592,7 +72,7 @@ class iaField extends abstractCore
 		$stmt = '`status` = :status AND `item` = :item';
 		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'item' => $itemName));
 
-		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt, null, null, self::getTable()))
+		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt . ' ORDER BY `order`', null, null, self::getTable()))
 		{
 			$fieldsList = array();
 
@@ -628,10 +108,7 @@ class iaField extends abstractCore
 	{
 		foreach (array('page', 'where', 'not_empty') as $key)
 		{
-			if (!isset($params[$key]))
-			{
-				$params[$key] = false;
-			}
+			isset($params[$key]) || $params[$key] = false;
 		}
 		if (!$item && isset($items['item']))
 		{
@@ -668,10 +145,7 @@ class iaField extends abstractCore
 	{
 		foreach (array('page', 'where', 'filter') as $key)
 		{
-			if (!isset($params[$key]))
-			{
-				$params[$key] = false;
-			}
+			isset($params[$key]) || $params[$key] = false;
 		}
 
 		if ($params['page'] === false && iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
@@ -742,7 +216,7 @@ class iaField extends abstractCore
 	{
 		if ($forPlans)
 		{
-			$iaPlan = $this->iaCore->factory('plan', iaCore::FRONT);
+			$iaPlan = $this->iaCore->factory('plan');
 
 			$plans = $iaPlan->getPlans($item);
 
@@ -833,7 +307,7 @@ class iaField extends abstractCore
 		{
 			if (isset($entry['name']) && $entry['name'])
 			{
-				if ($iaAcl->checkAccess('field', 0, 0, $itemName . '_' . $entry['name']))
+				if ($iaAcl->checkAccess('field', $itemName . '_' . $entry['name']))
 				{
 					$fieldNames[$entry['id']] = $entry['name'];
 					continue;
@@ -882,32 +356,29 @@ class iaField extends abstractCore
 		//
 	}
 
-	protected function _getFieldsSection($aco = false, $aItem = false, $aWhere = '', &$aItemData, $params = array())
+	protected function _getFieldsSection($aco = null, $itemName = null, $aWhere = '', &$itemData, $params = array())
 	{
-		$aco = $aco ? $aco : (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin' : $this->iaCore->iaView->name());
-		$aItem = $aItem ? $aItem : $this->iaCore->iaView->get('extras');
+		$aco = $aco ? $aco : (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin' : $this->iaView->name());
+		$itemName = $itemName ? $itemName : $this->iaView->get('extras');
 
-		$_params = array('page' => $aco, 'where' => $aWhere,'filter' => '');
+		$_params = array('page' => $aco, 'where' => $aWhere, 'filter' => '');
 		foreach ($_params as $key => $value)
 		{
-			if (!isset($params[$key]))
-			{
-				$params[$key] = $value;
-			}
+			isset($params[$key]) || $params[$key] = $value;
 		}
 
-		$fields = $this->filter($aItemData, $aItem, $params);
+		$fields = $this->filter($itemData, $itemName, $params);
 		if (empty($fields))
 		{
 			return array();
 		}
 
 		// get all available groups for item
-		$groups = $this->iaDb->assoc(array('id', 'name', 'order', 'collapsible', 'collapsed', 'tabview', 'tabcontainer'), "`item` = '{$aItem}' ORDER BY `order`", self::getTableGroups());
+		$groups = $this->iaDb->assoc(array('id', 'name', 'order', 'collapsible', 'collapsed', 'tabview', 'tabcontainer'), "`item` = '{$itemName}' ORDER BY `order`", self::getTableGroups());
 
 		foreach ($fields as $value)
 		{
-			$value['item'] = $aItem;
+			$value['item'] = $itemName;
 
 			if (self::PICTURES == $value['type'])
 			{
@@ -934,10 +405,7 @@ class iaField extends abstractCore
 				}
 			}
 
-			if (!isset($value['class']))
-			{
-				$value['class'] = 'fieldzone';
-			}
+			isset($value['class']) || $value['class'] = 'fieldzone';
 
 			if ($value['plans'])
 			{
@@ -957,22 +425,25 @@ class iaField extends abstractCore
 				$groups[$array['fieldgroup_id']]['name'] = $array['fieldgroup_id'];
 				$groups[$array['fieldgroup_id']]['tabview'] = '';
 				$groups[$array['fieldgroup_id']]['tabcontainer'] = '';
-				$groups[$array['fieldgroup_id']]['collapsible'] = 0;
-				$groups[$array['fieldgroup_id']]['collapsed'] = 0;
+				$groups[$array['fieldgroup_id']]['collapsible'] = false;
+				$groups[$array['fieldgroup_id']]['collapsed'] = false;
 			}
 
 			$groups[$array['fieldgroup_id']]['fields'][$array['id']] = $array;
 		}
 
+		$iaAcl = $this->iaCore->factory('acl');
+
 		// clear groups that don't have any fields
 		foreach ($groups as $key => $group)
 		{
-			// update description & titles
-			$groups[$key]['description'] = iaLanguage::get('fieldgroup_description_' . $aItem . '_' . $group['name'], '');
-
-			if (!isset($group['fields']))
+			if (!isset($group['fields']) || !$iaAcl->checkAccess('fieldgroup', $group['name']))
 			{
 				unset($groups[$key]);
+			}
+			else
+			{
+				$groups[$key]['description'] = iaLanguage::get('fieldgroup_description_' . $itemName . '_' . $group['name'], '');
 			}
 		}
 
@@ -1034,8 +505,8 @@ class iaField extends abstractCore
 				$groups[$value['fieldgroup_id']]['name'] = $value['fieldgroup_id'];
 				$groups[$value['fieldgroup_id']]['tabview'] = '';
 				$groups[$value['fieldgroup_id']]['tabcontainer'] = '';
-				$groups[$value['fieldgroup_id']]['collapsible'] = 0;
-				$groups[$value['fieldgroup_id']]['collapsed'] = 0;
+				$groups[$value['fieldgroup_id']]['collapsible'] = false;
+				$groups[$value['fieldgroup_id']]['collapsed'] = false;
 			}
 
 			$groups[$value['fieldgroup_id']]['fields'][] = $value;
@@ -1055,30 +526,16 @@ class iaField extends abstractCore
 		$item = array();
 		$data = &$_POST; // access to the data source by link
 
-		// check plan
-		if (isset($data['plan_id']))
-		{
-			$iaCore->factory('plan', iaCore::FRONT);
-			$item[iaPlan::SPONSORED_PLAN_ID] = (int)$data['plan_id'];
-			if (!isset($previousValues[iaPlan::SPONSORED_PLAN_ID])
-				|| !isset($item[iaPlan::SPONSORED_PLAN_ID])
-				|| $item[iaPlan::SPONSORED_PLAN_ID] != $previousValues[iaPlan::SPONSORED_PLAN_ID])
-			{
-				$item[iaPlan::SPONSORED] = 0;
-				$item[iaPlan::SPONSORED_DATE_START] = null;
-				$item[iaPlan::SPONSORED_DATE_END] = null;
-			}
-			if ($isBackend)
-			{
-				$item[iaPlan::SPONSORED] = (int)$data['sponsored'];
-				$item[iaPlan::SPONSORED_DATE_START] = date(iaDb::DATETIME_SHORT_FORMAT);
-				$item[iaPlan::SPONSORED_DATE_END] = $data['sponsored_end'];
-			}
-		}
-		// end
-
 		if ($isBackend)
 		{
+			if (isset($data['sponsored']))
+			{
+				$item['sponsored'] = (int)$data['sponsored'];
+				$item['sponsored_plan_id'] = $item['sponsored'] ? (int)$data['plan_id'] : 0;
+				$item['sponsored_start'] = $item['sponsored'] ? date(iaDb::DATETIME_SHORT_FORMAT) : null;
+				$item['sponsored_end'] = $item['sponsored'] ? $data['sponsored_end'] : null;
+			}
+
 			if (isset($data['featured']))
 			{
 				$item['featured'] = (int)$data['featured'];
@@ -1186,14 +643,7 @@ class iaField extends abstractCore
 
 		foreach ($activeFields as $fieldName => $field)
 		{
-			if (!isset($data[$fieldName]))
-			{
-				$data[$fieldName] = '';
-				if (in_array($field['type'], array(self::STORAGE, self::PICTURES, self::IMAGE)))
-				{
-					iaDebug::debug('[' . $fieldName . '] not uploaded', null, 'info');
-				}
-			}
+			isset($data[$fieldName]) || $data[$fieldName] = '';
 
 			// Check the UTF-8 is well formed
 			if (!is_array($data[$fieldName]) && !utf8_is_valid($data[$fieldName]))
@@ -1203,7 +653,10 @@ class iaField extends abstractCore
 
 			if ($field['extra_actions'])
 			{
-				eval($field['extra_actions']);
+				if (false === eval($field['extra_actions']))
+				{
+					continue; // make possible to stop further processing of this field by returning FALSE
+				}
 			}
 
 			if (in_array($field['type'], array(self::TEXT, self::TEXTAREA, self::NUMBER, self::RADIO, self::CHECKBOX, self::COMBO)))
@@ -1219,7 +672,7 @@ class iaField extends abstractCore
 					{
 						$error = true;
 
-						$messages[] = (in_array($field['type'], array(self::RADIO, self::CHECKBOX, self::COMBO)))
+						$messages[] = in_array($field['type'], array(self::RADIO, self::CHECKBOX, self::COMBO))
 							? iaLanguage::getf('field_is_not_selected', array('field' => iaLanguage::get('field_' . $fieldName)))
 							: iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
 
@@ -1231,7 +684,7 @@ class iaField extends abstractCore
 				{
 					$item[$fieldName] = $field['use_editor']
 						? iaUtil::safeHTML($data[$fieldName])
-						: strip_tags($data[$fieldName]);
+						: iaSanitize::tags($data[$fieldName]);
 				}
 				else
 				{
@@ -1262,7 +715,7 @@ class iaField extends abstractCore
 
 				if (empty($data[$fieldName]))
 				{
-					$item[$fieldName] = '';
+					$item[$fieldName] = $field['allow_null'] ? null : '';
 				}
 				else
 				{
@@ -1304,8 +757,8 @@ class iaField extends abstractCore
 					if (iaValidate::isUrl($data[$fieldName]['url']))
 					{
 						$item[$fieldName] = array();
-						$item[$fieldName]['url'] = iaSanitize::html($data[$fieldName]['url']);
-						$item[$fieldName]['title'] = empty($data[$fieldName]['title']) ? $item[$fieldName]['url'] : iaSanitize::html($data[$fieldName]['title']);
+						$item[$fieldName]['url'] = iaSanitize::tags($data[$fieldName]['url']);
+						$item[$fieldName]['title'] = empty($data[$fieldName]['title']) ? $item[$fieldName]['url'] : $data[$fieldName]['title'];
 						$item[$fieldName] = implode('|', $item[$fieldName]);
 					}
 					else
@@ -1353,13 +806,19 @@ class iaField extends abstractCore
 
 					$item[$fieldName] = empty($item[$fieldName]) ? array() : unserialize($item[$fieldName]);
 
+					// item is not saved to DB, but has assigned uploaded images
+					if ($data[$fieldName] && empty($previousValues[$fieldName]))
+					{
+						$previousValues[$fieldName] = $data[$fieldName];
+					}
+
 					// get previous values for the files to keep them
 					$previousValues[$fieldName] = empty($previousValues[$fieldName]) ? array() : $previousValues[$fieldName];
 					$previousValues[$fieldName] = is_array($previousValues[$fieldName]) ? $previousValues[$fieldName] : unserialize($previousValues[$fieldName]);
 
-					foreach ($previousValues[$fieldName] as $fileKey => $fileValue)
+					foreach ($previousValues[$fieldName] as $fileKey => &$fileValue)
 					{
-						$previousValues[$fieldName][$fileKey]['title'] = isset($data[$fieldName . '_title'][$fileKey]) ? $data[$fieldName . '_title'][$fileKey] : $fileValue['title'];
+						$fileValue['title'] = isset($data[$fieldName . '_title'][$fileKey]) ? $data[$fieldName . '_title'][$fileKey] : $fileValue['title'];
 					}
 
 					// initialize class to work with images
@@ -1392,8 +851,7 @@ class iaField extends abstractCore
 						list($filename, $error, $messages) = self::$methodName($field, $file, $path);
 
 						$fieldValue = array(
-							'title' => (isset($data[$fieldName . '_title'][$id]) ?
-								substr(iaSanitize::html($data[$fieldName . '_title'][$id]), 0, 100) : ''),
+							'title' => (isset($data[$fieldName . '_title'][$id]) ? substr($data[$fieldName . '_title'][$id], 0, 100) : ''),
 							'path' => $filename
 						);
 
@@ -1456,7 +914,8 @@ class iaField extends abstractCore
 
 	protected static function _processFileField(array $field, array $file, $path)
 	{
-		$error = $message = false;
+		$error = false;
+		$messages = array();
 
 		list($filename, $extension) = self::_generateFileName($file['name'], $field['file_prefix'], false);
 		$filename = $path . $filename . '.' . $extension;
@@ -1472,10 +931,10 @@ class iaField extends abstractCore
 		else
 		{
 			$error = true;
-			$message = iaLanguage::getf('file_type_error', array('extension' => $field['file_types']));
+			$messages[] = iaLanguage::getf('file_type_error', array('extension' => $field['file_types']));
 		}
 
-		return array($filename, $error, $message);
+		return array($filename, $error, $messages);
 	}
 
 	protected static function _processImageField(array $field, array $file, $path)
@@ -1596,22 +1055,5 @@ class iaField extends abstractCore
 		$conditions = implode(' AND ', $conditions);
 
 		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
-	}
-
-	protected function _setPagesList($fieldId, array $pages, $extras)
-	{
-		$this->iaDb->setTable(self::getTablePages());
-
-		$this->iaDb->delete(iaDb::convertIds($fieldId, 'field_id'));
-
-		foreach ($pages as $pageName)
-		{
-			if (trim($pageName))
-			{
-				$this->iaDb->insert(array('page_name' => $pageName, 'field_id' => $fieldId, 'extras' => $extras));
-			}
-		}
-
-		$this->iaDb->resetTable();
 	}
 }

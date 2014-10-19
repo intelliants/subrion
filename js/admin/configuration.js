@@ -91,7 +91,7 @@ $(function()
 					{
 						if ('boolean' == typeof response.result && response.result)
 						{
-							intelli.notifFloatBox({msg: response.message, type: response.result ? 'notif' : 'error', autohide: true});
+							intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
 						}
 					}
 				});

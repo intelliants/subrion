@@ -21,10 +21,8 @@ intelli.members = {
 		{name: 'email', title: _t('email'), width: 180, editor: 'text'},
 		'status',
 		{name: 'date_reg', title: _t('date'), width: 120},
-		/*
-		{name: 'permissions', title: _t('permissions'), href: intelli.config.admin_url + '/permissions/?user={id}', icon: 'folder'},
-		{name: 'config', title: _t('go_to_config'), href: intelli.config.admin_url + '/configuration/?user={id}', icon: 'cogs'},
-		*/
+		{name: 'permissions', title: _t('permissions'), href: intelli.config.admin_url + '/permissions/?user={id}', icon: 'lock'},
+		//{name: 'config', title: _t('go_to_config'), href: intelli.config.admin_url + '/configuration/?user={id}', icon: 'cogs'},
 		'update',
 		'delete'
 	],
@@ -33,23 +31,11 @@ intelli.members = {
 	texts: {
 		delete_single: _t('are_you_sure_to_delete_this_member'),
 		delete_multiple: _t('are_you_sure_to_delete_selected_members')
-	},
-	url: intelli.config.admin_url + '/members/'
+	}
 };
 
 Ext.onReady(function()
 {
-	var searchParam = intelli.urlVal('q');
-	if (searchParam)
-	{
-		intelli.members.storeParams = {name: searchParam};
-	}
-	searchParam = intelli.urlVal('status');
-	if (searchParam)
-	{
-		intelli.members.storeParams = {status: searchParam};
-	}
-
 	intelli.members = new IntelliGrid(intelli.members, false);
 	intelli.members.toolbar = new Ext.Toolbar({items:[
 	{
@@ -97,15 +83,19 @@ Ext.onReady(function()
 		text: '<i class="i-close"></i> ' + _t('reset')
 	}]});
 
-	if (searchParam)
-	{
-		Ext.getCmp('fltStatus').setValue(searchParam);
-	}
-	searchParam = intelli.urlVal('q');
-	if (searchParam)
-	{
-		Ext.getCmp('fltName').setValue(searchParam);
-	}
-
 	intelli.members.init();
+
+	var searchStatus = intelli.urlVal('status'),
+		searchName = intelli.urlVal('q');
+
+	if (searchStatus)
+	{
+		Ext.getCmp('fltStatus').setValue(searchStatus);
+		intelli.gridHelper.search(intelli.members);
+	}
+	else if (searchName)
+	{
+		Ext.getCmp('fltName').setValue(searchName);
+		intelli.gridHelper.search(intelli.members);
+	}
 });
