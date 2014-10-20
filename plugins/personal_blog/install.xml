@@ -4,9 +4,9 @@
 	<summary>Allows to create a personal admin blog.</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.1.4</version>
-	<date>2014-10-17</date>
-	<compatibility>3.1.2</compatibility>
+	<version>3.2.0</version>
+	<date>2014-10-20</date>
+	<compatibility>3.2</compatibility>
 	<status>active</status>
 
 	<actions>
@@ -107,4 +107,12 @@ DROP TABLE IF EXISTS `{prefix}blog_entries`;
 			]]>
 		</sql>
 	</uninstall>
+
+	<upgrade>
+		<sql version="3.1.3">
+			<![CDATA[
+ALTER TABLE `{prefix}blog_entries` CHANGE `date` `date_added` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00';
+			]]>
+		</sql>
+	</upgrade>
 </plugin>
