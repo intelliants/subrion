@@ -26,7 +26,6 @@
 
 class iaTransaction extends abstractCore
 {
-	const CANCELED = 'canceled';
 	const FAILED = 'failed';
 	const REFUNDED = 'refunded';
 	const PASSED = 'passed';
@@ -34,8 +33,9 @@ class iaTransaction extends abstractCore
 
 	const TRANSACTION_MEMBER_BALANCE = 'balance';
 
-	protected static $_table = 'transactions';
+	protected static $_table = 'payment_transactions';
 	protected $_tableGateways = 'payment_gateways';
+	protected $_tableIpnLog = 'payment_gateways_ipn_log';
 
 	protected $_gateways;
 
@@ -50,6 +50,11 @@ class iaTransaction extends abstractCore
 	public function getTableGateways()
 	{
 		return $this->_tableGateways;
+	}
+
+	public function getTableIpnLog()
+	{
+		return $this->_tableIpnLog;
 	}
 
 	/**
@@ -145,7 +150,7 @@ class iaTransaction extends abstractCore
 	 */
 	public function getById($transactionId)
 	{
-		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($transactionId), self::getTable());
+		return $this->getBy(iaDb::ID_COLUMN_SELECTION, $transactionId);
 	}
 
 	public function getBy($key, $id)
@@ -193,10 +198,11 @@ class iaTransaction extends abstractCore
 			'status' => self::PENDING,
 			'plan_id' => $planId,
 			'return_url' => $returnUrl,
-			'operation' => $title
+			'operation' => $title,
+			'date' => date(iaDb::DATETIME_FORMAT)
 		);
 
-		$result = (bool)$this->iaDb->insert($transaction, array('date' => iaDb::FUNCTION_NOW), self::getTable());
+		$result = (bool)$this->iaDb->insert($transaction, null, $this->getTable());
 		$return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 
 		return $result ? $transactionId : false;
@@ -251,5 +257,16 @@ class iaTransaction extends abstractCore
 			'total' => $currency . $total,
 			'url' => 'transactions/'
 		);
+	}
+
+	public function addIpnLogEntry($gateway, $data, $result)
+	{
+		$entry = array(
+			'gateway' => $gateway,
+			'data' => var_export($data, true),
+			'result' => $result
+		);
+
+		return (bool)$this->iaDb->insert($entry, array('date' => iaDb::FUNCTION_NOW), $this->getTableIpnLog());
 	}
 }

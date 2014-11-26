@@ -7,7 +7,6 @@
 	<version>3.2.0</version>
 	<date>2014-10-20</date>
 	<compatibility>3.2</compatibility>
-	<status>active</status>
 
 	<actions>
 		<action name="blogs" url="blog/" icon="list" pages="personal_blog:add,personal_blog:edit">List</action>

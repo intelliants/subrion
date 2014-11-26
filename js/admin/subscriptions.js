@@ -9,9 +9,11 @@ Ext.onReady(function()
 				{name: 'reference_id', title: _t('reference_id'), width: 1},
 				{name: 'user', title: _t('member'), width: 150},
 				{name: 'plan', title: _t('plan'), width: 150},
+				{name: 'date_created', title: _t('created_date'), width: 180},
+				{name: 'date_next_payment', title: _t('next_payment_date'), width: 180},
 				'status'
 			],
-			statuses: ['active','pending','canceled','failed']
+			statuses: ['active','suspended','canceled','failed','completed']
 		}, false);
 
 		grid.toolbar = new Ext.Toolbar({items:[

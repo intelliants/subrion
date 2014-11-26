@@ -22,7 +22,7 @@ intelli.plugins = {
 					: intelli.plugins.markers.available = true;
 			}
 
-			intelli.admin.synchronizeAdminMenu();
+			intelli.admin.synchronizeAdminMenu('plugins', response.groups);
 		}
 	}
 };

@@ -40,5 +40,5 @@
 		{/access}
 	{/capture}
 
-	{include file='field-type-content-fieldset.tpl' item_sections=$sections isSystem=true}
+	{include file='field-type-content-fieldset.tpl' isSystem=true}
 </form>

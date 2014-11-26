@@ -16,15 +16,14 @@
 // Inventory
 // --------------------------------------------------
 
-// @inventoryBg:               #3d4049;
-// @inventoryPadding:          14px 0;
+@inventoryBg:               @baseDarkColor;
 
-// @inventoryLinkColor:        lighten(@baseDarkColor, 40%);
-// @inventoryLinkHoverColor:   lighten(@baseDarkColor, 60%);
-// @inventoryLinkHoverBg:      transparent;
+@inventoryLinkColor:        lighten(@inventoryBg, 35%);
+@inventoryLinkHoverColor:   lighten(@inventoryBg, 60%);
+@inventoryLinkHoverBg:      transparent;
 
-// @inventoryLinkActiveColor:  lighten(@baseDarkColor, 80%);
-// @inventoryLinkActiveBg:     transparent;
+@inventoryLinkActiveColor:  lighten(@inventoryBg, 20%);
+@inventoryLinkActiveBg:     transparent;
 
 
 
@@ -137,6 +136,7 @@
 @iaItemBadgeBgColor:       @iaItemBorderColor;
 
 @iaItemBadgeBannedColor:   #cc374b;
+@iaItemBadgeAvailableColor:#00a651;
 @iaItemBadgeApprovalColor: #00acee;
 @iaItemBadgeSuspendedColor:#7aa59e;
 

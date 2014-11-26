@@ -29,6 +29,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	iaBreadcrumb::preEnd(iaLanguage::get('payment'), IA_SELF);
 
 	$transactionId = isset($iaCore->requestPath[0]) ? iaSanitize::paranoid($iaCore->requestPath[0]) : 0;
+	$action = isset($iaCore->requestPath[1]) ? iaSanitize::sql($iaCore->requestPath[1]) : null;
 
 	if (empty($transactionId))
 	{
@@ -36,18 +37,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 
 	$iaTransaction = $iaCore->factory('transaction');
+	$iaPage = $iaCore->factory('page', iaCore::FRONT);
 
 	$transaction = $iaTransaction->getBy('sec_key', $transactionId);
 
 	if (empty($transaction))
 	{
 		return iaView::errorPage(iaView::ERROR_NOT_FOUND, iaLanguage::get('no_transaction'));
-	}
-
-	// configure return url on payment success
-	if (isset($transaction['sec_key']))
-	{
-		define('IA_RETURN_URL', IA_URL . 'pay/' . $transaction['sec_key'] . IA_URL_DELIMITER);
 	}
 
 	// delete transaction
@@ -59,16 +55,19 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		iaUtil::go_to($iaPage->getUrlByName('member_balance'));
 	}
 
-	$action = isset($iaCore->requestPath[1]) ? iaSanitize::sql($iaCore->requestPath[1]) : null;
-	$iaPage = $iaCore->factory('page', iaCore::FRONT);
-
 	// cancel payment
-	if (iaTransaction::CANCELED == $action)
+	if ('canceled' == $action)
 	{
 		$iaTransaction->update(array('status' => iaTransaction::FAILED), $transaction['id']);
 
 		$iaView->setMessages(iaLanguage::get('payment_canceled'), iaView::SUCCESS);
 		iaUtil::go_to($iaPage->getUrlByName('member_balance'));
+	}
+
+	// configure return url on payment success
+	if (isset($transaction['sec_key']))
+	{
+		define('IA_RETURN_URL', IA_URL . 'pay/' . $transaction['sec_key'] . IA_URL_DELIMITER);
 	}
 
 	$gateways = $iaTransaction->getPaymentGateways();
@@ -90,8 +89,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				if ($transaction && isset($_POST['source']) && 'internal' == $_POST['source'])
 				{
-					$iaPlan->extractFunds($transaction);
-					iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('payment_done'), $transaction['return_url']);
+					if ($iaPlan->extractFunds($transaction))
+					{
+						$iaPlan->setPaid($transaction);
+						iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('payment_done'), $transaction['return_url']);
+					}
 				}
 			}
 			elseif (empty($transaction['gateway']) || isset($_GET['repay']))
@@ -189,7 +191,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 								$iaTransaction->update($transaction, $transaction['id']);
 
 								// process item specific post-processing actions
-								$iaPlan->postPayment($transaction);
+								if (iaTransaction::PASSED == $transaction['status'])
+								{
+									$iaPlan->setPaid($transaction);
+								}
 
 								// notify admin of a completed payment
 								$action = 'payment_completion_admin';
@@ -260,11 +265,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
 
 	$memberBalance = iaUsers::hasIdentity() ? iaUsers::getIdentity()->funds : 0;
-	$phrase = iaLanguage::getf('balance_in_your_account', array('sum' => $memberBalance, 'currency' => $iaCore->get('currency')));
-	iaLanguage::set('balance_in_your_account', $phrase);
+	iaLanguage::set('balance_in_your_account', iaLanguage::getf('balance_in_your_account', array('sum' => $memberBalance, 'currency' => $iaCore->get('currency'))));
 
-	$balance = (iaUsers::hasIdentity() && 'balance' == $transaction['item'] && iaUsers::getIdentity()->id == $transaction['item_id']);
-	$isFundsEnough = (bool)(!$balance && iaUsers::hasIdentity() && iaUsers::getIdentity()->funds >= $transaction['amount']);
+	$isBalancePayment = (iaUsers::hasIdentity() && 'balance' == $transaction['item'] && iaUsers::getIdentity()->id == $transaction['item_id']);
+	$isFundsEnough = (bool)(!$isBalancePayment && iaUsers::hasIdentity() && iaUsers::getIdentity()->funds >= $transaction['amount']);
 
 	// FIXME: solution to prevent csrf catching.
 	// Should be replaced once it is possible to disable csrf checking for a single page.
@@ -291,10 +295,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 	//
 
-	$iaView->assign('balance', $balance);
+	$iaView->assign('isBalancePayment', $isBalancePayment);
+	$iaView->assign('isFundsEnough', $isFundsEnough);
 	$iaView->assign('order', $order);
 	$iaView->assign('gateways', $gateways);
-	$iaView->assign('enough_funds', $isFundsEnough);
 	$iaView->assign('transaction', $transaction);
 
 	$iaView->display($tplFile);

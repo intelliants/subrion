@@ -109,7 +109,7 @@ intelli.admin = function()
 		 *
 		 * @return void
 		 */
-		synchronizeAdminMenu: function(currentPage)
+		synchronizeAdminMenu: function(currentPage, extensionGroups)
 		{
 			currentPage = currentPage || 'plugins';
 
@@ -117,9 +117,19 @@ intelli.admin = function()
 				data: {action: 'menu', page: currentPage},
 				success: function(response)
 				{
-					var $menuSection = $('#panel-center');
-					$('ul:not(:first)', $menuSection).remove();
-					$menuSection.append(response.menus);
+					var $menuSection  = $('#panel-center'),
+						$menus        = $(response.menus);
+
+					if (typeof extensionGroups != 'undefined')
+					{
+						$.each(extensionGroups, function(i, val)
+						{
+							$('#menu-section-' + val + ' a').append('<span class="menu-updated animated bounceIn"></span>');
+						});
+					}
+
+					$('ul', $menuSection).remove();
+					$menus.appendTo($menuSection);
 				},
 				type: 'POST',
 				url: intelli.config.admin_url + '/index/read.json'

@@ -189,13 +189,13 @@ class iaView extends abstractUtil
 		$this->set('body', $body);
 	}
 
-	public function title($key = null)
+	public function title($title = null)
 	{
-		if (is_null($key))
+		if (is_null($title))
 		{
 			return $this->get('title');
 		}
-		$this->set('title', $key);
+		$this->set('title', $title);
 	}
 
 	public function caption($key = null)
@@ -253,9 +253,8 @@ class iaView extends abstractUtil
 		$result = array();
 		$menuGroups = array();
 		$extras = $this->iaCore->get('extras');
-		$stmt = "`extras` IN ('', '" . implode("','", $extras) . "')";
-		$templateName = $this->iaCore->get('tmpl');
 
+		$stmt = "`extras` IN ('', '" . implode("','", $extras) . "')";
 		$rows = $iaDb->all(array('id', 'name', 'title'), $stmt . ' ORDER BY `order`', null, null, 'admin_pages_groups');
 		foreach ($rows as $row)
 		{
@@ -264,26 +263,26 @@ class iaView extends abstractUtil
 
 		$this->iaCore->factory('item');
 
-		$sql =
-			'SELECT g.`name` `config`, e.`type`, ' .
-				'p.`id`, p.`group`, p.`name`, p.`parent`, p.`title`, p.`attr`, p.`alias`, p.`extras` ' .
-			'FROM `:prefix:table_admin_pages` p ' .
-			'LEFT JOIN `:prefix:table_config_groups` g ON ' .
-				"(p.`extras` IN (':extras') AND p.`extras` = g.`extras`) " .
-			'LEFT JOIN `:prefix:table_extras` e ON ' .
-				"(p.`extras` = e.`name` AND e.`status` = ':status') " .
-			'WHERE p.`group` IN (:groups) ' .
-			"AND FIND_IN_SET('menu', p.`menus`) " .
-			"AND p.`status` = ':status' " .
-			'ORDER BY p.`order`';
+		$sql = 'SELECT g.`name` `config`, e.`type`, '
+				. 'p.`id`, p.`group`, p.`name`, p.`parent`, p.`title`, p.`attr`, p.`alias`, p.`extras` '
+			. 'FROM `:prefix:table_admin_pages` p '
+			. 'LEFT JOIN `:prefix:table_config_groups` g ON '
+				. "(p.`extras` IN (':extras') AND p.`extras` = g.`extras`) "
+			. 'LEFT JOIN `:prefix:table_extras` e ON '
+				. "(p.`extras` = e.`name`) "
+			. 'WHERE p.`group` IN (:groups) '
+				. "AND FIND_IN_SET('menu', p.`menus`) "
+				. "AND p.`status` = ':status' "
+				. "AND p.`extras` IN ('',':extras') "
+			. 'ORDER BY p.`order`';
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $iaDb->prefix,
 			'table_admin_pages' => 'admin_pages',
 			'table_config_groups' => iaCore::getConfigGroupsTable(),
 			'table_extras' => iaItem::getTable(),
-			'extras' => implode("','", $extras),
 			'groups' => implode(',', array_keys($menuGroups)),
-			'status' => iaCore::STATUS_ACTIVE
+			'status' => iaCore::STATUS_ACTIVE,
+			'extras' => implode("','", $extras)
 		));
 		$rows = $iaDb->getAll($sql);
 		foreach ($rows as $row)
@@ -296,6 +295,7 @@ class iaView extends abstractUtil
 		// config groups to be included as menu items
 		$rows = $iaDb->all(array('name', 'title', 'extras'), "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
 		$configGroups = array();
+		$templateName = $this->iaCore->get('tmpl');
 
 		foreach ($rows as $row)
 		{
@@ -345,10 +345,13 @@ class iaView extends abstractUtil
 					$data = array(
 						'name' => $item['name'],
 						'parent' => isset($item['parent']) ? $item['parent'] : null,
-						'title' => $title ? $title : '',
-						'url' => IA_ADMIN_URL . (empty($item['alias']) ? $item['name'] . IA_URL_DELIMITER : $item['alias'])
+						'title' => $title
 					);
 
+					if ($item['alias'])
+					{
+						$data['url'] = IA_ADMIN_URL . $item['alias'];
+					}
 					if (isset($item['attr']) && $item['attr'])
 					{
 						$data['attr'] = $item['attr'];
@@ -1013,7 +1016,6 @@ SQL;
 				$pageTitle = $this->get('title', 'Subrion CMS');
 
 				$iaSmarty->assign('breadcrumb', iaBreadcrumb::render());
-				$iaSmarty->assign('gTitle', $pageTitle);
 				$iaSmarty->assign('config', $this->iaCore->getConfig());
 				$iaSmarty->assign('customConfig', $this->iaCore->getCustomConfig());
 				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
@@ -1188,6 +1190,9 @@ SQL;
 				$iaView->assign('code', $errorCode);
 
 				$body = self::PAGE_ERROR;
+
+				$positions = &$iaView->blocks;
+				unset($positions['left'], $positions['right'], $positions['top'], $positions['bottom'], $positions['user1'], $positions['user2']);
 
 				$iaAcl = $iaCore->factory('acl');
 				if (iaCore::ACCESS_ADMIN == $iaCore->getAccessType()

@@ -7,7 +7,7 @@
 
 		<base href="{$url}">
 
-		<title>{ia_print_title title=$gTitle}</title>
+		<title>{ia_print_title}</title>
 
 		<!--[if lt IE 9]>
 			<script src="../../../js/utils/shiv.js"></script>
@@ -220,10 +220,9 @@
 										<li><a href="{$action.url}" {$action.attributes}>{if $action.icon}<i class="{$action.icon}"></i> {/if}{$action.title}</a></li>
 									{/foreach}
 								</ul>
-								<h3>{$gTitle}</h3>
+								<h3>{$page.title|escape:'html'}</h3>
 
 								{include file='breadcrumb.tpl'}
-
 							</div>
 
 							{include file='notification.tpl'}

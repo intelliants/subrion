@@ -141,7 +141,7 @@ class iaField extends abstractCore
 		return $sections;
 	}
 
-	public function filter(&$items, $item, $params = array())
+	public function filter(&$items, $itemName, $params = array())
 	{
 		foreach (array('page', 'where', 'filter') as $key)
 		{
@@ -159,7 +159,7 @@ class iaField extends abstractCore
 			$params['filter'] = explode(',', $params['filter']);
 		}
 
-		$fieldsList = self::getAcoFieldsList($params['page'], $item, $params['where'], $params['info'], $items, $params);
+		$fieldsList = self::getAcoFieldsList($params['page'], $itemName, $params['where'], $params['info'], $items, $params);
 
 		if (!is_array($items))
 		{
@@ -199,26 +199,26 @@ class iaField extends abstractCore
 
 		if ($type == 'simple')
 		{
-			$items = $this->_checkItem($items, $item, $fields, $forPlans, $empty);
+			$items = $this->_checkItem($items, $itemName, $fields, $forPlans, $empty);
 		}
 		else
 		{
 			foreach ($items as $key => $value)
 			{
-				$items[$key] = $this->_checkItem($value, $item, $fields, $forPlans, $empty);
+				$items[$key] = $this->_checkItem($value, $itemName, $fields, $forPlans, $empty);
 			}
 		}
 
 		return $fieldsList;
 	}
 
-	protected function _checkItem($items, $item, $fields, $forPlans, $empty)
+	protected function _checkItem($items, $itemName, $fields, $forPlans, $empty)
 	{
 		if ($forPlans)
 		{
 			$iaPlan = $this->iaCore->factory('plan');
 
-			$plans = $iaPlan->getPlans($item);
+			$plans = $iaPlan->getPlans($itemName);
 
 			if (isset($items[iaPlan::SPONSORED_PLAN_ID]) && $items[iaPlan::SPONSORED_PLAN_ID] != 0 && isset($plans[$items[iaPlan::SPONSORED_PLAN_ID]]))
 			{
@@ -376,60 +376,58 @@ class iaField extends abstractCore
 		// get all available groups for item
 		$groups = $this->iaDb->assoc(array('id', 'name', 'order', 'collapsible', 'collapsed', 'tabview', 'tabcontainer'), "`item` = '{$itemName}' ORDER BY `order`", self::getTableGroups());
 
-		foreach ($fields as $value)
+		foreach ($fields as $fieldInfo)
 		{
-			$value['item'] = $itemName;
+			$fieldInfo['item'] = $itemName;
 
-			if (self::PICTURES == $value['type'])
+			if (self::PICTURES == $fieldInfo['type'])
 			{
-				$value['values'] = empty($value['values']) ? array() : explode(',', $value['values']);
+				$fieldInfo['values'] = empty($fieldInfo['values']) ? array() : explode(',', $fieldInfo['values']);
 			}
 
-			if (in_array($value['type'], array(self::CHECKBOX, self::COMBO, self::RADIO)))
+			if (in_array($fieldInfo['type'], array(self::CHECKBOX, self::COMBO, self::RADIO)))
 			{
-				if ($value['type'] == self::CHECKBOX)
+				if ($fieldInfo['type'] == self::CHECKBOX)
 				{
-					$value['default'] = explode(',', $value['default']);
+					$fieldInfo['default'] = explode(',', $fieldInfo['default']);
 				}
 
-				$values = explode(',', $value['values']);
+				$values = explode(',', $fieldInfo['values']);
 
-				$value['values'] = array();
+				$fieldInfo['values'] = array();
 				if ($values)
 				{
 					foreach ($values as $v)
 					{
-						$k = 'field_' . $value['name'] . '_' . $v;
-						$value['values'][$v] = iaLanguage::get($k);
+						$k = 'field_' . $fieldInfo['name'] . '_' . $v;
+						$fieldInfo['values'][$v] = iaLanguage::get($k);
 					}
 				}
 			}
 
-			isset($value['class']) || $value['class'] = 'fieldzone';
+			isset($fieldInfo['class']) || $fieldInfo['class'] = 'fieldzone';
 
-			if ($value['plans'])
+			if ($fieldInfo['plans'])
 			{
-				foreach (explode(',', $value['plans']) as $p)
+				foreach (explode(',', $fieldInfo['plans']) as $p)
 				{
-					$value['class'] .= sprintf(' plan_%d ', $p);
+					$fieldInfo['class'] .= sprintf(' plan_%d ', $p);
 				}
 			}
 
-			$array = $value;
-
-			if (empty($array['fieldgroup_id']) || empty($groups[$array['fieldgroup_id']]))
+			if (empty($fieldInfo['fieldgroup_id']) || empty($groups[$fieldInfo['fieldgroup_id']]))
 			{
-				$array['fieldgroup_id'] = '___empty___';
+				$fieldInfo['fieldgroup_id'] = '___empty___';
 
 				// emulate tab to avoid isset checks
-				$groups[$array['fieldgroup_id']]['name'] = $array['fieldgroup_id'];
-				$groups[$array['fieldgroup_id']]['tabview'] = '';
-				$groups[$array['fieldgroup_id']]['tabcontainer'] = '';
-				$groups[$array['fieldgroup_id']]['collapsible'] = false;
-				$groups[$array['fieldgroup_id']]['collapsed'] = false;
+				$groups[$fieldInfo['fieldgroup_id']]['name'] = $fieldInfo['fieldgroup_id'];
+				$groups[$fieldInfo['fieldgroup_id']]['tabview'] = '';
+				$groups[$fieldInfo['fieldgroup_id']]['tabcontainer'] = '';
+				$groups[$fieldInfo['fieldgroup_id']]['collapsible'] = false;
+				$groups[$fieldInfo['fieldgroup_id']]['collapsed'] = false;
 			}
 
-			$groups[$array['fieldgroup_id']]['fields'][$array['id']] = $array;
+			$groups[$fieldInfo['fieldgroup_id']]['fields'][$fieldInfo['id']] = $fieldInfo;
 		}
 
 		$iaAcl = $this->iaCore->factory('acl');
@@ -604,6 +602,11 @@ class iaField extends abstractCore
 					}
 				}
 			}
+
+			if (isset($data['locked']))
+			{
+				$item['locked'] = (int)$data['locked'];
+			}
 		}
 
 		// the code block below filters fields based on parent/dependent structure
@@ -680,22 +683,22 @@ class iaField extends abstractCore
 					}
 				}
 
-				if (self::TEXTAREA == $field['type'])
+				switch ($field['type'])
 				{
-					$item[$fieldName] = $field['use_editor']
-						? iaUtil::safeHTML($data[$fieldName])
-						: iaSanitize::tags($data[$fieldName]);
-				}
-				else
-				{
-					$item[$fieldName] = is_array($data[$fieldName])
-						? implode(',', $data[$fieldName])
-						: $data[$fieldName];
-				}
+					case self::NUMBER:
+						$item[$fieldName] = (float)str_replace(' ', '', $data[$fieldName]);
+						break;
 
-				if (self::NUMBER == $field['type'])
-				{
-					$item[$fieldName] = (float)str_replace(' ', '', $item[$fieldName]);
+					case self::TEXT:
+						$item[$fieldName] = iaSanitize::tags($data[$fieldName]);
+						break;
+
+					case self::TEXTAREA:
+						$item[$fieldName] = $field['use_editor'] ? iaUtil::safeHTML($data[$fieldName]) : iaSanitize::tags($data[$fieldName]);
+						break;
+
+					default:
+						$item[$fieldName] = is_array($data[$fieldName]) ? implode(',', $data[$fieldName]) : $data[$fieldName];
 				}
 			}
 			elseif (self::DATE == $field['type'])
@@ -814,11 +817,14 @@ class iaField extends abstractCore
 
 					// get previous values for the files to keep them
 					$previousValues[$fieldName] = empty($previousValues[$fieldName]) ? array() : $previousValues[$fieldName];
-					$previousValues[$fieldName] = is_array($previousValues[$fieldName]) ? $previousValues[$fieldName] : unserialize($previousValues[$fieldName]);
+					is_array($previousValues[$fieldName]) || $previousValues[$fieldName] = unserialize($previousValues[$fieldName]);
 
-					foreach ($previousValues[$fieldName] as $fileKey => &$fileValue)
+					if ($field['type'] == self::PICTURES)
 					{
-						$fileValue['title'] = isset($data[$fieldName . '_title'][$fileKey]) ? $data[$fieldName . '_title'][$fileKey] : $fileValue['title'];
+						foreach ($previousValues[$fieldName] as $fileKey => &$fileValue)
+						{
+							$fileValue['title'] = isset($data[$fieldName . '_title'][$fileKey]) ? $data[$fieldName . '_title'][$fileKey] : $fileValue['title'];
+						}
 					}
 
 					// initialize class to work with images
@@ -848,20 +854,28 @@ class iaField extends abstractCore
 							$file[$key] = $_FILES[$fieldName][$key][$id];
 						}
 
-						list($filename, $error, $messages) = self::$methodName($field, $file, $path);
-
-						$fieldValue = array(
-							'title' => (isset($data[$fieldName . '_title'][$id]) ? substr($data[$fieldName . '_title'][$id], 0, 100) : ''),
-							'path' => $filename
-						);
-
-						if (self::IMAGE == $field['type'])
+						$processing = self::$methodName($field, $file, $path);
+						// 0 - filename, 1 - error, 2 - textual error description
+						if (!$processing[1]) // went smoothly
 						{
-							$item[$fieldName] = $fieldValue;
+							$fieldValue = array(
+								'title' => (isset($data[$fieldName . '_title'][$id]) ? substr($data[$fieldName . '_title'][$id], 0, 100) : ''),
+								'path' => $processing[0]
+							);
+
+							if (self::IMAGE == $field['type'])
+							{
+								$item[$fieldName] = $fieldValue;
+							}
+							else
+							{
+								$item[$fieldName][] = $fieldValue;
+							}
 						}
 						else
 						{
-							$item[$fieldName][] = $fieldValue;
+							$error = true;
+							$messages[] = $processing[2];
 						}
 					}
 				}
@@ -903,11 +917,10 @@ class iaField extends abstractCore
 
 			if (false !== strpos($filename, '.'))
 			{
-				$filename = str_replace('.', '-', $filename);
+				$filename = str_replace(array('.', '~'), '-', $filename);
 			}
 		}
-
-		$filename .= '_' . iaUtil::generateToken(4);
+		$filename = iaSanitize::alias($filename) . '_'. iaUtil::generateToken(5);
 
 		return $glue ? $filename . '.' . $extension : array($filename, $extension);
 	}
@@ -915,7 +928,7 @@ class iaField extends abstractCore
 	protected static function _processFileField(array $field, array $file, $path)
 	{
 		$error = false;
-		$messages = array();
+		$message = null;
 
 		list($filename, $extension) = self::_generateFileName($file['name'], $field['file_prefix'], false);
 		$filename = $path . $filename . '.' . $extension;
@@ -931,16 +944,16 @@ class iaField extends abstractCore
 		else
 		{
 			$error = true;
-			$messages[] = iaLanguage::getf('file_type_error', array('extension' => $field['file_types']));
+			$message = iaLanguage::getf('file_type_error', array('extension' => $field['file_types']));
 		}
 
-		return array($filename, $error, $messages);
+		return array($filename, $error, $message);
 	}
 
 	protected static function _processImageField(array $field, array $file, $path)
 	{
 		$error = false;
-		$messages = array();
+		$message = null;
 
 		$iaCore = iaCore::instance();
 		$iaPicture = $iaCore->factory('picture');
@@ -956,10 +969,10 @@ class iaField extends abstractCore
 		else
 		{
 			$error = true;
-			$messages[] = $iaPicture->getMessage();
+			$message = $iaPicture->getMessage();
 		}
 
-		return array($imageName, $error, $messages);
+		return array($imageName, $error, $message);
 	}
 
 	/**

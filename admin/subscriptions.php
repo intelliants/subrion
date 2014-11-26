@@ -44,7 +44,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridQuery($columns, $where, $order, $start, $limit)
 	{
-		$sql = 'SELECT s.`id`, s.`reference_id`, s.`status`, s.`plan_id`, m.`fullname` `user` '
+		$sql = 'SELECT s.`id`, s.`reference_id`, s.`status`, s.`plan_id`, '
+				. 's.`date_created`, s.`date_next_payment`, m.`fullname` `user` '
 			. 'FROM `:prefix:table_subscriptions` s '
 			. 'LEFT JOIN `:prefix:table_members` m ON (s.`member_id` = m.`id`) '
 			. ($where ? 'WHERE ' . $where . ' ' : '') . $order . ' '

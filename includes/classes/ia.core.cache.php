@@ -310,7 +310,7 @@ class iaCache extends abstractUtil
 			case 'config':
 				$iaDb = &$this->iaCore->iaDb;
 
-				$stmt = "`private` = 0 AND `type` != 'divider'";
+				$stmt = "`private` = 0 && `type` != 'divider' && `config_group` != 'email_templates'";
 				$config = $iaDb->keyvalue(array('name', 'value'), $stmt, iaCore::getConfigTable());
 
 				if (file_exists(IA_INCLUDES . 'custom.inc.php'))

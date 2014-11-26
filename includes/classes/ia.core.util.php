@@ -311,13 +311,10 @@ class iaUtil extends abstractUtil
 			$subFolders = array();
 			$subFolders[] = strtolower(substr($userName, 0, 1)) . IA_DS;
 			$subFolders[] = $userName . IA_DS;
-			foreach ($subFolders as $test)
+			foreach ($subFolders as $folderName)
 			{
-				$serverDirectory .= $test;
-				if (!is_dir(IA_UPLOADS . $serverDirectory))
-				{
-					mkdir(IA_UPLOADS . $serverDirectory);
-				}
+				$serverDirectory .= $folderName;
+				is_dir(IA_UPLOADS . $serverDirectory) || mkdir(IA_UPLOADS . $serverDirectory);
 			}
 		}
 
@@ -423,6 +420,14 @@ class iaUtil extends abstractUtil
 			'0-9','A','B','C','D','E','F','G','H','I','J','K','L',
 			'M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
 		);
+	}
+
+	public static function getMetaKeywords($text)
+	{
+		require_once IA_INCLUDES . 'utils/ia.metakeywords.php';
+		$iaMetaKeywords = new iaMetaKeywords();
+
+		return $iaMetaKeywords->get($text);
 	}
 
 	/**

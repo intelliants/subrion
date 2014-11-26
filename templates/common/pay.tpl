@@ -22,9 +22,9 @@
 
 	<form method="post" id="payment_form" class="form-horizontal">
 		{preventCsrf}
-		{if !$balance}
+		{if $member && !$isBalancePayment}
 			<label class="radio">
-				<input type="radio" name="source" value="internal"{if $enough_funds} checked{else} disabled{/if}>
+				<input type="radio" name="source" value="internal"{if $isFundsEnough} checked{else} disabled{/if}>
 				<strong>{lang key='pay_using_account_funds'}</strong>
 			</label>
 			<div class="plan_description">{lang key='balance_in_your_account'}</div>
@@ -32,7 +32,7 @@
 
 		<div class="plan">
 			<label class="radio">
-				<input type="radio" name="source" value="external"{if !$enough_funds && $gateways} checked{elseif !$gateways} disabled{/if}>
+				<input type="radio" name="source" value="external"{if !$isFundsEnough && $gateways} checked{elseif !$gateways} disabled{/if}>
 				<strong>{lang key='pay_external'}</strong>
 			</label>
 			<div class="plan_description">{lang key='pay_via_payment_gateways'}</div>
@@ -47,7 +47,7 @@
 		{elseif $member && iaUsers::MEMBERSHIP_ADMINISTRATOR == $member.usergroup_id}
 			<div class="alert alert-warning">{lang key='no_gateway'}</div>
 		{/if}
-		<button type="submit" class="btn btn-primary"{if !$gateways && !$enough_funds} disabled="disabled"{/if}>{lang key='proceed_pay'}</button>
+		<button type="submit" class="btn btn-primary"{if !$gateways && !$isFundsEnough} disabled="disabled"{/if}>{lang key='proceed_pay'}</button>
 	</form>
 
 	{ia_print_js files='frontend/pay'}

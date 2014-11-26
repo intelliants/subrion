@@ -29,7 +29,7 @@
 	</div>
 
 	<div class="form-actions">
-		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/download/" class="btn btn-lg btn-primary">Next <i class="icon-arrow-right icon-white"></i></a>
+		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/download/" class="btn btn-lg btn-primary js-btn-download">Next <i class="icon-arrow-right icon-white"></i></a>
 		<a class="pull-right btn btn-primary btn-lg" href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/rollback/"><i class="i-box-remove"></i> Rollback upgrade</a>
 	</div>
 
@@ -57,6 +57,17 @@
 		$.getJSON('http://tools.subrion.org/changelog.json?fn=?', {version: '<?php echo $this->version ?>'}, function(response)
 		{
 			$('.modal-body:first', '#changelog-details').html(response.html);
+		});
+
+		$('.js-btn-download').on('click', function(e)
+		{
+			var $this = $(this);
+			var spinner = '<div class="vm-spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>';
+
+			if (!$this.hasClass('loading'))
+			{
+				$this.addClass('disabled loading').html(spinner);
+			}
 		});
 	});
 	</script>

@@ -75,12 +75,12 @@
 															{if $for_plan != 2}
 																<label class="checkbox">
 																	<input{if isset($item.data.fields) && in_array($field, $item.data.fields)} checked{/if} type="checkbox" value="{$field}" name="fields[]">
-																	{lang key='field_'|cat:$field}
+																	{lang key="field_{$field}"}
 																</label>
 															{else}
 																<label class="checkbox">
 																	<input checked type="checkbox" value="{$field}" disabled name="checked_fields[]">
-																	{lang key='field_'|cat:$field}
+																	{lang key="field_{$field}"}
 																</label>
 															{/if}
 														</li>

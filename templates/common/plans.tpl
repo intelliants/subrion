@@ -31,20 +31,24 @@
 		</div>
 	</div>
 
-{ia_add_js}
+	{ia_add_js}
 $(function()
 {
 	var $container = $('#js-plans-list');
 	$('input[type="radio"]', $container).on('click', function()
 	{
-		var plan = $(this).val();
-		var fields = $('#fields_'+plan).val().split(',');
+		var $this = $(this);
+		var plan = $this.val();
+		var fields = $this.data('fields').split(',');
+		
 		$('.for_plan').hide().addClass('hide');
+
 		$.each(fields, function(index, item)
 		{
 			$('#'+item+'_fieldzone').show().removeClass('hide');
 		});
-		$('fieldset .fieldset-wrapper').each(function()
+
+		$('.fieldset-wrapper').each(function()
 		{
 			if ($('.fieldzone', this).length > 0 && $('.fieldzone:not(.for_plan),.fieldzone:not(.hide)', this).length == 0) {
 				$(this).parent('fieldset').hide();
@@ -58,5 +62,5 @@ $(function()
 		? $(':checked', $container).click()
 		: $('input[type="radio"]:first', $container).click();
 });
-{/ia_add_js}
+	{/ia_add_js}
 {/if}

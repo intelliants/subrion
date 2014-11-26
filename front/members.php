@@ -44,6 +44,35 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
+	$iaUsers = $iaCore->factory('users');
+
+	// filter by usergroups
+	$usergroups = $iaUsers->getUsergroups();
+	unset($usergroups[iaUsers::MEMBERSHIP_GUEST]);
+
+	$iaView->assign('usergroups', $usergroups);
+
+	$activeGroup = '';
+	if (isset($_GET['group']))
+	{
+		$_SESSION['group'] = (int)$_GET['group'];
+
+		if ('all' == $_GET['group'])
+		{
+			unset($_SESSION['group']);
+		}
+	}
+
+	$cause = '';
+	if (isset($_SESSION['group']) && in_array($_SESSION['group'], array_keys($usergroups)))
+	{
+		$activeGroup = $_SESSION['group'];
+
+		$cause .= '`usergroup_id` = ' . $activeGroup . ' AND ';
+	}
+	$iaView->assign('activeGroup', $activeGroup);
+
+
 	$filterBy = 'username';
 
 	/* check values */
@@ -59,7 +88,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$letters['all'] = iaUtil::getLetters();
 	$letters['active'] = (isset($iaCore->requestPath[0]) && in_array($iaCore->requestPath[0], $letters['all'])) ? $iaCore->requestPath[0] : false;
-	$cause = $letters['active'] ? ('0-9' == $letters['active'] ? "(`$filterBy` REGEXP '^[0-9]') AND " : "(`$filterBy` LIKE '{$letters['active']}%') AND ") : '';
+	$cause .= $letters['active'] ? ('0-9' == $letters['active'] ? "(`$filterBy` REGEXP '^[0-9]') AND " : "(`$filterBy` LIKE '{$letters['active']}%') AND ") : '';
 	if ($letters['active'])
 	{
 		$iaView->set('subpage', array_search($letters['active'], $letters) + 1);
@@ -67,7 +96,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$iaDb->setTable(iaUsers::getTable());
 
-	/* gets current page and defines start position */
+	// gets current page and defines start position
 	$pagination = array(
 		'limit' => 20,
 		'total' => (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, $cause . "`status` = 'active' "),
@@ -94,8 +123,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		iaBreadcrumb::toEnd($letters['active'], IA_SELF);
 	}
-
-	$iaUsers = $iaCore->factory('users');
 
 	if ($membersList)
 	{

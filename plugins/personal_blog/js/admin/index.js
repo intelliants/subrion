@@ -2,7 +2,7 @@ Ext.onReady(function()
 {
 	if (Ext.get('js-grid-placeholder'))
 	{
-		intelli.blog =
+		var grid = new IntelliGrid(
 		{
 			columns: [
 				'selection',
@@ -12,10 +12,11 @@ Ext.onReady(function()
 				{name: 'date_added', title: _t('date'), width: 120, editor: 'date'},
 				'update',
 				'delete'
-			]
-		};
-		intelli.blog = new IntelliGrid(intelli.blog, false);
-		intelli.blog.toolbar = Ext.create('Ext.Toolbar', {items:[
+			],
+			sorters: [{property: 'date_added', direction: 'DESC'}]
+		}, false);
+
+		grid.toolbar = Ext.create('Ext.Toolbar', {items:[
 		{
 			emptyText: _t('text'),
 			name: 'text',
@@ -28,25 +29,25 @@ Ext.onReady(function()
 			emptyText: _t('status'),
 			id: 'fltStatus',
 			name: 'status',
-			store: intelli.blog.stores.statuses,
+			store: grid.stores.statuses,
 			typeAhead: true,
 			valueField: 'value',
 			xtype: 'combo'
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.blog);},
+			handler: function(){intelli.gridHelper.search(grid);},
 			id: 'fltBtn',
 			text: '<i class="i-search"></i> ' + _t('search')
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.blog, true);},
+			handler: function(){intelli.gridHelper.search(grid, true);},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
-		intelli.blog.init();
+		grid.init();
 
 		var searchStatus = intelli.urlVal('status');
 		if (searchStatus)
 		{
 			Ext.getCmp('fltStatus').setValue(searchStatus);
-			intelli.gridHelper.search(intelli.blog);
+			intelli.gridHelper.search(grid);
 		}
 	}
 	else

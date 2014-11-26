@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <plugin name="kcaptcha">
 	<title>KCaptcha</title>
 	<summary>Plugin adds the CAPTCHA to all pages where it is needed to prevents automatic bot form submission.</summary>
@@ -6,12 +6,11 @@
 	<contributor>Intelliants LLC</contributor>
 	<version>3.1.0</version>
 	<date>2013-11-18</date>
-	<status>active</status>
 	<compatibility>3.1</compatibility>
 
-	<config group="captcha" name="kcaptcha_divider" custom="1" type="divider" description="KCAPTCHA configuration">KCAPTCHA</config>
-	<config group="captcha" name="captcha_case_sensitive" custom="1" type="radio" values="1,0" description="Case sensitive">1</config>
-	<config group="captcha" name="captcha_num_chars" type="text" custom="1" description="Number of characters">5</config>
+	<config group="captcha" name="kcaptcha_divider" type="divider" description="KCAPTCHA configuration" private="1">KCAPTCHA</config>
+	<config group="captcha" name="captcha_case_sensitive" type="radio" values="1,0" description="Case sensitive" private="1">1</config>
+	<config group="captcha" name="captcha_num_chars" type="text" description="Number of characters" private="1">5</config>
 
 	<phrases>
 		<phrase key="click_to_redraw" category="frontend">Click here to redraw</phrase>

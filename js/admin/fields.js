@@ -426,7 +426,7 @@ $(function()
 	$('#input-item').on('change', function()
 	{
 		var $fieldGroup = $('#input-fieldgroup');
-		$fieldGroup.empty().append('<option selected="selected" value="">' + _t('_select_') + '</option>').prop('disabled', true);
+		$fieldGroup.empty().append('<option value="" selected>' + _t('_select_') + '</option>').prop('disabled', true);
 
 		var $pagesList = $('#js-pages-list-row');
 		var itemName = $(this).val();
@@ -466,7 +466,7 @@ $(function()
 		}
 
 		$('input[type="checkbox"]:not(:visible)', $pagesList).prop('checked', false);
-	}).trigger('change');
+	});
 
 	// accordion for host fields
 	$('.js-dependent-fields-list').on('click', 'a.list-group-item', function(e)
@@ -486,6 +486,5 @@ $(function()
 					$this.addClass('active').next().slideDown('fast');
 				});
 		}
-		
 	});
 });

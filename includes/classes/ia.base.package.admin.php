@@ -203,7 +203,7 @@ abstract class abstractPackageAdmin extends iaGrid
 			return false;
 		}
 
-		$result = (bool)$this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
+		$result = $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
 
 		if ($result)
 		{

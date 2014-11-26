@@ -28,7 +28,7 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'members';
 
-	protected $_gridColumns = array('username', 'fullname', 'usergroup_id', 'email', 'status', 'date_reg');
+	protected $_gridColumns = array('username', 'fullname', 'usergroup_id', 'email', 'status', 'date_reg', 'date_logged');
 	protected $_gridFilters = array('status' => 'equal', 'usergroup_id' => 'equal', 'id' => 'equal');
 
 	protected $_phraseAddSuccess = 'member_added';
@@ -113,7 +113,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		unset($this->_userGroups[iaUsers::MEMBERSHIP_GUEST]);
 
 		$iaView->assign('plans', $plans);
-		$iaView->assign('sections', $sections);
+		$iaView->assign('item_sections', $sections);
 		$iaView->assign('statuses', $this->getHelper()->getStatuses());
 		$iaView->assign('usergroups', $this->_userGroups);
 	}
@@ -141,10 +141,12 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_iaCore->startHook('adminAddMemberValidation');
 
+		$iaAcl = $this->_iaCore->factory('acl');
 		$iaField = $this->_iaCore->factory('field');
+
 		$fields = iaField::getAcoFieldsList(iaCore::ADMIN, $this->_itemName);
 
-		// this is a hack to force the script to upload files to the appropriate folder
+		// below is the hacky way to force the script to upload files to the appropriate user's folder
 		// FIXME
 		$activeUser = iaUsers::getIdentity(true);
 		$_SESSION[iaUsers::SESSION_KEY] = array(
@@ -155,14 +157,21 @@ class iaBackendController extends iaAbstractControllerBackend
 		$_SESSION[iaUsers::SESSION_KEY] = $activeUser;
 		//
 
+		if ($iaAcl->isAccessible($this->getName(), 'usergroup'))
+		{
+			if (isset($data['usergroup_id']))
+			{
+				$entry['usergroup_id'] = array_key_exists($data['usergroup_id'], $this->_userGroups) ? $data['usergroup_id'] : iaUsers::MEMBERSHIP_REGULAR;
+			}
+		}
+		elseif (iaCore::ACTION_ADD == $action)
+		{
+			$entry['usergroup_id'] = iaUsers::MEMBERSHIP_REGULAR;
+		}
+
 		if ($error)
 		{
 			return false;
-		}
-
-		if (isset($data['status']))
-		{
-			$entry['status'] = $data['status'];
 		}
 
 		$stmt = '`email` = :email';
@@ -186,7 +195,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->addMessage('username_already_taken');
 		}
 
-		$iaAcl = $this->_iaCore->factory('acl');
 		if ($iaAcl->checkAccess($this->getName(), 'password') || iaCore::ACTION_ADD == $action)
 		{
 			$this->_password = trim($data['_password']);
@@ -214,18 +222,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (empty($data['_password']) && iaCore::ACTION_ADD == $action)
 		{
 			$this->addMessage('error_password_empty');
-		}
-
-		if ($iaAcl->isAccessible($this->getName(), 'usergroup'))
-		{
-			if (isset($data['usergroup_id']))
-			{
-				$entry['usergroup_id'] = array_key_exists($data['usergroup_id'], $this->_userGroups) ? $data['usergroup_id'] : iaUsers::MEMBERSHIP_REGULAR;
-			}
-		}
-		elseif (iaCore::ACTION_ADD == $action)
-		{
-			$entry['usergroup_id'] = iaUsers::MEMBERSHIP_REGULAR;
 		}
 
 		return !$this->getMessages();

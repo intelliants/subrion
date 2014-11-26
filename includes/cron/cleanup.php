@@ -44,7 +44,7 @@ foreach ($itemNames as $itemName)
 	{
 		foreach ($itemIds as $itemId)
 		{
-			$iaPlan->cancelSubscription($itemName, $itemId);
+			$iaPlan->setUnpaid($itemName, $itemId);
 		}
 	}
 }

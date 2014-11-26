@@ -49,6 +49,7 @@ class iaExtra extends abstractCore
 	protected $_attributes;
 
 	protected $_url;
+	protected $_menuGroups = array();
 
 	protected $_parsed = false;
 	protected $_quickParseMode = false;
@@ -354,6 +355,7 @@ class iaExtra extends abstractCore
 	protected function _addAlter($fieldData)
 	{
 		$iaDb = $this->iaDb;
+		$this->iaCore->factory('field');
 
 		$sql = 'ALTER TABLE `' . $iaDb->prefix . $fieldData['table_name'] . '` ADD `' . $fieldData['name'] . '` ';
 		switch ($fieldData['type'])
@@ -401,7 +403,7 @@ class iaExtra extends abstractCore
 
 		if ($fieldData['searchable'] && in_array($fieldData['type'], array('text','textarea')))
 		{
-			$indexes = $iaDb->getAll('SHOW INDEX FROM `' . INTELLI_DBPREFIX . $fieldData['table_name'] . '`');
+			$indexes = $iaDb->getAll('SHOW INDEX FROM `' . $iaDb->prefix . $fieldData['table_name'] . '`');
 			$keyExists = false;
 			if ($indexes)
 			{
@@ -416,7 +418,7 @@ class iaExtra extends abstractCore
 			}
 			if (!$keyExists)
 			{
-				$iaDb->query('ALTER TABLE `' . INTELLI_DBPREFIX . $fieldData['table_name'] . '` ADD FULLTEXT (`' . $fieldData['name'] . '`)');
+				$iaDb->query('ALTER TABLE `' . $iaDb->prefix . $fieldData['table_name'] . '` ADD FULLTEXT (`' . $fieldData['name'] . '`)');
 			}
 		}
 
@@ -454,9 +456,9 @@ class iaExtra extends abstractCore
 			foreach ($this->itemData['pages']['admin'] as $page)
 			{
 				$page['group'] = $this->_lookupGroupId($page['group']);
-				$page['order'] = is_null($page['order'])
+				$page['order'] = (int)(is_null($page['order'])
 					? $iaDb->one_bind('MAX(`order`) + 5', '`group` = :group', $page)
-					: (int)$page['order'];
+					: $page['order']);
 
 				$iaDb->insert($page);
 			}
@@ -657,6 +659,8 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
+		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
+
 		if ($this->itemData['pages']['front'])
 		{
 			$iaDb->setTable('pages');
@@ -758,7 +762,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['user_groups'])
 		{
-			$iaAcl = &$this->iaCore->iaAcl;
+			$iaAcl = $this->iaCore->factory('acl');
 			foreach ($this->itemData['user_groups'] as $item)
 			{
 				$iaDb->setTable('usergroups');
@@ -1107,6 +1111,11 @@ class iaExtra extends abstractCore
 				{
 					$order += 5;
 					$page['order'] = $order;
+				}
+
+				if ($page['group'])
+				{
+					$this->_menuGroups[] = $page['group'];
 				}
 
 				$page['group'] = $this->_lookupGroupId($page['group']);
@@ -2201,7 +2210,7 @@ class iaExtra extends abstractCore
 						'name' => $this->_attr('name'),
 						'type' => $this->_attr('type'),
 						'use_editor' => $this->_attr('editor', false),
-						'length' => $this->_attr('length', 100),
+						'length' => (int)$this->_attr('length'),
 						'default' => $this->_attr('default'),
 						'editable' => $this->_attr('editable', true),
 						'required' => $this->_attr('required', false),
@@ -2350,6 +2359,11 @@ class iaExtra extends abstractCore
 		return $this->_url;
 	}
 
+	public function getMenuGroups()
+	{
+		return array_unique($this->_menuGroups);
+	}
+
 	public function _parserEnd($parser, $name)
 	{
 		array_pop($this->_currentPath);
@@ -2365,6 +2379,8 @@ class iaExtra extends abstractCore
 		switch ($entryData['category'])
 		{
 			case 'payments':
+				$iaTransaction = $this->iaCore->factory('transaction');
+
 				if (self::ACTION_INSTALL == $action)
 				{
 					$entry = array(
@@ -2372,11 +2388,11 @@ class iaExtra extends abstractCore
 						'title' => $entryData['title']
 					);
 
-					$this->iaDb->insert($entry, null, 'payment_gateways');
+					$this->iaDb->insert($entry, null, $iaTransaction->getTableGateways());
 				}
 				elseif (self::ACTION_UNINSTALL == $action)
 				{
-					$this->iaDb->delete('`name` = :name', $entryData, 'payment_gateways');
+					$this->iaDb->delete('`name` = :name', $iaTransaction->getTableGateways(), $entryData);
 				}
 
 				break;

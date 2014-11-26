@@ -144,7 +144,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaView->assign('item', $member);
 	$iaView->assign('sections', $sections);
 
-	$iaView->title($iaView->title() . ' - ' . (empty($member['fullname']) ? $member['username'] : $member['fullname']));
+	$iaView->title(empty($member['fullname']) ? $member['username'] : $member['fullname']);
 
 	$iaView->display('view-member');
 }

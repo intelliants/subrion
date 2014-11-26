@@ -97,44 +97,6 @@ class iaPlan extends abstractCore
 	}
 
 	/**
-	 * Payment post-processing actions
-	 *
-	 * @param $transaction transaction information
-	 *
-	 * @return bool
-	 */
-	public function postPayment($transaction)
-	{
-		if ('passed' == $transaction['status'])
-		{
-			$planId = (int)$transaction['plan_id'];
-			$itemId = (int)$transaction['item_id'];
-			$item = $transaction['item'];
-
-			if ($item == 'balance' && $planId == 0)
-			{
-				/*
-				 TODO: refactor this, combine with iaTransaction::update()
-				$this->iaDb->update(null, iaDb::convertIds($transaction['member_id']), array('funds' => "`funds` + {$transaction['total']}"), iaUsers::getTable());
-
-				if ($transaction['member_id'] == iaUsers::getIdentity()->id)
-				{
-					$this->iaCore->factory('users')->getAuth($transaction['member_id']);
-				}
-				*/
-
-				return true;
-			}
-			elseif ($planId != 0 && $itemId != 0)
-			{
-				return $this->assignSubscription($transaction);
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Return plan information
 	 *
 	 * @param integer $planId plan id
@@ -145,7 +107,7 @@ class iaPlan extends abstractCore
 	{
 		$plan = null;
 
-		if (isset($planId) && !is_array($planId))
+		if (!is_array($planId))
 		{
 			$plan = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`status` = :status AND `id` = :id', array('status' => iaCore::STATUS_ACTIVE, 'id' => (int)$planId), self::getTable());
 			if ($plan)
@@ -194,43 +156,49 @@ class iaPlan extends abstractCore
 	/**
 	 * Write funds off from member balance.
 	 *
-	 * @param array $transaction data about transaction
+	 * @param array $transactionData data about transaction
 	 *
 	 * @return bool true on success
 	 */
-	public function extractFunds($transaction)
+	public function extractFunds(array $transactionData)
 	{
 		if (!iaUsers::hasIdentity())
 		{
 			return false;
 		}
 
-		$iaDb = &$this->iaDb;
+		$iaUsers = $this->iaCore->factory('users');
+		$iaTransaction = $this->iaCore->factory('transaction');
 
-		$funds = $iaDb->one('funds', iaDb::convertIds(iaUsers::getIdentity()->id), iaUsers::getTable());
-		$balance = $funds - $transaction['total'];
-		if ($balance >= 0)
+		$userInfo = $iaUsers->getInfo(iaUsers::getIdentity()->id);
+
+		$remainingBalance = $userInfo['funds'] - $transactionData['amount'];
+		if ($remainingBalance >= 0)
 		{
-			$iaDb->update(array('funds' => $balance), iaDb::convertIds(iaUsers::getIdentity()->id), null, iaUsers::getTable());
-			iaUsers::reloadIdentity();
+			$result = (bool)$iaUsers->update(array('funds' => $remainingBalance), iaDb::convertIds(iaUsers::getIdentity()->id));
 
-			// close transaction
-			$updatedValues = array('status' => 'passed', 'gateway' => 'balance', 'reference_id' => date('YmdHis'));
-			// change member_id if different account makes the payment
-			if (iaUsers::getIdentity()->id != $transaction['member_id'])
+			if ($result)
 			{
-				$updatedValues['member_id'] = iaUsers::getIdentity()->id;
-			}
-			$iaDb->update($updatedValues, iaDb::convertIds($transaction['id']), array('date' => iaDb::FUNCTION_NOW), 'transactions');
+				iaUsers::reloadIdentity();
 
-			$this->assignSubscription($transaction);
+				$updatedValues = array(
+					'status' => iaTransaction::PASSED,
+					'gateway' => iaTransaction::TRANSACTION_MEMBER_BALANCE,
+					'reference_id' => date('YmdHis'),
+					'member_id' => iaUsers::getIdentity()->id
+				);
+
+				$iaTransaction->update($updatedValues, $transactionData['id']);
+			}
+
+			return $result;
 		}
 
-		return true;
+		return false;
 	}
 
 
-	public function cancelSubscription($itemName, $itemId) // unassigns paid plan
+	public function setUnpaid($itemName, $itemId) // unassigns paid plan
 	{
 		// first, try to update DB record
 		$tableName = $this->iaCore->factory('item')->getItemTable($itemName);
@@ -261,30 +229,40 @@ class iaPlan extends abstractCore
 		// then, try to call class' helper
 		$this->_runClassMethod($itemName, self::METHOD_CANCEL_PLAN, array($itemId));
 
-		// TODO: the respective mail should be sent here
+		// TODO: #1804 (the respective email should be sent here)
 
 		return $result;
 	}
 
-	public function assignSubscription($transaction) // updates item's sponsored record
+	public function setPaid($transaction) // updates item's sponsored record
 	{
+		if (!is_array($transaction))
+		{
+			return false;
+		}
+
+		$result = false;
+
 		$item = $transaction['item'];
 		$plan = $this->getById($transaction['plan_id']);
 
-		list($dateStarted, $dateFinished) = $this->_calculateDates($plan['duration'], $plan['unit']);
+		if ($plan && $item && !empty($transaction['item_id']))
+		{
+			list($dateStarted, $dateFinished) = $this->_calculateDates($plan['duration'], $plan['unit']);
 
-		$values = array(
-			self::SPONSORED => 1,
-			self::SPONSORED_PLAN_ID => $transaction['plan_id'],
-			self::SPONSORED_DATE_START => $dateStarted,
-			self::SPONSORED_DATE_END => $dateFinished,
-			'status' => iaCore::STATUS_ACTIVE
-		);
+			$values = array(
+				self::SPONSORED => 1,
+				self::SPONSORED_PLAN_ID => $transaction['plan_id'],
+				self::SPONSORED_DATE_START => $dateStarted,
+				self::SPONSORED_DATE_END => $dateFinished,
+				'status' => iaCore::STATUS_ACTIVE
+			);
 
-		$iaItem = $this->iaCore->factory('item');
-		$result = $this->iaDb->update($values, iaDb::convertIds($transaction['item_id']), null, $iaItem->getItemTable($item));
+			$iaItem = $this->iaCore->factory('item');
+			$result = $this->iaDb->update($values, iaDb::convertIds($transaction['item_id']), null, $iaItem->getItemTable($item));
+		}
 
-		// perform item specific actions when plan is assigned
+		// perform item specific actions
 		$this->_runClassMethod($item, self::METHOD_POST_PAYMENT, array($plan, $transaction));
 
 		return $result;

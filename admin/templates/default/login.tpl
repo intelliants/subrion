@@ -3,11 +3,11 @@
 <head>
 	<meta charset="{$config.charset}">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="generator" content="Subrion CMS {$config.version}" />
+	<meta name="generator" content="Subrion CMS {$config.version}">
 
 	<base href="{$url}">
 
-	<title>{ia_print_title title=$gTitle}</title>
+	<title>{ia_print_title}</title>
 
 	<!--[if lt IE 9]>
 	<script src="../../../js/utils/shiv.js"></script>
@@ -88,7 +88,7 @@
 				</form>
 			</div>
 			<p class="copyright">
-				Powered by <a href="http://www.subrion.org/" title="Subrion CMS">Subrion CMS v{$config.version}</a><br />
+				Powered by <a href="http://www.subrion.org/" title="Subrion CMS">Subrion CMS v{$config.version}</a><br>
 				Copyright &copy; 2008-{$smarty.now|date_format:'%Y'} <a href="http://www.intelliants.com/" title="Intelligent Web Solutions">Intelliants LLC</a>
 			</p>
 			<a href="{$smarty.const.IA_URL}" class="back-to-home"><span>←</span> {lang key='back_to_homepage'}</a>

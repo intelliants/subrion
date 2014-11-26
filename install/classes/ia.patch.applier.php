@@ -86,20 +86,22 @@ class iaPatchApplier
 		{
 			$this->_runPhpCode($patch['executables']['pre']);
 		}
-		if (count($patch['queries']) > 0)
+
+		if (!$this->_dbConnect())
 		{
-			if (!$this->_dbConnect())
-			{
-				$this->_logInfo('Unable to connect to the database :database.', self::LOG_INFO, array('database' => $this->_dbConnectionParams['database']));
-				return;
-			}
+			$this->_logInfo('Unable to connect to the database :database.', self::LOG_INFO, array('database' => $this->_dbConnectionParams['database']));
+			return;
+		}
+
+		if ($patch['info']['num_queries'] > 0)
+		{
 			$this->_logInfo('Starting to process SQL queries...', self::LOG_INFO);
 			foreach ($patch['queries'] as $entry)
 			{
 				$this->_processQuery($entry);
 			}
 		}
-		if (count($patch['files']) > 0)
+		if ($patch['info']['num_files'] > 0)
 		{
 			$this->_logInfo('Starting to process files in :mode mode...', self::LOG_INFO, array('mode' => $this->_forceMode ? 'forced' : 'regular'));
 			chdir($this->_scriptRoot);

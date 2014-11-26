@@ -4,9 +4,9 @@
 	<summary>Nice template for Subrion CMS to start with. Based on Bootstrap 2.3.</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.2.0</version>
-	<date>2014-10-20</date>
-	<compatibility>3.2.0</compatibility>
+	<version>3.2.2</version>
+	<date>2014-11-24</date>
+	<compatibility>3.2</compatibility>
 
 	<layout>
 		<position menu="1" movable="0">inventory</position>
@@ -44,7 +44,7 @@
 	</layout>
 
 	<screenshots>
-		<screenshot name="index.jpg"><![CDATA[Frontend -> Home Page]]></screenshot>
+		<screenshot name="1.jpg"><![CDATA[Frontend -> Home Page]]></screenshot>
 		<screenshot name="2.jpg"><![CDATA[Frontend -> Blog]]></screenshot>
 	</screenshots>
 
@@ -66,7 +66,7 @@
 		    name="max_top_menu_items" 
 		    type="text" 
 		    description="Max number of items in Main Menu"
-		    order="3002">5</config>
+		    order="3002">6</config>
 
 	<config group="template_startup"
 		    name="startup_font" 
@@ -128,8 +128,7 @@
 	<changeset>
 		<menu position="account" status="active">account</menu>
 
-		<block sticky="1" pages="index">new_blog_posts</block>
-		<block sticky="0" pages="index" classname="box-blog" position="verybottom">blogroll</block>
+		<block sticky="0" pages="index" classname="box-blog" position="verybottom" status="active">blogroll</block>
 	</changeset>
 
 	<blocks>

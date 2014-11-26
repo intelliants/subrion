@@ -18,7 +18,7 @@
 <div id="{$varname}_fieldzone" class="row {$field.relation}">
 
 	<label class="col col-lg-2 control-label">{lang key=$name} {if $field.required}{lang key='field_required'}{/if}
-		{assign var='annotation' value="{$name}_annotation"}
+		{assign annotation "{$name}_annotation"}
 		{if isset($lang.$annotation)}<br><span class="help-block">{lang key=$annotation}</span>{/if}
 	</label>
 
@@ -101,7 +101,7 @@ $('.textcounter_{$varname}').wrap('<p class="help-block text-right">').addClass(
 		{case 'pictures' break}
 			{if $value}
 				<div class="thumbnails-grid">
-					{foreach $value as $entry}
+					{foreach $value as $i => $entry}
 						<div class="input-group">
 							<div class="thumbnail">
 								<a href="{printImage imgfile=$entry.path url=true fullimage=true}" title="{$entry.title|escape:'html'}" rel="ia_lightbox[{$field.name}]">{printImage imgfile=$entry.path}</a>

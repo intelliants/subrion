@@ -82,7 +82,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			}
 			elseif (!$error && $code)
 			{
-				$iaUsers->setNewPassword($member);
+				$iaUsers->changePassword($member);
 
 				$error = false;
 				$message = iaLanguage::get('new_password_sent');
@@ -176,7 +176,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			{
 				$error = false;
 				$messages[] = iaLanguage::get('new_password_sent');
-				$iaUsers->setNewPassword($member);
+
+				$iaUsers->changePassword($member);
 				$form = false;
 			}
 		}

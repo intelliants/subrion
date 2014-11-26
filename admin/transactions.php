@@ -40,11 +40,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaTransaction = $this->_iaCore->factory('transaction');
 		$this->setHelper($iaTransaction);
+
+		$this->setTable(iaTransaction::getTable());
 	}
 
 	protected function _gridRead($params)
 	{
-		switch ($_GET['get'])
+		$action = (1 == count($this->_iaCore->requestPath)) ? $this->_iaCore->requestPath[0] : null;
+
+		switch ($action)
 		{
 			case 'items':
 				$output = array('data' => null);
@@ -63,20 +67,19 @@ class iaBackendController extends iaAbstractControllerBackend
 				$output = array('data' => null);
 
 				$stmt = '';
-/*				if (isset($_POST['itemname']) && $_POST['itemname'])
-				{
-					$stmt = "`item` = '{$_POST['itemname']}' ";
-				}
-				if (!empty($_POST['itemname']) && 'accounts' == $_POST['itemname'])
+				if (!isset($params['itemname'])
+					|| (isset($params['itemname']) && iaUsers::getItemName() == $params['itemname']))
 				{
 					$output['data'][] = array('title' => iaLanguage::get('member_balance'), 'value' => 0);
 				}
-				elseif (!isset($_POST['itemname']))
-				{*/
-				$output['data'][] = array('title' => iaLanguage::get('member_balance'), 'value' => 0);
-//				}
+				elseif (!empty($params['itemname']))
+				{
+					$stmt = iaDb::convertIds($params['itemname'], 'item');
+				}
 
-				if ($planIds = $this->_iaDb->onefield(iaDb::ID_COLUMN_SELECTION, $stmt, null, null, 'plans'))
+				$this->_iaCore->factory('plan');
+
+				if ($planIds = $this->_iaDb->onefield(iaDb::ID_COLUMN_SELECTION, $stmt, null, null, iaPlan::getTable()))
 				{
 					foreach ($planIds as $planId)
 					{
@@ -89,7 +92,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'gateways':
 				$output = array('data' => null);
 
-				if ($items = $this->_iaDb->keyvalue(array('name', 'title'), null, $this->getHelper()->getTableGateways()))
+				if ($items = $this->getHelper()->getPaymentGateways())
 				{
 					foreach ($items as $name => $title)
 					{
@@ -102,10 +105,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'members':
 				$output = array('data' => null);
 
-				if (isset($_GET['query']) && $_GET['query'])
+				if (!empty($params['query']))
 				{
 					$where[] = 'CONCAT(`username`, `fullname`) LIKE :username';
-					$values['username'] = '%' . iaSanitize::sql($_GET['query']) . '%';
+					$values['username'] = '%' . iaSanitize::sql($params['query']) . '%';
 				}
 
 				$where || $where[] = iaDb::EMPTY_CONDITION;
@@ -146,16 +149,14 @@ class iaBackendController extends iaAbstractControllerBackend
 				. 't.`id`, t.`item`, t.`item_id`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, '
 				. 't.`date`, t.`status`, t.`currency`, t.`operation`, t.`plan_id`, t.`reference_id`, '
 				. "m.`username`, IF(t.`status` != 'passed', 1, 0) `delete` " .
-			'FROM `:prefix:transactions` t ' .
-			'LEFT JOIN `:prefix:plans` p ON (p.`id` = t.`plan_id`) ' .
-			'LEFT JOIN `:prefix:members` m ON (m.`id` = t.`member_id`) ' .
-			($where ? 'WHERE ' . $where . ' ' : '') . $order .
+			'FROM `:prefix:table_transactions` t ' .
+			'LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`) ' .
+			($where ? 'WHERE ' . $where . ' ' : '') . $order . ' ' .
 			'LIMIT :start, :limit';
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
-			'plans' => $this->getTable(),
-			'members' => iaUsers::getTable(),
-			'transactions' => iaTransaction::getTable(),
+			'table_members' => iaUsers::getTable(),
+			'table_transactions' => $this->getTable(),
 			'start' => $start,
 			'limit' => $limit
 		));
@@ -163,32 +164,32 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->_iaDb->getAll($sql);
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
-		if (isset($_GET['email']) && $_GET['email'])
+		if (!empty($params['email']))
 		{
 			$conditions[] = 't.`email` = :email';
-			$values['email'] = $_GET['email'];
+			$values['email'] = $params['email'];
 		}
-		if (isset($_GET['reference_id']) && $_GET['reference_id'])
+		if (!empty($params['reference_id']))
 		{
 			$conditions[] = 't.`reference_id` LIKE :reference';
-			$values['reference'] = '%' . $_GET['reference_id'] . '%';
+			$values['reference'] = '%' . $params['reference_id'] . '%';
 		}
-		if (isset($_GET['item']) && $_GET['item'])
+		if (!empty($params['item']))
 		{
-			$conditions[] = ('members' == $_GET['item']) ? "(t.`item` = :item OR t.`item` = 'balance') " : 't.`item` = :item';
-			$values['item'] = $_GET['item'];
+			$conditions[] = ('members' == $params['item']) ? "(t.`item` = :item OR t.`item` = 'balance') " : 't.`item` = :item';
+			$values['item'] = $params['item'];
 		}
-		if (isset($_GET['username']) && $_GET['username'])
+		if (!empty($params['username']))
 		{
 			$conditions[] = 'a.`username` LIKE :username';
-			$values['username'] = '%' . $_GET['username'] . '%';
+			$values['username'] = '%' . $params['username'] . '%';
 		}
-		if (isset($_GET['status']) && $_GET['status'] && in_array($_GET['status'], array('pending', 'passed', 'failed', 'refunded')))
+		if (!empty($params['status']))
 		{
 			$conditions[] = 't.`status` = :status';
-			$values['status'] = $_GET['status'];
+			$values['status'] = $params['status'];
 		}
 	}
 
@@ -199,9 +200,9 @@ class iaBackendController extends iaAbstractControllerBackend
 		$transaction = array(
 			'member_id' => (int)$_POST['member'],
 			'plan_id' => (int)$_POST['plan'],
-			//'email' => $_POST['email'],
+			'email' => $_POST['email'],
 			'item_id' => (int)$_POST['itemid'],
-			'gateway' => (string)$_POST['payment'],
+			'gateway' => (string)$_POST['gateway'],
 			'sec_key' => uniqid('t'),
 			'reference_id' => empty($_POST['order']) ? date('mdyHis') : $_POST['order'],
 			'amount' => (float)$_POST['amount'],
@@ -211,7 +212,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($transaction['plan_id'])
 		{
-			if ($plan = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($transaction['plan_id']), 'plans'))
+			$this->_iaCore->factory('plan');
+
+			if ($plan = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($transaction['plan_id']), iaPlan::getTable()))
 			{
 				$transaction['item'] = $plan['item'];
 				$transaction['operation'] = iaLanguage::get('plan_title_' . $plan['id']);
@@ -241,11 +244,11 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-/*		if (!iaValidate::isEmail($transaction['email']))
+		if ($transaction['email'] && !iaValidate::isEmail($transaction['email']))
 		{
 			$output['error'] = true;
 			$output['message'][] = iaLanguage::get('error_email_incorrect');
-		}*/
+		}
 
 		if (isset($transaction['item']) && in_array($transaction['item'], array('balance', 'members')))
 		{

@@ -33,7 +33,7 @@ function IntelliTree(params)
 		}});
 
 		self.$tree.on('loaded.jstree', _openCascade);
-		self.$tree.on('click.jstree', self.onchange);
+		self.$tree.on('changed.jstree', this.onchange);
 		if (typeof params.onchange == 'function')
 		{
 			self.$tree.on('click.jstree', params.onchange);
@@ -46,15 +46,14 @@ function IntelliTree(params)
 		})
 	};
 
-	this.onchange = function()
+	this.onchange = function(e, data)
 	{
-		var tree = self.$tree.jstree(true),
-			nodeId = tree.get_selected().shift(),
-			path = tree.get_path(nodeId);
+		var nodeId = data.instance.get_node(data.selected).id,
+			path = data.instance.get_path(nodeId);
 
 		self.$value.val(nodeId);
 		if(path)
-			self.$label.val(path.join(' > '));
+			self.$label.val(path.join(' / '));
 	};
 
 	var _openCascade = function()

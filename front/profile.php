@@ -69,7 +69,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		if (!$error)
 		{
-			$iaUsers->changePassword(iaUsers::getIdentity()->id, $newPassword);
+			$iaUsers->changePassword(iaUsers::getIdentity(true), $newPassword, false);
+
 			$error = false;
 			$messages[] = iaLanguage::get('password_changed');
 		}
@@ -96,7 +97,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				if (0 == $iaDb->getErrorNumber())
 				{
-					$iaCore->startHook('phpUserProfileUpdate', array('userInfo' => $item, 'username' => iaUsers::getIdentity()->username));
+					$iaCore->startHook('phpUserProfileUpdate', array('userInfo' => iaUsers::getIdentity(true), 'data' => $item));
 					iaUsers::reloadIdentity();
 
 					$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
@@ -121,7 +122,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			}
 			else
 			{
-				$iaPlan->cancelSubscription(iaUsers::getItemName(), iaUsers::getIdentity()->id);
+				$iaPlan->setUnpaid(iaUsers::getItemName(), iaUsers::getIdentity()->id);
 			}
 		}
 	}

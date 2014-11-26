@@ -3,7 +3,7 @@
 	<head>
 		{ia_hooker name='smartyFrontBeforeHeadSection'}
 
-		<title>{ia_print_title title=$gTitle|default:$pageTitle}</title>
+		<title>{ia_print_title}</title>
 		<meta http-equiv="Content-Type" content="text/html;charset={$config.charset}">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
 		<meta name="robots" content="index">
 		<meta name="robots" content="follow">
 		<meta name="revisit-after" content="1 day">
-		<base href="{$nonProtocolUrl}">
+		<base href="{$smarty.const.IA_URL}">
 
 		<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
 		<!--[if lt IE 9]>
@@ -57,13 +57,27 @@
 
 	<body class="page-{$pageName}{if $config.sticky_navbar} sticky-navbar{/if}">
 		<header class="header">
+			<div class="inventory">
+				<div class="container">
+					<form id="fast-search" method="post" action="{$smarty.const.IA_URL}search/" class="form-inline nav-search">
+						<div class="control-group">
+							<input type="text" name="q" placeholder="{lang key='search'}" class="span2">
+							<button type="submit"><i class="icon-search"></i></button>
+						</div>
+					</form>
+					
+					{ia_blocks block='inventory'}
+
+					{include file='language-selector.tpl'}
+				</div>
+			</div>
 			<nav class="navigation">
 				<div class="container">
 					<a class="brand" href="{$smarty.const.IA_URL}">
 						{if !empty($config.site_logo)}
 							<img src="{$nonProtocolUrl}uploads/{$config.site_logo}" alt="{$config.site}">
 						{else}
-							<img src="{$img}logo.png" alt="{$gTitle}">
+							<img src="{$img}logo.png" alt="{$config.site}">
 						{/if}
 					</a>
 
@@ -75,17 +89,10 @@
 						</ul>
 					{/if}
 
-					{ia_blocks block='account'}
-
 					<a href="#" class="nav-toggle" data-toggle="collapse" data-target=".nav-bar-collapse"><i class="icon-reorder"></i> {lang key='su_menu'}</a>
 					
 					<div class="nav-bar-collapse">
-						<!-- <form id="fast-search" method="post" action="{$smarty.const.IA_URL}search/" class="form-inline nav-search">
-							<div class="control-group">
-								<input type="text" name="q" placeholder="{lang key='search'}" class="span2">
-								<button type="submit"><i class="icon-search"></i></button>
-							</div>
-						</form> -->
+						{ia_blocks block='account'}
 					
 						{ia_blocks block='mainmenu'}
 					</div>
@@ -99,7 +106,7 @@
 			{/if}
 		</header>
 
-		{if  isset($iaBlocks.header)}
+		{if isset($iaBlocks.header1) || isset($iaBlocks.header2) || isset($iaBlocks.header3) || isset($iaBlocks.header4)}
 			<div class="header-blocks">
 				<div class="container">
 					<div class="row">
@@ -112,6 +119,10 @@
 			</div>
 		{/if}
 
+		{ia_hooker name='smartyFrontBeforeBreadcrumb'}
+
+		{include file='breadcrumb.tpl'}
+
 		{if isset($iaBlocks.verytop)}
 			<div class="verytop">
 				<div class="container">
@@ -120,11 +131,7 @@
 			</div>
 		{/if}
 
-		{ia_hooker name='smartyFrontBeforeBreadcrumb'}
-
-		{include file='breadcrumb.tpl'}
-
-		<div class="content">
+		<div class="main-content">
 			<div class="container">
 				<div class="row">
 
@@ -173,16 +180,18 @@
 			</div>
 		{/if}
 
-		<div class="footer-blocks">
-			<div class="container">
-				<div class="row">
-					<div class="{width section='footer' position='footer1'}">{ia_blocks block='footer1'}</div>
-					<div class="{width section='footer' position='footer2'}">{ia_blocks block='footer2'}</div>
-					<div class="{width section='footer' position='footer3'}">{ia_blocks block='footer3'}</div>
-					<div class="{width section='footer' position='footer4'}">{ia_blocks block='footer4'}</div>
+		{if isset($iaBlocks.footer1) || isset($iaBlocks.footer2) || isset($iaBlocks.footer3) || isset($iaBlocks.footer4)}
+			<div class="footer-blocks">
+				<div class="container">
+					<div class="row">
+						<div class="{width section='footer' position='footer1'}">{ia_blocks block='footer1'}</div>
+						<div class="{width section='footer' position='footer2'}">{ia_blocks block='footer2'}</div>
+						<div class="{width section='footer' position='footer3'}">{ia_blocks block='footer3'}</div>
+						<div class="{width section='footer' position='footer4'}">{ia_blocks block='footer4'}</div>
+					</div>
 				</div>
 			</div>
-		</div>
+		{/if}
 
 		<footer class="footer">
 			<div class="container">

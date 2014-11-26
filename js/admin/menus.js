@@ -79,7 +79,7 @@ Ext.onReady(function()
 				$.ajax(
 				{
 					dataType: 'json',
-					url: intelli.config.admin_url + '/menus.json',
+					url: intelli.config.admin_url + '/menus/read.json',
 					data: {
 						action: 'titles',
 						id: selectedNode.data.id,
@@ -100,6 +100,7 @@ Ext.onReady(function()
 
 						win = new Ext.Window(
 						{
+							title: _t('edit_page_title'),
 							layout: 'fit',
 							width: 350,
 							autoHeight: true,
@@ -108,7 +109,7 @@ Ext.onReady(function()
 							{
 								id: 'form-panel',
 								labelWidth: 75,
-								url: intelli.config.admin_url + '/menus.json?action=save&menu=' + $('#input-name').val() + '&node=' + nodeId,
+								url: intelli.config.admin_url + '/menus/read.json?action=save&menu=' + $('#input-name').val() + '&node=' + nodeId,
 								frame: true,
 								width: 350,
 								autoHeight: true,
@@ -123,7 +124,7 @@ Ext.onReady(function()
 										changed = true;
 										Ext.getCmp('form-panel').getForm().submit(
 										{
-											waitMsg : 'Saving...',
+											waitMsg : _t('saving'),
 											success: function()
 											{
 												var formText = Ext.getCmp('form-panel').getForm().getValues()[intelli.config.lang];
@@ -195,7 +196,7 @@ Ext.onReady(function()
 				proxy:
 				{
 					type: 'ajax',
-					url: intelli.config.admin_url + '/menus.json?id=' + $('#js-input-id').val() + '&action=menus'
+					url: intelli.config.admin_url + '/menus/read.json?id=' + $('#js-input-id').val() + '&action=menus'
 				}
 			}),
 			viewConfig:
@@ -240,7 +241,7 @@ Ext.onReady(function()
 				proxy:
 				{
 					type: 'ajax',
-					url: intelli.config.admin_url + '/menus.json?action=pages'
+					url: intelli.config.admin_url + '/menus/read.json?action=pages'
 				}
 			}),
 			viewConfig:

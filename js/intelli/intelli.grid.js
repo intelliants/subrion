@@ -273,7 +273,8 @@ function IntelliGrid(params, autoInit)
 				type: 'ajax',
 				url: self.url + 'read.json'
 			},
-			remoteSort: true
+			remoteSort: true,
+			sorters: (self.params.sorters !== undefined) ? self.params.sorters : null
 		});
 	};
 

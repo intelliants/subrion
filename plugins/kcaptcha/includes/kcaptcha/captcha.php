@@ -239,14 +239,14 @@ class KCAPTCHA{
 			}
 		}
 
-		if(function_exists("imagejpeg")){
-			header("Content-Type: image/jpeg");
+		if(function_exists('imagejpeg')){
+			header('Content-Type: image/jpeg');
 			imagejpeg($img2, null, $this->jpeg_quality);
-		}else if(function_exists("imagegif")){
-			header("Content-Type: image/gif");
+		}else if(function_exists('imagegif')){
+			header('Content-Type: image/gif');
 			imagegif($img2);
-		}else if(function_exists("imagepng")){
-			header("Content-Type: image/x-png");
+		}else if(function_exists('imagepng')){
+			header('Content-Type: image/x-png');
 			imagepng($img2);
 		}
 	}

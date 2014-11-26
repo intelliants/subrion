@@ -116,9 +116,15 @@ a {
   padding: 20px 0;
 }
 
-.content {
-  padding: 80px 0;
+.main-content {
+  padding: 30px 0;
+
+  .page-index & {
+    padding: 80px 0;
+  }
 }
+
+
 
 
 
@@ -196,10 +202,20 @@ a {
 
     > a {
       color: fade(#fff, 30%);
+      background: none;
 
-      &:hover {
+      &:hover,
+      &:focus {
+        background: none;
         color: @linkColorHover;
       }
+    }
+
+    &.active > a,
+    &.active > a:hover,
+    &.active > a:focus {
+      text-decoration: none;
+      color: @linkColor;
     }
   }
 }

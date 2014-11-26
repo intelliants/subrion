@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{$config.lang}">
 	<head>
 		<title>{ia_print_title title=$pageTitle}</title>
 		<meta http-equiv="Content-Type" content="text/html;charset={$config.charset}">

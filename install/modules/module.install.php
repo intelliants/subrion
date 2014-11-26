@@ -24,8 +24,8 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '3.2.0');
-define('IA_VER', '320');
+define('IA_VERSION', '3.2.2');
+define('IA_VER', '322');
 
 $error = false;
 $message = '';
@@ -449,7 +449,7 @@ HTML;
 				if (!$error)
 				{
 					$iaUsers = iaHelper::loadCoreClass('users', 'core');
-					$iaUsers->changePassword(1, iaHelper::getPost('admin_password'));
+					$iaUsers->changePassword(array('id' => 1), iaHelper::getPost('admin_password'), false);
 				}
 
 				if (!$error)

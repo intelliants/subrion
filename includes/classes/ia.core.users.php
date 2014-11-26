@@ -197,54 +197,48 @@ class iaUsers extends abstractCore
 	}
 
 	/**
-	 * Updates member password
-	 *
-	 * @param integer $memberId member id
-	 * @param string $password new password
-	 *
-	 * @return bool
-	 */
-	public function changePassword($memberId, $password)
-	{
-		$result = $this->iaDb->update(array('password' => $this->encodePassword($password)), iaDb::convertIds($memberId), null, self::getTable());
-
-		if ($result)
-		{
-			$this->iaCore->startHook('phpUserPasswordUpdate', array('id' => $memberId, 'password' => $password));
-		}
-
-		return $result;
-	}
-
-	/**
 	 * Updates member password and sends email
 	 *
 	 * @param array $memberInfo member information
+	 * @param string $password new password, auto generated if none is passed
+	 * @param bool $isNotify send notification email on change
 	 *
 	 * @return bool
 	 */
-	public function setNewPassword($memberInfo)
+	public function changePassword($memberInfo, $password = '', $isNotify = true)
 	{
-		$pass = $this->_createPassword();
-		$this->iaDb->setTable(self::getTable());
-		$x = $this->iaDb->update(array(
-			'password' => $this->encodePassword($pass),
+		// generate password if no password is passed
+		if (!$password)
+		{
+			$password = $this->_createPassword();
+		}
+
+		$result = $this->iaDb->update(array(
+			'password' => $this->encodePassword($password),
 			'sec_key' => ''
-		), "`id`='" . $memberInfo['id'] . "'");
-		$this->iaDb->resetTable();
+		), iaDb::convertIds($memberInfo['id']), null, self::getTable());
 
-		$iaMailer = $this->iaCore->factory('mailer');
-		$iaMailer->loadTemplate('password_changement');
-		$iaMailer->addAddress($memberInfo['email'], $memberInfo['fullname']);
-		$iaMailer->setReplacements(array(
-			'fullname' => $memberInfo['fullname'],
-			'username' => $memberInfo['username'],
-			'password' => $pass
-		));
+		if ($result)
+		{
+			$this->iaCore->startHook('phpUserPasswordUpdate', array('userInfo' => $memberInfo, 'password' => $password));
+		}
 
-		$iaMailer->send();
+		if ($isNotify)
+		{
+			$iaMailer = $this->iaCore->factory('mailer');
 
-		return $x;
+			$iaMailer->loadTemplate('password_changement');
+			$iaMailer->addAddress($memberInfo['email'], $memberInfo['fullname']);
+			$iaMailer->setReplacements(array(
+				'fullname' => $memberInfo['fullname'],
+				'username' => $memberInfo['username'],
+				'password' => $password
+			));
+
+			$iaMailer->send();
+		}
+
+		return $result;
 	}
 
 	/**
@@ -532,7 +526,7 @@ class iaUsers extends abstractCore
 		}
 
 		// statuses grid
-		$rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status', self::getTable());
+		$rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status`', self::getTable());
 		$statuses = array(iaCore::STATUS_ACTIVE, iaCore::STATUS_APPROVAL, self::STATUS_UNCONFIRMED, self::STATUS_SUSPENDED);
 		$total = 0;
 

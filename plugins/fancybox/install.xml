@@ -1,13 +1,12 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <plugin name="fancybox">
 	<title>fancyBox</title>
 	<summary>Plugin will add lightbox effect to images based on Fancybox javascript library.</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.1.2</version>
-	<date>2014-08-01</date>
-	<status>active</status>
-	<compatibility>3.1</compatibility>
+	<version>3.2.0</version>
+	<date>2014-10-20</date>
+	<compatibility>3.2</compatibility>
 
 	<config group="pictures" name="fancybox_divider" type="divider">fancyBox</config>
 	<config group="pictures" name="fancybox_slide_transition" custom="1" type="select" multiplevalues="elastic,fade" description="fancyBox slide effect">elastic</config>

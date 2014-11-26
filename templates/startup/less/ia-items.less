@@ -196,27 +196,30 @@
   color: @iaItemBadgeColor;
   background: @iaItemBadgeBgColor;
   display: block;
-  position: absolute; right: 10px; top: 0;
-  width: @iaItemBadgeWidth;
+  position: absolute; 
+  right: 0;
+  top: 10px;
+  // width: @iaItemBadgeWidth;
   height: @iaItemBadgeHeight;
   line-height: @iaItemBadgeHeight;
   text-align: center;
+  padding: 0 10px;
 
   &:before,
   &:after {
     content: '';
     display: block;
-    position: absolute; top: 100%; left: 0;
+    position: absolute; bottom: 0; right: 100%;
     width: 0px;
     height: 0px;
     border-style: solid;
-    border-width: (@iaItemBadgeTenonWidth/2) @iaItemBadgeTenonWidth 0 0;
-    border-color: @iaItemBadgeBgColor transparent transparent transparent;
+    border-width: 0 0 (@iaItemBadgeTenonWidth) @iaItemBadgeTenonWidth;
+    border-color: transparent transparent @iaItemBadgeBgColor transparent;
   }
 
   &:after {
-    left: auto; right: 0;
-    border-width: 0 @iaItemBadgeTenonWidth (@iaItemBadgeTenonWidth/2) 0;
+    top: 0; right: 100%;
+    border-width: 0 @iaItemBadgeTenonWidth (@iaItemBadgeTenonWidth) 0;
     border-color: transparent @iaItemBadgeBgColor transparent transparent;
   }
 
@@ -225,7 +228,7 @@
     background-color: @iaItemBorderFeaturedColor;
 
     &:before {
-      border-top-color: @iaItemBorderFeaturedColor;
+      border-bottom-color: @iaItemBorderFeaturedColor;
     }
 
     &:after {
@@ -238,7 +241,7 @@
     background-color: @iaItemBorderSponsoredColor;
 
     &:before {
-      border-top-color: @iaItemBorderSponsoredColor;
+      border-bottom-color: @iaItemBorderSponsoredColor;
     }
 
     &:after {
@@ -248,6 +251,10 @@
 
   &-banned {
     color: @iaItemBadgeBannedColor;
+  }
+
+  &-available {
+    color: @iaItemBadgeAvailableColor;
   }
 
   &-approval {

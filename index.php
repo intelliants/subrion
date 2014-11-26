@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '3.2.0');
+define('IA_VERSION', '3.2.2');
 
 if (isset($ia_version))
 {
@@ -42,7 +42,7 @@ if (function_exists('apache_get_modules') && !in_array('mod_rewrite', apache_get
 
 // enable errors display
 ini_set('display_errors', true);
-error_reporting(E_STRICT | E_ALL);
+error_reporting(E_ALL | E_STRICT | E_DEPRECATED);
 
 // define system constants
 define('IA_DS', '/');

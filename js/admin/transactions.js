@@ -1,79 +1,71 @@
-intelli.transactions = {
-	columns: [
-		'selection',
-		{name: 'username', title: _t('username'), width: 1},
-		{name: 'operation', title: _t('plan'), width: 1, renderer: function(value, metadata, record)
-		{
-			return (value && record.get('plan_id') > 0)
-				? '<b><a href="' + intelli.config.admin_url + '/plans/edit/' + record.get('plan_id') + '/">' + value + '</a></b>'
-				: '<b>' + value + '</b>';
-		}},
-		{name: 'item', title: _t('item'), width: 100},
-		{name: 'item_id', title: _t('item_id'), width: 60},
-		//{name: 'email', title: _t('email'), width: 150, editor: 'text'},
-		{name: 'reference_id', title: _t('reference_id'), editor: 'text', width: 1},
-		{name: 'amount', title: _t('total'), width: 100},
-		'status',
-		{name: 'date', title: _t('date'), width: 135},
-		'delete'
-	],
-	fields: ['plan_id'],
-	statuses: ['pending', 'passed', 'failed', 'refunded'],
-	texts:{
-		delete_single: _t('are_you_sure_to_delete_this_transaction'),
-		delete_multiple: _t('are_you_sure_to_delete_transactions')
-	}
-};
-
 intelli.visual = {form: null, panel: null};
 
 Ext.onReady(function()
 {
 	if (Ext.get('js-grid-placeholder'))
 	{
-		var searchParam = intelli.urlVal('status');
-		if (searchParam)
+		var grid = new IntelliGrid(
 		{
-			intelli.transactions.storeParams = {status: searchParam};
-		}
-
-		intelli.transactions = new IntelliGrid(intelli.transactions, false);
-		intelli.transactions.toolbar = Ext.create('Ext.Toolbar', {items:[
+			columns: [
+				'selection',
+				{name: 'username', title: _t('username'), width: 1},
+				{name: 'operation', title: _t('plan'), width: 1, renderer: function(value, metadata, record)
+				{
+					return (value && record.get('plan_id') > 0)
+						? '<b><a href="' + intelli.config.admin_url + '/plans/edit/' + record.get('plan_id') + '/">' + value + '</a></b>'
+						: '<b>' + value + '</b>';
+				}},
+				{name: 'item', title: _t('item'), width: 100},
+				{name: 'item_id', title: _t('item_id'), width: 60},
+				{name: 'reference_id', title: _t('reference_id'), editor: 'text', width: 1},
+				{name: 'amount', title: _t('total'), width: 100},
+				'status',
+				{name: 'date', title: _t('date'), width: 170},
+				'delete'
+			],
+			fields: ['plan_id'],
+			statuses: ['pending','passed','failed','refunded'],
+			texts:{
+				delete_single: _t('are_you_sure_to_delete_this_transaction'),
+				delete_multiple: _t('are_you_sure_to_delete_transactions')
+			}
+		}, false);
+		grid.toolbar = Ext.create('Ext.Toolbar', {items:[
 		{
 			xtype: 'textfield',
 			name: 'username',
 			emptyText: _t('username'),
 			listeners: intelli.gridHelper.listener.specialKey
-		}, {
+		},{
 			xtype: 'textfield',
 			name: 'reference_id',
 			emptyText: _t('reference_id'),
 			listeners: intelli.gridHelper.listener.specialKey
-		}, {
+		},{
 			emptyText: _t('item'),
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
-			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/transactions.json?get=items'),
+			store: intelli.gridHelper.store.ajax(window.location.href + 'items.json'),
 			displayField: 'title',
 			name: 'item',
 			valueField: 'value'
-		}, {
+		},{
 			emptyText: _t('status'),
 			name: 'status',
 			id: 'fltStatus',
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
-			store: intelli.transactions.stores.statuses,
+			store: grid.stores.statuses,
 			displayField: 'title',
 			valueField: 'value'
-		}, {
-			handler: function(){intelli.gridHelper.search(intelli.transactions)},
+		},{
+			handler: function(){intelli.gridHelper.search(grid)},
 			id: 'fltBtn',
 			text: '<i class="i-search"></i> ' + _t('search')
-		}, {
-			handler: function(){intelli.gridHelper.search(intelli.transactions, true)},
+		},{
+			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
 
@@ -82,7 +74,14 @@ Ext.onReady(function()
 			Ext.getCmp('fltStatus').setValue(searchParam);
 		}
 
-		intelli.transactions.init();
+		grid.init();
+
+		var searchParam = intelli.urlVal('status');
+		if (searchParam)
+		{
+			Ext.getCmp('fltStatus').setValue(searchParam);
+			intelli.gridHelper.search(grid)
+		}
 	}
 
 	$('#js-add-transaction-cmd').on('click', function(e)
@@ -100,23 +99,23 @@ Ext.onReady(function()
 				labelWidth: 140,
 				editable: false,
 				id: 'item_name',
-				name: 'item_name',
 				lazyRender: true,
-				store: intelli.gridHelper.store.ajax(intelli.transactions.url + 'read.json?get=items'),
+				store: intelli.gridHelper.store.ajax(window.location.href + 'items.json'),
 				displayField: 'title',
 				listeners: {
-					select: function(combo, record, index)
+					select: function(combo)
 					{
-						var itemname = combo.getValue();
+						var itemName = combo.getValue(),
+							itemPlanCtl = Ext.getCmp('item_plan');
 
-						('members' == itemname) ? Ext.getCmp('itemid').hide() : Ext.getCmp('itemid').show();
+						('members' == itemName) ? Ext.getCmp('itemid').hide() : Ext.getCmp('itemid').show();
 
-						Ext.getCmp('item_plan').clearValue();
-
-						Ext.getCmp('item_plan').getStore().baseParams = {itemname: itemname};
-						Ext.getCmp('item_plan').getStore().reload({params: {itemname: itemname}});
+						itemPlanCtl.clearValue();
+						//itemPlanCtl.getStore().baseParams = {itemname: itemName};
+						itemPlanCtl.getStore().reload({itemname: itemName});
 					}
-				}
+				},
+				valueField: 'value'
 			});
 
 			var plans = new Ext.form.ComboBox(
@@ -128,10 +127,11 @@ Ext.onReady(function()
 				editable: false,
 				name: 'plan',
 				lazyRender: true,
-				store: intelli.gridHelper.store.ajax(intelli.transactions.url + 'read.json?get=plans'),
+				store: intelli.gridHelper.store.ajax(window.location.href + 'plans.json'),
 				displayField: 'title',
 				anchor: '100%',
-				labelWidth: 140
+				labelWidth: 140,
+				valueField: 'value'
 			});
 
 			var gateways = new Ext.form.ComboBox(
@@ -139,13 +139,13 @@ Ext.onReady(function()
 				fieldLabel: _t('payment_gateway'),
 				typeAhead: true,
 				allowBlank: true,
-				//editable: false,
-				name: 'payment',
+				name: 'gateway',
 				lazyRender: true,
-				store: intelli.gridHelper.store.ajax(intelli.transactions.url + 'read.json?get=gateways'),
+				store: intelli.gridHelper.store.ajax(window.location.href + 'gateways.json'),
 				displayField: 'title',
 				anchor: '100%',
-				labelWidth: 140
+				labelWidth: 140,
+				valueField: 'value'
 			});
 
 			var members = new Ext.form.ComboBox(
@@ -156,7 +156,7 @@ Ext.onReady(function()
 				editable: true,
 				name: 'username',
 				lazyRender: true,
-				store: intelli.gridHelper.store.ajax(intelli.transactions.url + 'read.json?get=members'),
+				store: intelli.gridHelper.store.ajax(window.location.href + 'members.json'),
 				displayField: 'title',
 				anchor: '100%',
 				labelWidth: 140
@@ -197,21 +197,20 @@ Ext.onReady(function()
 					xtype: 'textfield',
 					anchor: '100%',
 					labelWidth: 140
-				}, members,/* {
+				},members,{
+					anchor: '100%',
 					fieldLabel: _t('email'),
+					labelWidth: 140,
 					name: 'email',
-					width: '100%',
 					vtype: 'email',
-					allowBlank: false,
 					xtype: 'textfield'
-				}, */{
+				},{
 					fieldLabel: _t('total'),
 					name: 'amount',
 					allowBlank: false,
 					xtype: 'textfield',
 					anchor: '100%',
-					labelWidth: 140,
-
+					labelWidth: 140
 				},{
 					fieldLabel: _t('id'),
 					name: 'itemid',
@@ -225,7 +224,6 @@ Ext.onReady(function()
 					layout: 'hbox',
 					labelWidth: 140,
 					width: '100%',
-					// defaultType: 'field',
 					items: dateFields
 				}]
 			});
@@ -248,7 +246,7 @@ Ext.onReady(function()
 						{
 							f.submit(
 							{
-								url: intelli.transactions.url + 'add.json',
+								url: window.location.href + 'add.json',
 								success: function(form, data)
 								{
 									Ext.Msg.show(
@@ -264,7 +262,7 @@ Ext.onReady(function()
 										}
 									});
 
-									intelli.transactions.store.reload();
+									grid.store.reload();
 								},
 								failure: function(form, data)
 								{

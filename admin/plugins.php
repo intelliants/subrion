@@ -369,7 +369,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						$result['tabs'][] = array(
 							'title' => iaLanguage::get('extra_' . $tab, $tab),
 							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
-							'cls' => 'extension-docs'
+							'cls' => 'extension-docs' . ' extension-docs--' . $tab
 						);
 					}
 				}
@@ -380,6 +380,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			$search = array(
 				'{icon}',
+				'{link}',
 				'{name}',
 				'{author}',
 				'{contributor}',
@@ -392,9 +393,11 @@ class iaBackendController extends iaAbstractControllerBackend
 			$icon = file_exists(IA_PLUGINS . $pluginName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
 				? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'plugins/' . $pluginName . '/docs/img/icon.png" alt="' . $data['info']['title'] . '"></td></tr>'
 				: '';
+			$link = '<tr><td><a href="http://www.subrion.org/plugin/' . $pluginName . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>';
 
 			$replace = array(
 				$icon,
+				$link,
 				$data['info']['title'],
 				$data['info']['author'],
 				$data['info']['contributor'],
@@ -440,6 +443,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$pclZip = new PclZip($fileName);
 					$pclZip->extract(PCLZIP_OPT_PATH, IA_PLUGINS . $pluginName);
+
+					$this->_iaCache->remove('subrion_plugins.inc');
 				}
 				else
 				{
@@ -507,6 +512,8 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 				else
 				{
+					$result['groups'] = $iaExtra->getMenuGroups();
+
 					$result['message'] = ('install' == $action)
 						? iaLanguage::getf('plugin_installed', array('name' => $iaExtra->itemData['info']['title']))
 						: iaLanguage::getf('plugin_reinstalled', array('name' => $iaExtra->itemData['info']['title']));

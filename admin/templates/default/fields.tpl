@@ -21,7 +21,7 @@
 
 				<div class="col col-lg-4">
 					<input type="text" value="{$item.item|escape:'html'}" disabled>
-					<input type="hidden" name="item" value="{$item.item|escape:'html'}">
+					<input type="hidden" name="item" id="input-item" value="{$item.item|escape:'html'}">
 				</div>
 			</div>
 			<div class="row">
@@ -29,7 +29,7 @@
 
 				<div class="col col-lg-4">
 					<input type="text" value="{lang key="field_type_{$item.type}" default=$item.type}" disabled>
-					<input type="hidden" name="type" value="{$item.type|escape:'html'}">
+					<input type="hidden" name="type" id="input-type" value="{$item.type|escape:'html'}">
 				</div>
 			</div>
 			{else}
@@ -74,7 +74,7 @@
 					<select name="fieldgroup_id" id="input-fieldgroup"{if !$groups} disabled{/if}>
 						<option value="">{lang key='_select_'}</option>
 						{foreach $groups as $code => $value}
-							<option value="{$code}"{if $code == $item.fieldgroup_id} selected{/if}>{$value.name}</option>
+							<option value="{$code}"{if $code == $item.fieldgroup_id} selected{/if}>{$value.name|escape:'html'}</option>
 						{/foreach}
 					</select>
 				</div>
@@ -101,7 +101,7 @@
 				<div class="col col-lg-4">
 					<div class="box-simple fieldset">
 					{foreach $pages as $pageId => $entry}
-						<div class="checkbox" data-item="{$entry.item}">
+						<div class="checkbox" data-item="{$entry.item|escape:'html'}">
 							<label>
 								<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[{$pageId}]">
 								{$entry.title}
@@ -171,28 +171,6 @@
 							</div>
 						</div>
 					{/foreach}
-
-					{*foreach $parents as $field_item => $item_list}
-						<div class="js-dependent-fields-list pages" data-item="{$field_item}"{if $item.item != $field_item} style="display: none;"{/if}>
-							{foreach $item_list as $field_name => $elements}
-								<fieldset class="list">
-									<legend><span class="text-up">{lang key='field_'|cat:$field_name}</span> {lang key='field_values'}</legend>
-									<ul class="visible_common">
-										{foreach $elements as $element}
-											<li>
-												<label>
-													<input type="checkbox" value="1"{if isset($item.parents[$field_item][$field_name][$element])} checked="checked"{/if} name="parents[{$field_item}][{$field_name}][{$element}]" />
-													{lang key="field_{$field_name}_{$element}"}
-												</label>
-											</li>
-										{/foreach}
-									</ul>
-								</fieldset>
-							{foreachelse}
-								<div>{lang key='no_parent_fields'}</div>
-							{/foreach}
-						</div>
-					{/foreach*}
 				</div>
 			</div>
 
@@ -539,7 +517,7 @@
 				<label class="col col-lg-2 control-label">{lang key='required_checks'} <a href="#" class="js-tooltip" title="{$tooltips.required_checks}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-8">
-					<textarea name="required_checks" id="required_checks" class="js-code-editor">{if isset($item.required_checks)}{$item.required_checks|escape:'html'}{/if}</textarea>
+					<textarea name="required_checks" class="js-code-editor">{if isset($item.required_checks)}{$item.required_checks|escape:'html'}{/if}</textarea>
 				</div>
 			</div>
 
@@ -547,7 +525,7 @@
 				<label class="col col-lg-2 control-label">{lang key='extra_actions'} <a href="#" class="js-tooltip" title="{$tooltips.extra_actions}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-8">
-					<textarea name="extra_actions" id="extra_actions" class="js-code-editor">{if isset($item.extra_actions)}{$item.extra_actions|escape:'html'}{/if}</textarea>
+					<textarea name="extra_actions" class="js-code-editor">{if isset($item.extra_actions)}{$item.extra_actions|escape:'html'}{/if}</textarea>
 				</div>
 			</div>
 		</div>

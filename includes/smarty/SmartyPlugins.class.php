@@ -49,6 +49,7 @@ class iaSmartyPlugins extends Smarty
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_add_media', array(__CLASS__, 'ia_add_media'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_css', array(__CLASS__, 'ia_print_css'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_js', array(__CLASS__, 'ia_print_js'));
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_title', array(__CLASS__, 'ia_print_title'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_page_url', array(__CLASS__, 'ia_page_url'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'lang', array(__CLASS__, 'lang'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'preventCsrf', array(__CLASS__, 'preventCsrf'));
@@ -287,11 +288,11 @@ class iaSmartyPlugins extends Smarty
 		switch ($params['type'])
 		{
 			case 'link':
-				$result = '<a href="' . $params['url'] . '" ' . $params['attr'] . '>' . $params['text'] . '</a>';
+				$result = '<a href="' . $params['url'] . '" ' . $params['attr'] . '>' . iaSanitize::html($params['text']) . '</a>';
 				break;
 			case 'icon':
 			case 'icon_text':
-				$params['text'] = ($params['type'] == 'icon') ? $params['icon'] : $params['icon'] . ' ' . $params['text'];
+				$params['text'] = ($params['type'] == 'icon') ? $params['icon'] : $params['icon'] . ' ' . iaSanitize::html($params['text']);
 
 				$result = '<a href="' . $params['url'] . '" ' . $params['attr'] . ' class="btn btn-small ' . $classname . '">' . $params['text'] . '</a>';
 				break;
@@ -383,7 +384,7 @@ class iaSmartyPlugins extends Smarty
 		return '';
 	}
 
-	public function add_js(array $params)
+	public static function add_js(array $params)
 	{
 		$iaView = &iaCore::instance()->iaView;
 		$order = isset($params['order']) ? $params['order'] : iaView::RESOURCE_ORDER_REGULAR;
@@ -819,7 +820,7 @@ class iaSmartyPlugins extends Smarty
 			return '';
 		}
 
-		$iaCore = &iaCore::instance();
+		$iaCore = iaCore::instance();
 		$resources = self::_arrayCopyKeysSorted($iaCore->iaView->resources->js->toArray());
 
 		$output = '';
@@ -1090,5 +1091,13 @@ class iaSmartyPlugins extends Smarty
 		}
 
 		return $result;
+	}
+
+	public static function ia_print_title($params)
+	{
+		$suffix = iaCore::instance()->get('suffix');
+		$title = empty($params['title']) ? iaCore::instance()->iaView->get('title') : $params['title'];
+
+		return $title . ' ' . $suffix;
 	}
 }

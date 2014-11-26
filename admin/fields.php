@@ -204,14 +204,18 @@ class iaBackendController extends iaAbstractControllerBackend
 				? $this->_iaDb->keyvalue(array('id', 'page_name'), iaDb::convertIds($this->getEntryId(), 'field_id'), iaField::getTablePages())
 				: array();
 		}
+		elseif (!empty($_GET['item']))
+		{
+			$entryData['item'] = $_GET['item'];
+		}
 
 		$iaItem = $this->_iaCore->factory('item');
 
 		$pages = $groups = array();
 
 		$stmt = (iaCore::ACTION_ADD == $iaView->get('action'))
-			? isset($_POST['item']) ? "`item` = '{$_POST['item']}'" : (isset($_GET['item']) ? "`item` = '{$_GET['item']}'" : iaDb::EMPTY_CONDITION)
-			: "`item` = '" . $entryData['item'] . "'";
+			? iaDb::EMPTY_CONDITION
+			: iaDb::convertIds($entryData['item'], 'item');
 
 		// get items pages
 		$itemPagesList = $this->_iaDb->all(array('id', 'page_name', 'item'), $stmt . ' ORDER BY `item`, `page_name`', null, null, 'items_pages');
@@ -270,7 +274,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'name' => iaSanitize::alias(iaUtil::checkPostParam('name')),
 			'text_length' => (int)iaUtil::checkPostParam('text_length', 100),
 			'length' => iaUtil::checkPostParam('length', false),
-			'title' => iaSanitize::html(iaUtil::checkPostParam('title')),
+			'title' => iaUtil::checkPostParam('title'),
 			'pages' => iaUtil::checkPostParam('pages', array()),
 			'required' => iaUtil::checkPostParam('required'),
 			'use_editor' => (int)iaUtil::checkPostParam('use_editor'),
@@ -283,7 +287,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			'required_checks' => iaUtil::checkPostParam('required_checks'),
 			'extra_actions' => iaUtil::checkPostParam('extra_actions'),
 			'link_to' => (int)iaUtil::checkPostParam('link_to'),
-			'extras' => '',
 			'values' => '',
 			'relation' => iaUtil::checkPostParam('relation', iaField::RELATION_REGULAR),
 			'parents' => isset($data['parents']) && is_array($data['parents']) ? $data['parents'] : array(),
@@ -621,11 +624,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		foreach ($this->_iaCore->languages as $code => $l)
 		{
-			iaLanguage::addPhrase('field_' . $field['name'], $fieldData['title'][$code], $code, $fieldData['extras']);
+			iaLanguage::addPhrase('field_' . $field['name'], $fieldData['title'][$code], $code, $field['extras']);
 
 			if (isset($fieldData['annotation'][$code]) && $fieldData['annotation'][$code])
 			{
-				iaLanguage::addPhrase('field_' . $field['name'] . '_annotation', $fieldData['annotation'][$code], $code, $fieldData['extras']);
+				iaLanguage::addPhrase('field_' . $field['name'] . '_annotation', $fieldData['annotation'][$code], $code, $field['extras']);
 			}
 		}
 
@@ -638,7 +641,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			foreach ($fieldData['values'] as $key => $value)
 			{
 				$key = $keys[$key] = isset($fieldData['keys'][$key]) ? $fieldData['keys'][$key] : $key;
-				iaLanguage::addPhrase('field_' . $field['name'] . '_' . $key, $value, null, $fieldData['extras']);
+				iaLanguage::addPhrase('field_' . $field['name'] . '_' . $key, $value, null, $field['extras']);
 
 				$newKeys[] = $key;
 			}
@@ -652,7 +655,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				foreach ($phrases as $phraseKey => $phraseValue)
 				{
-					iaLanguage::addPhrase('field_' . $field['name'] . '_' . $phraseKey, $phraseValue, $languageCode, $fieldData['extras']);
+					iaLanguage::addPhrase('field_' . $field['name'] . '_' . $phraseKey, $phraseValue, $languageCode, $field['extras']);
 				}
 			}
 		}
@@ -667,7 +670,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			foreach ($fieldData['_numberRangeForSearch'] as $value)
 			{
-				iaLanguage::addPhrase('field_' . $field['name'] . '_range_' . $value, $value, null, $fieldData['extras']);
+				iaLanguage::addPhrase('field_' . $field['name'] . '_range_' . $value, $value, null, $field['extras']);
 			}
 			unset($fieldData['_numberRangeForSearch']);
 		}
@@ -726,14 +729,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($pagesList)
 		{
-			$this->_setPagesList($id, $pagesList, $fieldData['extras']);
+			$this->_setPagesList($id, $pagesList, $field['extras']);
 		}
 
 		if ($result)
 		{
 			if (in_array($fieldData['type'], array(iaField::TEXT, iaField::COMBO, iaField::RADIO, iaField::CHECKBOX)))
 			{
-				$sql = "ALTER TABLE `{$this->iaDb->prefix}{$tableName}` ";
+				$sql = "ALTER TABLE `{$this->_iaDb->prefix}{$tableName}` ";
 				$sql .= "CHANGE `{$field['name']}` `{$field['name']}` ";
 
 				switch ($fieldData['type'])
@@ -792,12 +795,12 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if (!empty($fieldData['title'][$code]))
 			{
-				iaLanguage::addPhrase('field_' . $fieldData['name'], $fieldData['title'][$code], $code, $fieldData['extras']);
+				iaLanguage::addPhrase('field_' . $fieldData['name'], $fieldData['title'][$code], $code);
 			}
 
 			if (isset($fieldData['annotation'][$code]) && !empty($fieldData['annotation'][$code]))
 			{
-				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_annotation', $fieldData['annotation'][$code], $code, $fieldData['extras']);
+				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_annotation', $fieldData['annotation'][$code], $code);
 			}
 		}
 		unset($fieldData['title'], $fieldData['annotation']);
@@ -834,7 +837,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			foreach ($fieldData['_numberRangeForSearch'] as $number)
 			{
-				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_range_' . $number, $number, null, $fieldData['extras']);
+				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_range_' . $number, $number);
 			}
 		}
 		unset($fieldData['_numberRangeForSearch']);
@@ -844,7 +847,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			foreach ($fieldData['values'] as $key => $value)
 			{
 				$key = $keys[$key] = isset($fieldData['keys'][$key]) ? $fieldData['keys'][$key] : $key;
-				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $key, $value, null, $fieldData['extras']);
+				iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $key, $value);
 			}
 		}
 		else
@@ -858,7 +861,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				foreach ($lng_phrases as $ph_key => $ph_value)
 				{
-					iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $ph_key, $ph_value, $lng_code, $fieldData['extras']);
+					iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $ph_key, $ph_value, $lng_code);
 				}
 			}
 			unset($fieldData['lang_values']);
@@ -881,7 +884,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($fieldId && $pagesList)
 		{
-			$this->_setPagesList($fieldId, $pagesList, $fieldData['extras']);
+			$this->_setPagesList($fieldId, $pagesList);
 		}
 
 		$fieldData['table_name'] = $this->_iaCore->factory('item')->getItemTable($fieldData['item']);
@@ -961,7 +964,6 @@ class iaBackendController extends iaAbstractControllerBackend
 						'field' => $name,
 						'element' => $values[$index],
 						'child' => $field,
-						'extras' => '',
 						'item' => $item
 					));
 				}
@@ -990,7 +992,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->query($sql);
 	}
 
-	protected function _setPagesList($fieldId, array $pages, $extras)
+	protected function _setPagesList($fieldId, array $pages, $extras = '')
 	{
 		$this->_iaDb->setTable(iaField::getTablePages());
 

@@ -206,7 +206,8 @@ final class iaCore
 
 		$extension = IA_URL_DELIMITER;
 
-		$url = array_shift(explode('?', $url));
+		$url = explode('?', $url);
+		$url = array_shift($url);
 		$url = explode(IA_URL_DELIMITER, trim($url, IA_URL_DELIMITER));
 
 		$lastChunk = end($url);
@@ -347,6 +348,10 @@ final class iaCore
 			{
 				iaView::accessDenied();
 			}
+		}
+		elseif (iaView::PAGE_ERROR == $this->iaView->name())
+		{
+			return;
 		}
 
 		$iaAcl->isAccessible($this->iaView->get('name'), $this->iaView->get('action')) || iaView::accessDenied();
@@ -694,7 +699,7 @@ final class iaCore
 			header('HTTP/1.1 203'); // reply with 203 "Non-Authoritative Information" status
 
 			$this->iaView->set('nodebug', true);
-			die('Request treated as potential CSRF attack.');
+			die('Request treated as a potential CSRF attack.');
 		}
 	}
 

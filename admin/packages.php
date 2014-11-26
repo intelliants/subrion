@@ -96,6 +96,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			$search = array(
 				'{icon}',
+				'{link}',
 				'{name}',
 				'{author}',
 				'{contributor}',
@@ -113,6 +114,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			$replacement = array(
 				$icon,
+				'',
 				$data['info']['title'],
 				$data['info']['author'],
 				$data['info']['contributor'],
@@ -419,7 +421,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					if (false === $buttons)
 					{
-						$this->getHelper()->itemData['compatibility'] = '<span style="color:red">' . $iaExtra->itemData['compatibility'] . ' ' . iaLanguage::get('incompatible') . '</span>';
+						$this->getHelper()->itemData['compatibility'] = '<span style="color:red">' . $this->getHelper()->itemData['compatibility'] . ' ' . iaLanguage::get('incompatible') . '</span>';
 					}
 
 					$data = &$this->getHelper()->itemData;

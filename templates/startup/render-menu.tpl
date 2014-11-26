@@ -1,5 +1,7 @@
 {if 'mainmenu' == $position}
 	{ia_menu menus=$menu.contents class="nav nav-pills nav-mainmenu {$menu.classname}"}
+{elseif 'inventory' == $position}
+	{ia_menu menus=$menu.contents class="nav-inventory {$menu.classname}" loginout=true}
 {elseif 'account' == $position}
 	{if 'account' == $menu.name && $member && $config.members_enabled}
 		<div class="nav-account">
@@ -22,7 +24,7 @@
 				<span class="caret"></span>
 			</a>
 			<ul class="nav-account__menu dropdown-menu">
-				{access object='admin_login'}
+				{access object='admin_access'}
 					<li><a rel="nofollow" href="{$smarty.const.IA_ADMIN_URL}" target="_blank" title="{lang key='su_admin_dashboard'}"><i class="icon-cog"></i> {lang key='su_admin_dashboard'}</a></li>
 					<li class="divider"></li>
 				{/access}
@@ -34,8 +36,8 @@
 		</div>
 	{else}
 		<ul class="nav-account">
-			<li><a href="{$nonProtocolUrl}login/">{lang key='su_login'}</a></li>
-			<li><a class="btn-account" href="{$nonProtocolUrl}registration/">{lang key='su_signup'}</a></li>
+			<li><a href="{$smarty.const.IA_URL}login/">{lang key='su_login'}</a></li>
+			<li><a class="btn-account" href="{$smarty.const.IA_URL}registration/">{lang key='su_signup'}</a></li>
 		</ul>
 	{/if}
 {elseif in_array($position, array('left', 'right', 'user1', 'user2', 'top', 'footer1', 'footer2', 'footer3', 'footer4'))}
@@ -56,7 +58,7 @@
 						{/if}
 
 						{lang key='welcome'}, {$member.fullname|default:$member.username|escape:'html'}
-						{access object='admin_login'}
+						{access object='admin_access'}
 							<a rel="nofollow" href="{$smarty.const.IA_ADMIN_URL}" target="_blank" title="{lang key='su_admin_dashboard'}"><i class="icon-cog"></i></a>
 						{/access}
 					</div>

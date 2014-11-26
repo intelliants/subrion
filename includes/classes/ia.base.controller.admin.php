@@ -26,6 +26,9 @@
 
 abstract class iaAbstractControllerBackend
 {
+	const EQUAL = 'equal';
+	const LIKE = 'like';
+
 	protected $_iaCore;
 	protected $_iaDb;
 
@@ -38,6 +41,7 @@ abstract class iaAbstractControllerBackend
 
 	protected $_gridColumns;
 	protected $_gridFilters;
+	protected $_gridQueryMainTableAlias = '';
 
 	protected $_entryId = 0;
 
@@ -62,9 +66,11 @@ abstract class iaAbstractControllerBackend
 		$this->_iaCore = iaCore::instance();
 		$this->_iaDb = &$this->_iaCore->iaDb;
 
+		$this->_gridQueryMainTableAlias = empty($this->_gridQueryMainTableAlias) ? '' : $this->_gridQueryMainTableAlias . '.';
+
 		$this->_iaCore->factory('util');
 
-		$this->_table || $this->_table = $this->getName();
+		$this->_table || $this->setTable($this->getName());
 		$this->_path = IA_ADMIN_URL . $this->getName() . IA_URL_DELIMITER;
 		$this->_template = $this->getName();
 	}
@@ -136,7 +142,7 @@ abstract class iaAbstractControllerBackend
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 						}
 
-						$entry = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($this->_entryId));
+						$entry = $this->getById($this->_entryId);
 						if (empty($entry))
 						{
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
@@ -278,6 +284,11 @@ abstract class iaAbstractControllerBackend
 		return $this->_entryId;
 	}
 
+	public function getById($id)
+	{
+		return $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
+	}
+
 	public function getTable()
 	{
 		return $this->_table;
@@ -305,7 +316,7 @@ abstract class iaAbstractControllerBackend
 
 		$dir = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $params['dir'] : iaDb::ORDER_ASC;
 		$order = (isset($params['sort']) && $params['sort'] && $dir)
-			? ' ORDER BY `' . $params['sort'] . '` ' . $dir
+			? ' ORDER BY ' . $this->_gridQueryMainTableAlias . '`' . $params['sort'] . '` ' . $dir
 			: '';
 
 		$conditions = $values = array();
@@ -313,22 +324,21 @@ abstract class iaAbstractControllerBackend
 		{
 			if (isset($params[$name]) && $params[$name])
 			{
-				$value = iaSanitize::sql($params[$name]);
+				$value = $params[$name];
 
-				switch ($type)
-				{
-					case 'equal':
-						$conditions[] = sprintf('`%s` = :%s', $name, $name);
+				switch ($type) {
+					case self::EQUAL:
+						$conditions[] = sprintf('%s`%s` = :%s', $this->_gridQueryMainTableAlias, $name, $name);
 						$values[$name] = $value;
 						break;
-					case 'like':
-						$conditions[] = sprintf('`%s` LIKE :%s', $name, $name);
+					case self::LIKE:
+						$conditions[] = sprintf('%s`%s` LIKE :%s', $this->_gridQueryMainTableAlias, $name, $name);
 						$values[$name] = '%' . $value . '%';
 				}
 			}
 		}
 
-		$this->_modifyGridParams($conditions, $values);
+		$this->_modifyGridParams($conditions, $values, $params);
 
 		$conditions || $conditions[] = iaDb::EMPTY_CONDITION;
 		$conditions = implode(' AND ', $conditions);
@@ -455,7 +465,7 @@ abstract class iaAbstractControllerBackend
 			{
 				$result .= is_int($key)
 					? '`' . $field . '`'
-					: sprintf('%s `%s`', is_numeric($field) ? $field : '`' . $field . '`', $key);
+					: sprintf('%s `%s`', is_numeric($field) ? $field : $this->_gridQueryMainTableAlias . '`' . $field . '`', $key);
 				$result .= ', ';
 			}
 
@@ -477,7 +487,7 @@ abstract class iaAbstractControllerBackend
 	}
 
 	// to be overloaded if required to modify the DB query params
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
 
 	}
@@ -578,9 +588,9 @@ abstract class iaAbstractControllerBackend
 		$iaView->assign('goto', $options);
 	}
 
-	protected function _setPageTitle(&$iaView)
+	protected function _setPageTitle(&$iaView, array $entryData, $action)
 	{
-		$phraseKey = $iaView->get('action') . '_' . substr($this->getName(), 0, -1);
+		$phraseKey = $action . '_' . substr($this->getName(), 0, -1);
 
 		$iaView->title(iaLanguage::get($phraseKey, $iaView->title()));
 	}

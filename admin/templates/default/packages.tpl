@@ -5,14 +5,14 @@
 		<div class="media">
 			{if isset($package.preview) && count($package.preview) > 0}
 				{foreach $package.preview as $preview}
-					<a class="pull-left" href="{$smarty.const.IA_CLEAR_URL}packages/{$package.name}/docs/screenshots/{$preview.name}" rel="ia_lightbox[{$package.name}]" title="{$package.title}">
+					<a class="pull-left" href="{$smarty.const.IA_CLEAR_URL}packages/{$package.name}/docs/img/{$preview.name}" rel="ia_lightbox[{$package.name}]" title="{$package.title}">
 						<img title="{$preview.title}" class="media-object" src="{$nonProtocolUrl}packages/{$package.name}/docs/img/icon.png">
 					</a>
 				{/foreach}
 				<div class="screenshots hidden">
 					{foreach $package.screenshots as $screenshot}
-						<a rel="ia_lightbox[{$package.name}]" title="{$package.title}. {$screenshot.title}" href="{$smarty.const.IA_CLEAR_URL}packages/{$package.name}/docs/screenshots/{$screenshot.name}">
-							<img width="150" height="150" src="{$nonProtocolUrl}packages/{$package.name}/docs/screenshots/{$screenshot.name}">
+						<a rel="ia_lightbox[{$package.name}]" title="{$package.title}. {$screenshot.title}" href="{$smarty.const.IA_CLEAR_URL}packages/{$package.name}/docs/img/{$screenshot.name}">
+							<img width="150" height="150" src="{$nonProtocolUrl}packages/{$package.name}/docs/img/{$screenshot.name}">
 						</a>
 					{/foreach}
 				</div>

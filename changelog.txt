@@ -372,3 +372,53 @@
 	+ Feature #1803: Add iaDb::replace() method
 	+ Feature #1814: Recurring payments
 	+ Feature #1815: Permissions filters
+
+>> From 3.2.0 to 3.2.1 <<
+
+	- Bug #681: Fix payment redirect issue
+	- Bug #894: "Re-declare class" fatal error during payment process.
+	- Bug #1511: incorrect table extraction for PHP 5.2
+	- Bug #1760: Sponsored status when plan disabled
+	- Bug #1794: Email-template: member created at...
+	- Bug #1797: Block name is not used when a block is created
+	- Bug #1819: Fix installer styles
+	- Bug #1822: Image field: title generated improperly
+	- Bug #1824: Smarty permissions
+	- Bug #1838: Missing tips for field types
+	- Bug #1839: Image field: no dimension properties
+	- Bug #1841: Incorrect method called on payment cancellation
+	- Bug #1842: Fields edit issues
+	- Bug #1843: Pay from account balance is displayed for visitor
+	- Bug #1844: Multiple functions with the same functionality
+	- Bug #1845: Incorrect params passed
+	- Bug #1846: Incorrect response code returned
+	- Bug #1848: Package pages section is reset
+	- Bug #1857: Avatar does not display on member details page
+	+ Feature #1817: Add title for edit menu title popup
+	+ Feature #1852: Store payment email & fullname
+	+ Feature #1855: Create well designed error pages
+	+ Feature #1856: Improve postPayment routine
+	+ Feature #1860: Method to extract meta keywords
+
+>> From 3.2.1 to 3.2.2 <<
+
+	- Bug #1862: Get rid of screenshots folder in packages
+	- Bug #1869: Better styles for lists in plugins/templates docs
+	- Bug #1872: Delete cached plugins list
+	- Bug #1876: Error notice when applying a patch which does not contain SQL queries
+	- Bug #1884: Usergroup value is not saved
+	- Bug #1896: Statistics block
+	- Bug #1902: Backend: inconsistent plans list when trying to manually add transaction
+	- Bug #1903: Payment gateway is not removed from gateways list when removing corresponding plugin
+	- Bug #1906: Vulnerability issue
+	- Bug #1907: Images with non UTF chars cannot be saved
+	- Bug #1910: Incorrect address link of 'Additional Info' button of any template in Admin Panel
+	- Bug #1912: Package upgrade issues
+	- Bug #1918: Plugin link is still active when a plugin is disabled
+	+ Feature #1691: Grid: add an ability to pre-set sorting column and direction
+	+ Feature #1863: Display last logged in date
+	+ Feature #1868: No real need for email templates in JS
+	+ Feature #1897: Plugin installation improvements
+	+ Feature #1898: Extension improvements
+	+ Feature #1916: Improve member filter
+	+ Feature #1917: Usergroups filter on Members page

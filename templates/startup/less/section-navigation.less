@@ -1,5 +1,100 @@
 
 //
+// Inventory
+// --------------------------------------------------
+
+.inventory {
+  background: @inventoryBg;
+  padding: 10px 0;
+}
+
+.nav-inventory {
+  list-style-type: none;
+  margin: 0 0 0 30px;
+  padding: 0;
+  .clearfix();
+  float: right;
+
+  > li {
+    margin: 0;
+    float: left;
+
+    > a {
+      display: block;
+      margin-left: 14px;
+      line-height: 30px;
+      color: @inventoryLinkColor;
+
+      &:hover,
+      &:active {
+        color: @inventoryLinkHoverColor;
+      }
+    }
+
+    &.active {
+
+      > a,
+      > a:hover,
+      > a:active {
+        color: @inventoryLinkActiveColor;
+        text-decoration: none;
+      }
+    }
+  }
+
+  &--langs {
+    float: left;
+    margin: 0 30px 0 0;
+
+    > li {
+
+      > a {
+        margin-left: 0;
+        margin-right: 14px;
+      }
+    }
+  }
+}
+
+.nav-search {
+  float: right;
+  margin: 0 0 0 44px;
+  padding: 0;
+
+  .control-group {
+    margin: 0;
+    position: relative;
+  }
+
+  input {
+    padding-right: 30px;
+    border-color: transparent;
+    .box-shadow(none);
+    background: lighten(@inventoryBg, 8%);
+    .border-radius(@baseBorderRadius);
+
+    &:focus {
+      border-color: transparent;
+      background: #fff;
+    }
+  }
+
+  button {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    margin: -10px 5px 0 0;
+    color: lighten(@inventoryBg, 35%);
+    border: 0 none;
+    background: none;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+  }
+}
+
+
+//
 // Navigation
 //
 // see responsive-navbar.less for nav-bar styles on 
@@ -25,7 +120,7 @@
     > a {
       text-transform: uppercase;
       text-decoration: none;
-      margin: 0 20px 0 0;
+      margin: 0 10px;
       padding: 0;
       line-height: @navMainHeight;
       color: @navMainLinkColor;
@@ -59,6 +154,37 @@
         border-top-color: @navMainLinkHoverColor;
         border-bottom-color: @navMainLinkHoverColor;
       }
+    }
+
+    .dropdown-menu {
+      margin-top: -25px;
+      .transition(all .3s ease-in-out);
+      .opacity(0);
+      display: block;
+      visibility: hidden;
+      left: 50%;
+      width: 200px;
+      margin-left: -100px;
+      border-top: 3px solid @baseDarkColor;
+
+      &:before {
+        content: '';
+        display: inline-block;
+        border-left:   7px solid transparent;
+        border-right:  7px solid transparent;
+        border-bottom: 8px solid @baseDarkColor;
+        border-bottom-color: @baseDarkColor;
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        margin-left: -4px;
+      }
+    }
+
+    &.open .dropdown-menu {
+      .opacity(100);
+      margin-top: -20px;
+      visibility: visible;
     }
   }
 }
@@ -141,6 +267,11 @@
     }
   }
 
+  > a:active,
+  > a:focus {
+    outline: 0 none;
+  }
+
   .caret {
     margin-top: 14px;
     margin-left: 5px;
@@ -167,14 +298,40 @@
   }
 
   &__menu {
-    margin-top: 6px;
+    &.dropdown-menu {
+      margin-top: 0;
+      .transition(all .3s ease-in-out);
+      .opacity(0);
+      display: block;
+      visibility: hidden;
+      left: 50%;
+      width: 200px;
+      margin-left: -100px;
+      border-top: 3px solid @baseDarkColor;
 
-    border: 0 none;
-    .border-radius(@baseBorderRadius);
+      &:before {
+        content: '';
+        display: inline-block;
+        border-left:   7px solid transparent;
+        border-right:  7px solid transparent;
+        border-bottom: 8px solid @baseDarkColor;
+        border-bottom-color: @baseDarkColor;
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        margin-left: -4px;
+      }
+    }
 
     ul {
       margin: 0;
     }
+  }
+
+  &.open .dropdown-menu {
+    .opacity(100);
+    margin-top: 5px;
+    visibility: visible;
   }
 }
 
@@ -201,36 +358,6 @@
   padding-top: 0;
   padding-bottom: 0;
   .box-shadow(0 0 10px rgba(0,0,0,.3));
-}
-
-// search form in navbar
-.nav-search {
-  float: right;
-  margin: 0;
-  line-height: @navMainHeight - 1;
-  padding: 0;
-
-  .control-group {
-    margin: 0;
-    position: relative;
-  }
-
-  input {
-    padding-right: 30px;
-  }
-
-  button {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    margin: -10px 5px 0 0;
-    color: @linkColor;
-    border: 0 none;
-    background: none;
-    width: 20px;
-    height: 20px;
-    padding: 0;
-  }
 }
 
 // toggler for collapsed main nav

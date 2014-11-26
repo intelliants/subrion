@@ -342,6 +342,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaView->assign('group', $groupData);
 		$iaView->assign('params', $params);
+		$iaView->assign('tooltips', iaLanguage::getTooltips());
 		$iaView->assign('url_custom', $customUrl);
 	}
 

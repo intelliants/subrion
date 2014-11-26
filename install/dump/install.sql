@@ -436,6 +436,16 @@ CREATE TABLE `{install:prefix}payment_gateways` (
 	UNIQUE KEY `NAME` (`name`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_gateways_ipn_log`;
+CREATE TABLE `{install:prefix}payment_gateways_ipn_log` (
+  `id` int(11) unsigned NOT NULL auto_increment,
+  `date` datetime NOT NULL,
+  `gateway` varchar(50) NOT NULL,
+  `data` text,
+  `result` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_plans`;
 CREATE TABLE IF NOT EXISTS `{install:prefix}payment_plans` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
@@ -457,10 +467,35 @@ CREATE TABLE IF NOT EXISTS `{install:prefix}payment_plans` (
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_subscriptions`;
 CREATE TABLE `{install:prefix}payment_subscriptions` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
+  `date_created` datetime,
+  `date_next_payment` datetime,
   `reference_id` varchar(64) default NULL,
   `member_id` int(11) unsigned NOT NULL,
   `plan_id` smallint(5) unsigned NOT NULL,
-  `status` enum('active','pending','canceled','failed') NOT NULL,
+  `status` enum('active','pending','suspended','canceled','failed','completed') NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `REFERENCE` (`reference_id`)
+) {install:db_options};
+
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_transactions`;
+CREATE TABLE `{install:prefix}payment_transactions` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `member_id` int(11) unsigned NOT NULL,
+  `subscription_id` int(10) unsigned default NULL,
+  `plan_id` smallint(5) unsigned NOT NULL,
+  `reference_id` varchar(64) NOT NULL,
+  `item` varchar(30) NOT NULL,
+  `item_id` int(11) unsigned NOT NULL,
+  `fullname` varchar(100) NOT NULL,
+  `email` varchar(200) NOT NULL,
+  `date` datetime NOT NULL,
+  `amount` decimal(10,2) unsigned NOT NULL,
+  `currency` varchar(3) NOT NULL,
+  `status` enum('pending','passed','failed','refunded') NOT NULL default 'pending',
+  `operation` varchar(100) NOT NULL,
+  `gateway` varchar(50) NOT NULL,
+  `sec_key` varchar(14) NOT NULL,
+  `return_url` tinytext NOT NULL,
   PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -480,26 +515,6 @@ CREATE TABLE `{install:prefix}search` (
 	`query` varchar(200) NOT NULL,
 	`terms` text,
 	`time` int(10) NOT NULL,
-	PRIMARY KEY (`id`)
-) {install:db_options};
-
-{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}transactions`;
-CREATE TABLE `{install:prefix}transactions` (
-	`id` int(10) unsigned NOT NULL auto_increment,
-	`member_id` int(11) unsigned NOT NULL,
-  `subscription_id` int(10) unsigned default NULL,
-  `plan_id` smallint(5) unsigned NOT NULL,
-  `reference_id` varchar(64) NOT NULL,
-  `item` varchar(30) NOT NULL,
-  `item_id` int(11) unsigned NOT NULL,
-	`date` datetime NOT NULL,
-	`amount` decimal(10,2) unsigned NOT NULL,
-  `currency` varchar(3) NOT NULL,
-	`status` enum('pending','passed','failed','refunded') NOT NULL default 'pending',
-	`operation` varchar(100) NOT NULL,
-	`gateway` varchar(50) NOT NULL,
-	`sec_key` varchar(14) NOT NULL,
-	`return_url` tinytext NOT NULL,
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -662,10 +677,14 @@ INSERT INTO `{install:prefix}blocks` VALUES
 (3,'Main Menu','main','',0,'mainmenu','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','','0',0,'',''),
 (4,'Member Menu','account','',0,'right','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','','0',0,'',''),
 (5,'Bottom Menu','bottom','',0,'copyright','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','','0',0,'',''),
-(6,'Statistics','common_statistics','{foreach $common_statistics as $group => $data}\r\n	<table class="table table-condensed table-striped statistics">\r\n	<thead>\r\n		<tr>\r\n			<th colspan="2">{lang key=$group}</th>\r\n		</tr>\r\n	</thead>\r\n	<tbody>\r\n	{foreach $data as $item}\r\n		<tr>\r\n			<td>{$item.title}:</td>\r\n			<td>{$item.value}</td>\r\n		</tr>\r\n	{/foreach}\r\n	</tbody>\r\n	<tfoot>\r\n	{foreach $data as $item}\r\n		{if isset($item.html)}\r\n		<tr>\r\n			<td colspan="2"><div class="user-list">{$item.html}</div></td>\r\n		</tr>\r\n		{/if}\r\n	{/foreach}\r\n	</tfoot>\r\n	</table>\r\n{/foreach}',2,'right','smarty','','active',1,0,0,0,'',1,'','','',0,0,'','');
+(6,'Statistics','common_statistics','',1,'right','smarty','','active',1,0,0,0,'',1,'','','block.common-statistics.tpl',1,0,'',''),
+(7,'Members filter','members_filter','',1,'right','smarty','','active',1,0,0,0,'',1,'','','block.members-filter.tpl',1,0,'','');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
-('blocks','index',6, 1);
+('blocks','',6, 0),
+('blocks','index',6, 1),
+('blocks','',7, 0),
+('blocks','members',7, 1);
 
 INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`private`) VALUES
 ('debug_pass','','hidden','Debug password',1),
@@ -758,33 +777,34 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('system','compress_js','0','''1'',''0''','radio',0,'Compress Javascript',36,'',0,0,''),
 
 ('email_templates','members_optgroup','','','divider',0,'Members',0,'',1,1,''),
-('email_templates','member_approved','1','''1'',''0''','radio',0,'Member Approval',1,'',1,1,''),
+('email_templates','member_approved','1','''1'',''0''','radio',0,'Member approval',1,'',1,1,''),
 ('email_templates','member_approved_subject','Member was approved at {%SITE_NAME%}',null,'text',0,'',17,'',1,1,''),
 ('email_templates','member_approved_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was approved in {%SITE_NAME%}. Now you can log in.</p>','fullname|User','textarea',0,'',18,'',1,1,''),
-('email_templates','member_disapproved','1','''1'',''0''','radio',0,'Member Cancellation',2,'',1,1,''),
+('email_templates','member_disapproved','1','''1'',''0''','radio',0,'Member cancellation',2,'',1,1,''),
 ('email_templates','member_disapproved_subject','Member was disapproved at {%SITE_NAME%}',null,'text',0,'',21,'',1,1,''),
 ('email_templates','member_disapproved_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was disapproved in {%SITE_NAME%}.</p>','fullname|User','textarea',0,'',22,'',1,1,''),
-('email_templates','member_registration','1','''1'',''0''','radio',0,'Member Registration',3,'',1,1,''),
+('email_templates','member_registration','1','''1'',''0''','radio',0,'Member registration',3,'',1,1,''),
 ('email_templates','member_registration_subject','Thanks for registration at {%SITE_NAME%}',null,'text',0,'',3,'',1,1,''),
 ('email_templates','member_registration_body','<p>Dear {%FULLNAME%},</p> <p>Thanks for your registration at <a href="{%SITE_URL%}" target="_blank">{%SITE_URL%}</a>. Here is information you should use in order to login:</p> <p>Your e-mail: {%EMAIL%}<br /> Your password: {%PASSWORD%}</p> <p>To activate your account, please, <a href="{%LINK%}" target="_blank">follow this link</a>. <br /> You may change your password later by editing your personal attributes in your member area.</p>','fullname|User,email|Email,password|Password,link|Confirmation link','textarea',0,'',3,'',1,1,''),
+('email_templates','member_registration_notification','1','''1'',''0''','radio',0,'Member created by admin',3,'',1,1,''),
 ('email_templates','member_registration_notification_subject','Member has been created {%SITE_NAME%}',null,'text',0,'',4,'',1,1,''),
 ('email_templates','member_registration_notification_body','<p>Greetings {%FULLNAME%},</p> <p>Administrator has just created an account for you at {%SITE_URL%}. Here is information you should use in order to login:</p> <p>Your email: <b>{%EMAIL%}</b><br /> Your password: <b>{%PASSWORD%}</b></p>','fullname|User,email|Email,password|Password','textarea',0,'',4,'',1,1,''),
-('email_templates','member_registration_admin','1','''1'',''0''','radio',0,'Administrator\'s Notification on Member Registration',3,'',1,1,''),
+('email_templates','member_registration_admin','1','''1'',''0''','radio',0,'Administrator\'s notification on member registration',3,'',1,1,''),
 ('email_templates','member_registration_admin_subject','New member registered at {%SITE_NAME%}',null,'text',0,'',4,'',1,1,''),
 ('email_templates','member_registration_admin_body','<p>Greetings,</p><p>New member registered at {%SITE_URL%}. Detailed information is below:</p> <p>ID: <b>{%ID%}</b><br>Name: <b>{%FULLNAME%}</b> ({%USERNAME%})<br>Email: <b>{%EMAIL%}</b></p>','id|ID,fullname|User,username|Username,email|User email','textarea',0,'',4,'',1,1,''),
-('email_templates','member_removal','1','''1'',''0''','radio',0,'Member Removal',4,'',1,1,''),
+('email_templates','member_removal','1','''1'',''0''','radio',0,'Member removal',4,'',1,1,''),
 ('email_templates','member_removal_subject','Member deleted at {%SITE_NAME%}',null,'text',0,'',5,'',1,1,''),
 ('email_templates','member_removal_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was removed from  {%SITE_URL%}.</p>','fullname|User','textarea',0,'',8,'',1,1,''),
-('email_templates','password_restoration','1','''1'',''0''','radio',0,'Member Password Restoration',6,'',1,1,''),
+('email_templates','password_restoration','1','''1'',''0''','radio',0,'Member password restoration',6,'',1,1,''),
 ('email_templates','password_restoration_subject','Password restoration request at {%SITE_NAME%}',null,'text',0,'',10,'',1,1,''),
 ('email_templates','password_restoration_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Please follow this link if you wish to change the password at {%SITE_URL%}:<br />\r\n{%URL%}\r\n</p>\r\n<p>\r\nOr use confirmation code on page: {%SITE_URL%}forgot/?code<br />\r\nE-mail: {%EMAIL%}<br />\r\nCode: {%CODE%}\r\n</p>','fullname|User,email|Email,code|Restoration code','textarea',0,'',11,'',1,1,''),
-('email_templates','password_changement','1','''1'',''0''','radio',0,'Member Password Change',7,'',1,1,''),
+('email_templates','password_changement','1','''1'',''0''','radio',0,'Member password change',7,'',1,1,''),
 ('email_templates','password_changement_subject','Password change request at {%SITE_NAME%}',null,'text',0,'',13,'',1,1,''),
 ('email_templates','password_changement_body','<p>Dear {%FULLNAME%},</p>\r\n\r\n<p>You requested a password change in {%SITE_NAME%}. Now you should use the following credentials to log in as member:</p>\r\n\r\n<p>username: {%USERNAME%}<br />\r\npassword:  {%PASSWORD%}</p>','fullname|User,username|Username,password|New password','textarea',0,'',14,'',1,1,''),
 ('email_templates','payments_optgroup','','','divider',0,'Payments',50,'',1,1,''),
-('email_templates','payment_completion_admin','1','''1'',''0''','radio',0,'Administrator\'s Notification on Payment Completion',55,'',1,1,''),
+('email_templates','payment_completion_admin','1','''1'',''0''','radio',0,'Administrator\'s notification on payment completion',55,'',1,1,''),
 ('email_templates','payment_completion_admin_subject','Payment completed at {%SITE_NAME%}',null,'text',0,'',0,'',1,1,''),
-('email_templates','payment_completion_admin_body','<p>Dear Administrator,</p>\r\n<p>A payment has been completed on your site. Here is the details:</p><ul><li><b>Username:</b> {%USERNAME%}</li><li><b>Amount:</b> {%AMOUNT%}</li><li><b>Operation:</b> {%OPERATION%}</li></ul>','username|User,amount|Amount of transaction,operation|Operation name','textarea',0,'',8,'',1,1,'');
+('email_templates','payment_completion_admin_body','<p>Dear Administrator,</p>\r\n<p>A payment has been completed on your site. Here is the information on the payment:</p><ul><li><b>Username:</b> {%USERNAME%}</li><li><b>Amount:</b> {%AMOUNT%}</li><li><b>Operation:</b> {%OPERATION%}</li></ul>','username|User,amount|Amount of transaction,operation|Operation name','textarea',0,'',8,'',1,1,'');
 
 INSERT INTO `{install:prefix}config_groups` (`name`,`title`,`order`) VALUES
 ('general','General',1),
@@ -1062,8 +1082,9 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('core_and_db_versions_mismatch','DB and core files versions mismatch.','admin'),
 ('cost','Cost','admin'),
 ('created','Created.','admin'),
+('created_date','Created date','admin'),
 ('crop','Crop','admin'),
-('crop_tip','The mod will attempt to fit the image inside the "frame" create by the width and height arguments.','admin'),
+('crop_tip','The mod will attempt to fit the image inside the \"frame\" created by the width and height arguments.','admin'),
 ('css_class_name','CSS class name','admin'),
 ('csv_format','CSV format','admin'),
 ('current_home_page','Current homepage','admin'),
@@ -1099,12 +1120,13 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('edit_member','Edit Member','admin'),
 ('edit_menu','Edit Menu','admin'),
 ('edit_page','Edit Page','admin'),
+('edit_page_title','Edit page title','admin'),
 ('edit_plan','Edit Plan','admin'),
 ('edit_phrases','Edit Phrases','admin'),
 ('email_templates','Email Templates','admin'),
-('empty','-empty-','admin'),
 ('email_templates_tags','Email Template Tags','admin'),
 ('email_templates_tags_info','You can use these tags in your email templates. They will be changed to real information while sending email templates. Click will paste it to template body.','admin'),
+('empty','-empty-','admin'),
 ('empty_field','Empty field text','admin'),
 ('enable_no_follow','Enable No-Follow','admin'),
 ('enable_template_sending','Enable sending','admin'),
@@ -1173,10 +1195,15 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_type_textarea','Multiline Textarea','admin'),
 ('field_type_url','URL Text Input','admin'),
 ('field_type_tip_checkbox','This field allows multiple values selection.','admin'),
+('field_type_tip_combo','This field will be displayed as dropdown select box.','admin'),
 ('field_type_tip_date','This field adds calendar control to set the date.','admin'),
 ('field_type_tip_image','This field value will be displayed as an image.','admin'),
 ('field_type_tip_number','This field can be searched by interval on Advanced Search page. Two inputs are created to set start and end values.','admin'),
 ('field_type_tip_pictures','This field is displayed as a gallery of images. Lightbox display is used on View Item page.','admin'),
+('field_type_tip_radio','This field is displayed as multiple radio buttons.','admin'),
+('field_type_tip_storage','This field is displayed as upload input.','admin'),
+('field_type_tip_text','This field is displayed as one line text field.','admin'),
+('field_type_tip_textarea','This field is displayed as multiline text box.','admin'),
 ('field_type_tip_url','This field value will be displayed as a hyperlink.','admin'),
 ('field_type_invalid','Field type is invalid.','admin'),
 ('fields','Fields','admin'),
@@ -1299,6 +1326,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('name_is_incorrect','Name is incorrect.','admin'),
 ('new_language','New Language','admin'),
 ('new_password','New password','admin'),
+('next_payment_date','Next payment date','admin'),
 ('no_blocks','There are no blocks.','admin'),
 ('no_captcha_preview','No captcha preview.','admin'),
 ('no_extension','No extension','admin'),
@@ -1624,11 +1652,11 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('featured_status_finished_date_is_empty','Listing has been marked as featured, but no finished date was specified.','common'),
 
 ('field__annotation','please upload only image files','common'),
+('field_amount','Amount','common'),
 ('field_member_id','Member username','common'),
 ('field_avatar','Avatar','common'),
 ('field_avatar_annotation','Please upload image files only','common'),
 ('field_category_id_annotation','Select a category from the list','common'),
-('field_cost','cost','common'),
 ('field_currency','Currency code','common'),
 ('field_date','Date','common'),
 ('field_description','Description','common'),
@@ -1674,6 +1702,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('language','Language','common'),
 ('languages','Languages','common'),
+('last_login_date','Logged in','common'),
 ('listings','Listings','common'),
 ('loading','Loading ...','common'),
 ('locked','Locked','common'),
@@ -1796,6 +1825,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('active_users','Active Users','frontend'),
 ('advanced','Advanced','frontend'),
+('all_groups','All groups','frontend'),
 ('amount_incorrect','Please input correct amount.','frontend'),
 ('amount_less_min','Please input a greater amount.','frontend'),
 ('are_you_sure_to_cancel_invoice','Are you sure you want to cancel your invoice?','frontend'),
@@ -1835,6 +1865,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('forgot','Forgot password?','frontend'),
 ('forgot_annotation', "Don't remember your login information? We all forget &mdash; no worries. Please enter your e-mail address below and we will send your login credentials.",'frontend'),
 
+('group_filter','Group filter','frontend'),
 ('guest','Guest','frontend'),
 ('guests','Guests','frontend'),
 
@@ -1860,7 +1891,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('no_funds','Your balance is empty.','frontend'),
 ('no_favorites','You have not added any favorite items.','frontend'),
 ('no_gateway','You have not installed any payment gateway plugin.','frontend'),
-('no_members','No members. <a href=\"registration/\">Click here</a> to create new one.','frontend'),
+('no_members','No members found that match specified params.','frontend'),
 ('no_transaction','Sorry, no such transaction.','frontend'),
 ('no_transactions_records','You do not have any payment records in your history.','frontend'),
 

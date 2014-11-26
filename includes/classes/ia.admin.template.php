@@ -636,7 +636,7 @@ class iaTemplate extends abstractCore
 						$entryId = $iaDb->one(iaDb::ID_COLUMN_SELECTION, $stmt, $tableName);
 
 						$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
-						$iaBlock->setVisiblePages($entryId, $pagesList);
+						$iaBlock->setVisiblePages($entryId, $pagesList, (bool)$changeset['sticky']);
 					}
 				}
 			}

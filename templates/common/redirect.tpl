@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{$config.lang}">
 	<head>
 		<title>{ia_print_title title=$pageTitle}</title>
 		<meta http-equiv="Content-Type" content="text/html;charset={$config.charset}">
@@ -30,10 +30,10 @@
 		</div>
 
 		{ia_add_js}
-			$(function()
-			{
-				setTimeout("location.href = '{$redirect_url}'", {$config.redirect_time|default:4000});
-			});
+$(function()
+{
+	setTimeout("location.href = '{$redirect_url}'", {$config.redirect_time|default:4000});
+});
 		{/ia_add_js}
 
 		{ia_print_js files='jquery/jquery' order='0' display='on'}

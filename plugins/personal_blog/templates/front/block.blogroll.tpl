@@ -11,7 +11,7 @@
 						<a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{printImage imgfile=$one_blog_entry.image alt=$one_blog_entry.title}</a>
 						<div class="info">
 							<h3><a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{$one_blog_entry.title|truncate:25:'...'}</a></h3>
-							<p class="date">{$one_blog_entry.date|date_format:$config.date_format}</p>
+							<p class="date">{$one_blog_entry.date_added|date_format:$config.date_format}</p>
 						</div>
 					{else}
 						<div class="info">
