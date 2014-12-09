@@ -60,26 +60,14 @@ class iaSanitize extends abstractUtil
 	/**
 	 * Converts special characters to HTML entities
 	 *
-	 * @param mixed $string text to be converted
+	 * @param string $string text to be converted
 	 * @param int $mode mode
 	 *
 	 * @return array|string
 	 */
 	public static function html($string, $mode = ENT_QUOTES)
 	{
-		if (is_array($string))
-		{
-			foreach ($string as $key => $value)
-			{
-				$string[$key] = self::html($value);
-			}
-		}
-		else
-		{
-			$string = htmlspecialchars($string, $mode);
-		}
-
-		return $string;
+		return htmlspecialchars($string, $mode, iaCore::instance()->get('charset'));
 	}
 
 	/**
@@ -104,7 +92,7 @@ class iaSanitize extends abstractUtil
 	 */
 	public static function paranoid($string)
 	{
-		return preg_replace('/[^a-z_0-9]/i', '', $string);
+		return preg_replace('#[^a-z_0-9]#i', '', $string);
 	}
 
 	/*
@@ -124,7 +112,7 @@ class iaSanitize extends abstractUtil
 		iaUtil::loadUTF8Functions();
 
 		// Strip HTML and BB codes
-		$pattern = '/(\[\w+[^\]]*?\]|\[\/\w+\]|<\w+[^>]*?>|<\/\w+>)/i';
+		$pattern = '#(\[\w+[^\]]*?\]|\[\/\w+\]|<\w+[^>]*?>|<\/\w+>)#i';
 		$text = preg_replace($pattern, '', $text);
 
 		// remove repeated spaces and new lines
@@ -167,7 +155,7 @@ class iaSanitize extends abstractUtil
 		{
 			if (iaCore::instance()->get('alias_urlencode', false))
 			{
-				$string = preg_replace('/[^0-9\\p{L}]+/ui', $separator, $string);
+				$string = preg_replace('#[^0-9\\p{L}]+#ui', $separator, $string);
 
 				$urlEncoded = true;
 			}
@@ -177,22 +165,22 @@ class iaSanitize extends abstractUtil
 			}
 		}
 
-		$string = $urlEncoded ? $string : preg_replace('/[^a-z0-9_]+/i', $separator, $string);
+		$string = $urlEncoded ? $string : preg_replace('#[^a-z0-9_]+#i', $separator, $string);
 		$string = trim($string, $separator);
 
 		return $string;
 	}
 
 	/**
-	 * Filters against email header injection
+	 * Filters against HTML injection
 	 *
-	 * @param string $name
+	 * @param string $url
 	 *
 	 * @return mixed
 	 */
-	public static function headerInjectionFilter($name)
+	public static function urlInjectionFilter($url)
 	{
-		return preg_replace("/(?:%0A|%0D|\n+|\r+)(?:content-type:|to:|cc:|bcc:)/i", "", $name);
+		return str_replace(array('<', '>', '"', "'", '&'), '', $url);
 	}
 
 	/**

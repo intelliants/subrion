@@ -14,7 +14,7 @@
 						{/if}
 					{/if}
 
-					{if isset($category.crossed) && $category.crossed}@&nbsp;{/if}<a href="{ia_url type='url' item=$item data=$category}">{$category.title}</a>
+					{if isset($category.crossed) && $category.crossed}@&nbsp;{/if}<a href="{ia_url type='url' item=$item data=$category}">{$category.title|escape:'html'}</a>
 					{if isset($show_amount) && $show_amount}
 						&mdash; {$category.num|default:0}
 					{/if}

@@ -43,16 +43,10 @@ class iaPlan extends abstractCore
 	const UNIT_YEAR = 'year';
 
 	protected static $_table = 'payment_plans';
-	protected $_tableSubscriptions = 'payment_subscriptions';
 
 	protected $_item;
 	protected $_plans = array();
 
-
-	public function getTableSubscriptions()
-	{
-		return $this->_tableSubscriptions;
-	}
 
 	/**
 	 * Payment pre-processing actions
@@ -266,13 +260,6 @@ class iaPlan extends abstractCore
 		$this->_runClassMethod($item, self::METHOD_POST_PAYMENT, array($plan, $transaction));
 
 		return $result;
-	}
-
-	public function createSubscription()
-	{
-		$entry = array();
-
-		return $this->iaDb->insert($entry, null, $this->getTableSubscriptions());
 	}
 
 	private function _calculateDates($duration, $unit)

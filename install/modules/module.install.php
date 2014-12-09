@@ -24,8 +24,8 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '3.2.2');
-define('IA_VER', '322');
+define('IA_VERSION', '3.2.3');
+define('IA_VER', '323');
 
 $error = false;
 $message = '';

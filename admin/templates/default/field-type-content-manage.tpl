@@ -89,7 +89,7 @@ $('.textcounter_{$varname}').wrap('<p class="help-block text-right">').addClass(
 					</a>
 
 					<div class="caption">
-						<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$value.path}',this,'{$field.item}','{$varname}','{$id}')"><i class="i-remove-sign"></i></a>
+						<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$value.path}',this,'{$field.item}','{$varname}','{$item.id}')"><i class="i-remove-sign"></i></a>
 					</div>
 				</div>
 
@@ -110,13 +110,13 @@ $('.textcounter_{$varname}').wrap('<p class="help-block text-right">').addClass(
 									<input type="text" name="{$varname}_title[]" value="{$entry.title|escape:'html'}" class="js-edit-picture-title" id="{$varname}_{$entry@index}">
 								</div>
 
-								{if empty($id)}
+								{if empty($item.id)}
 									<input type="hidden" name="{$varname}[{$i}][title]" value="{$entry.title|escape:'html'}">
 									<input type="hidden" name="{$varname}[{$i}][path]" value="{$entry.path}">
 								{/if}
 
 								<div class="caption text-center">
-									<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><i class=" i-remove-sign"></i></a>
+									<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$item.id|default:''}')"><i class=" i-remove-sign"></i></a>
 								</div>
 							</div>
 						</div>

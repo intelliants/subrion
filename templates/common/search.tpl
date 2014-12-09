@@ -1,4 +1,4 @@
-<form method="post" action="{$smarty.const.IA_SELF}" class="form-inline ia-form page__search">
+<form method="post" class="form-inline ia-form page__search">
 	{preventCsrf}
 
 	<div class="search-bar">

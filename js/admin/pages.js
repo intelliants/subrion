@@ -3,14 +3,13 @@ intelli.pagesUrl = intelli.config.admin_url + '/pages/';
 function fillUrlBox()
 {
 	var externalUrl = $('#unique').prop('checked');
-	var customUrl = $('#custom_url').val();
-	var name = $('input[name="name"]').val();
+	var customUrl = $('#input-custom-url').val();
+	var name = $('#input-name').val();
 
 	var params = {
-		get: 'url',
 		name: name,
-		url: $('input[name="alias"]').val(),
-		parent: $('#js-field-parent').val(),
+		url: $('#input-alias').val(),
+		parent: $('#input-parent').val(),
 		ext: $('input[name="extension"]').val()
 	};
 
@@ -26,7 +25,7 @@ function fillUrlBox()
 
 function sendQuery(params)
 {
-	$.get(intelli.pagesUrl + 'read.json', params, function(response)
+	$.get(intelli.pagesUrl + 'url.json', params, function(response)
 	{
 		var $placeholder = $('.text-danger', '#js-alias-placeholder');
 		if ('string' == typeof response.url)
@@ -36,7 +35,7 @@ function sendQuery(params)
 				.fadeIn();
 
 			response.exists
-				? $placeholder.append('<div class="alert alert-info" id="js-exist-url-alert">' + _t('custom_url_exist') + '</div>')
+				? $placeholder.append('<div class="alert alert-info" id="js-exist-url-alert">' + _t('page_alias_exists') + '</div>')
 				: $('#js-exist-url-alert').remove();
 		}
 		else
@@ -50,7 +49,7 @@ Ext.onReady(function()
 {
 	if (Ext.get('js-grid-placeholder'))
 	{
-		intelli.pages = new IntelliGrid(
+		var grid = new IntelliGrid(
 		{
 			columns: [
 				'selection',
@@ -70,9 +69,9 @@ Ext.onReady(function()
 			{
 				delete_single: _t('are_you_sure_to_delete_this_page'),
 				delete_multiple: _t('are_you_sure_to_delete_selected_pages')
-			},
+			}
 		}, false);
-		intelli.pages.toolbar = new Ext.Toolbar({items:[
+		grid.toolbar = new Ext.Toolbar({items:[
 		{
 			emptyText: _t('name'),
 			xtype: 'textfield',
@@ -83,22 +82,22 @@ Ext.onReady(function()
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
-			store: intelli.gridHelper.store.ajax(intelli.pagesUrl + 'read.json?get=plugins'),
+			store: intelli.gridHelper.store.ajax(window.location + 'plugins.json'),
 			displayField: 'title',
 			name: 'extras',
 			valueField: 'value'
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.pages)},
+			handler: function(){intelli.gridHelper.search(grid)},
 			id: 'fltBtn',
 			text: '<i class="i-search"></i> ' + _t('search')
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.pages, true)},
+			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
 
-		intelli.pages.init();
+		grid.init();
 
-		intelli.pages.grid.getView().getRowClass = function(record, rowIndex, rowParams, store)
+		grid.grid.getView().getRowClass = function(record, rowIndex, rowParams, store)
 		{
 			if (1 == record.get('default'))
 			{
@@ -108,81 +107,78 @@ Ext.onReady(function()
 			return '';
 		}
 	}
-	else
-	{
-		$('#js-delete-page').on('click', function()
-		{
-			Ext.Msg.confirm(_t('confirm'), _t('are_you_sure_to_delete_this_page'), function(btn, text)
-			{
-				if (btn == 'yes')
-				{
-					$.ajax(
-					{
-						data: {'id[]': $('input[name="id"]').val()},
-						dataType: 'json',
-						failure: function()
-						{
-							Ext.MessageBox.alert(_t('error'));
-						},
-						type: 'POST',
-						url: intelli.pagesUrl + 'delete.json',
-						success: function(response)
-						{
-							if ('boolean' == typeof response.result && response.result)
-							{
-								intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error'});
-								document.location = intelli.pagesUrl;
-							}
-						}
-					});
-				}
-			});
-		});
-	}
 });
 
 $(function()
 {
+	$('#js-delete-page').on('click', function()
+	{
+		Ext.Msg.confirm(_t('confirm'), _t('are_you_sure_to_delete_this_page'), function(btn, text)
+		{
+			if (btn == 'yes')
+			{
+				$.ajax(
+				{
+					data: {'id[]': $('input[name="id"]').val()},
+					dataType: 'json',
+					failure: function()
+					{
+						Ext.MessageBox.alert(_t('error'));
+					},
+					type: 'POST',
+					url: intelli.pagesUrl + 'delete.json',
+					success: function(response)
+					{
+						if ('boolean' == typeof response.result && response.result)
+						{
+							intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error'});
+							document.location = intelli.pagesUrl;
+						}
+					}
+				});
+			}
+		});
+	});
+
 	$('input[name="preview"]').on('click', function()
 	{
 		$('#page_form').attr('target', '_blank');
-		$('#js-csrf-protection-code').val($('input[name="prevent_csrf"]:first', '#csrf_for_preview').val());
 	});
 
 	$('input[name="save"]').on('click', function(e)
 	{
 		$('#page_form').removeAttr('target');
-		$('#js-csrf-protection-code').val($('input[name="prevent_csrf"]:first', '#csrf_for_save').val());
 	});
 
 	$('input[name="unique"]').on('change', function()
 	{
-		var obj = $('input[name="preview"]');
-		this.value == 1 ? obj.hide() : obj.show();
+		var isRemoteUrl = (1 == this.value);
 
-		if ($.trim($('input[name="name"]').val()).length > 0)
+		if ($.trim($('#input-name').val()).length > 0)
 		{
 			fillUrlBox();
 		}
 
-		var display = (1 == $(this).val()) ? 'none' : 'block';
+		var $obj = $('.js-local-url-field');
+		isRemoteUrl ? $obj.hide() : $obj.show();
 
-		$('#url_field').css('display', (display == 'block' ? 'none' : 'block'));
-		$('#ckeditor, #page_options').css('display', display);
+		$obj = $('#js-field-remote-url');
+		isRemoteUrl ? $obj.show() : $obj.hide();
 	}).trigger('change');
 
-	$('input[name="name"], input[name="alias"]').on('blur', fillUrlBox);
-	$('#js-field-parent').on('change', fillUrlBox);
+	$('#input-name, #input-alias').on('blur', fillUrlBox);
+	$('#input-parent').on('change', fillUrlBox);
 
 	// Page content language tabs
-	$('a[data-toggle="tab"]', '#ckeditor').on('shown.bs.tab', function(e)
+	$('a[data-toggle="tab"]', '#js-content-fields').on('shown.bs.tab', function()
 	{
-		CKEDITOR.instances['contents['+$(this).text()+']']
-			|| intelli.ckeditor('contents['+$(this).text()+']', {toolbar: 'Extended'});
+		var lngCode = $(this).data('language');
+		CKEDITOR.instances['contents['+lngCode+']']
+			|| intelli.ckeditor('contents['+lngCode+']', {toolbar: 'Extended'});
 
-		$('#js-active-language').val($(this).data('language'));
+		$('#js-active-language').val(lngCode);
 	});
-	$('a[data-toggle="tab"]:first', '#ckeditor').trigger('shown.bs.tab');
+	$('a[data-toggle="tab"]:first', '#js-content-fields').trigger('shown.bs.tab');
 
 	// page extension dropdown
 	$('a', '#js-page-extension-list').on('click', function(e)

@@ -115,21 +115,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _setDefaultValues(array &$entry)
 	{
-		$entry['status'] = iaCore::STATUS_ACTIVE;
-		$entry['collapsed'] = false;
+		$entry = array(
+			'status' => iaCore::STATUS_ACTIVE,
+			'collapsed' => false,
+			'pages' => array()
+		);
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$sql =
-			'SELECT DISTINCTROW p.*, IF(t.`value` IS NULL, p.`name`, t.`value`) `title` '
-			. 'FROM `' . $this->_iaDb->prefix . 'pages` p '
-			. 'LEFT JOIN `' . $this->_iaDb->prefix . 'language` t '
-				. "ON (`key` = CONCAT('page_title_', p.`name`) AND t.`code` = '" . $iaView->language . "') "
-			. "WHERE p.`status` = 'active' AND p.`service` = 0 "
-			. 'ORDER BY t.`value`';
-
-		$pages = $this->_iaDb->getAll($sql);
 		$groupList = $this->_iaDb->onefield('`group`', '1 = 1 GROUP BY `group`', null, null, 'pages');
 
 		$this->_iaDb->setTable('admin_pages_groups');
@@ -161,19 +155,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 
 			$menuPages = $this->_iaDb->onefield('`name`', "FIND_IN_SET('{$entryData['name']}', `menus`)", null, null, 'pages');
-			$visibleOn = $this->_iaDb->onefield('page_name', "`object_type` = 'blocks' && " . iaDb::convertIds($this->getEntryId(), 'object'), 0, null, iaBlock::getPagesTable());
 		}
-		else
-		{
-			$visibleOn = isset($_POST['visible_on_pages']) ? $_POST['visible_on_pages'] : array();
-		}
-
-		$iaView->assign('menuPages', $menuPages);
-		$iaView->assign('pagesGroup', $pagesGroups);
-		$iaView->assign('pages', $pages);
-		$iaView->assign('positions', $this->getHelper()->getPositions());
-		$iaView->assign('types', $this->getHelper()->getTypes());
-		$iaView->assign('visibleOn', $visibleOn);
 
 		isset($entryData['type']) || $entryData['type'] = iaBlock::TYPE_PLAIN;
 		isset($entryData['header']) || $entryData['header'] = true;
@@ -182,8 +164,13 @@ class iaBackendController extends iaAbstractControllerBackend
 		isset($entryData['sticky']) || $entryData['sticky'] = true;
 		isset($entryData['external']) || $entryData['external'] = false;
 		empty($entryData['subpages']) || $entryData['subpages'] = unserialize($entryData['subpages']);
+		isset($entryData['pages']) || $entryData['pages'] = $this->_iaDb->onefield('page_name', "`object_type` = 'blocks' && " . iaDb::convertIds($this->getEntryId(), 'object'), 0, null, iaBlock::getPagesTable());
 
-		$iaView->add_js('ckeditor/ckeditor, admin/blocks');
+		$iaView->assign('menuPages', $menuPages);
+		$iaView->assign('pagesGroup', $pagesGroups);
+		$iaView->assign('pages', $this->_getPagesList($iaView->language));
+		$iaView->assign('positions', $this->getHelper()->getPositions());
+		$iaView->assign('types', $this->getHelper()->getTypes());
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
@@ -224,7 +211,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['sticky'] = (int)$data['sticky'];
 		$entry['external'] = (int)$data['external'];
 		$entry['filename'] = $data['filename'];
-		$entry['visible_on_pages'] = isset($data['visible_on_pages']) ? $data['visible_on_pages'] : array();
+		$entry['pages'] = isset($data['pages']) ? $data['pages'] : array();
 
 		if ($entry['multi_language'])
 		{
@@ -339,5 +326,18 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return $output;
+	}
+
+	private function _getPagesList($languageCode)
+	{
+		$sql =
+			'SELECT DISTINCTROW p.*, IF(t.`value` IS NULL, p.`name`, t.`value`) `title` '
+			. 'FROM `' . $this->_iaDb->prefix . 'pages` p '
+			. 'LEFT JOIN `' . $this->_iaDb->prefix . 'language` t '
+			. "ON (`key` = CONCAT('page_title_', p.`name`) AND t.`code` = '" . $languageCode . "') "
+			. "WHERE p.`status` = 'active' AND p.`service` = 0 "
+			. 'ORDER BY t.`value`';
+
+		return $this->_iaDb->getAll($sql);
 	}
 }

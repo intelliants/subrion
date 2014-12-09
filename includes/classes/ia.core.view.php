@@ -142,6 +142,8 @@ class iaView extends abstractUtil
 				$this->iaSmarty->addTemplateDir(IA_TEMPLATES . 'common' . IA_DS);
 			}
 
+			Smarty::$_CHARSET = $this->iaCore->get('charset');
+
 			$this->iaSmarty->setCompileDir($compileDir);
 			$this->iaSmarty->setCacheDir(IA_TMP . 'smartycache' . IA_DS);
 			$this->iaSmarty->setPluginsDir(array(IA_SMARTY . 'plugins', IA_SMARTY . 'intelli_plugins'));

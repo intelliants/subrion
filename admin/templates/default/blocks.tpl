@@ -126,7 +126,7 @@
 				</div>
 			</div>
 
-			<div class="row" id="acos">
+			<div class="row" id="js-pages-list">
 				<label class="col col-lg-2 control-label"></label>
 
 				<div class="col col-lg-8">
@@ -154,7 +154,7 @@
 											{if $page.group == $group}
 												<div class="checkbox">
 													<label>
-														<input type="checkbox" name="visible_on_pages[]" class="{$classname}" value="{$page.name}" id="page_{$key}"{if in_array($page.name, $visibleOn, true)} checked{/if}> {$page.title}
+														<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}" id="page_{$key}"{if in_array($page.name, $item.pages)} checked{/if}> {$page.title|escape:'html'}
 													</label>
 												</div>
 												{if $page.suburl}
@@ -169,7 +169,7 @@
 
 							<div class="checkbox checkbox-all">
 								<label>
-									<input type="checkbox" value="1" name="select_all" id="select_all"{if isset($smarty.post.select_all) && $smarty.post.select_all == '1'} checked{/if}> {lang key='select_all'}
+									<input type="checkbox" value="1" name="select_all" id="js-pages-select-all"{if isset($smarty.post.select_all) && $smarty.post.select_all == '1'} checked{/if}> {lang key='select_all'}
 								</label>
 							</div>
 						{/if}

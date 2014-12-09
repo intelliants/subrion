@@ -28,6 +28,7 @@ Ext.onReady(function()
 			],
 			expanderTemplate: '<pre style="font-size: 0.9em">{contents}</pre>',
 			fields: ['contents'],
+			sorters: [{property: 'title'}],
 			texts: {delete_single: _t('are_you_sure_to_delete_this_block')}
 		}, false);
 
@@ -82,11 +83,11 @@ Ext.onReady(function()
 	else
 	{
 		var $multiLanguage = $('#multi_language');
-		$multiLanguage.change(function()
+		$multiLanguage.on('change', function()
 		{
-			var _thisVal = $(this).val();
-			var checked = false;
-			var type = $('#block_type').val();
+			var _thisVal = $(this).val(),
+				checked = false,
+				type = $('#block_type').val();
 
 			if (_thisVal == 0 && (type == 'php' || type == 'smarty'))
 			{
@@ -95,8 +96,7 @@ Ext.onReady(function()
 
 			if (_thisVal == 1)
 			{
-				$('#languages').hide();
-				$('#blocks_contents_multi').hide();
+				$('#languages, #blocks_contents_multi').hide();
 				$('#blocks_contents').show();
 
 				if ('html' != $('#block_type').val() && CKEDITOR.instances.multi_contents)
@@ -107,8 +107,7 @@ Ext.onReady(function()
 			else
 			{
 				checked = true;
-				$('#languages').show();
-				$('#blocks_contents_multi').show();
+				$('#languages, #blocks_contents_multi').show();
 				$('#blocks_contents').hide();
 				if ('html' == type)
 				{
@@ -130,14 +129,12 @@ Ext.onReady(function()
 			}
 			$('input.block_languages').each(function()
 			{
-				checked ? $(this).prop('checked', true) : $(this).prop('checked', false);
+				$(this).prop('checked', checked);
 				initContentBox({lang: $(this).val(), checked: checked});
 			});
 		}).change();
 
-
 		// Block visibility
-
 		$('#sticky').on('change', function()
 		{
 			var $this = $(this);
@@ -276,41 +273,33 @@ Ext.onReady(function()
 		});
 */
 
-		var pagesCount = $('#acos input[name^="visible_on_pages"]').length;
-		var selectedPagesCount = $("#acos input[name^='visible_on_pages']:checked").length;
+		var pagesCount = $('input[name^="pages"]', '#js-pages-list').length;
+		var selectedPagesCount = $('input[name^="pages"]:checked', '#js-pages-list').length;
 
 		if (selectedPagesCount > 0 && pagesCount == selectedPagesCount)
 		{
-			$('#select_all').prop('checked', true).click();
+			$('#js-pages-select-all').prop('checked', true).click();
 		}
 
-		$('input[name^="visible_on_pages"]', '#acos').click(function()
+		$('input[name^="pages"]', '#js-pages-list').on('click', function()
 		{
-			var checked = (pagesCount == $("input[name^='visible_on_pages']:checked", '#acos').length) ? 'checked' : '';
+			var checked = (pagesCount == $('input[name^="pages"]:checked', '#js-pages-list').length);
+			$('#js-pages-select-all').prop('checked', checked);
 		});
 
-		$('#select_all').click(function()
+		$('#js-pages-select-all').on('click', function()
 		{
-			var obj = $('input[type="checkbox"]', '#acos');
-
-			$(this).prop('checked') ? obj.prop('checked', true) : obj.prop('checked', false);
-			obj.change();
+			$('input[type="checkbox"]', '#js-pages-list').prop('checked', $(this).prop('checked')).change();
 		});
 
-		$('#all_pages').click(function()
+		$('#all_pages').on('click', function()
 		{
-			var obj = $('input[type="checkbox"]', '#pages');
-
-			$(this).prop('checked') ? obj.prop('checked', true) : obj.prop('checked', false);
-			obj.change();
+			$('input[type="checkbox"]', '#pages').prop('checked', $(this).prop('checked')).change();
 		});
 
-		$('#acos input[name^="select_all_"], input[name^="all_pages_"]').click(function()
+		$('input[name^="select_all_"], input[name^="all_pages_"]', '#js-pages-list').on('click', function()
 		{
-			var group = $('input.' + $(this).data('group'));
-
-			$(this).is(':checked') ? group.prop('checked', true) : group.prop('checked', false);
-			group.change();
+			$('input.' + $(this).data('group')).prop('checked', $(this).is(':checked')).change();
 		});
 
 		$('#header').on('change', function()
@@ -338,13 +327,12 @@ Ext.onReady(function()
 			initContentBox({lang: $(this).val(), checked: $(this).prop('checked')})
 		});
 
-		$('#select_all_languages').click(function()
+		$('#select_all_languages').on('click', function()
 		{
-			var checked = $(this).prop('checked') ? true : false;
+			var checked = $(this).prop('checked');
 			$('input.block_languages').each(function()
 			{
-				checked ? $(this).prop('checked', true) : $(this).prop('checked', false);
-				$(this).change();
+				$(this).prop('checked', checked).change();
 			});
 		});
 
@@ -353,9 +341,9 @@ Ext.onReady(function()
 			$('#select_all_languages').prop('checked', true);
 		}
 
-		var last = '';
-		var last_multi = false;
-		$('#block_type').change(function()
+		var last = '', last_multi = false;
+
+		$('#block_type').on('change', function()
 		{
 			$('#pages').hide();
 			var type = $(this).val();
@@ -366,7 +354,7 @@ Ext.onReady(function()
 			{
 				$('textarea.js-ckeditor').each(function()
 				{
-					intelli.ckeditor($(this).attr("id"), {toolbar: 'Extended', height: '400px'});
+					intelli.ckeditor($(this).attr('id'), {toolbar: 'Extended', height: '400px'});
 				});
 			}
 			else
@@ -408,27 +396,24 @@ Ext.onReady(function()
 
 				last_multi = false;
 
-				$('#external_file_row').hide();
-				$('#external_filename').hide();
+				$('#external_file_row, #external_filename').hide();
 				$('input[name="external"]').val(0);
 			}
 			else
 			{
-				$multiLanguage.parents('tr').show();
-				$multiLanguage.change();
+				$multiLanguage.parents('tr').show().change();
 
-				$('#external_file_row').hide();
-				$('#external_filename').hide();
+				$('#external_file_row, #external_filename').hide();
 				$('input[name="external"]').val(0);
 			}
 
 			$('p[id^="type_tip_"]').hide();
-			$("#type_tip_" + type).show();
+			$('#type_tip_' + type).show();
 			last = $(this).val();
 		}).change();
 	}
 
-	$('#js-delete-block').click(function()
+	$('#js-delete-block').on('click', function()
 	{
 		Ext.Msg.confirm(_t('confirm'), _t('are_you_sure_to_delete_this_block'), function(btn, text)
 		{

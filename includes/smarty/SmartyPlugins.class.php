@@ -1016,7 +1016,7 @@ class iaSmartyPlugins extends Smarty
 
 		$limit = $params['aItemsPerPage'];
 		$total = $params['aTotal'];
-		$ignoreParams = isset($params['aIgnore']) ? (bool)$params['aIgnore'] : false;
+		$ignoreParams = isset($params['aIgnore']);
 
 		if ($total > $limit)
 		{
@@ -1032,17 +1032,17 @@ class iaSmartyPlugins extends Smarty
 			$urlPattern = $params['aTemplate'];
 			foreach (range($first, $last) as $pageNumber)
 			{
-				if (false == $ignoreParams)
+				if (!$ignoreParams)
 				{
 					$url = str_replace('{page}', $pageNumber, $urlPattern);
 				}
 
 				if (1 == $pageNumber)
 				{
-					$url = true == $ignoreParams ? $urlPattern : preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern);
+					$url = $ignoreParams ? $urlPattern : preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern);
 				}
 				
-				if (true == $ignoreParams)
+				if ($ignoreParams)
 				{
 					$url = str_replace('{page}', $pageNumber, $urlPattern);
 				}
@@ -1052,7 +1052,7 @@ class iaSmartyPlugins extends Smarty
 
 			$params = array(
 				'current_page' => $currentPage,
-				'first_page' => true == $ignoreParams ? $urlPattern : preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern),
+				'first_page' => $ignoreParams ? $urlPattern : preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern),
 				'last_page' => str_replace('{page}', $pagesCount, $urlPattern),
 				'pages_count' => $pagesCount,
 				'pages_range' => $pages

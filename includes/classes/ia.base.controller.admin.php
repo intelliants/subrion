@@ -201,7 +201,7 @@ abstract class iaAbstractControllerBackend
 		return true;
 	}
 
-	protected function _postSaveEntry(array $entry, array $data, $action)
+	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 
 	}
@@ -464,7 +464,7 @@ abstract class iaAbstractControllerBackend
 			foreach ($this->_gridColumns as $key => $field)
 			{
 				$result .= is_int($key)
-					? '`' . $field . '`'
+					? $this->_gridQueryMainTableAlias . '`' . $field . '`'
 					: sprintf('%s `%s`', is_numeric($field) ? $field : $this->_gridQueryMainTableAlias . '`' . $field . '`', $key);
 				$result .= ', ';
 			}

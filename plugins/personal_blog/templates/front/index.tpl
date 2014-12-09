@@ -33,7 +33,7 @@
 						<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}">{$blog_entry.title}</a>
 					</h4>
 					<p class="ia-item-date">{lang key='posted_on'} {$blog_entry.date_added|date_format:$config.date_format}</p>
-					<div class="ia-item-body">{$blog_entry.body|strip_tags:false|truncate:$config.blog_max:'...'}</div>
+					<div class="ia-item-body">{$blog_entry.body|strip_tags|truncate:$config.blog_max:'...'}</div>
 				</div>
 			</div>
 			{/foreach}

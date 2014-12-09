@@ -616,7 +616,7 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 
 INSERT INTO `{install:prefix}admin_pages` (`group`,`title`,`name`,`action`,`parent`,`filename`,`alias`,`menus`,`attr`,`order`) VALUES
 (0,'Dashboard','index','read','','index','','menu',null,0),
-(0,'Actions','actions','read','','actions','',null,null,0),
+(0,'Actions','actions','read','','actions','actions/',null,null,0),
 (0,'Clear Cache','clear_cache','cache','index','index','clear/cache/','header',null,35),
 (0,'','','','','','','header',null,20),
 (0,'MySQL Tools','adminer','read','','adminer','adminer/','header',null,25),
@@ -681,10 +681,10 @@ INSERT INTO `{install:prefix}blocks` VALUES
 (7,'Members filter','members_filter','',1,'right','smarty','','active',1,0,0,0,'',1,'','','block.members-filter.tpl',1,0,'','');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
-('blocks','',6, 0),
-('blocks','index',6, 1),
-('blocks','',7, 0),
-('blocks','members',7, 1);
+('blocks','',6,0),
+('blocks','index',6,1),
+('blocks','',7,0),
+('blocks','members',7,1);
 
 INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`private`) VALUES
 ('debug_pass','','hidden','Debug password',1),
@@ -760,7 +760,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('mail','mimetype','1','''1'',''0''','radio',0,'Send HTML mime-type emails instead of plain text',3,'',1,0,''),
 
 ('system','admin_panel_config_divider','Admin Panel Settings','1','divider',0,'',1,'',1,0,''),
-('system','admin_online_expiry_time','180','','text',0,'Session expire time (in minutes)',2,'',1,0,''),
+--('system','session_length','180','','text',0,'Session length',2,'',1,0,''),
 ('system','display_feedbacks','1','''1'',''0''','radio',0,'Feedbacks panel display',3,'',0,0,''),
 ('system','display_changelog','1','''1'',''0''','radio',0,'Changelog panel display',4,'',0,0,''),
 ('system','display_twitter','1','''1'',''0''','hidden',0,'Twitter in Dashboard',5,'',0,0,''),
@@ -912,7 +912,7 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (2,'terms',0,0,'terms/',0,'page','','',''),
 (2,'help',0,0,'help/',0,'page','','',''),
 (2,'advertise',0,0,'advertise/',0,'page','','','');
-UPDATE `{install:prefix}pages` SET `status` = 'active', `last_updated` = NOW();
+UPDATE `{install:prefix}pages` SET `status`='active',`last_updated`=NOW();
 
 INSERT INTO `{install:prefix}usergroups` (`id`,`title`,`system`) VALUES
 (1,'Administrators',1),
@@ -1084,12 +1084,11 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('created','Created.','admin'),
 ('created_date','Created date','admin'),
 ('crop','Crop','admin'),
-('crop_tip','The mod will attempt to fit the image inside the \"frame\" created by the width and height arguments.','admin'),
+('crop_tip','The mod will attempt to fit the image inside the &quot;frame&quot; created by the width and height arguments.','admin'),
 ('css_class_name','CSS class name','admin'),
 ('csv_format','CSV format','admin'),
 ('current_home_page','Current homepage','admin'),
 ('custom','Custom','admin'),
-('custom_url_exist','Custom URL already exist.','admin'),
 ('custom_perm','Custom Permissions','admin'),
 ('custom_modification','Custom Modification','admin'),
 ('custom_url','Custom URL','admin'),
@@ -1213,7 +1212,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('file_doesnt_exist','File does not exist.','admin'),
 ('file_format','File format','admin'),
 ('file_prefix','File Prefix','admin'),
-('filename_notification','The filename field should contain a full path to the file started with the folder name stored in the script\'s root folder.<br />Example: <b>templates/common/block_file.tpl</b>','admin'),
+('filename_notification','<b>For templates:</b> type just a name of your TPL file and place this file in your active template folder or common templates folder.<br />Example: <code>block_file.tpl</code><br><b>For plugins:</b> TPL file should be placed in plugins\' templates folder.<br />Example: <code>plugins:plugin_name:block_file.tpl</code><br><b>For packages:</b> TPL file should be placed in packages\' templates folder.<br />Example: <code>autos:block_file.tpl</code>','admin'),
 ('fit','Fit','admin'),
 ('fit_tip','This mode attempts to resize an image proportionally in case it does not fit inner frame dimensions set by the administrator. If it fits the dimensions, an image will not be resized at all.','admin'),
 ('for_plan_only','For plans only','admin'),
@@ -1275,8 +1274,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('just_now','just now','admin'),
 
 ('key_exists','The phrase with similar key already exists.','admin'),
-('key_not_valid','Key is not valid only alphanumeric and underscore characters allowed.','admin'),
-('key_parameter_is_empty','The :key parameter is empty.','admin'),
+('key_not_valid','Key is invalid. Only alphanumeric and underscore characters allowed.','admin'),
 
 ('lang_incorrect','Please choose correct language.','admin'),
 ('language_already_exists','Language already exists.','admin'),
@@ -1363,6 +1361,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('owner_is_not_specified','Owner is not specified.','admin'),
 
 ('page_added','Page added.','admin'),
+('page_alias_exists','Page URL already exists.','admin'),
 ('page_content','Page Content','admin'),
 ('page_exists','Page with specified URL already exists. Please change URL.','admin'),
 ('page_external_url','Page External URL','admin'),
@@ -1527,7 +1526,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('upgrade','Upgrade','admin'),
 ('upgrades','Upgrades','admin'),
 ('url_nofollow','Enable nofollow attribute','admin'),
-('use_as_home_page','Use as your homepage','admin'),
+('use_as_home_page','Use as the homepage','admin'),
 ('use_custom_signature','Use custom signature','admin'),
 ('use_editor','Use WYSIWYG editor','admin'),
 ('username_already_taken','Username already taken.','admin'),
@@ -1541,7 +1540,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('view_as_tab','View as tab','admin'),
 ('view_roadmap','Development Roadmap','admin'),
 ('visible_for_admin','Visible for admin only','admin'),
-('visible_on_pages','Visible on pages','admin'),
 ('visual_manage','Visual Manage Mode','admin'),
 
 ('warning_fields_become_for_plan_only','Warning! If you check these fields they will be displayed for sponsored plans only.','admin'),
@@ -1678,7 +1676,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('fieldgroup_description_members_general','','common'),
 ('file_click_to_upload','Click Browse to upload file','common'),
 ('file_type_error','Files with ":extension" extension are only allowed.','common'),
-('file_types', "Allowed file types (comma separated values (don't include point), example: pdf, doc, odf, mov)",'common'),
+('file_types',"Allowed file types (comma separated values (don't include point), example: pdf, doc, odf, mov)",'common'),
 ('filename','Filename','common'),
 
 ('gateway','Gateway','common'),
@@ -1863,7 +1861,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_required','<span class=\"note\">[Required]</span>','frontend'),
 ('first','First','frontend'),
 ('forgot','Forgot password?','frontend'),
-('forgot_annotation', "Don't remember your login information? We all forget &mdash; no worries. Please enter your e-mail address below and we will send your login credentials.",'frontend'),
+('forgot_annotation',"Don't remember your login information? We all forget &mdash; no worries. Please enter your e-mail address below and we will send your login credentials.",'frontend'),
 
 ('group_filter','Group filter','frontend'),
 ('guest','Guest','frontend'),
@@ -1914,7 +1912,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('payment_details','Payment details','frontend'),
 ('payment_done','Thank you for your payment. Your transaction has been completed.','frontend'),
 ('payment_date','Payment Date','frontend'),
-('payment_redirect_message', "You will be automatically redirected to the item's page in :seconds. If you do not want to wait click the button below:",'frontend'),
+('payment_redirect_message',"You will be automatically redirected to the item's page in :seconds. If you do not want to wait click the button below:",'frontend'),
 ('payment_status','Payment status','frontend'),
 ('pictures','Pictures','frontend'),
 ('powered_by_subrion','Powered by <a href="http://www.subrion.org" title="Open Source CMS">Subrion CMS</a>','frontend'),
@@ -1976,12 +1974,12 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('youre_in_preview_mode','You are in preview mode. <a href="?preview_exit=y">Exit</a>','frontend');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
-('page_content_about', "<p>Page 'About Us' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
-('page_content_advertise', "<p>Page 'Advertise Us' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
+('page_content_about',"<p>Page 'About Us' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
+('page_content_advertise',"<p>Page 'Advertise Us' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
 ('page_content_help','<p>Help page content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>','page'),
 ('page_content_index','<p>Subrion is a new PHP content management system and it can be used for building both simple and enterprise-level sites. It includes an extensive plugin system that makes Subrion CMS extremely flexible and easy to use. There are several packages that can be used separately or together on one site. They are: article publishing script, auto classifieds package, realty classifieds script, and web directory package.</p><p>Subrion CMS is constantly being improved. If you have any feature requests you are welcome to post them in <a href=\"http://www.subrion.org/forums/\">Subrion CMS Support Forums</a>. Thanks for choosing Subrion Content Management System!</p>','page'),
-('page_content_policy', "<p>Page 'Privacy Policy' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
-('page_content_terms', "<p>Page 'Terms Of Use' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
+('page_content_policy',"<p>Page 'Privacy Policy' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
+('page_content_terms',"<p>Page 'Terms Of Use' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
 
 ('page_title_about','About Us','page'),
 ('page_title_members','Members','page'),
@@ -2004,6 +2002,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_view_member','Member Details','page');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
+('alias_urlencode','Non-Latin (non-utf8) characters are encoded into special entities instead of being romanized.','tooltip'),
 ('adminonly','The field will only be displayed in Admin Dashboard.','tooltip'),
 
 ('backup','Folder name where your DB backups are saved.','tooltip'),
@@ -2033,10 +2032,10 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('required_checks','This PHP code validates the field value when Required Field is ON. Please make sure you use correct code.','tooltip'),
 
 ('searchable','Specifies if the field is available to search by on Advanced Search page.','tooltip'),
+--('session_length','Length of user session in minutes','tooltip'),
 ('site','This will be your site name.','tooltip'),
 ('site_email','Email address you wish to get member changes and notifications sent to.','tooltip'),
 ('smarty_cache','Forces the template engine to rebuild the cache on every request. Increases the server load. It should only be used for debugging purposes.','tooltip'),
-('alias_urlencode','Non-Latin (non-utf8) characters are encoded into special entities instead of being romanized.','tooltip'),
 ('smtp_password','Password for the username above.','tooltip'),
 ('smtp_server','That would be Ex. (smtp.yourdomain.com)','tooltip'),
 ('smtp_user','Username is usually specified with your email/hosting provider.','tooltip'),
@@ -2048,4 +2047,4 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('upgrade_available','Upgrade patch to version :version is available. In order to upgrade please <a href=":url">follow this link</a>.','admin'),
 ('usergroup_assignable','Member can assign to the group himself.','tooltip');
 
-UPDATE `{install:prefix}language` SET `code` = '{install:lang}', `original` = `value`;
+UPDATE `{install:prefix}language` SET `code`='{install:lang}',`original`=`value`;

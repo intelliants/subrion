@@ -129,7 +129,7 @@
 											{if $page.group == $group}
 											<div class="checkbox">
 												<label>
-													<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $visibleOn, true)} checked{/if}>
+													<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $visibleOn)} checked{/if}>
 													{if empty($page.title)}{$page.name}{else}{$page.title}{/if}
 
 													{if $page.suburl}

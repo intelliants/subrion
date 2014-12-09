@@ -46,6 +46,11 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		$this->setHelper($iaBlog);
 	}
 
+	protected function _indexPage(&$iaView)
+	{
+		$iaView->grid('_IA_URL_plugins/' . $this->getPluginName() . '/js/admin/index');
+	}
+
 	protected function _modifyGridParams(&$conditions, &$values)
 	{
 		if (!empty($_GET['text']))

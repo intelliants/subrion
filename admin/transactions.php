@@ -183,7 +183,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		if (!empty($params['username']))
 		{
-			$conditions[] = 'a.`username` LIKE :username';
+			$conditions[] = 'm.`username` LIKE :username';
 			$values['username'] = '%' . $params['username'] . '%';
 		}
 		if (!empty($params['status']))

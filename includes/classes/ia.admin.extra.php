@@ -72,7 +72,7 @@ class iaExtra extends abstractCore
 		$this->iaCore->factory('acl');
 	}
 
-	protected function _setDefaultValues()
+	protected function _resetValues()
 	{
 		$this->itemData = array(
 			'type' => self::TYPE_PLUGIN,
@@ -142,7 +142,7 @@ class iaExtra extends abstractCore
 
 	public function parse($quickMode = false)
 	{
-		$this->_setDefaultValues();
+		$this->_resetValues();
 		$this->_quickParseMode = $quickMode;
 
 		require_once IA_INCLUDES . 'xml' . IA_DS . 'xml_saxy_parser.php';
@@ -435,13 +435,13 @@ class iaExtra extends abstractCore
 		{
 			$iaDb->setTable('admin_pages_groups');
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 
 			foreach ($this->itemData['groups'] as $block)
 			{
 				$iaDb->exists("`extras` = '{$this->itemData['name']}' AND `name` = '{$block['name']}'")
 					? $iaDb->update($block, "`extras` = '{$this->itemData['name']}' AND `name` = '{$block['name']}'")
-					: $iaDb->insert($block, array('order' => $maxOrder++));
+					: $iaDb->insert($block, array('order' => ++$maxOrder));
 			}
 
 			$iaDb->resetTable();
@@ -477,7 +477,7 @@ class iaExtra extends abstractCore
 				$fieldGroups[$row['item']][$row['name']] = $row['id'];
 			}
 
-			$maxOrder = $iaDb->getMaxOrder('fields') + 1;
+			$maxOrder = $iaDb->getMaxOrder('fields');
 
 			foreach ($itemFields as $item)
 			{
@@ -486,7 +486,7 @@ class iaExtra extends abstractCore
 					continue;
 				}
 
-				$item['order'] || $item['order'] = $maxOrder++;
+				$item['order'] || $item['order'] = ++$maxOrder;
 				$item['fieldgroup_id'] = isset($fieldGroups[$item['item']][$item['group']])
 					? $fieldGroups[$item['item']][$item['group']]
 					: 0;
@@ -605,11 +605,11 @@ class iaExtra extends abstractCore
 			$iaDb->setTable(iaCore::getConfigGroupsTable());
 			$iaDb->delete("`extras` = '{$this->itemData['name']}'");
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 
 			foreach ($this->itemData['config_groups'] as $config)
 			{
-				$iaDb->insert($config, array('order' => $maxOrder++));
+				$iaDb->insert($config, array('order' => ++$maxOrder));
 			}
 
 			$iaDb->resetTable();
@@ -638,7 +638,7 @@ class iaExtra extends abstractCore
 		{
 			$iaDb->setTable('config');
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 
 			foreach ($this->itemData['config'] as $config)
 			{
@@ -652,7 +652,7 @@ class iaExtra extends abstractCore
 				}
 				else
 				{
-					$iaDb->insert($config, array('order' => $maxOrder++));
+					$iaDb->insert($config, array('order' => ++$maxOrder));
 				}
 			}
 
@@ -665,27 +665,38 @@ class iaExtra extends abstractCore
 		{
 			$iaDb->setTable('pages');
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 
 			foreach ($this->itemData['pages']['front'] as $page)
 			{
 				if ($page['blocks'])
 				{
-					$blocks = $iaDb->keyvalue(array('name', 'id'), "`name` IN ('" . implode("','", $page['blocks']) . "')", 'blocks', 0, 1);
+					$blocks = $iaDb->keyvalue(array('name', 'id'), "`name` IN ('" . implode("','", $page['blocks']) . "')", iaBlock::getTable(), 0, 1);
 					foreach ($blocks as $blockId)
 					{
 						$iaDb->insert(array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => $page['name']), null, 'objects_pages');
 					}
 				}
-				unset($page['blocks'], $page['title']);
 
-				if (!is_int($page['group']))
-				{
-					$page['group'] = $this->_lookupGroupId($page['group']);
-				}
+				is_int($page['group']) || $page['group'] = $this->_lookupGroupId($page['group']);
+
 				if (!$iaDb->exists("`name` = '{$page['name']}' AND `extras` = '{$this->itemData['name']}'"))
 				{
-					$iaDb->insert($page, array('order' => $maxOrder++));
+					// insert titles
+					if (isset($page['title']) && $page['title'])
+					{
+						foreach ($this->iaCore->languages as $code => $value)
+						{
+							iaLanguage::addPhrase('page_title_' . $page['name'], $page['title'], $code, $this->itemData['name'], iaLanguage::CATEGORY_PAGE, false);
+						}
+					}
+
+					unset($page['blocks'], $page['title']);
+
+					$page['last_updated'] = date(iaDb::DATETIME_FORMAT);
+					$page['order'] = ++$maxOrder;
+
+					$iaDb->insert($page);
 				}
 			}
 
@@ -694,46 +705,21 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['blocks'])
 		{
-			$iaDb->setTable('blocks');
-
-			$maxOrder = $iaDb->getMaxOrder() + 1;
-			$version = $this->_getVersion();
-
 			foreach ($this->itemData['blocks'] as $block)
 			{
-				if (isset($block['added']) && $block['added'] && version_compare($version, $block['added'], '<=') )
+				$blockId = $iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`extras` = :plugin AND `name` = :block',
+					array('plugin' => $this->itemData['name'], 'block' => $block['name']), iaBlock::getTable());
+
+				if ($blockId && in_array($block['type'], array(iaBlock::TYPE_PHP, iaBlock::TYPE_SMARTY)))
 				{
-					$blockPages = $block['pages'];
-					unset($block['pages'], $block['added']);
-
-					if (isset($block['contents']) && $block['contents'])
-					{
-						$block['contents'] = str_replace('{extras}', $this->itemData['name'], $block['contents']);
-					}
-
-					$stmt = iaDb::printf("`extras` = ':plugin' AND `name` = ':block'", array(
-						'plugin' => iaSanitize::sql($this->itemData['name']),
-						'block' => iaSanitize::sql($block['name'])
-					));
-
-					if ($iaDb->exists($stmt))
-					{
-						$iaDb->update($block, $stmt);
-						$id = $iaDb->one('`id`', $stmt);
-					}
-					else
-					{
-						$block['order'] = $maxOrder++;
-						$id = $iaDb->insert($block);
-					}
-
-					if ($blockPages)
-					{
-						$iaBlock->setVisiblePages($id, explode(',', $blockPages), $block['sticky']);
-					}
+					unset($block['classname']);
+					$iaBlock->update($block, $blockId);
+				}
+				elseif (!$blockId)
+				{
+					$iaBlock->insert($block);
 				}
 			}
-			$iaDb->resetTable();
 		}
 
 		if ($this->itemData['hooks'])
@@ -816,32 +802,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['sql']['upgrade'])
 		{
-			if (($versionInstalled = $iaDb->one_bind('`version`', '`name` = :name', array('name' => $this->itemData['name']), self::getTable()))
-				&& isset($this->itemData['sql']['upgrade'][$versionInstalled]))
-			{
-				foreach ($this->itemData['sql']['upgrade'][$versionInstalled] as $sql)
-				{
-					$iaDb->query(str_replace(
-						array('{prefix}', '{options}'),
-						array($iaDb->prefix, $iaDb->tableOptions),
-						$sql['query'])
-					);
-				}
-			}
-			else
-			{
-				foreach ($this->itemData['sql']['upgrade'] as $sql)
-				{
-					if (isset($sql['query']))
-					{
-						$iaDb->query(str_replace(
-							array('{prefix}', '{options}'),
-							array($iaDb->prefix, $iaDb->tableOptions),
-							$sql['query'])
-						);
-					}
-				}
-			}
+			$this->_processQueries($this->itemData['sql']['upgrade']);
 		}
 
 		if ($this->itemData['code']['upgrade'])
@@ -927,6 +888,7 @@ class iaExtra extends abstractCore
 		);
 		$iaDb->cascadeDelete($tableList, "`extras` = '{$extraName}'");
 
+		$this->iaCore->factory('block', iaCore::ADMIN);
 		$this->iaCore->factory('field');
 
 		$iaDb->setTable(iaField::getTable());
@@ -946,10 +908,13 @@ class iaExtra extends abstractCore
 		}
 		$iaDb->resetTable();
 
-		if ($blockIds = $iaDb->onefield('id', "`extras` = '{$extraName}'", null, null, 'blocks'))
+		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
+		if ($blockIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, "`extras` = '{$extraName}'", null, null, iaBlock::getTable()))
 		{
-			$iaDb->delete("`id` IN('" . implode("','", $blockIds) . "')", 'blocks');
-			$iaDb->delete("`object` = 'blocks' && `block_id` IN('" . implode("','", $blockIds) . "')", 'objects_pages');
+			foreach ($blockIds as $blockId)
+			{
+				$iaBlock->delete($blockId);
+			}
 		}
 
 		if ($code['uninstall_sql'])
@@ -1087,12 +1052,11 @@ class iaExtra extends abstractCore
 		{
 			$iaDb->setTable('admin_pages_groups');
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 
 			foreach ($this->itemData['groups'] as $block)
 			{
-				$iaDb->insert($block, array('order' => $maxOrder));
-				$maxOrder++;
+				$iaDb->insert($block, array('order' => ++$maxOrder));
 			}
 
 			$iaDb->resetTable();
@@ -1180,12 +1144,11 @@ class iaExtra extends abstractCore
 		{
 			$iaDb->setTable(iaCore::getConfigGroupsTable());
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 
 			foreach ($this->itemData['config_groups'] as $config)
 			{
-				$iaDb->insert($config, array('order' => $maxOrder));
-				$maxOrder++;
+				$iaDb->insert($config, array('order' => ++$maxOrder));
 			}
 
 			$iaDb->resetTable();
@@ -1221,12 +1184,11 @@ class iaExtra extends abstractCore
 		{
 			$iaDb->setTable('config');
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 
 			foreach ($this->itemData['config'] as $config)
 			{
-				$iaDb->insert($config, array('order' => $maxOrder));
-				$maxOrder++;
+				$iaDb->insert($config, array('order' => ++$maxOrder));
 			}
 
 			$iaDb->resetTable();
@@ -1251,7 +1213,7 @@ class iaExtra extends abstractCore
 
 			$iaDb->setTable('pages');
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 			$existPages = $iaDb->keyvalue(array('name', 'id'));
 
 			foreach ($this->itemData['pages']['front'] as $page)
@@ -1277,8 +1239,7 @@ class iaExtra extends abstractCore
 
 					$page['group'] = $pageGroups[$page['group']];
 
-					$pageId = $iaDb->insert($page, array('order' => $maxOrder, 'last_updated' => iaDb::FUNCTION_NOW));
-					$maxOrder++;
+					$pageId = $iaDb->insert($page, array('order' => ++$maxOrder, 'last_updated' => iaDb::FUNCTION_NOW));
 
 					if ($title)
 					{
@@ -1385,56 +1346,19 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['blocks'])
 		{
-			$iaDb->setTable(iaBlock::getTable());
-
-			$maxOrder = $iaDb->getMaxOrder() + 1;
-			$blockPositions = $iaDb->onefield('name', null, 0, null, 'positions');
+			$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
 
 			foreach ($this->itemData['blocks'] as $block)
 			{
-				if ($block['order'])
-				{
-					$block['order'] = intval($block['order']);
-				}
-				else
-				{
-					$maxOrder++;
-					$block['order'] = $maxOrder;
-				}
-
-				if (!empty($block['filename']))
-				{
-					$block['external'] = 1;
-				}
-
-				$blockPages = str_replace('extra_pages', implode(',', $extraPages), $block['pages']);
-
-				unset($block['pages'], $block['added']);
-				if (!in_array($block['position'], $blockPositions))
-				{
-					$block['position'] = $blockPositions[0];
-				}
-				if (isset($block['contents']) && $block['contents'])
-				{
-					$block['contents'] = str_replace('{extras}', $this->itemData['name'], $block['contents']);
-				}
-
-				$id = (int)$iaDb->insert($block);
-
-				if ($blockPages)
-				{
-					$iaBlock->setVisiblePages($id, explode(',', $blockPages), $block['sticky']);
-				}
+				$iaBlock->insert($block);
 			}
-
-			$iaDb->resetTable();
 		}
 
 		if ($this->itemData['hooks'])
 		{
 			$iaDb->setTable('hooks');
 
-			$maxOrder = $iaDb->getMaxOrder() + 1;
+			$maxOrder = $iaDb->getMaxOrder();
 
 			foreach ($this->itemData['hooks'] as $hook)
 			{
@@ -1451,8 +1375,7 @@ class iaExtra extends abstractCore
 						$rawValues = array();
 						if (!isset($hook['order']))
 						{
-							$rawValues['order'] = $maxOrder;
-							$maxOrder++;
+							$rawValues['order'] = ++$maxOrder;
 						}
 
 						$iaDb->insert($hook, $rawValues);
@@ -1535,66 +1458,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['sql']['install'])
 		{
-			switch ($this->itemData['type'])
-			{
-				case self::TYPE_PLUGIN:
-					$path = IA_PLUGINS;
-					break;
-				case self::TYPE_PACKAGE:
-					$path = IA_PACKAGES;
-					break;
-				case self::TYPE_CORE:
-					$path = IA_HOME;
-					break;
-				default:
-					$path = IA_HOME;
-			}
-
-			require_once IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php';
-
-			$mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
-			foreach ($this->itemData['sql']['install'] as $sql)
-			{
-				if ($sql['external'])
-				{
-					$filePath = str_replace(array('{DIRECTORY_SEPARATOR}', '{DS}'), IA_DS, $sql['query']);
-					$fileFullPath = $path . $this->itemData['name'] . IA_DS . $filePath;
-
-					// initialize class to split MySQL dump
-					$iaDbControl = $this->iaCore->factory('dbcontrol', iaCore::ADMIN);
-
-					if (iaUtil::isZip($fileFullPath))
-					{
-						$archive = new PclZip($fileFullPath);
-
-						$files = $archive->extract(PCLZIP_OPT_PATH, IA_TMP);
-
-						if (0 == $files)
-						{
-							continue;
-						}
-
-						foreach ($files as $file)
-						{
-							$iaDbControl->splitSQL($file['filename']);
-
-							// delete file
-							iaUtil::deleteFile($file['filename']);
-						}
-					}
-					else
-					{
-						$iaDbControl->splitSQL($fileFullPath);
-					}
-				}
-				else
-				{
-					if ($sql['query'])
-					{
-						$iaDb->query(str_replace(array('{prefix}', '{mysql_version}'), array($this->iaDb->prefix, $mysqlOptions), $sql['query']));
-					}
-				}
-			}
+			$this->_processQueries($this->itemData['sql']['install']);
 		}
 
 		if (self::TYPE_PACKAGE == $this->itemData['type'])
@@ -1619,10 +1483,10 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['item_field_groups'])
 		{
-			$maxOrder = $iaDb->getMaxOrder(iaField::getTableGroups()) + 1;
+			$maxOrder = $iaDb->getMaxOrder(iaField::getTableGroups());
 			foreach ($this->itemData['item_field_groups'] as $item)
 			{
-				$item['order'] || $item['order'] = $maxOrder++;
+				$item['order'] || $item['order'] = ++$maxOrder;
 
 				if ($item['title'] && !$iaDb->exists("`key` = 'fieldgroup_{$item['name']}' AND `code`='" . $this->iaView->language . "'", null, iaLanguage::getTable()))
 				{
@@ -1653,12 +1517,12 @@ class iaExtra extends abstractCore
 		{
 			$iaDb->setTable(iaField::getTable());
 
-			$maxOrder = $iaDb->getMaxOrder(iaField::getTable()) + 1;
+			$maxOrder = $iaDb->getMaxOrder(iaField::getTable());
 			foreach ($this->itemData['item_fields'] as $item)
 			{
 				if (!$iaDb->exists('`item` = :item AND `name` = :name', array('item' => $item['item'], 'name' => $item['name'])))
 				{
-					$item['order'] || $item['order'] = $maxOrder++;
+					$item['order'] || $item['order'] = ++$maxOrder;
 					$item['fieldgroup_id'] = isset($fieldGroups[$item['item'] . $item['group']])
 						? $fieldGroups[$item['item'] . $item['group']]
 						: 0;
@@ -2288,7 +2152,6 @@ class iaExtra extends abstractCore
 						'sticky' => $this->_attr('sticky', 1),
 						'multi_language' => $this->_attr('multilanguage', 1),
 						'pages' => $this->_attr('pages'),
-						'added' => $this->_attr('added'),
 						'rss' => $this->_attr('rss'),
 						'filename' => $this->_attr('filename'),
 						'classname' => $this->_attr('classname')
@@ -2323,28 +2186,22 @@ class iaExtra extends abstractCore
 				break;
 
 			case 'sql':
-				$sql = array(
+				$entry = array(
 					'query' => $text,
 					'external' => isset($this->_attributes['external']) ? true : false
 				);
 				if ($this->_checkPath('install'))
 				{
-					$this->itemData['sql']['install'][] = $sql;
+					$this->itemData['sql']['install'][$this->itemData['info']['version']][] = $entry;
 				}
 				elseif ($this->_checkPath('uninstall'))
 				{
-					$this->itemData['sql']['uninstall'][] = $sql;
+					$this->itemData['sql']['uninstall'][] = $entry;
 				}
 				elseif ($this->_checkPath('upgrade'))
 				{
-					if (isset($this->_attributes['version']) && $this->_attributes['version'])
-					{
-						$this->itemData['sql']['upgrade'][$this->_attributes['version']][] = $sql;
-					}
-					else
-					{
-						$this->itemData['sql']['upgrade'][] = $sql;
-					}
+					$key = isset($this->_attributes['version']) ? $this->_attributes['version'] : IA_VERSION;
+					$this->itemData['sql']['upgrade'][$key][] = $entry;
 				}
 		}
 	}
@@ -2399,6 +2256,66 @@ class iaExtra extends abstractCore
 
 			default:
 				// currently, no action
+		}
+	}
+
+	protected function _processQueries(array $entries)
+	{
+		$iaDb = &$this->iaDb;
+		$iaDbControl = $this->iaCore->factory('dbcontrol', iaCore::ADMIN);
+
+		require_once IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php';
+
+		$mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
+		$pathsMap = array(self::TYPE_PLUGIN => IA_PLUGINS, self::TYPE_PACKAGE => IA_PACKAGES);
+
+		$path = isset($pathsMap[$this->itemData['type']]) ? $pathsMap[$this->itemData['type']] : IA_HOME;
+		$versionInstalled = $iaDb->one_bind('version', '`name` = :name', array('name' => $this->itemData['name']), self::getTable());
+
+		foreach ($entries as $version => $entry)
+		{
+			if ($versionInstalled && version_compare($versionInstalled, $version, '>'))
+			{
+				continue;
+			}
+
+			foreach ($entry as $data)
+			{
+				if ($data['external'])
+				{
+					$filePath = str_replace(array('{DIRECTORY_SEPARATOR}', '{DS}'), IA_DS, $data['query']);
+					$fileFullPath = $path . $this->itemData['name'] . IA_DS . $filePath;
+
+					if (iaUtil::isZip($fileFullPath))
+					{
+						$archive = new PclZip($fileFullPath);
+
+						$files = $archive->extract(PCLZIP_OPT_PATH, IA_TMP);
+
+						if (0 == $files)
+						{
+							continue;
+						}
+
+						foreach ($files as $file)
+						{
+							$iaDbControl->splitSQL($file['filename']);
+							iaUtil::deleteFile($file['filename']);
+						}
+					}
+					else
+					{
+						$iaDbControl->splitSQL($fileFullPath);
+					}
+				}
+				else
+				{
+					if ($data['query'])
+					{
+						$iaDb->query(str_replace(array('{prefix}', '{mysql_version}'), array($iaDb->prefix, $mysqlOptions), $data['query']));
+					}
+				}
+			}
 		}
 	}
 }

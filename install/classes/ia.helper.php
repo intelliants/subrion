@@ -94,6 +94,7 @@ class iaHelper
 			define('IA_INCLUDES', IA_HOME . 'includes' . IA_DS);
 			define('IA_SMARTY', IA_INCLUDES . 'smarty' . IA_DS);
 			define('IA_CLASSES', IA_INCLUDES . 'classes' . IA_DS);
+			define('IA_PACKAGES', IA_HOME . 'packages' . IA_DS);
 			define('IA_PLUGINS', IA_HOME . 'plugins' . IA_DS);
 			define('IA_TMP', IA_HOME . 'tmp' . IA_DS);
 			define('IA_CACHEDIR', IA_TMP . 'cache' . IA_DS);

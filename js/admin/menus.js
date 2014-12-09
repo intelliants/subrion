@@ -4,7 +4,7 @@ Ext.onReady(function()
 	{
 		var positionsStore = intelli.gridHelper.store.ajax(intelli.config.admin_url + '/blocks/positions.json');
 
-		intelli.menus = new IntelliGrid(
+		var grid = new IntelliGrid(
 		{
 			columns: [
 				'selection',
@@ -29,7 +29,8 @@ Ext.onReady(function()
 				delete_multiple: _t('are_you_sure_to_delete_selected_menus')
 			}
 		}, false);
-		intelli.menus.toolbar = new Ext.Toolbar({items:[
+
+		grid.toolbar = new Ext.Toolbar({items:[
 		{
 			xtype: 'textfield',
 			name: 'name',
@@ -48,19 +49,20 @@ Ext.onReady(function()
 			editable: false,
 			emptyText: _t('status'),
 			name: 'status',
-			store: intelli.menus.stores.statuses,
+			store: grid.stores.statuses,
 			typeAhead: true,
 			valueField: 'value',
 			xtype: 'combo'
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.menus)},
+			handler: function(){intelli.gridHelper.search(grid)},
 			id: 'fltBtn',
 			text: '<i class="i-search"></i> ' + _t('search')
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.menus, true)},
+			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
-		intelli.menus.init();
+
+		grid.init();
 	}
 	else
 	{
@@ -262,13 +264,6 @@ Ext.onReady(function()
 			}
 		});
 
-		$('input[name="visible_on_pages[]"]').on('change', function()
-		{
-			$(this).is(':checked')
-				? $($(this).parent().children('.subpages').get(0)).show()
-				: $($(this).parent().children('.subpages').get(0)).hide();
-		}).change();
-
 /* TEMPORARILY DISABLED FOR FUTURE IMPLEMENTATION
 
 		$('.subpages').on('click', function()
@@ -383,62 +378,6 @@ Ext.onReady(function()
 		});
 */
 
-		$('#header').on('change', function()
-		{
-			var $collapsible = $('input[name="collapsible"]').closest('.row');
-			$(this).val() == 1 ? $collapsible.show() : $collapsible.hide();
-
-			var $collapsed = $('input[name="collapsed"]').closest('.row');
-			$(this).val() == 1 && $('#collapsible').val() == 1 ? $collapsed.show() : $collapsed.hide();
-		}).change();
-
-		$('#collapsible').on('change', function()
-		{
-			var $obj = $('input[name="collapsed"]').closest('.row');
-			$(this).val() == 1 ? $obj.show() : $obj.hide();
-		}).change();
-
-		$('#sticky').on('change', function()
-		{
-			var $this = $(this);
-
-			if ($this.is(':checked'))
-			{
-				$('.js-visibility-hidden').show();
-				$('.js-visibility-visible').hide();
-			}
-			else
-			{
-				$('.js-visibility-hidden').hide();
-				$('.js-visibility-visible').show();
-			}
-		}).change();
-
-		$('#js-select-all-pages').on('click', function()
-		{
-			$('input[type="checkbox"]:not(#all_pages)', '#js-pages-list')
-				.prop('checked', $(this).is(':checked'))
-				.change();
-		});
-
-		$('input[name^="all_pages_"]', '#js-pages-list').on('click', function()
-		{
-			$('input.' + $(this).data('group'))
-				.prop('checked', $(this).prop('checked'))
-				.trigger('change');
-		});
-
-		$('#js-form-menus').on('submit', function()
-		{
-			var items = [];
-			Ext.getCmp('menus').getRootNode().cascadeBy(function(node)
-			{
-				items.push(node.data)
-			});
-
-			$('#js-menu-data').val(JSON.stringify(items));
-		});
-
 		// var menuItems = $('#js-menu-data').val();
 		// if (menuItems)
 		// {
@@ -446,4 +385,70 @@ Ext.onReady(function()
 		// 	Ext.getCmp('menus').getRootNode().childNodes = menuItems;
 		// }
 	}
+});
+
+$(function()
+{
+	$('#header').on('change', function()
+	{
+		var $collapsible = $('input[name="collapsible"]').closest('.row');
+		$(this).val() == 1 ? $collapsible.show() : $collapsible.hide();
+
+		var $collapsed = $('input[name="collapsed"]').closest('.row');
+		$(this).val() == 1 && $('#collapsible').val() == 1 ? $collapsed.show() : $collapsed.hide();
+	}).change();
+
+	$('#collapsible').on('change', function()
+	{
+		var $obj = $('input[name="collapsed"]').closest('.row');
+		$(this).val() == 1 ? $obj.show() : $obj.hide();
+	}).change();
+
+	$('#sticky').on('change', function()
+	{
+		var $this = $(this);
+
+		if ($this.is(':checked'))
+		{
+			$('.js-visibility-hidden').show();
+			$('.js-visibility-visible').hide();
+		}
+		else
+		{
+			$('.js-visibility-hidden').hide();
+			$('.js-visibility-visible').show();
+		}
+	}).change();
+
+	$('#js-select-all-pages').on('click', function()
+	{
+		$('input[type="checkbox"]:not(#all_pages)', '#js-pages-list')
+			.prop('checked', $(this).is(':checked'))
+			.change();
+	});
+
+	$('input[name^="all_pages_"]', '#js-pages-list').on('click', function()
+	{
+		$('input.' + $(this).data('group'))
+			.prop('checked', $(this).prop('checked'))
+			.trigger('change');
+	});
+
+	$('#js-form-menus').on('submit', function()
+	{
+		var items = [];
+		Ext.getCmp('menus').getRootNode().cascadeBy(function(node)
+		{
+			items.push(node.data)
+		});
+
+		$('#js-menu-data').val(JSON.stringify(items));
+	});
+
+	$('input[name="pages[]"]').on('change', function()
+	{
+		$(this).is(':checked')
+			? $($(this).parent().children('.subpages').get(0)).show()
+			: $($(this).parent().children('.subpages').get(0)).hide();
+	}).change();
 });

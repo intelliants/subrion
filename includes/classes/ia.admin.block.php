@@ -69,6 +69,17 @@ class iaBlock extends abstractPlugin
 		return $this->_positions;
 	}
 
+	protected function _preparePages($pagesList)
+	{
+		if (is_string($pagesList))
+		{
+			$pagesList = explode(',', $pagesList);
+			array_map('trim', $pagesList);
+		}
+
+		return $pagesList;
+	}
+
 	/**
 	 * Insert block
 	 * @param array $blockData
@@ -90,13 +101,18 @@ class iaBlock extends abstractPlugin
 			$blockData['tpl'] = self::DEFAULT_MENU_TEMPLATE;
 		}
 
+		if (isset($blockData['filename']) && $blockData['filename'])
+		{
+			$blockData['external'] = 1;
+		}
+
 		$order = $this->iaDb->getMaxOrder(self::getTable());
 		$blockData['order'] = ($order) ? $order + 1 : 1;
 
-		if (isset($blockData['visible_on_pages']))
+		if (isset($blockData['pages']))
 		{
-			$pagesList = $blockData['visible_on_pages'];
-			unset($blockData['visible_on_pages']);
+			$pagesList = $this->_preparePages($blockData['pages']);
+			unset($blockData['pages']);
 		}
 
 		if (isset($blockData['multi_language']))
@@ -124,35 +140,13 @@ class iaBlock extends abstractPlugin
 				}
 			}
 
-			$this->setVisiblePages($id, $pagesList, $blockData['sticky']);
+			if (isset($pagesList))
+			{
+				$this->setVisiblePages($id, $pagesList, $blockData['sticky']);
+			}
 		}
 
 		return $id;
-	}
-
-	public function delete($id)
-	{
-		$iaDb = &$this->iaDb;
-
-		$row = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
-		$title = 'block_title_blc' . $id;
-		$title = iaLanguage::exists($title) ? iaLanguage::get($title) : $row['title'];
-
-		$this->iaCore->startHook('beforeBlockDelete', array('block' => &$row));
-
-		$result = parent::delete($id);
-
-		if ($result)
-		{
-			$iaDb->delete('`object_type` = :object && `object` = :id', self::getPagesTable(), array('id' => $id, 'object' => 'blocks'));
-			$iaDb->delete("`key` = 'block_title_blc{$id}' OR `key` = 'block_content_blc{$id}'", iaLanguage::getTable());
-
-			$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'block', 'name' => $title, 'id' => $id));
-		}
-
-		$this->iaCore->startHook('afterBlockDelete', array('block' => &$row));
-
-		return $result;
 	}
 
 	public function update(array $itemData, $id)
@@ -161,10 +155,10 @@ class iaBlock extends abstractPlugin
 
 		$row = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
 
-		if (isset($itemData['visible_on_pages']))
+		if (isset($itemData['pages']))
 		{
-			$pagesList = $itemData['visible_on_pages'];
-			unset($itemData['visible_on_pages']);
+			$pagesList = $this->_preparePages($itemData['pages']);
+			unset($itemData['pages']);
 		}
 
 		if (isset($itemData['multi_language']) && !$itemData['multi_language'])
@@ -234,6 +228,31 @@ class iaBlock extends abstractPlugin
 				'id' => $id
 			));
 		}
+
+		return $result;
+	}
+
+	public function delete($id)
+	{
+		$iaDb = &$this->iaDb;
+
+		$row = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
+		$title = 'block_title_blc' . $id;
+		$title = iaLanguage::exists($title) ? iaLanguage::get($title) : $row['title'];
+
+		$this->iaCore->startHook('beforeBlockDelete', array('block' => &$row));
+
+		$result = parent::delete($id);
+
+		if ($result)
+		{
+			$iaDb->delete('`object_type` = :object && `object` = :id', self::getPagesTable(), array('id' => $id, 'object' => 'blocks'));
+			$iaDb->delete("`key` = 'block_title_blc{$id}' OR `key` = 'block_content_blc{$id}'", iaLanguage::getTable());
+
+			$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'block', 'name' => $title, 'id' => $id));
+		}
+
+		$this->iaCore->startHook('afterBlockDelete', array('block' => &$row));
 
 		return $result;
 	}

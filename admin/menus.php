@@ -271,7 +271,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['position'] = empty($data['position']) ? 'left' : $data['position'];
 		$entry['classname'] = $data['classname'];
 		$entry['sticky'] = (int)$data['sticky'];
-		$entry['visible_on_pages'] = empty($data['pages']) ? array() : $data['pages'];
+		$entry['pages'] = empty($data['pages']) ? array() : $data['pages'];
 		$entry['header'] = (int)$data['header'];
 		$entry['collapsible'] = (int)$data['collapsible'];
 		$entry['collapsed'] = (int)$data['collapsed'];
@@ -366,9 +366,9 @@ class iaBackendController extends iaAbstractControllerBackend
 				$visibleOn = $array;
 			}
 		}
-		elseif (!empty($_POST['visible_on_pages']))
+		elseif (!empty($_POST['pages']))
 		{
-			$visibleOn = $_POST['visible_on_pages'];
+			$visibleOn = $_POST['pages'];
 		}
 
 		if (!empty($_POST['menus']))

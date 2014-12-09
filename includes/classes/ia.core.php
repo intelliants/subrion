@@ -96,9 +96,6 @@ final class iaCore
 		$this->getConfig();
 		iaSystem::renderTime('core', 'Configuration Loaded');
 
-		date_default_timezone_set($this->get('timezone'));
-		setlocale(LC_ALL, $this->get('locale'));
-
 		iaSystem::setDebugMode();
 
 		$this->_parseUrl();
@@ -208,7 +205,7 @@ final class iaCore
 
 		$url = explode('?', $url);
 		$url = array_shift($url);
-		$url = explode(IA_URL_DELIMITER, trim($url, IA_URL_DELIMITER));
+		$url = explode(IA_URL_DELIMITER, iaSanitize::urlInjectionFilter(trim($url, IA_URL_DELIMITER)));
 
 		$lastChunk = end($url);
 		if ($pos = strrpos($lastChunk, '.'))
@@ -425,6 +422,9 @@ final class iaCore
 			}
 
 			$this->languages = unserialize($this->_config['languages']);
+
+			date_default_timezone_set($this->get('timezone'));
+			setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
 		}
 
 		return $this->_config;

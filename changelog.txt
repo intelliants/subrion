@@ -422,3 +422,19 @@
 	+ Feature #1898: Extension improvements
 	+ Feature #1916: Improve member filter
 	+ Feature #1917: Usergroups filter on Members page
+
+>> From 3.2.2 to 3.2.3 <<
+
+	- Bug #887: Session save path issues
+	- Bug #1818: Incorrect upgrade sql logic
+	- Bug #1911: Pages settings are not saved on Edit Block
+	- Bug #1922: Change description tooltip for External file name
+	- Bug #1923: Incorrect output on Turkish language
+	- Bug #1924: Fatal error on Turkish sites when several languages added.
+	- Bug #1927: Incorrect working of plugin upgrade functionality
+	- Bug #1932: Minor security issue reported by Netsparker
+	- Bug #1933: No replacements for admin notifications
+	- Bug #1935: Transactions search by username
+	- Bug #1937: Incorrect pages creation during package upgrade
+	+ Feature #1749: Switch to controllers
+	+ Feature #1938: Admin Panel: blocks should be sorted by title by default

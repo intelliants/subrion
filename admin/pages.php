@@ -24,95 +24,340 @@
  *
  ******************************************************************************/
 
-$iaPage = $iaCore->factory('page', iaCore::ADMIN);
-$iaUtil = $iaCore->factory('util');
-
-$iaDb->setTable(iaPage::getTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerBackend
 {
-	switch ($pageAction)
+	protected $_name = 'pages';
+
+	protected $_tooltipsEnabled = true;
+
+	protected $_gridColumns = "`id`, `name`, `status`, `last_updated`, IF(`custom_url` != '', `custom_url`, IF(`alias` != '', `alias`, CONCAT(`name`, '/'))) `url`, `id` `update`, IF(`readonly` = 0, 1, 0) `delete`";
+	protected $_gridFilters = array('name' => self::LIKE, 'extras' => self::EQUAL);
+
+	protected $_phraseAddSuccess = 'page_added';
+
+
+	public function __construct()
 	{
-		case iaCore::ACTION_READ:
-			switch ($_GET['get'])
-			{
-				case 'url':
-					iaUtil::loadUTF8Functions('ascii', 'utf8_to_ascii');
+		parent::__construct();
 
-					$name = $_GET['name'];
-					$name = utf8_is_ascii($name) ? $name : utf8_to_ascii($name);
-					$name = preg_replace('#[^a-z0-9-_]#iu', '', $name);
+		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
+		$this->setHelper($iaPage);
 
-					$url = $_GET['url'];
-					$url = utf8_is_ascii($url) ? $url : utf8_to_ascii($url);
-					$url = preg_replace('#[^a-z0-9-_]#iu', '', $url);
-
-					$url = $url ? $url : $name;
-
-					if (is_numeric($_GET['parent']) && $_GET['parent'])
-					{
-						$parentPage = $iaPage->getById($_GET['parent']);
-						$parentAlias = empty($parentPage['alias']) ? $parentPage['name'] . IA_URL_DELIMITER : $parentPage['alias'];
-
-						$url = $parentAlias . (IA_URL_DELIMITER == substr($parentAlias, -1, 1) ? '' : IA_URL_DELIMITER) . $url;
-					}
-
-					$url.= $_GET['ext'];
-
-					$exists = $iaDb->exists('`alias` = :url AND `name` != :name', array('url' => $url, 'name' => $name));
-					$url = IA_URL . $url;
-
-					$output = array('url' => $url, 'exists' => $exists);
-
-					break;
-
-				case 'plugins':
-					$sql =
-						'SELECT ' .
-							"IF(p.`extras` = '', 'core', p.`extras`) `value`, " .
-							"IF(p.`extras` = '', 'Core', g.`title`) `title` " .
-						'FROM `:prefix:pages` p ' .
-						'LEFT JOIN `:prefixextras` g ON g.`name` = p.`extras` ' .
-						'GROUP BY p.`extras`';
-					$sql = iaDb::printf($sql, array(
-						'prefix' => $iaDb->prefix,
-						'pages' => iaPage::getTable()
-					));
-
-					$output = array('data' => $iaDb->getAll($sql));
-
-					break;
-
-				default:
-					$output = $iaPage->gridRead($_GET,
-						"`id`, `name`, `status`, `last_updated`, IF(`custom_url` != '', `custom_url`, IF(`alias` != '', `alias`, CONCAT(`name`, '/'))) `url`, `id` `update`, IF(`readonly` = 0, 1, 0) `delete`",
-						array('name' => 'like', 'extras' => 'equal'),
-						array('`service` = 0')
-					);
-			}
-
-			break;
-
-		case iaCore::ACTION_EDIT:
-			$output = $iaPage->gridUpdate($_POST);
-
-			break;
-
-		case iaCore::ACTION_DELETE:
-			$output = $iaPage->gridDelete($_POST);
+		$this->setTable(iaPage::getTable());
 	}
 
-	$iaView->assign($output);
-}
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$iaUsers = $iaCore->factory('users');
-	$userGroups = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, iaUsers::getUsergroupsTable());
-
-	if (isset($_POST['preview']))
+	protected function _gridRead($params)
 	{
-		if ($pageAction == iaCore::ACTION_ADD)
+		$action = (1 == count($this->_iaCore->requestPath)) ? $this->_iaCore->requestPath[0] : null;
+
+		switch ($action)
+		{
+			case 'url': return $this->_getJsonUrl($params);
+			case 'plugins': return $this->_getJsonPlugins();
+			default: return parent::_gridRead($params);
+		}
+	}
+
+	protected function _indexPage(&$iaView)
+	{
+		if (isset($_POST['preview']))
+		{
+			$this->_previewPage($iaView->get('action'));
+		}
+
+		parent::_indexPage($iaView);
+	}
+
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		$this->_iaCore->startHook('phpAdminAddPageValidation', array('entry' => &$entry));
+
+		iaUtil::loadUTF8Functions('ascii', 'bad', 'utf8_to_ascii', 'validation');
+
+		$entry['name'] = preg_replace('#[^a-z0-9-_]#iu', '', strtolower($data['name'] =! utf8_is_ascii($data['name']) ? utf8_to_ascii($data['name']): $data['name']));
+		$entry['meta_description'] = utf8_is_valid($data['meta_description']) ? $data['meta_description'] : utf8_bad_replace($data['meta_description']);
+		$entry['meta_keywords'] = utf8_is_valid($data['meta_keywords']) ? $data['meta_keywords'] : utf8_bad_replace($data['meta_keywords']);
+		$entry['status'] = isset($data['preview']) ? iaCore::STATUS_DRAFT : $data['status'];
+
+		if (iaCore::ACTION_ADD == $action)
+		{
+			$entry['group'] = 2;
+			$entry['filename'] = 'page';
+		}
+
+		foreach ($data['titles'] as $key => $title)
+		{
+			if (empty($title))
+			{
+				$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('title') . ' (' . $key . ')')), false);
+				break;
+			}
+		}
+
+		if (!isset($data['service']) || !$data['service'])
+		{
+			$entry['alias'] = empty($data['alias']) ? $data['name'] : $data['alias'];
+			$entry['custom_url'] = empty($data['custom_url']) ? '' : $data['custom_url'];
+			$entry['passw'] = empty($data['passw']) ? '' : $data['passw'];
+
+			$entry['alias'] = utf8_is_ascii($entry['alias']) ? $entry['alias'] : utf8_to_ascii($entry['alias']);
+			$entry['alias'] = empty($entry['alias']) ? '' : iaSanitize::alias($entry['alias']);
+			$entry['alias'].= $data['extension'];
+
+			if (is_numeric($data['parent_id']))
+			{
+				$parentPage = $this->getById($data['parent_id']);
+				$parentAlias = empty($parentPage['alias']) ? $parentPage['name'] . IA_URL_DELIMITER : $parentPage['alias'];
+
+				$entry['parent'] = $parentPage['name'];
+				$entry['alias'] = $parentAlias . (IA_URL_DELIMITER == substr($parentAlias, -1, 1) ? '' : IA_URL_DELIMITER) . $entry['alias'];
+			}
+
+			if ($this->_iaDb->exists('`id` != :id AND `alias` = :alias', array('id' => $this->getEntryId(), 'alias' => $entry['alias'])))
+			{
+				$this->addMessage('page_alias_exists');
+			}
+
+			if (isset($data['nofollow']))
+			{
+				$entry['nofollow'] = (int)$data['nofollow'];
+			}
+
+			if (isset($data['new_window']))
+			{
+				$entry['new_window'] = (int)$data['new_window'];
+			}
+
+			// delete custom url
+			if (isset($data['unique']) && 0 == $data['unique'])
+			{
+				$entry['custom_url'] = '';
+			}
+		}
+
+		if (empty($entry['name']))
+		{
+			$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('name'))), false);
+		}
+		elseif (iaCore::ACTION_ADD == $action
+			&& $this->_iaDb->exists('`name` = :name', array('name' => $entry['name'])))
+		{
+			$this->addMessage('page_name_exists');
+		}
+
+		return !$this->getMessages();
+	}
+
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
+	{
+		if (isset($values['extras']) && iaCore::CORE == strtolower($values['extras']))
+		{
+			$values['extras'] = '';
+		}
+
+		$conditions[] = '`service` = 0';
+	}
+
+	protected function _modifyGridResult(array &$entries)
+	{
+		$currentLanguage = $this->_iaCore->iaView->language;
+
+		$this->_iaDb->setTable(iaLanguage::getTable());
+		$pageTitles = $this->_iaDb->keyvalue(array('key', 'value'), "`key` LIKE('page_title_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
+		$pageContents = $this->_iaDb->keyvalue(array('key', 'value'), "`key` LIKE('page_content_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
+		$this->_iaDb->resetTable();
+
+		$defaultPage = $this->_iaCore->get('home_page');
+
+		foreach ($entries as &$entry)
+		{
+			$entry['title'] = isset($pageTitles["page_title_{$entry['name']}"]) ? $pageTitles["page_title_{$entry['name']}"] : 'No title';
+			$entry['content'] = isset($pageContents["page_content_{$entry['name']}"]) ? $pageContents["page_content_{$entry['name']}"] : 'No content';
+
+			if ($defaultPage == $entry['name'])
+			{
+				$entry['default'] = true;
+			}
+		}
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry = array(
+			'name' => '',
+			'extension' => '',
+			'parent' => '',
+			'readonly' => false,
+			'service' => false,
+			'meta_description' => '',
+			'meta_keywords' => '',
+			'status' => iaCore::STATUS_ACTIVE
+		);
+	}
+
+	protected function _entryAdd(array $entryData)
+	{
+		$order = $this->_iaDb->getMaxOrder() + 1;
+
+		$entryData['last_updated'] = date(iaDb::DATETIME_FORMAT);
+		$entryData['order'] = $order ? $order : 1;
+
+		return parent::_entryAdd($entryData);
+	}
+
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		$currentData = $this->getById($entryId);
+
+		$entryData['last_updated'] = date(iaDb::DATETIME_FORMAT);
+
+		$result = parent::_entryUpdate($entryData, $entryId);
+
+		if ($result)
+		{
+			if (!empty($currentData['alias']) && $entryData['alias'] && $currentData['alias'] != $entryData['alias'])
+			{
+				$this->_massUpdateAlias($currentData['alias'], $entryData['alias'], $this->getEntryId());
+			}
+		}
+
+		return $result;
+	}
+
+	protected function _postSaveEntry(array &$entry, array $data, $action)
+	{
+		// saving selected menus
+		$selectedMenus = empty($data['menus']) ? array() : $data['menus'];
+		$this->_saveMenus($entry['name'], $selectedMenus);
+
+		// setting as the home page if needed
+		if (isset($data['home_page']) && $data['home_page'])
+		{
+			$iaAcl = $this->_iaCore->factory('acl');
+			if ($iaAcl->checkAccess($this->getName() . 'home'))
+			{
+				$this->_iaCore->set('home_page', $entry['name'], true);
+			}
+		}
+
+		// saving multilingual content
+		$currentLanguage = $this->_iaCore->iaView->language;
+
+		foreach (array('title', 'content') as $type)
+		{
+			if (isset($data[$type . 's']) && is_array($data[$type . 's']))
+			{
+				foreach ($data[$type . 's'] as $languageCode => $value)
+				{
+					utf8_is_valid($value) || $value = utf8_bad_replace($value);
+					iaLanguage::addPhrase('page_' . $type . '_' . $entry['name'], $value, $languageCode, '', iaLanguage::CATEGORY_PAGE);
+				}
+				isset($title) || $title = $entry[$type . 's'][$currentLanguage];
+			}
+		}
+
+		// writing to log
+		$iaLog = $this->_iaCore->factory('log');
+		$actionCode = (iaCore::ACTION_ADD == $action) ? iaLog::ACTION_CREATE : iaLog::ACTION_UPDATE;
+		$iaLog->write($actionCode, array('item' => 'page', 'name' => $title, 'id' => $this->getEntryId()));
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		$result = false;
+
+		if ($row = $this->getById($entryId))
+		{
+			$result = parent::_entryDelete($entryId);
+
+			if ($result)
+			{
+				$pageName = $row['name'];
+
+				// remove associated entries as well
+				$this->_iaDb->delete("`key` IN ('page_title_{$pageName}', 'page_content_{$pageName}')", iaLanguage::getTable());
+
+				$this->_iaCore->factory('block', iaCore::ADMIN);
+				$this->_iaDb->delete('`page_name` = :page', iaBlock::getMenusTable(), array('page' => $pageName));
+				//
+
+				$this->_iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'page', 'name' => iaLanguage::get('page_title_' . $pageName), 'id' => (int)$entryId));
+			}
+		}
+
+		return $result;
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		if (isset($_POST['titles']) && isset($_POST['contents']))
+		{
+			$entryData['titles'] = $_POST['titles'];
+			$entryData['contents'] = $_POST['contents'];
+		}
+		elseif (iaCore::ACTION_EDIT == $iaView->get('action'))
+		{
+			$this->_iaDb->setTable(iaLanguage::getTable());
+			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'page_title_{$entryData['name']}' AND `category` = 'page'");
+			$entryData['contents'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'page_content_{$entryData['name']}' AND `category` = 'page'");
+			$this->_iaDb->resetTable();
+
+			$parentAlias = '';
+			if ($entryData['parent'])
+			{
+				$parentAlias = $this->getHelper()->getByName($entryData['parent'], false);
+				$parentAlias = empty($parentAlias['alias']) ? $parentAlias['name'] . IA_URL_DELIMITER : $parentAlias['alias'];
+			}
+
+			$entryData['extension'] = (false === strpos($entryData['alias'], '.')) ? '' : end(explode('.', $entryData['alias']));
+			$entryData['alias'] = substr($entryData['alias'], strlen($parentAlias), -1 - strlen($entryData['extension']));
+
+			if ($entryData['name'] == $entryData['alias'])
+			{
+				$entryData['alias'] = '';
+			}
+		}
+
+		$menus = array(
+			array('title' => iaLanguage::get('core_menus', 'Core menus'), 'list' => array()),
+			array('title' => iaLanguage::get('custom_menus', 'Custom menus'), 'list' => array())
+		);
+
+		$iaAcl = $this->_iaCore->factory('acl');
+		if ($iaAcl->checkAccess('admin_page:add', 0, 0, 'menus'))
+		{
+			$selectedMenus = $this->getEntryId()
+				? $this->_iaDb->onefield('menu_id', iaDb::convertIds($entryData['name'], 'page_name'), null, null, 'menus')
+				: array();
+			$menusList = $this->_iaDb->all(array('id', 'title', 'removable'), "`type` = 'menu'", null, null, 'blocks');
+
+			foreach ($menusList as $menuEntry)
+			{
+				$menus[$menuEntry['removable']]['list'][] = $menuEntry;
+			}
+
+			ksort($menus[0]['list']);
+			ksort($menus[1]['list']);
+
+			$iaView->assign('selectedMenus', $selectedMenus);
+		}
+
+		$parentPage = $this->getHelper()->getByName($entryData['parent'], false);
+		$groups = $this->getHelper()->getGroups(array($this->_iaCore->get('home_page'), $entryData['name']));
+		$isHomepage = ($this->_iaCore->get('home_page', iaView::DEFAULT_HOMEPAGE) == $entryData['name']);
+
+		$iaView->assign('isHomePage', $isHomepage);
+		$iaView->assign('extensions', $this->getHelper()->extendedExtensions);
+		$iaView->assign('menus', $menus);
+		$iaView->assign('pages', $this->getHelper()->getNonServicePages(array('index')));
+		$iaView->assign('pagesGroup', $groups);
+		$iaView->assign('parentPageId', $parentPage['id']);
+	}
+
+
+	private function _previewPage($action)
+	{
+		if (iaCore::ACTION_ADD == $action)
 		{
 			$_POST['save'] = true;
 		}
@@ -139,407 +384,122 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$newPage['titles'] = $_POST['titles'];
 			$newPage['passw'] = iaSanitize::sql($_POST['passw']);
 
-			if (!isset($_SESSION['preview_pages']))
-			{
-				$_SESSION['preview_pages'] = array();
-			}
+			isset($_SESSION['preview_pages']) || $_SESSION['preview_pages'] = array();
 			$_SESSION['preview_pages'][$name] = $newPage;
 
-			$languagesEnabled = $iaCore->get('language_switch', false) && count($iaCore->languages);
+			$languagesEnabled = $this->_iaCore->get('language_switch', false) && count($this->_iaCore->languages);
 			$redirectUrl = IA_CLEAR_URL . ($languagesEnabled ? $_POST['language'] . IA_URL_DELIMITER : '') . 'page' . IA_URL_DELIMITER . $name . IA_URL_DELIMITER . '?preview';
 
 			iaUtil::go_to($redirectUrl);
 		}
 	}
 
-	if (isset($_POST['save']))
+	private function _massUpdateAlias($previous, $new, $entryId)
 	{
-		$iaCore->startHook('phpAdminAddPageValidation');
+		$previous = iaSanitize::sql($previous);
+		$previous = (IA_URL_DELIMITER == $previous[strlen($previous) - 1]) ? substr($previous, 0, -1) : $previous;
 
-		iaUtil::loadUTF8Functions('ascii', 'bad', 'utf8_to_ascii', 'validation');
+		$new = iaSanitize::sql($new);
+		$new = (IA_URL_DELIMITER == $new[strlen($new) - 1]) ? substr($new, 0, -1) : $new;
 
-		$error = false;
-		$messages = array();
+		$cond = iaDb::printf("`alias` LIKE ':alias%' AND `id` != :id", array('alias' => $previous, 'id' => $entryId));
+		$stmt = array('alias' => "REPLACE(`alias`, '$previous', '$new')");
 
-		$newPage = array(
-			'name' => iaSanitize::sql(strtolower($_POST['name'] =! utf8_is_ascii($_POST['name']) ? utf8_to_ascii($_POST['name']): $_POST['name'])),
-			'alias' => empty($_POST['alias']) ? $_POST['name'] : $_POST['alias']
-		);
+		$this->_iaDb->update(null, $cond, $stmt);
+	}
 
-		if (iaCore::ACTION_ADD == $pageAction)
+	private function _getJsonPlugins()
+	{
+		$sql = 'SELECT '
+				. "IF(p.`extras` = '', 'core', p.`extras`) `value`, "
+				. "IF(p.`extras` = '', 'Core', g.`title`) `title` "
+			. 'FROM `:prefix:pages` p '
+			. 'LEFT JOIN `:prefixextras` g ON (g.`name` = p.`extras`) '
+			. 'GROUP BY p.`extras`';
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'pages' => iaPage::getTable()
+		));
+
+		return array('data' => $this->_iaDb->getAll($sql));
+	}
+
+
+	private function _saveMenus($entryName, $menus)
+	{
+		$iaAcl = $this->_iaCore->factory('acl');
+
+		if ($iaAcl->checkAccess('admin_page:add', 'menus'))
 		{
-			$newPage['group'] = 2;
-			$newPage['filename'] = 'page';
-		}
+			$iaDb = &$this->_iaDb;
+			$iaBlock = $this->_iaCore->factory('block', iaCore::ADMIN);
 
-		foreach ($_POST['titles'] as $key => $title)
-		{
-			if (empty($title))
+			$iaDb->setTable($iaBlock::getMenusTable());
+
+			$menusList = $iaDb->all(array('id'), iaDb::convertIds('menu', 'type'), null, null, $iaBlock::getTable());
+			foreach ($menusList as $item)
 			{
-				$error = true;
-				$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('title') . ' (' . $key . ')'));
+				$items = array();
+				$add = false;
+				if (in_array($item['id'], $menus))
+				{
+					if (!$iaDb->exists('`menu_id` = :menu AND `page_name` = :page', array('menu' => $item['id'], 'page' => $entryName)))
+					{
+						$items[] = array(
+							'parent_id' => 0,
+							'menu_id' => $item['id'],
+							'el_id' => $this->getEntryId() . '_' . iaUtil::generateToken(5),
+							'level' => 0,
+							'page_name' => $entryName
+						);
+						$add = true;
+					}
+				}
+				else
+				{
+					$iaDb->delete('`menu_id` = :menu AND `page_name` = :page', null, array('menu' => $item['id'], 'page' => $entryName));
+				}
 
-				break;
+				if ($add)
+				{
+					$iaDb->insert($items);
+				}
+
+				$iaCache = $this->_iaCore->factory('cache');
+				$iaCache->remove('menu_' . $item['id'] . '.inc');
 			}
+
+			$iaDb->resetTable();
 		}
+	}
 
-		if (isset($_POST['preview']))
+	private function _getJsonUrl(array $params)
+	{
+		iaUtil::loadUTF8Functions('ascii', 'utf8_to_ascii');
+
+		$name = $params['name'];
+		$name = utf8_is_ascii($name) ? $name : utf8_to_ascii($name);
+		$name = preg_replace('#[^a-z0-9-_]#iu', '', $name);
+
+		$url = $params['url'];
+		$url = utf8_is_ascii($url) ? $url : utf8_to_ascii($url);
+		$url = preg_replace('#[^a-z0-9-_]#iu', '', $url);
+
+		$url = $url ? $url : $name;
+
+		if (is_numeric($params['parent']) && $params['parent'])
 		{
-			$newPage['status'] = iaCore::STATUS_DRAFT;
-		}
-		else
-		{
-			$newPage['status'] = in_array($_POST['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $_POST['status'] : iaCore::STATUS_DRAFT;
-		}
-
-		$newPage['passw'] = empty($_POST['passw']) ? '' : iaSanitize::sql($_POST['passw']);
-		$newPage['name'] = preg_replace('#[^a-z0-9-_]#iu', '', $newPage['name']);
-		$newPage['custom_url'] = empty($_POST['custom_url']) ? '' : $_POST['custom_url'];
-
-		$newPage['alias'] = utf8_is_ascii($newPage['alias']) ? $newPage['alias'] : utf8_to_ascii($newPage['alias']);
-		$newPage['alias'] = empty($newPage['alias']) ? '' : iaSanitize::alias($newPage['alias']);
-		$newPage['alias'].= $_POST['extension'];
-
-		if (is_numeric($_POST['parent_id']) && $_POST['parent_id'] > 0)
-		{
-			$parentPage = $iaPage->getById($_POST['parent_id']);
+			$parentPage = $this->getById($params['parent']);
 			$parentAlias = empty($parentPage['alias']) ? $parentPage['name'] . IA_URL_DELIMITER : $parentPage['alias'];
 
-			$newPage['parent'] = $parentPage['name'];
-			$newPage['alias'] = $parentAlias . (IA_URL_DELIMITER == substr($parentAlias, -1, 1) ? '' : IA_URL_DELIMITER) . $newPage['alias'];
+			$url = $parentAlias . (IA_URL_DELIMITER == substr($parentAlias, -1, 1) ? '' : IA_URL_DELIMITER) . $url;
 		}
 
-		if ($iaDb->exists('`id` != :id AND `alias` = :alias', array('id' => isset($_GET['id']) ? $_GET['id'] : 0, 'alias' => $newPage['alias'])))
-		{
-			$error = true;
-			$messages[] = iaLanguage::get('custom_url_exist');
-		}
+		$url.= $params['ext'];
 
-		if (isset($_POST['home_page']) && $iaAcl->checkAccess($permission . 'home'))
-		{
-			if ((int)$_POST['home_page'])
-			{
-				$iaCore->set('home_page', $newPage['name'], true);
-			}
-		}
+		$exists = $this->_iaDb->exists('`alias` = :url AND `name` != :name', array('url' => $url, 'name' => $name));
+		$url = IA_URL . $url;
 
-		if (isset($_POST['meta_description']) && $_POST['meta_description'])
-		{
-			if (!utf8_is_valid($_POST['meta_description']))
-			{
-				$_POST['meta_description'] = utf8_bad_replace($_POST['meta_description']);
-			}
-			$newPage['meta_description'] = $_POST['meta_description'];
-		}
-
-		if (isset($_POST['meta_keywords']) && $_POST['meta_keywords'])
-		{
-			if (!utf8_is_valid($_POST['meta_keywords']))
-			{
-				$_POST['meta_keywords'] = utf8_bad_replace($_POST['meta_keywords']);
-			}
-			$newPage['meta_keywords'] = $_POST['meta_keywords'];
-		}
-
-		if (isset($_POST['nofollow']))
-		{
-			$newPage['nofollow'] = (int)$_POST['nofollow'];
-		}
-
-		if (isset($_POST['new_window']))
-		{
-			$newPage['new_window'] = (int)$_POST['new_window'];
-		}
-
-		$newPage['extras'] = isset($_POST['extras']) ? iaSanitize::sql($_POST['extras']) : '';
-
-		if (isset($_POST['contents']) && is_array($_POST['contents']))
-		{
-			foreach ($_POST['contents'] as $key => $content)
-			{
-				utf8_is_valid($_POST['contents'][$key], $key);
-			}
-			$newPage['contents'] = $_POST['contents'];
-		}
-
-		if (empty($newPage['name']))
-		{
-			$error = true;
-			$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('name')));
-		}
-		elseif (iaCore::ACTION_ADD == $pageAction && $iaDb->exists('`status` != :status AND `name` = :name', array('status' => iaCore::STATUS_DRAFT, 'name' => $newPage['name'])))
-		{
-			$error = true;
-			$messages[] = iaLanguage::get('page_name_exists');
-		}
-
-		$newPage['titles'] = $_POST['titles'];
-
-		// delete custom url
-		if (isset($_POST['unique']) && 0 == $_POST['unique'])
-		{
-			$newPage['custom_url'] = '';
-		}
-
-		if (!$error)
-		{
-			// TODO: refactor the permissions management
-/*			if (isset($_POST['usergroups']))
-			{
-				$iaDb->setTable('acl_privileges');
-				$iaDb->delete("`object` = 'pages' AND `type` = 'group' AND `object_id` = '{$newPage['name']}'");
-				foreach ($userGroups as $userGroup)
-				{
-					if (!in_array($ugroup['id'], $_POST['usergroups']))
-					{
-						$iaDb->insert(array(
-							'type' => 'group',
-							'type_id' => $userGroup['id'],
-							'action' => iaCore::ACTION_READ,
-							'access' => 0,
-							'object' => 'pages',
-							'object_id' => $newPage['name']
-						));
-					}
-				}
-				$iaDb->resetTable();
-			}
-*/
-			if (iaCore::ACTION_EDIT == $pageAction)
-			{
-				$id = (int)$_POST['id'];
-				if (isset($_POST['service']) && 1 == $_POST['service'])
-				{
-					$update = $newPage;
-					$newPage = array(
-						'name' => $update['name'],
-						'titles' => $update['titles'],
-						'meta_keywords' => isset($update['meta_keywords']) ? $update['meta_keywords'] : '',
-						'meta_description' => isset($update['meta_description']) ? $update['meta_description'] : '',
-						'status' => $update['status'],
-						'extras' => $update['extras']
-					);
-				}
-
-				$result = $iaPage->update($newPage, $id);
-
-				if ($result)
-				{
-					$messages[] = iaLanguage::get('saved');
-				}
-				else
-				{
-					$error = true;
-					$messages[] = $iaPage->getMessage();
-				}
-			}
-			else
-			{
-				$id = $iaPage->insert($newPage);
-				if ($id)
-				{
-					$messages[] = iaLanguage::get('page_added');
-				}
-				else
-				{
-					$error = true;
-					$messages[] = $iaPage->getMessage();
-				}
-			}
-
-			if (!$error)
-			{
-				if ($iaAcl->checkAccess('admin_page:add', 'menus'))
-				{
-					$menus = (isset($_POST['menus']) && is_array($_POST['menus'])) ? $_POST['menus'] : array();
-					$iaDb->setTable('menus');
-
-					$menusList = $iaDb->all(array('id', 'name', 'title', 'removable'), "`type` = 'menu'", null, null, 'blocks');
-					foreach ($menusList as $item)
-					{
-						$items = array();
-						$add = false;
-						if (in_array($item['name'], $menus))
-						{
-							if (!$iaDb->exists('`menu_id` = :menu AND `page_name` = :page', array('menu' => $item['id'], 'page' => $newPage['name'])))
-							{
-								$items[] = array(
-									'parent_id' => 0,
-									'menu_id' => $item['id'],
-									'el_id' => $id . '_' . iaUtil::generateToken(5),
-									'level' => 0,
-									'page_name' => $newPage['name']
-								);
-								$add = true;
-
-								$menus[] = $item['name'];
-							}
-						}
-						else
-						{
-							$iaDb->delete('`menu_id` = :menu AND `page_name` = :page', null, array('menu' => $item['id'], 'page' => $newPage['name']));
-						}
-
-						if ($add)
-						{
-							$iaDb->insert($items);
-						}
-
-						$iaCore->factory('cache')->remove('menu_' . $item['id'] . '.inc');
-					}
-					$iaDb->resetTable();
-				}
-
-				if (!isset($_POST['preview']))
-				{
-					$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
-					$url = IA_ADMIN_URL . 'pages/';
-					iaUtil::post_goto(array(
-						'add' => $url . 'add/',
-						'list' => $url,
-						'stay' => $url . 'edit/' . $id . '/',
-					));
-				}
-				else
-				{
-					iaUtil::go_to(IA_URL . 'page/' . $newPage['name'] . '/?page_preview=true');
-				}
-			}
-		}
-
-		$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
-	}
-
-	switch ($pageAction)
-	{
-		case iaCore::ACTION_READ:
-			$iaView->grid('admin/pages');
-
-			break;
-
-		case iaCore::ACTION_ADD:
-		case iaCore::ACTION_EDIT:
-			$pageId = (isset($iaCore->requestPath[0]) && is_numeric($iaCore->requestPath[0])) ? (int)$iaCore->requestPath[0] : null;
-			$menus = array();
-			$displayableInMenus = array();
-
-			if (iaCore::ACTION_EDIT == $pageAction)
-			{
-				if (!$pageId)
-				{
-					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-				}
-
-				$page = $iaPage->getById($pageId);
-
-				$iaDb->setTable(iaLanguage::getTable());
-				$page['titles'] = $iaDb->keyvalue(array('code', 'value'), "`key` = 'page_title_{$page['name']}' AND `category` = 'page'");
-				$page['contents'] = $iaDb->keyvalue(array('code', 'value'), "`key` = 'page_content_{$page['name']}' AND `category` = 'page'");
-				$iaDb->resetTable();
-
-				$parentAlias = '';
-				if ($page['parent'])
-				{
-					$parentAlias = $iaPage->getByName($page['parent'], false);
-					$parentAlias = empty($parentAlias['alias']) ? $parentAlias['name'] . IA_URL_DELIMITER : $parentAlias['alias'];
-				}
-
-				$page['extension'] = (false === strpos($page['alias'], '.')) ? '' : end(explode('.', $page['alias']));
-				$page['alias'] = substr($page['alias'], strlen($parentAlias), -1 - strlen($page['extension']));
-
-				if ($page['name'] == $page['alias'])
-				{
-					$page['alias'] = '';
-				}
-
-				$iaView->assign('home_page', ($iaCore->get('home_page', iaView::DEFAULT_HOMEPAGE) == $page['name'] ? 1 : 0));
-			}
-			else
-			{
-				$page = array(
-					'name' => iaUtil::checkPostParam('name'),
-					'extension' => '',
-					'parent' => '',
-					'readonly' => false,
-					'service' => false
-				);
-
-				$iaView->assign('home_page', 0);
-			}
-
-			if ($iaAcl->checkAccess('admin_page:add', 0, 0, 'menus'))
-			{
-				$displayableInMenus[0] = array('title' => iaLanguage::get('core_menus', 'Core menus'), 'list' => array());
-				$displayableInMenus[1] = array('title' => iaLanguage::get('custom_menus', 'Custom menus'), 'list' => array());
-
-				$menusList = $iaDb->all(array('id', 'name', 'title', 'removable'), "`type` = 'menu'", null, null, 'blocks');
-
-				foreach ($menusList as $item)
-				{
-					$item['title'] = iaLanguage::get($item['title'], $item['title']);
-					if ($pageId)
-					{
-						// TODO: refactor (remove the SQL query)
-						if ($iaDb->exists('`menu_id` = :menu AND `page_name` = :page', array('menu' => (int)$item['id'], 'page' => $page['name']), 'menus'))
-						{
-							$menus[] = $item['name'];
-						}
-					}
-					$displayableInMenus[$item['removable']]['list'][$item['name']] = $item;
-				}
-
-				ksort($displayableInMenus[0]['list']);
-				ksort($displayableInMenus[1]['list']);
-
-				$iaView->assign('menus', $menus);
-
-				if (iaCore::ACTION_ADD == $pageAction)
-				{
-					$menus = (isset($_POST['menus']) && $_POST['menus']) ? $_POST['menus'] : array();
-					$iaView->assign('menus', $menus);
-				}
-			}
-/*
-			if ($pageAction == iaCore::ACTION_EDIT)
-			{
-				$perms = array();
-				if ($array = $iaDb->all(array('type_id', 'access'), "`type` = 'group' AND `action` = 'read' AND `object` = 'pages' AND `object_id` = '{$page['name']}'", null, null, 'acl_privileges'))
-				{
-					foreach ($array as $row)
-					{
-						if (!$row['access'])
-						{
-							$perms[] = $row['type_id'];
-						}
-					}
-				}
-			}
-			else
-			{
-				$perms = isset($_POST['usergroups']) ? $_POST['usergroups'] : array();
-			}
-*/
-			$parentPage = $iaPage->getByName($page['parent'], false);
-
-			$groups = $iaPage->getGroups(array($iaCore->get('home_page'), $page['name']));
-
-			/* temporary */
-			$options = array('list' => 'go_to_list', 'add' => 'add_another_one', 'stay' => 'stay_here');
-			$iaView->assign('goto', $options);
-			//
-
-			$iaView->assign('item', $page);
-			$iaView->assign('pages', $iaPage->getNonServicePages(array('index')));
-			$iaView->assign('pages_group', $groups);
-			$iaView->assign('parent_page', $parentPage['id']);
-			$iaView->assign('extensions', $iaPage->extendedExtensions);
-			$iaView->assign('usergroups', $userGroups);
-//			$iaView->assign('perms', $perms);
-			$iaView->assign('show_in_menus', $displayableInMenus);
-			$iaView->add_js('ckeditor/ckeditor, admin/pages');
-
-			$iaView->display('pages');
+		return array('url' => $url, 'exists' => $exists);
 	}
 }
-
-$iaDb->resetTable();

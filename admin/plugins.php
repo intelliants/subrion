@@ -513,8 +513,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				else
 				{
 					$result['groups'] = $iaExtra->getMenuGroups();
-
-					$result['message'] = ('install' == $action)
+					$result['message'] = (iaExtra::ACTION_INSTALL == $action)
 						? iaLanguage::getf('plugin_installed', array('name' => $iaExtra->itemData['info']['title']))
 						: iaLanguage::getf('plugin_reinstalled', array('name' => $iaExtra->itemData['info']['title']));
 

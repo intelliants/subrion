@@ -144,7 +144,7 @@ class iaMailer extends PHPMailer
 		$this->Body = $this->_iaCore->get($name . '_body');
 	}
 
-	public function sendToAdministrators()
+	public function sendToAdministrators($clearAddresses = true)
 	{
 		if ($administrators = $this->_iaCore->iaDb->keyvalue(array('email', 'fullname'), '`usergroup_id` = ' . iaUsers::MEMBERSHIP_ADMINISTRATOR, iaUsers::getTable()))
 		{
@@ -154,7 +154,7 @@ class iaMailer extends PHPMailer
 			}
 		}
 
-		return self::send();
+		return $this->send($clearAddresses);
 	}
 
 	public function send($clearAddresses = true)

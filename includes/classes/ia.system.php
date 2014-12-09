@@ -53,7 +53,7 @@ final class iaSystem
 			// backend controllers
 			'iaAbstractControllerBackend' => 'ia.base.controller.admin',
 			'iaAbstractControllerPluginBackend' => 'ia.base.controller.plugin.admin',
-			'iaAbstractControllerPackageBackend' => 'ia.base.controller.package.admin',
+			'iaAbstractControllerPackageBackend' => 'ia.base.controller.package.admin'
 		);
 
 		if (isset($systemClasses[$className]))
