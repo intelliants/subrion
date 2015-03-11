@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -34,12 +34,16 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_phraseAddSuccess = 'usergroup_added';
 	protected $_phraseGridEntryDeleted = 'usergroup_deleted';
 
+	protected $_iaUsers = null;
+
 
 	public function __construct()
 	{
 		parent::__construct();
 
 		$this->setTable(iaUsers::getUsergroupsTable());
+
+		$this->_iaUsers = $this->_iaCore->factory('users');
 	}
 
 	protected function _gridRead($params)
@@ -58,15 +62,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _entryDelete($entryId)
 	{
-		$result = parent::_entryDelete($entryId);
-
-		if ($result)
-		{
-			$this->_iaDb->delete('`type` = :type AND `type_id` = :id', 'acl_privileges', array('type' => 'group', 'id' => $entryId)); // TODO: use the class method for this
-			$this->_iaDb->update(array('usergroup_id' => iaUsers::MEMBERSHIP_REGULAR), iaDb::convertIds((int)$entryId, 'usergroup_id'), null, iaUsers::getTable());
-		}
-
-		return $result;
+		return $this->_iaUsers->deleteUsergroup($entryId);
 	}
 
 	protected function _gridQuery($columns, $where, $order, $start, $limit)
@@ -85,25 +81,63 @@ class iaBackendController extends iaAbstractControllerBackend
 			. $order
 			. 'LIMIT ' . $start . ', ' . $limit;
 
-		return $this->_iaDb->getAll($sql);
+		$usergroups = $this->_iaDb->getAll($sql);
+		foreach ($usergroups as &$usergroup)
+		{
+			$usergroup['title'] = iaLanguage::get('usergroup_' . $usergroup['name']);
+		}
+
+		return $usergroups;
 	}
 
-	protected function _preSaveEntry(array &$entry, array $data)
+	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
 		$iaAcl = $this->_iaCore->factory('acl');
 
-		$entry['title'] = empty($data['title']) ? '' : $data['title'];
-		$entry['id'] = $iaAcl->obtainFreeId();
-		$entry['assignable'] = (int)$_POST['assignable'];
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
-		if (empty($entry['title']))
+		$entry['id'] = $iaAcl->obtainFreeId();
+		$entry['assignable'] = $data['visible'];
+		$entry['visible'] = $data['visible'];
+
+		if (iaCore::ACTION_ADD == $action)
 		{
-			$this->addMessage('error_usergroup_incorrect');
+			if (empty($data['name']))
+			{
+				$this->addMessage('error_usergroup_incorrect');
+			}
+			else
+			{
+				$entry['name'] = strtolower(iaSanitize::paranoid($data['name']));
+				if (!iaValidate::isAlphaNumericValid($entry['name']))
+				{
+					$this->addMessage('error_usergroup_incorrect');
+				}
+				elseif ($this->_iaDb->exists('`name` = :name', array('name' => $entry['name'])))
+				{
+					$this->addMessage('error_usergroup_exists');
+				}
+			}
 		}
 
-		if ($this->_iaDb->exists('`title` = :title', $entry))
+		foreach ($this->_iaCore->languages as $iso => $title)
 		{
-			$this->addMessage('error_usergroup_exists');
+			if (empty($data['title'][$iso]))
+			{
+				$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $this->_iaCore->languages[$iso])), false);
+			}
+			elseif (!utf8_is_valid($data['title'][$iso]))
+			{
+				$data['title'][$iso] = utf8_bad_replace($data['title'][$iso]);
+			}
+		}
+
+		if (!$this->getMessages())
+		{
+			foreach ($this->_iaCore->languages as $iso => $title)
+			{
+				iaLanguage::addPhrase('usergroup_' . $entry['name'], $data['title'][$iso], $iso);
+			}
 		}
 
 		return !$this->getMessages();
@@ -111,7 +145,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _postSaveEntry(array $entry, array $data, $action)
 	{
-		// copying privileges
+		// copy privileges
 		$copyFrom = isset($data['copy_from']) ? (int)$data['copy_from'] : 0;
 		if ($copyFrom)
 		{
@@ -127,24 +161,22 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			$this->_iaDb->resetTable();
 		}
-		//
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
 		iaBreadcrumb::replaceEnd(iaLanguage::get('add_usergroup'), IA_SELF);
 
-		$iaView->assign('groups', $this->_iaDb->keyvalue(array('id', 'title')));
+		$iaView->assign('groups', $this->_iaDb->keyvalue(array('id', 'name')));
 	}
 
 	private function _getUsergroups()
 	{
 		$result = array('data' => array());
 
-		$iaUsers = $this->_iaCore->factory('users');
-		foreach ($iaUsers->getUsergroups() as $id => $title)
+		foreach ($this->_iaUsers->getUsergroups() as $id => $name)
 		{
-			$result['data'][] = array('value' => $id, 'title' => $title);
+			$result['data'][] = array('value' => $id, 'title' => iaLanguage::get('usergroup_' . $name));
 		}
 
 		return $result;

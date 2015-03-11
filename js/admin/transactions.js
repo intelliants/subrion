@@ -24,24 +24,26 @@ Ext.onReady(function()
 				'delete'
 			],
 			fields: ['plan_id'],
+			sorters: [{property: 'date', direction: 'DESC'}],
 			statuses: ['pending','passed','failed','refunded'],
 			texts:{
 				delete_single: _t('are_you_sure_to_delete_this_transaction'),
 				delete_multiple: _t('are_you_sure_to_delete_transactions')
 			}
 		}, false);
+
 		grid.toolbar = Ext.create('Ext.Toolbar', {items:[
 		{
 			xtype: 'textfield',
 			name: 'username',
 			emptyText: _t('username'),
 			listeners: intelli.gridHelper.listener.specialKey
-		},{
+		}, {
 			xtype: 'textfield',
 			name: 'reference_id',
 			emptyText: _t('reference_id'),
 			listeners: intelli.gridHelper.listener.specialKey
-		},{
+		}, {
 			emptyText: _t('item'),
 			xtype: 'combo',
 			typeAhead: true,
@@ -50,7 +52,7 @@ Ext.onReady(function()
 			displayField: 'title',
 			name: 'item',
 			valueField: 'value'
-		},{
+		}, {
 			emptyText: _t('status'),
 			name: 'status',
 			id: 'fltStatus',
@@ -60,11 +62,11 @@ Ext.onReady(function()
 			store: grid.stores.statuses,
 			displayField: 'title',
 			valueField: 'value'
-		},{
+		}, {
 			handler: function(){intelli.gridHelper.search(grid)},
 			id: 'fltBtn',
 			text: '<i class="i-search"></i> ' + _t('search')
-		},{
+		}, {
 			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
@@ -111,8 +113,9 @@ Ext.onReady(function()
 						('members' == itemName) ? Ext.getCmp('itemid').hide() : Ext.getCmp('itemid').show();
 
 						itemPlanCtl.clearValue();
-						//itemPlanCtl.getStore().baseParams = {itemname: itemName};
-						itemPlanCtl.getStore().reload({itemname: itemName});
+
+						itemPlanCtl.getStore().proxy.extraParams = { itemname: itemName};
+						itemPlanCtl.getStore().load();
 					}
 				},
 				valueField: 'value'
@@ -197,28 +200,29 @@ Ext.onReady(function()
 					xtype: 'textfield',
 					anchor: '100%',
 					labelWidth: 140
-				},members,{
+				}, members, {
 					anchor: '100%',
 					fieldLabel: _t('email'),
 					labelWidth: 140,
 					name: 'email',
 					vtype: 'email',
 					xtype: 'textfield'
-				},{
+				}, {
 					fieldLabel: _t('total'),
 					name: 'amount',
 					allowBlank: false,
 					xtype: 'textfield',
 					anchor: '100%',
 					labelWidth: 140
-				},{
+				}, {
 					fieldLabel: _t('id'),
 					name: 'itemid',
 					allowBlank: true,
 					hidden: true,
 					id: 'itemid',
-					xtype: 'numberfield'
-				},{
+					xtype: 'numberfield',
+					labelWidth: 140
+				}, {
 					fieldLabel: _t('date'),
 					xtype: 'fieldcontainer',
 					layout: 'hbox',

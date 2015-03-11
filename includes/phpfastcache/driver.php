@@ -1,9 +1,9 @@
 <?php
 
 /*
- * khoaofgod@yahoo.com
+ * khoaofgod@gmail.com
  * Website: http://www.phpfastcache.com
- * Example at our website, any bugs, problems, please visit http://www.codehelper.io
+ * Example at our website, any bugs, problems, please visit http://faster.phpfastcache.com
  */
 
 
@@ -11,7 +11,7 @@ interface phpfastcache_driver {
     /*
      * Check if this Cache driver is available for server or not
      */
-     function __construct($option = array());
+     function __construct($config = array());
 
      function checkdriver();
 

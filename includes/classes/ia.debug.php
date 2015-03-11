@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -100,7 +100,7 @@ class iaDebug
 		$iaCore->factory('users');
 
 		self::dump(iaCore::ACCESS_FRONT == $iaCore->getAccessType() ? iaCore::FRONT : iaCore::ADMIN, 'Access Type');
-		self::dump($iaCore->iaView->getParams(), 'Page');
+		self::dump($iaCore->iaView->getParams(), 'Page', 'info');
 		self::dump($iaCore->iaView->get('action'), 'Action', 'info');
 		self::dump($iaCore->iaView->get('filename'), 'Module');
 		self::dump($iaCore->iaView->language, 'Language');
@@ -154,7 +154,6 @@ class iaDebug
 
 		if ($queries = $iaCore->iaDb->getQueriesList())
 		{
-			array_unshift($queries, 'Core Queries');
 			$duplicated = array();
 			$index = 0;
 
@@ -162,7 +161,7 @@ class iaDebug
 			{
 				if (!is_array($query))
 				{
-					$table .= '<tr><th colspan="3" style="color:green"><div>'.$query.'</div></th></tr>';
+					$table .= '<tr><th colspan="3" style="color:green"><div>' . $query . '</div></th></tr>';
 				}
 				else
 				{
@@ -204,13 +203,12 @@ class iaDebug
 					);
 					$query[0] = str_replace($search, $replace, $query[0]);
 
-					$table .= '<tr><td style="width:15px;color:'.($query[1] > 0.001 ? 'red' : 'green') . ';">'
-						. ($query[1] * 1000) . '&nbsp;ms</td><td style="width:30px;text-align:center;">' . $index . '.</td><td>'
-						. $double.self::dump($query[0], $title, 1) . '</td></tr>';
+					$table .= '<tr><td class="iterator">' . $index . '.</td><td style="width: 15px; color: '.($query[1] > 0.001 ? 'red' : 'green') . ';">'
+						. ($query[1] * 1000) . '&nbsp;ms</td><td>' . $double.self::dump($query[0], $title, 1, 'sql') . '</td></tr>';
 				}
 			}
 		}
-		echo '<table cellspacing="0" cellpadding="0" width="100%"><tr><th width="30">Time</th><th></th><th>Query</th></tr>' . $table . '</table>';
+		echo '<table><tr><th width="30">#</th><th>Time</th><th>Query</th></tr>' . $table . '</table>';
 
 		return sprintf('[Queries: %d]', $iaCore->iaDb->getCount());
 	}
@@ -242,20 +240,24 @@ class iaDebug
 			{
 				unset($listUnused[$name]);
 
-				$cellContent = '';
+				$hooksContent = array();
+				$j = 0;
 				foreach ($listLoaded[$name] as $pluginName => $hookData)
 				{
-					$cellContent .= '<h5>' . (empty($pluginName) ? 'core' : $pluginName) . '</h5>';
-					foreach ($hookData as $key => $value)
-					{
-						if ($value && in_array($key, array('code', 'type', 'filename')))
-						{
-							$cellContent .= '<u>' . $key . '</u>: ' . ('code' == $key ? iaSanitize::html($value, 0, 100) : $value) . '<br>';
-						}
-					}
+					$j++;
+					$pluginName = empty($pluginName) ? 'core' : $pluginName;
+
+					$hooksContent['hooks'][$j]['header'] = '<div style="margin: 10px 0 5px 0;"><b>Type:</b> ' . $hookData['type'] . '<b style="margin-left: 30px;">Extension:</b> ' . $pluginName . '</div>';
+					$hooksContent['hooks'][$j]['type'] = $hookData['type'];
+					$hooksContent['hooks'][$j]['filename'] = $hookData['filename'];
+					$hooksContent['hooks'][$j]['code'] = iaSanitize::html($hookData['code'], 0, 100);
 				}
+
 				$name = '<span style="color: green;">(' . count($listLoaded[$name]) . ')</span> ' . $name;
-				$cellContent = self::dump($cellContent, $name, true);
+
+				ob_start();
+				self::dump($hooksContent, $name, true);
+				$cellContent = ob_get_clean();
 			}
 			else
 			{
@@ -264,7 +266,7 @@ class iaDebug
 
 			$type = is_array($type) ? $type[0] : $type;
 
-			$output.= '<tr><td width="30">' . $i . '</td><td width="60"><i>' . $type . '</i></td><td>' . $cellContent . '</td></tr>';
+			$output.= '<tr><td class="iterator">' . $i . '</td><td width="60"><i>' . $type . '</i></td><td>' . $cellContent . '</td></tr>';
 		}
 
 		foreach ($listLoaded as $hooks)
@@ -318,10 +320,8 @@ class iaDebug
 				$last[0] = $last[1] = iaSystem::$timer[$i]['time'];
 				$totalTime += $times;
 
-				$text .= ('<tr><td width="1">' . $i . '.</td><td colspan="3" width="100%"><div class="hr">&nbsp;</div></td></tr>
-				<tr>
-					<td rowspan="2">&nbsp;</td>
-					<td rowspan="2" width="60%">
+				$text .= ('<tr><td class="iterator" rowspan="2">' . $i . '.</td>
+					<td rowspan="2" class="noborder">
 						<i>' . iaSystem::$timer[$i]['description'] . '</i> <br />
 						' . ( $perc >= 5 ? '<font color="orange"><i>memory up:</i></font> ' . $perc . '%' : '' )
 					. '</td>
@@ -329,8 +329,8 @@ class iaDebug
 					<td>' . ( $times > 0.01 ? '<font color="red">' . $times * 1000 . '</font>' : $times * 1000 ) . ' ms ('.($totalTime).' s)</td>
 				</tr>
 				<tr>
-					<td><b>Memory usage:</b></td>
-					<td>'
+					<td width="100"><b>Memory usage:</b></td>
+					<td width="150">'
 					. iaSystem::byteView($memoryUsed)
 					. ' (' . number_format($memoryUsed, 0, '', ' ')
 					. ')</td>
@@ -344,11 +344,12 @@ class iaDebug
 		$text = str_replace($search, $replace, '<b>Real time render:</b> ' . $totalRealTime . '<br />
 			<b>Math time render:</b> ' . $totalTime . '<br />
 			<b>Memory usage:</b> ' . iaSystem::byteView($memoryUsed) . '(' . number_format($memoryUsed, 0, '', ' ') . 'b)
-			<table border="0" cellspacing="2" cellpadding="2" width="100%">' . $text . '</table>');
+
+			<table>' . $text . '</table>');
 
 		echo $text;
 
-		return '[Time: '.$totalRealTime.'] [Mem.: '.iaSystem::byteView($memoryUsed).']';
+		return '[Time: ' . $totalRealTime . '] [Mem.: ' . iaSystem::byteView($memoryUsed) . ']';
 	}
 
 	private static function _deepSanitizeHtml($value)
@@ -368,7 +369,7 @@ class iaDebug
 		}
 	}
 
-	public static function dump($value = '<br />', $title = '', $type = false)
+	public static function dump($value = '<br />', $title = '', $type = false, $hl = 'php')
 	{
 		if (!INTELLI_DEBUG && !INTELLI_QDEBUG)
 		{
@@ -389,15 +390,39 @@ class iaDebug
 					$name = 'pre_' . mt_rand(1000, 9999);
 					echo '<div style="margin:0px;font-size:11px;"><span onclick="document.getElementById(\''.$name.'\').style.display = (document.getElementById(\''.$name.'\').style.display==\'none\' ? \'block\' : \'none\');">
 					<b><i style="color:green;cursor:pointer;text-shadow: 0 1px 1px white;">'.$title.'</i></b></span> ['.count($value).']</div>
-					<pre style="display:none;font-size:12px;max-height:250px;overflow:auto;margin:5px;" id="'.$name.'">';
+					<pre style="display:none;font-size:12px;max-height:250px;overflow:auto;margin: 5px 0 10px;" id="'.$name.'">';
 				}
 				else
 				{
 					echo '<pre>';
 				}
 
-				print_r(self::_deepSanitizeHtml($value));
-				echo '</pre>';
+				if (isset($value['hooks']))
+				{
+					foreach ($value['hooks'] as $hook)
+					{
+						echo $hook['header'];
+						if ($hook['filename'])
+						{
+							echo $hook['filename'];
+						}
+						else
+						{
+							$hl = 'smarty' == $hook['type'] ? 'html' : $hook['type'];
+							echo "<code class='$hl'>";
+							print_r($hook['code']);
+							echo '</code>';
+						}
+
+					}
+				}
+				else
+				{
+					echo "<code class='{$hl}'>";
+					print_r(self::_deepSanitizeHtml($value));
+					echo '</code>';
+				}
+ 				echo '</pre>';
 			}
 		}
 		else
@@ -405,9 +430,7 @@ class iaDebug
 			switch (true)
 			{
 				case is_bool($value):
-					$value = $value
-						? '<i style="color:green">true</i>'
-						: '<i style="color:red">false</i>';
+					$value = $value ? '<i style="color:green">true</i>' : '<i style="color:red">false</i>';
 					break;
 				case is_null($value):
 					$value = '<i style="color:gray">NULL</i>';
@@ -415,17 +438,18 @@ class iaDebug
 
 			if ($type)
 			{
-				$count = 50;
+				$count = 100;
 				if (strlen($value) > $count)
 				{
 					$title = $title ? $title : substr($value, 0, - strlen($value) + $count) . ' ... ';
 					$name = 'val_' . mt_rand(1000, 9999);
+
 					return '<div onclick="document.getElementById(\''.$name.'\').style.display = (document.getElementById(\''.$name.'\').style.display==\'none\' ? \'block\' : \'none\');">'
-						. '<b><i style="color:black;cursor:pointer;">'.$title.'</i></b></div><div style="display:none;color:#464B4D;" id="'.$name.'"><pre><code class="sql">'.$value.'</code></pre></div> ';
+						. '<b><i style="color:black;cursor:pointer;">'.$title.'</i></b></div><div style="display:none;color:#464B4D;" id="'.$name.'"><pre><code class="' . $hl . '">'.$value.'</code></pre></div> ';
 				}
 				else
 				{
-					return '<div style="color:black;"><pre><code class="sql">'.$value.'</code></pre></div>';
+					return '<div style="color: black;"><pre><code class="' . $hl . '">' . $value . '</code></pre></div>';
 				}
 			}
 			else

@@ -1,21 +1,28 @@
 <?php
 
-// If no autoloader, uncomment these lines:
-require_once(IA_INCLUDES . 'phpimageworkshop/Core/ImageWorkshopLayer.php');
-require_once(IA_INCLUDES . 'phpimageworkshop/Exception/ImageWorkshopException.php');
+namespace phpimageworkshop;
+
+require_once IA_INCLUDES . 'phpimageworkshop/Core/ImageWorkshopLayer.php';
+require_once IA_INCLUDES . 'phpimageworkshop/Core/ImageWorkshopLib.php';
+require_once IA_INCLUDES . 'phpimageworkshop/Exception/ImageWorkshopBaseException.php';
+require_once IA_INCLUDES . 'phpimageworkshop/Exception/ImageWorkshopException.php';
+
+use phpimageworkshop\Core\ImageWorkshopLayer as ImageWorkshopLayer;
+use phpimageworkshop\Core\ImageWorkshopLib as ImageWorkshopLib;
+use phpimageworkshop\Exception\ImageWorkshopException as ImageWorkshopException;
 
 /**
  * ImageWorkshop class
  * 
  * Use this class as a factory to initialize ImageWorkshop layers
  *
- * @version 2.0.0
+ * @version 2.0.6
  * @link http://phpimageworkshop.com
  * @author Sybio (Clément Guillemain / @Sybio01)
  * @license http://en.wikipedia.org/wiki/MIT_License
  * @copyright Clément Guillemain
  */
-class ImageWorkshop extends abstractCore
+class ImageWorkshop
 {
     /**
      * @var integer
@@ -27,6 +34,16 @@ class ImageWorkshop extends abstractCore
      */
     const ERROR_IMAGE_NOT_FOUND = 2;
     
+    /**
+     * @var integer
+     */
+    const ERROR_NOT_WRITABLE_FILE = 3;
+    
+    /**
+     * @var integer
+     */
+    const ERROR_CREATE_IMAGE_FROM_STRING = 4;
+      
     /**
      * Initialize a layer from a given image path
      * 
@@ -40,10 +57,19 @@ class ImageWorkshop extends abstractCore
     {
         if (file_exists($path) && !is_dir($path)) {
             
-            $imageSizeInfos = getImageSize($path);
+            if (!is_readable($path)) {
+                throw new ImageWorkshopException('Can\'t open the file at "'.$path.'" : file is not writable, did you check permissions (755 / 777) ?', static::ERROR_NOT_WRITABLE_FILE);
+            }
+            
+            $imageSizeInfos = @getImageSize($path);
             $mimeContentType = explode('/', $imageSizeInfos['mime']);
+            
+            if (!$mimeContentType || !array_key_exists(1, $mimeContentType)) {
+                throw new ImageWorkshopException('Not an image file (jpeg/png/gif) at "'.$path.'"', static::ERROR_NOT_AN_IMAGE_FILE);
+            }
+            
             $mimeContentType = $mimeContentType[1];
-
+            
             switch ($mimeContentType) {
                 case 'jpeg':
                     $image = imageCreateFromJPEG($path);
@@ -58,14 +84,14 @@ class ImageWorkshop extends abstractCore
                 break;
 
                 default:
-                    throw new ImageWorkshopException('Not an image file (jpeg/png/gif) at "'.$path.'"', self::ERROR_NOT_AN_IMAGE_FILE);
+                    throw new ImageWorkshopException('Not an image file (jpeg/png/gif) at "'.$path.'"', static::ERROR_NOT_AN_IMAGE_FILE);
                 break;
             }
             
             return new ImageWorkshopLayer($image);
         }
         
-        throw new ImageWorkshopException('No such file found at "'.$path.'"', self::ERROR_IMAGE_NOT_FOUND);
+        throw new ImageWorkshopException('No such file found at "'.$path.'"', static::ERROR_IMAGE_NOT_FOUND);
     }
     
     /**
@@ -84,7 +110,7 @@ class ImageWorkshop extends abstractCore
     {
         $textDimensions = ImageWorkshopLib::getTextBoxDimension($fontSize, $textRotation, $fontPath, $text);
 
-        $layer = self::initVirginLayer($textDimensions['width'], $textDimensions['height'], $backgroundColor);
+        $layer = static::initVirginLayer($textDimensions['width'], $textDimensions['height'], $backgroundColor);
         $layer->write($text, $fontPath, $fontSize, $fontColor, $textDimensions['left'], $textDimensions['top'], $textRotation);
         
         return $layer;
@@ -103,7 +129,7 @@ class ImageWorkshop extends abstractCore
     {
         $opacity = 0;
         
-        if (!$backgroundColor || $backgroundColor == 'transparent') {
+        if (null === $backgroundColor || $backgroundColor == 'transparent') {
             $opacity = 127;
             $backgroundColor = 'ffffff';
         }
@@ -134,6 +160,10 @@ class ImageWorkshop extends abstractCore
      */
     public static function initFromString($imageString)
     {
-        return new ImageWorkshopLayer(imageCreateFromString($imageString));
+        if (!$image = @imageCreateFromString($imageString)) {
+            throw new ImageWorkshopException('Can\'t generate an image from the given string.', static::ERROR_CREATE_IMAGE_FROM_STRING);
+        }
+        
+        return new ImageWorkshopLayer($image);
     }
 }

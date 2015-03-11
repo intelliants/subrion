@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -69,6 +69,14 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			trigger_error('An error occurred while selecting database: ' . mysql_error($this->_link), E_USER_ERROR);
 			die();
 		}
+	}
+
+	public function setTimezoneOffset($offset)
+	{
+		$query = 'SET time_zone = :offset';
+		$this->bind($query, array('offset' => $offset));
+
+		$this->query($query);
 	}
 
 	/**
@@ -703,7 +711,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		switch (true)
 		{
 			case is_numeric($ids):
-				return sprintf('`%s` ' . ($equal ? '=' : '!=') . ' %d', $columnName, $ids);
+				return sprintf('`%s` ' . ($equal ? '=' : '!=') . ' %s', $columnName, $ids);
 
 			case is_array($ids):
 				$array = array();

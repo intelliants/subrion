@@ -55,24 +55,30 @@ $(function()
 	// Navbar clickable parent menus
 	$('.nav > li:has(ul)').hover(function()
 	{
-		var _this = $(this);
-		_this.addClass('open');
-		var thisHref = $('> a', _this).attr('href');
-		_this.click(function(){
+		var $this = $(this),
+			thisHref = $('> a', $this).attr('href');
+
+		$this.addClass('open');
+		$this.click(function()
+		{
 			window.location = thisHref;
 		});
+		
 		// disable click on More dropdown
-		$('.dropdown-more').unbind('click');
+		$('.dropdown-more').off('click');
 	}, function()
 	{
 		var $this = $(this);
-		setTimeout(function(){$this.removeClass('open');});
+		setTimeout(function()
+		{
+			$this.removeClass('open');
+		});
 	});
 
 	if ($().datepicker)
 	{
-		$('.js-datepicker').datepicker({
-			showTime: true,
+		$('.js-datepicker').datepicker(
+		{
 			format: 'yyyy-mm-dd H:i:s',
 			language: intelli.config.lang
 		});
@@ -86,10 +92,11 @@ $(function()
 	}
 
 	// update picture titles
-	var pictureTitles = $('.js-edit-picture-title');
-	if (pictureTitles.length)
+	var $pictureTitles = $('.js-edit-picture-title');
+
+	if ($pictureTitles.length)
 	{
-		$(pictureTitles).editable(
+		$pictureTitles.editable(
 		{
 			url: intelli.config.ia_url + 'actions.json',
 			type: 'text',
@@ -105,10 +112,17 @@ $(function()
 
 				return params;
 			},
-			success: function(response)
+			success: function(response, newValue)
 			{
-				var success = ('boolean' == typeof response.error && !response.error);
+				var $self = $(this),
+					success = ('boolean' == typeof response.error && !response.error);
+
 				intelli.notifFloatBox({msg: success ? _t('saved') : response.message, type: success ? 'success' : 'error', autohide: true});
+
+				if (success)
+				{
+					$self.closest('.gallery').find('input[name*="title"]').val(newValue)
+				}
 			}
 		});
 	}

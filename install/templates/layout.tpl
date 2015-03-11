@@ -2,8 +2,9 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title><?php echo $this->steps[$this->step] ?> :: Subrion CMS Web Installer</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+		<title><?php echo isset($this->steps[$this->step]) ? $this->steps[$this->step] : $this->layout()->title ?> :: Subrion CMS Web Installer</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="author" content="Intelliants LLC">
 
 		<!--[if lt IE 9]>
@@ -105,9 +106,11 @@
 				
 					<div class="content-wrapper">
 						<div class="block">
+							<?php if (isset($this->steps[$this->step])): ?>
 							<div class="block-heading">
 								<h3><?php echo $this->steps[$this->step] ?></h3>
 							</div>
+							<?php endif ?>
 							<div class="block-content">
 								<?php if ($this->message): ?>
 									<div class="min-height">
@@ -121,7 +124,7 @@
 					</div>
 				</section>
 			</div>
-		</div><!-- /overall-wrapper -->
+		</div>
 
 	</body>
 </html>

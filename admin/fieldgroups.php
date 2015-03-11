@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -64,6 +64,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach ($entries as &$entry)
 		{
 			$entry['title'] = iaLanguage::get('fieldgroup_' . $entry['name'], $entry['name']);
+			$entry['item'] = iaLanguage::get($entry['item']);
 		}
 	}
 
@@ -114,8 +115,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$this->_iaDb->setTable(iaLanguage::getTable());
 
-			$entryData['description'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_description_{$entryData['item']}_{$entryData['name']}'");
 			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_{$entryData['name']}'");
+			$entryData['description'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_description_{$entryData['item']}_{$entryData['name']}'");
 
 			$this->_iaDb->resetTable();
 		}
@@ -190,8 +191,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_savePhrases($data, $entry['name'], $entry['item']);
 
-		$iaCache = $this->_iaCore->factory('cache');
-		$iaCache->clearAll();
+		$this->_iaCore->iaCache->clearAll();
 	}
 
 	private function _savePhrases(array &$data, $name, $item)
@@ -210,15 +210,12 @@ class iaBackendController extends iaAbstractControllerBackend
 				? $this->_iaDb->update(array('value' => iaSanitize::html($data['titles'][$code])), $stmt)
 				: iaLanguage::addPhrase($phraseKeyTitle, iaSanitize::html($data['titles'][$code]), $code);
 
-			if ($data['description'][$code])
-			{
-				$stmt = '`key` = :phrase AND `code` = :language';
-				$this->_iaDb->bind($stmt, array('phrase' => $phraseKeyDescription, 'language' => $code));
+			$stmt = '`key` = :phrase && `code` = :language';
+			$this->_iaDb->bind($stmt, array('phrase' => $phraseKeyDescription, 'language' => $code));
 
-				$this->_iaDb->exists($stmt)
-					? $this->_iaDb->update(array('value' => iaSanitize::html($data['description'][$code])), $stmt)
-					: iaLanguage::addPhrase($phraseKeyDescription, iaSanitize::html($data['description'][$code]), $code);
-			}
+			$this->_iaDb->exists($stmt)
+				? $this->_iaDb->update(array('value' => iaSanitize::html($data['description'][$code])), $stmt)
+				: iaLanguage::addPhrase($phraseKeyDescription, iaSanitize::html($data['description'][$code]), $code);
 		}
 
 		$this->_iaDb->resetTable();

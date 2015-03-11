@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -58,13 +58,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		if (empty($data['item']))
+		$entry['item'] = in_array($data['item'], $this->_items) ? $data['item'] : null;
+
+		if (!$entry['item'])
 		{
 			$this->addMessage('incorrect_item');
-			return false;
 		}
 
-		$entry['item'] = in_array($data['item'], $this->_items) ? $data['item'] : false;
 		if ($entry['item'] == iaUsers::getItemName())
 		{
 			if (isset($data['usergroup']))
@@ -76,7 +76,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (isset($this->_fields[$entry['item']]))
 		{
 			$entry['data'] = array();
-			if (!empty($data['fields']))
+			if (!empty($data['fields']) && !$this->getMessages())
 			{
 				$f = $this->_fields[$entry['item']];
 				$array = array();
@@ -119,7 +119,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 				elseif (!utf8_is_valid($lang['title'][$languageCode]))
 				{
-					$block['title'][$languageCode] = utf8_bad_replace($lang['title'][$languageCode]);
+					$lang['title'][$languageCode] = utf8_bad_replace($lang['title'][$languageCode]);
 				}
 			}
 
@@ -135,6 +135,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 		}
+
 		$this->_languages = $lang;
 
 		$entry['duration'] = isset($data['duration']) ? $data['duration'] : 0;
@@ -172,6 +173,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$entry['title'] = iaLanguage::get(self::PATTERN_TITLE . $entry['id']);
 			$entry['description'] = iaSanitize::tags(iaLanguage::get(self::PATTERN_DESCRIPTION . $entry['id']));
+			$entry['item'] = iaLanguage::get($entry['item']);
 
 			$entry['duration'].= ' ' . iaLanguage::get($entry['unit'] . ($entry['duration'] > 1 ? 's' : ''));
 			if ($entry['recurring'] && $entry['cycles'] != -1)
@@ -239,10 +241,30 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entryData['data'] = array();
 		}
 
+		// populating titles & descriptions
+		if (empty($_POST['title']))
+		{
+			$this->_iaDb->setTable(iaLanguage::getTable());
+
+			$stmt = "`key` = 'plan_title_" . $this->getEntryId() . "'";
+			$entryData['title'] = $this->_iaDb->keyvalue(array('code', 'value'), $stmt);
+
+			$stmt = "`key` = 'plan_description_" . $this->getEntryId() . "'";
+			$entryData['description'] = $this->_iaDb->keyvalue(array('code', 'value'), $stmt);
+
+			$this->_iaDb->resetTable();
+		}
+		else
+		{
+			list($entryData['title'], $entryData['description']) = array($_POST['title'], $_POST['description']);
+		}
+		//
+
 		$units = $this->_iaDb->getEnumValues($this->getTable(), 'unit');
 		$units = $units ? array_values($units['values']) : array();
 
-		$usergroups = $this->_iaDb->keyvalue(array(iaDb::ID_COLUMN_SELECTION, 'title'), iaDb::convertIds(array(iaUsers::MEMBERSHIP_ADMINISTRATOR, iaUsers::MEMBERSHIP_GUEST), 'id', false), iaUsers::getUsergroupsTable());
+		$usergroups = $this->_iaCore->factory('users')->getUsergroups();
+		unset($usergroups[iaUsers::MEMBERSHIP_ADMINISTRATOR], $usergroups[iaUsers::MEMBERSHIP_GUEST]);
 
 		$iaView->assign('usergroups', $usergroups);
 		$iaView->assign('fields', $this->_fields);

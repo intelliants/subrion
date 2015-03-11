@@ -1,24 +1,25 @@
 <?php
 /*
- * khoaofgod@yahoo.com
+ * khoaofgod@gmail.com
  * Website: http://www.phpfastcache.com
- * Example at our website, any bugs, problems, please visit http://www.codehelper.io
+ * Example at our website, any bugs, problems, please visit http://faster.phpfastcache.com
  */
 
-class phpfastcache_wincache extends phpFastCache implements phpfastcache_driver  {
+class phpfastcache_wincache extends BasePhpFastCache implements phpfastcache_driver  {
 
     function checkdriver() {
         if(extension_loaded('wincache') && function_exists("wincache_ucache_set"))
         {
             return true;
         }
+	    $this->fallback = true;
         return false;
     }
 
-    function __construct($option = array()) {
-        $this->setOption($option);
-        if(!$this->checkdriver() && !isset($option['skipError'])) {
-            throw new Exception("Can't use this driver for your website!");
+    function __construct($config = array()) {
+        $this->setup($config);
+        if(!$this->checkdriver() && !isset($config['skipError'])) {
+	        $this->fallback = true;
         }
 
     }

@@ -4,9 +4,10 @@
 	<summary>Plugin will add lightbox effect to images based on Fancybox javascript library.</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.2.0</version>
-	<date>2014-10-20</date>
-	<compatibility>3.2</compatibility>
+	<version>3.2.1</version>
+	<date>2015-02-03</date>
+	<category>lightbox</category>
+	<compatibility>3.2.6</compatibility>
 
 	<config group="pictures" name="fancybox_divider" type="divider">fancyBox</config>
 	<config group="pictures" name="fancybox_slide_transition" custom="1" type="select" multiplevalues="elastic,fade" description="fancyBox slide effect">elastic</config>
@@ -39,7 +40,12 @@ $(function()
 		padding: {$config.fancybox_padding},
 		arrows: {$config.fancybox_arrows},
 		closeBtn: {$config.fancybox_closeBtn},
-		closeClick: {$config.fancybox_closeClick}
+		closeClick: {$config.fancybox_closeClick},
+		helpers: {
+			overlay: {
+				locked: false
+			}
+		}
 	});
 });
 	{/ia_add_js}
@@ -47,39 +53,4 @@ $(function()
 			]]>
 		</hook>
 	</hooks>
-
-	<install>
-		<code>
-			<![CDATA[
-$iaCore = iaCore::instance();
-
-if ($currentValues = $iaCore->iaDb->one("`multiple_values`", "`name` = 'lightbox_name'", iaCore::getConfigTable()))
-{
-	$values = explode(',', $currentValues);
-}
-
-$values[] = 'fancybox';
-
-$iaCore->iaDb->update(array('multiple_values' => implode(',', $values)), "`name` = 'lightbox_name'", null, iaCore::getConfigTable());
-
-if (1 == count($values))
-{
-	$iaCore->set('lightbox_name', 'fancybox', true);
-}
-			]]>
-		</code>
-	</install>
-
-	<uninstall>
-		<code>
-			<![CDATA[
-$iaCore = iaCore::instance();
-
-if ($values = explode(',', $iaCore->iaDb->one("`multiple_values`", "`name` = 'lightbox_name'", iaCore::getConfigTable())))
-{
-	$iaCore->iaDb->update(array('multiple_values' => implode(',', array_diff($values, array('fancybox')))), "`name` = 'lightbox_name'", null, iaCore::getConfigTable());
-}
-			]]>
-		</code>
-	</uninstall>
 </plugin>

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -83,7 +83,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		foreach ($entries as &$entry)
 		{
-			$entry['usergroup'] = isset($this->_userGroups[$entry['usergroup_id']]) ? $this->_userGroups[$entry['usergroup_id']] : '';
+			$entry['usergroup'] = isset($this->_userGroups[$entry['usergroup_id']]) ? iaLanguage::get('usergroup_' . $this->_userGroups[$entry['usergroup_id']]) : '';
 			$entry['permissions'] = $entry['config'] = $entry['update'] = true;
 			$entry['delete'] = ($entry['id'] != $userId);
 		}
@@ -106,6 +106,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaPlan = $this->_iaCore->factory('plan');
 		$plans = $iaPlan->getPlans($this->_itemName);
+		foreach ($plans as &$plan)
+		{
+			list(, $plan['defaultEndDate']) = $iaPlan->calculateDates($plan['duration'], $plan['unit']);
+		}
 
 		$iaField = $this->_iaCore->factory('field');
 		$sections = $iaField->filterByGroup($entryData, $this->_itemName, array('page' => iaCore::ADMIN, 'selection' => "f.*, IF(f.`name` = 'avatar', 4, `order`) `order`", 'order' => '`order`'));
@@ -153,7 +157,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'id' => $this->getEntryId(),
 			'username' => $data['username']
 		);
-		list($entry, $error, $this->_messages, ) = $iaField->parsePost($fields, $entry, true);
+		list($entry, $error, $this->_messages, ) = $iaField->parsePost($fields, $entry);
 		$_SESSION[iaUsers::SESSION_KEY] = $activeUser;
 		//
 

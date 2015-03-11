@@ -1,5 +1,6 @@
 <form method="post" id="page_form" class="sap-form form-horizontal">
 	<input type="hidden" name="language" id="js-active-language">
+	<input type="hidden" name="extras" value="{$item.extras|escape:'html'}">
 
 	<div class="wrap-list">
 		<div class="wrap-group">
@@ -45,7 +46,7 @@
 					<label class="col col-lg-2 control-label">{lang key='custom_url'}</label>
 					<div class="col col-lg-4">
 						<div class="input-group">
-							<input type="text" name="alias" id="input-alias" value="{if isset($item.alias)}{$item.alias|escape:'html'}{/if}">
+							<input type="text" name="alias" id="input-alias" value="{$item.alias|escape:'html'}">
 							<input type="hidden" name="extension" value="{if $item.extension}.{$item.extension}{else}/{/if}">
 							<div class="input-group-btn">
 								<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -77,12 +78,6 @@
 					</div>
 				</div>
 
-				{if isset($item.nofollow)}
-					{assign nofollow $item.nofollow}
-				{else}
-					{assign nofollow 0}
-				{/if}
-
 				<div class="row">
 					<label class="col col-lg-2 control-label">{lang key='no_follow_url'}</label>
 					<div class="col col-lg-4">
@@ -90,16 +85,10 @@
 					</div>
 				</div>
 
-				{if isset($item.new_window)}
-					{assign new_window $item.new_window}
-				{else}
-					{assign new_window 0}
-				{/if}
-
 				<div class="row">
 					<label class="col col-lg-2 control-label">{lang key='open_in_new_window'}</label>
 					<div class="col col-lg-4">
-						{html_radio_switcher value=$new_window name='new_window'}
+						{html_radio_switcher value=$item.new_window name='new_window'}
 					</div>
 				</div>
 
@@ -122,22 +111,6 @@
 						{html_radio_switcher value=$isHomePage name='home_page'}
 						<p class="help-block">{lang key='current_home_page'}: <span class="text-danger">{lang key="page_title_{$config.home_page}"}</span></p>
 					{/if}
-				</div>
-			</div>
-
-			<div class="row js-local-url-field">
-				<label class="col col-lg-2 control-label">{lang key='meta_description'}</label>
-
-				<div class="col col-lg-4">
-					<textarea name="meta_description" rows="2">{$item.meta_description|escape:'html'}</textarea>
-				</div>
-			</div>
-
-			<div class="row js-local-url-field">
-				<label class="col col-lg-2 control-label">{lang key='meta_keywords'}</label>
-
-				<div class="col col-lg-4">
-					<input type="text" name="meta_keywords" value="{$item.meta_keywords|escape:'html'}">
 				</div>
 			</div>
 
@@ -172,18 +145,58 @@
 					</div>
 				</div>
 			{/access}
+
+			<div class="js-local-url-field">
+				{if 'page' == $item.filename}
+					<div class="row">
+						<label class="col col-lg-2 control-label">{lang key='custom_template'}</label>
+						<div class="col col-lg-4">
+							{html_radio_switcher value=$item.custom_tpl name='custom_tpl'}
+						</div>
+					</div>
+
+					<div class="row" id="js-field-tpl-filename" style="display: none;">
+						<label class="col col-lg-2 control-label">{lang key='custom_template_filename'}</label>
+						<div class="col col-lg-4">
+							<input type="text" name="template_filename" id="input-tpl-filename" value="{if isset($item.template_filename)}{$item.template_filename|escape:'html'}{/if}">
+						</div>
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<div class="wrap-group js-local-url-field">
+			<div class="wrap-group-heading">
+				<h4>{lang key='seo'}</h4>
+			</div>
+
+			<div class="row">
+				<label class="col col-lg-2 control-label">{lang key='meta_description'}</label>
+
+				<div class="col col-lg-4">
+					<textarea name="meta_description" rows="2">{$item.meta_description|escape:'html'}</textarea>
+				</div>
+			</div>
+
+			<div class="row">
+				<label class="col col-lg-2 control-label">{lang key='meta_keywords'}</label>
+
+				<div class="col col-lg-4">
+					<input type="text" name="meta_keywords" value="{$item.meta_keywords|escape:'html'}">
+				</div>
+			</div>
 		</div>
 
 		<div class="wrap-group" id="js-content-fields">
 			<div class="row">
 				<ul class="nav nav-tabs">
-					{foreach $languages as $code => $language}
-						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language}</a></li>
+					{foreach $core.languages as $code => $language}
+						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title}</a></li>
 					{/foreach}
 				</ul>
 
 				<div class="tab-content">
-					{foreach $languages as $code => $language}
+					{foreach $core.languages as $code => $language}
 					<div class="tab-pane{if $language@first} active{/if}" id="tab-language-{$code}">
 						<div class="row">
 							<label class="col col-lg-2 control-label">{lang key='title'}</label>

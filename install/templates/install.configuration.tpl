@@ -26,7 +26,7 @@
 					<div class="form-group">
 						<label class="col-lg-4 control-label">Debug Mode:</label>
 						<div class="col-lg-8">
-							<select name="debug" id="debug">
+							<select name="debug">
 								<option value="0"<?php if (iaHelper::getPost('debug', 0) == 0): ?> selected="selected"<?php endif ?>>Do not display errors</option>
 								<option value="1"<?php if (iaHelper::getPost('debug', 0) == 1): ?> selected="selected"<?php endif ?>>Display errors in a special block</option>
 							</select>

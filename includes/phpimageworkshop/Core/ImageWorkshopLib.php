@@ -1,7 +1,11 @@
 <?php
 
+namespace phpimageworkshop\Core;
+
+use phpimageworkshop\Core\Exception\ImageWorkshopLibException as ImageWorkshopLibException;
+
 // If no autoloader, uncomment these lines:
-require_once(IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'Exception' . IA_DS . 'ImageWorkshopLibException.php');
+//require_once(__DIR__.'/Exception/ImageWorkshopLibException.php');
 
 /**
  * ImageWorkshopLib class
@@ -132,7 +136,7 @@ class ImageWorkshopLib
     public static function getTextBoxDimension($fontSize, $fontAngle, $fontFile, $text)
     {
         if (!file_exists($fontFile)) {
-            throw new ImageWorkshopLibException('Can\'t find a font file at this path : "'.$fontFile.'".', self::ERROR_FONT_NOT_FOUND);
+            throw new ImageWorkshopLibException('Can\'t find a font file at this path : "'.$fontFile.'".', static::ERROR_FONT_NOT_FOUND);
         }
         
         $box = imagettfbbox($fontSize, $fontAngle, $fontFile, $text);
@@ -224,7 +228,7 @@ class ImageWorkshopLib
                     $destPixel = imageColorsForIndex($destImg, imageColorat($destImg, $x + $destX, $y + $destY));
                     $srcImgColorat = imageColorat($srcImg, $x + $srcX, $y + $srcY);
                     
-                    if ($srcImgColorat > 0) {
+                    if ($srcImgColorat >= 0) {
                     
                         $srcPixel = imageColorsForIndex($srcImg, $srcImgColorat);
     

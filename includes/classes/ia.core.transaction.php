@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -66,7 +66,8 @@ class iaTransaction extends abstractCore
 	{
 		if (is_null($this->_gateways))
 		{
-			$this->_gateways = $this->iaDb->keyvalue(array('name', 'title'), null, $this->getTableGateways());
+			$stmt = "`name` IN ('" . implode("','", $this->iaCore->get('extras')) . "')";
+			$this->_gateways = $this->iaDb->keyvalue(array('name', 'title'), $stmt, $this->getTableGateways());
 		}
 
 		return $this->_gateways;
@@ -186,7 +187,10 @@ class iaTransaction extends abstractCore
 		{
 			$itemData['id'] = 0;
 		}
+
 		$title = empty($title) ? iaLanguage::get('plan_title_' . $planId) : $title;
+		$title .= ($itemData['id']) ? ' - #' . $itemData['id'] : '';
+
 		$transactionId = uniqid('t');
 		$transaction = array(
 			'member_id' => (int)(isset($itemData['member_id']) && $itemData['member_id'] ? $itemData['member_id'] : iaUsers::getIdentity()->id),

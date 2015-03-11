@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -67,9 +67,10 @@ class iaBackendController extends iaAbstractControllerBackend
 				$output = array('data' => null);
 
 				$stmt = '';
-				if (!isset($params['itemname'])
-					|| (isset($params['itemname']) && iaUsers::getItemName() == $params['itemname']))
+				if (!isset($params['itemname']) || (isset($params['itemname']) && iaUsers::getItemName() == $params['itemname']))
 				{
+					$stmt = iaDb::convertIds(iaUsers::getItemName(), 'item');
+
 					$output['data'][] = array('title' => iaLanguage::get('member_balance'), 'value' => 0);
 				}
 				elseif (!empty($params['itemname']))
@@ -204,7 +205,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'item_id' => (int)$_POST['itemid'],
 			'gateway' => (string)$_POST['gateway'],
 			'sec_key' => uniqid('t'),
-			'reference_id' => empty($_POST['order']) ? date('mdyHis') : $_POST['order'],
+			'reference_id' => empty($_POST['reference_id']) ? date('mdyHis') : $_POST['reference_id'],
 			'amount' => (float)$_POST['amount'],
 			'currency' => $this->_iaCore->get('currency'),
 			'date' => $_POST['date'] . ' ' . $_POST['time']

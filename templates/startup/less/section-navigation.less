@@ -103,6 +103,50 @@
 
 .navigation {
   background: rgba(0, 0, 0, 0.05);
+
+  &.is-sticky {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 7000;
+    padding-top: 0;
+    padding-bottom: 0;
+    .box-shadow(0 0 10px rgba(0,0,0,.3));
+
+    .nav-account__name {
+      color: @navMainLinkColor;
+
+      &:hover {
+        color: @navMainLinkHoverColor;
+      }
+    }
+
+    .nav-account .caret {
+      border-top-color: @navMainLinkColor;
+      border-bottom-color: @navMainLinkColor;
+    }
+
+    .nav-account > li > a {
+      color: @navMainLinkColor;
+      border-color: @navMainLinkColor;
+
+      &:hover {
+        color: @navMainLinkHoverColor;
+        border-color: @navMainLinkHoverColor;
+      }
+    }
+
+    .social > li > a {
+      background: fade(#fff, 30%);
+      color: fade(#fff, 50%);
+
+      &:hover {
+        color: #fff;
+      }
+    }
+  }
 }
 
 .brand {
@@ -156,7 +200,7 @@
       }
     }
 
-    .dropdown-menu {
+    > .dropdown-menu {
       margin-top: -25px;
       .transition(all .3s ease-in-out);
       .opacity(0);
@@ -181,7 +225,7 @@
       }
     }
 
-    &.open .dropdown-menu {
+    &.open > .dropdown-menu {
       .opacity(100);
       margin-top: -20px;
       visibility: visible;
@@ -347,18 +391,6 @@
   }
 }
 
-
-.navigation-sticky {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  background: rgba(255, 255, 255, 0.9);
-  z-index: 7000;
-  padding-top: 0;
-  padding-bottom: 0;
-  .box-shadow(0 0 10px rgba(0,0,0,.3));
-}
 
 // toggler for collapsed main nav
 // see responsive-navbar.less for nav-bar styles on small devices

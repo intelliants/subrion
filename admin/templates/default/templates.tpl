@@ -16,9 +16,13 @@
 						{if isset($template.screenshots) && $template.screenshots}
 							<div class="screenshots hidden">
 								{foreach $template.screenshots as $screenshot}
-									<a href="{$nonProtocolUrl}templates/{$template.name}/docs/img/{$screenshot.name}" rel="ia_lightbox[{$template.name}]" title="{$screenshot.title}"></a>
+									<a href="{$core.page.nonProtocolUrl}templates/{$template.name}/docs/img/{$screenshot.name}" rel="ia_lightbox[{$template.name}]" title="{$screenshot.title}"></a>
 								{/foreach}
 							</div>
+						{/if}
+
+						{if isset($template.remote) && $template.price > 0}
+							<div class="plate__badge plate__badge--premium">Premium &mdash; ${$template.price}</div>
 						{/if}
 
 						{foreach $template.notes as $note}
@@ -30,7 +34,7 @@
 							<h4>{$template.title} <small>{$template.version}</small></h4>
 						</div>
 						<p class="plate__info">
-							{lang key='date'}: {$template.date}<br>
+							{lang key='date'}: {$template.date|date_format:$config.date_format}<br>
 							{lang key='compatibility'}: {$template.compatibility}
 						</p>
 
@@ -54,10 +58,14 @@
 								{/if}
 							</form>
 						{elseif isset($template.remote)}
-							<form method="post" class="clearfix">
-								<button type="submit" name="download" value="{$template.name}" class="btn btn-success btn-sm"><i class="i-box-add"></i> {lang key='download'}</button>
-								<a href="{$template.url}" class="btn btn-default btn-sm" target="_blank" title="{lang key='preview'}"><i class="i-eye"></i></a>
-							</form>
+							{if $template.price > 0}
+								<a href="{$template.url}" class="btn btn-default btn-sm" target="_blank" title="{lang key='view'}"><i class="i-eye"></i> {lang key='view'}</a>
+							{else}
+								<form method="post" class="clearfix">
+									<button type="submit" name="download" value="{$template.name}" class="btn btn-success btn-sm"><i class="i-box-add"></i> {lang key='download'}</button>
+									<a href="{$template.url}" class="btn btn-default btn-sm" target="_blank" title="{lang key='preview'}"><i class="i-eye"></i></a>
+								</form>
+							{/if}
 						{else}
 							<a href="#" rel="{$template.name}" class="btn btn-default btn-sm js-cmd-info" title="{lang key='details'}"><i class="i-info"></i></a>
 						{/if}

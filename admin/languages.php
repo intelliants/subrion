@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -31,9 +31,6 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `delete`";
 	protected $_gridFilters = array('key' => 'like', 'value' => 'like', 'category' => 'equal', 'extras' => 'equal');
 
-	protected $_processAdd = false;
-	protected $_processEdit = false;
-
 	protected $_phraseAddSuccess = 'phrase_added';
 
 
@@ -43,8 +40,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$this->setTable(iaLanguage::getTable());
 
-		$iaCache = $this->_iaCore->factory('cache');
-		$this->setHelper($iaCache);
+		$this->setHelper($this->_iaCore->iaCache);
 	}
 
 	protected function _gridRead($params)
@@ -57,6 +53,8 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'plugins':
 				if ($plugins = $this->_iaDb->onefield('name', null, null, null, 'extras'))
 				{
+					$output['data'][] = array('value' => iaCore::CORE, 'title' => iaLanguage::get('core', 'Core'));
+
 					foreach ($plugins as $plugin)
 					{
 						$output['data'][] = array('value' => $plugin, 'title' => iaLanguage::get($plugin, ucfirst($plugin)));
@@ -88,6 +86,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					if (!empty($params['plugin']))
 					{
+						if (iaCore::CORE == $params['plugin'])
+						{
+							$params['plugin'] = '';
+						}
 						$conditions[] = '`extras` = :plugin';
 						$values['plugin'] = $params['plugin'];
 					}
@@ -130,12 +132,17 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $output;
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
-		if (isset($_GET['lang']) && $_GET['lang'] && array_key_exists($_GET['lang'], $this->_iaCore->languages))
+		if (!empty($params['lang']) && array_key_exists($params['lang'], $this->_iaCore->languages))
 		{
 			$conditions[] = '`code` = :language';
-			$values['language'] = $_GET['lang'];
+			$values['language'] = $params['lang'];
+		}
+
+		if (isset($values['extras']) && iaCore::CORE == $values['extras'])
+		{
+			$values['extras'] = '';
 		}
 	}
 
@@ -144,56 +151,73 @@ class iaBackendController extends iaAbstractControllerBackend
 		$error = false;
 		$output = array('message' => iaLanguage::get('invalid_parameters'), 'success' => false);
 
-		if (empty($_POST['key']))
+		if (isset($_POST['sorting']) && 'save' == $_POST['sorting'])
 		{
-			$error = true;
-			$output['message'] = iaLanguage::get('incorrect_key');
+			if (count($_POST['langs']) > 1)
+			{
+				$i = 0;
+				foreach ($_POST['langs'] as $code)
+				{
+					$this->_iaDb->update(array('order' => ++$i), iaDb::convertIds($code, 'code'), null, iaLanguage::getLanguagesTable());
+				}
+
+				$output = array('message' => iaLanguage::get('saved'), 'success' => true);
+			}
 		}
-
-		if (empty($_POST['value']))
+		else
 		{
-			$error = true;
-			$output['message'] = iaLanguage::get('incorrect_value');
-		}
-
-		if (!$error)
-		{
-			$lang = (isset($_POST['language']) && array_key_exists($_POST['language'], $this->_iaCore->languages))
-				? $_POST['language']
-				: $iaView->language;
-			$key = iaSanitize::paranoid($_POST['key']);
-			$value = $_POST['value'];
-			$category = iaSanitize::paranoid($_POST['category']);
-
-			if (empty($key))
+			if (empty($_POST['key']))
 			{
 				$error = true;
-				$output['message'] = iaLanguage::get('key_not_valid');
+				$output['message'] = iaLanguage::get('incorrect_key');
 			}
 
-			if (empty($value))
+			if (empty($_POST['value']))
 			{
 				$error = true;
 				$output['message'] = iaLanguage::get('incorrect_value');
 			}
 
-			if ($this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category', array('key' => $key, 'language' => $lang, 'category' => $category)))
+			if (!$error)
 			{
-				$error = true;
-				$output['message'] = iaLanguage::get('key_exists');
+				$lang = (isset($_POST['language']) && array_key_exists($_POST['language'], $this->_iaCore->languages))
+					? $_POST['language']
+					: $iaView->language;
+				$key = iaSanitize::paranoid($_POST['key']);
+				$value = $_POST['value'];
+				$category = iaSanitize::paranoid($_POST['category']);
+
+				if (empty($key))
+				{
+					$error = true;
+					$output['message'] = iaLanguage::get('key_not_valid');
+				}
+
+				if (empty($value))
+				{
+					$error = true;
+					$output['message'] = iaLanguage::get('incorrect_value');
+				}
+
+				if ($this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category', array('key' => $key, 'language' => $lang, 'category' => $category)))
+				{
+					$error = true;
+					$output['message'] = iaLanguage::get('key_exists');
+				}
+			}
+
+			if (!$error)
+			{
+				$output['success'] = (bool)$this->_iaDb->insert(array('key' => $key, 'original' => $value, 'value' => $value, 'code' => $lang, 'category' => $category));
+				$output['message'] = iaLanguage::get($output['success'] ? $this->_phraseAddSuccess : $this->_phraseSaveError);
+
+				if ($output['success'])
+				{
+					$this->getHelper()->createJsCache(true);
+				}
 			}
 		}
 
-		if (!$error)
-		{
-			$output['success'] = (bool)$this->_iaDb->insert(array('key' => $key, 'original' => $value, 'value' => $value, 'code' => $lang, 'category' => $category));
-			$output['message'] = iaLanguage::get($output['success'] ? $this->_phraseAddSuccess : $this->_phraseSaveError);
-
-			if ($output['success'])
-			{
-				$this->getHelper()->createJsCache(true);
-			}
-		}
 
 		return $output;
 	}
@@ -225,41 +249,167 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			unset($params['id']);
 		}
-		elseif (isset($params['key']))
+		elseif (isset($params['key'])) // request from the page 'Comparison'
 		{
 			$stmt = '`key` = :key';
 			empty($params['lang']) || $stmt.= ' AND `code` = :lang';
 			$this->_iaDb->bind($stmt, $params);
+
+			if (!$this->_iaDb->exists($stmt)
+				&& ($row = $this->_iaDb->row_bind(array('extras', 'category'), '`key` = :key AND `code` != :lang', $params)))
+			{
+				$insertion = iaLanguage::addPhrase($params['key'], $params['value'], $params['lang'], $row['extras'], $row['category'], true);
+			}
 
 			unset($params['key'], $params['lang']);
 		}
 
 		if (isset($stmt))
 		{
-			$output['result'] = (bool)$this->_iaDb->update($params, $stmt);
+			$output['result'] = isset($insertion)
+				? $insertion
+				: (bool)$this->_iaDb->update($params, $stmt);
 			$output['message'] = iaLanguage::get($output['result'] ? $this->_phraseEditSuccess : $this->_phraseSaveError);
 
-			if ($output['result'])
-			{
-				$this->getHelper()->createJsCache(true);
-			}
+			empty($output['result']) || $this->getHelper()->createJsCache(true);
 		}
 
 		return $output;
 	}
 
+	public function getById($id)
+	{
+		return $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), iaLanguage::getLanguagesTable());
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		$iaView->title(iaLanguage::get(iaCore::ACTION_EDIT == $iaView->get('action') ? 'edit_language' : 'copy_language'));
+	}
+
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		if (empty($data['title']) || strlen(trim($data['title'])) == 0)
+		{
+			$this->addMessage('title_incorrect');
+		}
+
+		if (preg_match('/^[a-z]{2}$/i', $data['code']))
+		{
+			if (iaCore::ACTION_ADD == $action && array_key_exists($data['code'], $this->_iaCore->languages))
+			{
+				$this->addMessage('language_already_exists');
+			}
+		}
+		else
+		{
+			$this->addMessage('bad_iso_code');
+		}
+
+		if (empty($data['locale']) || strlen(trim($data['locale'])) == 0)
+		{
+			$this->addMessage('language_locale_incorrect');
+		}
+
+		if (empty($data['date_format']) || strlen(trim($data['date_format'])) == 0)
+		{
+			$this->addMessage('language_date_format_incorrect');
+		}
+
+		$entry['title'] = $data['title'];
+		$entry['code'] = $data['code'];
+		$entry['locale'] = $data['locale'];
+		$entry['date_format'] = $data['date_format'];
+		$entry['direction'] = $data['direction'];
+		$entry['master'] = $entry['default'] = 0;
+		$entry['author'] = $entry['flagicon'] = '';
+		$entry['status'] = $data['status'];
+
+		return !$this->getMessages();
+	}
+
+	protected function _postSaveEntry(array $entry, array $data, $action)
+	{
+		if (iaCore::ACTION_ADD == $action)
+		{
+			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, array(
+				'item' => 'language',
+				'name' => $entry['title'],
+				'id' => $this->getEntryId()
+			));
+		}
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry = array(
+			'code' => '',
+			'title' => '',
+			'locale' => 'en_US',
+			'date_format' => '%b %e, %Y',
+			'direction' => 'auto',
+			'status' => iaCore::STATUS_INACTIVE,
+		);
+	}
+
+	protected function _entryAdd(array $entryData)
+	{
+		// create language
+		$entryData['order'] = $this->_iaDb->getMaxOrder('languages') + 1;
+
+		$this->_iaDb->insert($entryData, null, iaLanguage::getLanguagesTable());
+
+		// copy phrases
+		$counter = 0;
+		$languageCode = strtolower($entryData['code']);
+		$rows = $this->_iaDb->all(array('key', 'value', 'category', 'extras'), "`code` = '" . $this->_iaCore->iaView->language . "'");
+		foreach ($rows as $value)
+		{
+			$row = array(
+				'key' => $value['key'] ,
+				'value' => $value['value'],
+				'extras' => $value['extras'],
+				'code' => $languageCode,
+				'category' => $value['category']
+			);
+
+			if ($this->_iaDb->insert($row))
+			{
+				$counter++;
+			}
+		}
+		$this->_iaDb->update(null, iaDb::convertIds($languageCode, 'code'), array('original' => '`value`'));
+
+		$this->_iaCore->iaView->setMessages(iaLanguage::getf('language_copied', array('count' => $counter)), iaView::SUCCESS);
+
+		// clear language cache
+		$this->getHelper()->clearAll();
+
+		iaUtil::go_to($this->getPath());
+	}
+
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		return $this->_iaDb->update($entryData, iaDb::convertIds($entryId), null, iaLanguage::getLanguagesTable());
+	}
+
 	protected function _indexPage(&$iaView)
 	{
-		parent::_indexPage($iaView);
-		$iaView->display($this->getName());
+		if ('phrases' == $iaView->get('name'))
+		{
+			iaBreadcrumb::preEnd(iaLanguage::get('languages'), IA_ADMIN_URL . 'languages/');
+
+			$iaView->assign('action', 'phrases');
+			$iaView->display('languages');
+
+			return true;
+		}
 
 		$action = isset($this->_iaCore->requestPath[0]) ? $this->_iaCore->requestPath[0] : 'list';
+		$iaView->assign('action', $action);
+
 		switch ($action)
 		{
-			case 'phrases':
-				$pageCaption = iaLanguage::get('phrase_manager');
-				break;
-
 			case 'search':
 				$pageCaption = iaLanguage::get('search_in_phrases');
 				break;
@@ -283,13 +433,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				break;
 
-			case 'copy':
-				$pageCaption = iaLanguage::get('copy_language');
-
-				$this->_copyLanguage($iaView);
-
-				break;
-
 			case 'rm':
 				// TODO: set checkAccess
 				$this->_removeLanguage($iaView);
@@ -306,6 +449,8 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'import':
 				$result = $this->_importLanguage($iaView);
 				iaUtil::go_to($this->getPath() . ($result ? '' : 'download/'));
+
+				break;
 		}
 
 		if (isset($pageCaption))
@@ -313,10 +458,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			iaBreadcrumb::toEnd($pageCaption, IA_SELF);
 			$iaView->title($pageCaption);
 		}
-
-		$iaView->assign('action', $action);
 	}
-
 
 	private function _importLanguage(&$iaView)
 	{
@@ -356,8 +498,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _removeLanguage(&$iaView)
 	{
-		if (!isset($this->_iaCore->requestPath[1])
-			|| $this->_iaCore->get('lang') == $this->_iaCore->requestPath[1])
+		if (!isset($this->_iaCore->requestPath[1]) || $this->_iaCore->get('lang') == $this->_iaCore->requestPath[1])
 		{
 			return;
 		}
@@ -365,10 +506,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$language = $this->_iaCore->requestPath[1];
 
 		$this->_iaDb->delete('`code` = :language', null, array('language' => $language));
-
-		$languages = $this->_iaCore->languages;
-		unset($languages[$language]);
-		$this->_iaCore->set('languages', serialize($languages), true);
+		$this->_iaDb->delete('`code` = :language', iaLanguage::getLanguagesTable(), array('language' => $language));
 
 		$iaView->setMessages(iaLanguage::get($this->_phraseGridEntryDeleted), iaView::SUCCESS);
 
@@ -453,69 +591,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			$iaView->setMessages(iaLanguage::get('impossible_to_compare_single_language'));
 		}
 	}
-
-	private function _copyLanguage(&$iaView)
-	{
-		if (!isset($_POST['form-copy']))
-		{
-			return;
-		}
-
-		$messages = array();
-
-		if (empty($_POST['title']) || strlen(trim($_POST['title'])) == 0)
-		{
-			$messages[] = iaLanguage::get('title_incorrect');
-		}
-
-		if (preg_match('/^[a-z]{2}$/i', $_POST['code']))
-		{
-			if (array_key_exists($_POST['code'], $this->_iaCore->languages))
-			{
-				$messages[] = iaLanguage::get('language_already_exists');
-			}
-		}
-		else
-		{
-			$messages[] = iaLanguage::get('bad_iso_code');
-		}
-
-		if (empty($messages))
-		{
-			$counter = 0;
-			$languageCode = strtolower($_POST['code']);
-			$rows = $this->_iaDb->all(array('key', 'value', 'category', 'extras'), "`code` = '" . $iaView->language . "'");
-			foreach ($rows as $value)
-			{
-				$row = array(
-					'key' => $value['key'] ,
-					'value' => $value['value'],
-					'extras' => $value['extras'],
-					'code' => $languageCode,
-					'category' => $value['category']
-				);
-
-				if ($this->_iaDb->insert($row))
-				{
-					$counter++;
-				}
-			}
-
-			$iaView->setMessages(iaLanguage::getf('language_copied', array('count' => $counter)), iaView::SUCCESS);
-
-			$this->_iaCore->languages[$languageCode] = $_POST['title'];
-			$this->_iaCore->set('languages', serialize($this->_iaCore->languages), true);
-
-			$this->_iaDb->update(null, iaDb::convertIds($languageCode, 'code'), array('original' => '`value`'));
-
-			$this->getHelper()->clearAll();
-
-			iaUtil::go_to($this->getPath());
-		}
-
-		$iaView->setMessages($messages, $messages ? iaView::ERROR : iaView::SUCCESS);
-	}
-
 
 	private static function _importDump(&$iaDb)
 	{

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -35,8 +35,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private $_folder;
 
-	private $_iaCache;
-
 
 	public function __construct()
 	{
@@ -47,7 +45,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->setHelper($iaExtra);
 		$this->setTable(iaExtra::getTable());
 
-		$this->_iaCache = $this->_iaCore->factory('cache');
 		$this->_folder = IA_PLUGINS;
 	}
 
@@ -105,7 +102,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				break;
 
 			case 'remote':
-				$output = $this->_getRemotePlugins($start, $limit);
+				$output = $this->_getRemotePlugins($start, $limit, $dir, $filter);
 		}
 
 		return $output;
@@ -124,13 +121,13 @@ class iaBackendController extends iaAbstractControllerBackend
 	}
 
 
-	private function _getRemotePlugins($start, $limit)
+	private function _getRemotePlugins($start, $limit, $dir, $filter)
 	{
-		$entries = false;
+		$pluginsData = array();
 
-		if ($cachedData = $this->_iaCache->get('subrion_plugins', 3600, true))
+		if ($cachedData = $this->_iaCore->iaCache->get('subrion_plugins', 3600, true))
 		{
-			$entries = $cachedData;
+			$pluginsData = $cachedData;
 		}
 		else
 		{
@@ -145,7 +142,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					if (isset($response['extensions']) && is_array($response['extensions']))
 					{
-						$entries = array();
+						$pluginsData = array();
 						$installedPlugins = $this->_iaDb->keyvalue(array('name', 'version'), iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
 
 						foreach ($response['extensions'] as $entry)
@@ -156,11 +153,13 @@ class iaBackendController extends iaAbstractControllerBackend
 							// exclude installed plugins
 							if (!array_key_exists($pluginInfo['name'], $installedPlugins))
 							{
+								$pluginsData['pluginsList'][$pluginInfo['name']] = $pluginInfo['title'];
+
 								if (isset($pluginInfo['compatibility']) && version_compare($pluginInfo['compatibility'], IA_VERSION, '<='))
 								{
 									$pluginInfo['install'] = 1;
 								}
-								$pluginInfo['date'] = gmdate('Y-m-d H:i', $pluginInfo['date']);
+								$pluginInfo['date'] = gmdate(iaDb::DATE_FORMAT, $pluginInfo['date']);
 								$pluginInfo['file'] = $pluginInfo['name'];
 								$pluginInfo['readme'] = false;
 								$pluginInfo['reinstall'] = false;
@@ -168,12 +167,12 @@ class iaBackendController extends iaAbstractControllerBackend
 								$pluginInfo['remove'] = false;
 								$pluginInfo['removable'] = false;
 
-								$entries[] = $pluginInfo;
+								$pluginsData['plugins'][$pluginInfo['name']] = $pluginInfo;
 							}
 						}
 
 						// cache well-formed results
-						$this->_iaCache->write('subrion_plugins', $entries);
+						$this->_iaCore->iaCache->write('subrion_plugins', $pluginsData);
 					}
 					else
 					{
@@ -189,15 +188,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		return $this->getMessages()
 			? array('result' => false, 'message' => $this->getMessages())
-			: array('total' => count($entries), 'data' => array_slice($entries, $start, $limit));
+			: $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter);
 	}
 
 	private function _getLocalPlugins($start, $limit, $dir, $filter)
 	{
-		$result = array();
-
 		$total = 0;
-		$pluginsList = array();
 		$pluginsData = array();
 		$installedPlugins = $this->_iaDb->keyvalue(array('name', 'version'), iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
 
@@ -243,8 +239,8 @@ class iaBackendController extends iaAbstractControllerBackend
 								$notes.= PHP_EOL . PHP_EOL . iaLanguage::get('installation_impossible');
 							}
 
-							$pluginsList[$file] = $this->getHelper()->itemData['info']['title'];
-							$pluginsData[$file] = array(
+							$pluginsData['pluginsList'][$this->getHelper()->itemData['name']] = $this->getHelper()->itemData['info']['title'];
+							$pluginsData['plugins'][$this->getHelper()->itemData['name']] = array(
 								'title' => $this->getHelper()->itemData['info']['title'],
 								'version' => $this->getHelper()->itemData['info']['version'],
 								'compatibility' => $this->getHelper()->itemData['compatibility'],
@@ -263,38 +259,9 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 		}
-
 		closedir($directory);
 
-		$result['total'] = $total;
-
-		if ($pluginsList) // sort plugins
-		{
-			natcasesort($pluginsList);
-			(iaDb::ORDER_DESC != $dir) || $pluginsList = array_reverse($pluginsList, true);
-
-			if ($filter)
-			{
-				foreach ($pluginsList as $pluginName => $pluginTitle)
-				{
-					if (false === stripos($pluginName . $pluginTitle, $filter))
-					{
-						unset($pluginsList[$pluginName]);
-					}
-				}
-
-				$result['total'] = count($pluginsList);
-			}
-
-			$pluginsList = array_splice($pluginsList, $start, $limit);
-
-			foreach ($pluginsList as $pluginName => $pluginTitle)
-			{
-				$result['data'][] = $pluginsData[$pluginName];
-			}
-		}
-
-		return $result;
+		return $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter);
 	}
 
 	private function _getInstalledPlugins($start, $limit, $sort, $dir, $filter)
@@ -348,6 +315,40 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return $result;
+	}
+
+	private function _sortPlugins(array $pluginsData, $start, $limit, $dir = iaDb::ORDER_DESC, $filter = '')
+	{
+		$pluginsList = $pluginsData['pluginsList'];
+		$output = array('data' => array(), 'total' => count($pluginsList));
+
+		if ($pluginsList)
+		{
+			natcasesort($pluginsList);
+			(iaDb::ORDER_DESC != $dir) || $pluginsList = array_reverse($pluginsList, true);
+
+			if ($filter)
+			{
+				foreach ($pluginsList as $pluginName => $pluginTitle)
+				{
+					if (false === stripos($pluginName . $pluginTitle, $filter))
+					{
+						unset($pluginsList[$pluginName]);
+					}
+				}
+
+				$output['total'] = count($pluginsList);
+			}
+
+			$pluginsList = array_splice($pluginsList, $start, $limit);
+
+			foreach ($pluginsList as $pluginName => $pluginTitle)
+			{
+				$output['data'][] = $pluginsData['plugins'][$pluginName];
+			}
+		}
+
+		return $output;
 	}
 
 	private function _getDocumentation($pluginName)
@@ -444,7 +445,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$pclZip = new PclZip($fileName);
 					$pclZip->extract(PCLZIP_OPT_PATH, IA_PLUGINS . $pluginName);
 
-					$this->_iaCache->remove('subrion_plugins.inc');
+					$this->_iaCore->iaCache->remove('subrion_plugins.inc');
 				}
 				else
 				{

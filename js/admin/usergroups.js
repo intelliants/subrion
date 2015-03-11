@@ -4,7 +4,8 @@ Ext.onReady(function()
 	{
 		columns: [
 			'numberer',
-			{name: 'title', title: _t('title'), width: 150, editor: 'text', renderer: function(value, metadata, record)
+			{name: 'name', title: _t('name'), width: 150, hidden: true},
+			{name: 'title', title: _t('title'), width: 150, renderer: function(value, metadata, record)
 			{
 				if (1 == record.get('admin'))
 				{
@@ -16,10 +17,19 @@ Ext.onReady(function()
 			{
 				return value
 					? value.replace(/, $/, '')
-					: '<span style="color:red;font-style:italic;">-no members-</span>';
+					: '<span style="color:red;font-style:italic;">' + _t('no_members') + '</span>';
 			}},
 			{name: 'count', title: _t('members'), width: 68, align: 'right'},
 			{name: 'assignable', title: _t('assignable'), width: 76, align: intelli.gridHelper.constants.ALIGN_CENTER, renderer: intelli.gridHelper.renderer.check, editor: Ext.create('Ext.form.ComboBox',
+			{
+				typeAhead: false,
+				editable: false,
+				lazyRender: true,
+				store: Ext.create('Ext.data.SimpleStore', {fields: ['value','title'], data: [[0, _t('no')],[1, _t('yes')]]}),
+				displayField: 'title',
+				valueField: 'value'
+			})},
+			{name: 'visible', title: _t('visible'), width: 76, align: intelli.gridHelper.constants.ALIGN_CENTER, renderer: intelli.gridHelper.renderer.check, editor: Ext.create('Ext.form.ComboBox',
 			{
 				typeAhead: false,
 				editable: false,

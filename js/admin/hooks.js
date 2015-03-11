@@ -1,6 +1,6 @@
 Ext.onReady(function()
 {
-	intelli.hooks = new IntelliGrid(
+	var grid = new IntelliGrid(
 	{
 		columns:
 		[
@@ -31,7 +31,7 @@ Ext.onReady(function()
 		]
 	}, false);
 
-	intelli.hooks.toolbar = Ext.create('Ext.Toolbar', {items:[
+	grid.toolbar = Ext.create('Ext.Toolbar', {items:[
 	{
 		emptyText: _t('name'),
 		xtype: 'textfield',
@@ -56,15 +56,15 @@ Ext.onReady(function()
 		name: 'type',
 		valueField: 'value'
 	},{
-		handler: function(){intelli.gridHelper.search(intelli.hooks)},
+		handler: function(){intelli.gridHelper.search(grid)},
 		id: 'fltBtn',
 		text: '<i class="i-search"></i> ' + _t('search')
 	},{
-		handler: function(){intelli.gridHelper.search(intelli.hooks, true)},
+		handler: function(){intelli.gridHelper.search(grid, true)},
 		text: '<i class="i-close"></i> ' + _t('reset')
 	}]});
 
-	intelli.hooks.init();
+	grid.init();
 
 	editAreaLoader.init(
 	{
@@ -97,6 +97,6 @@ function saveHook(id, code)
 {
 	$.post(intelli.config.admin_url + '/hooks.json', {action: 'set', id: editAreaLoader.getCurrentFile('codeContainer').id, code: editAreaLoader.getValue('codeContainer')}, function(response)
 	{
-		intelli.notifFloatBox({msg: _t(response.result ? 'saved' : 'db_error'), type: response.result ? 'success' : 'error', autohide: true});
+		intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
 	});
 }

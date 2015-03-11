@@ -564,7 +564,7 @@
 
 			var zIndex = parseInt(this.element.parents().filter(function(){
 					return $(this).css('z-index') !== 'auto';
-				}).first().css('z-index'))+10;
+				}).first().css('z-index'))+1000;
 			var offset = this.component ? this.component.parent().offset() : this.element.offset();
 			var height = this.component ? this.component.outerHeight(true) : this.element.outerHeight(false);
 			var width = this.component ? this.component.outerWidth(true) : this.element.outerWidth(false);
@@ -1438,7 +1438,7 @@
 					xopts = $.extend({}, defaults, elopts, options),
 					locopts = opts_from_locale(xopts.language),
 					// Options priority: js args, data-attrs, locales, defaults
-					opts = $.extend({}, defaults, locopts, elopts, options);
+					opts = $.extend({}, defaults, locopts, options, elopts);
 				if ($this.is('.input-daterange') || opts.inputs){
 					var ropts = {
 						inputs: opts.inputs || $this.find('input').toArray()
@@ -1596,13 +1596,13 @@
 					d: function(d,v){
 						return d.setUTCDate(v);
 					},
-					h: function(d,v) {
+					h: function(d,v){
 						return d.setUTCHours(v);
 					},
-					i: function(d,v) {
+					i: function(d,v){
 						return d.setUTCMinutes(v);
 					},
-					s: function(d,v) {
+					s: function(d,v){
 						return d.setUTCSeconds(v);
 					}
 				},
@@ -1662,10 +1662,7 @@
 			if (typeof format === 'string')
 				format = DPGlobal.parseFormat(format);
 
-			var
-				hh = ('00' + date.getUTCHours()).slice(-2),
-				mi = ('00' + date.getUTCMinutes()).slice(-2),
-				ss = ('00' + date.getUTCSeconds()).slice(-2);
+			var hh = ('00' + date.getUTCHours()).slice(-2);
 
 			var val = {
 				d: date.getUTCDate(),
@@ -1678,10 +1675,8 @@
 				yyyy: date.getUTCFullYear(),
 				h: hh,
 				H: hh,
-				i: mi,
-				I: mi,
-				s: ss,
-				S: ss
+				i: ('00' + date.getUTCMinutes()).slice(-2),
+				s: ('00' + date.getUTCSeconds()).slice(-2)
 			};
 
 			val.dd = (val.d < 10 ? '0' : '') + val.d;
@@ -1721,7 +1716,9 @@
 						'<option value="am">am</option>'+
 						'<option value="pm">pm</option>'+
 					'</select>'+
-					'<button class="btn btn-success btn-small">'+ _t('ok') +'</button>'+
+					'<button class="btn btn-success btn-timepicker-ok">' +
+						'<i class="i-checkmark"></i>' +
+					'</button>'+
 				'</th>'+
 			'</tr>';
 		},

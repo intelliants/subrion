@@ -2,7 +2,7 @@
 	<div class="widget widget-default">
 		<div class="widget-content">
 			<p>We are pretty sure that everything will be fine. Whatever, it's good to have a backup just in case.</p>
-			<p>Script's files are to be zipped into single one. Complete DB backup is to be included into as well.</p>
+			<p>Script's files are to be zipped into single one. Complete DB backup to be included into as well.</p>
 			<p>
 				<a class="btn btn-default" id="js-cmd-backup" href="#"><i class="i-box-add"></i> Create backup</a> &nbsp;
 				<small id="js-notification-area">Backup is to be saved to <em><?php echo $this->backupFile ?></em></small>.

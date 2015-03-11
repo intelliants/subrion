@@ -1,0 +1,7 @@
+Options -ExecCGI
+
+<FilesMatch "(?i)\.(php5|php4|php|php3|php2|phtml|pl|py|jsp|asp|htm|shtml|sh|cgi)$">
+	ForceType text/plain
+</FilesMatch>
+
+AddHandler default-handler .php5 .php4 .php .php3 .php2 .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi

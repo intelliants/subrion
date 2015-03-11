@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="{$config.lang}">
+<html lang="{$core.language.iso}" dir="{$core.language.direction}">
 	<head>
-		<title>{ia_print_title title=$pageTitle}</title>
-		<meta http-equiv="Content-Type" content="text/html;charset={$config.charset}">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+		<title>{ia_print_title}</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="generator" content="Subrion CMS {$config.version}">
 
-		<link rel="shortcut icon" href="{$nonProtocolUrl}favicon.ico">
+		<link rel="shortcut icon" href="{$core.page.nonProtocolUrl}favicon.ico">
 
-		<link href="{$nonProtocolUrl}templates/{$config.tmpl}/css/iabootstrap{if isset($smarty.cookies.template_color_scheme)}-{$smarty.cookies.template_color_scheme}{elseif isset($config.template_color_scheme)}-{$config.template_color_scheme}{/if}.css" rel="stylesheet">
-		<link href="{$nonProtocolUrl}templates/{$config.tmpl}/css/iabootstrap-responsive.css" rel="stylesheet">
+		<link href="{$core.page.nonProtocolUrl}templates/{$config.tmpl}/css/iabootstrap{if isset($smarty.cookies.template_color_scheme)}-{$smarty.cookies.template_color_scheme}{elseif isset($config.template_color_scheme)}-{$config.template_color_scheme}{/if}.css" rel="stylesheet">
+		<link href="{$core.page.nonProtocolUrl}templates/{$config.tmpl}/css/iabootstrap-responsive.css" rel="stylesheet">
 	</head>
 
 	<body>

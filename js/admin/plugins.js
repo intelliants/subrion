@@ -221,9 +221,9 @@ intelli.available = {
 		{name: 'compatibility', title: _t('compatibility'), width: 70, renderer: function(value, metadata, record)
 		{
 			return '<span style="color:' + (record.get('install') ? 'green' : 'red') + ';">' + value + '</span>';
-		}},
-		{name: 'author', title: _t('author'), width: 120},
-		{name: 'date', title: _t('date'), width: 140},
+		}, sortable: false},
+		{name: 'author', title: _t('author'), width: 120, sortable: false},
+		{name: 'date', title: _t('date'), width: 105, sortable: false},
 		{name: 'info', title: _t('documentation'), icon: 'info', click: helpClick},
 		{name: 'install', title: _t('install'), icon: 'box-add', click: installClick}
 	],
@@ -243,8 +243,7 @@ intelli.available = {
 		var rows = that.grid.getSelectionModel().getSelections();
 		if (rows.length == 0) Ext.getCmp('multi_install_btn').disable();
 	},*/
-	sort: 'date',
-	sortDir: 'DESC',
+	sorters: [{property: 'title', direction: 'ASC'}],
 	statusBar: false,
 	storeParams: {type: 'local'},
 	target: 'js-grid-available'
@@ -260,7 +259,7 @@ Ext.onReady(function()
 				if (intelli.plugins.markers.installed)
 				{
 					intelli.plugins.markers.installed = false;
-					
+
 					intelli.installed.store.reload();
 					intelli.installed.grid.doLayout();
 				}
@@ -299,7 +298,7 @@ Ext.onReady(function()
 								if (e.ENTER == e.getKey()) Ext.getCmp('search2').handler();
 							}
 						}
-					},{
+					}, {
 						xtype: 'button',
 						text: '<i class="i-search"></i> ' + _t('search'),
 						id: 'search2',
@@ -313,14 +312,16 @@ Ext.onReady(function()
 								intelli.available.store.loadPage(1);
 							}
 						}
-					},{
+					}, {
 						text: '<i class="i-close"></i> ' + _t('reset'),
 						id: 'reset2',
 						handler: function()
 						{
+							var type = Ext.getCmp('modeFilter').getValue();
+
 							Ext.getCmp('availableFilter').reset();
 
-							intelli.available.store.getProxy().extraParams = {type: 'local'};
+							intelli.available.store.getProxy().extraParams = {type: type};
 							intelli.available.store.loadPage(1);
 						}
 					},'->',_t('mode') + ':',{
@@ -347,24 +348,12 @@ Ext.onReady(function()
 								intelli.available.grid.columns[5].sortable
 									= isLocalMode;
 
-								if (isLocalMode)
-								{
-									Ext.getCmp('availableFilter').disable();
-									Ext.getCmp('search2').disable();
-									Ext.getCmp('reset2').disable();
-								}
-								else
-								{
-									Ext.getCmp('availableFilter').enable();
-									Ext.getCmp('search2').enable();
-									Ext.getCmp('reset2').enable();
-								}
-
 								intelli.available.store.getProxy().extraParams.type = this.getValue();
 								intelli.available.store.loadPage(1);
 							}
 						}
 					}]});
+
 					intelli.available.init();
 				}
 
@@ -385,7 +374,7 @@ Ext.onReady(function()
 			'expander',
 			{name: 'version', title: _t('version'), width: 70, align: 'center', sortable: false},
 			{name: 'title', title: _t('title'), width: 1},
-			{name: 'date', title: _t('date'), width: 150},
+			{name: 'date', title: _t('date'), width: 170},
 			'status',
 			{name: 'upgrade', title: _t('upgrade'), icon: 'box-remove', click: upgradeClick},
 			{name: 'config', title: _t('go_to_config'), icon: 'cog', href: intelli.config.admin_url + '/configuration/{value}'},
@@ -397,8 +386,7 @@ Ext.onReady(function()
 		expanderTemplate: '{summary}',
 		fields: ['file', 'summary'],
 		resizer: false,
-		sort: 'date',
-		sortDir: 'DESC',
+		sorters: [{property: 'date', direction: 'DESC'}],
 		storeParams: {type: 'installed'},
 		target: 'js-grid-installed'
 	}, false);
@@ -409,7 +397,7 @@ Ext.onReady(function()
 		width: 220,
 		emptyText: _t('title'),
 		listeners: intelli.gridHelper.listener.specialKey
-	},{
+	}, {
 		xtype: 'button',
 		text: '<i class="i-search"></i> ' + _t('search'),
 		id: 'fltBtn',
@@ -418,7 +406,7 @@ Ext.onReady(function()
 			intelli.installed.store.getProxy().extraParams.filter = Ext.getCmp('installedFilter').getValue();
 			intelli.installed.store.loadPage(1);
 		}
-	},{
+	}, {
 		text: '<i class="i-close"></i> ' + _t('reset'),
 		handler: function()
 		{
@@ -427,5 +415,6 @@ Ext.onReady(function()
 			intelli.installed.store.loadPage(1);
 		}
 	}]});
+
 	intelli.installed.init();
 });

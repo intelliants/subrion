@@ -33,7 +33,7 @@
 
 			{if $value}
 				{foreach $value as $entry}
-					<a href="{$nonProtocolUrl}uploads/{$entry.path}">{if $entry.title}{$entry.title|escape:'html'}{else}{lang key='download'} {$entry@iteration}{/if}</a>{if !$entry@last}, {/if}
+					<a href="{$core.page.nonProtocolUrl}uploads/{$entry.path}">{if $entry.title}{$entry.title|escape:'html'}{else}{lang key='download'} {$entry@iteration}{/if}</a>{if !$entry@last}, {/if}
 				{/foreach}
 			{/if}
 

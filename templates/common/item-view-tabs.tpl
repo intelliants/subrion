@@ -10,8 +10,8 @@
 
 {ia_hooker name='smartyItemViewBeforeTabs'}
 
-{if (isset($sections) && $sections) || (isset($tabs_content) && $tabs_content)}
-	<div class="tabbable">
+{if !empty($sections) || !empty($tabs_content)}
+	<div class="tabbable{if isset($class)} {$class}{/if}">
 		<ul class="nav nav-tabs">
 			{if isset($sections)}
 				{foreach $sections as $section_name => $section}

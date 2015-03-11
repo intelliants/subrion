@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -79,6 +79,14 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		$this->query("SET NAMES 'utf8'");
 	}
 
+	public function setTimezoneOffset($offset)
+	{
+		$query = 'SET time_zone = :offset';
+		$this->bind($query, array('offset' => $offset));
+
+		$this->query($query);
+	}
+
 	/**
 	 * Escapes string using valid connection
 	 *
@@ -149,7 +157,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		}
 
 		// 2013 - lost connection during the execution
-		if (!$result && 2013 != mysql_errno())
+		if (!$result && 2013 != mysqli_errno($this->_link))
 		{
 			$error = $this->getError();
 			$error .= PHP_EOL . $sql;
@@ -666,7 +674,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	{
 		if (empty($condition))
 		{
-			trigger_error(__CLASS__ . '::' . __METHOD__ . ' Parameters required "where clause"). All rows deletion is restricted.', E_USER_ERROR);
+			trigger_error(__METHOD__ . ' Parameters required "where clause"). All rows deletion is restricted.', E_USER_ERROR);
 		}
 
 		if ($values)
@@ -732,7 +740,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		switch (true)
 		{
 			case is_numeric($ids):
-				return sprintf('`%s` ' . ($equal ? '=' : '!=') . ' %d', $columnName, $ids);
+				return sprintf('`%s` ' . ($equal ? '=' : '!=') . ' %s', $columnName, $ids);
 
 			case is_array($ids):
 				$array = array();

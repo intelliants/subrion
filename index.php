@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '3.2.3');
+define('IA_VERSION', '3.3.0');
 
 if (isset($ia_version))
 {
@@ -98,11 +98,8 @@ if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], '.') && !filte
 	}
 	$domain = '.' . $domain;
 
-	session_set_cookie_params(0, '/', $domain);
+	session_set_cookie_params(0, '/', $domain, false, true);
 }
-
-session_name('INTELLI_' . substr(md5(IA_HOME), 0, 10));
-session_start();
 
 $performInstallation = false;
 
@@ -127,6 +124,9 @@ if ($performInstallation)
 
 	exit('Install directory was not found!');
 }
+
+session_name('INTELLI_' . substr(md5(IA_HOME), 0, 10));
+session_start();
 
 require_once IA_CLASSES . 'ia.system.php';
 require_once IA_INCLUDES . 'function.php';

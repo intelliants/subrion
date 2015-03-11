@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -74,6 +74,9 @@ class iaSmartyPlugins extends Smarty
 
 			$this->registerPlugin(self::PLUGIN_BLOCK, 'ia_block', array(__CLASS__, 'ia_block'));
 		}
+
+		// uncomment this to get rid of useless whitespaces in html
+		// $this->loadFilter('output', 'trimwhitespace');
 
 		$iaCore->startHook('phpSmartyAfterFuncInit', array('iaSmarty' => &$this));
 	}
@@ -1041,7 +1044,7 @@ class iaSmartyPlugins extends Smarty
 				{
 					$url = $ignoreParams ? $urlPattern : preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern);
 				}
-				
+
 				if ($ignoreParams)
 				{
 					$url = str_replace('{page}', $pageNumber, $urlPattern);
@@ -1058,7 +1061,7 @@ class iaSmartyPlugins extends Smarty
 				'pages_range' => $pages
 			);
 
-			if (true == $ignoreParams)
+			if ($ignoreParams)
 			{
 				$params['first_page'] = str_replace('{page}', 1, $params['first_page']);
 			}

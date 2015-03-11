@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -49,6 +49,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				case 'set':
 					$output['result'] = (bool)$this->_iaDb->update(array('code' => $_POST['code']), iaDb::convertIds($_POST['id']));
+					$output['message'] = iaLanguage::get($output['result'] ? 'saved' : 'db_error');
 			}
 
 			return $output;

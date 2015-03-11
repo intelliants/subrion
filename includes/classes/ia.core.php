@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -63,13 +63,16 @@ final class iaCore
 	protected $_config = array();
 	protected $_customConfig = array();
 
-	protected $_checkDomainValue;
+	protected $_checkDomain;
 
 	public $iaDb;
 	public $iaView;
+	public $iaCache;
+
+	public $languages = array();
+	public $language = array();
 
 	public $packagesData = array();
-	public $languages = array();
 	public $requestPath = array();
 
 
@@ -89,8 +92,9 @@ final class iaCore
 	public function init()
 	{
 		$this->iaDb = $this->factory('db');
-		$this->factory(array('sanitize', 'validate', 'users'));
+		$this->factory(array('sanitize', 'validate', 'language', 'users'));
 		$this->iaView = $this->factory('view');
+		$this->iaCache = $this->factory('cache');
 		iaSystem::renderTime('core', 'Basic Classes Initialized');
 
 		$this->getConfig();
@@ -100,10 +104,12 @@ final class iaCore
 
 		$this->_parseUrl();
 
-		$this->factory('language');
+		setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
+
+		// we can only load strings when we know if a specific language is requested based on URL
 		iaLanguage::load($this->iaView->language);
 
-		$this->_retrieveHooks();
+		$this->_fetchHooks();
 		iaSystem::renderTime('core', 'Hooks Loaded');
 
 		$this->startHook('phpCoreUrlRewrite');
@@ -128,7 +134,7 @@ final class iaCore
 		$this->_executeModule();
 
 		$this->startHook('phpCoreBeforeJsCache');
-		$this->factory('cache')->createJsCache();
+		$this->iaCache->createJsCache();
 
 		if (self::ACCESS_FRONT == $this->getAccessType()
 			&& iaView::REQUEST_HTML == $this->iaView->getRequestType()
@@ -231,8 +237,6 @@ final class iaCore
 			$changeLang = true;
 		}
 
-		$adminPanelUrl = $this->get('admin_page', 'admin');
-
 		$isSystemChunk = true;
 		$array = array();
 		foreach ($url as $value)
@@ -245,7 +249,7 @@ final class iaCore
 
 			switch (true)
 			{
-				case ($adminPanelUrl == $value): // admin panel
+				case ($this->get('admin_page') == $value): // admin panel
 					$this->_accessType = self::ACCESS_ADMIN;
 					continue 2;
 				case ('logout' == $value): // logging out
@@ -274,6 +278,13 @@ final class iaCore
 
 		$iaView->url = empty($url[0]) ? array() : $url;
 		$this->requestPath = $array;
+
+		// set system language
+		$this->language = $this->languages[$iaView->language];
+
+		// set dynamic config
+		$this->set('date_format', $this->language['date_format']);
+		$this->set('locale', $this->language['locale']);
 
 		define('IA_EXIT', $doExit);
 	}
@@ -401,9 +412,7 @@ final class iaCore
 	{
 		if (empty($this->_config) || $reloadRequired)
 		{
-			$iaCache = $this->factory('cache');
-
-			$this->_config = $iaCache->get('config', 604800, true);
+			$this->_config = $this->iaCache->get('config', 604800, true);
 			iaSystem::renderTime('config', 'Cached Configuration Loaded');
 
 			if (empty($this->_config) || $reloadRequired)
@@ -417,14 +426,11 @@ final class iaCore
 				$this->_config['extras'] = $extras;
 				$this->_config['block_positions'] = $this->iaView->positions;
 
-				$iaCache->write('config', $this->_config);
+				$this->iaCache->write('config', $this->_config);
 				iaSystem::renderTime('config', 'Configuration written to cache file');
 			}
 
-			$this->languages = unserialize($this->_config['languages']);
-
-			date_default_timezone_set($this->get('timezone'));
-			setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
+			$this->_setTimezone($this->get('timezone'));
 		}
 
 		return $this->_config;
@@ -527,10 +533,8 @@ final class iaCore
 		{
 			$result = (bool)$this->iaDb->update(array('value' => $value), "`name`='{$key}'", null, self::getConfigTable());
 
-			$iaCache = $this->factory('cache');
-
-			$iaCache->createJsCache(array('config'));
-			$iaCache->remove('config.inc');
+			$this->iaCache->createJsCache(array('config'));
+			$this->iaCache->remove('config.inc');
 		}
 
 		return $result;
@@ -564,7 +568,7 @@ final class iaCore
 		}
 		elseif (isset($_POST['password']))
 		{
-			$pass = $iaUsers->encodePassword($_POST['password']);
+			$pass = $_POST['password'];
 			$authorized++;
 		}
 		else
@@ -602,6 +606,8 @@ final class iaCore
 			$auth = (bool)$iaUsers->getAuth(0, $login, $pass);
 			if (!$auth)
 			{
+				$this->startHook('phpUserLogin', array('userInfo' => $iaUsers->getIdentity(), 'password' => $pass));
+
 				if ($isBackend)
 				{
 					$this->iaView->assign('error_login', true);
@@ -614,6 +620,8 @@ final class iaCore
 			}
 			else
 			{
+				$this->startHook('phpUserLogin', array('userInfo' => $iaUsers->getIdentity(), 'password' => $pass));
+
 				unset($_SESSION['_achkych']);
 				if (isset($_SESSION['referrer'])) // this variable is set by Login page handler
 				{
@@ -649,7 +657,7 @@ final class iaCore
 		return $this->_hooks;
 	}
 
-	protected function _retrieveHooks()
+	protected function _fetchHooks()
 	{
 		$columns = array('name', 'code', 'type', 'extras', 'filename', 'pages');
 		$stmt = "`extras` IN('', '" . implode("','", $this->get('extras')) . "') AND `status` = :status AND `page_type` IN ('both', :type) ORDER BY `order`";
@@ -705,15 +713,15 @@ final class iaCore
 
 	public function checkDomain()
 	{
-		if (is_null($this->_checkDomainValue))
+		if (is_null($this->_checkDomain))
 		{
 			$dbUrl = str_replace(array('http://www.', 'http://'), '', $this->get('baseurl'));
 			$codeUrl = str_replace(array('http://www.', 'http://'), '', $this->iaView->domainUrl);
 
-			$this->_checkDomainValue = ($dbUrl == $codeUrl);
+			$this->_checkDomain = ($dbUrl == $codeUrl);
 		}
 
-		return $this->_checkDomainValue;
+		return $this->_checkDomain;
 	}
 
 	public function setPackagesData($regenerate = false)
@@ -971,9 +979,10 @@ final class iaCore
 		$languagesEnabled = (iaCore::ACCESS_FRONT == $this->getAccessType())
 			? ($this->get('language_switch') && count($this->languages) > 1)
 			: (count($this->languages) > 1);
+		$baseUrl = trim($this->get('baseurl'), IA_URL_DELIMITER) . IA_URL_DELIMITER;
 
-		define('IA_CANONICAL', preg_replace('/\?(.*)/', '', 'http://' . $iaView->domain . IA_URL_DELIMITER . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
-		define('IA_CLEAR_URL', $iaView->domainUrl);
+		define('IA_CANONICAL', preg_replace('/\?(.*)/', '', $baseUrl . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
+		define('IA_CLEAR_URL', $baseUrl);
 		define('IA_LANGUAGE', $iaView->language);
 		define('IA_TEMPLATES', IA_HOME . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . 'templates' . IA_DS);
 		define('IA_URL_LANG', $languagesEnabled ? $iaView->language . IA_URL_DELIMITER : '');
@@ -983,5 +992,22 @@ final class iaCore
 
 		$iaView->theme = $this->get((self::ACCESS_ADMIN == $this->getAccessType() ? 'admin_' : '') . 'tmpl', 'default');
 		define('IA_TPL_URL', $iaView->assetsUrl . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin/' : '') . 'templates/' . $iaView->theme . IA_URL_DELIMITER);
+	}
+
+	private function _setTimezone($timezone)
+	{
+		date_default_timezone_set($timezone);
+
+		// calculate an offset for DBMS
+		$now = new DateTime();
+		$minutes = $now->getOffset() / 60;
+		$sign = ($minutes < 0 ? -1 : 1);
+		$minutes = abs($minutes);
+		$hours = floor($minutes / 60);
+		$minutes -= $hours * 60;
+
+		$offset = sprintf('%+d:%02d', $hours * $sign, $minutes);
+
+		$this->iaDb->setTimezoneOffset($offset);
 	}
 }

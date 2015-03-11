@@ -4,17 +4,17 @@
 	<table class="table table-striped table-bordered">
 	<thead>
 		<tr>
+			<th>ID</th>
 			<th>{lang key='pay_reason'}</th>
 			<th>{lang key='item'}</th>
-			<th>ID</th>
 			<th>{lang key='total'}</th>
 		</tr>
 	</thead>
 	<tbody>
 		<tr>
+			<td>{$transaction.item_id}</td>
 			<td>{$transaction.operation}</td>
 			<td>{lang key=$transaction.item}</td>
-			<td>{$transaction.item_id}</td>
 			<td>{$transaction.amount}&nbsp;{$config.currency}</td>
 		</tr>
 	</tbody>

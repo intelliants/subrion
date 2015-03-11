@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -53,7 +53,11 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->_processAction($iaView);
 		}
 
-		$iaView->assign('packages', $this->_getList());
+		list($localPackages, $packageNames) = $this->_getList();
+		$remotePackages = $this->getRemoteList($packageNames);
+
+		$packages = array_merge($localPackages, $remotePackages);
+		$iaView->assign('packages', $packages);
 
 		$iaView->display($this->getName());
 	}
@@ -220,8 +224,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 		}
 
-		$iaCache = $this->_iaCore->factory('cache');
-		$iaCache->clearAll();
+		$this->_iaCore->iaCache->clearAll();
 
 		$iaView->setMessages($this->getMessages(), $error ? iaView::ERROR : iaView::SUCCESS);
 
@@ -375,6 +378,46 @@ class iaBackendController extends iaAbstractControllerBackend
 		return true;
 	}
 
+	private function _changeDefault($url = '', $package = '')
+	{
+		$iaDb = &$this->_iaDb;
+
+		$defaultPackage = $this->_iaCore->get('default_package', false);
+
+		if ($defaultPackage != $package)
+		{
+			if ($defaultPackage)
+			{
+				$oldExtras = $this->_iaCore->factory('extra', iaCore::ADMIN);
+
+				$oldExtras->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
+				$oldExtras->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaExtra::INSTALL_FILE_NAME));
+				$oldExtras->parse();
+				$oldExtras->checkValidity();
+
+				$iaDb->update(array('url' => $oldExtras->getUrl()), iaDb::convertIds($defaultPackage, 'name'));
+
+				if ($oldExtras->itemData['pages']['front'])
+				{
+					$iaDb->setTable('pages');
+					foreach ($oldExtras->itemData['pages']['front'] as $page)
+					{
+						$iaDb->update(array('alias' => $page['alias']), "`name` = '{$page['name']}' AND `extras` = '$defaultPackage'");
+					}
+					$iaDb->resetTable();
+				}
+			}
+
+			$iaDb->update(array('url' => IA_URL_DELIMITER), iaDb::convertIds($package, 'name'));
+			$this->_iaCore->set('default_package', $package, true);
+
+			$iaDb->setTable('hooks');
+			$iaDb->update(array('status' => iaCore::STATUS_INACTIVE), "`name` = 'phpCoreUrlRewrite'");
+			$iaDb->update(array('status' => iaCore::STATUS_ACTIVE), "`name` = 'phpCoreUrlRewrite' AND `extras` = '$package'");
+			$iaDb->resetTable();
+		}
+	}
+
 	private function _getList()
 	{
 		$stmt = iaDb::convertIds(iaExtra::TYPE_PACKAGE, 'type');
@@ -385,7 +428,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$dates = $this->_iaDb->keyvalue(array('name', 'date'), $stmt);
 
 		$directory = opendir($this->_folder);
-		$result = array();
+		$result = $packageNames = array();
 
 		while ($file = readdir($directory))
 		{
@@ -498,6 +541,8 @@ class iaBackendController extends iaAbstractControllerBackend
 							$items['install'] = true;
 					}
 
+					$packageNames[] = $data['name'];
+
 					$result[] = array(
 						'title' => $data['info']['title'],
 						'version' => $data['info']['version'],
@@ -511,57 +556,79 @@ class iaBackendController extends iaAbstractControllerBackend
 						'buttons' => $buttons,
 						'url' => $data['url'],
 						'preview' => $preview,
+						'img' => IA_CLEAR_URL . 'packages/' . $data['name'] . '/docs/img/icon.png',
 						'screenshots' => $screenshots,
 						'file' => $file,
 						'items' => $items,
+						'price' => 0,
 						'status' => $status,
 						'date_updated' => ($status != 'notinstall') ? $dates[$data['name']] : false,
-						'install' => true
+						'install' => true,
+						'remote' => false
 					);
 				}
 			}
 		}
 
-		return $result;
+		return array($result, $packageNames);
 	}
 
-	private function _changeDefault($url = '', $package = '')
+	private function getRemoteList($localPackages)
 	{
-		$iaDb = &$this->_iaDb;
+		$remotePackages = array();
 
-		$defaultPackage = $this->_iaCore->get('default_package', false);
-
-		if ($defaultPackage != $package)
+		if ($cachedData = $this->_iaCore->iaCache->get('subrion_packages', 3600 * 24 * 7, true))
 		{
-			if ($defaultPackage)
+			$remotePackages = $cachedData; // get templates list from cache, cache lives for 1 hour
+		}
+		else
+		{
+			if ($response = iaUtil::getPageContent(iaUtil::REMOTE_TOOLS_URL . 'list/package/' . IA_VERSION))
 			{
-				$oldExtras = $this->_iaCore->factory('extra', iaCore::ADMIN);
-
-				$oldExtras->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
-				$oldExtras->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaExtra::INSTALL_FILE_NAME));
-				$oldExtras->parse();
-				$oldExtras->checkValidity();
-
-				$iaDb->update(array('url' => $oldExtras->getUrl()), iaDb::convertIds($defaultPackage, 'name'));
-
-				if ($oldExtras->itemData['pages']['front'])
+				$response = iaUtil::jsonDecode($response);
+				if (!empty($response['error']))
 				{
-					$iaDb->setTable('pages');
-					foreach ($oldExtras->itemData['pages']['front'] as $page)
+					$this->_messages[] = $response['error'];
+					$this->_error = true;
+				}
+				elseif ($response['total'] > 0)
+				{
+					if (isset($response['extensions']) && is_array($response['extensions']))
 					{
-						$iaDb->update(array('alias' => $page['alias']), "`name` = '{$page['name']}' AND `extras` = '$defaultPackage'");
+						foreach ($response['extensions'] as $entry)
+						{
+							$packageInfo = (array)$entry;
+
+							// exclude uploaded packages
+							if (!in_array($packageInfo['name'], $localPackages))
+							{
+								$packageInfo['date'] = gmdate(iaDb::DATE_FORMAT, $packageInfo['date']);
+								$packageInfo['status'] = '';
+								$packageInfo['summary'] = $packageInfo['description'];
+								$packageInfo['buttons'] = false;
+								$packageInfo['remote'] = true;
+
+								$remotePackages[] = $packageInfo;
+							}
+						}
+
+						// cache well-formed results
+						$this->_iaCore->iaCache->write('subrion_packages', $remotePackages);
 					}
-					$iaDb->resetTable();
+					else
+					{
+						$this->addMessage('error_incorrect_format_from_subrion');
+						$this->_error = true;
+					}
 				}
 			}
-
-			$iaDb->update(array('url' => IA_URL_DELIMITER), iaDb::convertIds($package, 'name'));
-			$this->_iaCore->set('default_package', $package, true);
-
-			$iaDb->setTable('hooks');
-			$iaDb->update(array('status' => iaCore::STATUS_INACTIVE), "`name` = 'phpCoreUrlRewrite'");
-			$iaDb->update(array('status' => iaCore::STATUS_ACTIVE), "`name` = 'phpCoreUrlRewrite' AND `extras` = '$package'");
-			$iaDb->resetTable();
+			else
+			{
+				$this->addMessage('error_incorrect_response_from_subrion');
+				$this->_error = true;
+			}
 		}
+
+		return $remotePackages;
 	}
 }

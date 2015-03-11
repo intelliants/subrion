@@ -55,7 +55,7 @@ $(function()
 				var i, html = '';
 				for (i in response.patterns)
 				{
-					if (i != '') html += '<strong>{%' + i.toUpperCase() + '%}</strong>' + ' - ' + response.patterns[i] + '<br>';
+					if (i != '') html += '<strong>{%' + i.toUpperCase() + '%}</strong>' + ' — ' + response.patterns[i] + '<br>';
 				}
 
 				$('div:first', $patterns).html(html);

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -45,6 +45,9 @@ interface iaInterfaceDbAdapter
 
 	const ORDER_ASC = 'ASC';
 	const ORDER_DESC = 'DESC';
+
+
+	public function setTimezoneOffset($offset);
 
 	/**
 	 * Sets table to work with (in most cases resetTable should be called after calling this method)

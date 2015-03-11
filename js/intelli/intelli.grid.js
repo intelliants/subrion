@@ -399,9 +399,11 @@ function IntelliGrid(params, autoInit)
 
 		Ext.state.Manager.setProvider(Ext.create('Ext.state.CookieProvider'));
 
-		var stateId = window.location.href;
-		stateId = stateId.replace(intelli.config.admin_url, '');
-		stateId = 'IG' + stateId.replace(/\//g, '');
+		var stateId = window.location.href,
+			bases = document.getElementsByTagName('base'),
+			urlBase = bases.length > 0 ? bases[0].href : intelli.config.ia_url;
+		stateId = stateId.replace(urlBase, '');
+		stateId = stateId.replace(/\//g, '');
 
 		self.grid = Ext.create('Ext.grid.Panel',
 		{

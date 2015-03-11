@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -33,6 +33,9 @@ class iaBlock extends abstractPlugin
 	const TYPE_SMARTY = 'smarty';
 
 	const DEFAULT_MENU_TEMPLATE = 'render-menu.tpl';
+
+	const LANG_PATTERN_TITLE = 'block_title_blc';
+	const LANG_PATTERN_CONTENT = 'block_content_blc';
 
 	protected static $_table = 'blocks';
 	protected static $_pagesTable = 'objects_pages';
@@ -87,7 +90,8 @@ class iaBlock extends abstractPlugin
 	 */
 	public function insert(array $blockData)
 	{
-		if (empty($blockData['lang']) || !array_key_exists($blockData['lang'], $this->iaCore->languages))
+		if (empty($blockData['lang'])
+			|| ($blockData['lang'] && !array_key_exists($blockData['lang'], $this->iaCore->languages)))
 		{
 			$blockData['lang'] = $this->iaView->language;
 		}
@@ -101,13 +105,13 @@ class iaBlock extends abstractPlugin
 			$blockData['tpl'] = self::DEFAULT_MENU_TEMPLATE;
 		}
 
-		if (isset($blockData['filename']) && $blockData['filename'])
+		if (!empty($blockData['filename']))
 		{
 			$blockData['external'] = 1;
 		}
 
 		$order = $this->iaDb->getMaxOrder(self::getTable());
-		$blockData['order'] = ($order) ? $order + 1 : 1;
+		$blockData['order'] = $order ? $order + 1 : 1;
 
 		if (isset($blockData['pages']))
 		{
@@ -115,15 +119,15 @@ class iaBlock extends abstractPlugin
 			unset($blockData['pages']);
 		}
 
-		if (isset($blockData['multi_language']))
+		if (isset($blockData['multilingual']))
 		{
-			if (!$blockData['multi_language'] && isset($blockData['block_languages']))
+			if (!$blockData['multilingual'] && isset($blockData['languages']))
 			{
-				$languages = $blockData['block_languages'];
-				$title = $blockData['title'];
+				$languages = $blockData['languages'];
+				$titles = $blockData['titles'];
 				$contents = $blockData['contents'];
 
-				unset($blockData['block_languages'], $blockData['title'], $blockData['contents']);
+				unset($blockData['languages'], $blockData['titles'], $blockData['contents']);
 			}
 		}
 
@@ -135,8 +139,8 @@ class iaBlock extends abstractPlugin
 			{
 				foreach ($languages as $language)
 				{
-					iaLanguage::addPhrase('block_title_blc' . $id, $title[$language], $language);
-					iaLanguage::addPhrase('block_content_blc' . $id, $contents[$language], $language);
+					iaLanguage::addPhrase(self::LANG_PATTERN_TITLE . $id, $titles[$language], $language);
+					iaLanguage::addPhrase(self::LANG_PATTERN_CONTENT . $id, $contents[$language], $language);
 				}
 			}
 
@@ -161,15 +165,15 @@ class iaBlock extends abstractPlugin
 			unset($itemData['pages']);
 		}
 
-		if (isset($itemData['multi_language']) && !$itemData['multi_language'])
+		if (isset($itemData['multilingual']) && !$itemData['multilingual'])
 		{
-			if (isset($itemData['block_languages']))
+			if (isset($itemData['languages']))
 			{
-				$languages = $itemData['block_languages'];
-				$title = $itemData['title'];
+				$languages = $itemData['languages'];
+				$titles = $itemData['titles'];
 				$contents = $itemData['contents'];
 
-				unset($itemData['block_languages'], $itemData['title'], $itemData['contents']);
+				unset($itemData['languages'], $itemData['titles'], $itemData['contents']);
 			}
 		}
 
@@ -180,44 +184,50 @@ class iaBlock extends abstractPlugin
 
 		$result = parent::update($itemData, $id);
 
-		$this->setVisiblePages($id, $pagesList, $itemData['sticky']);
+		if (isset($pagesList))
+		{
+			$this->setVisiblePages($id, $pagesList, $itemData['sticky']);
+		}
 
-		if (isset($itemData['multi_language']) && !$itemData['multi_language'])
+		if (isset($itemData['multilingual']) && !$itemData['multilingual'])
 		{
 			if (isset($languages))
 			{
-				$languageContent_where = array();
-				$languageContent = array();
+				$stmt = array();
+				$entries = array();
 
-				foreach ($languages as $block_language)
+				foreach ($languages as $langCode)
 				{
-					$languageContent[] = array(
-						'key' => 'block_title_blc' . $id,
-						'value' => $title[$block_language],
+					$entries[] = array(
+						'key' => self::LANG_PATTERN_TITLE . $id,
+						'value' => $titles[$langCode],
 						'category' => iaLanguage::CATEGORY_COMMON,
-						'code' => $block_language
+						'code' => $langCode
 					);
 
-					$languageContent[] = array(
-						'key' => 'block_content_blc' . $id,
-						'value' => $contents[$block_language],
+					$entries[] = array(
+						'key' => self::LANG_PATTERN_CONTENT . $id,
+						'value' => $contents[$langCode],
 						'category' => iaLanguage::CATEGORY_COMMON,
-						'code' => $block_language
+						'code' => $langCode
 					);
 
-					$languageContent_where[] = 'block_title_blc' . $id;
-					$languageContent_where[] = 'block_content_blc' . $id;
+					$stmt[] = self::LANG_PATTERN_TITLE . $id;
+					$stmt[] = self::LANG_PATTERN_CONTENT . $id;
 				}
 
 				$iaDb->setTable(iaLanguage::getTable());
-				$iaDb->delete("`key` IN ('" . implode("','", $languageContent_where) . "')");
-				$iaDb->insert($languageContent);
+				$iaDb->delete("`key` IN ('" . implode("','", $stmt) . "')");
+				$iaDb->insert($entries);
 				$iaDb->resetTable();
 			}
 		}
 		else
 		{
-			$iaDb->delete("`key` IN ('block_title_blc{$id}', 'block_content_blc{$id}')", iaLanguage::getTable());
+			// let the user content be kept
+
+			//$iaDb->delete("`key` IN ('" . self::LANG_PATTERN_TITLE . $id . "', '"
+			//	. self::LANG_PATTERN_CONTENT . $id . "')", iaLanguage::getTable());
 		}
 
 		if ($result)
@@ -232,12 +242,12 @@ class iaBlock extends abstractPlugin
 		return $result;
 	}
 
-	public function delete($id)
+	public function delete($id, $log = true)
 	{
 		$iaDb = &$this->iaDb;
 
 		$row = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
-		$title = 'block_title_blc' . $id;
+		$title = self::LANG_PATTERN_TITLE . $id;
 		$title = iaLanguage::exists($title) ? iaLanguage::get($title) : $row['title'];
 
 		$this->iaCore->startHook('beforeBlockDelete', array('block' => &$row));
@@ -247,9 +257,15 @@ class iaBlock extends abstractPlugin
 		if ($result)
 		{
 			$iaDb->delete('`object_type` = :object && `object` = :id', self::getPagesTable(), array('id' => $id, 'object' => 'blocks'));
-			$iaDb->delete("`key` = 'block_title_blc{$id}' OR `key` = 'block_content_blc{$id}'", iaLanguage::getTable());
+			$iaDb->delete('`key` = :title OR `key` = :content', iaLanguage::getTable(), array(
+				'title' => self::LANG_PATTERN_TITLE . $id,
+				'content' => self::LANG_PATTERN_CONTENT . $id
+			));
 
-			$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'block', 'name' => $title, 'id' => $id));
+			if ($log)
+			{
+				$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'block', 'name' => $title, 'id' => $id));
+			}
 		}
 
 		$this->iaCore->startHook('afterBlockDelete', array('block' => &$row));
@@ -274,8 +290,13 @@ class iaBlock extends abstractPlugin
 			$rows = array();
 			foreach ($pagesList as $pageName)
 			{
-				$rows[] = array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => $pageName, 'access' => !$accessLevel);
+				$pageName = trim($pageName);
+				if ($pageName)
+				{
+					$rows[] = array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => $pageName, 'access' => !$accessLevel);
+				}
 			}
+
 			$this->iaDb->insert($rows);
 		}
 

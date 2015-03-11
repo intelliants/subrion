@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -41,8 +41,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _indexPage(&$iaView)
 	{
-		$iaCache = $this->_iaCore->factory('cache');
-
 		// set default template
 		if (isset($_POST['install']) || isset($_POST['reinstall']))
 		{
@@ -50,7 +48,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				$iaView->setMessages(iaLanguage::getf('template_installed', array('name' => $this->getHelper()->title)), iaView::SUCCESS);
 
-				$iaCache->clearAll();
+				$this->_iaCore->iaCache->clearAll();
 
 				$this->_iaCore->factory('log')->write(iaLog::ACTION_INSTALL, array('type' => 'template', 'name' => $this->getHelper()->title));
 
@@ -63,11 +61,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($this->_downloadTemplate())
 			{
-				$iaCache->remove('subrion_templates.inc');
+				$this->_iaCore->iaCache->remove('subrion_templates.inc');
 			}
 		}
 
-		$templates = $this->_getList($iaCache);
+		$templates = $this->_getList();
 
 		if ($this->_messages)
 		{
@@ -135,14 +133,14 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $output;
 	}
 
-	private function _getList(&$iaCache)
+	private function _getList()
 	{
 		$templates = $this->getHelper()->getList(); // get list of available local templates
 		$remoteTemplates = array();
 
 		if ($this->_iaCore->get('allow_remote_templates'))
 		{
-			if ($cachedData = $iaCache->get('subrion_templates', 3600, true))
+			if ($cachedData = $this->_iaCore->iaCache->get('subrion_templates', 3600, true))
 			{
 				$remoteTemplates = $cachedData; // get templates list from cache, cache lives for 1 hour
 			}
@@ -177,7 +175,7 @@ class iaBackendController extends iaAbstractControllerBackend
 							}
 
 							// cache well-formed results
-							$iaCache->write('subrion_templates', $remoteTemplates);
+							$this->_iaCore->iaCache->write('subrion_templates', $remoteTemplates);
 						}
 						else
 						{

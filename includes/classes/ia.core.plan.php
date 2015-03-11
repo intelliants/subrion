@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -54,8 +54,6 @@ class iaPlan extends abstractCore
 	 * @param $itemName item name
 	 * @param $itemData current item data, id field is mandatory
 	 * @param $planId plan id to be paid for
-	 * @param null $title transaction title
-	 * @param int $amount amount to be paid
 	 * @param string $returnUrl post payment return url
 	 *
 	 * @return bool|string
@@ -242,7 +240,7 @@ class iaPlan extends abstractCore
 
 		if ($plan && $item && !empty($transaction['item_id']))
 		{
-			list($dateStarted, $dateFinished) = $this->_calculateDates($plan['duration'], $plan['unit']);
+			list($dateStarted, $dateFinished) = $this->calculateDates($plan['duration'], $plan['unit']);
 
 			$values = array(
 				self::SPONSORED => 1,
@@ -262,7 +260,7 @@ class iaPlan extends abstractCore
 		return $result;
 	}
 
-	private function _calculateDates($duration, $unit)
+	public function calculateDates($duration, $unit)
 	{
 		switch ($unit)
 		{
@@ -290,8 +288,8 @@ class iaPlan extends abstractCore
 		$dateFinished = $dateStarted + ($base * $duration);
 
 		return array(
-			date(iaDb::DATETIME_FORMAT, $dateStarted),
-			date(iaDb::DATETIME_FORMAT, $dateFinished)
+			date(iaDb::DATETIME_SHORT_FORMAT, $dateStarted),
+			date(iaDb::DATETIME_SHORT_FORMAT, $dateFinished)
 		);
 	}
 

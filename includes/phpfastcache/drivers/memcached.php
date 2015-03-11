@@ -1,12 +1,12 @@
 <?php
 
 /*
- * khoaofgod@yahoo.com
+ * khoaofgod@gmail.com
  * Website: http://www.phpfastcache.com
- * Example at our website, any bugs, problems, please visit http://www.codehelper.io
+ * Example at our website, any bugs, problems, please visit http://faster.phpfastcache.com
  */
 
-class phpfastcache_memcached extends phpFastCache implements phpfastcache_driver  {
+class phpfastcache_memcached extends BasePhpFastCache implements phpfastcache_driver  {
 
     var $instant;
 
@@ -14,20 +14,31 @@ class phpfastcache_memcached extends phpFastCache implements phpfastcache_driver
         if(class_exists("Memcached")) {
             return true;
         }
+	    $this->fallback = true;
        return false;
     }
 
-    function __construct($option = array()) {
-        $this->setOption($option);
-        if(!$this->checkdriver() && !isset($option['skipError'])) {
-            throw new Exception("Can't use this driver for your website!");
-        }
+    function __construct($config = array()) {
 
-        $this->instant = new Memcached();
+	    $this->setup($config);
+	    if(!$this->checkdriver() && !isset($config['skipError'])) {
+		    $this->fallback = true;
+	    }
+		if(class_exists("Memcached")) {
+			$this->instant = new Memcached();
+		} else {
+			$this->fallback = true;
+		}
+
     }
 
     function connectServer() {
-        $s = $this->option['server'];
+
+	    if($this->checkdriver() == false) {
+		    return false;
+	    }
+
+        $s = $this->option['memcache'];
         if(count($s) < 1) {
             $s = array(
                 array("127.0.0.1",11211,100),
@@ -40,12 +51,22 @@ class phpfastcache_memcached extends phpFastCache implements phpfastcache_driver
             $sharing = isset($server[2]) ? $server[2] : 0;
             $checked = $name."_".$port;
             if(!isset($this->checked[$checked])) {
-                if($sharing >0 ) {
-                    $this->instant->addServer($name,$port,$sharing);
-                } else {
-                    $this->instant->addServer($name,$port);
-                }
-                $this->checked[$checked] = 1;
+	            try {
+		            if($sharing >0 ) {
+			            if(!$this->instant->addServer($name,$port,$sharing)) {
+				            $this->fallback = true;
+			            }
+		            } else {
+
+			            if(!$this->instant->addServer($name,$port)) {
+				            $this->fallback = true;
+			            }
+		            }
+		            $this->checked[$checked] = 1;
+	            } catch (Exception $e) {
+		            $this->fallback = true;
+	            }
+
             }
         }
     }

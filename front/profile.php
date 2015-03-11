@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -37,7 +37,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$itemName = $tableName = iaUsers::getTable();
 	$messages = array();
 
-	$assignableGroups = $iaDb->keyvalue(array('id', 'title'), '`assignable` = 1', iaUsers::getUsergroupsTable());
+	$assignableGroups = $iaDb->keyvalue(array('id', 'name'), '`assignable` = 1', iaUsers::getUsergroupsTable());
 
 	$iaPlan = $iaCore->factory('plan');
 	$plans = $iaPlan->getPlans($iaUsers->getItemName());
@@ -82,13 +82,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		if (isset($_POST['change_info']))
 		{
 			$item = array();
-			$fields = iaField::getAcoFieldsList(false, $itemName, null, true, iaUsers::getIdentity(true));
+			$fields = iaField::getAcoFieldsList(null, $itemName, null, true, iaUsers::getIdentity(true));
 
 			list($item, $error, $messages, $error_fields) = $iaField->parsePost($fields, iaUsers::getIdentity(true));
 
 			if (!$error)
 			{
-				if ($assignableGroups && in_array((int)$_POST['usergroup_id'], array_keys($assignableGroups)))
+				if (isset($_POST['usergroup_id']) && $assignableGroups && in_array((int)$_POST['usergroup_id'], array_keys($assignableGroups)))
 				{
 					$item['usergroup_id'] = $_POST['usergroup_id'];
 				}

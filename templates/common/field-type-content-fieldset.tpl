@@ -9,8 +9,26 @@
 
 		{capture name='field_text'}
 			{if 'plans' != $section.name}
+				{*--
+					Checking for fields relations
+					TODO: to be rewritten along with the iaField method
+				 --*}
+				{$relations = []}
+
+				{if isset($isView)}
+					{foreach $section.fields as $variable}
+						{if iaField::RELATION_PARENT == $variable.relation && $variable.children}
+							{foreach $variable.children as $dependentField => $relation}
+								{$relations[$dependentField] = array($variable.name, $relation[0])}
+							{/foreach}
+						{/if}
+					{/foreach}
+				{/if}
+				{*-- END --*}
 				{foreach $section.fields as $variable}
-					{if !isset($exceptions) || !in_array($variable.name, $exceptions)}
+					{if (!isset($exceptions) || !in_array($variable.name, $exceptions))
+						&& (!isset($relations[$variable.name])
+							|| (isset($relations[$variable.name]) && $relations[$variable.name][1] == $item[$relations[$variable.name][0]]))}
 						{include file="field-type-content-{(isset($isView)) ? 'view' : 'manage'}.tpl" wrappedValues=true}
 					{/if}
 				{/foreach}

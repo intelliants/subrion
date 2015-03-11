@@ -17,7 +17,9 @@
 
 	<div class="form-actions">
 		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/" class="btn btn-lg btn-primary"><i class="i-loop"></i> Refresh</a>
+		<?php if (!$this->errorCode): ?>
 		<a class="pull-right btn btn-primary btn-lg" href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/rollback/"><i class="i-box-remove"></i> Rollback upgrade</a>
+		<?php endif ?>
 	</div>
 <?php else: ?>
 	<div class="widget widget-default">

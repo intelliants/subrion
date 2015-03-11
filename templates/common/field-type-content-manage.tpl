@@ -84,51 +84,14 @@ $(function()
 			</div>
 
 		{case 'date' break}
-			{assign var='default_date' value=($value && '0000-00-00' != $value) ? {$value|escape:'html'} : ''}
+			{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
 
 			<div class="input-append date" id="field_date_{$varname}">
-				<input type="text" name="{$varname}" class="js-datepicker" id="{$name}" value="{$default_date}">
+				<input type="text" name="{$varname}" class="js-datepicker" {if $variable.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if} id="{$name}" value="{$default_date}">
 				<span class="add-on js-datepicker-toggle"><i class="icon-calendar"></i></span>
 			</div>
 
 			{ia_add_media files='datepicker'}
-
-		{case 'storage' break}
-			{if $value}
-				<div class="files-list">
-					{foreach $value as $entry}
-						<div class="thumbnail">
-							<code><a href="{$nonProtocolUrl}uploads/{$entry.path}">{if $entry.title}{$entry.title|escape:'html'}{else}{lang key='download'} {$entry@iteration}{/if}</a></code>
-
-							<div class="caption">
-								<button class="btn btn-mini btn-danger js-delete-file" data-item="{$variable.item}" data-field="{$variable.name}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}">{lang key='delete'}</button>
-							</div>
-						</div>
-					{/foreach}
-				</div>
-
-				{assign var='max_num' value=($variable.length - count($value))}
-			{else}
-				{assign max_num $variable.length}
-			{/if}
-
-			<div class="upload-gallery-wrap-outer" id="wrap_{$variable.name}"{if $max_num <= 0} style="display: none;"{/if}>
-				<div class="upload-gallery-wrap clearfix">
-					<div class="upload-wrap pull-left">
-						<div class="input-append">
-							<span class="span2 uneditable-input">{lang key='file_click_to_upload'}</span>
-							<span class="add-on">{lang key='browse'}</span>
-						</div>
-						<input type="file" class="upload-hidden" name="{$variable.name}[]">
-					</div>
-					<input class="upload-title" type="text" placeholder="{lang key='title'}" name="{$variable.name}_title[]" maxlength="100">
-					{if $max_num > 1}
-						<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
-						<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
-					{/if}
-				</div>
-			</div>
-			<input type="hidden" value="{$max_num}" id="{$variable.name}">
 
 		{case 'image' break}
 			<div class="upload-wrap">
@@ -142,12 +105,14 @@ $(function()
 			{if $value}
 				<div class="thumbnail" style="width: {$variable.thumb_width}px;">
 					{if $variable.thumb_width == $variable.image_width && $variable.thumb_height == $variable.image_height}
-						{printImage imgfile=$value.path width=$variable.thumb_width height=$variable.thumb_height title=$value.title thumbnail=1}
+						{printImage imgfile=$value.path width=$variable.thumb_width height=$variable.thumb_height thumbnail=1}
 					{else}
 						<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$varname}]" style="max-width: {$variable.thumb_width}px;">
-							{printImage imgfile=$value.path width=$variable.thumb_width height=$variable.thumb_height title=$value.title}
+							{printImage imgfile=$value.path width=$variable.thumb_width height=$variable.thumb_height}
 						</a>
 					{/if}
+
+					<input type="hidden" name="{$varname}[path]" value="{$value.path}">
 
 					<div class="caption">
 						<button class="btn btn-mini btn-danger js-delete-file" data-item="{$variable.item}" data-field="{$varname}" data-item-id="{$item.id|default:''}" data-picture-path="{$value.path}">{lang key='delete'}</button>
@@ -159,10 +124,10 @@ $(function()
 			{ia_add_media files='js:bootstrap/js/bootstrap-editable.min, css:_IA_URL_js/bootstrap/css/bootstrap-editable' order=5}
 
 			{if $value}
-				<div class="thumbnails-grid">
+				<div class="thumbnails-grid" id="{$varname}_upload_list">
 					{foreach $value as $entry}
 						<div class="thumbnail gallery">
-							<a href="{printImage imgfile=$entry.path url=true fullimage=true}" rel="ia_lightbox[{$varname}]" title="{$entry.title|escape:'html'}" style="max-width: {$variable.thumb_width}px;">
+							<a href="{printImage imgfile=$entry.path url=true fullimage=true}" rel="ia_lightbox[{$varname}]" title="{$entry.title|escape:'html'}" style="max-width: 140px;">
 								{printImage imgfile=$entry.path title=$entry.title}
 							</a>
 
@@ -170,17 +135,23 @@ $(function()
 								<a href="#" id="{$varname}_{$entry@index}" data-type="text" data-item="{$variable.item}" data-field="{$varname}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a>
 							</div>
 
-							{if empty($item.id)}
-								<input type="hidden" name="{$varname}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
-								<input type="hidden" name="{$varname}[{$entry@index}][path]" value="{$entry.path}">
-							{/if}
+							<input type="hidden" name="{$varname}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
+							<input type="hidden" name="{$varname}[{$entry@index}][path]" value="{$entry.path}">
 
-							<div class="caption">
+							<div class="caption clearfix">
+								<span class="btn btn-mini drag-handle pull-right"><i class="icon-move"></i></span>
 								<button class="btn btn-mini btn-danger js-delete-file" data-item="{$variable.item}" data-field="{$varname}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}">{lang key='delete'}</button>
 							</div>
 						</div>
 					{/foreach}
 				</div>
+
+				{ia_add_js}
+$(function()
+{
+	intelli.sortable('{$varname}_upload_list', '.drag-handle');
+});
+				{/ia_add_js}
 
 				{assign var='max_num' value=($variable.length - count($value))}
 			{else}
@@ -199,7 +170,7 @@ $(function()
 					</div>
 					<input class="upload-title" type="text" placeholder="{lang key='title'}" name="{$variable.name}_title[]" maxlength="100">
 
-					{if $max_num > 1}
+					{if $max_num > 0}
 						<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
 						<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
 					{/if}
@@ -208,6 +179,53 @@ $(function()
 				<input type="hidden" value="{$max_num}" id="{$variable.name}">
 				<p class="help-block">{lang key='click'}<strong> {lang key='browse'}... </strong>{lang key='choose_image_file'}</p>
 			</div>
+
+		{case 'storage' break}
+			{if $value}
+				<div class="files-list" id="{$varname}_upload_list">
+					{foreach $value as $entry}
+						<div class="thumbnail">
+							<input class="input-large" type="text" name="{$varname}[{$entry@index}][title]" value="{$entry.title|escape:'html'}" style="margin-bottom: 0;">
+							<input type="hidden" name="{$varname}[{$entry@index}][path]" value="{$entry.path}">
+
+							<div class="caption">
+								<a class="btn btn-mini btn-success" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}">{lang key='download'}</a>
+								<button class="btn btn-mini btn-danger js-delete-file" data-item="{$variable.item}" data-field="{$variable.name}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}">{lang key='delete'}</button>
+								<span class="btn btn-mini drag-handle"><i class="icon-move"></i></span>
+							</div>
+						</div>
+					{/foreach}
+				</div>
+
+				{ia_add_js}
+$(function()
+{
+	intelli.sortable('{$varname}_upload_list', '.drag-handle');
+});
+				{/ia_add_js}
+
+				{assign var='max_num' value=($variable.length - count($value))}
+			{else}
+				{assign max_num $variable.length}
+			{/if}
+
+			<div class="upload-gallery-wrap-outer" id="wrap_{$variable.name}"{if $max_num <= 0} style="display: none;"{/if}>
+				<div class="upload-gallery-wrap clearfix">
+					<div class="upload-wrap pull-left">
+						<div class="input-append">
+							<span class="span2 uneditable-input">{lang key='file_click_to_upload'}</span>
+							<span class="add-on">{lang key='browse'}</span>
+						</div>
+						<input type="file" class="upload-hidden" name="{$variable.name}[]">
+					</div>
+					<input class="upload-title" type="text" placeholder="{lang key='title'}" name="{$variable.name}_title[]" maxlength="100">
+					{if $max_num > 0}
+						<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
+						<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
+					{/if}
+				</div>
+			</div>
+			<input type="hidden" value="{$max_num}" id="{$variable.name}">
 
 	{/switch}
 
@@ -220,7 +238,7 @@ $(function()
 			</select>
 
 			{if $variable.relation == 'parent' && $variable.children}
-			{ia_add_js order=5}
+				{ia_add_js order=5}
 $(function()
 {
 $('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
@@ -242,7 +260,7 @@ $('#{$name}').on('change', function()
 	});
 }).change();
 });
-			{/ia_add_js}
+				{/ia_add_js}
 			{/if}
 
 		{elseif $type == 'radio'}
@@ -258,21 +276,27 @@ $('#{$name}').on('change', function()
 $(function()
 {
 	$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
+
 	$('input[name="{$varname}"]').on('change', function()
 	{
-		var value = $(this).val();
-		$('.hide_{$variable.name}').hide();
-		{foreach $variable.children as $_field => $_values}
-		if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
-		{/foreach}
-		$('fieldset').show().each(function(index, item)
+		var $this = $(this),
+			value = $(this).val();
+
+		if ($this.is(':checked'))
 		{
-			if ($('.fieldset-wrapper', item).length > 0)
-			{
-				if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
-				else $(this).show();
-			}
-		});
+			$('hide_{$variable.name}').hide();
+			
+			{foreach $variable.children as $_field => $_values}
+				if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1)
+				{
+					$('#{$_field}_fieldzone').show();
+				}
+				else
+				{
+					$('#{$_field}_fieldzone').hide();
+				}
+			{/foreach}
+		}
 	}).change();
 });
 				{/ia_add_js}
@@ -301,22 +325,14 @@ $(function()
 			if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 			{/foreach}
 		});
-		$('fieldset').show().each(function(index, item)
-		{
-			if ($('.fieldset-wrapper', item).length > 0)
-			{
-				if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
-				else $(this).show();
-			}
-		});
 	}).change();
 });
 			{/ia_add_js}
 			{/if}
 		{/if}
 
-		{assign annotation "{$name}_annotation"}
-		{if isset($lang.$annotation)}<p class="annotation help-block">{lang key=$annotation}</p>{/if}
+		{assign annotation {lang key="{$name}_annotation" default=''}}
+		{if $annotation}<p class="annotation help-block">{$annotation}</p>{/if}
 	</div>
 </div>
 {if isset($field_after[$varname])}{$field_after.$varname}{/if}

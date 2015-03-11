@@ -16,3 +16,5 @@ define('IA_SALT', '{salt}');
 
 // debug mode: 0 - disabled, 1 - enabled
 define('INTELLI_DEBUG', {debug});
+
+{sessionpath}

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -24,9 +24,6 @@
  *
  ******************************************************************************/
 
-$ia_version = true;
-include IA_HOME . 'index.php';
-
 $iaOutput->layout()->title = 'Upgrade Wizard';
 
 $iaOutput->steps = array(
@@ -36,20 +33,17 @@ $iaOutput->steps = array(
 	'finish' => 'Upgrade'
 );
 
-// check that a user performing an upgrade is administrator
-$iaUsers = iaHelper::loadCoreClass('users', 'core');
-
-$proceed = false;
-if (iaUsers::hasIdentity())
+if (!isset($iaOutput->steps[$iaOutput->step]) && $iaOutput->step != 'rollback')
 {
-	if (iaUsers::MEMBERSHIP_ADMINISTRATOR == iaUsers::getIdentity()->usergroup_id)
-	{
-		$proceed = true;
-	}
+	iaHelper::redirect('upgrade/');
 }
-if (!$proceed)
+
+if (!iaUsers::hasIdentity() || iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id)
 {
+	$iaOutput->steps = array('check' => $iaOutput->layout()->title);
 	$iaOutput->errorCode = 'authorization';
+
+	$step = 'check';
 
 	return false;
 }

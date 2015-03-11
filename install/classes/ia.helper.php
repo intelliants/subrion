@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -35,6 +35,8 @@ class iaHelper
 
 	const INSTALLATION_FILE_NAME = 'install.xml';
 
+	const CONFIGURATION_FILE = 'config.inc.php';
+
 
 	public static function isAjaxRequest()
 	{
@@ -42,9 +44,29 @@ class iaHelper
 			&& strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
 	}
 
+	public static function isScriptInstalled()
+	{
+		return file_exists(IA_HOME . 'includes' . IA_DS . self::CONFIGURATION_FILE);
+	}
+
 	public static function getIniSetting($name)
 	{
 		return ini_get($name) == '1' ? 'ON' : 'OFF';
+	}
+
+	public static function cleanUpCacheContents()
+	{
+		self::cleanUpDirectoryContents(IA_CACHEDIR, true);
+
+		if (!file_exists(IA_CACHEDIR))
+		{
+			iaCore::instance()->util()->makeDirCascade(IA_CACHEDIR, 0777);
+		}
+
+		$mask = !function_exists('posix_getuid') || function_exists('posix_getuid') && posix_getuid() != fileowner(IA_HOME . 'index' . iaSystem::EXECUTABLE_FILE_EXT) ? 0777 : 0755;
+		chmod(IA_CACHEDIR, $mask);
+
+		return true;
 	}
 
 	public static function cleanUpDirectoryContents($directory, $removeFolder = false)
@@ -136,11 +158,12 @@ class iaHelper
 			$iaCore->factory('language');
 			$iaCore->iaView = $iaCore->factory('view');
 
-			$config = array('baseurl', 'languages', 'timezone');
+			$iaCore->iaCache = $iaCore->factory('cache');
+
+			$config = array('baseurl', 'timezone');
 			$config = $iaCore->iaDb->keyvalue(array('name', 'value'), "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
 
-			$languages = empty($config['languages']) ? array('en' => 'English') : unserialize($config['languages']);
-			$iaCore->languages = $languages;
+			$iaCore->languages = array('en' => 'English');
 			$iaCore->iaView->language = 'en';
 
 			date_default_timezone_set($config['timezone']);
@@ -247,12 +270,12 @@ class iaHelper
 		return $result;
 	}
 
-	public static function _html ($string, $mode = ENT_QUOTES)
+	public static function _html($string, $mode = ENT_QUOTES)
 	{
 		return htmlspecialchars($string, $mode);
 	}
 
-	public static function _sql ($string)
+	public static function _sql($string)
 	{
 		if (is_array($string))
 		{
@@ -372,12 +395,18 @@ class iaHelper
 	}
 
 	// handy function to create a path
-	protected static function _composePath (array $path)
+	protected static function _composePath(array $path)
 	{
 		foreach ($path as $key => $value)
 		{
 			$path[$key] = trim($value, IA_DS);
 		}
 		return (stripos(PHP_OS, 'win') !== false ? '' : IA_DS) . implode(IA_DS, $path) . IA_DS;
+	}
+
+	public static function redirect($url)
+	{
+		header('Location: ' . URL_HOME . 'install/' . $url);
+		exit();
 	}
 }

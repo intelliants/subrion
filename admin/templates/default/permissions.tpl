@@ -16,8 +16,8 @@
 						<tbody>
 							{foreach $usergroups as $entry}
 								<tr>
-									<td>{$entry@index + 1}</td>
-									<td>{$entry.title|escape:'html'}</td>
+									<td>{$entry@iteration}</td>
+									<td>{lang key="usergroup_{$entry.name}"|escape:'html'}</td>
 									<td>
 										{if $entry.admin_access}
 											<span class="text-success">{lang key='allowed'}</span> 
@@ -56,9 +56,9 @@
 						<tbody>
 							{foreach $members as $entry}
 								<tr data-name="{$entry.fullname|escape:'html'}">
-									<td>{$entry@index + 1}</td>
+									<td>{$entry@iteration}</td>
 									<td><a href="{$smarty.const.ADMIN_URL}members/edit/{$entry.id}/">{$entry.fullname|escape:'html'}</a></td>
-									<td>{$entry.usergroup|escape:'html'}</td>
+									<td>{lang key="usergroup_{$entry.usergroup}"}</td>
 									<td>
 										{if $entry.admin_access}
 											<span class="text-success">{lang key='allowed'}</span> 
@@ -113,7 +113,7 @@ $(function()
 {else}
 	<ul class="nav nav-tabs">
 		{foreach $permissions as $pageType => $list}
-			<li{if $list@first} class="active"{/if}><a href="#tab-{$pageType}" data-toggle="tab">{lang key=$pageType|cat:'s'}</a></li>
+			<li{if $list@first} class="active"{/if}><a href="#tab-{$pageType}" data-toggle="tab">{lang key="{$pageType}s"}</a></li>
 		{/foreach}
 	</ul>
 	<div class="tab-content">

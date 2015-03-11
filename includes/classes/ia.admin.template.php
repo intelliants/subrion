@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -278,15 +278,14 @@ class iaTemplate extends abstractCore
 			return;
 		}
 
-		$existPositions = array();
-		if ($this->_config)
+		if (isset($rollbackData['blocks']))
 		{
-			foreach ($this->_config as $entry)
+			$existPositions = array();
+			if ($this->_positions)
 			{
-				if ('block_positions' == $entry['name'])
+				foreach ($this->_positions as $entry)
 				{
-					$existPositions = explode(',', $entry['value']);
-					break;
+					$existPositions[] = $entry['name'];
 				}
 			}
 		}
@@ -389,37 +388,7 @@ class iaTemplate extends abstractCore
 
 		if ($this->_phrases)
 		{
-			$installedLanguages = unserialize($iaDb->one('value', "`name` = 'languages'", iaCore::getConfigTable()));
-
-			if (!array_key_exists('en', $installedLanguages))
-			{
-				foreach ($installedLanguages as $code => $language)
-				{
-					foreach ($this->_phrases as $key => $phrase)
-					{
-						$this->_phrases[$key]['lang'] = $language;
-						$this->_phrases[$key]['code'] = $code;
-					}
-				}
-			}
-			else
-			{
-				foreach ($installedLanguages as $code => $language)
-				{
-					if ('en' != $code)
-					{
-						foreach ($this->_phrases as $phrase)
-						{
-							iaLanguage::addPhrase($phrase['key'], $phrase['value'], $code, $this->name, $phrase['category'], false);
-						}
-					}
-				}
-			}
-
-			foreach ($this->_phrases as $phrase)
-			{
-				iaLanguage::addPhrase($phrase['key'], $phrase['value'], $phrase['code'], $this->name, $phrase['category'], false);
-			}
+			$this->_processPhrases();
 		}
 
 		if ($this->_config)
@@ -750,12 +719,11 @@ class iaTemplate extends abstractCore
 			case 'phrase':
 				if (in_array('phrases', $this->_path))
 				{
-					$this->_phrases[] = array(
-						'key' => $attr['key'],
-						'value' => $text,
-						'category' => $this->attr('category', iaLanguage::CATEGORY_COMMON),
-						'code' => $this->attr('code', $this->iaView->language)
-					);
+					if ($key = trim($this->attr('key')))
+					{
+						isset($this->_phrases[$key]) || $this->_phrases[$key] = array('values' => array(), 'category' => $this->attr('category', iaLanguage::CATEGORY_COMMON));
+						$this->_phrases[$key]['values'][$this->attr('code', $this->iaView->language)] = $text;
+					}
 				}
 				break;
 
@@ -831,7 +799,7 @@ class iaTemplate extends abstractCore
 						'header' => $this->attr('header', true),
 						'collapsible' => $this->attr('collapsible', false),
 						'sticky' => $this->attr('sticky', false),
-						'multi_language' => $this->attr('multilanguage', true),
+						'multilingual' => $this->attr('multilanguage', true),
 						'pages' => $this->attr('pages'),
 						'added' => $this->attr('added'),
 						'rss' => $this->attr('rss'),
@@ -872,5 +840,25 @@ class iaTemplate extends abstractCore
 	public function getNotes()
 	{
 		return $this->_notes;
+	}
+
+	protected function _processPhrases()
+	{
+		if ($this->_phrases)
+		{
+			$defaultLangCode = $this->iaView->language;
+
+			foreach ($this->_phrases as $key => $phrase)
+			{
+				foreach ($this->iaCore->languages as $languageCode => $language)
+				{
+					$value = isset($phrase['values'][$languageCode])
+						? $phrase['values'][$languageCode]
+						: $phrase['values'][$defaultLangCode];
+
+					iaLanguage::addPhrase($key, $value, $languageCode, $this->name, $phrase['category'], false);
+				}
+			}
+		}
 	}
 }

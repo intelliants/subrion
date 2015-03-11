@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -40,197 +40,27 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _indexPage(&$iaView)
 	{
-		$iaAcl = $this->_iaCore->factory('acl');
-
-		$pageAction = $iaView->getParams('action');
+		$type = null;
+		$customEntryId = false;
 
 		if (isset($_GET['group']))
 		{
 			$type = 'group';
-			$customGroup = (int)$_GET['group'];
-			$customUser = false;
-			$pageAction = 'custom';
+			$customEntryId = (int)$_GET['group'];
 
 			iaBreadcrumb::preEnd(iaLanguage::get('usergroups'), IA_ADMIN_URL . 'usergroups/');
 		}
 		elseif (isset($_GET['user']))
 		{
 			$type = 'user';
-			$customUser = (int)$_GET['user'];
-			$customGroup = false;
-			$pageAction = 'custom';
+			$customEntryId = (int)$_GET['user'];
 
 			iaBreadcrumb::preEnd(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
 		}
 
 		if (isset($_POST['save']))
 		{
-			if (!$iaAcl->checkAccess($iaView->name() . iaAcl::SEPARATOR . iaCore::ACTION_EDIT))
-			{
-				return iaView::accessDenied();
-			}
-
-			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-			$messages = array();
-			$error = false;
-
-			if ($_POST['param'] && is_array($_POST['param']))
-			{
-				$values = $_POST['param'];
-
-				$this->_iaDb->setTable(iaCore::getConfigTable());
-
-				$this->_iaCore->startHook('phpConfigurationChange', array('configurationValues' => &$values));
-
-				foreach ($values as $key => $value)
-				{
-					$s = strpos($key, '_items_enabled');
-					if ($s !== false)
-					{
-						$p = $this->_iaCore->get($key, '', (bool)('custom' == $pageAction));
-						$array = $p ? explode(',', $p) : array();
-
-						$data = array();
-
-						array_shift($value);
-
-						if ($diff = array_diff($value, $array))
-						{
-							foreach ($diff as $item)
-							{
-								array_push($data, array('action' => '+', 'item' => $item));
-							}
-						}
-
-						if ($diff = array_diff($array, $value))
-						{
-							foreach ($diff as $item)
-							{
-								array_push($data, array('action' => '-', 'item' => $item));
-							}
-						}
-
-						$extra = substr($key, 0, $s);
-
-						$this->_iaCore->startHook('phpPackageItemChangedForPlugin', array('data' => $data), $extra);
-					}
-
-					if (is_array($value))
-					{
-						$value = implode(',', $value);
-					}
-
-					if (!utf8_is_valid($value))
-					{
-						$value = utf8_bad_replace($value);
-						trigger_error('Bad UTF-8 detected (replacing with "?") in configuration', E_USER_NOTICE);
-					}
-					if (('site_logo' == $key || 'site_watermark' == $key))
-					{
-						if (isset($_POST['delete'][$key]) && $_POST['delete'][$key] == 'on')
-						{
-							$value = '';
-						}
-						elseif (!empty($_FILES[$key]['name']))
-						{
-							if ((bool)$_FILES[$key]['error'])
-							{
-								$error = true;
-								$messages[] = iaLanguage::get('site_logo_image_error');
-							}
-							else
-							{
-								if (@is_uploaded_file($_FILES[$key]['tmp_name']))
-								{
-									$ext = strtolower(utf8_substr($_FILES[$key]['name'], -3));
-
-									// if jpeg
-									if ($ext == 'peg')
-									{
-										$ext = 'jpg';
-									}
-
-									if (!array_key_exists(strtolower($_FILES[$key]['type']), $this->_imageTypes) || !in_array($ext, $this->_imageTypes, true) || !getimagesize($_FILES[$key]['tmp_name']))
-									{
-										$error = true;
-										$messages[] = iaLanguage::get('wrong_site_logo_image_type');
-									}
-									else
-									{
-										if ($this->_iaCore->get($key) && file_exists(IA_UPLOADS . $this->_iaCore->get($key)))
-										{
-											iaUtil::deleteFile(IA_UPLOADS . $this->_iaCore->get($key));
-										}
-
-										$token = iaUtil::generateToken();
-										$fileName = $key . '_' . $token . '.' . $ext;
-										$fname = IA_UPLOADS . $fileName;
-
-										$value = $fileName;
-
-										@move_uploaded_file($_FILES[$key]['tmp_name'], $fname);
-
-										@chmod($fname, 0777);
-									}
-								}
-							}
-						}
-						else
-						{
-							$value = $this->_iaCore->get($key, '', ($pageAction == 'custom' ? true : false));
-						}
-					}
-
-					if ('custom' == $pageAction)
-					{
-						$typeId = ($type == 'user') ? $customUser : $customGroup;
-						$where = "`name` = '{$key}' AND `type` = '{$type}' AND `type_id` = '{$typeId}'";
-
-						$this->_iaDb->setTable('config_custom');
-						if ($_POST['chck'][$key] == 1)
-						{
-							$values = array('name' => $key, 'value' => $value, 'type' => $type, 'type_id' => $typeId);
-
-							if ($this->_iaDb->exists($where))
-							{
-								unset($values['value']);
-								$this->_iaDb->bind($where, $values);
-								$this->_iaDb->update(array('value' => $value), $where);
-							}
-							else
-							{
-								$this->_iaDb->insert($values);
-							}
-						}
-						else
-						{
-							$this->_iaDb->delete($where);
-						}
-						$this->_iaDb->resetTable();
-					}
-					else
-					{
-						$stmt = '`name` = :key';
-						$this->_iaDb->bind($stmt, array('key' => $key));
-
-						$this->_iaDb->update(array('value' => $value), $stmt);
-					}
-				}
-
-				$this->_iaDb->resetTable();
-
-				$this->_iaCore->factory('cache')->clearAll();
-			}
-
-			if (!$error)
-			{
-				$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
-			}
-			elseif ($messages)
-			{
-				$iaView->setMessages($messages);
-			}
+			$this->_save($iaView, $type, $customEntryId);
 		}
 
 		$iaItem = $this->_iaCore->factory('item');
@@ -245,17 +75,19 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$this->_setGroup($iaView, $iaItem, $groupData);
 
-		$where = "`config_group` = '{$groupName}' AND `type` != 'hidden' " . ('custom' == $pageAction ? 'AND `custom` = 1' : '') . ' ORDER BY `order`';
+		$where = "`config_group` = '{$groupName}' AND `type` != 'hidden' " . ($type ? 'AND `custom` = 1' : '') . ' ORDER BY `order`';
 		$params = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, iaCore::getConfigTable());
-		if ('custom' == $pageAction)
+		if ($type)
 		{
-			$custom = $this->_iaCore->getCustomConfig($customUser, $customGroup);
+			$custom = ('user' == $type)
+				? $this->_iaCore->getCustomConfig($customEntryId)
+				: $this->_iaCore->getCustomConfig(false, $customEntryId);
 			$custom2 = array();
-			if (false === $customGroup)
+			if ('user' == $type)
 			{
 				$custom2 = $this->_iaDb->getKeyValue('SELECT d.`name`, d.`value` '
 					. "FROM `{$this->_iaCore->iaDb->prefix}config_custom` d, `{$this->_iaCore->iaDb->prefix}members` a "
-					. "WHERE d.`type` = 'group' AND d.`type_id` = a.`usergroup_id` AND a.`id` = '{$customUser}'");
+					. "WHERE d.`type` = 'group' AND d.`type_id` = a.`usergroup_id` AND a.`id` = '{$customEntryId}'");
 			}
 		}
 
@@ -265,7 +97,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$className = 'default';
 
-			if ('custom' == $pageAction)
+			if ($type)
 			{
 				$className = 'custom';
 
@@ -332,7 +164,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$customUrl = '';
-		if ('custom' == $pageAction)
+		if ($type)
 		{
 			$customUrl = isset($_GET['user'])
 				? '?user=' . $_GET['user']
@@ -366,32 +198,21 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				break;
 
-			case 'remove_site_logo':
-				if (file_exists(IA_UPLOADS . $this->_iaCore->get('site_logo')))
-				{
-					iaUtil::deleteFile(IA_UPLOADS . $this->_iaCore->get('site_logo'));
-				}
-				$this->_iaCore->set('site_logo', '', true);
+			case 'remove_image':
+
+				iaUtil::deleteFile(IA_UPLOADS . $this->_iaCore->get($_POST['name']));
+				$this->_iaCore->set($_POST['name'], '', true);
 
 				break;
 
-			case 'get_site_logo':
-				echo file_exists(IA_UPLOADS . $this->_iaCore->get('site_logo'))
-					? '<img src="' . IA_URL . 'uploads/' . $this->_iaCore->get('site_logo') . '" alt="">'
-					: '<div style="padding: 15px; margin: 0; background: #ffe269 none repeat scroll 0 0;">' . iaLanguage::get('logo_image_not_found') . '</div>';
+			case 'upload_image':
 
-				exit;
-
-			case 'upload':
-				if ((bool)$_FILES['site_logo']['error'])
+				$paramName = $_POST['name'];
+				if (!(bool)$_FILES[$paramName]['error'])
 				{
-					$output = array('error' => true, 'msg' => iaLanguage::get('site_logo_image_error'));
-				}
-				else
-				{
-					if (is_uploaded_file($_FILES['site_logo']['tmp_name']))
+					if (is_uploaded_file($_FILES[$paramName]['tmp_name']))
 					{
-						$ext = substr($_FILES['site_logo']['name'], -3);
+						$ext = substr($_FILES[$paramName]['name'], -3);
 
 						// if 'jpeg'
 						if ($ext == 'peg')
@@ -399,28 +220,28 @@ class iaBackendController extends iaAbstractControllerBackend
 							$ext = 'jpg';
 						}
 
-						if (!array_key_exists($_FILES['site_logo']['type'], $this->_imageTypes) || !in_array($ext, $this->_imageTypes))
+						if (!array_key_exists($_FILES[$paramName]['type'], $this->_imageTypes) || !in_array($ext, $this->_imageTypes))
 						{
 							$output['error'] = true;
-							$output['msg'] = iaLanguage::get('wrong_site_logo_image_type');
+							$output['msg'] = iaLanguage::getf('file_type_error', array('extension' => implode(', ', array_unique($this->_imageTypes))));
 						}
 						else
 						{
-							if ($this->_iaCore->get('site_logo') && file_exists(IA_UPLOADS . $this->_iaCore->get('site_logo')))
+							if ($this->_iaCore->get($paramName) && file_exists(IA_UPLOADS . $this->_iaCore->get($paramName)))
 							{
-								iaUtil::deleteFile(IA_UPLOADS . $this->_iaCore->get('site_logo'));
+								iaUtil::deleteFile(IA_UPLOADS . $this->_iaCore->get($paramName));
 							}
 
-							$fileName = 'site_logo_' . iaUtil::generateToken() . '.' . $ext;
+							$fileName = $paramName . '.' . $ext;
 							$fname = IA_UPLOADS . $fileName;
 
-							if (@move_uploaded_file($_FILES['site_logo']['tmp_name'], $fname))
+							if (@move_uploaded_file($_FILES[$paramName]['tmp_name'], $fname))
 							{
 								$output['error'] = false;
-								$output['msg'] = iaLanguage::getf('image_uploaded', array('name' => $_FILES['site_logo']['name']));
+								$output['msg'] = iaLanguage::getf('image_uploaded', array('name' => $_FILES[$paramName]['name']));
 								$output['file_name'] = $fileName;
 
-								$this->_iaCore->set('site_logo', $fileName, true);
+								$this->_iaCore->set($paramName, $fileName, true);
 
 								@chmod($fname, 0777);
 							}
@@ -455,6 +276,9 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				// it is a package
 				$iaView->set('group', $pluginPage['group']);
+				$iaView->set('active_config', $groupData['extras']);
+
+				$activeMenu = null;
 
 				iaBreadcrumb::insert($groupData['title'], IA_ADMIN_URL . $pluginPage['alias'], iaBreadcrumb::POSITION_FIRST);
 			}
@@ -472,5 +296,177 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$iaView->set('active_menu', $activeMenu);
+	}
+
+	private function _save(&$iaView, $type, $customEntryId)
+	{
+		$where = "`type` != 'hidden' " . ($type ? 'AND `custom` = 1' : '');
+		$params = $this->_iaDb->keyvalue(array('name', 'type'), $where, iaCore::getConfigTable());
+
+		// correct admin dashboard URL generation
+		$adminPage = $this->_iaCore->get('admin_page');
+
+		$iaAcl = $this->_iaCore->factory('acl');
+
+		if (!$iaAcl->checkAccess($iaView->name() . iaAcl::SEPARATOR . iaCore::ACTION_EDIT))
+		{
+			return iaView::accessDenied();
+		}
+
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+		$messages = array();
+		$error = false;
+
+		if ($_POST['param'] && is_array($_POST['param']))
+		{
+			$values = $_POST['param'];
+
+			$this->_iaDb->setTable(iaCore::getConfigTable());
+
+			$this->_iaCore->startHook('phpConfigurationChange', array('configurationValues' => &$values));
+
+			foreach ($values as $key => $value)
+			{
+				$s = strpos($key, '_items_enabled');
+				if ($s !== false)
+				{
+					$p = $this->_iaCore->get($key, '', !is_null($type));
+					$array = $p ? explode(',', $p) : array();
+
+					$data = array();
+
+					array_shift($value);
+
+					if ($diff = array_diff($value, $array))
+					{
+						foreach ($diff as $item)
+						{
+							array_push($data, array('action' => '+', 'item' => $item));
+						}
+					}
+
+					if ($diff = array_diff($array, $value))
+					{
+						foreach ($diff as $item)
+						{
+							array_push($data, array('action' => '-', 'item' => $item));
+						}
+					}
+
+					$extra = substr($key, 0, $s);
+
+					$this->_iaCore->startHook('phpPackageItemChangedForPlugin', array('data' => $data), $extra);
+				}
+
+				if (is_array($value))
+				{
+					$value = implode(',', $value);
+				}
+
+				if (!utf8_is_valid($value))
+				{
+					$value = utf8_bad_replace($value);
+					trigger_error('Bad UTF-8 detected (replacing with "?") in configuration', E_USER_NOTICE);
+				}
+
+				if ('image' == $params[$key])
+				{
+					if (isset($_POST['delete'][$key]) && $_POST['delete'][$key] == 'on')
+					{
+						$value = '';
+					}
+					elseif (!empty($_FILES[$key]['name']))
+					{
+						if (!(bool)$_FILES[$key]['error'])
+						{
+							if (@is_uploaded_file($_FILES[$key]['tmp_name']))
+							{
+								$ext = strtolower(utf8_substr($_FILES[$key]['name'], -3));
+
+								// if jpeg
+								if ($ext == 'peg')
+								{
+									$ext = 'jpg';
+								}
+
+								if (!array_key_exists(strtolower($_FILES[$key]['type']), $this->_imageTypes) || !in_array($ext, $this->_imageTypes, true) || !getimagesize($_FILES[$key]['tmp_name']))
+								{
+									$error = true;
+									$messages[] = iaLanguage::getf('file_type_error', array('extension' => implode(', ', array_unique($this->_imageTypes))));
+								}
+								else
+								{
+									if ($this->_iaCore->get($key) && file_exists(IA_UPLOADS . $this->_iaCore->get($key)))
+									{
+										iaUtil::deleteFile(IA_UPLOADS . $this->_iaCore->get($key));
+									}
+
+									$value = $fileName = $key . '.' . $ext;
+									@move_uploaded_file($_FILES[$key]['tmp_name'], IA_UPLOADS . $fileName);
+									@chmod(IA_UPLOADS . $fileName, 0777);
+								}
+							}
+						}
+					}
+					else
+					{
+						$value = $this->_iaCore->get($key, '', !is_null($type));
+					}
+				}
+
+				if ($type)
+				{
+					$where = "`name` = '{$key}' AND `type` = '{$type}' AND `type_id` = '{$customEntryId}'";
+
+					$this->_iaDb->setTable('config_custom');
+					if ($_POST['chck'][$key] == 1)
+					{
+						$values = array('name' => $key, 'value' => $value, 'type' => $type, 'type_id' => $customEntryId);
+
+						if ($this->_iaDb->exists($where))
+						{
+							unset($values['value']);
+							$this->_iaDb->bind($where, $values);
+							$this->_iaDb->update(array('value' => $value), $where);
+						}
+						else
+						{
+							$this->_iaDb->insert($values);
+						}
+					}
+					else
+					{
+						$this->_iaDb->delete($where);
+					}
+					$this->_iaDb->resetTable();
+				}
+				else
+				{
+					$stmt = '`name` = :key';
+					$this->_iaDb->bind($stmt, array('key' => $key));
+
+					$this->_iaDb->update(array('value' => $value), $stmt);
+				}
+			}
+
+			$this->_iaDb->resetTable();
+
+			$this->_iaCore->iaCache->clearAll();
+		}
+
+		if (!$error)
+		{
+			$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
+
+			if (isset($_POST['param']['admin_page']) && $_POST['param']['admin_page'] != $adminPage)
+			{
+				iaUtil::go_to(IA_URL . $_POST['param']['admin_page'] . '/configuration/general/');
+			}
+		}
+		elseif ($messages)
+		{
+			$iaView->setMessages($messages);
+		}
 	}
 }

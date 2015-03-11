@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -144,7 +144,17 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaView->assign('item', $member);
 	$iaView->assign('sections', $sections);
 
-	$iaView->title(empty($member['fullname']) ? $member['username'] : $member['fullname']);
+	$title = empty($member['fullname']) ? $member['username'] : $member['fullname'];
+	$iaView->title($title);
+
+	// add open graph data
+	$avatar = $member['avatar'] ? unserialize($member['avatar']) : '';
+	$openGraph = array(
+		'title' => $title,
+		'url' => IA_SELF,
+		'image' => $avatar ? IA_CLEAR_URL . 'uploads/' . $avatar['path'] : ''
+	);
+	$iaView->set('og', $openGraph);
 
 	$iaView->display('view-member');
 }

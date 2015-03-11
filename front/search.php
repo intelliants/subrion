@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -119,6 +119,202 @@ function searchMatch($searchFields = array(), $imp = ' OR ')
 
 	return implode($imp, $match);
 }
+
+
+function searchThroughBlocks($query)
+{
+	$iaCore = iaCore::instance();
+	$iaDb = &$iaCore->iaDb;
+
+	$sql = 'SELECT '
+			. 'b.`name`, b.`external`, b.`filename`, b.`title`, '
+			. 'b.`extras`, b.`sticky`, b.`contents`, b.`type`, b.`header`, '
+			. 'o.`page_name` `page` '
+		. 'FROM `:prefix:table_blocks` b '
+		//. 'LEFT JOIN `:prefix:table_language` l ON () '
+		. "LEFT JOIN `:prefix:table_objects` o ON (o.`object` = b.`id` AND o.`object_type` = 'blocks' AND o.`access` = 1) "
+		. "WHERE b.`type` IN('plain','smarty','html') "
+			. "AND b.`status` = ':status' "
+			. "AND b.`extras` IN (':extras') "
+			. "AND (CONCAT(b.`contents`,IF(b.`header` = 1, b.`title`, '')) LIKE ':query' OR b.`external` = 1) "
+			. 'AND o.`page_name` IS NOT NULL '
+		. 'GROUP BY b.`id`';
+
+	$sql = iaDb::printf($sql, array(
+		'prefix' => $iaDb->prefix,
+		'table_blocks' => 'blocks',
+		'table_objects' => 'objects_pages',
+		//'table_language' => 'language',
+		'status' => iaCore::STATUS_ACTIVE,
+		'query' => '%' . iaSanitize::sql($query) . '%',
+		'extras' => implode("','", $iaCore->get('extras'))
+	));
+
+
+	$blocks = array();
+
+	if ($rows = $iaDb->getAll($sql))
+	{
+		$extras = $iaDb->keyvalue(array('name', 'type'), iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'extras');
+
+		foreach ($rows as $row)
+		{
+			$pageName = empty($row['page']) ? $iaCore->get('home_page') : $row['page'];
+
+			if (empty($pageName))
+			{
+				continue;
+			}
+
+			if ($row['external'])
+			{
+				switch ($extras[$row['extras']])
+				{
+					case 'package':
+						$fileName = explode(':', $row['filename']);
+						array_shift($fileName);
+						$tpl = IA_HOME . 'packages/' . $row['extras'] . '/templates/common/' . $fileName[0];
+						break;
+					case 'plugin':
+						$fileName = explode(':', $row['filename']);
+						$fileName = end($fileName);
+						$tpl = IA_HOME . 'plugins/' . $row['extras'] . '/templates/front/' . $fileName;
+						break;
+					default:
+						$tpl = IA_HOME . 'templates/' . $row['extras'] . IA_DS;
+				}
+
+				$content = @file_get_contents($tpl);
+
+				if (false === $content)
+				{
+					continue;
+				}
+
+				$content = stripSmartyTags(iaSanitize::tags($content));
+
+				if (false === stripos($content, $query))
+				{
+					continue;
+				}
+			}
+			else
+			{
+				switch ($row['type'])
+				{
+					case 'smarty':
+						$content = stripSmartyTags(iaSanitize::tags($row['contents']));
+						break;
+					case 'html':
+						$content = iaSanitize::tags($row['contents']);
+						break;
+					default:
+						$content = $row['contents'];
+				}
+			}
+
+			isset($blocks[$pageName]) || $blocks[$pageName] = array();
+
+			$blocks[$pageName][] = array(
+				'title' => $row['header'] ? $row['title'] : null,
+				'content' => extractSnippet($content, $query)
+			);
+		}
+	}
+
+	return $blocks;
+}
+
+function searchByPages($query, &$results)
+{
+	$iaCore = iaCore::instance();
+	$iaDb = &$iaCore->iaDb;
+	$iaSmarty = &$iaCore->iaView->iaSmarty;
+	$iaPage = $iaCore->factory('page', iaCore::FRONT);
+
+	$stmt = '`value` LIKE :query AND `category` = :category AND `code` = :language ORDER BY `key`';
+	$iaDb->bind($stmt, array(
+		'query' => '%' . iaSanitize::sql($query) . '%',
+		'category' => iaLanguage::CATEGORY_PAGE,
+		'language' => $iaCore->iaView->language
+	));
+
+	$pages = array();
+
+	if ($rows = $iaDb->all(array('key', 'value'), $stmt, null, null, iaLanguage::getTable()))
+	{
+		foreach ($rows as $row)
+		{
+			$pageName = str_replace(array('page_title_', 'page_content_'), '', $row['key']);
+			$key = (false === stripos($row['key'], 'page_content_')) ? 'title' : 'content';
+			$value = iaSanitize::tags($row['value']);
+
+			isset($pages[$pageName]) || $pages[$pageName] = array();
+
+			if ('content' == $key)
+			{
+				$value = extractSnippet($value, $query);
+				if (empty($pages[$pageName]['title']))
+				{
+					$pages[$pageName]['title'] = iaLanguage::get('page_title_' . $pageName);
+				}
+			}
+
+			$pages[$pageName]['url'] = $iaPage->getUrlByName($pageName, false);
+			$pages[$pageName][$key] = $value;
+		}
+	}
+
+	// blocks content will be printed out as a pages content
+	if ($blocks = searchThroughBlocks($query))
+	{
+		foreach ($blocks as $pageName => $blocksData)
+		{
+			if (isset($pages[$pageName]))
+			{
+				$pages[$pageName]['extraItems'] = $blocksData;
+			}
+			else
+			{
+				$pages[$pageName] = array(
+					'url' => $iaPage->getUrlByName($pageName),
+					'title' => iaLanguage::get('page_title_' . $pageName),
+					'content' => '',
+					'extraItems' => $blocksData
+				);
+			}
+		}
+	}
+
+	if ($pages)
+	{
+		$iaSmarty->assign('pages', $pages);
+
+		$results['num']+= count($pages);
+		$results['html']['pages'] = $iaSmarty->fetch('search-list-pages.tpl');
+	}
+}
+
+function extractSnippet($text, $query)
+{
+	$result = $text;
+
+	if (strlen($text) > 500)
+	{
+		$start = stripos($result, $query);
+		$result = '…' . substr($result, -30 + $start, 250);
+		if (strlen($text) > strlen($result)) $result.= '…';
+	}
+
+	return $result;
+}
+
+function stripSmartyTags($content)
+{
+	return preg_replace('#\{.+?\}#im', '', $content);
+}
+
+
 
 $fields = array();
 $search = false; //search parameters
@@ -282,6 +478,8 @@ if ($search)
 
 		if ($search['query'])
 		{
+			searchByPages($search['query'], $results);
+
 			if ($iaCore->get('members_enabled'))
 			{
 				$searchFields['members']['items'] = array(
@@ -348,7 +546,7 @@ if ($search)
 					$fieldsList = iaField::getAcoFieldsList($v['fields'], $v['type'], null, true);
 				}
 
-				if ($rows && iaView::REQUEST_HTML == $iaView->getRequestType())
+				if ($rows)
 				{
 					$iaView->iaSmarty->assign('all_items', $rows);
 					$iaView->iaSmarty->assign('all_item_fields', $fieldsList);
@@ -405,11 +603,9 @@ if ($search)
 		{
 			$search['terms'] = serialize($search['terms']);
 			$searchId = $iaDb->insert($search, array('time' => 'UNIX_TIMESTAMP()'));
-			$redir = IA_URL . ($adv ? 'adv' : '') . 'search/?id=' . $searchId;
+			$url = IA_URL . ($adv ? 'adv' : '') . 'search/?id=' . $searchId;
 
-
-			header('Location: ' . $redir);
-			exit;
+			iaUtil::go_to($url);
 		}
 	}
 

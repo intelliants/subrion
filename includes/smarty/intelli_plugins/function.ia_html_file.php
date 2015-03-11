@@ -41,7 +41,7 @@ TITLE;
 		}
 
 		$result = <<<OUT
-<div id="upload-group-{$id}" class="upload-group">
+<div class="upload-group" id="upload-group-{$id}">
 	<div class="file-upload"{$hidden}>
 		{$title_html}
 		<div class="input-group">

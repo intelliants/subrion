@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -218,7 +218,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$output['message'] = iaLanguage::get('saved');
 					$output['success'] = true;
 
-					$this->_iaCore->factory('cache')->remove('menu_' . $menu . '.inc');
+					$this->_iaCore->iaCache->remove('menu_' . $menu . '.inc');
 				}
 
 				break;
@@ -322,8 +322,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (iaCore::ACTION_EDIT == $action)
 		{
-			$iaCache = $this->_iaCore->factory('cache');
-			$iaCache->remove('menu_' . $this->getEntryId() . '.inc');
+			$this->_iaCore->iaCache->remove('menu_' . $this->getEntryId() . '.inc');
 		}
 	}
 

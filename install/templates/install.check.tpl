@@ -1,3 +1,6 @@
+<?php if ($this->errorCode): ?>
+<div class="alert alert-danger">Please log in as an administrator to proceed.</div>
+<?php else: ?>
 <?php foreach ($this->sections as $name => $item): ?>
 	<div class="widget widget-default">
 		<div class="widget-header">
@@ -45,3 +48,4 @@
 	<a href="<?php echo URL_INSTALL . $this->module ?>/" class="btn btn-lg btn-danger disabled">Next <i class="i-remove-sign"></i></a>
 	<?php endif ?>
 </div>
+<?php endif ?>

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -155,18 +155,7 @@ class iaSmarty extends iaSmartyPlugins
 
 		return $resourceName;
 	}
-/*
-	public function display($template = null, $cache_id = null, $compile_id = null, $parent = null)
-	{
-		$resourceName = $this->ia_template($template, false);
 
-		iaSystem::renderTime('check the template: ' . $resourceName);
-
-		parent::display($resourceName, $cache_id, $compile_id, $parent);
-
-		iaSystem::renderTime('rendering the template: ' . $resourceName);
-	}
-*/
 	private function _createPackageTemplateHandlers($packageName)
 	{
 		$pathDeterminationCode = '

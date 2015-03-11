@@ -1,10 +1,28 @@
-$(function(){
-	$('.tree_name').each(function(index, tree_name){
-		var parents = intelli[$(tree_name).val() + '_category']['parents'];
+$(function()
+{
+	$('.tree_name').each(function(index, treeName)
+	{
+		var parents = intelli[$(treeName).val() + '_category']['parents'];
 		parents = parents.split(',').reverse();
-		$.ajaxSetup({async:false});
-		$('#' + $(tree_name).val()).jstree({
-			core: {
+//		$.ajaxSetup({async:false});
+
+		$('#' + $(treeName).val()).jstree(
+		{
+			data: {
+				data: function(n)
+				{
+					var params = {};
+					if(n.id != '#')
+					{
+						params.id = n.id;
+					}
+
+					return params;
+				},
+				url: $('#' + $(treeName).val() + '_json_url').val()
+			},
+			multiple: false
+/*			core: {
 				to_open: 0,
 				initially_open: parents
 			},
@@ -40,11 +58,11 @@ $(function(){
 				selected_parent_close: true,
 				disable_selecting_children: false,
 			},
-			plugins: ['json_data', 'ui', 'types']
-		})
-		.undelegate('a', 'click');
+			plugins: ['json_data', 'ui', 'types']*/
+		});
+/*		.undelegate('a', 'click');
 		$.ajaxSetup({async: true});
 
-		$("li[id='"+intelli[$(tree_name).val() + '_category']['selected']+"']", '#' + $(tree_name).val()).addClass('active');
+		$("li[id='"+intelli[$(treeName).val() + '_category']['selected']+"']", '#' + $(treeName).val()).addClass('active');*/
 	});	
 });

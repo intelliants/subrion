@@ -203,47 +203,55 @@
 		{/if}
 
 		{if isset($changelog)}
-		<div class="widget widget-large" id="widget-changelog">
-			<div class="widget-header"><i class="i-lightning"></i> {lang key='changelog'}
-				<ul class="nav nav-pills pull-right">
-					<li class="dropdown">
-						<a class="dropdown-toggle" data-toggle="dropdown" href="#">
-						{foreach $changelog_titles as $item => $index}
-							{$item} <span class="caret"></span>
-							{if $index@iteration == 1}
-								{break}
-							{/if}
-						{/foreach}
-						</a>
-						<ul class="dropdown-menu pull-right">
-						{foreach $changelog_titles as $item => $index}
-							<li{if $index@iteration == 1} class="active"{/if}><a href="#" data-item="#changelog-item-{$index}">{$item}</a></li>
-						{/foreach}
-						</ul>
-					</li>
-					<li><a href="http://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i></a></li>
-					<li><a href="#" class="widget-toggle"><i class="i-chevron-up"></i></a></li>
-				</ul>
-			</div>
-			<div class="widget-content">
-				{foreach $changelog as $index => $items}
-				<div class="changelog-item" id="changelog-item-{$index}" style="display:none;">
-					{foreach $items as $class => $list}
-						{if !empty($list) && $class != 'title'}
-							{if 'added' == $class}
-							<h5 class="text-success"><i class="i-fire"></i> {lang key='changelog_'|cat:$class}</h5>
-							{elseif 'modified' == $class}
-							<h5 class="text-warning"><i class="i-lightning"></i> {lang key='changelog_'|cat:$class}</h5>
-							{else}
-							<h5 class="text-danger"><i class="i-bug"></i> {lang key='changelog_'|cat:$class}</h5>
-							{/if}
-							<ol>{$list}</ol>
-						{/if}
+			<div class="widget widget-large" id="widget-changelog">
+				<div class="widget-header"><i class="i-lightning"></i> {lang key='changelog'}
+					<ul class="nav nav-pills pull-right">
+						<li class="dropdown">
+							<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+								{foreach $changelog_titles as $item => $index}
+									{$item} <span class="caret"></span>
+									{if $index@iteration == 1}
+										{break}
+									{/if}
+								{/foreach}
+							</a>
+							<ul class="dropdown-menu pull-right">
+								{foreach $changelog_titles as $item => $index}
+									<li{if $index@iteration == 1} class="active"{/if}><a href="#" data-item="#changelog-item-{$index}">{$item}</a></li>
+
+									{if $index@iteration == 10}
+										<li class="divider"></li>
+										<li><a href="http://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i> {lang key='view_roadmap'}</a></li>
+
+										{break}
+									{/if}
+								{/foreach}
+							</ul>
+						</li>
+						<li><a href="http://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i></a></li>
+						<li><a href="#" class="widget-toggle"><i class="i-chevron-up"></i></a></li>
+					</ul>
+				</div>
+				<div class="widget-content">
+					{foreach $changelog as $index => $items}
+						<div class="changelog-item" id="changelog-item-{$index}" style="display:none;">
+							{foreach $items as $class => $list}
+								{if !empty($list) && $class != 'title'}
+									{assign classtext "changelog_{$class}"}
+									{if 'added' == $class}
+										<h5 class="text-success"><i class="i-fire"></i> {lang key=$classtext}</h5>
+									{elseif 'modified' == $class}
+										<h5 class="text-warning"><i class="i-lightning"></i> {lang key=$classtext}</h5>
+									{else}
+										<h5 class="text-danger"><i class="i-bug"></i> {lang key=$classtext}</h5>
+									{/if}
+									<ol>{$list}</ol>
+								{/if}
+							{/foreach}
+						</div>
 					{/foreach}
 				</div>
-				{/foreach}
 			</div>
-		</div>
 		{/if}
 
 		{ia_hooker name='smartyDashboardContentRight'}

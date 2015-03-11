@@ -71,14 +71,15 @@ Ext.onReady(function()
 				delete_multiple: _t('are_you_sure_to_delete_selected_pages')
 			}
 		}, false);
+
 		grid.toolbar = new Ext.Toolbar({items:[
 		{
 			emptyText: _t('name'),
 			xtype: 'textfield',
 			name: 'name',
 			listeners: intelli.gridHelper.listener.specialKey
-		},{
-			emptyText: _t('fields_item_filter'),
+		}, {
+			emptyText: _t('extras'),
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
@@ -86,11 +87,11 @@ Ext.onReady(function()
 			displayField: 'title',
 			name: 'extras',
 			valueField: 'value'
-		},{
+		}, {
 			handler: function(){intelli.gridHelper.search(grid)},
 			id: 'fltBtn',
 			text: '<i class="i-search"></i> ' + _t('search')
-		},{
+		}, {
 			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
@@ -166,6 +167,14 @@ $(function()
 		isRemoteUrl ? $obj.show() : $obj.hide();
 	}).trigger('change');
 
+	// Page custom template
+	$('input[name="custom_tpl"]').on('change', function()
+	{
+		$obj = $('#js-field-tpl-filename');
+
+		(1 == this.value) ? $obj.show() : $obj.hide();
+	}).trigger('change');
+
 	$('#input-name, #input-alias').on('blur', fillUrlBox);
 	$('#input-parent').on('change', fillUrlBox);
 
@@ -173,8 +182,8 @@ $(function()
 	$('a[data-toggle="tab"]', '#js-content-fields').on('shown.bs.tab', function()
 	{
 		var lngCode = $(this).data('language');
-		CKEDITOR.instances['contents['+lngCode+']']
-			|| intelli.ckeditor('contents['+lngCode+']', {toolbar: 'Extended'});
+		CKEDITOR.instances['contents[' + lngCode + ']']
+			|| intelli.ckeditor('contents[' + lngCode + ']', {toolbar: 'Extended'});
 
 		$('#js-active-language').val(lngCode);
 	});

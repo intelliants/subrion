@@ -14,8 +14,8 @@
   border-radius: 4px;
   direction: ltr;
   /*.dow {
-		border-top: 1px solid #ddd !important;
-	}*/
+    border-top: 1px solid #ddd !important;
+  }*/
 }
 .datepicker-inline {
   width: 220px;
@@ -443,6 +443,13 @@
   cursor: default;
   background-color: transparent;
 }
+.datepicker .timepicker:hover {
+  background: none;
+}
+.datepicker .timepicker .time {
+  width: auto;
+  margin: 2px;
+}
 .input-append.date .add-on i,
 .input-prepend.date .add-on i {
   cursor: pointer;
@@ -507,30 +514,14 @@
   line-height: 20px;
 }
 .datepicker.dropdown-menu th,
-.datepicker.dropdown-menu td {
+.datepicker.datepicker-inline th,
+.datepicker.dropdown-menu td,
+.datepicker.datepicker-inline td {
   padding: 4px 5px;
 }
 
-
-
-.timepicker {
-  background: #f5f5f5;
-  border-radius: 0 0 3px 3px;
-  border-top: 1px solid #ddd;
-}
-
-.timepicker select {
-  padding: 2px;
-  margin: 0 2px;
-  display: inline-block;
-  vertical-align: middle;
-  width: auto;
-  height: 26px;
-  line-height: 26px;
-}
-
-.timepicker .btn {
-  font-size: 13px;
-  padding: 2px 6px;
-  margin: 0 2px;
+.btn-timepicker-ok {
+  padding: 4px 7px;
+  font-size: 12px;
+  margin: 0;
 }

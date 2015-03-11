@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -269,9 +269,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			foreach ($queries as $key => $sqlQuery)
 			{
-				$this->_iaCore->startHook('phpAdminBeforeRunSqlQuery');
+				$sql = trim(str_replace('{prefix}', $this->_iaDb->prefix, $sqlQuery));
 
-				$result = $this->_iaDb->query(trim(str_replace('{prefix}', $this->_iaDb->prefix, $sqlQuery)));
+				$this->_iaCore->startHook('phpAdminBeforeRunSqlQuery', array('query' => $sql));
+
+				$result = $this->_iaDb->query($sql);
 
 				$this->_iaCore->startHook('phpAdminAfterRunSqlQuery');
 
@@ -497,7 +499,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$this->addMessage('upgrade_completed');
 
-				$this->_iaCore->factory('cache')->clearAll();
+				$this->_iaCore->iaCache->clearAll();
 			}
 		}
 

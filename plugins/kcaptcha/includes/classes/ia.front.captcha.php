@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -32,7 +32,7 @@ class iaCaptcha extends abstractUtil
 			'<p class="field-captcha">' .
 			'<img src=":url" onclick="$(this).attr(\'src\', \':url?\'+Math.random())" title=":title" alt="captcha" style="cursor:pointer; margin-right: 10px;" align="left">' .
 			':text<br />' .
-			'<input type="text" class="span1" name="security_code" size=":length" maxlength=":length" id="securityCode">' .
+			'<input type="text" class="span1" name="security_code" size=":length" maxlength=":length">' .
 			'</p>' .
 			'<div class="clearfix"></div>'
 		;

@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html lang="{$config.lang}">
+<html lang="{$core.language.iso}" dir="{$core.language.direction}">
 <head>
-	<meta charset="{$config.charset}">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="generator" content="Subrion CMS {$config.version}">
-
-	<base href="{$url}">
-
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 	<title>{ia_print_title}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="generator" content="Subrion CMS &middot; {$config.version}">
+	<base href="{$smarty.const.IA_ADMIN_URL}">
 
 	<!--[if lt IE 9]>
-	<script src="../../../js/utils/shiv.js"></script>
-	<script src="../../../js/utils/respond.min.js"></script>
+		<script src="../../../js/utils/shiv.js"></script>
+		<script src="../../../js/utils/respond.min.js"></script>
 	<![endif]-->
 
 	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="{$img}ico/apple-touch-icon-144-precomposed.png">
@@ -28,8 +27,8 @@
 	{ia_print_css display='on'}
 
 	{ia_add_js order=0}
-		{foreach $customConfig as $key => $item}
-			intelli.config.{$key} = '{$item}';
+		{foreach $core.customConfig as $key => $value}
+			intelli.config.{$key} = '{$value}';
 		{/foreach}
 	{/ia_add_js}
 </head>
@@ -62,11 +61,11 @@
 					<p>
 						<input type="password" id="dummy_password" name="password" tabindex="2" placeholder="{lang key='password'}">
 					</p>
-					{if count($languages) > 1}
+					{if count($core.languages) > 1}
 					<p>
 						<select name="_lang" id="_lang">
-							{foreach $languages as $code => $language}
-							<option value="{$code}"{if $code == $smarty.const.IA_LANGUAGE} selected{/if}>{$language}</option>
+							{foreach $core.languages as $code => $language}
+								<option value="{$code}"{if $code == $smarty.const.IA_LANGUAGE} selected{/if}>{$language.title}</option>
 							{/foreach}
 						</select>
 					</p>

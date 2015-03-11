@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -102,7 +102,7 @@ class iaUsers extends abstractCore
 	public static function reloadIdentity()
 	{
 		$sql =
-			'SELECT u.*, g.`title` `usergroup` ' .
+			'SELECT u.*, g.`name` `usergroup` ' .
 			'FROM `:prefix_:table_users` u ' .
 			'LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) ' .
 			"WHERE u.`id` = :id AND u.`status` = ':status' " .
@@ -281,6 +281,7 @@ class iaUsers extends abstractCore
 			$iaMailer->addAddress($memberInfo['email']);
 			$iaMailer->setReplacements(array(
 				'fullname' => $memberInfo['fullname'],
+				'username' => $memberInfo['username'],
 				'email' => $memberInfo['email'],
 				'password' => $password,
 				'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
@@ -376,7 +377,7 @@ class iaUsers extends abstractCore
 	public function getAuth($userId, $user = null, $password = null)
 	{
 		$sql =
-			'SELECT u.*, g.`title` `usergroup` ' .
+			'SELECT u.*, g.`name` `usergroup` ' .
 			'FROM `:prefix_:table_users` u ' .
 			'LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) ' .
 			'WHERE :condition ' .
@@ -388,9 +389,12 @@ class iaUsers extends abstractCore
 		}
 		else
 		{
-			$email = iaSanitize::sql($user);
-			$user = preg_replace('/[^a-zA-Z0-9.@_-]/', '', $user);
-			$condition = sprintf("(u.`username` = '%s' OR u.`email` = '%s') AND u.`password` = '%s'", $user, $email, $password);
+			$condition = '(u.`username` = :username OR u.`email` = :email) AND u.`password` = :password';
+			$this->iaDb->bind($condition, array(
+				'username' => preg_replace('/[^a-zA-Z0-9.@_-]/', '', $user),
+				'email' => $user,
+				'password' => $this->encodePassword($password)
+			));
 		}
 
 		$sql = iaDb::printf($sql, array(
@@ -404,7 +408,6 @@ class iaUsers extends abstractCore
 		if (iaCore::STATUS_ACTIVE == $row['status'])
 		{
 			self::_setIdentity($row);
-			$this->iaCore->startHook('phpUserLogin', array('userInfo' => $row, 'password' => $_POST['password']));
 
 			$this->iaDb->update(null, iaDb::convertIds($row['id']), array('date_logged' => iaDb::FUNCTION_NOW), self::getTable());
 
@@ -507,11 +510,12 @@ class iaUsers extends abstractCore
 		return $password;
 	}
 
-	public function getUsergroups()
+	public function getUsergroups($visible = false)
 	{
-		return $this->iaDb->keyvalue(array('id', 'title'), null, self::getUsergroupsTable());
-	}
+		$stmt = $visible ? iaDb::convertIds('1', 'visible') : null;
 
+		return $this->iaDb->keyvalue(array('id', 'name'), $stmt, self::getUsergroupsTable());
+	}
 
 	public function getDashboardStatistics()
 	{
@@ -585,5 +589,26 @@ class iaUsers extends abstractCore
 	public function getStatuses()
 	{
 		return array(iaCore::STATUS_APPROVAL, iaCore::STATUS_ACTIVE, self::STATUS_UNCONFIRMED, self::STATUS_SUSPENDED);
+	}
+
+	public function deleteUsergroup($entryId)
+	{
+		$this->iaDb->setTable(iaUsers::getUsergroupsTable());
+
+		$usergroup = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($entryId));
+
+		$result = $this->iaDb->delete(iaDb::convertIds($entryId));
+
+		if ($result)
+		{
+			// delete language records
+			iaLanguage::delete('usergroup_' . $usergroup['name']);
+
+			$this->iaDb->delete('`type` = :type AND `type_id` = :id', 'acl_privileges', array('type' => 'group', 'id' => $entryId)); // TODO: use the class method for this
+			$this->iaDb->update(array('usergroup_id' => iaUsers::MEMBERSHIP_REGULAR), iaDb::convertIds((int)$entryId, 'usergroup_id'), null, iaUsers::getTable());
+		}
+		$this->iaDb->resetTable();
+
+		return $result;
 	}
 }

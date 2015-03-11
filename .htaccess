@@ -11,7 +11,7 @@ Options -MultiViews
 	RewriteRule ^(tmp/)?sitemap.xml$ tmp/sitemap.xml [L]
 
 	RewriteCond %{REQUEST_FILENAME} -f
-	RewriteRule ^(.*)(\.xml|\.php([0-9]*)|\.tpl|\.phtml|\.ini|\.inc|/)$ index.php?_p=$1 [QSA,L]
+	RewriteRule ^(.*)(\.php([0-9]*)|\.json|\.xml|\.tpl|\.phtml|\.ini|\.inc|/)$ index.php?_p=$1 [NC,QSA,L]
 
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteRule ^(.*)$ index.php?_p=$1 [QSA,L]

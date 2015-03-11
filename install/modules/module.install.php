@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -24,15 +24,30 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '3.2.3');
-define('IA_VER', '323');
+define('IA_VER', '330');
+
+$iaOutput->layout()->title = 'Installation Wizard';
+
+$iaOutput->steps = array(
+	'check' => 'Pre-Installation Check',
+	'license' => 'Subrion License',
+	'configuration' => 'Configuration',
+	'finish' => 'Script Installation',
+	'plugins' => 'Plugins Installation'
+);
+
+if (iaHelper::isScriptInstalled()
+	&& (!iaUsers::hasIdentity() || iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id))
+{
+	$iaOutput->errorCode = 'authorization';
+	return false;
+}
+
 
 $error = false;
 $message = '';
 
 $builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog');
-
-$iaOutput->layout()->title = 'Installation Wizard';
 
 switch ($step)
 {
@@ -338,7 +353,8 @@ switch ($step)
 									$counter++;
 									$message .= '<div class="db_errors">';
 								}
-								$message .= "<div class=\"qerror\">'" . mysql_errno() . " " . mysql_error()
+								$errorCode = function_exists('mysql_errno') ? mysql_errno() . ' ' : '';
+								$message .= "<div class=\"qerror\">'" . $errorCode . mysql_error()
 									. "' during the following query:</div> <div class=\"query\"><pre>{$s_sql}</pre></div>";
 							}
 							$s_sql = '';
@@ -412,6 +428,19 @@ HTML;
 					$filename = IA_HOME . 'includes' . IA_DS . 'config.inc.php';
 					$configMsg = '';
 
+					// session path test
+					$testResult = false;
+					$filePath = session_save_path() . IA_DS . 'foo';
+					if ($fh = @fopen($filePath, 'w'))
+					{
+						$testResult = fwrite($fh, 'bar');
+						fclose($fh);
+					}
+
+					$testResult = $testResult ? '' : "session_save_path('" . IA_HOME . "tmp');";
+					$config = str_replace('{sessionpath}', $testResult, $config);
+					//
+
 					if (is_writable(IA_HOME . 'includes' . IA_DS) || is_writable($filename))
 					{
 						if (!$handle = fopen($filename, 'w+'))
@@ -420,7 +449,7 @@ HTML;
 							$configMsg = 'Cannot open file: ' . $filename;
 						}
 
-						if (fwrite($handle, $config, strlen($config)) === false)
+						if (fwrite($handle, $config) === false)
 						{
 							$error = true;
 							$configMsg = 'Cannot write to file: ' . $filename;
@@ -451,6 +480,8 @@ HTML;
 					$iaUsers = iaHelper::loadCoreClass('users', 'core');
 					$iaUsers->changePassword(array('id' => 1), iaHelper::getPost('admin_password'), false);
 				}
+
+				iaHelper::cleanUpCacheContents();
 
 				if (!$error)
 				{
@@ -541,14 +572,6 @@ HTML;
 	default:
 		return;
 }
-
-$iaOutput->steps = array(
-	'check' => 'Pre-Installation Check',
-	'license' => 'Subrion License',
-	'configuration' => 'Configuration',
-	'finish' => 'Script Installation',
-	'plugins' => 'Plugins Installation'
-);
 
 $iaOutput->error = $error;
 $iaOutput->message = $message;

@@ -132,13 +132,16 @@ a[data-toggle="error"]:hover {
 }
 
 #debug pre {
-	border: 1px solid #eee;
+	background: none;
+	border: none;
 	line-height: 14px !important;
-	margin-left: 20px !important;
-	padding: 20px;
+	margin: 0;
+	padding: 0;
 }
 
 #debug .hr {
 	height: 1px;
 	border-top: 1px solid #eee;
 }
+
+#debug table{width:100%;border-width:1px;border-spacing:0;border-style:dotted}#debug table th{background-color:#CCC;font-size:13px;font-weight:700;text-transform:uppercase}#debug table td,#debug table th{border-width:1px;border-spacing:0;border-style:dotted;padding:5px}#debug table td.iterator{width:30px; text-align: center;}#debug table td.noborder{border-right: none !important; border-right-width: 0;}

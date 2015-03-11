@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -269,6 +269,12 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 				$output['error'] = !$iaMailer->Send();
 				$output['message'][] = iaLanguage::get($output['error'] ? 'unable_to_send_email' : 'mail_sent');
 			}
+
+			break;
+
+		default:
+			$output = array();
+			$iaCore->startHook('phpActionsJsonHandle', array('action' => $_POST['action'], 'output' => &$output));
 	}
 
 	$iaView->assign($output);

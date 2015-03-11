@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -26,8 +26,8 @@
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
-	$preview = false;
-	$previewMode = false;
+	$preview = $previewMode = false;
+	$content = '';
 	$name = $iaView->name();
 
 	$iaView->assign('protect', false);
@@ -114,19 +114,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$iaView->assign('protect', true);
 		}
 	}
+
 	if ($preview)
 	{
 		$iaView->assign('page_protect', iaLanguage::get('page_preview'));
 	}
-
-	if (isset($page['unique_tpl']))
-	{
-		$iaCore->factory('util')->go_to($page['name']);
-	}
-
 	$iaView->assign('page', $page);
-
-	$defaultLanguage = $iaCore->get('lang');
 
 	$iaDb->setTable(iaLanguage::getTable());
 	$jt_where = "`category` = 'page' AND `key` = 'page_{DATA_REPLACE}_{$name}' AND `code` = '";
@@ -134,19 +127,24 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	if (!$previewMode)
 	{
 		$page_title_check = iaLanguage::get('page_title_' . $name, $name);
-		$pageTitle = $page_title_check ? $page_title_check : $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'title', $jt_where) . $defaultLanguage . "'");
+		$pageTitle = $page_title_check ? $page_title_check : $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'title', $jt_where) . $iaCore->get('lang') . "'");
+
 		$iaView->title($pageTitle);
 	}
 
 	if ($page && !$previewMode)
 	{
 		$page_content_check = $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'content', $jt_where) . $iaView->language . "'");
-		$page_content = $page_content_check ? $page_content_check : $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'content', $jt_where) . $defaultLanguage . "'");
+		$content = $page_content_check ? $page_content_check : $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'content', $jt_where) . $iaCore->get('lang') . "'");
+	}
+	$iaDb->resetTable();
 
-		$iaView->assign('content', $page_content);
+	if ($page['custom_tpl'] && $page['template_filename'])
+	{
+		$content = $iaView->iaSmarty->fetch($page['template_filename']);
 	}
 
-	$iaDb->resetTable();
+	$iaView->assign('content', $content);
 
 	$iaView->set('description', $page['meta_description']);
 	$iaView->set('keywords', $page['meta_keywords']);

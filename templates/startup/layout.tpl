@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{$core.language.iso}" dir="{$core.language.direction}">
 	<head>
 		{ia_hooker name='smartyFrontBeforeHeadSection'}
 
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<title>{ia_print_title}</title>
-		<meta http-equiv="Content-Type" content="text/html;charset={$config.charset}">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="{$core.page['meta-description']}">
+		<meta name="keywords" content="{$core.page['meta-keywords']}">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="generator" content="Subrion CMS {$config.version} - Open Source Content Management System">
-		<meta name="description" content="{$description}">
-		<meta name="keywords" content="{$keywords}">
 		<meta name="robots" content="index">
 		<meta name="robots" content="follow">
 		<meta name="revisit-after" content="1 day">
@@ -17,10 +17,10 @@
 
 		<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
 		<!--[if lt IE 9]>
-			<script src="{$nonProtocolUrl}js/utils/shiv.js"></script>
+			<script src="{$core.page.nonProtocolUrl}js/utils/shiv.js"></script>
 		<![endif]-->
 
-		<link rel="shortcut icon" href="{$nonProtocolUrl}favicon.ico">
+		<link rel="shortcut icon" href="{$core.page.nonProtocolUrl}favicon.ico">
 
 		{ia_add_media files='jquery, subrion, bootstrap' order=0}
 		{ia_print_js files='_IA_TPL_app' order=999}
@@ -30,32 +30,37 @@
 		{ia_print_css display='on'}
 
 		{ia_add_js}
-			intelli.pageName = '{$pageName}';
+			intelli.pageName = '{$core.page.name}';
 
-			{foreach $customConfig as $key => $value}
+			{foreach $core.customConfig as $key => $value}
 				intelli.config.{$key} = '{$value}';
 			{/foreach}
 		{/ia_add_js}
 
-		{if 'PT Sans' == $config.startup_font}
-			<link href='http://fonts.googleapis.com/css?family=PT+Sans:400,700,400italic{if $config.startup_font_subset}&subset=latin,cyrillic{/if}' rel='stylesheet' type='text/css'>
-			<style type="text/css">
-				body, select, textarea { font-family: 'PT Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-			</style>
-		{elseif 'PT Serif' == $config.startup_font}
-			<link href='http://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic{if $config.startup_font_subset}&subset=latin,cyrillic{/if}' rel='stylesheet' type='text/css'>
-			<style type="text/css">
-				body, select, textarea { font-family: 'PT Serif', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-			</style>
-		{elseif 'Roboto' == $config.startup_font}
-			<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,400italic{if $config.startup_font_subset}&subset=latin,cyrillic{/if}' rel='stylesheet' type='text/css'>
-			<style type="text/css">
-				body, select, textarea { font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-			</style>
+		{switch $config.startup_font}
+			{case 'PT Sans' break}
+				<link href='http://fonts.googleapis.com/css?family=PT+Sans:400,700,400italic{if $config.startup_font_subset}&subset=latin,cyrillic{/if}' rel='stylesheet' type='text/css'>
+				<style type="text/css">
+					body, select, textarea { font-family: 'PT Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+				</style>
+			{case 'PT Serif' break}
+				<link href='http://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic{if $config.startup_font_subset}&subset=latin,cyrillic{/if}' rel='stylesheet' type='text/css'>
+				<style type="text/css">
+					body, select, textarea { font-family: 'PT Serif', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+				</style>
+			{case 'Roboto' break}
+				<link href='http://fonts.googleapis.com/css?family=Roboto:400,700,400italic{if $config.startup_font_subset}&subset=latin,cyrillic{/if}' rel='stylesheet' type='text/css'>
+				<style type="text/css">
+					body, select, textarea { font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+				</style>
+		{/switch}
+
+		{if 'rtl' == $core.language.direction}
+			<link rel="stylesheet" href="{$core.page.nonProtocolUrl}templates/{$core.config.tmpl}/css/iabootstrap.rtl.css">
 		{/if}
 	</head>
 
-	<body class="page-{$pageName}{if $config.sticky_navbar} sticky-navbar{/if}">
+	<body class="page-{$core.page.name}">
 		<header class="header">
 			<div class="inventory">
 				<div class="container">
@@ -71,11 +76,11 @@
 					{include file='language-selector.tpl'}
 				</div>
 			</div>
-			<nav class="navigation">
+			<nav class="navigation{if $config.sticky_navbar} navigation--sticky{/if}">
 				<div class="container">
 					<a class="brand" href="{$smarty.const.IA_URL}">
 						{if !empty($config.site_logo)}
-							<img src="{$nonProtocolUrl}uploads/{$config.site_logo}" alt="{$config.site}">
+							<img src="{$core.page.nonProtocolUrl}uploads/{$config.site_logo}" alt="{$config.site}">
 						{else}
 							<img src="{$img}logo.png" alt="{$config.site}">
 						{/if}
@@ -144,7 +149,7 @@
 
 							{ia_blocks block='top'}
 
-							<h1 class="page-header">{$pageTitle}</h1>
+							<h1 class="page-header">{$core.page.title}</h1>
 
 							{ia_hooker name='smartyFrontBeforeNotifications'}
 							{include file='notification.tpl'}
@@ -216,7 +221,7 @@
 
 		{if $config.cron}
 			<div style="display: none;">
-				<img src="{$nonProtocolUrl}cron/?{randnum}" width="1" height="1" alt="">
+				<img src="{$core.page.nonProtocolUrl}cron/?{randnum}" width="1" height="1" alt="">
 			</div>
 		{/if}
 

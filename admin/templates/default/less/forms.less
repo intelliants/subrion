@@ -457,3 +457,66 @@ input[type="checkbox"],
 .sap-form + .sap-form {
   margin-top: 30px;
 }
+
+.upload-group {
+  clear: left;
+}
+
+.uploads-list-item {
+  .clearfix();
+  margin-bottom: 10px;
+  padding: 5px;
+  background: #f0f0f0;
+
+  &__thumb {
+    float: left;
+    width: 34px;
+    margin-right: 5px;
+
+    img {
+      .img-responsive();
+    }
+
+    &--file {
+      height: 34px;
+      // background: #ccc;
+      color: #999;
+      text-align: center;
+      line-height: 34px;
+      font-size: 22px;
+    }
+  }
+
+  &__body {
+    overflow: hidden;
+  }
+
+  &__drag-handle {
+    cursor: move !important;
+    color: #aaa !important;
+    background: none !important;
+    border-color: transparent !important;
+
+    &:hover {
+      color: #444 !important;
+    }
+
+    &:active,
+    &:focus {
+      box-shadow: none !important;
+    }
+  }
+}
+
+.sortable-ghost {
+  background: @brand-primary;
+}
+
+
+//
+// Fields
+// --------------------------------------------------
+
+.row.dependent {
+  display: none;
+}

@@ -7,7 +7,7 @@
 				{assign grouptitle 'other'}
 			{/if}
 
-			<div class="wrap-group">
+			<div class="wrap-group" id="{$section.name}">
 				<div class="wrap-group-heading">
 					<h4>{lang key=$grouptitle}
 						{if isset($section.description) && $section.description}

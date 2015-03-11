@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -47,9 +47,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaUsers = $iaCore->factory('users');
 
 	// filter by usergroups
-	$usergroups = $iaUsers->getUsergroups();
-	unset($usergroups[iaUsers::MEMBERSHIP_GUEST]);
-
+	$usergroups = $iaUsers->getUsergroups(true);
 	$iaView->assign('usergroups', $usergroups);
 
 	$activeGroup = '';
@@ -63,12 +61,15 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		}
 	}
 
-	$cause = '';
 	if (isset($_SESSION['group']) && in_array($_SESSION['group'], array_keys($usergroups)))
 	{
 		$activeGroup = $_SESSION['group'];
 
-		$cause .= '`usergroup_id` = ' . $activeGroup . ' AND ';
+		$cause = '`usergroup_id` = ' . $activeGroup . ' AND ';
+	}
+	else
+	{
+		$cause = '`usergroup_id` IN (' . implode(',', array_keys($usergroups)) . ') AND ';
 	}
 	$iaView->assign('activeGroup', $activeGroup);
 
@@ -109,7 +110,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$fields = $iaCore->factory('field')->filter($membersList, iaUsers::getTable());
 
 	$letters['existing'] = array();
-	$array = $iaDb->all('DISTINCT UPPER(SUBSTR(`' . $filterBy . '`, 1, 1)) `letter`', "`status` = 'active' GROUP BY `username`");
+	$array = $iaDb->all('DISTINCT UPPER(SUBSTR(`' . $filterBy . '`, 1, 1)) `letter`', $cause . "`status` = 'active' GROUP BY `username`");
 	$iaDb->resetTable();
 	if ($array)
 	{
@@ -118,7 +119,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$letters['existing'][] = $item['letter'];
 		}
 	}
+
 	// breadcrumb formation
+	if ($activeGroup)
+	{
+		iaBreadcrumb::toEnd(iaLanguage::get('usergroup_' . $usergroups[$activeGroup]), IA_URL . 'members/?group=' . $activeGroup);
+	}
 	if ($letters['active'])
 	{
 		iaBreadcrumb::toEnd($letters['active'], IA_SELF);

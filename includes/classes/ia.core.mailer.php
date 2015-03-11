@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -89,7 +89,7 @@ class iaMailer extends PHPMailer
 	{
 		$this->_iaCore = iaCore::instance();
 
-		$this->CharSet = $this->_iaCore->get('charset');
+		$this->CharSet = 'UTF-8';
 		$this->From = $this->_iaCore->get('site_email');
 		$this->FromName = $this->_iaCore->get('site_from_name', 'Subrion CMS');
 		$this->SingleTo = true;

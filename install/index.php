@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -39,31 +39,39 @@ if (false === strpos($_SERVER['SCRIPT_NAME'], IA_URL_DELIMITER . INSTALL . IA_UR
 error_reporting (E_STRICT | E_ALL);
 ini_set('display_errors', true);
 
-date_default_timezone_set('UTC');
-
-session_name(sprintf('INTELLI_%s', substr(md5(IA_HOME), 0, 10)));
-session_start();
-
 if (version_compare(PHP_VERSION, '5.3.0', '<') && function_exists('set_magic_quotes_runtime'))
 {
 	@set_magic_quotes_runtime(0);
 }
 
+date_default_timezone_set('UTC');
+
+session_name(sprintf('INTELLI_%s', substr(md5(IA_HOME), 0, 10)));
+session_start();
+
+$ia_version = true;
+include IA_HOME . 'index.php';
+
 $scriptFolder = trim(str_replace(INSTALL . IA_URL_DELIMITER . 'index.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER);
 $scriptFolder = empty($scriptFolder) ? '' : $scriptFolder . IA_URL_DELIMITER;
+$scriptPort = (80 == $_SERVER['SERVER_PORT']) ? '' : ':' . $_SERVER['SERVER_PORT'];
 
-define('URL_HOME', 'http://' . $_SERVER['SERVER_NAME'] . IA_URL_DELIMITER . $scriptFolder);
+define('URL_HOME', 'http://' . $_SERVER['SERVER_NAME'] . $scriptPort . IA_URL_DELIMITER . $scriptFolder);
 define('URL_INSTALL', URL_HOME . INSTALL . IA_URL_DELIMITER);
 
 $url = trim(!isset($_SERVER['REDIRECT_URL']) || $_SERVER['REQUEST_URI'] != $_SERVER['REDIRECT_URL'] ? $_SERVER['REQUEST_URI'] : $_SERVER['REDIRECT_URL'], IA_URL_DELIMITER);
-$url = isset($_GET['_p']) ? trim($_GET['_p'], IA_URL_DELIMITER) : substr($url, strlen(trim(INSTALL . $scriptFolder, IA_URL_DELIMITER)));
-$url = explode(IA_URL_DELIMITER, $url);
+$url = isset($_GET['_p']) ? trim($_GET['_p'], IA_URL_DELIMITER) : substr($url, strlen(trim(INSTALL . $scriptFolder, IA_URL_DELIMITER)) - 1);
+$url = explode(IA_URL_DELIMITER, (string)$url);
 
 unset($_GET['_p']);
 
-$step = 'check';
-$module = 'welcome';
+$module = empty($url[0]) ? 'welcome' : $url[0];
+$step = empty($url[1]) ? 'check' : $url[1];
 $modules = array();
+
+set_include_path(IA_INSTALL . 'classes');
+require_once 'ia.helper.php';
+require_once 'ia.output.php';
 
 $modulesPath = IA_INSTALL . 'modules' . IA_DS;
 if (is_dir($modulesPath))
@@ -75,12 +83,36 @@ if (is_dir($modulesPath))
 			$pos = strpos($file, 'module.');
 			if ($pos !== false && $pos == 0)
 			{
-				list(, $mod, $type) = explode('.', $file);
-				if (empty($module))
+				list(, $mod,) = explode('.', $file);
+				switch ($mod)
 				{
-					$module = $mod;
+					case 'install':
+						if (iaHelper::isScriptInstalled())
+						{
+							$iaUsers = iaHelper::loadCoreClass('users', 'core');
+							if (iaUsers::hasIdentity() && iaUsers::MEMBERSHIP_ADMINISTRATOR == iaUsers::getIdentity()->usergroup_id)
+							{
+								$modules[] = $mod;
+							}
+						}
+						else
+						{
+							$modules[] = $mod;
+						}
+						break;
+					case 'upgrade':
+						if (iaHelper::isScriptInstalled())
+						{
+							$iaUsers = iaHelper::loadCoreClass('users', 'core');
+							if ($mod == $module || iaUsers::hasIdentity() && iaUsers::MEMBERSHIP_ADMINISTRATOR == iaUsers::getIdentity()->usergroup_id)
+							{
+								$modules[] = $mod;
+							}
+						}
+						break;
+					default:
+						$modules[] = $mod;
 				}
-				$modules[] = $mod;
 			}
 		}
 		closedir($directory);
@@ -89,27 +121,8 @@ if (is_dir($modulesPath))
 
 if (empty($modules))
 {
-	exit('Access denied.');
-}
-
-foreach ($url as $index => $chunk)
-{
-	if (trim($chunk))
-	{
-		switch ($index)
-		{
-			case 0: // module name
-				if (in_array($chunk, $modules))
-				{
-					$module = $chunk;
-				}
-
-				break;
-
-			case 1: // step name
-				$step = $chunk;
-		}
-	}
+	header('HTTP/1.0 403');
+	exit('Forbidden.');
 }
 
 if (1 == count($modules))
@@ -120,7 +133,7 @@ if (1 == count($modules))
 if ('welcome' == $module)
 {
 	$url = URL_HOME . 'install' . IA_URL_DELIMITER;
-	$url .= file_exists(IA_HOME . 'includes' . IA_DS . 'config.inc.php') ? 'upgrade' : 'install';
+	$url .= iaHelper::isScriptInstalled() ? 'upgrade' : 'install';
 	$url .= IA_URL_DELIMITER;
 	header('Location: ' . $url);
 	exit();
@@ -134,11 +147,6 @@ if (!file_exists(IA_HOME . 'includes' . IA_DS . 'config.inc.php'))
 	// set active module
 	$module = 'install';
 }
-
-set_include_path(IA_INSTALL . 'classes');
-
-require_once 'ia.helper.php';
-require_once 'ia.output.php';
 
 $iaOutput = new iaOutput(IA_INSTALL . 'templates/');
 

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -35,6 +35,13 @@ abstract class iaAbstractControllerPluginBackend extends iaAbstractControllerBac
 
 		$this->_pluginName = IA_CURRENT_PLUGIN;
 		$this->_template = 'manage';
+
+		$this->init();
+	}
+
+	public function init()
+	{
+
 	}
 
 	public function getPluginName()

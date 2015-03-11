@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -246,7 +246,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (false === strtotime(iaUsers::getIdentity()->date_logged))
 		{
-			$iaCore->factory('sitemap', iaCore::ADMIN)->generate();
+			// $iaCore->factory('sitemap', iaCore::ADMIN)->generate();
 		}
 	}
 
@@ -308,8 +308,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$page = $this->_iaCore->factory('page', iaCore::ADMIN)->getByName($_POST['page']);
 
-				$iaView->iaSmarty->assign('menu', $iaView->getAdminMenu());
-				$iaView->iaSmarty->assign('page', array('active_menu' => $page['name'], 'group' => $page['group'])); // trick to get the specified page marked as active
+				$core = array('page' => array(
+					'info' => array(
+						'active_menu' => $page['name'],
+						'group' => $page['group'], // trick to get the specified page marked as active
+						'menu' => $iaView->getAdminMenu()
+					)
+				));
+				$iaView->iaSmarty->assign('core', $core);
 
 				return array('menus' => $iaView->iaSmarty->fetch('menu.tpl'));
 		}
@@ -351,8 +357,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _clearCache(&$iaView)
 	{
-		$iaCache = $this->_iaCore->factory('cache');
-		$iaCache->clearGlobalCache();
+		$this->_iaCore->iaCache->clearGlobalCache();
 
 		$iaView->setMessages(iaLanguage::get('cache_dropped'), iaView::SUCCESS);
 

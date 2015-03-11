@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -525,7 +525,7 @@ abstract class iaAbstractControllerBackend
 		$actionCode = $iaAcl->encodeAction($objectName, iaCore::ACTION_READ, $objectId);
 		$data = array();
 		$modified = false;
-		$usergroups = $this->_iaDb->all(array('id', 'title', 'system'), null, null, null, iaUsers::getUsergroupsTable());
+		$usergroups = $this->_iaDb->all(array('id', 'name', 'system'), null, null, null, iaUsers::getUsergroupsTable());
 
 		foreach ($usergroups as $entry)
 		{
@@ -541,7 +541,7 @@ abstract class iaAbstractControllerBackend
 
 			$data[] = array(
 				'id' => $entry['id'],
-				'title' => $entry['title'],
+				'title' => iaLanguage::get('usergroup_' . $entry['name']),
 				'default' => $iaAcl->checkAccess($objectName, $objectId, 0, 0, true),
 				'access' => (int)$iaAcl->checkAccess($objectName, $objectId, 0, 0, $custom),
 				'system' => $entry['system']

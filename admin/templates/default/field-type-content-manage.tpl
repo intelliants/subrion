@@ -18,8 +18,8 @@
 <div id="{$varname}_fieldzone" class="row {$field.relation}">
 
 	<label class="col col-lg-2 control-label">{lang key=$name} {if $field.required}{lang key='field_required'}{/if}
-		{assign annotation "{$name}_annotation"}
-		{if isset($lang.$annotation)}<br><span class="help-block">{lang key=$annotation}</span>{/if}
+		{assign annotation {lang key="{$name}_annotation" default=''}}
+		{if $annotation}<br><span class="help-block">{$annotation}</span>{/if}
 	</label>
 
 	{if 'textarea' != $type}
@@ -33,8 +33,10 @@
 			<input type="text" name="{$varname}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case 'date' break}
-			<div class="input-group">
-				<input type="text" class="js-datepicker" name="{$varname}" id="{$name}" value="{if '0000-00-00' != $value}{$value}{/if}">
+			{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
+
+			<div class="input-group date" id="field_date_{$varname}">
+				<input type="text" class="js-datepicker" name="{$varname}" id="{$name}" value="{$default_date}" {if $field.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if}>
 				<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 			</div>
 
@@ -47,13 +49,14 @@
 			{/if}
 			<div class="row control-group-inner">
 				<div class="col col-lg-6">
-					<label for="{$field.name}[title]" class="control-label">{lang key='title'}:</label>
-					<input type="text" name="{$field.name}[title]" value="{if isset($value['title'])}{$value['title']|escape:'html'}{elseif !empty($value[1])}{$value[1]|escape:'html'}{/if}">
+					<label for="{$field.name}[url]" class="control-label">{lang key='url'}:</label>
+					<input type="text" name="{$field.name}[url]" value="{if isset($value['url'])}{$value['url']}{elseif !empty($value[0])}{$value[0]}{else}http://{/if}">
 				</div>
 
 				<div class="col col-lg-6">
-					<label for="{$field.name}[url]" class="control-label">{lang key='url'}:</label>
-					<input type="text" name="{$field.name}[url]" value="{if isset($value['url'])}{$value['url']}{elseif !empty($value[0])}{$value[0]}{else}http://{/if}">
+					<label for="{$field.name}[title]" class="control-label">{lang key='title'}:</label>
+					<input type="text" name="{$field.name}[title]" value="{if isset($value['title'])}{$value['title']|escape:'html'}{elseif !empty($value[1])}{$value[1]|escape:'html'}{/if}">
+					<p class="help-block">({lang key='optional'})</p>
 				</div>
 			</div>
 
@@ -88,8 +91,10 @@ $('.textcounter_{$varname}').wrap('<p class="help-block text-right">').addClass(
 						{printImage imgfile=$value.path}
 					</a>
 
+					<input type="hidden" name="{$varname}[path]" value="{$value.path}">
+
 					<div class="caption">
-						<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$value.path}',this,'{$field.item}','{$varname}','{$item.id}')"><i class="i-remove-sign"></i></a>
+						<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$value.path}',this,'{$field.item}','{$varname}','{$id}')"><i class="i-remove-sign"></i></a>
 					</div>
 				</div>
 
@@ -98,57 +103,44 @@ $('.textcounter_{$varname}').wrap('<p class="help-block text-right">').addClass(
 				{ia_html_file name="{$varname}[]" id=$name}
 			{/if}
 
-		{case 'pictures' break}
-			{if $value}
-				<div class="thumbnails-grid">
-					{foreach $value as $i => $entry}
-						<div class="input-group">
-							<div class="thumbnail">
-								<a href="{printImage imgfile=$entry.path url=true fullimage=true}" title="{$entry.title|escape:'html'}" rel="ia_lightbox[{$field.name}]">{printImage imgfile=$entry.path}</a>
-
-								<div class="caption">
-									<input type="text" name="{$varname}_title[]" value="{$entry.title|escape:'html'}" class="js-edit-picture-title" id="{$varname}_{$entry@index}">
-								</div>
-
-								{if empty($item.id)}
-									<input type="hidden" name="{$varname}[{$i}][title]" value="{$entry.title|escape:'html'}">
-									<input type="hidden" name="{$varname}[{$i}][path]" value="{$entry.path}">
-								{/if}
-
-								<div class="caption text-center">
-									<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$item.id|default:''}')"><i class=" i-remove-sign"></i></a>
-								</div>
-							</div>
-						</div>
-					{/foreach}
-				</div>
-
-				{assign var='max_num' value=($field.length-count($value))}
-			{else}
-				{assign max_num $field.length}
-			{/if}
-
-			{ia_html_file name=$varname id=$varname multiple=true max_num=$max_num title=true}
-
+		{case 'pictures'}
 		{case 'storage' break}
 			{if $value}
-				<div class="file-uploaded-group">
-					{foreach $value as $entry}
-						<div class="input-group">
-							<div class="thumbnail">
-								<div class="caption">
-									{$entry.path}
-									<input type="text" name="{$varname}_title[]" value="{$entry.title|escape:'html'}" class="js-edit-picture-title" id="{$varname}_{$entry@index}">
-								</div>
+				<div class="uploads-list" id="{$varname}_upload_list">
+					{foreach $value as $i => $entry}
+						<div class="uploads-list-item">
+							{if 'pictures' == $type}
+								<a class="uploads-list-item__thumb" href="{printImage imgfile=$entry.path url=true fullimage=true}" title="{$entry.title|escape:'html'}" rel="ia_lightbox[{$field.name}]">{printImage imgfile=$entry.path}</a>
+							{else}
+								<span class="uploads-list-item__thumb uploads-list-item__thumb--file"><i class="i-file-2"></i></span>
+							{/if}
+							<div class="uploads-list-item__body">
+								<div class="input-group">
+									<input type="text" name="{$varname}[{$i}][title]" value="{$entry.title|escape:'html'}" id="{$varname}_{$entry@index}">
+									<input type="hidden" name="{$varname}[{$i}][path]" value="{$entry.path}">
 
-								<div class="caption text-center">
-									<a class="btn btn-primary" href="{$nonProtocolUrl}uploads/{$entry.path}" title="{lang key='download'}"><i class="i-box-add"></i></a>
-									<a class="btn btn-danger js-file-delete" href="#" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$item.id|default:''}')"><i class="i-remove-sign"></i></a>
+									<span class="input-group-btn">
+										{if 'pictures' == $type}
+											<a class="btn btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><i class=" i-remove-sign"></i></a>
+										{else}
+											<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{$entry.title|escape:'html'}"><i class="i-box-add"></i></a>
+											<a class="btn btn-danger js-file-delete" href="#" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><i class="i-remove-sign"></i></a>
+										{/if}
+										<span class="btn btn-default uploads-list-item__drag-handle"><i class="i-list-2"></i></span>
+									</span>
 								</div>
 							</div>
 						</div>
 					{/foreach}
 				</div>
+
+				{ia_add_js}
+$(function()
+{
+	intelli.sortable('{$varname}_upload_list', '.uploads-list-item__drag-handle');
+});
+				{/ia_add_js}
+
 				{assign var='max_num' value=($field.length - count($value))}
 			{else}
 				{assign max_num $field.length}
@@ -203,19 +195,22 @@ $(function()
 	$('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$field.name}');
 	$('input[name="{$varname}"]').on('change', function()
 	{
-		var value = $(this).val();
-		$('.hide_{$field.name}').hide();
-		{foreach $field.children as $_field => $_values}
-		if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
-		{/foreach}
-		$('fieldset').show().each(function(index, item)
+		var $this = $(this),
+			value = $this.val();
+
+		if ($this.is(':checked'))
 		{
-			if ($('.fieldset-wrapper', item).length > 0)
-			{
-				if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
-				else $(this).show();
-			}
-		});
+			{foreach $field.children as $_field => $_values}
+				if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1)
+				{
+					$('#{$_field}_fieldzone').show();
+				}
+				else
+				{
+					$('#{$_field}_fieldzone').hide();
+				}
+			{/foreach}
+		}
 	}).change();
 });
 			{/ia_add_js}
@@ -237,20 +232,14 @@ $(function()
 	$('input[name="{$varname}[]"]').on('change', function()
 	{
 		$('.hide_{$field.name}').hide();
+
 		$('input[type="checkbox"]:checked', '#type_fieldzone').each(function()
 		{
 			var value = $(this).val();
+
 			{foreach $field.children as $_field => $_values}
-			if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
+				if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 			{/foreach}
-		});
-		$('fieldset').show().each(function(index, item)
-		{
-			if ($('.fieldset-wrapper', item).length > 0)
-			{
-				if($('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0) $(this).hide();
-				else $(this).show();
-			}
 		});
 	}).change();
 });

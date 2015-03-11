@@ -196,7 +196,7 @@ $(function()
 		var object = $('#js-row-empty-text');
 		($.inArray(type, ['text', 'textarea', 'number']) !== -1) ? object.show() : object.hide();
 
-		if (type && $.inArray(type, ['textarea', 'text', 'number', 'storage', 'image', 'url', 'pictures']) !== -1)
+		if (type && $.inArray(type, ['textarea', 'text', 'number', 'storage', 'image', 'url', 'date', 'pictures']) !== -1)
 		{
 			$('#' + type).css('display', 'block');
 			if ($('#searchable').val() == '1' && ('textarea' == type || 'text' == type) && 'none' == $('#fulltext_search_zone').css('display'))
@@ -222,8 +222,9 @@ $(function()
 	$('#js-field-relation').change(function()
 	{
 		var value = $(this).val();
-		(value == 'dependent') ? $('#regular_field').show() : $('#regular_field').hide();
+
 		(value == 'parent') ? $('.main_fields').show() : $('.main_fields').hide();
+		(value == 'dependent') ? $('#regular_field').show() : $('#regular_field').hide();
 	});
 
 	$('#searchable').on('change', function()

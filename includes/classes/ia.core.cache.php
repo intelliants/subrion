@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -292,23 +292,31 @@ class iaCache extends abstractUtil
 	{
 		$this->iaCore->factory('util'); // required in order the class iaUtil to be loaded
 
+		$iaDb = &$this->iaCore->iaDb;
+
 		switch ($type)
 		{
 			case 'lang':
 			case 'admin_lang':
+
+				// get phrases
 				$stmt = "`code` = :lang AND `category` NOT IN ('tooltip', 'page', :category)";
-				$this->iaCore->iaDb->bind($stmt, array('lang' => $this->iaCore->iaView->language, 'category' => $type == 'admin_lang' ? 'frontend' : iaCore::ADMIN));
+				$iaDb->bind($stmt, array('lang' => $this->iaCore->iaView->language, 'category' => $type == 'admin_lang' ? 'frontend' : iaCore::ADMIN));
+				$phrases = $iaDb->keyvalue(array('key', 'value'), $stmt, iaLanguage::getTable());
 
-				$phrases = $this->iaCore->iaDb->keyvalue(array('key', 'value'), $stmt, iaLanguage::getTable());
-				$languagesList = iaUtil::jsonEncode(unserialize($this->iaCore->get('languages')));
+				// get list of languages
+				$languagesList = $iaDb->assoc(
+					array('code', 'title', 'direction', 'flagicon', 'iso' => 'code'),
+					('admin_lang' == $type ? null : "`status` = 'active'"),
+					'languages'
+				);
 
-				$fileContent = 'intelli.' . ($type == 'admin_lang' ? 'admin.' : '') . 'lang = '
+				$fileContent = 'intelli.' . ('admin_lang' == $type ? 'admin.' : '') . 'lang = '
 					. iaUtil::jsonEncode($phrases) . ';'
-					. 'intelli.languages = ' . $languagesList . ';';
+					. 'intelli.languages = ' . iaUtil::jsonEncode($languagesList) . ';';
 				break;
 
 			case 'config':
-				$iaDb = &$this->iaCore->iaDb;
 
 				$stmt = "`private` = 0 && `type` != 'divider' && `config_group` != 'email_templates'";
 				$config = $iaDb->keyvalue(array('name', 'value'), $stmt, iaCore::getConfigTable());

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -91,7 +91,14 @@ class iaView extends abstractUtil
 
 	public function set($key, $value)
 	{
-		$this->_params[$key] = $value;
+		if (is_array($value))
+		{
+			$this->_params[$key] = isset($this->_params[$key]) ? array_merge((array)$this->_params[$key], $value) : $value;
+		}
+		else
+		{
+			$this->_params[$key] = $value;
+		}
 	}
 
 	public function get($key, $default = null)
@@ -142,7 +149,7 @@ class iaView extends abstractUtil
 				$this->iaSmarty->addTemplateDir(IA_TEMPLATES . 'common' . IA_DS);
 			}
 
-			Smarty::$_CHARSET = $this->iaCore->get('charset');
+			Smarty::$_CHARSET = 'UTF-8';
 
 			$this->iaSmarty->setCompileDir($compileDir);
 			$this->iaSmarty->setCacheDir(IA_TMP . 'smartycache' . IA_DS);
@@ -379,7 +386,7 @@ class iaView extends abstractUtil
 
 			if (isset($menuEntry['items'][0]['name']) && $menuEntry['items'][0]['name'])
 			{
-				$menuHeading = array('name' => '', 'title' => iaLanguage::get('global'));
+				$menuHeading = array('name' => null, 'title' => iaLanguage::get('global'));
 				if (iaItem::TYPE_PACKAGE == $item['type'])
 				{
 					$menuHeading['config'] = $item['extras'];
@@ -508,7 +515,7 @@ SQL;
 			}
 			else
 			{
-				if (!$block['multi_language'])
+				if (!$block['multilingual'])
 				{
 					$block['contents'] = iaLanguage::get('block_content_blc' . $block['id']);
 					$block['title'] = iaLanguage::get('block_title_blc' . $block['id']);
@@ -579,16 +586,14 @@ SQL;
 
 		if (!isset($this->_menus[$menuId]))
 		{
-			$iaCache = $this->iaCore->factory('cache');
-
-			if ($cache = $iaCache->get('menu_' . $menuId, 0, true))
+			if ($cache = $this->iaCore->iaCache->get('menu_' . $menuId, 0, true))
 			{
 				$rows = $cache;
 			}
 			else
 			{
 				$sql =
-					'SELECT m.*, p.`nofollow`, p.`new_window`, p.`action` ' .
+					'SELECT m.*, p.`nofollow`, p.`new_window`, p.`action`, p.`custom_url` ' .
 					'FROM `:prefixmenus` m ' .
 					'LEFT JOIN `:prefixpages` p ON (p.`name` = m.`page_name`) ' .
 					'WHERE m.`menu_id` = :menu ORDER BY m.`level`, m.`id`';
@@ -617,7 +622,7 @@ SQL;
 
 					if ($pageName != 'node' && isset($pages[$pageName]))
 					{
-						$row['url'] = $this->isHomepage($pageName) ? IA_URL : $pages[$pageName];
+						$row['url'] = $this->isHomepage($pageName) ? IA_URL : ($row['custom_url'] ? $pages[$pageName] : IA_URL . $pages[$pageName]);
 						$list[$row['parent_id']][$row['id']] = $row;
 					}
 				}
@@ -641,7 +646,7 @@ SQL;
 
 			$this->_menus[$menuId] = $list;
 
-			$iaCache->write('menu_' . $menuId, $rows);
+			$this->iaCore->iaCache->write('menu_' . $menuId, $rows);
 		}
 
 		if ($pid !== false)
@@ -902,7 +907,7 @@ SQL;
 
 				if (!is_writable(IA_UPLOADS))
 				{
-					$this->setMessages('Uploads directory is not writable.', self::SYSTEM);
+					$this->setMessages(iaLanguage::get('upload_writable_permission'), self::SYSTEM);
 				}
 
 				if (0 == $this->get('group'))// here we do populate the dashboard quick links
@@ -927,19 +932,28 @@ SQL;
 					$adminActions = $this->_getToolbarActions();
 				}
 
-				$this->assign('toolbarActions', $adminActions);
-				$this->assign('headerMenu', $this->_getAdminHeaderMenu());
-				$this->assign('menu', $this->getAdminMenu());
+				$this->set('toolbarActions', $adminActions);
+				$this->set('headerMenu', $this->_getAdminHeaderMenu());
+				$this->set('menu', $this->getAdminMenu());
 			}
 			else
 			{
 				$this->_existBlocks || $this->_setBlocks();
+
+				// get rid of inactive languages
+				foreach ($this->iaCore->languages as $key => $language)
+				{
+					if (iaCore::STATUS_INACTIVE == $language['status']) unset($this->iaCore->languages[$key]);
+				}
 			}
 
-			$this->assign('nonProtocolUrl', $this->assetsUrl);
+			// aliases
 			$this->assign('img', IA_TPL_URL . 'img/');
-			$this->assign('languages', $this->iaCore->languages);
 			$this->assign('pageAction', $this->get('action'));
+
+			// TODO: obsolete not used in 3.3.0, kept for minor compatibility
+			$this->assign('nonProtocolUrl', $this->assetsUrl);
+			$this->assign('languages', $this->iaCore->languages);
 			$this->assign('url', (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? IA_ADMIN_URL : IA_URL));
 
 			if (isset($_SESSION['msg']) && is_array($_SESSION['msg']))
@@ -994,37 +1008,49 @@ SQL;
 
 				$pageName = $this->name();
 
+				$iaSmarty->assign('config', $this->iaCore->getConfig());
+				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
+
+				// TODO: obsolete not used in 3.3.0, kept for minor compatibility
+				$iaSmarty->assign('page', $this->getParams());
+
+				// define smarty super global $core
+				$core = array(
+					'config' => $this->iaCore->getConfig(),
+					'customConfig' => $this->iaCore->getCustomConfig(),
+					'language' => $this->iaCore->languages[$this->language],
+					'languages' => $this->iaCore->languages,
+					'notifications' => $notifications,
+					'page' => array(
+						'breadcrumb' => iaBreadcrumb::render(),
+						'info' => $this->getParams(),
+						'nonProtocolUrl' => $this->assetsUrl,
+						'name' => $pageName,
+						'title' => $this->get('caption', $this->get('title', 'Subrion CMS')),
+					),
+				);
+
 				if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 				{
 					// get meta-description
 					$value = $this->get('description');
 					$metaDescription = (empty($value) && iaLanguage::exists('page_metadescr_' . $pageName))
-							? iaLanguage::get('page_metadescr_' . $pageName)
-							: $value;
-					$iaSmarty->assignGlobal('description', iaSanitize::html($metaDescription));
+						? iaLanguage::get('page_metadescr_' . $pageName)
+						: $value;
+					$core['page']['meta-description'] = iaSanitize::html($metaDescription);
 
 					// get meta-keywords
 					$value = $this->get('keywords');
 					$metaKeywords = (empty($value) && iaLanguage::exists('page_metakeyword_' . $pageName))
-							? iaLanguage::get('page_metakeyword_' . $pageName)
-							: $value;
-					$iaSmarty->assignGlobal('keywords', iaSanitize::html($metaKeywords));
+						? iaLanguage::get('page_metakeyword_' . $pageName)
+						: $value;
+					$core['page']['meta-keywords'] = iaSanitize::html($metaKeywords);
 
 					$this->_logStatistics();
 
 					header('X-Powered-CMS: Subrion CMS');
 				}
-
-				$pageTitle = $this->get('title', 'Subrion CMS');
-
-				$iaSmarty->assign('breadcrumb', iaBreadcrumb::render());
-				$iaSmarty->assign('config', $this->iaCore->getConfig());
-				$iaSmarty->assign('customConfig', $this->iaCore->getCustomConfig());
-				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
-				$iaSmarty->assign('notifications', $notifications);
-				$iaSmarty->assign('page', $this->getParams());
-				$iaSmarty->assign('pageName', $pageName);
-				$iaSmarty->assign('pageTitle', $this->get('caption', $pageTitle));
+				$iaSmarty->assignByRef('core', $core);
 
 				$this->iaCore->startHook('phpCoreDisplayBeforeShowBody');
 

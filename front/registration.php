@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -309,8 +309,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			}
 
 			$error = true;
-			$result = $iaUsers->confirmation($_GET['email'], $_GET['key']);
-			if ($result)
+
+			if ($iaUsers->confirmation($_GET['email'], $_GET['key']))
 			{
 				$messages[] = $iaCore->get('members_autoapproval') ? iaLanguage::get('reg_confirmed') : iaLanguage::get('reg_confirm_adm_approve');
 				$error = false;

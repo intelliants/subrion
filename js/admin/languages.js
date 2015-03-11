@@ -1,15 +1,17 @@
 Ext.onReady(function()
 {
+	var selectedLanguage = (intelli.urlVal('language') === null) ? intelli.config.language : intelli.urlVal('language');
+
 	var languages = [], j = 0;
 	for (var i in intelli.languages)
 	{
-		languages[j++] = [i, intelli.languages[i]];
+		languages[j++] = [i, intelli.languages[i].title];
 	}
 
-	var languagesStore = new Ext.data.SimpleStore({fields: ['value','title'], data: languages});
+	var languagesStore = new Ext.data.SimpleStore({fields: ['value', 'title'], data: languages});
 	var categoriesStore = new Ext.data.SimpleStore(
 	{
-		fields: ['value','title'],
+		fields: ['value', 'title'],
 		data: [['admin', 'Administration Board'],['frontend', 'User Frontend'],['common', 'Common'],['tooltip', 'Tooltip']]
 	});
 
@@ -193,18 +195,19 @@ Ext.onReady(function()
 				});
 			}
 		}];*/
+
 		intelli.language.toolbar = Ext.create('Ext.Toolbar', {items:[
 		{
 			emptyText: _t('key'),
 			listeners: intelli.gridHelper.listener.specialKey,
 			name: 'key',
 			xtype: 'textfield'
-		},{
+		}, {
 			emptyText: _t('value'),
 			listeners: intelli.gridHelper.listener.specialKey,
 			name: 'value',
 			xtype: 'textfield'
-		},{
+		}, {
 			displayField: 'title',
 			editable: false,
 			emptyText: _t('category'),
@@ -212,12 +215,12 @@ Ext.onReady(function()
 			store: new Ext.data.SimpleStore(
 			{
 				fields: ['value', 'title'],
-				data: [['admin', 'Administration Board'],['frontend', 'User Frontend'],['common', 'Common'],['tooltip', 'Tooltip']]
+				data: [['admin', 'Administration Board'],['frontend', 'User Frontend'],['common', 'Common'],['tooltip', 'Toolytip']]
 			}),
 			typeAhead: true,
 			valueField: 'value',
 			xtype: 'combo'
-		},{
+		}, {
 			displayField: 'title',
 			editable: false,
 			emptyText: _t('extras'),
@@ -226,14 +229,30 @@ Ext.onReady(function()
 			typeAhead: true,
 			valueField: 'value',
 			xtype: 'combo'
-		},{
+		}, {
 			handler: function(){intelli.gridHelper.search(intelli.language)},
 			id: 'fltBtn',
 			text: '<i class="i-search"></i> ' + _t('search')
-		},{
+		}, {
 			handler: function(){intelli.gridHelper.search(intelli.language, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
+		}, '->', {
+			xtype: 'combo',
+			typeAhead: true,
+			editable: false,
+			store: languagesStore,
+			value: selectedLanguage,
+			displayField: 'title',
+			valueField: 'value',
+			id: 'languageFilter',
+			listeners: {
+				change: function()
+				{
+					window.location = intelli.config.admin_url + '/languages/phrases/?language=' + this.getSubmitValue();
+				}
+			}
 		}]});
+
 		intelli.language.init();
 	}
 
@@ -268,6 +287,19 @@ Ext.onReady(function()
 			});
 		});
 	});
+
+	if (Ext.get('languagesList'))
+	{
+		intelli.sortable('languagesList', '.uploads-list-item__drag-handle', 0, function (e) {
+			var langs = $('.iso-val').map(function() {
+				return $(this).text();
+			}).get();
+
+			$.post(window.location.href + 'add.json', {sorting: 'save', langs: langs}, function(response) {
+				intelli.notifFloatBox({msg: response.message, type: (response.success ? 'success' : 'error'), autohide: true, pause: 1500});
+			});
+		});
+	}
 
 	if (Ext.get('js-comparison-grid'))
 	{

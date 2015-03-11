@@ -24,9 +24,11 @@
 				{preventCsrf}
 				<label>{lang key='email'}:</label>
 				<input type="text" name="email" value="{if isset($smarty.post.email)}{$smarty.post.email|escape:'html'}{/if}">
-				{include file='captcha.tpl'}
 			</div>
 		</div>
+
+		{include file='captcha.tpl'}
+
 		<div class="actions">
 			<button type="submit" name="restore" class="btn btn-primary btn-plain">{lang key='restore_password'}</button>
 		</div>

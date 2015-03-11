@@ -385,6 +385,15 @@ input[readonly].char-counter {
   margin-top: 15px;
 }
 
+// icons compatibility
+.i-checkmark {
+  .icon-FontAwesome();
+
+  &:before {
+    content: @ok;
+  }
+}
+
 
 
 // PRINT STYLESHEET

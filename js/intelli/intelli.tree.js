@@ -5,9 +5,14 @@ function IntelliTree(params)
 	this.url = params.url || window.location.href + 'read.json';
 	this.selector = params.selector || '#js-tree';
 
+	if (typeof params.value == 'undefined' && !$('#input-tree').length) // compatibility layer
+	{
+		params.value = '#input-category';
+	}
+
 	this.$tree = null;
 	this.$label = params.label ? $(params.label) : $('#js-category-label');
-	this.$value = params.value ? $(params.value) : $('#input-category');
+	this.$value = params.value ? $(params.value) : $('#input-tree');
 	this.$toggler = params.toggler ? $(params.toggler) : $('#js-tree-toggler');
 
 	var self = this;
@@ -60,9 +65,10 @@ function IntelliTree(params)
 	{
 		if (params.nodeOpened)
 		{
-			self.$tree.jstree(true).open_node(params.nodeOpened, function()
+			var tree = self.$tree.jstree(true);
+			tree.open_node(params.nodeOpened, function()
 			{
-				self.$tree.jstree(true).select_node(params.nodeSelected);
+				tree.select_node(params.nodeSelected);
 			});
 		}
 	};

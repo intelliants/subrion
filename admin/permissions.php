@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -125,7 +125,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			else
 			{
 				iaBreadcrumb::add(iaLanguage::get('usergroups'), IA_ADMIN_URL . 'usergroups/');
-				$iaView->title(iaLanguage::getf('permissions_usergroups', array('usergroup' => '"' . $settings['item']['title'] . '"')));
+				$iaView->title(iaLanguage::getf('permissions_usergroups', array('usergroup' => '"' . iaLanguage::get('usergroup_' . $settings['item']['name']) . '"')));
 			}
 
 			$userPermissions = $this->getHelper()->getPermissions($settings['id'], $settings['group']);
@@ -237,7 +237,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _listUsergroups()
 	{
-		$sql = 'SELECT u.`id`, u.`title`, IF(u.`id` = 1, 1, p.`access`) `admin_access` '
+		$sql = 'SELECT u.`id`, u.`name`, IF(u.`id` = 1, 1, p.`access`) `admin_access` '
 			. 'FROM `:prefix:table_usergroups` u '
 			. "LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = u.`id` AND p.`type` = 'group' AND p.`object` = 'admin_access')";
 		$sql = iaDb::printf($sql, array(
@@ -251,7 +251,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _listMembers()
 	{
-		$sql = 'SELECT m.`id`, m.`fullname`, g.`title` `usergroup`, IF(m.`usergroup_id` = 1, 1, p.`access`) `admin_access` '
+		$sql = 'SELECT m.`id`, m.`fullname`, g.`name` `usergroup`, IF(m.`usergroup_id` = 1, 1, p.`access`) `admin_access` '
 			. 'FROM `:prefix:table_members` m '
 			. 'LEFT JOIN `:prefix:table_groups` g ON (m.`usergroup_id` = g.`id`) '
 			. "LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = m.`id` AND p.`type` = 'user' AND p.`object` = 'admin_access')"

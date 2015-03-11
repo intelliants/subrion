@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title><?php echo $this->iaCore->get('site') ?> :: <?php echo $this->iaCore->get('suffix') ?></title>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+		<title><?php echo $this->iaCore->get('site') ?> :: <?php echo $this->iaCore->get('suffix') ?></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="author" content="Intelliants LLC">
 
 		<link rel="stylesheet" type="text/css" href="<?php echo $this->iaCore->get('baseurl') ?>js/bootstrap/css/bootstrap.min.css" />

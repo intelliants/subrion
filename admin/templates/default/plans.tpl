@@ -35,7 +35,7 @@
 				<div class="col col-lg-4">
 					<div class="row">
 						<div class="col-lg-3">
-							<input type="text" name="duration" value="{$item.duration}" maxlength="10">
+							<input type="text" name="duration" value="{$item.duration|escape:'html'}" maxlength="10">
 						</div>
 						<div class="col-lg-8 col-lg-offset-1">
 							<select name="unit">
@@ -107,7 +107,7 @@
 				<div class="col col-lg-4">
 					<select name="expiration_status"{foreach $expiration_statuses as $key => $value} data-{$key}="{$value}"{/foreach}>
 						<option value=""{if empty($item.expiration_status)} selected{/if}>{lang key='_do_not_change_'}</option>
-						{if iaCore::ACTION_EDIT == $pageAction}
+						{if iaCore::ACTION_EDIT == $pageAction && $item.item}
 							{assign values ','|explode:$expiration_statuses[$item.item]}
 							{foreach $values as $value}
 								<option value="{$value}"{if $item.expiration_status == $value} selected{/if}>{lang key=$value}</option>
@@ -124,8 +124,8 @@
 					<div class="col col-lg-4">
 						<select name="usergroup">
 							<option value="0">{lang key='_do_not_change_'}</option>
-							{foreach $usergroups as $uid => $usergroup}
-								<option value="{$uid}"{if $uid == $item.usergroup} selected{/if}>{$usergroup}</option>
+							{foreach $usergroups as $uid => $name}
+								<option value="{$uid}"{if $uid == $item.usergroup} selected{/if}>{lang key="usergroup_{$name}"}</option>
 							{/foreach}
 						</select>
 					</div>
@@ -161,26 +161,26 @@
 		<div class="wrap-group">
 			<div id="ckeditor" class="row">
 				<ul class="nav nav-tabs">
-					{foreach $languages as $code => $language}
-						<li{if $language@first} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language}</a></li>
+					{foreach $core.languages as $code => $language}
+						<li{if $language@first} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title}</a></li>
 					{/foreach}
 				</ul>
 
 				<div class="tab-content">
-					{foreach $languages as $code => $language}
+					{foreach $core.languages as $code => $language}
 						<div class="tab-pane{if $language@first} active{/if}" id="tab-language-{$code}">
 							<div class="row">
 								<label class="col col-lg-2 control-label">{lang key='title'} {lang key='field_required'}</label>
 
 								<div class="col col-lg-10">
-									<input type="text" name="title[{$code}]" value="{if $id}{lang key="plan_title_{$id}"}{elseif isset($smarty.post.title.$code)}{$smarty.post.title.$code|escape:'html'}{/if}">
+									<input type="text" name="title[{$code}]" value="{$item.title.$code|default:''|escape:'html'}">
 								</div>
 							</div>
 							<div class="row">
 								<label class="col col-lg-2 control-label">{lang key='description'} {lang key='field_required'}</label>
 
 								<div class="col col-lg-10">
-									<textarea id="description_{$language}" rows="30" name="description[{$code}]" class="js-wysiwyg">{if $id}{lang key="plan_description_{$id}"}{elseif isset($smarty.post.description.$code)}{$smarty.post.description.$code|escape:'html'}{/if}</textarea>
+									<textarea id="description_{$code}" rows="30" name="description[{$code}]" class="js-wysiwyg">{$item.description.$code|default:''|escape:'html'}</textarea>
 								</div>
 							</div>
 						</div>

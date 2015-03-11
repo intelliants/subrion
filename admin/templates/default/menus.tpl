@@ -109,15 +109,14 @@
 						{if !empty($pages)}
 							<ul class="nav nav-tabs">
 								{foreach $pagesGroup as $group => $row}
-									{assign classname 'pages_'|cat:$row.name}
-									<li{if $row@iteration == 1} class="active"{/if}><a href="#tab-{$classname}" data-toggle="tab">{$row.title}</a></li>
+									<li{if $row@iteration == 1} class="active"{/if}><a href="#tab-pages_{$row.name}" data-toggle="tab">{$row.title}</a></li>
 								{/foreach}
 							</ul>
 
 							<div class="tab-content">
 								{foreach $pagesGroup as $group => $row}
-									{assign post_key 'all_pages_'|cat:$row.name}
-									{assign classname 'pages_'|cat:$row.name}
+									{assign post_key "all_pages_{$row.name}"}
+									{assign classname "pages_{$row.name}"}
 									<div class="tab-pane{if $row@iteration == 1} active{/if}" id="tab-{$classname}">
 										<div class="checkbox checkbox-all">
 											<label>
@@ -130,7 +129,7 @@
 											<div class="checkbox">
 												<label>
 													<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $visibleOn)} checked{/if}>
-													{if empty($page.title)}{$page.name}{else}{$page.title}{/if}
+													{if empty($page.title)}{$page.name}{else}{$page.title|escape:'html'}{/if}
 
 													{if $page.suburl}
 														<div class="subpages" style="display: none" rel="{$page.suburl}::{$key}">&nbsp;</div>

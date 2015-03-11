@@ -98,22 +98,6 @@ $(function()
 		intelli.cookie.write('widgetsState', JSON.stringify(widgetsState));
 	});
 
-
-	// changelog
-	$('.widget-content .changelog-item:last-child', '#widget-changelog').show();
-	$('.nav-pills .dropdown-menu a', '#widget-changelog').on('click', function(e)
-	{
-		e.preventDefault();
-
-		var changelogItem = $(this).data('item');
-		var changelogNum  = $(this).text();
-
-		$(this).parent().addClass('active').siblings().removeClass('active');
-		$(this).closest('.nav').find('.dropdown-toggle').html(changelogNum + ' <span class="caret"></span>');
-		$(changelogItem).show().siblings().hide();
-	});
-
-
 	// Tree toggle
 	$('.js-categories-toggle').on('click', function(e)
 	{
@@ -293,8 +277,8 @@ $(function()
 
 	if ($().datepicker)
 	{
-		$('.js-datepicker').datepicker({
-			showTime: true,
+		$('.js-datepicker').datepicker(
+		{
 			format: 'yyyy-mm-dd H:i:s',
 			language: intelli.config.lang
 		});
@@ -598,6 +582,34 @@ $(function()
 			$installerAlert.addClass('b-resolve').append(resolveBtnHtml);
 		}
 	}
+
+	// moving upload blocks up and down
+
+	disableMoveButtons();
+
+	$('.js-upload-moveup').click(function(e)
+	{
+		e.preventDefault();
+
+		var $this = $(this),
+			$parent = $this.closest('.uploads-list-item');
+
+		$parent.insertBefore($parent.prev());
+
+		disableMoveButtons();
+	});
+
+	$('.js-upload-movedown').click(function(e)
+	{
+		e.preventDefault();
+
+		var $this = $(this),
+			$parent = $this.closest('.uploads-list-item');
+
+		$parent.insertAfter($parent.next());
+
+		disableMoveButtons();
+	});
 });
 
 function clearNotification(el)
@@ -626,4 +638,19 @@ function clearNotification(el)
 	{
 		el.closest('.dropdown').find('.dropdown-toggle').dropdown('toggle');
 	}
+}
+
+function disableMoveButtons()
+{
+	$('.uploads-list-item')
+		.find('.js-upload-moveup, .js-upload-movedown')
+		.prop('disabled', false);
+
+	$('.uploads-list-item:first-child')
+		.find('.js-upload-moveup')
+		.prop('disabled', true);
+
+	$('.uploads-list-item:last-child')
+		.find('.js-upload-movedown')
+		.prop('disabled', true);
 }

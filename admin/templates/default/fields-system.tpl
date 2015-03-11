@@ -26,15 +26,33 @@
 		</div>
 
 		<div class="row" id="plans"{if $item.sponsored != 1} style="display: none;"{/if}>
-			<label class="col col-lg-2 control-label" for="plan-selector">{lang key='plan'}</label>
+			<label class="col col-lg-2 control-label" for="input-plan">{lang key='plan'}</label>
 
 			<div class="col col-lg-4">
 				{if isset($plans) && $plans}
-					<select name="plan_id" id="plan-selector">
-					{foreach $plans as $plan}
-						<option value="{$plan.id}"{if $plan.id == $item.sponsored_plan_id} selected{/if}>{lang key='plan_title_'|cat:$plan.id} - {$config.currency} {$plan.cost}</option>
-					{/foreach}
+					<select name="plan_id" id="input-plan">
+						{foreach $plans as $plan}
+							<option value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} selected{/if} data-date="{$plan.defaultEndDate}">{lang key="plan_title_{$plan.id}"} - {$config.currency} {$plan.cost}</option>
+						{/foreach}
 					</select>
+					{ia_add_js}
+$(function()
+{
+	var $sponsoredEnd = $('input[name="sponsored_end"]'),
+		$inputPlan = $('#input-plan');
+
+	$inputPlan.on('change', function()
+	{
+		var date = $('option:selected', this).data('date');
+		$sponsoredEnd.datepicker('update', date);
+	});
+
+	if ('' == $sponsoredEnd.val())
+	{
+		$inputPlan.trigger('change');
+	}
+});
+					{/ia_add_js}
 				{else}
 					<span class="label label-info">{lang key='no_plans'}</span>
 				{/if}
@@ -47,7 +65,7 @@
 
 				<div class="col col-lg-4">
 					<div class="input-group">
-						<input size="16" type="text" class="js-datepicker" value="{$item.sponsored_end}" name="sponsored_end" readonly>
+						<input size="16" type="text" class="js-datepicker" value="{if isset($item.sponsored_end)}{$item.sponsored_end}{/if}" data-date-show-time="true" data-date-format="yyyy-mm-dd H:i" name="sponsored_end" readonly>
 						<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 					</div>
 				</div>
@@ -69,7 +87,7 @@
 
 			<div class="col col-lg-4">
 				<div class="input-group">
-					<input type="text" class="js-datepicker" name="featured_end" value="{$item.featured_end}">
+					<input type="text" class="js-datepicker" name="featured_end" value="{$item.featured_end}" data-date-show-time="true" data-date-format="yyyy-mm-dd H:i">
 					<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 				</div>
 			</div>
@@ -87,12 +105,20 @@
 	{/if}
 
 	{if isset($item.date_added)}
+		{capture assign=datevalue}
+			{if isset($datetime)}
+				value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d %H:%M'}{/if}" data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"
+			{else}
+				value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d'}{/if}"
+			{/if}
+		{/capture}
+
 		<div class="row">
 			<label class="col col-lg-2 control-label" for="field_date_added">{lang key='date_added'}</label>
 
 			<div class="col col-lg-4">
 				<div class="input-group">
-					<input type="text" class="datepicker js-datepicker" name="date_added" id="field_date_added" value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d'}{/if}">
+					<input type="text" class="datepicker js-datepicker" name="date_added" id="field_date_added" {$datevalue}>
 					<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 				</div>
 			</div>
@@ -101,7 +127,7 @@
 
 	{if isset($item.status)}
 		{if !isset($statuses)}
-			{assign statuses ['active','inactive']}
+			{assign statuses [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]}
 		{/if}
 
 		<div class="row">
@@ -174,7 +200,7 @@ $(function()
 
 		{foreach $ugp as $entry}
 		<div class="row">
-			<label class="col col-lg-2">{$entry.title}{if !$entry.system} <i class="i-tools" title="Custom usergroup"></i>{/if}</label>
+			<label class="col col-lg-2">{$entry.title}{if !$entry.system} <i class="i-tools" title=""></i>{/if}</label>
 
 			<div class="col col-lg-4 p-table__actions js-toggler-group" data-id="{$entry.id}" data-default-access="{$entry.default}">
 				<input type="hidden" id="js-ugp-{$entry.id}" name="permissions[{$entry.id}]" value="{$entry.access}">

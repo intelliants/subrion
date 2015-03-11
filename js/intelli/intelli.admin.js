@@ -142,7 +142,7 @@ intelli.admin = function()
 			{
 				if (btn == 'yes')
 				{
-					$.post(intelli.config.admin_url + '/actions.json',
+					$.post(intelli.config.admin_url + '/actions/read.json',
 						{action: 'delete-file', item: item, field: field, path: path, itemid: itemid},
 						function(data)
 						{
@@ -154,12 +154,12 @@ intelli.admin = function()
 									$(link).closest('.input-group').remove();
 								}
 
-								$(link).closest('.file-upload, .input-group').remove();
+								$(link).closest('.file-upload, .uploads-list-item').remove();
 
 								var counter = $('#' + field);
 								try {
 									counter.val(parseInt(counter.val()) + 1);
-									if (counter.val() == 0)
+									if (counter.val() > 0)
 									{
 										$('.file-upload:hidden', '#upload-group-' + field).show();
 									}

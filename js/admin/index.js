@@ -39,6 +39,25 @@ $(function()
 		}
 	});
 
+	// changelog
+	$('.widget-content .changelog-item:last-child', '#widget-changelog').show();
+	$('.nav-pills .dropdown-menu a', '#widget-changelog').on('click', function(e)
+	{
+		var $this = $(this);
+
+		if ($this.data('item'))
+		{
+			e.preventDefault();
+
+			var changelogItem = $this.data('item'),
+				changelogNum  = $this.text();
+
+			$this.parent().addClass('active').siblings().removeClass('active');
+			$this.closest('.nav').find('.dropdown-toggle').html(changelogNum + ' <span class="caret"></span>');
+			$(changelogItem).show().siblings().hide();	
+		}
+	});
+
 	if ($('#js-disabled-widgets-list').length) // CUSTOMIZATION MODE
 	{
 		var dc_widget_tools =

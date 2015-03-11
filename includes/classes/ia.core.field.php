@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -110,12 +110,9 @@ class iaField extends abstractCore
 		{
 			isset($params[$key]) || $params[$key] = false;
 		}
-		if (!$item && isset($items['item']))
-		{
-			$item = $items['item'];
-		}
 
-		$sections = $this->_getFieldsSection($params['page'], $item, $params['where'], $items, $params);
+		$sections = $this->_getFieldgroups($params['page'], $item, $params['where'], $items, $params);
+
 		if ($params['not_empty'])
 		{
 			if ($sections)
@@ -166,7 +163,7 @@ class iaField extends abstractCore
 			return $fieldsList;
 		}
 
-		if ($params['page'] == iaCore::ADMIN)
+		if (iaCore::ADMIN == $params['page'])
 		{
 			return $fieldsList;
 		}
@@ -197,7 +194,7 @@ class iaField extends abstractCore
 			}
 		}
 
-		if ($type == 'simple')
+		if ('simple' == $type)
 		{
 			$items = $this->_checkItem($items, $itemName, $fields, $forPlans, $empty);
 		}
@@ -287,7 +284,7 @@ class iaField extends abstractCore
 					"f.`item` = '{$itemName}' AND " .
 					"f.`adminonly` = 0 "
 				. ($aWhere ? ' AND ' . $aWhere : '');
-			//			$sql .= $aPlan && (!$aItemData || $aItemData['sponsored']) ? " AND (`plans`='' OR FIND_IN_SET('{$aPlan}', `plans`)) " : " AND `plans`='' ";
+			$sql .= $aItemData['sponsored_plan_id'] && (!$aItemData || $aItemData['sponsored']) ? " AND (`plans`='' OR FIND_IN_SET('{$aItemData['sponsored_plan_id']}', `plans`)) " : " AND `plans`='' ";
 		}
 		else
 		{
@@ -295,7 +292,7 @@ class iaField extends abstractCore
 					'LEFT JOIN `' . $iaCore->iaDb->prefix . self::getTable() . '` f ON (fp.`field_id` = f.`id`) ' .
 					"WHERE fp.`page_name` = '{$pageName}' AND f.`status` = 'active' AND f.`item` = '{$itemName}' AND f.`adminonly` = 0 "
 						. ($aWhere ? ' AND ' . $aWhere : '');
-			//			$sql .= $aPlan && (!$aItemData || $aItemData['sponsored']) ? " AND (`plans`='' OR FIND_IN_SET('{$aPlan}', `plans`)) " : " AND `plans`='' ";
+			$sql .= !empty($aItemData['sponsored_plan_id']) && (!$aItemData || $aItemData['sponsored']) ? " AND (`plans`='' OR FIND_IN_SET('{$aItemData['sponsored_plan_id']}', `plans`)) " : " AND `plans`='' ";
 		}
 
 		$sql .= 'ORDER BY ' . (empty($params['order']) ? 'f.`order`' : $params['order']);
@@ -353,10 +350,9 @@ class iaField extends abstractCore
 		{
 			$entry['children'] = isset($relationsMap[$entry['name']]) ? $relationsMap[$entry['name']] : array();
 		}
-		//
 	}
 
-	protected function _getFieldsSection($aco = null, $itemName = null, $aWhere = '', &$itemData, $params = array())
+	private function _getFieldgroups($aco = null, $itemName = null, $aWhere = '', &$itemData, $params = array())
 	{
 		$aco = $aco ? $aco : (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin' : $this->iaView->name());
 		$itemName = $itemName ? $itemName : $this->iaView->get('extras');
@@ -378,8 +374,6 @@ class iaField extends abstractCore
 
 		foreach ($fields as $fieldInfo)
 		{
-			$fieldInfo['item'] = $itemName;
-
 			if (self::PICTURES == $fieldInfo['type'])
 			{
 				$fieldInfo['values'] = empty($fieldInfo['values']) ? array() : explode(',', $fieldInfo['values']);
@@ -476,25 +470,6 @@ class iaField extends abstractCore
 
 		foreach ($fields as $value)
 		{
-/*			if ($isSearchPage && self::NUMBER == $value['type'])
-			{
-				$value['ranges'] = array();
-
-				if ($ranges = $iaDb->keyvalue(array('key', 'value'), "`key` LIKE 'field\_" . $value['name'] . "\_range\_%'", iaLanguage::getTable()))
-				{
-					foreach ($ranges as $k2 => $v2)
-					{
-						$k2 = array_pop(explode('_', $k2));
-						$value['ranges'][$k2] = $v2;
-					}
-				}
-
-				('desc' == $value['sort_order'])
-					? krsort($value['ranges'])
-					: ksort($value['ranges']);
-			}
-*/
-
 			if (empty($value['fieldgroup_id']) || empty($groups[$value['fieldgroup_id']]))
 			{
 				$value['fieldgroup_id'] = '___empty___';
@@ -513,7 +488,7 @@ class iaField extends abstractCore
 		return $groups;
 	}
 
-	public function parsePost(array $fields, $previousValues = null, $isBackend = false)
+	public function parsePost(array $fields, $previousValues = null)
 	{
 		$iaCore = &$this->iaCore;
 
@@ -524,7 +499,7 @@ class iaField extends abstractCore
 		$item = array();
 		$data = &$_POST; // access to the data source by link
 
-		if ($isBackend)
+		if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
 		{
 			if (isset($data['sponsored']))
 			{
@@ -638,10 +613,7 @@ class iaField extends abstractCore
 		}
 		//
 
-		$iaView = &$iaCore->iaView;
-		$iaDb = &$iaCore->iaDb;
-		$iaUtil = $iaCore->factory('util');
-
+		$iaCore->factory('util');
 		iaUtil::loadUTF8Functions('validation', 'bad');
 
 		foreach ($activeFields as $fieldName => $field)
@@ -722,7 +694,18 @@ class iaField extends abstractCore
 				}
 				else
 				{
-					$array = explode('-', $data[$fieldName]);
+					if (strpos($data[$fieldName], ' ') === false)
+					{
+						$date = $data[$fieldName];
+						$time = false;
+					}
+					else
+					{
+						list($date, $time) = explode(' ', $data[$fieldName]);
+					}
+
+					// FIXME: fucking shit
+					$array = explode('-', $date);
 
 					$year = (int)$array[0];
 					$month = max(1, (int)$array[1]);
@@ -733,6 +716,21 @@ class iaField extends abstractCore
 					$day = (strlen($day) < 2) ? '0' . $day : $day;
 
 					$item[$fieldName] = $year . '-' . $month . '-' . $day;
+
+					if ($field['timepicker'] && $time)
+					{
+						$time = explode(':', $time);
+
+						$hour = max(1, (int)$time[0]);
+						$minute = max(1, (int)$time[1]);
+						$seconds = max(1, (int)$time[2]);
+
+						$hour = (strlen($hour) < 2) ? '0' . $hour : $hour;
+						$minute = (strlen($minute) < 2) ? '0' . $minute : $minute;
+						$seconds = (strlen($seconds) < 2) ? '0' . $seconds : $seconds;
+
+						$item[$fieldName] .= ' ' . $hour . ':' . $minute . ':' . $seconds;
+					}
 				}
 			}
 			elseif (self::URL == $field['type'])
@@ -757,11 +755,19 @@ class iaField extends abstractCore
 
 				if (!$req_error && !empty($data[$fieldName]['url']) && !in_array($data[$fieldName]['url'], $validProtocols))
 				{
+					if (false === stripos($data[$fieldName]['url'], 'http://')
+						&& false === stripos($data[$fieldName]['url'], 'https://'))
+					{
+						$data[$fieldName]['url'] = 'http://' . $data[$fieldName]['url'];
+					}
+
 					if (iaValidate::isUrl($data[$fieldName]['url']))
 					{
 						$item[$fieldName] = array();
 						$item[$fieldName]['url'] = iaSanitize::tags($data[$fieldName]['url']);
-						$item[$fieldName]['title'] = empty($data[$fieldName]['title']) ? $item[$fieldName]['url'] : $data[$fieldName]['title'];
+						$item[$fieldName]['title'] = empty($data[$fieldName]['title'])
+							? str_replace($validProtocols, '', $data[$fieldName]['url'])
+							: $data[$fieldName]['title'];
 						$item[$fieldName] = implode('|', $item[$fieldName]);
 					}
 					else
@@ -772,7 +778,7 @@ class iaField extends abstractCore
 					}
 				}
 			}
-			elseif (in_array($field['type'], array(self::PICTURES, self::STORAGE, self::IMAGE)) && is_array($_FILES[$fieldName]['tmp_name']) && !empty($_FILES[$fieldName]['tmp_name']))
+			elseif (in_array($field['type'], array(self::IMAGE, self::STORAGE, self::PICTURES)) && is_array($_FILES[$fieldName]['tmp_name']) && !empty($_FILES[$fieldName]['tmp_name']))
 			{
 				if (!is_writable(IA_UPLOADS))
 				{
@@ -807,32 +813,10 @@ class iaField extends abstractCore
 						$path = iaUtil::getAccountDir();
 					}
 
-					$item[$fieldName] = empty($item[$fieldName]) ? array() : unserialize($item[$fieldName]);
-
-					// item is not saved to DB, but has assigned uploaded images
-					if ($data[$fieldName] && empty($previousValues[$fieldName]))
-					{
-						$previousValues[$fieldName] = $data[$fieldName];
-					}
-
-					// get previous values for the files to keep them
-					$previousValues[$fieldName] = empty($previousValues[$fieldName]) ? array() : $previousValues[$fieldName];
-					is_array($previousValues[$fieldName]) || $previousValues[$fieldName] = unserialize($previousValues[$fieldName]);
-
-					if ($field['type'] == self::PICTURES)
-					{
-						foreach ($previousValues[$fieldName] as $fileKey => &$fileValue)
-						{
-							$fileValue['title'] = isset($data[$fieldName . '_title'][$fileKey]) ? $data[$fieldName . '_title'][$fileKey] : $fileValue['title'];
-						}
-					}
+					$item[$fieldName] = isset($data[$fieldName]) && $data[$fieldName] ? $data[$fieldName] : array();
 
 					// initialize class to work with images
-					$methodName = '_processImageField';
-					if (self::STORAGE == $field['type'])
-					{
-						$methodName = '_processFileField';
-					}
+					$methodName = self::STORAGE == $field['type'] ? '_processFileField' : '_processImageField';
 
 					// process uploaded files
 					foreach ($_FILES[$fieldName]['tmp_name'] as $id => $tmp_name)
@@ -843,7 +827,7 @@ class iaField extends abstractCore
 						}
 
 						// files limit exceeded or rewrite image value
-						if (self::IMAGE != $field['type'] && count($previousValues[$fieldName]) + count($item[$fieldName]) >= $field['length'])
+						if (self::IMAGE != $field['type'] && count($item[$fieldName]) >= $field['length'])
 						{
 							break;
 						}
@@ -859,7 +843,7 @@ class iaField extends abstractCore
 						if (!$processing[1]) // went smoothly
 						{
 							$fieldValue = array(
-								'title' => (isset($data[$fieldName . '_title'][$id]) ? substr($data[$fieldName . '_title'][$id], 0, 100) : ''),
+								'title' => (isset($data[$fieldName . '_title'][$id]) ? substr(trim($data[$fieldName . '_title'][$id]), 0, 100) : ''),
 								'path' => $processing[0]
 							);
 
@@ -881,8 +865,7 @@ class iaField extends abstractCore
 				}
 
 				// If already has images, append them.
-				$item[$fieldName] = array_merge($previousValues[$fieldName], $item[$fieldName]);
-				$item[$fieldName] = empty($item[$fieldName]) ? '' : serialize($item[$fieldName]);
+				$item[$fieldName] = empty($item[$fieldName]) ? '' : serialize(array_merge($item[$fieldName])); // array_merge is used to reset numeric keys
 			}
 
 			if (isset($item[$fieldName]))
@@ -979,7 +962,7 @@ class iaField extends abstractCore
 	 * Sets elements of array according to provided fields structure
 	 *
 	 * @param array $itemData resulting array
-	 * @param array $fieldsList standard fields structure returned by methods of this class
+	 * @param array $fields standard fields structure returned by methods of this class
 	 * @param array $extraValues values that will be merged to $itemData
 	 * @param array $data source data (POST values are used if nothing specified)
 	 *

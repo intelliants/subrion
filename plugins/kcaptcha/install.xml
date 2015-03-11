@@ -4,9 +4,10 @@
 	<summary>Plugin adds the CAPTCHA to all pages where it is needed to prevents automatic bot form submission.</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.1.0</version>
-	<date>2013-11-18</date>
-	<compatibility>3.1</compatibility>
+	<version>3.2.0</version>
+	<date>2015-01-29</date>
+	<category>captchas</category>
+	<compatibility>3.2.6</compatibility>
 
 	<config group="captcha" name="kcaptcha_divider" type="divider" description="KCAPTCHA configuration" private="1">KCAPTCHA</config>
 	<config group="captcha" name="captcha_case_sensitive" type="radio" values="1,0" description="Case sensitive" private="1">1</config>
@@ -16,40 +17,4 @@
 		<phrase key="click_to_redraw" category="frontend">Click here to redraw</phrase>
 		<phrase key="captcha_annotation" category="frontend">Please input letters you see on the image.&lt;br /&gt;Click on image to redraw.</phrase>
 	</phrases>
-
-	<install>
-		<code>
-			<![CDATA[
-$iaCore = iaCore::instance();
-
-if ($currentValues = $iaCore->iaDb->one("`multiple_values`", "`name` = 'captcha_name'", iaCore::getConfigTable()))
-{
-	$values = explode(',', $currentValues);
-}
-
-$values[] = 'kcaptcha';
-
-$iaCore->iaDb->update(array('multiple_values' => implode(',', $values)), "`name` = 'captcha_name'", null, iaCore::getConfigTable());
-
-if (1 == count($values))
-{
-	$iaCore->set('captcha_name', 'kcaptcha', true);
-}
-			]]>
-		</code>
-	</install>
-
-	<uninstall>
-		<code>
-			<![CDATA[
-$iaCore = iaCore::instance();
-
-// get possible values
-if ($values = explode(',', $iaCore->iaDb->one("`multiple_values`", "`name` = 'captcha_name'", iaCore::getConfigTable())))
-{
-	$iaCore->iaDb->update(array('multiple_values' => implode(',', array_diff($values, array('kcaptcha')))), "`name` = 'captcha_name'", null, iaCore::getConfigTable());
-}
-			]]>
-		</code>
-	</uninstall>
 </plugin>

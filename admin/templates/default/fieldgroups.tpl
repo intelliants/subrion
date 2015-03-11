@@ -73,21 +73,21 @@
 				</div>
 			</div>
 
-			{foreach $languages as $code => $pre_lang}
-			<div class="row">
-				<label class="col col-lg-2 control-label">{$pre_lang} {lang key='title'}</label>
+			{foreach $core.languages as $code => $language}
+				<div class="row">
+					<label class="col col-lg-2 control-label">{$language.title} {lang key='title'}</label>
 
-				<div class="col col-lg-4">
-					<input type="text" name="titles[{$code}]" value="{if isset($smarty.post.titles.$code)}{$smarty.post.titles.$code|escape:'html'}{elseif isset($item.titles[$code])}{$item.titles[$code]}{/if}">
+					<div class="col col-lg-4">
+						<input type="text" name="titles[{$code}]" value="{if isset($smarty.post.titles.$code)}{$smarty.post.titles.$code|escape:'html'}{elseif isset($item.titles[$code])}{$item.titles[$code]}{/if}">
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<label class="col col-lg-2 control-label">{$pre_lang} {lang key='description'}</label>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{$language.title} {lang key='description'}</label>
 
-				<div class="col col-lg-4">
-					<textarea id="description[{$code}]" rows="6" name="description[{$code}]">{if isset($smarty.post.description.$code)}{$smarty.post.description[$code]|escape:'html'}{elseif isset($item.description[$code])}{$item.description.$code}{/if}</textarea>
+					<div class="col col-lg-4">
+						<textarea id="description[{$code}]" rows="6" name="description[{$code}]">{if isset($smarty.post.description.$code)}{$smarty.post.description[$code]|escape:'html'}{elseif isset($item.description[$code])}{$item.description.$code}{/if}</textarea>
+					</div>
 				</div>
-			</div>
 			{/foreach}
 		</div>
 

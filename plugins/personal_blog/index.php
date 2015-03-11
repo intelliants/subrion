@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -44,11 +44,20 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 		}
 
-		iaBreadcrumb::toEnd($blogEntry['title'], IA_SELF);
+		$title = iaSanitize::tags($blogEntry['title']);
+		iaBreadcrumb::toEnd($title);
+
+		$iaView->title($title);
+
+		// add open graph data
+		$openGraph = array(
+			'title' => $title,
+			'url' => IA_SELF,
+			'image' => IA_CLEAR_URL . 'uploads/' . $blogEntry['image']
+		);
+		$iaView->set('og', $openGraph);
 
 		$iaView->assign('blog_entry', $blogEntry);
-
-		$iaView->title(iaSanitize::tags($blogEntry['title']));
 	}
 	else
 	{
@@ -81,7 +90,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		'classes' => 'btn-warning'
 	);
 
-	$iaView->assign('page_actions', $pageActions);
+	$iaView->set('actions', $pageActions);
 
 	$iaView->display('index');
 }
@@ -95,7 +104,7 @@ if (iaView::REQUEST_XML == $iaView->getRequestType())
 		'item' => array()
 	);
 
-	$listings = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, 0, 20);
+	$listings = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`lang`= '" . $iaView->language . "'", 0, 20);
 	$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
 
 	foreach ($listings as $entry)

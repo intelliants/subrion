@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -67,7 +67,7 @@ class iaSanitize extends abstractUtil
 	 */
 	public static function html($string, $mode = ENT_QUOTES)
 	{
-		return htmlspecialchars($string, $mode, iaCore::instance()->get('charset'));
+		return htmlspecialchars($string, $mode, 'UTF-8');
 	}
 
 	/**

@@ -1,7 +1,6 @@
 <div id="notification" style="display: none;"></div>
-{if isset($notifications)}
-	{foreach $notifications as $type => $entries}
-		{if 'system' != $type}
+{foreach $core.notifications as $type => $entries}
+	{if 'system' != $type}
 		<div class="alert alert-{$type}">
 			<ul>
 				{foreach $entries as $message}
@@ -9,6 +8,5 @@
 				{/foreach}
 			</ul>
 		</div>
-		{/if}
-	{/foreach}
-{/if}
+	{/if}
+{/foreach}

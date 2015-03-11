@@ -438,3 +438,96 @@
 	- Bug #1937: Incorrect pages creation during package upgrade
 	+ Feature #1749: Switch to controllers
 	+ Feature #1938: Admin Panel: blocks should be sorted by title by default
+
+>> From 3.2.3 to 3.2.4 <<
+
+	- Bug #1946: Pagination: GET parameters removed for the first page
+	- Bug #1951: Blocks aren't displayed after package/plugin installation
+	- Bug #1959: Incorrect fieldgroup for item
+	+ Feature #1958: Extensions compatibility improvements
+
+>> From 3.2.4 to 3.2.5 <<
+
+	- Bug #1934: Field group issue when adding new field
+	- Bug #1960: There is a DataBase error when adding missing phrases in Comparison page.
+	- Bug #1962: Value of pages on which block will be displayed is reset after any change in the grid
+	- Bug #1975: Reference id is not recorded
+	- Bug #1979: Removing photos
+	+ Feature #823: Include item's ID/Title to payment details
+	+ Feature #1977: Display premium templates
+	+ Feature #1981: Improve dashboard for smaller resolutions
+	+ Feature #1982: Display premium packages in list
+	+ Feature #1983: Languages Comparison: add a filter to be able to search the phrases of "core" component
+
+>> From 3.2.5 to 3.2.6 <<
+
+	- Bug #768: Multilanguage accurate sorting
+	- Bug #922: Issue with cyrillic domains
+	- Bug #1913: iaMailer does not add Email TO value
+	- Bug #1980: Blocks changeset
+	- Bug #1989: Startup template: fix dropdown menu
+	- Bug #1997: KCaptcha Plugin: requires improvement
+	- Bug #2013: Incorrect generating of item_id value in transactions table
+	- Bug #2016: No username var in register email template
+	+ Feature #1538: Synchronize the timezone between PHP and DBMS
+	+ Feature #1886: Add config that will allow to have different date and time formats
+	+ Feature #1991: Restrict area for non admin
+	+ Feature #2015: Update phpMailer library
+	+ Feature #2017: Date field improvements
+	+ Feature #2018: Update phpImageWorkshop
+
+>> From 3.2.6 to 3.2.7 <<
+
+	- Bug #970: Language content for blocks and other items
+	- Bug #1732: Log shows actually removed directories as existent
+	- Bug #1734: Personal Blog: could not read language specific RSS feed on a multilingual site
+	- Bug #1930: Email confirmation link does not work in some Mail clients and Web Browsers
+	- Bug #1988: Incorrect title assigns in Admin Panel
+	- Bug #1994: Can't delete description for field groups
+	- Bug #1996: Incorrect working of multilingual functionality for plans
+	- Bug #1998: There is no way to sort plugins in the Available Plugins tab during Remote type
+	- Bug #2031: "Recent Reviews": Reviews showed even if the corresponding item has been removed
+	- Bug #2032: Dropdown menu does not work correctly on Internet Explorer
+	- Bug #2038: Usergroup duplication
+	- Bug #2039: Multiple fields not functioning properly
+	+ Feature #27: Reorder images using drag & drop
+	+ Feature #95: Include pages content search
+	+ Feature #196: Add multi-language support for usergroups
+	+ Feature #591: First image as thumbnail
+	+ Feature #1065: Add ability to reorder images in gallery field
+	+ Feature #1519: Make it possible to change positions of images in galleries
+	+ Feature #1967: Date field improvements
+	+ Feature #1976: Improve security
+	+ Feature #2005: Update RSS reader plugin for 3.2.x versions
+	+ Feature #2027: Script upgrade: hide the Rollback command if it's inaccessible to user
+	+ Feature #2028: Make possible to sort by remote plugins
+	+ Feature #2035: Implement page search
+	+ Feature #2037: Session tmp folder
+
+>> From 3.2.7 to 3.3.0 <<
+	- Bug #1456: No action buttons in search for some packages
+	- Bug #1939: https:// is not using by default
+	- Bug #1972: Incorrect working of multilingual functionality for blocks
+	- Bug #2014: DataBase error on Permissions page when click on Reset all to default link
+	- Bug #2041: Dependent fields are visible
+	- Bug #2044: Changelog does not look good
+	- Bug #2046: Phpimageworkshop lib stops the script when trying to upload an invalid image file
+	- Bug #2049: Smileys are not inserted in CKEditor
+	- Bug #2056: Unable to install the script to servers with port differs from default
+	- Bug #2066: Incorrect redirect after admin home changes
+	- Bug #2075: Transactions grid is not sorted by date by default
+	- Bug #2077: PHP 5.5. compatibility - Parsing Error: Call to undefined function mysql_errno() on line 160 in file includes/classes/ia.core.mysqli.php
+	+ Feature #754: Add template config for RTL support
+	+ Feature #786: Make "pictures" field to be displayed as a single upload input
+	+ Feature #866: Implement rtl template
+	+ Feature #973: Add ability to change language title
+	+ Feature #1481: Make it possible to upload custom no-preview and no-avatar images
+	+ Feature #1677: Ability to change language order
+	* Feature #2022: Gallery on item view page
+	+ Feature #2057: Custom template file for pages
+	* Feature #2058: Easier access to phrases management
+	* Feature #2059: Get rid of UTF8 charset option in templates
+	+ Feature #2072: Implement OpenGraph functionality
+	* Feature #2076: phpFastCache update to 3.0
+	* Feature #2078: Update debug highlight library
+	* Feature #2079: Revive Back to top

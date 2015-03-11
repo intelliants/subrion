@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -30,7 +30,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 	protected $_helperName;
 
 	protected $_itemName;
-	
+
 	protected $_activityLog;
 
 	protected $_iaField;
@@ -64,6 +64,13 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 			$this->getItemName() || $this->_setItemName($helperClass->getItemName());
 			$this->setTable($helperClass::getTable());
 		}
+
+		$this->init();
+	}
+
+	public function init()
+	{
+
 	}
 
 	public function getPackageName()
@@ -81,6 +88,22 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		$this->_itemName = $itemName;
 	}
 
+	protected function _gridRead($params)
+	{
+		$action = empty($this->_iaCore->requestPath[0]) ? null : $this->_iaCore->requestPath[0];
+
+		if (!is_null($action))
+		{
+			$methodName = '_getJson' . ucfirst($action);
+			if (is_callable(array($this, $methodName)))
+			{
+				return call_user_func(array($this, $methodName), $params);
+			}
+		}
+
+		return parent::_gridRead($params);
+	}
+
 	protected function _indexPage(&$iaView)
 	{
 		$this->_setQuickSearchActiveItem();
@@ -96,7 +119,9 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		$entryData['item'] = $this->getItemName();
 
 		$sections = $this->_iaField->getGroups($this->getItemName());
+
 		$iaView->assign('item_sections', $sections);
+		$iaView->assign('plans', $this->_getPlans());
 	}
 
 	protected function _insert(array $entryData)
@@ -281,5 +306,47 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 				}
 			}
 		}
+	}
+
+
+	protected function _getJsonTree(array $data)
+	{
+		$output = array();
+
+		$rowsCount = $this->_iaDb->one(iaDb::STMT_COUNT_ROWS);
+		$dynamicLoadMode = ($rowsCount > 500);
+
+		$clause = $dynamicLoadMode ? sprintf('`parent_id` = %d', (int)$data['id']) : '1';
+		$clause.= ' ORDER BY `title`';
+
+		$rows = $this->_iaDb->all(array('id', 'title', 'parent_id', 'child'), $clause);
+
+		foreach ($rows as $row)
+		{
+			$entry = array('id' => $row['id'], 'text' => $row['title']);
+
+			$dynamicLoadMode
+				? $entry['children'] = $row['child'] && $row['child'] != $row['id']
+				: $entry['parent'] = (0 == $row['parent_id']) ? '#' : $row['parent_id'];
+
+			$output[] = $entry;
+		}
+
+		return $output;
+	}
+
+	protected function _getPlans()
+	{
+		$iaPlan = $this->_iaCore->factory('plan');
+
+		if ($plans = $iaPlan->getPlans($this->getItemName()))
+		{
+			foreach ($plans as &$plan)
+			{
+				list(, $plan['defaultEndDate']) = $iaPlan->calculateDates($plan['duration'], $plan['unit']);
+			}
+		}
+
+		return $plans;
 	}
 }

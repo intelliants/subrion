@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -79,7 +79,7 @@ class iaUtil extends abstractUtil
 		return false;
 	}
 
-	public static function getPageContent($url, $timeout = 10)
+	public static function getPageContent($url, $timeout = 5)
 	{
 		$result = null;
 		$userAgent = 'Subrion CMS Bot';
@@ -179,7 +179,7 @@ class iaUtil extends abstractUtil
 		self::go_to($goto[$action]);
 	}
 
-	public static function makeDirCascade($path, $mode = 0777, $chmod = false)
+	public static function makeDirCascade($path, $mode = 0755, $chmod = false)
 	{
 		if (!is_dir(dirname($path)))
 		{

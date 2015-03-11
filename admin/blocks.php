@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -28,12 +28,14 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'blocks';
 
-	protected $_gridColumns = array('title', 'contents', 'position', 'extras', 'type', 'status', 'order', 'multi_language', 'delete' => 'removable');
+	protected $_gridColumns = array('title', 'contents', 'position', 'extras', 'type', 'status', 'order', 'multilingual', 'delete' => 'removable');
 	protected $_gridFilters = array('status' => 'equal', 'title' => 'like', 'type' => 'equal', 'position' => 'equal');
 
 	protected $_phraseAddSuccess = 'block_created';
 
 	protected $_permissionsEdit = true;
+
+	private $_multilingualContent;
 
 
 	public function __construct()
@@ -87,7 +89,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$entry['contents'] = iaSanitize::tags($entry['contents']);
 
-			if (!$entry['multi_language'])
+			if (!$entry['multilingual'])
 			{
 				if ($titleLanguages = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'block_title_blc{$entry['id']}'", iaLanguage::getTable()))
 				{
@@ -117,60 +119,12 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$entry = array(
 			'status' => iaCore::STATUS_ACTIVE,
+			'type' => iaBlock::TYPE_HTML,
 			'collapsed' => false,
-			'pages' => array()
+			'pages' => array(),
+			'title' => '',
+			'contents' => ''
 		);
-	}
-
-	protected function _assignValues(&$iaView, array &$entryData)
-	{
-		$groupList = $this->_iaDb->onefield('`group`', '1 = 1 GROUP BY `group`', null, null, 'pages');
-
-		$this->_iaDb->setTable('admin_pages_groups');
-		$array = $this->_iaDb->all(array('id', 'name', 'title'));
-		$pagesGroups = array();
-		foreach ($array as $row)
-		{
-			if (in_array($row['id'], $groupList))
-			{
-				$pagesGroups[$row['id']] = $row;
-			}
-		}
-		$this->_iaDb->resetTable();
-
-		$menuPages = array();
-
-		if (iaCore::ACTION_EDIT == $iaView->get('action'))
-		{
-			if (!$entryData['multi_language'])
-			{
-				$this->_iaDb->setTable(iaLanguage::getTable());
-
-				$entry['block_languages'] = $this->_iaDb->onefield('code', "`key` = 'block_content_blc{$entryData['id']}'");
-
-				$entry['title'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'block_title_blc{$entryData['id']}'");
-				$entry['contents'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'block_content_blc{$entryData['id']}'");
-
-				$this->_iaDb->resetTable();
-			}
-
-			$menuPages = $this->_iaDb->onefield('`name`', "FIND_IN_SET('{$entryData['name']}', `menus`)", null, null, 'pages');
-		}
-
-		isset($entryData['type']) || $entryData['type'] = iaBlock::TYPE_PLAIN;
-		isset($entryData['header']) || $entryData['header'] = true;
-		isset($entryData['collapsible']) || $entryData['collapsible'] = true;
-		isset($entryData['multi_language']) || $entryData['multi_language'] = true;
-		isset($entryData['sticky']) || $entryData['sticky'] = true;
-		isset($entryData['external']) || $entryData['external'] = false;
-		empty($entryData['subpages']) || $entryData['subpages'] = unserialize($entryData['subpages']);
-		isset($entryData['pages']) || $entryData['pages'] = $this->_iaDb->onefield('page_name', "`object_type` = 'blocks' && " . iaDb::convertIds($this->getEntryId(), 'object'), 0, null, iaBlock::getPagesTable());
-
-		$iaView->assign('menuPages', $menuPages);
-		$iaView->assign('pagesGroup', $pagesGroups);
-		$iaView->assign('pages', $this->_getPagesList($iaView->language));
-		$iaView->assign('positions', $this->getHelper()->getPositions());
-		$iaView->assign('types', $this->getHelper()->getTypes());
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
@@ -207,16 +161,16 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['header'] = (int)$data['header'];
 		$entry['collapsible'] = (int)$data['collapsible'];
 		$entry['collapsed'] = (int)$data['collapsed'];
-		$entry['multi_language'] = (int)$data['multi_language'];
+		$entry['multilingual'] = (int)$data['multilingual'];
 		$entry['sticky'] = (int)$data['sticky'];
 		$entry['external'] = (int)$data['external'];
 		$entry['filename'] = $data['filename'];
 		$entry['pages'] = isset($data['pages']) ? $data['pages'] : array();
+		$entry['title'] = $data['title'];
+		$entry['contents'] = $data['content'];
 
-		if ($entry['multi_language'])
+		if ($entry['multilingual'])
 		{
-			$entry['title'] = $data['multi_title'];
-
 			if (empty($entry['title']))
 			{
 				$this->addMessage('title_is_empty');
@@ -226,18 +180,13 @@ class iaBackendController extends iaAbstractControllerBackend
 				$entry['title'] = utf8_bad_replace($entry['title']);
 			}
 
-			$entry['contents'] = $data['multi_contents'];
-
-			if (iaBlock::TYPE_MENU != $entry['type'])
+			if (empty($entry['contents']) && !$entry['external'])
 			{
-				if (empty($entry['contents']) && !$entry['external'])
-				{
-					$this->addMessage('error_contents');
-				}
-				elseif (empty($entry['filename']) && $entry['external'])
-				{
-					$this->addMessage('error_filename');
-				}
+				$this->addMessage('error_contents');
+			}
+			elseif (empty($entry['filename']) && $entry['external'])
+			{
+				$this->addMessage('error_filename');
 			}
 
 			if (iaBlock::TYPE_HTML != $entry['type'])
@@ -250,38 +199,40 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			if (isset($data['block_languages']) && $data['block_languages'])
+			$this->_multilingualContent = $data['content'];
+
+			if (isset($data['languages']) && $data['languages'])
 			{
-				$entry['block_languages'] = $data['block_languages'];
-				$entry['title'] = $data['title'];
+				$entry['languages'] = $data['languages'];
+				$entry['titles'] = $data['titles'];
 				$entry['contents'] = $data['contents'];
 
-				foreach ($entry['block_languages'] as $block_language)
+				foreach ($entry['languages'] as $langCode)
 				{
-					if (isset($entry['title'][$block_language]))
+					if (isset($entry['titles'][$langCode]))
 					{
-						if (empty($entry['title'][$block_language]))
+						if (empty($entry['titles'][$langCode]))
 						{
-							$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $this->_iaCore->languages[$block_language])), false);
+							$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $this->_iaCore->languages[$langCode]['title'])), false);
 						}
-						elseif (!utf8_is_valid($entry['title'][$block_language]))
+						elseif (!utf8_is_valid($entry['titles'][$langCode]))
 						{
-							$entry['title'][$block_language] = utf8_bad_replace($entry['title'][$block_language]);
+							$entry['titles'][$langCode] = utf8_bad_replace($entry['titles'][$langCode]);
 						}
 					}
 
-					if (isset($entry['contents'][$block_language]))
+					if (isset($entry['contents'][$langCode]))
 					{
-						if (empty($entry['contents'][$block_language]))
+						if (empty($entry['contents'][$langCode]))
 						{
-							$this->addMessage(iaLanguage::getf('error_lang_contents', array('lang' => $this->_iaCore->languages[$block_language])), false);
+							$this->addMessage(iaLanguage::getf('error_lang_contents', array('lang' => $this->_iaCore->languages[$langCode]['title'])), false);
 						}
 
 						if (iaBlock::TYPE_HTML != $entry['type'])
 						{
-							if (!utf8_is_valid($entry['contents'][$block_language]))
+							if (!utf8_is_valid($entry['contents'][$langCode]))
 							{
-								$entry['contents'][$block_language] = utf8_bad_replace($entry['contents'][$block_language]);
+								$entry['contents'][$langCode] = utf8_bad_replace($entry['contents'][$langCode]);
 							}
 						}
 					}
@@ -308,6 +259,61 @@ class iaBackendController extends iaAbstractControllerBackend
 				'id' => $this->getEntryId()
 			));
 		}
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		$groupList = $this->_iaDb->onefield('`group`', '1 = 1 GROUP BY `group`', null, null, 'pages');
+
+		$this->_iaDb->setTable('admin_pages_groups');
+		$array = $this->_iaDb->all(array('id', 'name', 'title'));
+		$pagesGroups = array();
+		foreach ($array as $row)
+		{
+			in_array($row['id'], $groupList) && $pagesGroups[$row['id']] = $row;
+		}
+		$this->_iaDb->resetTable();
+
+		$menuPages = array();
+
+		$entryData['content'] = is_null($this->_multilingualContent) ? $entryData['contents'] : $this->_multilingualContent;
+
+		if (!isset($entryData['titles']) && iaCore::ACTION_EDIT == $iaView->get('action'))
+		{
+			$this->_iaDb->setTable(iaLanguage::getTable());
+
+			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = '" . iaBlock::LANG_PATTERN_TITLE . $this->getEntryId() . "'");
+			$entryData['contents'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = '" . iaBlock::LANG_PATTERN_CONTENT . $this->getEntryId() . "'");
+
+			$entryData['languages'] = empty($entryData['contents']) ? array() : array_keys($entryData['contents']);
+
+			if ($entryData['multilingual'] && empty($entryData['contents']) && iaBlock::TYPE_PHP != $entryData['type'])
+			{
+				foreach ($this->_iaCore->languages as $code => $language)
+				{
+					$entryData['titles'][$code] = $entryData['title'];
+					$entryData['contents'][$code] = $entryData['content'];
+				}
+			}
+
+			$this->_iaDb->resetTable();
+
+			$menuPages = $this->_iaDb->onefield('`name`', "FIND_IN_SET('{$entryData['name']}', `menus`)", null, null, 'pages');
+		}
+
+		isset($entryData['header']) || $entryData['header'] = true;
+		isset($entryData['collapsible']) || $entryData['collapsible'] = true;
+		isset($entryData['multilingual']) || $entryData['multilingual'] = true;
+		isset($entryData['sticky']) || $entryData['sticky'] = true;
+		isset($entryData['external']) || $entryData['external'] = false;
+		empty($entryData['subpages']) || $entryData['subpages'] = unserialize($entryData['subpages']);
+		isset($entryData['pages']) || $entryData['pages'] = $this->_iaDb->onefield('page_name', "`object_type` = 'blocks' && " . iaDb::convertIds($this->getEntryId(), 'object'), 0, null, iaBlock::getPagesTable());
+
+		$iaView->assign('menuPages', $menuPages);
+		$iaView->assign('pagesGroup', $pagesGroups);
+		$iaView->assign('pages', $this->_getPagesList($iaView->language));
+		$iaView->assign('positions', $this->getHelper()->getPositions());
+		$iaView->assign('types', $this->getHelper()->getTypes());
 	}
 
 	protected function _gridRead($params)
@@ -339,5 +345,14 @@ class iaBackendController extends iaAbstractControllerBackend
 			. 'ORDER BY t.`value`';
 
 		return $this->_iaDb->getAll($sql);
+	}
+
+	// we should prevent editing menus via this controller
+	public function getById($id)
+	{
+		$stmt = '`type` != :type AND `id` = :id';
+		$this->_iaDb->bind($stmt, array('type' => iaBlock::TYPE_MENU, 'id' => $id));
+
+		return $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $stmt);
 	}
 }

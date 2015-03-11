@@ -8,8 +8,8 @@
 				<div class="controls">
 					<select name="usergroup_id" id="input-group">
 						<option value="8">{lang key='default'}</option>
-						{foreach $assignableGroups as $id => $title}
-							<option value="{$id}"{if $id == $item.usergroup_id} selected{/if}>{$title}</option>
+						{foreach $assignableGroups as $id => $name}
+							<option value="{$id}"{if $id == $item.usergroup_id} selected{/if}>{lang key="usergroup_{$name}"}</option>
 						{/foreach}
 					</select>
 				</div>

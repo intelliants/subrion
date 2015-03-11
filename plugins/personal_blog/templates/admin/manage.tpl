@@ -53,16 +53,16 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-language">{lang key='language'}</label>
 				<div class="col col-lg-4">
-					<select name="lang" id="input-language"{if $languages|@count == 1} disabled{/if}>
-						{foreach $languages as $code => $language}
-							<option value="{$code}"{if $item.lang == $code} selected{/if}>{$language}</option>
+					<select name="lang" id="input-language"{if count($core.languages) == 1} disabled{/if}>
+						{foreach $core.languages as $code => $language}
+							<option value="{$code}"{if $item.lang == $code} selected{/if}>{$language.title}</option>
 						{/foreach}
 					</select>
 				</div>
 			</div>
 		{/capture}
 
-		{include file='fields-system.tpl'}
+		{include file='fields-system.tpl' datetime=true}
 	</div>
 </form>
 

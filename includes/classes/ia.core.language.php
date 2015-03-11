@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -33,6 +33,7 @@ class iaLanguage
 	const CATEGORY_TOOLTIP = 'tooltip';
 
 	protected static $_table = 'language';
+	protected static $_languagesTable = 'languages';
 
 	protected static $_phrases = array();
 
@@ -42,7 +43,17 @@ class iaLanguage
 	public function __construct(){}
 	public function __clone(){}
 
-	public function init(){}
+	public function init()
+	{
+		$iaCore = iaCore::instance();
+
+		// set list of available languages
+		$iaCore->languages = $iaCore->iaDb->assoc(
+			array('code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'),
+			iaDb::EMPTY_CONDITION . ' ORDER BY `order` ASC',
+			self::$_languagesTable
+		);
+	}
 
 	public static function get($key, $default = null)
 	{
@@ -50,17 +61,17 @@ class iaLanguage
 		{
 			return false;
 		}
+
 		if (self::exists($key))
 		{
 			return self::$_phrases[$key];
 		}
 		else
 		{
-			if (INTELLI_DEBUG && empty($default))
+			if (INTELLI_DEBUG && is_null($default))
 			{
 				$iaCore = iaCore::instance();
-				$iaCache = $iaCore->factory('cache');
-				$cache = $iaCache->get('nonexistent_phrases', 0, true);
+				$cache = $iaCore->iaCache->get('nonexistent_phrases', 0, true);
 
 				if (empty($cache))
 				{
@@ -69,7 +80,7 @@ class iaLanguage
 				if (!in_array($key, $cache))
 				{
 					$cache[] = $key;
-					$iaCache->write('nonexistent_phrases', serialize($cache));
+					$iaCore->iaCache->write('nonexistent_phrases', serialize($cache));
 				}
 
 				iaDebug::debug($key, 'Phrases do not exist', 'error');
@@ -194,5 +205,10 @@ class iaLanguage
 		$iaDb = iaCore::instance()->iaDb;
 
 		return (bool)$iaDb->delete(iaDb::convertIds($key, 'key'), self::getTable());
+	}
+
+	public static function getLanguagesTable()
+	{
+		return self::$_languagesTable;
 	}
 }

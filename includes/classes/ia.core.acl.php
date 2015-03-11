@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -420,7 +420,9 @@ class iaAcl extends abstractUtil
 			'action' => $action
 		);
 
-		return (bool)$iaDb->delete($stmt, $this->_dbTablePrivileges, $params);
+		$iaDb->delete($stmt, $this->_dbTablePrivileges, $params);
+
+		return !$iaDb->getErrorNumber();
 	}
 
 	public function set($object, $objectId, $type, $typeId, $access, $action = iaCore::ACTION_READ, $extras = '')

@@ -1,13 +1,13 @@
 <?php
 
 /*
- * khoaofgod@yahoo.com
+ * khoaofgod@gmail.com
  * Website: http://www.phpfastcache.com
- * Example at our website, any bugs, problems, please visit http://www.codehelper.io
+ * Example at our website, any bugs, problems, please visit http://faster.phpfastcache.com
  */
 
 
-class phpfastcache_sqlite extends phpFastCache implements phpfastcache_driver  {
+class phpfastcache_sqlite extends BasePhpFastCache implements phpfastcache_driver  {
     var $max_size = 10; // 10 mb
 
     var $instant = array();
@@ -36,7 +36,7 @@ class phpfastcache_sqlite extends phpFastCache implements phpfastcache_driver  {
         $dir = opendir($this->path);
         while($file = readdir($dir)) {
             if($file != "." && $file!=".." && $file != "indexing" && $file!="dbfastcache") {
-                unlink($this->path."/".$file);
+                @unlink($this->path."/".$file);
             }
         }
 
@@ -155,24 +155,25 @@ class phpfastcache_sqlite extends phpFastCache implements phpfastcache_driver  {
         if(extension_loaded('pdo_sqlite') && is_writeable($this->getPath())) {
            return true;
         }
+	    $this->fallback = true;
         return false;
     }
 
     /*
      * Init Main Database & Sub Database
      */
-    function __construct($option = array()) {
+    function __construct($config = array()) {
         /*
          * init the path
          */
-        $this->setOption($option);
-        if(!$this->checkdriver() && !isset($option['skipError'])) {
-            throw new Exception("Can't use this driver for your website!");
+        $this->setup($config);
+        if(!$this->checkdriver() && !isset($config['skipError'])) {
+	        $this->fallback = true;
         }
 
         if(!file_exists($this->getPath()."/sqlite")) {
-            if(!@mkdir($this->getPath()."/sqlite",0777)) {
-                die("Sorry, Please CHMOD 0777 for this path: ".$this->getPath());
+            if(!@mkdir($this->getPath()."/sqlite",$this->__setChmodAuto())) {
+	            $this->fallback = true;
             }
         }
         $this->path = $this->getPath()."/sqlite";
@@ -205,12 +206,18 @@ class phpfastcache_sqlite extends phpFastCache implements phpfastcache_driver  {
 
                 return true;
             } catch(PDOException $e) {
-                $stm = $this->db($keyword,true)->prepare("INSERT OR REPLACE INTO `caching` (`keyword`,`object`,`exp`) values(:keyword,:object,:exp)");
-                $stm->execute(array(
-                    ":keyword"  => $keyword,
-                    ":object"   =>  $this->encode($value),
-                    ":exp"      => @date("U") + (Int)$time,
-                ));
+
+	            try {
+		            $stm = $this->db($keyword,true)->prepare("INSERT OR REPLACE INTO `caching` (`keyword`,`object`,`exp`) values(:keyword,:object,:exp)");
+		            $stm->execute(array(
+			            ":keyword"  => $keyword,
+			            ":object"   =>  $this->encode($value),
+			            ":exp"      => @date("U") + (Int)$time,
+		            ));
+	            } catch (PDOException $e) {
+		            return false;
+	            }
+
             }
 
 
@@ -231,12 +238,16 @@ class phpfastcache_sqlite extends phpFastCache implements phpfastcache_driver  {
             $row = $stm->fetch(PDO::FETCH_ASSOC);
 
         } catch(PDOException $e) {
+			try {
+				$stm = $this->db($keyword,true)->prepare("SELECT * FROM `caching` WHERE `keyword`=:keyword LIMIT 1");
+				$stm->execute(array(
+					":keyword"  =>  $keyword
+				));
+				$row = $stm->fetch(PDO::FETCH_ASSOC);
+			} catch(PDOException $e) {
+				return null;
+			}
 
-            $stm = $this->db($keyword,true)->prepare("SELECT * FROM `caching` WHERE `keyword`=:keyword LIMIT 1");
-            $stm->execute(array(
-                ":keyword"  =>  $keyword
-            ));
-            $row = $stm->fetch(PDO::FETCH_ASSOC);
         }
 
 
@@ -265,19 +276,29 @@ class phpfastcache_sqlite extends phpFastCache implements phpfastcache_driver  {
     }
 
     function deleteRow($row) {
-        $stm = $this->db($row['keyword'])->prepare("DELETE FROM `caching` WHERE (`id`=:id) OR (`exp` <= :U) ");
-        $stm->execute(array(
-            ":id"   => $row['id'],
-            ":U"    =>  @date("U"),
-        ));
+	    try {
+		    $stm = $this->db($row['keyword'])->prepare("DELETE FROM `caching` WHERE (`id`=:id) OR (`exp` <= :U) ");
+		    $stm->execute(array(
+			    ":id"   => $row['id'],
+			    ":U"    =>  @date("U"),
+		    ));
+	    } catch (PDOException $e) {
+		    return false;
+	    }
     }
 
     function driver_delete($keyword, $option = array()) {
-        $stm = $this->db($keyword)->prepare("DELETE FROM `caching` WHERE (`keyword`=:keyword) OR (`exp` <= :U)");
-        $stm->execute(array(
-            ":keyword"   => $keyword,
-            ":U"    =>  @date("U"),
-        ));
+	    try {
+		    $stm = $this->db($keyword)->prepare("DELETE FROM `caching` WHERE (`keyword`=:keyword) OR (`exp` <= :U)");
+		    $stm->execute(array(
+			    ":keyword"   => $keyword,
+			    ":U"    =>  @date("U"),
+		    ));
+	    } catch (PDOException $e) {
+		    return false;
+	    }
+
+
     }
 
     function driver_stats($option = array()) {
@@ -296,18 +317,25 @@ class phpfastcache_sqlite extends phpFastCache implements phpfastcache_driver  {
                 $size = filesize($file_path);
                 $total = $total + $size;
 
-                $PDO = new PDO("sqlite:".$file_path);
-                $PDO->setAttribute(PDO::ATTR_ERRMODE,
-                    PDO::ERRMODE_EXCEPTION);
+	            try {
+		            $PDO = new PDO("sqlite:".$file_path);
+		            $PDO->setAttribute(PDO::ATTR_ERRMODE,
+			            PDO::ERRMODE_EXCEPTION);
 
-                $stm = $PDO->prepare("DELETE FROM `caching` WHERE `exp` <= :U");
-                $stm->execute(array(
-                    ":U"    =>  @date("U"),
-                ));
+		            $stm = $PDO->prepare("DELETE FROM `caching` WHERE `exp` <= :U");
+		            $stm->execute(array(
+			            ":U"    =>  @date("U"),
+		            ));
 
-                $PDO->exec("VACUUM;");
-                $size = filesize($file_path);
-                $optimized = $optimized + $size;
+		            $PDO->exec("VACUUM;");
+		            $size = filesize($file_path);
+		            $optimized = $optimized + $size;
+	            } catch (PDOException $e) {
+		            $size = 0;
+		            $optimized = 0;
+	            }
+
+
 
             }
         }
@@ -321,26 +349,38 @@ class phpfastcache_sqlite extends phpFastCache implements phpfastcache_driver  {
     }
 
     function driver_clean($option = array()) {
+        
+        // close connection
+        $this->instant = array();
+        $this->indexing = NULL;
+    
         // delete everything before reset indexing
         $dir = opendir($this->path);
         while($file = readdir($dir)) {
             if($file != "." && $file!="..") {
-                unlink($this->path."/".$file);
+                @unlink($this->path."/".$file);
             }
         }
     }
 
     function driver_isExisting($keyword) {
-        $stm = $this->db($keyword)->prepare("SELECT COUNT(`id`) as `total` FROM `caching` WHERE `keyword`=:keyword");
-        $stm->execute(array(
-            ":keyword"   => $keyword
-        ));
-        $data = $stm->fetch(PDO::FETCH_ASSOC);
-        if($data['total'] >= 1) {
-            return true;
-        } else {
-            return false;
-        }
+	    try {
+		    $stm = $this->db($keyword)->prepare("SELECT COUNT(`id`) as `total` FROM `caching` WHERE `keyword`=:keyword");
+		    $stm->execute(array(
+			    ":keyword"   => $keyword
+		    ));
+		    $data = $stm->fetch(PDO::FETCH_ASSOC);
+		    if($data['total'] >= 1) {
+			    return true;
+		    } else {
+			    return false;
+		    }
+	    } catch (PDOException $e) {
+		    return false;
+	    }
+
+
+
     }
 
 

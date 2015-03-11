@@ -91,11 +91,11 @@ CREATE TABLE `{install:prefix}blocks` (
 	`collapsed` tinyint(1) unsigned NOT NULL,
 	`sticky` tinyint(1) unsigned NOT NULL,
 	`rss` tinytext NOT NULL,
-	`multi_language` tinyint(1) unsigned NOT NULL,
+	`multilingual` tinyint(1) unsigned NOT NULL,
 	`lang` char(2) NOT NULL,
 	`tpl` varchar(64) NOT NULL,
-	`filename` text,
 	`external` tinyint(1) NOT NULL,
+	`filename` text,
 	`removable` tinyint(1) unsigned NOT NULL default 1,
 	`subpages` text NOT NULL,
 	`classname` varchar(50) NOT NULL,
@@ -121,7 +121,6 @@ CREATE TABLE `{install:prefix}config` (
 	`custom` tinyint(1) unsigned NOT NULL,
 	`show` varchar(100) NOT NULL,
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `NAME` (`name`),
 	KEY `TYPE` (`type`)
 ) {install:db_options};
 
@@ -221,6 +220,7 @@ CREATE TABLE `{install:prefix}fields` (
 	`file_types` text NOT NULL,
 	`use_editor` tinyint(1) unsigned NOT NULL,
 	`plans` varchar(250) NOT NULL,
+  `timepicker` tinyint(1) unsigned NOT NULL,
 	`url_nofollow` tinyint(1) unsigned NOT NULL default 1,
 	`empty_field` tinytext NOT NULL,
 	`link_to` tinyint(1) unsigned NOT NULL,
@@ -307,6 +307,24 @@ CREATE TABLE `{install:prefix}items_pages` (
 	UNIQUE KEY `UNIQUE` (`page_name`,`item`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}languages`;
+CREATE TABLE `{install:prefix}languages` (
+	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`title` varchar(100) NOT NULL,
+	`code` varchar(20) NOT NULL,
+	`locale` varchar(50) NOT NULL,
+	`date_format` varchar(50) NOT NULL,
+	`author` varchar(120) NOT NULL,
+	`direction` varchar(10) NOT NULL default 'ltr',
+	`master` smallint(6) NOT NULL,
+	`default` smallint(6) NOT NULL,
+	`order` int(11) NOT NULL,
+	`status` enum('active','inactive') NOT NULL default 'active',
+	`flagicon` varchar(255) NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `LANG` (`code`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}language`;
 CREATE TABLE `{install:prefix}language` (
 	`id` int(10) unsigned NOT NULL auto_increment,
@@ -323,14 +341,14 @@ CREATE TABLE `{install:prefix}language` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}logs`;
 CREATE TABLE `{install:prefix}logs` (
-  `id` int(8) unsigned NOT NULL auto_increment,
-  `date` datetime NOT NULL,
-  `action` tinyint(3) unsigned NOT NULL,
-  `user_id` int(11) unsigned default null,
-  `extras` varchar(40) NOT NULL,
-  `params` text null,
-  PRIMARY KEY (`id`),
-  KEY `PLUGIN` (`extras`)
+	`id` int(8) unsigned NOT NULL auto_increment,
+	`date` datetime NOT NULL,
+	`action` tinyint(3) unsigned NOT NULL,
+	`user_id` int(11) unsigned default null,
+	`extras` varchar(40) NOT NULL,
+	`params` text null,
+	PRIMARY KEY (`id`),
+	KEY `PLUGIN` (`extras`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}members`;
@@ -415,6 +433,8 @@ CREATE TABLE `{install:prefix}pages` (
 	`extras` varchar(40) NOT NULL,
 	`passw` char(32) NOT NULL,
 	`filename` varchar(50) NOT NULL,
+	`custom_tpl` tinyint(1) NOT NULL,
+	`template_filename` varchar(64) NOT NULL,
 	`custom_url` tinytext NOT NULL,
 	`menus` set('main','bottom','account','inventory') NOT NULL default '',
 	`meta_description` tinytext,
@@ -496,6 +516,7 @@ CREATE TABLE `{install:prefix}payment_transactions` (
   `gateway` varchar(50) NOT NULL,
   `sec_key` varchar(14) NOT NULL,
   `return_url` tinytext NOT NULL,
+  `notes` tinytext default NULL,
   PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -521,9 +542,11 @@ CREATE TABLE `{install:prefix}search` (
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}usergroups`;
 CREATE TABLE `{install:prefix}usergroups` (
 	`id` smallint(5) unsigned NOT NULL,
-	`title` varchar(100) NOT NULL,
+	`name` varchar(100) NOT NULL,
+	`extras` varchar(40) NOT NULL,
 	`system` tinyint(1) unsigned NOT NULL,
 	`assignable` tinyint(1) unsigned NOT NULL default 0,
+	`visible` tinyint(1) unsigned NOT NULL default 0,
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -597,9 +620,9 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('field_groups_list','fieldgroups/','list-2','','fieldgroups,members_fields','Field Groups','regular',3),
 ('field_groups_add','fieldgroups/add/','folder-plus','','fieldgroups,members_fields','Add Field Group','regular',4),
 ('languages_list','languages/','list','','languages','view','regular',1),
-('language_add','languages/copy/','copy','','languages','new_language','regular',2),
+('language_add','languages/add/','copy','','languages','new_language','regular',2),
 ('languages_download','languages/download/','box-remove','','languages','Download','regular',3),
-('language_phrase_add','javascript:;','plus-alt','id="js-add-phrase-cmd"','languages','Add Phrase','regular',4),
+('language_phrase_add','javascript:;','plus-alt','id="js-add-phrase-cmd"','languages,phrases','Add Phrase','regular',4),
 ('languages_comparison','languages/comparison/','link-2','','languages','languages_comparison','regular',5),
 ('menu_list','menus/','list','','menus:add,menus:edit','Menus','regular',3),
 ('menu_add','menus/add/','plus-alt','','menus','Add Menu','regular',4),
@@ -639,6 +662,7 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`title`,`name`,`action`,`pare
 (2,'Pages','pages','read','','pages','pages/','menu',null,5),
 (2,'Menus','menus','read','','menus','menus/','menu',null,10),
 (2,'Blocks','blocks','read','','blocks','blocks/','menu',null,15),
+(2,'Phrases','phrases','read','','languages','languages/phrases/','menu',null,20),
 (2,'Extended','','','','','','menu',null,25),
 (2,'Field Groups','fieldgroups','read','','fieldgroups','fieldgroups/','menu',null,30),
 (2,'Fields','fields','read','','fields','fields/','menu',null,35),
@@ -672,13 +696,13 @@ INSERT INTO `{install:prefix}admin_pages_groups` (`name`,`title`) VALUES
 ('extensions','Extensions');
 
 INSERT INTO `{install:prefix}blocks` VALUES
-(1,'Actions','item_actions','$iaItem = $iaCore->factory(''item'');\r\n\r\nif (false !== strpos($iaCore->iaView->name(),''view''))\r\n{\r\n	$iaCore->startHook(''smartyItemTools'');\r\n\r\n	$iaItem->setItemTools(array(\r\n		''title'' => iaLanguage::get(''print_preview''),\r\n		''url'' => ''javascript: ;'',\r\n		''id'' => ''print_preview" onclick="window.print(); return false;''\r\n	));\r\n\r\n	$itemData = $iaCore->iaView->iaSmarty->getTemplateVars(''item'');\r\n	if (iaUsers::hasIdentity() && $itemData)\r\n	{\r\n		if ((''members'' != $itemData[''item''] && isset($itemData[''member_id'']) && iaUsers::getIdentity()->id != $itemData[''member_id''])\r\n			|| ($itemData[''item''] == ''members'' && iaUsers::getIdentity()->id != $itemData[''id'']))\r\n		{\r\n			$isAlreadyFavorited = isset($itemData[''favorite'']) && $itemData[''favorite''] == 1;\r\n\r\n			$iaItem->setItemTools(array(\r\n				''title'' => iaLanguage::get($isAlreadyFavorited ? ''favorites_remove_from'' : ''favorites_add_to''),\r\n				''url'' => ''javascript: ;'',\r\n				''id'' => ''action-favorite" onclick="intelli.actionFavorites('' . $itemData[''id''] . ",''"\r\n						. $itemData[''item''] . "'',''" . ($isAlreadyFavorited ? iaCore::ACTION_DELETE : iaCore::ACTION_ADD) . "'');"\r\n			));\r\n		}\r\n	}\r\n\r\n	$links = $js = $html = '''';\r\n	foreach ($iaItem->setItemTools() as $item)\r\n	{\r\n		$id = empty($item[''id'']) ? '''' : '' id="'' . $item[''id''] . ''"'';\r\n		$links .= ''<li><a href="'' . $item[''url''] . ''" rel="nofollow"'' . $id . ''>'' . $item[''title''] . ''</a></li>'' . PHP_EOL;\r\n		if (isset($item[''js'']))\r\n		{\r\n			$js .= $item[''js''];\r\n		}\r\n		$html .= isset($item[''html'']) ? $item[''html''] : '''';\r\n	}\r\n\r\n	echo ''<ul class="nav nav-pills nav-stacked extra-menu">'' . $links . ''</ul>'' . ($html ? $html : '''')\r\n			. ($js ? ''<script type="text/javascript">'' . $js . ''</script>'' : '''');\r\n}',1,'right','php','','active',1,0,0,1,'',1,'','','',0,0,'',''),
-(2,'Inventory Menu','inventory','',0,'inventory','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','','0',0,'',''),
-(3,'Main Menu','main','',0,'mainmenu','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','','0',0,'',''),
-(4,'Member Menu','account','',0,'right','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','','0',0,'',''),
-(5,'Bottom Menu','bottom','',0,'copyright','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','','0',0,'',''),
-(6,'Statistics','common_statistics','',1,'right','smarty','','active',1,0,0,0,'',1,'','','block.common-statistics.tpl',1,0,'',''),
-(7,'Members filter','members_filter','',1,'right','smarty','','active',1,0,0,0,'',1,'','','block.members-filter.tpl',1,0,'','');
+(1,'Actions','item_actions','$iaItem = $iaCore->factory(''item'');\r\n\r\nif (false !== strpos($iaCore->iaView->name(),''view''))\r\n{\r\n	$iaCore->startHook(''smartyItemTools'');\r\n\r\n	$iaItem->setItemTools(array(\r\n		''title'' => iaLanguage::get(''print_preview''),\r\n		''url'' => ''javascript: ;'',\r\n		''id'' => ''print_preview" onclick="window.print(); return false;''\r\n	));\r\n\r\n	$itemData = $iaCore->iaView->iaSmarty->getTemplateVars(''item'');\r\n	if (iaUsers::hasIdentity() && $itemData)\r\n	{\r\n		if ((''members'' != $itemData[''item''] && isset($itemData[''member_id'']) && iaUsers::getIdentity()->id != $itemData[''member_id''])\r\n			|| ($itemData[''item''] == ''members'' && iaUsers::getIdentity()->id != $itemData[''id'']))\r\n		{\r\n			$isAlreadyFavorited = isset($itemData[''favorite'']) && $itemData[''favorite''] == 1;\r\n\r\n			$iaItem->setItemTools(array(\r\n				''title'' => iaLanguage::get($isAlreadyFavorited ? ''favorites_remove_from'' : ''favorites_add_to''),\r\n				''url'' => ''javascript: ;'',\r\n				''id'' => ''action-favorite" onclick="intelli.actionFavorites('' . $itemData[''id''] . ",''"\r\n						. $itemData[''item''] . "'',''" . ($isAlreadyFavorited ? iaCore::ACTION_DELETE : iaCore::ACTION_ADD) . "'');"\r\n			));\r\n		}\r\n	}\r\n\r\n	$links = $js = $html = '''';\r\n	foreach ($iaItem->setItemTools() as $item)\r\n	{\r\n		$id = empty($item[''id'']) ? '''' : '' id="'' . $item[''id''] . ''"'';\r\n		$links .= ''<li><a href="'' . $item[''url''] . ''" rel="nofollow"'' . $id . ''>'' . $item[''title''] . ''</a></li>'' . PHP_EOL;\r\n		if (isset($item[''js'']))\r\n		{\r\n			$js .= $item[''js''];\r\n		}\r\n		$html .= isset($item[''html'']) ? $item[''html''] : '''';\r\n	}\r\n\r\n	echo ''<ul class="nav nav-pills nav-stacked extra-menu">'' . $links . ''</ul>'' . ($html ? $html : '''')\r\n			. ($js ? ''<script type="text/javascript">'' . $js . ''</script>'' : '''');\r\n}',1,'right','php','','active',1,0,0,1,'',1,'','',0,'',0,'',''),
+(2,'Inventory Menu','inventory','',0,'inventory','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
+(3,'Main Menu','main','',0,'mainmenu','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
+(4,'Member Menu','account','',0,'right','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
+(5,'Bottom Menu','bottom','',0,'copyright','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
+(6,'Statistics','common_statistics','',1,'right','smarty','','active',1,0,0,0,'',1,'','',1,'block.common-statistics.tpl',0,'',''),
+(7,'Members filter','members_filter','',1,'right','smarty','','active',1,0,0,0,'',1,'','',1,'block.members-filter.tpl',0,'','');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
 ('blocks','',6,0),
@@ -690,7 +714,6 @@ INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`priva
 ('debug_pass','','hidden','Debug password',1),
 ('tmpl','{install:tmpl}','hidden','Frontend theme',0),
 ('baseurl','{install:base_url}','hidden','',0),
-('languages','a:1:{s:2:\"en\";s:7:\"English\";}','hidden','',0),
 ('backup','backup/','hidden','Directory for database backups',1),
 ('version','{install:version}','hidden','',1),
 ('cron','1','hidden','Cron',1),
@@ -706,12 +729,9 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('general','suffix',':: Powered by Subrion 3.2','1','text',0,'Suffix for page titles',9,'',0,1,''),
 ('general','site_logo','','','image',0,'Website logo',12,'',0,0,''),
 ('general','regional_divider','Regional','1','divider',30,'',20,'',1,1,''),
-('general','lang','{install:lang}','1','select',0,'Script language',33,'',0,1,''),
+('general','lang','{install:lang}','1','select',0,'Default language',33,'',0,1,''),
 ('general','language_switch','1','''1'',''0''','radio',0,'Language switching',36,'',0,1,''),
-('general','charset','UTF-8','1','text',0,'Default charset',39,'',0,0,''),
-('general','locale','en_US','','text',0,'Default locale',42,'',0,0,''),
 ('general','timezone','America/New_York','','select',0,'Default timezone',45,'',0,0,''),
-('general','date_format','%b %e, %Y','','text',0,'Date format',48,'',0,1,''),
 ('general','pages_config','Pages','1','divider',0,'',60,'',1,1,''),
 ('general','admin_page','admin',null,'text',0,'Admin Dashboard URL',63,'',1,0,''),
 ('general','bc_home','Home',null,'text',0,'Breadcrumb first element',66,'',1,1,''),
@@ -785,7 +805,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('email_templates','member_disapproved_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was disapproved in {%SITE_NAME%}.</p>','fullname|User','textarea',0,'',22,'',1,1,''),
 ('email_templates','member_registration','1','''1'',''0''','radio',0,'Member registration',3,'',1,1,''),
 ('email_templates','member_registration_subject','Thanks for registration at {%SITE_NAME%}',null,'text',0,'',3,'',1,1,''),
-('email_templates','member_registration_body','<p>Dear {%FULLNAME%},</p> <p>Thanks for your registration at <a href="{%SITE_URL%}" target="_blank">{%SITE_URL%}</a>. Here is information you should use in order to login:</p> <p>Your e-mail: {%EMAIL%}<br /> Your password: {%PASSWORD%}</p> <p>To activate your account, please, <a href="{%LINK%}" target="_blank">follow this link</a>. <br /> You may change your password later by editing your personal attributes in your member area.</p>','fullname|User,email|Email,password|Password,link|Confirmation link','textarea',0,'',3,'',1,1,''),
+('email_templates','member_registration_body','<p>Dear {%FULLNAME%},</p> <p>Thanks for your registration at <a href="{%SITE_URL%}" target="_blank">{%SITE_URL%}</a>. Here is information you should use in order to login:</p> <p>Your username: {%USERNAME%}<br /> Your password: {%PASSWORD%}</p> <p>To activate your account, please, <a href="{%LINK%}" target="_blank">follow this link</a>. <br /> You may change your password later by editing your personal attributes in your member area.</p>','fullname|User,email|Email,username|Username,password|Password,link|Confirmation link','textarea',0,'',3,'',1,1,''),
 ('email_templates','member_registration_notification','1','''1'',''0''','radio',0,'Member created by admin',3,'',1,1,''),
 ('email_templates','member_registration_notification_subject','Member has been created {%SITE_NAME%}',null,'text',0,'',4,'',1,1,''),
 ('email_templates','member_registration_notification_body','<p>Greetings {%FULLNAME%},</p> <p>Administrator has just created an account for you at {%SITE_URL%}. Here is information you should use in order to login:</p> <p>Your email: <b>{%EMAIL%}</b><br /> Your password: <b>{%PASSWORD%}</b></p>','fullname|User,email|Email,password|Password','textarea',0,'',4,'',1,1,''),
@@ -797,7 +817,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('email_templates','member_removal_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was removed from  {%SITE_URL%}.</p>','fullname|User','textarea',0,'',8,'',1,1,''),
 ('email_templates','password_restoration','1','''1'',''0''','radio',0,'Member password restoration',6,'',1,1,''),
 ('email_templates','password_restoration_subject','Password restoration request at {%SITE_NAME%}',null,'text',0,'',10,'',1,1,''),
-('email_templates','password_restoration_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Please follow this link if you wish to change the password at {%SITE_URL%}:<br />\r\n{%URL%}\r\n</p>\r\n<p>\r\nOr use confirmation code on page: {%SITE_URL%}forgot/?code<br />\r\nE-mail: {%EMAIL%}<br />\r\nCode: {%CODE%}\r\n</p>','fullname|User,email|Email,code|Restoration code','textarea',0,'',11,'',1,1,''),
+('email_templates','password_restoration_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Please follow this link if you wish to change the password at {%SITE_URL%}:<br />\r\n{%URL%}\r\n</p>\r\n<p>\r\nOr use confirmation code on page: <a href="{%SITE_URL%}forgot/?code">{%SITE_URL%}forgot/?code</a><br />\r\nE-mail: {%EMAIL%}<br />\r\nCode: {%CODE%}\r\n</p>','fullname|User,email|Email,code|Restoration code','textarea',0,'',11,'',1,1,''),
 ('email_templates','password_changement','1','''1'',''0''','radio',0,'Member password change',7,'',1,1,''),
 ('email_templates','password_changement_subject','Password change request at {%SITE_NAME%}',null,'text',0,'',13,'',1,1,''),
 ('email_templates','password_changement_body','<p>Dear {%FULLNAME%},</p>\r\n\r\n<p>You requested a password change in {%SITE_NAME%}. Now you should use the following credentials to log in as member:</p>\r\n\r\n<p>username: {%USERNAME%}<br />\r\npassword:  {%PASSWORD%}</p>','fullname|User,username|Username,password|New password','textarea',0,'',14,'',1,1,''),
@@ -856,10 +876,10 @@ INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`,`extras`) VAL
 ('view_member',3,'core'),
 ('view_member',4,'core');
 
-INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`) VALUES
-('smartyFrontAfterHeadSection','{if $config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',1,'smarty','front'),
-('smartyAdminAfterHeadSection','{if $config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',2,'smarty','admin'),
-('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''];\r\n		}\r\n	}\r\n}','active',5,'php','admin');
+INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`) VALUES
+('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/opengraph.tpl'),
+('smartyAdminAfterHeadSection','{if $config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',2,'smarty','admin',''),
+('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''];\r\n		}\r\n	}\r\n}','active',5,'php','admin','');
 
 INSERT INTO `{install:prefix}items` (`payable`,`item`,`package`,`pages`) VALUES
 (1,'members','core','profile,view_member'),
@@ -914,11 +934,14 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (2,'advertise',0,0,'advertise/',0,'page','','','');
 UPDATE `{install:prefix}pages` SET `status`='active',`last_updated`=NOW();
 
-INSERT INTO `{install:prefix}usergroups` (`id`,`title`,`system`) VALUES
-(1,'Administrators',1),
-(2,'Moderators',1),
-(4,'Guests',1),
-(8,'Registered',1);
+INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`) VALUES
+(1,'administrators',1, 0),
+(2,'moderators',1, 0),
+(4,'guests',1, 0),
+(8,'registered',1, 1);
+
+INSERT INTO `{install:prefix}languages` VALUES
+(null,'English','en','en_US','%b %e, %Y','Intelliants LLC','ltr',1,1,1,'active','us.gif');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('_action_','- Action -','admin'),
@@ -1031,7 +1054,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('body_incorrect','Message body or subject is empty.','admin'),
 ('block_contents','Contents','admin'),
 ('block_created','Block created.','admin'),
-('block_languages_empty','Block languages is empty','admin'),
+('block_languages_empty','No languages selected for non-multilingual block.','admin'),
 ('block_type_tip_html','HTML type is used for formatted HTML display. You can use WYSIWYG editor for your block content. This block can be also used for JavaScript code, but you <span style=\"color: red;\">need to paste it in SOURCE mode</span>','admin'),
 ('block_type_tip_php','PHP is used to have php code in your block content.','admin'),
 ('block_type_tip_plain','Plain type is used when you wish to display simple information. It will be displayed as is with escaping HTML tags.','admin'),
@@ -1076,7 +1099,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('compare','Compare','admin'),
 ('compatibility','Min Core Version','admin'),
 ('complete_inserts','Complete Inserts','admin'),
-('copy_default_language_to','Copy default language [<b>:lang</b>] to ','admin'),
+('copy_master_language_to','Copy master language [<b>:lang</b>] to ','admin'),
 ('copy_language','Copy Language','admin'),
 ('copy_privileges_from','Copy Privileges From','admin'),
 ('core_and_db_versions_mismatch','DB and core files versions mismatch.','admin'),
@@ -1091,6 +1114,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('custom','Custom','admin'),
 ('custom_perm','Custom Permissions','admin'),
 ('custom_modification','Custom Modification','admin'),
+('custom_template','Use custom tpl','admin'),
+('custom_template_filename','Template filename','admin'),
 ('custom_url','Custom URL','admin'),
 ('customize','Customize','admin'),
 ('customization_mode_alert','You are in customization mode. Do not forget to save your changes.','admin'),
@@ -1116,12 +1141,13 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('edit_block','Edit Block','admin'),
 ('edit_field','Edit Field ":field"','admin'),
 ('edit_fieldgroup','Edit Field Group','admin'),
+('edit_language','Edit Language','admin'),
 ('edit_member','Edit Member','admin'),
 ('edit_menu','Edit Menu','admin'),
 ('edit_page','Edit Page','admin'),
 ('edit_page_title','Edit page title','admin'),
 ('edit_plan','Edit Plan','admin'),
-('edit_phrases','Edit Phrases','admin'),
+('edit_phrases','edit phrases','admin'),
 ('email_templates','Email Templates','admin'),
 ('email_templates_tags','Email Template Tags','admin'),
 ('email_templates_tags_info','You can use these tags in your email templates. They will be changed to real information while sending email templates. Click will paste it to template body.','admin'),
@@ -1143,7 +1169,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_lang_title','Title is empty for ":lang" language. Please input correct title.','admin'),
 ('error_plan_not_exists','Plan does not exist.','admin'),
 ('error_plan_duration','Please set correct duration for this plan.','admin'),
-('error_usergroup_incorrect','Title is incorrect. Please input correct title for the usergroup.','admin'),
+('error_usergroup_incorrect','Name is incorrect. Please input correct name for the usergroup.','admin'),
 ('error_usergroup_exists','This group already exists. Please input different usergroup title.','admin'),
 ('error_while_doc_tabs','Unknown error while fetching documentation tabs.','admin'),
 ('external_url','External URL','admin'),
@@ -1258,6 +1284,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('installation_extra_requirement_exist','Requires the &ldquo;:extra&rdquo; :type to be installed.','admin'),
 ('installation_extra_requirement_incorrect','Invalid dependencies specified. Ignored.','admin'),
 ('installation_impossible','Installation is currently impossible.','admin'),
+('invalid_image_file','Unable to process image, invalid image file.','admin'),
 ('invalid_plugin_dependencies','Invalid plugin dependencies','admin'),
 ('items_fields','Fields','admin'),
 ('invert','Invert','admin'),
@@ -1277,7 +1304,16 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('key_not_valid','Key is invalid. Only alphanumeric and underscore characters allowed.','admin'),
 
 ('lang_incorrect','Please choose correct language.','admin'),
+('language_iso_code','Iso','admin'),
+('language_locale','Locale','admin'),
+('language_date_format','Date format','admin'),
+('language_direction','Direction','admin'),
+('language_direction_auto','Auto','admin'),
+('language_direction_ltr','Left to right','admin'),
+('language_direction_rtl','Right to left','admin'),
 ('language_already_exists','Language already exists.','admin'),
+('language_date_format_incorrect','Date format is incorrect.','admin'),
+('language_locale_incorrect','Language locale is incorrect.','admin'),
 ('language_copied','New language created (:count phrases copied).','admin'),
 ('language_deleted','Selected language has been deleted.','admin'),
 ('languages_comparison','Comparison','admin'),
@@ -1292,6 +1328,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('mailer','Mailer','admin'),
 ('manage','Manage','admin'),
 ('manage_entries','Manage entries','admin'),
+('master','Master','admin'),
 ('mark_at_least_one_page','Mark at least one page to display field.','admin'),
 ('max_files','Max number of files','admin'),
 ('max_num_images','Max Images','admin'),
@@ -1315,7 +1352,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('minutes_ago',':minutes minutes ago','admin'),
 ('mode','Mode','admin'),
 ('moved','Moved.','admin'),
-('multi_language','Multilingual','admin'),
+('multilingual','Multilingual','admin'),
 ('mysql_options','MySQL Options','admin');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
@@ -1330,6 +1367,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('no_extension','No extension','admin'),
 ('no_follow_url','No Follow URL','admin'),
 ('no_implemented_packages','No implemented packages.','admin'),
+('no_members','- no members -','admin'),
 ('no_packages','No packages. You can check our <a href="http://www.subrion.com/order/" target="_blank">Order page</a> at subrion.com to get some premium extensions for your website.','admin'),
 ('no_parent_fields','No main fields for this item','admin'),
 ('no_plans','No Plans','admin'),
@@ -1353,6 +1391,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('open_in_new_window','Open in a new window','admin'),
 ('optimize_complete','Tables optimizing complete.','admin'),
 ('optimize_tables','Optimize tables','admin'),
+('optional','optional','admin'),
 ('options','Options','admin'),
 ('original','Original','admin'),
 ('other_can','Other can','admin'),
@@ -1365,6 +1404,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_content','Page Content','admin'),
 ('page_exists','Page with specified URL already exists. Please change URL.','admin'),
 ('page_external_url','Page External URL','admin'),
+('page_incorrect_template_filename','Incorrect template name for page.','admin'),
 ('page_name_exists','Page with specified name already exists.','admin'),
 ('page_preview','Page in draft','admin'),
 ('page_title','Page Title','admin'),
@@ -1455,6 +1495,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('select_all_in_tab','Select all in this tab','admin'),
 ('select_none','Select None','admin'),
 ('send_confirm','Are you sure you wish to send this feedback to the Subrion Team?','admin'),
+('seo','SEO','admin'),
 ('server_info','Server Info','admin'),
 ('set_as_default_value','Set as default value','admin'),
 ('set_as_default_package','Set as default package','admin'),
@@ -1503,6 +1544,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('this_fields_displayed_only_for_plans','These fields are displayed for sponsored plans only.','admin'),
 ('thumb_width','Thumbnail width','admin'),
 ('thumb_height','Thumbnail height','admin'),
+('timepicker','Enable time selection','admin'),
 ('title_alias','Title Alias','admin'),
 ('title_is_empty','Title is empty.','admin'),
 ('total_income','total income','admin'),
@@ -1521,7 +1563,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('upgrade_completed','MySQL dump file has been imported.','admin'),
 ('upload_plugin_error','Plugins directory is not writable.','admin'),
 ('upload_template_error','Templates directory is not writable.','admin'),
-('upload_writable_permission','Upload folder has no writable permissions','admin'),
+('upload_writable_permission','Upload folder has no writable permissions.','admin'),
 ('use_real_prefix','Use real tables prefix','admin'),
 ('upgrade','Upgrade','admin'),
 ('upgrades','Upgrades','admin'),
@@ -1539,7 +1581,9 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('version','Version','admin'),
 ('view_as_tab','View as tab','admin'),
 ('view_roadmap','Development Roadmap','admin'),
+('visible','Visible','admin'),
 ('visible_for_admin','Visible for admin only','admin'),
+('visible_on_members','Visible on Members page','admin'),
 ('visual_manage','Visual Manage Mode','admin'),
 
 ('warning_fields_become_for_plan_only','Warning! If you check these fields they will be displayed for sponsored plans only.','admin'),
@@ -1547,7 +1591,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('welcome_to_admin_board','Welcome to your administration board, cap''n!','admin'),
 ('welcome_to_admin_panel','Welcome to<br>Subrion Admin Panel','admin'),
 ('without_title','Without title','admin'),
-('wrong_site_logo_image_type','Only image types are allowed.','admin'),
 
 ('year','year','admin');
 
@@ -1646,6 +1689,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('fullname','Full Name','common'),
 ('featured','Featured','common'),
 ('failed','Failed','common'),
+('filter','Filter','common'),
 ('from','from','common'),
 ('featured_status_finished_date_is_empty','Listing has been marked as featured, but no finished date was specified.','common'),
 
@@ -1808,6 +1852,10 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('usergroup','Usergroup','common'),
 ('username','Username','common'),
 ('username_incorrect','Username is incorrect.','common'),
+('usergroup_administrators','Administrators','common'),
+('usergroup_moderators','Moderators','common'),
+('usergroup_guests','Guests','common'),
+('usergroup_registered','Registered','common'),
 
 ('value','Value','common'),
 ('view','View','common'),
@@ -2008,9 +2056,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('backup','Folder name where your DB backups are saved.','tooltip'),
 
 ('caching','If you use a slow shared hosting, this will cache your pages for faster loading.','tooltip'),
-('charset','UTF-8 is recommended.','tooltip'),
-
-('date_format','Select the preferred date format %e is timezone,  %Y is 4-digit year. See more in Smarty manual.','tooltip'),
 
 ('empty_field','This text will be displayed on view item page if this field has an empty value.','tooltip'),
 ('extra_actions','This code is executed every time on field change. It can be used for validation or any other operation.','tooltip'),
@@ -2020,7 +2065,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('lang','Select the preferred language of your site.','tooltip'),
 ('language_switch','Allows users to choose a language on the frontend of your site.','tooltip'),
 ('link_to_details','If specified, the field will be a link to the item details page.','tooltip'),
-('locale','Sets locale information. Should be specified in UTF8 format (de_DE.utf8 instead of de_DE).','tooltip'),
 
 ('members_enabled','Enables members functionality for your Subrion CMS based website.','tooltip'),
 ('members_autoapproval','Members are activated automatically without any confirmation.','tooltip'),
@@ -2045,6 +2089,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('underconstruction','This message is shown in case &quot;Display Frontend&quot; option is disabled.','tooltip'),
 ('upgrade_available','Upgrade patch to version :version is available. In order to upgrade please <a href=":url">follow this link</a>.','admin'),
-('usergroup_assignable','Member can assign to the group himself.','tooltip');
+('usergroup_assignable','Member can assign to the group himself.','tooltip'),
+('usergroup_visible','Group members are displayed on Members page and filters.','tooltip');
 
 UPDATE `{install:prefix}language` SET `code`='{install:lang}',`original`=`value`;

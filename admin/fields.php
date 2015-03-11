@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -43,6 +43,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaField = $this->_iaCore->factory('field');
 		$this->setHelper($iaField);
+
+		$this->_iaCore->factory('picture');
 	}
 
 	// support displaying of custom item's fields
@@ -203,6 +205,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entryData['pages'] = $this->getEntryId()
 				? $this->_iaDb->keyvalue(array('id', 'page_name'), iaDb::convertIds($this->getEntryId(), 'field_id'), iaField::getTablePages())
 				: array();
+
+			// get parents values
+			$entryData['parents'] = $this->_getParents($entryData['name']);
+
 		}
 		elseif (!empty($_GET['item']))
 		{
@@ -229,13 +235,16 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		// get field groups
-		$fieldGroups = $this->_iaDb->all(array('id', 'name', 'item'), $stmt . ' ORDER BY `item`, `name`', null, null, iaField::getTableGroups());
-		foreach ($fieldGroups as $entry)
+		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
-			$groups[$entry['id']] = array(
-				'name' => iaLanguage::get('fieldgroup_' . $entry['name'], $entry['name']),
-				'item' => $entry['item']
-			);
+			$array = $this->_iaDb->all(array('id', 'name', 'item'), $stmt . ' ORDER BY `item`, `name`', null, null, iaField::getTableGroups());
+			foreach ($array as $entry)
+			{
+				$groups[$entry['id']] = array(
+					'name' => iaLanguage::get('fieldgroup_' . $entry['name'], $entry['name']),
+					'item' => $entry['item']
+				);
+			}
 		}
 
 		$fieldTypes = $this->_iaDb->getEnumValues(iaField::getTable(), 'type');
@@ -251,8 +260,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$entryData['pages'] || $entryData['pages'] = array();
-		$entryData['regular_field'] = (iaField::RELATION_REGULAR == $entryData['relation']);
-
 
 		$iaView->assign('parents', $parents);
 		$iaView->assign('fieldTypes', $fieldTypes['values']);
@@ -264,6 +271,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
 		$entry = array(
+			'name' => iaSanitize::alias(iaUtil::checkPostParam('name')),
 			'item' => iaUtil::checkPostParam('item'),
 			'default' => iaUtil::checkPostParam('default'),
 			'lang_values' => iaUtil::checkPostParam('lang_values'),
@@ -271,7 +279,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			'type' => iaUtil::checkPostParam('type'),
 			'annotation' => iaUtil::checkPostParam('annotation'),
 			'fieldgroup_id' => (int)iaUtil::checkPostParam('fieldgroup_id'),
-			'name' => iaSanitize::alias(iaUtil::checkPostParam('name')),
 			'text_length' => (int)iaUtil::checkPostParam('text_length', 100),
 			'length' => iaUtil::checkPostParam('length', false),
 			'title' => iaUtil::checkPostParam('title'),
@@ -299,37 +306,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (!$this->_iaDb->exists(iaDb::convertIds($entry['fieldgroup_id']), null, iaField::getTableGroups()))
 		{
 			$entry['fieldgroup_id'] = 0;
-		}
-
-		$relationType = iaUtil::checkPostParam('relation_type', -1);
-		if ($relationType != -1)
-		{
-			if (0 == $relationType && !empty($entry['children']))
-			{
-				$entry['relation'] = iaField::RELATION_DEPENDENT;
-			}
-			else
-			{
-				$entry['relation'] = iaField::RELATION_REGULAR;
-				unset($entry['parents']);
-			}
-			unset($entry['children']);
-		}
-		else
-		{
-			if (!in_array($entry['relation'], array(iaField::RELATION_REGULAR, iaField::RELATION_DEPENDENT, iaField::RELATION_PARENT)))
-			{
-				$entry['relation'] = iaField::RELATION_REGULAR;
-			}
-
-			if ($entry['relation'] != iaField::RELATION_DEPENDENT)
-			{
-				unset($entry['parents']);
-			}
-			if ($entry['relation'] != iaField::RELATION_PARENT)
-			{
-				unset($entry['children']);
-			}
 		}
 
 		foreach ($this->_iaCore->languages as $code => $l)
@@ -507,6 +483,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					break;
 
+				case iaField::DATE:
+					$entry['timepicker'] = (int)iaUtil::checkPostParam('timepicker');
+
+					break;
+
 				case iaField::URL:
 					$entry['url_nofollow'] = (int)iaUtil::checkPostParam('url_nofollow');
 
@@ -603,21 +584,26 @@ class iaBackendController extends iaAbstractControllerBackend
 			return false;
 		}
 
-		if (isset($fieldData['parents']))
+		// set correct relatioins
+		if (iaField::RELATION_REGULAR == $fieldData['relation'])
 		{
-			$this->_setParents($field['name'], $fieldData['parents']);
-			$fieldData['relation'] = iaField::RELATION_DEPENDENT;
-
-			unset($fieldData['parents']);
+			$this->_resetRelations($field['name'], $field['item']);
 		}
-
-		if (isset($fieldData['children']))
+		else
 		{
-			$this->_setChildren($field['name'], $field['item'], $fieldData['values'], $fieldData['children']);
-			unset($fieldData['children']);
-		}
+			if ($fieldData['parents'])
+			{
+				$this->_setParents($field['name'], $fieldData['parents']);
+			}
 
-		$this->_setRelations();
+			if ($fieldData['children'])
+			{
+				$this->_setChildren($field['name'], $field['item'], $fieldData['values'], $fieldData['children']);
+			}
+
+			$this->_setRelations();
+		}
+		unset($fieldData['parents'], $fieldData['children']);
 
 		$iaDb->setTable(iaLanguage::getTable());
 		$iaDb->delete("`key` LIKE 'field\_" . $field['name'] . "\_%'");
@@ -772,18 +758,15 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$iaDb = &$this->_iaDb;
 
-		if (isset($fieldData['parents']))
+		if ($fieldData['parents'])
 		{
 			$this->_setParents($fieldData['name'], $fieldData['parents']);
-			$fieldData['relation'] = iaField::RELATION_DEPENDENT;
-			unset($fieldData['parents']);
 		}
-
 		if (isset($fieldData['children']))
 		{
 			$this->_setChildren($fieldData['name'], $fieldData['item'], $fieldData['values'], $fieldData['children']);
-			unset($fieldData['children']);
 		}
+		unset($fieldData['parents'], $fieldData['children']);
 
 		$this->_setRelations();
 
@@ -804,18 +787,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 		unset($fieldData['title'], $fieldData['annotation']);
-
-		if (!isset($fieldData['relation']) || $fieldData['relation'] != iaField::RELATION_PARENT)
-		{
-			$fieldData['relation'] = iaField::RELATION_REGULAR;
-		}
-		if (isset($fieldData['parents']))
-		{
-			$this->_setParents($fieldData['name'], $fieldData['parents']);
-			$fieldData['relation'] = iaField::RELATION_DEPENDENT;
-
-			unset($fieldData['parents']);
-		}
 
 		if (isset($fieldData['group']) && !isset($fieldData['fieldgroup_id']))
 		{
@@ -973,6 +944,14 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaDb->resetTable();
 	}
 
+	protected function _resetRelations($name, $item)
+	{
+		$this->_iaDb->delete(
+			iaDb::printf("`item` = ':item' && (`field` = ':field' || `child` = ':field')",
+			array('item' => $item, 'field' => $name)
+		), iaField::getTableRelations());
+	}
+
 	protected function _setRelations()
 	{
 		$sql =
@@ -1020,7 +999,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		switch ($fieldData['type'])
 		{
 			case iaField::DATE:
-				$sql .= 'DATE ';
+				$sql .= $fieldData['timepicker'] ? 'DATETIME ' : 'DATE ';
 				break;
 			case iaField::NUMBER:
 				$sql .= 'DOUBLE ';
@@ -1077,5 +1056,19 @@ class iaBackendController extends iaAbstractControllerBackend
 				$this->_iaDb->query("ALTER TABLE `" . $prefix . $fieldData['table_name'] . "` ADD FULLTEXT (`{$fieldData['name']}`)");
 			}
 		}
+	}
+
+	private function _getParents($name)
+	{
+		$result = array();
+		if ($parents = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`child` = '{$name}'", 0, null, iaField::getTableRelations()))
+		{
+			foreach ($parents as $parent)
+			{
+				$result[$parent['item']][$parent['field']][$parent['element']] = true;
+			}
+		}
+
+		return $result;
 	}
 }

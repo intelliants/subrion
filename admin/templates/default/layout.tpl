@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html lang="{$config.lang}">
+<html lang="{$core.language.iso}" dir="{$core.language.direction}">
 	<head>
-		<meta charset="{$config.charset}">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta name="generator" content="Subrion CMS &middot; {$config.version}">
-
-		<base href="{$url}">
-
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<title>{ia_print_title}</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="generator" content="Subrion CMS &middot; {$config.version}">
+		<base href="{$smarty.const.IA_ADMIN_URL}">
 
 		<!--[if lt IE 9]>
 			<script src="../../../js/utils/shiv.js"></script>
@@ -33,12 +32,12 @@
 		{ia_print_css display='on'}
 
 		{ia_add_js order=0}
-			{foreach $customConfig as $key => $value}
+			{foreach $core.customConfig as $key => $value}
 				intelli.config.{$key} = '{$value}';
 			{/foreach}
 		{/ia_add_js}
 	</head>
-	<body id="page--{$pageName}">
+	<body id="page--{$core.page.name}">
 		<div class="overall-wrapper">
 			<div class="panels-wrapper">
 				<section id="panel-left">
@@ -46,12 +45,12 @@
 						<img src="{$img}logo.png" alt="Subrion CMS &middot; {$config.version}">
 					</a>
 					<ul class="nav-main">
-						<li{if 0 == $page.group} class="current active"{/if}>
+						<li{if 0 == $core.page.info.group} class="current active"{/if}>
 							<a href="{$smarty.const.IA_ADMIN_URL}" class="dashboard" data-toggle="nav-sub-dashboard"><i class="i-gauge"></i>{lang key='dashboard'}</a>
 						</li>
-						{foreach $menu as $item}
-							<li{if $page.group == $item.id} class="current active"{/if} id="menu-section-{$item.name}">
-								<a href="#"{if isset($item.items) && $item.items} data-toggle="nav-sub-{$item.name}"{/if}><i class="i-cogs i-{$item.name}"></i>{$item.title}</a>
+						{foreach $core.page.info.menu as $entry}
+							<li{if $core.page.info.group == $entry.id} class="current active"{/if} id="menu-section-{$entry.name}">
+								<a href="#"{if isset($entry.items) && $entry.items} data-toggle="nav-sub-{$entry.name}"{/if}><i class="i-cogs i-{$entry.name}"></i>{$entry.title}</a>
 							</li>
 						{/foreach}
 					</ul>
@@ -69,7 +68,7 @@
 
 				<section id="panel-center">
 					{if isset($dashboard)}
-						<ul id="nav-sub-dashboard" class="nav-sub{if 0 == $page.group} active{/if}">
+						<ul id="nav-sub-dashboard" class="nav-sub{if 0 == $core.page.info.group} active{/if}">
 							<li class="single">
 								<ul class="list-unstyled quick-links clearfix">
 									{foreach $dashboard as $item}
@@ -101,30 +100,31 @@
 									<i class="i-fire"></i><span> {lang key='quick_access'}</span>
 								</a>
 								<ul class="dropdown-menu">
-								{foreach $headerMenu as $item}
-									{if empty($item.name)}
-										<li class="divider"></li>
-									{else}
-										<li{if $page.name == $item.name} class="active"{/if}><a href="{$item.url}"{if $item.attr} {$item.attr}{/if}>{$item.title}</a></li>
-									{/if}
-								{/foreach}
+									{foreach $core.page.info.headerMenu as $entry}
+										{if empty($entry.name)}
+											<li class="divider"></li>
+										{else}
+											<li{if $core.page.info.name == $entry.name} class="active"{/if}><a href="{$entry.url}"{if $entry.attr} {$entry.attr}{/if}>{$entry.title}</a></li>
+										{/if}
+									{/foreach}
 								</ul>
 							</li>
-							{if isset($notifications.system)}
-							<li class="dropdown notifications alerts">
-								<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='system_notifications'}">
-									<i class="i-flag"></i>
-									<span class="label label-info">{$notifications.system|count}</span>
-									<span> {lang key='system_notifications'}</span>
-								</a>
-								<ul class="dropdown-menu pull-right">
-									<li class="dropdown-block">
-										{foreach $notifications.system as $message}
-											<div class="alert alert-danger">{$message}</div>
-										{/foreach}
-									</li>
-								</ul>
-							</li>
+
+							{if isset($core.notifications.system)}
+								<li class="dropdown notifications alerts">
+									<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='system_notifications'}">
+										<i class="i-flag"></i>
+										<span class="label label-info">{$core.notifications.system|count}</span>
+										<span> {lang key='system_notifications'}</span>
+									</a>
+									<ul class="dropdown-menu pull-right">
+										<li class="dropdown-block">
+											{foreach $core.notifications.system as $message}
+												<div class="alert alert-danger">{$message}</div>
+											{/foreach}
+										</li>
+									</ul>
+								</li>
 							{/if}
 
 							<li class="dropdown">
@@ -155,7 +155,7 @@
 								<a href="#"><i class="i-menu"></i></a>
 							</li>
 							<li id="user-info">
-								<a href="{$url}members/edit/{$member.id}/">
+								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/">
 									{if $member.avatar}
 										{assign avatar $member.avatar|unserialize}
 										{if $avatar}
@@ -206,7 +206,7 @@
 						<div class="block">
 							<div class="block-heading">
 								<ul class="nav nav-pills pull-right">
-									{if 'index' == $pageName}
+									{if 'index' == $core.page.name}
 										{if isset($customization_mode)}
 											<li><a href="?reset"><i class="i-loop"></i> {lang key='reset'}</a></li>
 											<li><a href="?save" id="js-cmd-save"><i class="i-checkmark"></i> {lang key='save'}</a></li>
@@ -216,11 +216,11 @@
 										{/if}
 									{/if}
 
-									{foreach $toolbarActions as $action}
+									{foreach $core.page.info.toolbarActions as $action}
 										<li><a href="{$action.url}" {$action.attributes}>{if $action.icon}<i class="{$action.icon}"></i> {/if}{$action.title}</a></li>
 									{/foreach}
 								</ul>
-								<h3>{$page.title|escape:'html'}</h3>
+								<h3>{$core.page.title|escape:'html'}</h3>
 
 								{include file='breadcrumb.tpl'}
 							</div>

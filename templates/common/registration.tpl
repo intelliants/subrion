@@ -32,9 +32,9 @@
 					</div>
 				</div>
 			</div>
-
-			{include file='captcha.tpl'}
 		</div>
+
+		{include file='captcha.tpl'}
 
 		<div class="actions">
 			<button type="submit" name="register" class="btn btn-success btn-plain">{lang key='registration'}</button>

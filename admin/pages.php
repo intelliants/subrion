@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2014 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -104,13 +104,17 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entry['alias'] = empty($entry['alias']) ? '' : iaSanitize::alias($entry['alias']);
 			$entry['alias'].= $data['extension'];
 
-			if (is_numeric($data['parent_id']))
+			if ($data['parent_id'])
 			{
 				$parentPage = $this->getById($data['parent_id']);
 				$parentAlias = empty($parentPage['alias']) ? $parentPage['name'] . IA_URL_DELIMITER : $parentPage['alias'];
 
 				$entry['parent'] = $parentPage['name'];
 				$entry['alias'] = $parentAlias . (IA_URL_DELIMITER == substr($parentAlias, -1, 1) ? '' : IA_URL_DELIMITER) . $entry['alias'];
+			}
+			else
+			{
+				$entry['parent'] = '';
 			}
 
 			if ($this->_iaDb->exists('`id` != :id AND `alias` = :alias', array('id' => $this->getEntryId(), 'alias' => $entry['alias'])))
@@ -132,6 +136,17 @@ class iaBackendController extends iaAbstractControllerBackend
 			if (isset($data['unique']) && 0 == $data['unique'])
 			{
 				$entry['custom_url'] = '';
+			}
+
+			if (isset($data['custom_tpl']) && $data['custom_tpl'])
+			{
+				$entry['custom_tpl'] = (int)$data['custom_tpl'];
+				$entry['template_filename'] = $data['template_filename'];
+
+				if (!$data['template_filename'])
+				{
+					$this->addMessage('page_incorrect_template_filename');
+				}
 			}
 		}
 
@@ -185,10 +200,16 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$entry = array(
 			'name' => '',
-			'extension' => '',
 			'parent' => '',
+			'filename' => 'page',
+			'custom_tpl' => 0,
+			'template_filename' => '',
+			'alias' => '',
+			'extras' => '',
 			'readonly' => false,
 			'service' => false,
+			'nofollow' => false,
+			'new_window' => false,
 			'meta_description' => '',
 			'meta_keywords' => '',
 			'status' => iaCore::STATUS_ACTIVE
@@ -242,6 +263,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		// saving multilingual content
 		$currentLanguage = $this->_iaCore->iaView->language;
+		$extras = $data['extras'];
 
 		foreach (array('title', 'content') as $type)
 		{
@@ -250,9 +272,9 @@ class iaBackendController extends iaAbstractControllerBackend
 				foreach ($data[$type . 's'] as $languageCode => $value)
 				{
 					utf8_is_valid($value) || $value = utf8_bad_replace($value);
-					iaLanguage::addPhrase('page_' . $type . '_' . $entry['name'], $value, $languageCode, '', iaLanguage::CATEGORY_PAGE);
+					iaLanguage::addPhrase('page_' . $type . '_' . $entry['name'], $value, $languageCode, $extras, iaLanguage::CATEGORY_PAGE);
 				}
-				isset($title) || $title = $entry[$type . 's'][$currentLanguage];
+				isset($title) || $title = $data[$type . 's'][$currentLanguage];
 			}
 		}
 
@@ -301,21 +323,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'page_title_{$entryData['name']}' AND `category` = 'page'");
 			$entryData['contents'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'page_content_{$entryData['name']}' AND `category` = 'page'");
 			$this->_iaDb->resetTable();
-
-			$parentAlias = '';
-			if ($entryData['parent'])
-			{
-				$parentAlias = $this->getHelper()->getByName($entryData['parent'], false);
-				$parentAlias = empty($parentAlias['alias']) ? $parentAlias['name'] . IA_URL_DELIMITER : $parentAlias['alias'];
-			}
-
-			$entryData['extension'] = (false === strpos($entryData['alias'], '.')) ? '' : end(explode('.', $entryData['alias']));
-			$entryData['alias'] = substr($entryData['alias'], strlen($parentAlias), -1 - strlen($entryData['extension']));
-
-			if ($entryData['name'] == $entryData['alias'])
-			{
-				$entryData['alias'] = '';
-			}
 		}
 
 		$menus = array(
@@ -326,11 +333,9 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaAcl = $this->_iaCore->factory('acl');
 		if ($iaAcl->checkAccess('admin_page:add', 0, 0, 'menus'))
 		{
-			$selectedMenus = $this->getEntryId()
-				? $this->_iaDb->onefield('menu_id', iaDb::convertIds($entryData['name'], 'page_name'), null, null, 'menus')
-				: array();
-			$menusList = $this->_iaDb->all(array('id', 'title', 'removable'), "`type` = 'menu'", null, null, 'blocks');
+			$this->_iaCore->factory('block', iaCore::ADMIN);
 
+			$menusList = $this->_iaDb->all(array('id', 'title', 'removable'), "`type` = 'menu'", null, null, iaBlock::getTable());
 			foreach ($menusList as $menuEntry)
 			{
 				$menus[$menuEntry['removable']]['list'][] = $menuEntry;
@@ -339,7 +344,25 @@ class iaBackendController extends iaAbstractControllerBackend
 			ksort($menus[0]['list']);
 			ksort($menus[1]['list']);
 
+			$selectedMenus = empty($_POST['menus'])
+				? $this->_iaDb->onefield('menu_id', iaDb::convertIds($entryData['name'], 'page_name'), null, null, iaBlock::getMenusTable())
+				: $_POST['menus'];
 			$iaView->assign('selectedMenus', $selectedMenus);
+		}
+
+		$parentAlias = '';
+		if ($entryData['parent'])
+		{
+			$parentAlias = $this->getHelper()->getByName($entryData['parent'], false);
+			$parentAlias = empty($parentAlias['alias']) ? $parentAlias['name'] . IA_URL_DELIMITER : $parentAlias['alias'];
+		}
+
+		$entryData['extension'] = (false === strpos($entryData['alias'], '.')) ? '' : end(explode('.', $entryData['alias']));
+		$entryData['alias'] = substr($entryData['alias'], strlen($parentAlias), -1 - strlen($entryData['extension']));
+
+		if ($entryData['name'] == $entryData['alias'])
+		{
+			$entryData['alias'] = '';
 		}
 
 		$parentPage = $this->getHelper()->getByName($entryData['parent'], false);
@@ -465,8 +488,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$iaDb->insert($items);
 				}
 
-				$iaCache = $this->_iaCore->factory('cache');
-				$iaCache->remove('menu_' . $item['id'] . '.inc');
+				$this->_iaCore->iaCache->remove('menu_' . $item['id'] . '.inc');
 			}
 
 			$iaDb->resetTable();

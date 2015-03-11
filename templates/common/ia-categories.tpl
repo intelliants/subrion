@@ -8,7 +8,7 @@
 				<div class="cat-wrap">
 					{if isset($icons) && $icons}
 						{if isset($category.icon) && $category.icon}
-							<img src="{$nonProtocolUrl}uploads/{$category.icon.path}" alt="{$category.icon.title}">
+							<img src="{$core.page.nonProtocolUrl}uploads/{$category.icon.path}" alt="{$category.icon.title}">
 						{else}
 							<i class="icon-folder-open"></i>
 						{/if}

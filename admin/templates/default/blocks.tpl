@@ -24,23 +24,21 @@
 				<label class="col col-lg-2 control-label">{lang key='type'}</label>
 
 				<div class="col col-lg-4">
-					{if 'menu' != $item.type}
-						<select name="type" id="block_type">
-						{foreach $types as $key => $type}
-							{if 'menu' != $type}
-								{access object='admin_pages' id='blocks' action=$type}
-								<option value="{$type}"{if isset($item.type) && $item.type == $type} selected{/if}>{$type}</option>
-								{/access}
-							{/if}
-						{/foreach}
-						</select>
-					{else}
-						{$item.type}
-					{/if}
-					<p class="help-block" id="type_tip_plain" style="display: none;">{lang key='block_type_tip_plain'}</p>
-					<p class="help-block" id="type_tip_html" style="display: none;">{lang key='block_type_tip_html'}</p>
-					<p class="help-block" id="type_tip_smarty" style="display: none;">{lang key='block_type_tip_smarty'}</p>
-					<p class="help-block" id="type_tip_php" style="display: none;">{lang key='block_type_tip_php'}</p>
+					<select name="type" id="input-block-type">
+					{foreach $types as $key => $type}
+						{if iaBlock::TYPE_MENU != $type}
+							{access object='admin_pages' id='blocks' action=$type}
+							<option value="{$type}"{if $type == $item.type} selected{/if}>{$type}</option>
+							{/access}
+						{/if}
+					{/foreach}
+					</select>
+					<p class="help-block">
+						<span data-type="plain" style="display: none;">{lang key='block_type_tip_plain'}</span>
+						<span data-type="html" style="display: none;">{lang key='block_type_tip_html'}</span>
+						<span data-type="smarty" style="display: none;">{lang key='block_type_tip_smarty'}</span>
+						<span data-type="php" style="display: none;">{lang key='block_type_tip_php'}</span>
+					</p>
 				</div>
 			</div>
 
@@ -88,11 +86,11 @@
 				</div>
 			</div>
 
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='multi_language'}</label>
+			<div class="row" id="js-multi-language-row">
+				<label class="col col-lg-2 control-label">{lang key='multilingual'}</label>
 
 				<div class="col col-lg-4">
-					{html_radio_switcher value=$item.multi_language name='multi_language'}
+					{html_radio_switcher value=$item.multilingual name='multilingual'}
 				</div>
 			</div>
 
@@ -102,14 +100,14 @@
 				<div class="col col-lg-4">
 					<div class="checkbox">
 						<label>
-							<input type="checkbox" id="select_all_languages" name="select_all_languages" value="1"{if isset($smarty.post.select_all) && $smarty.post.select_all == '1'} checked{/if}> {lang key='select_all'}
+							<input type="checkbox" id="js-check-all-lngs" value="1"{if isset($smarty.post.select_all) && $smarty.post.select_all == '1'} checked{/if}> {lang key='select_all'}
 						</label>
 					</div>
 
-					{foreach $languages as $code => $pre_lang}
+					{foreach $core.languages as $code => $language}
 						<div class="checkbox">
 							<label>
-								<input type="checkbox" class="block_languages" name="block_languages[]" value="{$code}"{if isset($item.block_languages) && in_array($code, $item.block_languages)} checked{elseif isset($smarty.post.block_languages) && in_array($code, $smarty.post.block_languges)} checked{/if}> {$pre_lang}
+								<input type="checkbox" class="js-language-check" name="languages[]" value="{$code}"{if isset($item.languages) && in_array($code, $item.languages)} checked{/if}> {$language.title}
 							</label>
 						</div>
 					{/foreach}
@@ -130,50 +128,45 @@
 				<label class="col col-lg-2 control-label"></label>
 
 				<div class="col col-lg-8">
-					{if !empty($pagesGroup)}
-						{if !empty($pages)}
-							<ul class="nav nav-tabs">
-								{foreach $pagesGroup as $group => $row}
-									{assign classname 'visible_'|cat:$row.name}
-									<li{if $row@iteration == 1} class="active"{/if}><a href="#tab-{$classname}" data-toggle="tab">{$row.title}</a></li>
-								{/foreach}
-							</ul>
+					<ul class="nav nav-tabs">
+						{foreach $pagesGroup as $group => $row}
+							<li{if $row@iteration == 1} class="active"{/if}><a href="#tab-visible_{$row.name}" data-toggle="tab">{$row.title}</a></li>
+						{/foreach}
+					</ul>
 
-							<div class="tab-content">
-								{foreach $pagesGroup as $group => $row}
-									{assign post_key 'select_all_'|cat:$row.name}
-									{assign classname 'visible_'|cat:$row.name}
-									<div class="tab-pane{if $row@iteration == 1} active{/if}" id="tab-{$classname}">
-										<div class="checkbox checkbox-all">
+					<div class="tab-content">
+						{foreach $pagesGroup as $group => $row}
+							{assign post_key "select_all_{$row.name}"}
+							{assign classname "visible_{$row.name}"}
+							<div class="tab-pane{if $row@iteration == 1} active{/if}" id="tab-{$classname}">
+								<div class="checkbox checkbox-all">
+									<label>
+										<input type="checkbox" value="1" class="{$classname}" data-group="{$classname}" name="select_all_{$classname}" id="select_all_{$classname}"{if isset($smarty.post.$post_key) && $smarty.post.$post_key == '1'} checked{/if}> {lang key='select_all_in_tab'}
+									</label>
+								</div>
+
+								{foreach $pages as $key => $page}
+									{if $page.group == $group}
+										<div class="checkbox">
 											<label>
-												<input type="checkbox" value="1" class="{$classname}" data-group="{$classname}" name="select_all_{$classname}" id="select_all_{$classname}"{if isset($smarty.post.$post_key) && $smarty.post.$post_key == '1'} checked{/if}> {lang key='select_all_in_tab'}
+												<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}" id="page_{$key}"{if in_array($page.name, $item.pages)} checked{/if}> {$page.title|escape:'html'}
 											</label>
 										</div>
-
-										{foreach $pages as $key => $page}
-											{if $page.group == $group}
-												<div class="checkbox">
-													<label>
-														<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}" id="page_{$key}"{if in_array($page.name, $item.pages)} checked{/if}> {$page.title|escape:'html'}
-													</label>
-												</div>
-												{if $page.suburl}
-													<div class="subpages" style="display:none" rel="{$page.suburl}::{$key}">&nbsp;</div>
-													<input type="hidden" name="subpages[{$page.name}]" value="{if isset($item.subpages[$page.name])}{$item.subpages[$page.name]}{elseif isset($smarty.post.subpages[$page.name])}{$smarty.post.subpages[$page.name]}{/if}" id="subpage_{$key}">
-												{/if}
-											{/if}
-										{/foreach}
-									</div>
+										{if $page.suburl}
+											<div class="subpages" style="display:none" rel="{$page.suburl}::{$key}">&nbsp;</div>
+											<input type="hidden" name="subpages[{$page.name}]" value="{if isset($item.subpages[$page.name])}{$item.subpages[$page.name]}{elseif isset($smarty.post.subpages[$page.name])}{$smarty.post.subpages[$page.name]}{/if}" id="subpage_{$key}">
+										{/if}
+									{/if}
 								{/foreach}
 							</div>
+						{/foreach}
+					</div>
 
-							<div class="checkbox checkbox-all">
-								<label>
-									<input type="checkbox" value="1" name="select_all" id="js-pages-select-all"{if isset($smarty.post.select_all) && $smarty.post.select_all == '1'} checked{/if}> {lang key='select_all'}
-								</label>
-							</div>
-						{/if}
-					{/if}
+					<div class="checkbox checkbox-all">
+						<label>
+							<input type="checkbox" value="1" name="select_all" id="js-pages-select-all"{if isset($smarty.post.select_all) && $smarty.post.select_all == '1'} checked{/if}> {lang key='select_all'}
+						</label>
+					</div>
 				</div>
 			</div>
 
@@ -181,47 +174,42 @@
 				<label class="col col-lg-2 control-label">{lang key='pages_contains'}</label>
 
 				<div class="col col-lg-4">
-				{if isset($pagesGroup) && !empty($pagesGroup)}
-					{if isset($pages) && !empty($pages)}
-						<div class="checkbox">
-							<label>
-								<input type="checkbox" value="1" name="all_pages" id="all_pages"{if isset($smarty.post.all_pages) && $smarty.post.all_pages == '1'} checked{/if}> {lang key='select_all'}
-							</label>
-						</div>
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" value="1" name="all_pages" id="all_pages"{if isset($smarty.post.all_pages) && $smarty.post.all_pages == '1'} checked{/if}> {lang key='select_all'}
+						</label>
+					</div>
 
-						<ul class="nav nav-tabs">
-							{foreach $pagesGroup as $group => $row}
-								{assign classname 'pages_'|cat:$row.name}
-								<li{if $row@iteration == 1} class="active"{/if}><a href="#tab-{$classname}" data-toggle="tab">{$row.title}</a></li>
-							{/foreach}
-						</ul>
+					<ul class="nav nav-tabs">
+						{foreach $pagesGroup as $group => $row}
+							<li{if $row@iteration == 1} class="active"{/if}><a href="#tab-pages_{$row.name}" data-toggle="tab">{$row.title}</a></li>
+						{/foreach}
+					</ul>
 
-						<div class="tab-content">
-							{foreach $pagesGroup as $group => $row}
-								{assign post_key 'all_pages_'|cat:$row.name}
-								{assign classname 'pages_'|cat:$row.name}
-								<div class="tab-pane{if $row@iteration == 1} active{/if}" id="tab-{$classname}">
+					<div class="tab-content">
+						{foreach $pagesGroup as $group => $row}
+							{assign post_key "all_pages_{$row.name}"}
+							{assign classname "pages_{$row.name}"}
+							<div class="tab-pane{if $row@iteration == 1} active{/if}" id="tab-{$classname}">
+								<div class="checkbox">
+									<label>
+										<input type="checkbox" value="1" class="{$classname}" data-group="{$classname}" name="{$post_key}" id="{$post_key}"{if isset($smarty.post.$post_key) && $smarty.post.$post_key == '1'} checked{/if}>
+									</label>
+								</div>
+
+								{foreach $pages as $key => $page}
+									{if $page.group == $group}
 									<div class="checkbox">
 										<label>
-											<input type="checkbox" value="1" class="{$classname}" data-group="{$classname}" name="{$post_key}" id="{$post_key}"{if isset($smarty.post.$post_key) && $smarty.post.$post_key == '1'} checked{/if}>
+											<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $menuPages, true)} checked{/if}>
+											{if empty($page.title)}{$page.name}{else}{$page.title}{/if}
 										</label>
 									</div>
-
-									{foreach $pages as $key => $page}
-										{if $page.group == $group}
-										<div class="checkbox">
-											<label>
-												<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $menuPages, true)} checked{/if}>
-												{if empty($page.title)}{$page.name}{else}{$page.title}{/if}
-											</label>
-										</div>
-										{/if}
-									{/foreach}
-								</div>
-							{/foreach}
-						</div>
-					{/if}
-				{/if}
+									{/if}
+								{/foreach}
+							</div>
+						{/foreach}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -234,7 +222,7 @@
 			</div>
 
 			<div class="wrap-row" id="blocks_contents" style="display: none;">
-				<div class="row" id="external_file_row">
+				<div class="row" id="js-external-row">
 					<label class="col col-lg-2 control-label">{lang key='external_file'}</label>
 
 					<div class="col col-lg-4">
@@ -246,15 +234,15 @@
 					<label class="col col-lg-2 control-label">{lang key='title'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" name="multi_title" value="{if isset($item.title) && !is_array($item.title)}{$item.title|escape:'html'}{elseif isset($smarty.post.multi_title)}{$smarty.post.multi_title|escape:'html'}{/if}">
+						<input type="text" name="title" value="{if !is_array($item.title)}{$item.title|escape:'html'}{/if}">
 					</div>
 				</div>
 
-				<div class="row" id="multi_contents_row">
+				<div class="row" id="js-multilingual-content-row">
 					<label class="col col-lg-2 control-label">{lang key='contents'}</label>
 
 					<div class="col col-lg-8">
-						<textarea name="multi_contents" id="multi_contents" rows="8" class="js-ckeditor">{if isset($item.contents) && !is_array($item.contents)}{$item.contents}{elseif isset($smarty.post.multi_contents)}{$smarty.post.multi_contents}{/if}</textarea>
+						<textarea name="content" id="multi_contents" rows="8" class="js-ckeditor">{$item.content|escape:'html'}</textarea>
 					</div>
 				</div>
 
@@ -263,7 +251,7 @@
 
 					<div class="col col-lg-4">
 						<input type="text" name="filename" value="{if isset($item.filename) && !empty($item.filename)}{$item.filename|escape:'html'}{elseif isset($smarty.post.filename)}{$smarty.post.filename|escape:'html'}{/if}">
-						{if $pageAction == 'add'}
+						{if iaCore::ACTION_ADD == $pageAction}
 							<p class="help-block">{lang key='filename_notification'}</p>
 						{/if}
 					</div>
@@ -271,21 +259,21 @@
 			</div>
 
 			<div class="wrap-row" id="blocks_contents_multi" style="display: none;">
-				{foreach $languages as $code => $pre_lang}
+				{foreach $core.languages as $code => $language}
 					<div id="blocks_contents_{$code}" class="wrap-row">
 						<div class="row">
-							<label class="col col-lg-2 control-label">{lang key='title'} <span class="label label-info">{$pre_lang}</span></label>
+							<label class="col col-lg-2 control-label">{lang key='title'} <span class="label label-info">{$language.title}</span></label>
 
 							<div class="col col-lg-4">
-								<input type="text" name="title[{$code}]" value="{if isset($item.title) && is_array($item.title)}{if isset($item.title.$code)}{$item.title.$code|escape:'html'}{/if}{/if}">
+								<input type="text" name="titles[{$code}]" value="{if isset($item.titles.$code)}{$item.titles.$code|escape:'html'}{/if}">
 							</div>
 						</div>
 
 						<div class="row">
-							<label class="col col-lg-2 control-label">{lang key='contents'} <span class="label label-info">{$pre_lang}</span></label>
+							<label class="col col-lg-2 control-label">{lang key='contents'} <span class="label label-info">{$language.title}</span></label>
 
 							<div class="col col-lg-8">
-								<textarea name="contents[{$code}]" id="contents_{$code}" rows="8" class="js-ckeditor resizable">{if isset($item.contents) && is_array($item.contents)}{if isset($item.contents.$code)}{$item.contents.$code|escape:'html'}{/if}{/if}</textarea>
+								<textarea name="contents[{$code}]" id="contents_{$code}" rows="8" class="js-ckeditor resizable">{if isset($item.contents.$code)}{$item.contents.$code|escape:'html'}{/if}</textarea>
 							</div>
 						</div>
 					</div>
@@ -296,5 +284,4 @@
 		{include file='fields-system.tpl'}
 	</div>
 </form>
-
 {ia_print_js files='utils/edit_area/edit_area, ckeditor/ckeditor, admin/blocks'}
