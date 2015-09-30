@@ -1,0 +1,3 @@
+[submodule "packages/lyrics"]
+	path = packages/lyrics
+	url = git@github.com:vbezruchkin/subrion-lyrics.git
