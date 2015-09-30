@@ -1,3 +1,6 @@
 [submodule "packages/lyrics"]
 	path = packages/lyrics
 	url = git@github.com:vbezruchkin/subrion-lyrics.git
+[submodule "packages/yellowpages"]
+	path = packages/yellowpages
+	url = git@projects.intelliants.com:dev-team/package-yellowpages.git
