@@ -1,0 +1,74 @@
+
+//
+// Sections
+// --------------------------------------------------
+
+.section {
+	background: #fff;
+	padding: 100px 0;
+}
+
+.call-to-action {
+	background: #f3f3f3;
+
+	h2 {
+
+		+ p {
+			margin-top: 30px;
+		}
+	}
+
+	p {
+		font-size: 18px;
+
+		+ p {
+			margin-top: 30px;
+		}
+	}
+
+	&--alt {
+		background: #fff;
+	}
+
+	&--center {
+		text-align: center;
+		background: #fff;
+		padding-bottom: 0;
+		border-bottom: 1px solid #ddd;
+
+		p {
+			width: 70%;
+			margin-left: auto;
+			margin-right: auto;
+
+			+ img {
+				margin-top: 30px;
+			}
+		}
+	}
+}
+
+.b-feature {
+	text-align: center;
+}
+
+
+
+//
+// Section blog
+// --------------------------------------------------
+
+.section-blog {
+
+	h2 {
+		text-align: center;
+		
+		+ .box {
+			margin-top: 30px;
+		}
+	}
+
+	#caption_blogroll {
+		display: none;
+	}
+}

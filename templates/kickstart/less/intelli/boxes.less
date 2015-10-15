@@ -1,0 +1,81 @@
+
+//
+// Boxes / blocks
+// --------------------------------------------------
+
+.box {
+
+  &--border {
+    padding: 20px;
+    border: 1px solid #ddd;
+  }
+
+  + .box,
+  + div {
+    margin-top: @vertical-rhythm*2;
+  }
+
+  &__caption {
+    .font-normalize(18px, 0);
+    color: @box-caption-color;
+    position: relative;
+    padding-bottom: @vertical-rhythm/2;
+  }
+
+  &__content {
+    color: @box-content-color;
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+
+
+//
+// Min max toggle
+// --------------------------------------------------
+
+.collapsible {
+  position: relative;
+
+  &.collapsed {
+
+    .minmax-toggle i {
+      .fa-icon();
+      &:before { content: @fa-var-angle-down; }
+    }
+
+    .box__content,
+    > .fieldset__content {
+      display: none;
+    }
+  }
+}
+
+.minmax-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: -20px;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-decoration: none;
+  text-align: center;
+
+  i {
+    .fa-icon();
+    &:before { content: @fa-var-angle-up; }
+  }
+
+  &:hover {
+    text-decoration: none;
+
+    i {
+      color: @link-color;
+    }
+  }
+}
