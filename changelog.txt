@@ -64,11 +64,11 @@
 	- Bug #653: Edit Phrases - Table Visibility
 	- Bug #654: Listing fields check box set - required field
 	- Bug #702: Add Menu - Improper naming of added pages in list
-	- Bug #1010: Listings with non-valid captcha can be submitted 
+	- Bug #1010: Listings with non-valid captcha can be submitted
 	- Bug #1012: Dependencies are not considered when installing a plugin
 	- Bug #1013: Manage database errors
 	- Bug #1022: Loop redirect when making Login page as site home page
-	- Bug #1023: "Field Group" and "Show on Pages" options can't be saved 
+	- Bug #1023: "Field Group" and "Show on Pages" options can't be saved
 	- Bug #1024: Add log notice about successful upgrades
 	- Bug #1025: Disable automatic upgrades
 	- Bug #1027: Remote plugins list does not displays correctly
@@ -531,3 +531,89 @@
 	* Feature #2076: phpFastCache update to 3.0
 	* Feature #2078: Update debug highlight library
 	* Feature #2079: Revive Back to top
+
+>> From 3.3.0 to 3.3.1 <<
+
+	- Bug #1623: Packages: uploaded images deleted on listing removal, but assigned files don't
+	- Bug #1954: Backend styles are broken for HTTPS
+	- Bug #1974: Accordion does not work
+	- Bug #2081: User-Avatar in search results gets wrong link
+	- Bug #2082: Field default value
+	- Bug #2083: Incorrect filter for pages
+	- Bug #2084: Download config does not work
+	- Bug #2085: Datetime field is not displayed correctly
+	- Bug #2086: Incorrect fieldgroup on Add field page
+	- Bug #2097: Admin panel: config menus did not get Active state
+	- Bug #2100: Edit menu right click
+	- Bug #2102: CSRF should be added to database management page
+	- Bug #2105: Error during installation
+	* Feature #2095: Update adminer library
+
+>> From 3.3.1 to 3.3.2 <<
+
+	- Bug #2097: Admin panel: config menus did not get Active state
+	- Bug #2108: Upgrade: languages are not correctly fetched
+	- Bug #2116: Duplicate JS file comes with the script
+	- Bug #2118: Members filter is incorrect
+	- Bug #2121: Problems with sorting in Usergroups grid
+	- Bug #2123: Problems with sorting (order by title) in Usergroups grid
+	- Bug #2131: Strange formation of key for usergroup name
+	- Bug #2134: No rows removed on package uninstallation from the "config_custom" table
+	+ Feature #2132: Add php class for mobile detection
+
+>> From 3.3.2 to 3.3.3 <<
+
+	- Bug #2110: Error notices generated even if a force upgrade completed successfully
+	- Bug #2112: Installation issues with dependent templates
+	- Bug #2119: Field & fieldgroup titles written on current language only
+	- Bug #2122: Core upgrade error
+	- Bug #2135: Upgrade: output a phrases installation to the log
+	- Bug #2136: Extras is not updated
+	- Bug #2137: Vulnerable code in users
+	- Bug #2138: Transaction fields cannot be added
+	- Bug #2139: Incorrect registration process
+	- Bug #2141: Improve isScriptInstalled function
+	- Bug #2143: Errors and warnings after fresh installation
+
+>> From 3.3.3 to 3.3.4 <<
+
+	- Bug #1928: "Session expire time (in minutes)" configuration param is not actually used
+	- Bug #1953: Error while making the backup of site with a lot of data before upgrade process started
+	- Bug #1992: Add rule to Cronjob to clear {prefix}online table
+	- Bug #2127: Pagination doesn work on Search results page for any package
+	- Bug #2146: Problems with default home page
+	- Bug #2149: Undefined constant sometimes in admin dashboard
+	- Bug #2153: Bug with Re-installing FancyBox and Kcaptcha plugins
+	- Bug #2154: Email template body is empty after changing it from default
+	- Bug #2155: Get rid of rel attribute in plugins
+	- Bug #2159: Incorrect display of phrases on Phrases page in Admin Panel during first load
+	- Bug #2165: Searchable config doesn't work for any package
+	- Bug #2167: Impossible either to upgrade or reinstall Facebook plugin 3.2.3
+	- Bug #2171: Use custom tpl option cannot be disable once enabled
+	- Bug #2172: Manually created fields for package items must be removed when user deletes a package.
+	- Bug #2177: Password is not escaped when creating config.inc.php
+	- Bug #2178: Unable to install the script when INCLUDES folder is unwritable
+	+ Feature #2164: Default image for og:image tag, if entry doesn't have one
+	+ Feature #2169: Implement Tree field
+	+ Feature #2182: Create 'password' type of configuration params
+
+>> From 3.3.4 to 3.3.5 <<
+
+	- Bug #978: Header field exceeds server limit
+	- Bug #1625: Changes made by template installation are not reverted back
+	- Bug #1952: System hangs if any package is installed on multilingual site
+	- Bug #1984: There is a blank page when trying to generate a sitemap in Admin Panel
+	- Bug #2080: Mod deflate issues in Apache 2.4
+	- Bug #2117: Review dependent parent fields
+	- Bug #2162: Hide message "Deprecated: mysql_connect(): The mysql extension is ..." after installing Subrion CMS on XAMPP environment
+	- Bug #2179: Incorrect sitemap generation
+	- Bug #2186: Opengraph description bugs
+	- Bug #2187: Robots trying to index /cron/ URL
+	- Bug #2189: Incorrect page definition
+	+ Feature #2170: Cron Manager
+	+ Feature #2183: Make possible to create 'Tree' fields via install.xml
+	+ Feature #2192: Allow datepicker for fields
+	+ Feature #2195: .htaccess warning for Mac users
+	+ Feature #2198: Implement 'Scheduled Tasks' admin panel section
+
+>> From 3.3.5 to 3.4.0 <<
