@@ -1,32 +1,12 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'transactions';
+
+	protected $_gridFilters = array('email' => self::EQUAL, 'reference_id' => self::LIKE, 'status' => self::EQUAL, 'gateway' => self::EQUAL);
+	protected $_gridQueryMainTableAlias = 't';
 
 	protected $_processAdd = false;
 	protected $_processEdit = false;
@@ -71,7 +51,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					$stmt = iaDb::convertIds(iaUsers::getItemName(), 'item');
 
-					$output['data'][] = array('title' => iaLanguage::get('member_balance'), 'value' => 0);
+					$output['data'][] = array('title' => iaLanguage::get('funds'), 'value' => 0);
 				}
 				elseif (!empty($params['itemname']))
 				{
@@ -149,7 +129,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'SELECT SQL_CALC_FOUND_ROWS '
 				. 't.`id`, t.`item`, t.`item_id`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, '
 				. 't.`date`, t.`status`, t.`currency`, t.`operation`, t.`plan_id`, t.`reference_id`, '
-				. "m.`username`, IF(t.`status` != 'passed', 1, 0) `delete` " .
+				. "t.`gateway`, IF(t.`fullname` = '', m.`username`, t.`fullname`) `user`, IF(t.`status` != 'passed', 1, 0) `delete` " .
 			'FROM `:prefix:table_transactions` t ' .
 			'LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`) ' .
 			($where ? 'WHERE ' . $where . ' ' : '') . $order . ' ' .
@@ -167,30 +147,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
-		if (!empty($params['email']))
-		{
-			$conditions[] = 't.`email` = :email';
-			$values['email'] = $params['email'];
-		}
-		if (!empty($params['reference_id']))
-		{
-			$conditions[] = 't.`reference_id` LIKE :reference';
-			$values['reference'] = '%' . $params['reference_id'] . '%';
-		}
 		if (!empty($params['item']))
 		{
-			$conditions[] = ('members' == $params['item']) ? "(t.`item` = :item OR t.`item` = 'balance') " : 't.`item` = :item';
+			$conditions[] = ('members' == $params['item']) ? "(t.`item` = :item OR t.`item` = 'funds') " : 't.`item` = :item';
 			$values['item'] = $params['item'];
 		}
 		if (!empty($params['username']))
 		{
 			$conditions[] = 'm.`username` LIKE :username';
 			$values['username'] = '%' . $params['username'] . '%';
-		}
-		if (!empty($params['status']))
-		{
-			$conditions[] = 't.`status` = :status';
-			$values['status'] = $params['status'];
 		}
 	}
 
@@ -228,8 +193,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			$transaction['item'] = 'balance';
-			$transaction['operation'] = iaLanguage::get('member_balance');
+			$transaction['item'] = iaTransaction::TRANSACTION_MEMBER_BALANCE;
+			$transaction['operation'] = iaLanguage::get('funds');
 		}
 
 		if (isset($_POST['username']) && $_POST['username'])
@@ -251,7 +216,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$output['message'][] = iaLanguage::get('error_email_incorrect');
 		}
 
-		if (isset($transaction['item']) && in_array($transaction['item'], array('balance', 'members')))
+		if (isset($transaction['item']) && in_array($transaction['item'], array(iaTransaction::TRANSACTION_MEMBER_BALANCE, 'members')))
 		{
 			$transaction['item_id'] = $transaction['member_id'];
 		}

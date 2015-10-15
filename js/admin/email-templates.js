@@ -23,16 +23,17 @@ $(function()
 		tagsWindow.show();
 	});
 
-	$('#tpl').on('change', function(e)
+	$('#input-id').on('change', function(e)
 	{
 		var id = $(this).val();
-		var $switchers = $('#enable_sending, #use_signature');
-		var $patterns = $('#js-patterns');
+		var $switchers = $('#enable_sending, #use_signature'),
+			$patterns = $('#js-patterns'),
+			$subject = $('#input-subject');
 
 		// hide if none selected
 		if (!id)
 		{
-			$('#subject').val('').prop('disabled', true);
+			$subject.val('').prop('disabled', true);
 			CKEDITOR.instances.body.setData('');
 			$switchers.hide();
 			$patterns.hide();
@@ -44,7 +45,7 @@ $(function()
 		// get actual values
 		$.get(window.location.href + 'read.json', {id: id}, function(response)
 		{
-			$('#subject').val(response.subject);
+			$subject.val(response.subject);
 			CKEDITOR.instances.body.setData(response.body);
 
 			$('#enable_sending').bootstrapSwitch('setState', response.config);
@@ -70,27 +71,26 @@ $(function()
 		'json');
 
 		$switchers.show();
-		$('#subject, #js-email-template-form button[type="submit"]').prop('disabled', false);
+		$('#input-subject, #js-email-template-form button[type="submit"]').prop('disabled', false);
 	});
 
 	$('#js-email-template-form').on('submit', function(e)
 	{
 		e.preventDefault();
 
-		var value = $('#tpl').val();
-
-		if ('' == value)
-		{
-			return;
-		}
-
 		if ('object' == typeof CKEDITOR.instances.body)
 		{
 			CKEDITOR.instances.body.updateElement();
 		}
 
-		$.post(window.location.href + 'edit.json', {id: value, subject: $('#subject').val(),
-			enable_template: $('#enable_template').val(), enable_signature: $('#enable_signature').val(), body: CKEDITOR.instances.body.getData()}, function(response)
+		var data = $(this).serialize();
+
+		if ('' == data.tpl)
+		{
+			return;
+		}
+
+		$.post(window.location.href + 'edit.json', data, function(response)
 		{
 			if (response.result)
 			{

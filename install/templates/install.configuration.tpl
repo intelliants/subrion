@@ -13,7 +13,7 @@
 							<input type="text" value="<?php echo URL_HOME ?>" disabled="disabled" class="disabled" />
 						</div>
 					</div>
-					<div class="form-group">
+					<div class="form-group" id="err_template">
 						<label class="col-lg-4 control-label">Default Template:</label>
 						<div class="col-lg-8">
 							<select name="tmpl" id="tmpl"<?php if (count($this->templates) == 1): ?> readonly<?php endif ?>>
@@ -21,6 +21,7 @@
 								<option value="<?php echo $entry ?>"<?php if ($this->template == $entry): ?> selected="selected"<?php endif ?>><?php echo ucfirst($entry) ?></option>
 								<?php endforeach ?>
 							</select>
+							<p class="help-block" style="display: none;">Please choose another template.</p>
 						</div>
 					</div>
 					<div class="form-group">

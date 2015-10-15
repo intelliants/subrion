@@ -9,5 +9,5 @@ Disallow: /js/
 Disallow: /packages/
 Disallow: /plugins/
 Disallow: /templates/
-Disallow: /tmp/*
+Disallow: /tmp/
 Disallow: /updates/

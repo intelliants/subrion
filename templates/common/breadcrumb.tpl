@@ -1,27 +1,26 @@
 {if $core.page.breadcrumb|count}
-	<div class="section section-light section-narrow ia-breadcrumb--wrapper">
-		<div class="container" xmlns:v="http://rdf.data-vocabulary.org/#">
-			<ul class="ia-breadcrumb pull-left">
+	<div class="breadcrumbs">
+		<div class="container">
+			<ol class="breadcrumb" xmlns:v="http://rdf.data-vocabulary.org/#">
 				{foreach $core.page.breadcrumb as $entry}
 					{if $entry.url && !$entry@last}
 						<li typeof="v:Breadcrumb">
 							<a href="{$entry.url}"{if isset($entry.no_follow) && $entry.no_follow} rel="nofollow"{/if} rel="v:url" property="v:title">{$entry.caption}</a>
-							<span class="divider">/</span>
 						</li>
 					{else}
 						<li class="active">{$entry.caption}</li>
 					{/if}
 				{/foreach}
-			</ul>
+			</ol>
 
 			{if isset($core.page.info.actions)}
-				<div class="action-buttons pull-right">
+				<div class="action-buttons">
 					{section action $core.page.info.actions max=2}
-						<a href="{$core.page.info.actions[action].url}" class="btn btn-mini {if isset($core.page.info.actions[action].classes)} {$core.page.info.actions[action].classes}{else}btn-success{/if}"><i class="{$core.page.info.actions[action].icon}"></i> {$core.page.info.actions[action].title}</a> 
+						<a href="{$core.page.info.actions[action].url}" class="btn btn-xs {if isset($core.page.info.actions[action].classes)} {$core.page.info.actions[action].classes}{else}btn-success{/if}"><span class="fa fa-{$core.page.info.actions[action].icon}"></span> {$core.page.info.actions[action].title}</a> 
 					{/section}
 
 					{if count($core.page.info.actions) > 2}
-						<a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+						<a class="btn btn-xs dropdown-toggle" data-toggle="dropdown" href="#">
 							<span class="caret"></span>
 						</a>
 						<ul class="dropdown-menu pull-right">

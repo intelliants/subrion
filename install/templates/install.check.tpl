@@ -1,6 +1,7 @@
-<?php if ($this->errorCode): ?>
-<div class="alert alert-danger">Please log in as an administrator to proceed.</div>
-<?php else: ?>
+<?php if (!file_exists(IA_HOME . '.htaccess')): ?>
+	<div class="alert alert-error">No .htaccess found in your Subrion core folder. More details <a href="http://www.subrion.com/desk/index.php?/Knowledgebase/Article/View/28/3/no-htaccess-in-subrion-folder" target="_blank">here</a>.</div>
+<?php endif ?>
+
 <?php foreach ($this->sections as $name => $item): ?>
 	<div class="widget widget-default">
 		<div class="widget-header">
@@ -48,4 +49,3 @@
 	<a href="<?php echo URL_INSTALL . $this->module ?>/" class="btn btn-lg btn-danger disabled">Next <i class="i-remove-sign"></i></a>
 	<?php endif ?>
 </div>
-<?php endif ?>

@@ -193,7 +193,7 @@
 					<label class="col col-lg-2 control-label">{lang key='field_length'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" name="text_length" value="{if !$item.length || $item.length > 255}100{else}{$item.length}{/if}">
+						<input class="js-filter-numeric" type="text" name="text_length" value="{if !$item.length || $item.length > 255}100{else}{$item.length}{/if}">
 						<p class="help-block">{lang key='digits_only'}</p>
 					</div>
 				</div>
@@ -237,7 +237,7 @@
 					<label class="col col-lg-2 control-label">{lang key='max_files'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" name="max_files" value="{$item.length|escape:'html'}">
+						<input class="js-filter-numeric" type="text" name="max_files" value="{$item.length|escape:'html'}">
 					</div>
 				</div>
 				<div class="row">
@@ -309,7 +309,30 @@
 				{/if}
 			</div>
 
-			<div id="multiple" class="field_type" style="display: none;">
+			<div id="tree" class="field_type" style="display: none;">
+				<a href="#tree"></a>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='nodes'}</label>
+
+					<div class="col col-lg-4">
+						<button class="js-tree-action btn btn-xs btn-success" data-action="create"><i class="i-plus"></i> Add Node</button>
+						<button class="js-tree-action btn btn-xs btn-danger disabled" data-action="delete"><i class="i-minus"></i> Delete</button>
+						<button class="js-tree-action btn btn-xs btn-info disabled" data-action="update"><i class="i-edit"></i> Rename</button>
+
+						<input type="hidden" name="nodes"{if iaField::TREE == $item.type} value="{$item.values|escape}"{/if}>
+						<div class="categories-tree" id="input-nodes"></div>
+					</div>
+				</div>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='multiple_selection'} <a href="#" class="js-tooltip" title="{$tooltips.multiple_selection}"><i class="i-info"></i></a></label>
+
+					<div class="col col-lg-4">
+						{html_radio_switcher value=$item.timepicker|default:0 name='multiple'}
+					</div>
+				</div>
+			</div>
+
+			<div id="js-multiple" class="field_type" style="display: none;">
 				<div id="show_in_search_as" class="row"{if !$item.searchable} style="display:none"{/if}>
 					<label class="col col-lg-2 control-label">{lang key='show_in_search_as'}</label>
 
@@ -423,15 +446,19 @@
 				</div>
 			</div>
 
-			<div id="date" class="field_type" style="display: none;">
-				<div class="row">
-					<label class="col col-lg-2 control-label">{lang key='timepicker'}</label>
+			{if iaCore::ACTION_EDIT != $pageAction}
+				<div id="date" class="field_type" style="display: none;">
+					<div class="row">
+						<label class="col col-lg-2 control-label">{lang key='timepicker'}</label>
 
-					<div class="col col-lg-4">
-						{html_radio_switcher value=$item.timepicker|default:0 name='timepicker'}
+						<div class="col col-lg-4">
+							{html_radio_switcher value=$item.timepicker|default:0 name='timepicker'}
+						</div>
 					</div>
 				</div>
-			</div>
+			{else}
+				<input type="hidden" name="timepicker" value="{$item.timepicker}">
+			{/if}
 
 			<div id="pictures" class="field_type" style="display: none;">
 				{if !is_writeable($smarty.const.IA_UPLOADS)}
@@ -527,4 +554,5 @@
 		{include file='fields-system.tpl'}
 	</div>
 </form>
-{ia_print_js files='admin/fields,utils/numeric,utils/edit_area/edit_area'}
+{ia_add_media files='tree'}
+{ia_print_js files='jquery/plugins/jquery.numeric,utils/edit_area/edit_area,admin/fields'}

@@ -1,5 +1,5 @@
 {if $transactions}
-	<h2>{lang key='current_assets'}</h2>
+	<h3>{lang key='current_assets'}</h3>
 	<table class="table table-striped table-bordered">
 	<thead>
 		<tr>
@@ -18,7 +18,7 @@
 			<td>{$transaction.reference_id}</td>
 			<td>{$transaction.operation}</td>
 			<td class="{$transaction.status}">{$transaction.status}</td>
-			<td>{$transaction.date|date_format:$config.date_format}</td>
+			<td>{$transaction.date|date_format:$core.config.date_format}</td>
 			<td>{$transaction.gateway}</td>
 			<td>{$transaction.amount} {$transaction.currency}</td>
 			<td>
@@ -41,11 +41,11 @@
 	<div class="alert alert-info">{lang key='no_transactions_records'}</div>
 {/if}
 
-<form method="post" class="form-inline ia-form bordered">
-	<div class="fieldset">
-		<div class="content">
-			{preventCsrf}
-			{lang key='add_funds'} <input type="text" name="amount"> <button type="submit" class="btn btn-primary btn-plain">{lang key='add_funds'}</button>
-		</div>
+<form method="post" class="form-inline ia-form">
+	{preventCsrf}
+	<div class="form-group">
+		<label for="amount">{lang key='add_funds'}</label>
+		<input class="form-control" type="text" name="amount" id="amount">
 	</div>
+	<button type="submit" class="btn btn-primary">{lang key='add_funds'}</button>
 </form>

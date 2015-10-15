@@ -1,34 +1,12 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaBlog extends abstractPlugin
 {
 	const ALIAS_SUFFIX = '.html';
 
 	protected static $_table = 'blog_entries';
+	protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
 	public $dashboardStatistics = true;
 
@@ -80,13 +58,29 @@ class iaBlog extends abstractPlugin
 		// if item exists, then remove it
 		if ($row = $this->iaDb->row_bind(array('title', 'image'), '`id` = :id', array('id' => $id)))
 		{
-			$result = (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
+			$result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
 
 			if ($row['image'] && $result) // we have to remove the assigned image as well
 			{
 				$iaPicture = $this->iaCore->factory('picture');
 				$iaPicture->delete($row['image']);
 			}
+
+			$result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
+
+			$sql =
+				'DELETE ' .
+				'FROM `:prefix:table_blog_tags` ' .
+				'WHERE `id` NOT IN (' .
+					'SELECT DISTINCT `tag_id` ' .
+					'FROM `:prefix:table_blog_entries_tags`)';
+
+			$sql = iaDb::printf($sql, array(
+				'prefix' => $this->_iaDb->prefix,
+				'table_blog_entries_tags' => 'blog_entries_tags',
+				'table_blog_tags' => 'blog_tags'
+			));
+			$result[] = (bool)$this->iaDb->query($sql);
 
 			if ($result)
 			{

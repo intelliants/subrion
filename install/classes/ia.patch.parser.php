@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaPatchParser
 {
@@ -42,10 +19,25 @@ class iaPatchParser
 	const EXTRA_TYPE_PLUGIN = true;
 	const EXTRA_TYPE_PACKAGE = false;
 
+	const PHRASE_CATEGORY_ADMIN = 'admin';
+	const PHRASE_CATEGORY_FRONTEND = 'frontend';
+	const PHRASE_CATEGORY_COMMON = 'common';
+	const PHRASE_CATEGORY_PAGE = 'page';
+	const PHRASE_CATEGORY_TOOLTIP = 'tooltip';
+
 	protected $_extraTypesMap = array(self::EXTRA_TYPE_PLUGIN => 'plugin', self::EXTRA_TYPE_PACKAGE => 'package');
+
+	protected $_phraseCategoriesMap = array(
+		1 => self::PHRASE_CATEGORY_ADMIN,
+		2 => self::PHRASE_CATEGORY_FRONTEND,
+		3 => self::PHRASE_CATEGORY_COMMON,
+		4 => self::PHRASE_CATEGORY_PAGE,
+		5 => self::PHRASE_CATEGORY_TOOLTIP
+	);
 
 	protected $_data = '';
 	protected $_offset = 0;
+	protected $_version = '';
 
 	public $patch;
 
@@ -60,6 +52,7 @@ class iaPatchParser
 		$this->patch['queries'] = $this->_parseSectionQueries();
 		$this->patch['extras'] = $this->_parseSectionExtras();
 		$this->patch['executables'] = $this->_parseSectionExecutables();
+		$this->patch['phrases'] = $this->_parseSectionPhrases();
 	}
 
 	protected function _parseHeader($data)
@@ -70,13 +63,12 @@ class iaPatchParser
 			$this->_error('Patch file format is invalid.');
 		}
 
+		$this->_version = $header['major'] . '.' . $header['minor'];
+
 		$hash = substr($data, self::LENGTH_SIGNATURE, self::LENGTH_SALT);
 		$crypted = substr($data, self::LENGTH_SIGNATURE + self::LENGTH_SALT);
 
-		return array(
-			$header,
-			$this->_decrypt($crypted, $hash)
-		);
+		return array($header, $this->_decrypt($crypted, $hash));
 	}
 
 	private function _decrypt($data, $hash)
@@ -163,7 +155,12 @@ class iaPatchParser
 
 	protected function _parseSectionInfo()
 	{
-		$info = $this->_read('Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_extras/lcompilation_date/a34author/Smagic');
+		$infoHeaderFormats = array(
+			'3.0' => 'Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_extras/lcompilation_date/a34author/Smagic',
+			'4.0' => 'Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_extras/Snum_phrases/lcompilation_date/a34author/Smagic'
+		);
+
+		$info = $this->_read($infoHeaderFormats[$this->_version]);
 
 		$date = getdate($info['compilation_date']);
 		if ($info['magic'] != self::VALID_MAGIC_NUMBER || !checkdate($date['mon'], $date['mday'], $date['year']))
@@ -263,11 +260,9 @@ class iaPatchParser
 
 		while ($index < $this->patch['info']['num_extras'])
 		{
-			$len = $this->_read('C');
-			$type = $this->_read('C');
-			$name = $this->_read(self::FORMAT_RAW, $len);
+			list($l, $type) = array($this->_read('C'), $this->_read('C'));
 
-			if ($name)
+			if ($name = $this->_read(self::FORMAT_RAW, $l))
 			{
 				$items[] = array(
 					'type' => $this->_extraTypesMap[(bool)$type],
@@ -289,5 +284,31 @@ class iaPatchParser
 			'pre' => $this->_read(self::FORMAT_RAW, $lengths['pre']),
 			'post' => $this->_read(self::FORMAT_RAW, $lengths['post'])
 		);
+	}
+
+	protected function _parseSectionPhrases()
+	{
+		if (!$this->patch['info']['num_phrases'])
+		{
+			return false;
+		}
+
+		$index = (int)0;
+		$items = array();
+
+		while ($index < $this->patch['info']['num_phrases'])
+		{
+			list($type, $l1, $l2) = array($this->_read('C'), $this->_read('C'), $this->_read('S'));
+
+			$items[] = array(
+				'category' => $this->_phraseCategoriesMap[$type],
+				'key' => $this->_read(self::FORMAT_RAW, $l1),
+				'value' => $this->_read(self::FORMAT_RAW, $l2)
+			);
+
+			$index++;
+		}
+
+		return $items;
 	}
 }

@@ -29,7 +29,7 @@
 							<div class="alert alert-success">Configuration file has been saved. Please change permissions to unwritable for secure reason!</div>
 						<?php endif ?>
 						<form method="post" action="<?php echo URL_INSTALL ?><?php echo $this->module ?>/download/">
-							<input type="hidden" value="<?php echo iaHelper::_html($this->config) ?>" name="config_content" />
+							<input type="hidden" value="<?php echo iaHelper::_html($this->config) ?>" name="config_content">
 							<button type="submit" class="btn btn-success btn-plain">Download config file</button>
 							&nbsp;&nbsp;or&nbsp;&nbsp;
 							<a href="javascript:void(0);" onclick="if (document.getElementById('file_content').style.display=='block') { document.getElementById('file_content').style.display='none';} else {document.getElementById('file_content').style.display='block'}" class="btn btn-default">View config file</a>

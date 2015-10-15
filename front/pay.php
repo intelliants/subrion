@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
@@ -52,7 +29,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$iaTransaction->delete($transaction['id']);
 
 		$iaView->setMessages(iaLanguage::get('invoice_deleted'), iaView::SUCCESS);
-		iaUtil::go_to($iaPage->getUrlByName('member_balance'));
+		iaUtil::go_to($iaPage->getUrlByName('member_funds'));
 	}
 
 	// cancel payment
@@ -61,7 +38,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$iaTransaction->update(array('status' => iaTransaction::FAILED), $transaction['id']);
 
 		$iaView->setMessages(iaLanguage::get('payment_canceled'), iaView::SUCCESS);
-		iaUtil::go_to($iaPage->getUrlByName('member_balance'));
+		iaUtil::go_to($iaPage->getUrlByName('member_funds'));
 	}
 
 	// configure return url on payment success
@@ -79,6 +56,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$iaPlan = $iaCore->factory('plan');
 	$iaUsers = $iaCore->factory('users');
+
+	$iaCore->startHook('phpFrontBeforePaymentProcessing', array('transaction' => $transaction));
 
 	switch ($transaction['status'])
 	{
@@ -245,7 +224,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			else
 			{
 				$iaView->setMessages(iaLanguage::get('this_transaction_already_passed'), iaView::ALERT);
-				iaUtil::go_to($iaPage->getUrlByName('member_balance'));
+				iaUtil::go_to($iaPage->getUrlByName('member_funds'));
 			}
 
 			break;
@@ -253,7 +232,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		case iaTransaction::REFUNDED:
 		case iaTransaction::FAILED:
 			$iaView->setMessages($messages);
-			iaUtil::go_to($iaPage->getUrlByName('member_balance'));
+			iaUtil::go_to($iaPage->getUrlByName('member_funds'));
 
 			break;
 
@@ -265,9 +244,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
 
 	$memberBalance = iaUsers::hasIdentity() ? iaUsers::getIdentity()->funds : 0;
-	iaLanguage::set('balance_in_your_account', iaLanguage::getf('balance_in_your_account', array('sum' => $memberBalance, 'currency' => $iaCore->get('currency'))));
+	iaLanguage::set('funds_in_your_account', iaLanguage::getf('funds_in_your_account', array('sum' => $memberBalance, 'currency' => $iaCore->get('currency'))));
 
-	$isBalancePayment = (iaUsers::hasIdentity() && 'balance' == $transaction['item'] && iaUsers::getIdentity()->id == $transaction['item_id']);
+	$isBalancePayment = (iaUsers::hasIdentity() && iaTransaction::TRANSACTION_MEMBER_BALANCE == $transaction['item'] && iaUsers::getIdentity()->id == $transaction['item_id']);
 	$isFundsEnough = (bool)(!$isBalancePayment && iaUsers::hasIdentity() && iaUsers::getIdentity()->funds >= $transaction['amount']);
 
 	// FIXME: solution to prevent csrf catching.

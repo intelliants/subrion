@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
@@ -81,8 +58,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	if (iaUsers::hasIdentity() && iaUsers::getIdentity()->id == $member['id'])
 	{
 		$iaItem->setItemTools(array(
+			'id' => 'action-edit',
 			'title' => iaLanguage::get('edit'),
-			'url' => $iaPage->getUrlByName('profile')
+			'attributes' => array(
+				'href' => $iaPage->getUrlByName('profile'),
+			)
 		));
 	}
 
@@ -91,7 +71,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	// get fieldgroups
 	$iaField = $iaCore->factory('field');
-	list($sections, ) = $iaField->generateTabs($iaField->filterByGroup($member, $member['item']));
+	list($tabs, $fieldgroups) = $iaField->generateTabs($iaField->filterByGroup($member, $iaUsers->getItemName()));
+
+	// compose tabs
+	$sections = array_merge(array('common' => $fieldgroups), $tabs);
 
 	// get all items added by this account
 	$itemsList = $iaItem->getPackageItems();
@@ -127,11 +110,14 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					}
 
 					$member['items'][$itemName] = $result;
+					$member['items'][$itemName]['package'] = isset($itemsList[$itemName]) ? $itemsList[$itemName] : '';
 					$member['items'][$itemName]['fields'] = $iaField->filter($member['items'][$itemName]['items'], $itemName);
 				}
 			}
 		}
 	}
+
+	$iaUsers->incrementViewsCounter($member['id']);
 
 	$alpha = substr($member[$filterBy], 0, 1);
 	$alpha || $alpha = substr($member['username'], 0, 1);

@@ -10,5 +10,5 @@
 		<input type="submit" class="btn btn-danger" value="{lang key='close_all'}" id="js-close-cmd">
 	</div>
 </div>
-
+<div id="js-token">{preventCsrf}</div>
 {ia_print_js files='utils/edit_area/edit_area'}

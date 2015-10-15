@@ -1,4 +1,5 @@
 <form method="post" id="js-form-menus" class="sap-form form-horizontal">
+	{preventCsrf}
 	<input type="hidden" id="js-menu-data" name="menus"{if isset($treeData)} value="{$treeData}"{/if}>
 
 	<div class="wrap-list">

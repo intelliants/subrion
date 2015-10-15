@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 {
@@ -55,7 +32,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	 */
 	protected function _connect()
 	{
-		$this->_link = mysql_connect(INTELLI_DBHOST . ':' . INTELLI_DBPORT, INTELLI_DBUSER, INTELLI_DBPASS);
+		$this->_link = @mysql_connect(INTELLI_DBHOST . ':' . INTELLI_DBPORT, INTELLI_DBUSER, INTELLI_DBPASS);
 		if (!$this->_link)
 		{
 			$message = !INTELLI_DEBUG ? 'Could not connect.' : 'Could not connect to the database. For more information see error logs.';

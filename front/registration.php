@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 $iaUsers = $iaCore->factory('users');
 
@@ -46,7 +23,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			}
 			$email = iaSanitize::sql($email);
 
-			$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email AND `status` = :status', array('email' => $email, 'status' => iaCore::STATUS_ACTIVE));
+			$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', array('email' => $email));
 			if (empty($member))
 			{
 				$error = true;
@@ -126,59 +103,63 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		if ($email)
 		{
-			if (!iaValidate::isEmail($email))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('error_email_incorrect');
-			}
 			if ($form != 'confirm' && !iaValidate::isCaptchaValid())
 			{
 				$error = true;
 				$messages[] = iaLanguage::get('confirmation_code_incorrect');
 			}
 
-			$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email AND `status` = :status', array('email' => $email, 'status' => iaCore::STATUS_ACTIVE), iaUsers::getTable());
-
-			if (empty($member))
+			if (!iaValidate::isEmail($email))
 			{
 				$error = true;
-				$messages[] = iaLanguage::get('error_no_member_email');
-			}
-			if (false !== $code && $member['sec_key'] != $code)
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('confirmation_code_incorrect');
+				$messages[] = iaLanguage::get('error_email_incorrect');
 			}
 
-			if (!$error && false === $code)
+			if (!$error)
 			{
-				$token = iaUtil::generateToken();
-				$confirmationUrl = IA_URL . 'forgot/?email=' . $email . '&code=' . $token;
+				$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', array('email' => $email));
 
-				$iaMailer = $iaCore->factory('mailer');
+				if (empty($member))
+				{
+					$error = true;
+					$messages[] = iaLanguage::get('error_no_member_email');
+				}
+				if (false !== $code && $member['sec_key'] != $code)
+				{
+					$error = true;
+					$messages[] = iaLanguage::get('confirmation_code_incorrect');
+				}
 
-				$iaMailer->loadTemplate('password_restoration');
-				$iaMailer->addAddress($member['email'], $member['fullname']);
-				$iaMailer->setReplacements(array(
-					'fullname' => $member['fullname'],
-					'url' => $confirmationUrl,
-					'code' => $token,
-					'email' => $member['email']
-				));
+				if (!$error && false === $code)
+				{
+					$token = iaUtil::generateToken();
+					$confirmationUrl = IA_URL . 'forgot/?email=' . $email . '&code=' . $token;
 
-				$iaMailer->send();
+					$iaMailer = $iaCore->factory('mailer');
 
-				$messages[] = iaLanguage::get('restore_pass_confirm');
-				$iaDb->update(array('id' => $member['id'], 'sec_key' => $token), 0, 0, iaUsers::getTable());
-				$form = 'confirm';
-			}
-			elseif (!$error && $code)
-			{
-				$error = false;
-				$messages[] = iaLanguage::get('new_password_sent');
+					$iaMailer->loadTemplate('password_restoration');
+					$iaMailer->addAddress($member['email'], $member['fullname']);
+					$iaMailer->setReplacements(array(
+						'fullname' => $member['fullname'],
+						'url' => $confirmationUrl,
+						'code' => $token,
+						'email' => $member['email']
+					));
 
-				$iaUsers->changePassword($member);
-				$form = false;
+					$iaMailer->send();
+
+					$messages[] = iaLanguage::get('restore_pass_confirm');
+					$iaDb->update(array('id' => $member['id'], 'sec_key' => $token), 0, 0, iaUsers::getTable());
+					$form = 'confirm';
+				}
+				elseif (!$error && $code)
+				{
+					$error = false;
+					$messages[] = iaLanguage::get('new_password_sent');
+
+					$iaUsers->changePassword($member);
+					$form = false;
+				}
 			}
 		}
 		elseif ($_POST && empty($_POST['email']))

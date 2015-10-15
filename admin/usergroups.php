@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaBackendController extends iaAbstractControllerBackend
 {
@@ -34,7 +11,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_phraseAddSuccess = 'usergroup_added';
 	protected $_phraseGridEntryDeleted = 'usergroup_deleted';
 
-	protected $_iaUsers = null;
+	protected $_iaUsers;
 
 
 	public function __construct()
@@ -51,13 +28,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		return ($this->_iaCore->requestPath && 'store' == end($this->_iaCore->requestPath))
 			? $this->_getUsergroups()
 			: parent::_gridRead($params);
-	}
-
-	protected function _entryAdd(array $entryData)
-	{
-		parent::_entryAdd($entryData);
-
-		return $this->_iaDb->getAffected() ? $entryData['id'] : false;
 	}
 
 	protected function _entryDelete($entryId)
@@ -78,7 +48,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			. "AND `object` = 'admin_access' "
 			. "AND `action` = 'read' "
 			. ')'
-			. $order
+			. $order . ' '
 			. 'LIMIT ' . $start . ', ' . $limit;
 
 		$usergroups = $this->_iaDb->getAll($sql);
@@ -92,13 +62,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		$iaAcl = $this->_iaCore->factory('acl');
-
-		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-		$entry['id'] = $iaAcl->obtainFreeId();
-		$entry['assignable'] = $data['visible'];
-		$entry['visible'] = $data['visible'];
+		$entry['assignable'] = (int)$data['visible'];
+		$entry['visible'] = (int)$data['visible'];
 
 		if (iaCore::ACTION_ADD == $action)
 		{
@@ -120,31 +85,27 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		foreach ($this->_iaCore->languages as $iso => $title)
+		foreach ($this->_iaCore->languages as $code => $language)
 		{
-			if (empty($data['title'][$iso]))
+			if (empty($data['title'][$code]))
 			{
-				$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $this->_iaCore->languages[$iso])), false);
-			}
-			elseif (!utf8_is_valid($data['title'][$iso]))
-			{
-				$data['title'][$iso] = utf8_bad_replace($data['title'][$iso]);
-			}
-		}
-
-		if (!$this->getMessages())
-		{
-			foreach ($this->_iaCore->languages as $iso => $title)
-			{
-				iaLanguage::addPhrase('usergroup_' . $entry['name'], $data['title'][$iso], $iso);
+				$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $language['title'])), false);
 			}
 		}
 
 		return !$this->getMessages();
 	}
 
-	protected function _postSaveEntry(array $entry, array $data, $action)
+	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+		foreach ($this->_iaCore->languages as $code => $language)
+		{
+			$title = utf8_is_valid($data['title'][$code]) ? $data['title'][$code] : utf8_bad_replace($data['title'][$code]);
+			iaLanguage::addPhrase('usergroup_' . $entry['name'], $title, $code);
+		}
+
 		// copy privileges
 		$copyFrom = isset($data['copy_from']) ? (int)$data['copy_from'] : 0;
 		if ($copyFrom)

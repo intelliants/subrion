@@ -133,7 +133,7 @@
 						{/if}
 
 						<div class="item_input">
-							<select name="param[{$value.name}]" {if $value.values|@count == 1} disabled="disabled"{/if} id="{$value.name}">
+							<select name="param[{$value.name}]" {if count($value.values) == 1} disabled="disabled"{/if} id="{$value.name}">
 								{foreach $value.values as $key => $value2}
 									{if 'lang' == $value.name}
 										<option value="{$key}"{if $key == $value.value || $value2 == $value.value} selected{/if}>{$value2.title}</option>
@@ -165,9 +165,9 @@
 						{/if}
 					{elseif 'tpl' == $value.type}
 						{if file_exists($value.multiple_values)}
-							{include file=$value.multiple_values}
+							{include $value.multiple_values}
 						{else}
-							{lang key='template_file_error'} {$value.multiple_values}
+							{lang key='template_file_error' file=$value.multiple_values}
 						{/if}
 					{/if}
 					</div>

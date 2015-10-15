@@ -154,6 +154,7 @@
     text-align: right;
     line-height: 30px;
     vertical-align: bottom;
+    text-transform: lowercase;
 
     span {
       display: block;
@@ -652,4 +653,24 @@ li.dc-form {
     color: #fff;
   }
 
+}
+
+// Server alerts
+
+.imp-alert {
+  position: relative;
+  padding-left: 25px;
+
+  .i-warning {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    line-height: 28px;
+    left: -15px;
+    top: 10px;
+    background: @alert-danger-bg;
+    border-radius: 50%;
+    text-align: center;
+    border: 1px solid @alert-danger-border;
+  }
 }

@@ -1,49 +1,50 @@
-{assign type $field.type}
-{assign varname $field.name}
-{assign name "field_{$varname}"}
+{$type = $field.type}
+{$fieldName = $field.name}
+{$name = "field_{$fieldName}"}
 
-{if isset($field_before[$varname])}{$field_before.$varname}{/if}
-{if isset($item.$varname) && $item.$varname}
+{if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
+
+{if isset($item.$fieldName) && $item.$fieldName}
 	{if 'checkbox' == $type}
-		{assign value ','|explode:$item.$varname}
+		{$value = ','|explode:$item.$fieldName}
 	{elseif in_array($type, array('image', 'pictures', 'storage'))}
-		{assign value $item.$varname|unserialize}
+		{$value = $item.$fieldName|unserialize}
 	{else}
-		{assign value $item.$varname}
+		{$value = $item.$fieldName}
 	{/if}
 {else}
-	{assign value $field.default}
+	{$value = $field.default}
 {/if}
 
-<div id="{$varname}_fieldzone" class="row {$field.relation}">
+<div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
 	<label class="col col-lg-2 control-label">{lang key=$name} {if $field.required}{lang key='field_required'}{/if}
 		{assign annotation {lang key="{$name}_annotation" default=''}}
 		{if $annotation}<br><span class="help-block">{$annotation}</span>{/if}
 	</label>
 
-	{if 'textarea' != $type}
+	{if iaField::TEXTAREA != $type}
 		<div class="col col-lg-4">
 	{else}
 		<div class="col col-lg-8">
 	{/if}
 
 	{switch $type}
-		{case 'text' break}
-			<input type="text" name="{$varname}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+		{case iaField::TEXT break}
+			<input type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
 
-		{case 'date' break}
+		{case iaField::DATE break}
 			{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
 
-			<div class="input-group date" id="field_date_{$varname}">
-				<input type="text" class="js-datepicker" name="{$varname}" id="{$name}" value="{$default_date}" {if $field.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if}>
+			<div class="input-group date" id="field_date_{$fieldName}">
+				<input type="text" class="js-datepicker" name="{$fieldName}" id="{$name}" value="{$default_date}" {if $field.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if}>
 				<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 			</div>
 
-		{case 'number' break}
-			<input type="text" name="{$varname}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+		{case iaField::NUMBER break}
+			<input class="js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
 
-		{case 'url' break}
+		{case iaField::URL break}
 			{if !is_array($value)}
 				{assign value '|'|explode:$value}
 			{/if}
@@ -60,53 +61,52 @@
 				</div>
 			</div>
 
-		{case 'textarea' break}
+		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
-				<textarea name="{$varname}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
+				<textarea name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
 				{if $field.length > 0}
 					{ia_add_js}
 $(function($)
 {
-$('#{$name}').dodosTextCounter({$field.length},
-{
-	counterDisplayElement: 'span',
-	counterDisplayClass: 'textcounter_{$varname}',
-	addLineBreak: false
-});
+	$('#{$name}').dodosTextCounter({$field.length},
+	{
+		counterDisplayElement: 'span',
+		counterDisplayClass: 'textcounter_{$fieldName}',
+		addLineBreak: false
+	});
 
-$('.textcounter_{$varname}').wrap('<p class="help-block text-right">').addClass('textcounter').after(' ' + _t('chars_left'));
+	$('.textcounter_{$fieldName}').wrap('<p class="help-block text-right">').addClass('textcounter').after(' ' + _t('chars_left'));
 });
 					{/ia_add_js}
-
 					{ia_print_js files='jquery/plugins/jquery.textcounter'}
 				{/if}
 			{else}
 				{ia_wysiwyg value=$value name=$field.name}
 			{/if}
 
-		{case 'image' break}
+		{case iaField::IMAGE break}
 			{if $value}
 				<div class="input-group thumbnail thumbnail-single with-actions">
-					<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$varname}]">
+					<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]">
 						{printImage imgfile=$value.path}
 					</a>
 
-					<input type="hidden" name="{$varname}[path]" value="{$value.path}">
+					<input type="hidden" name="{$fieldName}[path]" value="{$value.path}">
 
 					<div class="caption">
-						<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$value.path}',this,'{$field.item}','{$varname}','{$id}')"><i class="i-remove-sign"></i></a>
+						<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$value.path}',this,'{$field.item}','{$fieldName}','{$id}')"><i class="i-remove-sign"></i></a>
 					</div>
 				</div>
 
-				{ia_html_file name="{$varname}[]" id=$name value=$value.path}
+				{ia_html_file name="{$fieldName}[]" id=$name value=$value.path}
 			{else}
-				{ia_html_file name="{$varname}[]" id=$name}
+				{ia_html_file name="{$fieldName}[]" id=$name}
 			{/if}
 
-		{case 'pictures'}
-		{case 'storage' break}
+		{case iaField::PICTURES}
+		{case iaFIeld::STORAGE break}
 			{if $value}
-				<div class="uploads-list" id="{$varname}_upload_list">
+				<div class="uploads-list" id="{$fieldName}_upload_list">
 					{foreach $value as $i => $entry}
 						<div class="uploads-list-item">
 							{if 'pictures' == $type}
@@ -116,8 +116,8 @@ $('.textcounter_{$varname}').wrap('<p class="help-block text-right">').addClass(
 							{/if}
 							<div class="uploads-list-item__body">
 								<div class="input-group">
-									<input type="text" name="{$varname}[{$i}][title]" value="{$entry.title|escape:'html'}" id="{$varname}_{$entry@index}">
-									<input type="hidden" name="{$varname}[{$i}][path]" value="{$entry.path}">
+									<input type="text" name="{$fieldName}[{$i}][title]" value="{$entry.title|escape:'html'}" id="{$fieldName}_{$entry@index}">
+									<input type="hidden" name="{$fieldName}[{$i}][path]" value="{$entry.path}">
 
 									<span class="input-group-btn">
 										{if 'pictures' == $type}
@@ -137,7 +137,11 @@ $('.textcounter_{$varname}').wrap('<p class="help-block text-right">').addClass(
 				{ia_add_js}
 $(function()
 {
-	intelli.sortable('{$varname}_upload_list', '.uploads-list-item__drag-handle');
+	var params = {
+		handle: '.uploads-list-item__drag-handle'
+	}
+
+	intelli.sortable('{$fieldName}_upload_list', params);
 });
 				{/ia_add_js}
 
@@ -146,17 +150,16 @@ $(function()
 				{assign max_num $field.length}
 			{/if}
 
-			{ia_html_file name=$varname id=$varname multiple=true max_num=$max_num title=true}
-	{/switch}
+			{ia_html_file name=$fieldName id=$fieldName multiple=true max_num=$max_num title=true}
 
-	{if $type == 'combo'}
-		<select name="{$varname}" id="{$name}">
-			<option value="">{lang key='_select_'}</option>
-			{html_options options=$field.values selected=$value}
-		</select>
+		{case iaField::COMBO break}
+			<select name="{$fieldName}" id="{$name}">
+				<option value="">{lang key='_select_'}</option>
+				{html_options options=$field.values selected=$value}
+			</select>
 
-		{if 'parent' == $field.relation && $field.children}
-			{ia_add_js order=5}
+			{if 'parent' == $field.relation && $field.children}
+				{ia_add_js order=5}
 $(function()
 {
 	$('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$field.name}');
@@ -178,22 +181,22 @@ $(function()
 		});
 	}).change();
 });
-			{/ia_add_js}
-		{/if}
+				{/ia_add_js}
+			{/if}
 
-	{elseif $type == 'radio'}
-		{if !empty($field.values)}
-			{html_radios assign='radios' name=$varname options=$field.values selected=$value separator="</div>"}
+		{case iaField::RADIO break}
+			{if !empty($field.values)}
+				{html_radios assign='radios' name=$fieldName options=$field.values selected=$value separator='</div>'}
 
-			<div class="radio">{'<div class="radio">'|implode:$radios}
-		{/if}
+				<div class="radio">{'<div class="radio">'|implode:$radios}
+			{/if}
 
-		{if $field.relation == 'parent' && $field.children}
-			{ia_add_js order=5}
+			{if iaField::RELATION_PARENT == $field.relation && $field.children}
+				{ia_add_js order=5}
 $(function()
 {
 	$('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$field.name}');
-	$('input[name="{$varname}"]').on('change', function()
+	$('input[name="{$fieldName}"]').on('change', function()
 	{
 		var $this = $(this),
 			value = $this.val();
@@ -213,23 +216,22 @@ $(function()
 		}
 	}).change();
 });
-			{/ia_add_js}
-		{/if}
+				{/ia_add_js}
+			{/if}
 
-	{elseif $type == 'checkbox'}
-		{html_checkboxes assign='checkboxes' name=$varname options=$field.values selected=$value separator='</div>'}
+		{case iaField::CHECKBOX break}
+			{if !empty($field.values)}
+				{html_checkboxes assign='checkboxes' name=$fieldName options=$field.values selected=$value separator='</div>'}
 
-		{if $field.values}
-			{html_checkboxes assign='checkboxes' name=$varname options=$field.values selected=$value separator='</div>'}
-			<div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
-		{/if}
+				<div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
+			{/if}
 
-		{if $field.relation == 'parent' && $field.children}
-			{ia_add_js order=5}
+			{if iaField::RELATION_PARENT == $field.relation && $field.children}
+				{ia_add_js order=5}
 $(function()
 {
 	$('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$field.name}');
-	$('input[name="{$varname}[]"]').on('change', function()
+	$('input[name="{$fieldName}[]"]').on('change', function()
 	{
 		$('.hide_{$field.name}').hide();
 
@@ -243,24 +245,56 @@ $(function()
 		});
 	}).change();
 });
+				{/ia_add_js}
+			{/if}
+
+		{case iaField::TREE break}
+			<input type="text" id="label-{$fieldName}" disabled>
+			<input type="hidden" name="{$fieldName}" id="input-{$fieldName}" value="{$value|escape:'html'}">
+			<div class="js-tree categories-tree" data-field="{$fieldName}" data-nodes="{$field.values|escape:'html'}" data-multiple="{$field.timepicker}"></div>
+			{ia_add_media files='tree'}
+			{ia_add_js order=5}
+$(function()
+{
+	'use strict';
+
+	$('.js-tree').each(function()
+	{
+		var data = $(this).data(),
+			options = { core:{ data: data.nodes, multiple: data.multiple}};
+
+		if (data.multiple) options.plugins = ['checkbox'];
+
+		$(this).jstree(options)
+		.on('changed.jstree', function(e, d)
+		{
+			var nodes = [], ids = [];
+			for (var i = 0; i < d.selected.length; i++)
+			{
+				var node = d.instance.get_node(d.selected[i]);
+				nodes.push(node.text.trim());
+				ids.push(node.id);
+			}
+
+			var fieldName = $(this).data('field');
+
+			$('#label-' + fieldName).val(nodes.join(', '));
+			$('#input-' + fieldName).val(ids.join(', '));
+		})
+		.on('ready.jstree', function(e, d)
+		{
+			var nodes = $('#input-' + $(this).data('field')).val().split(',');
+			d.instance.open_all();
+			for (var i in nodes)
+			{
+				d.instance.select_node(nodes[i]);
+			}
+		})
+	});
+});
 			{/ia_add_js}
-		{/if}
-
-	{elseif ($type == 'checkbox' || $type == 'combo' || $type == 'radio') && $field.show_as == 'radio'}
-		<h3>{lang key=$name}</h3>
-		<div>
-			{html_radios name=$varname options=$field.values separator='<br>' grouping=10}
-		</div>
-
-	{elseif ($type == 'checkbox' || $type == 'combo' || $type == 'radio') && $field.show_as == 'combo'}
-		<div>
-			<h3><label for="{$varname}_domid"> {lang key=$name}: </label>
-			<select name="{$varname}" id="{$varname}_domid">
-				<option value="_na_">{lang key='all'}</option>
-				{html_options options=$field.values}
-			</select></h3>
-		</div>
-	{/if}
+	{/switch}
 	</div>
 </div>
-{if isset($field_after[$varname])}{$field_after.$varname}{/if}
+
+{if isset($field_after[$fieldName])}{$field_after.$fieldName}{/if}

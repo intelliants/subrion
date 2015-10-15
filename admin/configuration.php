@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaBackendController extends iaAbstractControllerBackend
 {
@@ -199,14 +176,12 @@ class iaBackendController extends iaAbstractControllerBackend
 				break;
 
 			case 'remove_image':
-
 				iaUtil::deleteFile(IA_UPLOADS . $this->_iaCore->get($_POST['name']));
 				$this->_iaCore->set($_POST['name'], '', true);
 
 				break;
 
 			case 'upload_image':
-
 				$paramName = $_POST['name'];
 				if (!(bool)$_FILES[$paramName]['error'])
 				{
@@ -269,6 +244,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$page = $iaPage->getByName('templates');
 
 				$iaView->set('group', $page['group']);
+				$iaView->set('active_config', $groupData['name']);
 
 				iaBreadcrumb::add($page['title'], IA_ADMIN_URL . $page['alias']);
 			}
@@ -276,7 +252,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				// it is a package
 				$iaView->set('group', $pluginPage['group']);
-				$iaView->set('active_config', $groupData['extras']);
+				$iaView->set('active_config', $groupData['name']);
 
 				$activeMenu = null;
 
@@ -286,6 +262,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				// plugin with no admin pages
 				$iaView->set('group', 5);
+				$iaView->set('active_config', $groupData['extras']);
 			}
 		}
 		else

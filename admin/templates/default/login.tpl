@@ -75,7 +75,7 @@
 				</form>
 			</div>
 			<div class="js-login-body-forgot-password">
-				<form action="" method="post" class="sap-form">
+				<form method="post" class="sap-form">
 					<div class="alert" style="display: none;">{lang key='error_email_incorrect'}</div>
 					{preventCsrf}
 					<p class="help-block">{lang key='restore_password'}</p>

@@ -45,9 +45,7 @@
 								{if $template.name != $tmpl}
 									<button type="submit" name="install" class="btn btn-success btn-sm"><i class="i-checkmark"></i> {lang key='set_as_default_template'}</button>
 								{else}
-									{if $smarty.const.INTELLI_DEBUG}
-										<button type="submit" name="reinstall" class="btn btn-warning btn-sm"><i class="i-loop"></i></button>
-									{/if}
+									<button type="submit" name="reinstall" class="btn btn-warning btn-sm"><i class="i-loop"></i></button>
 									{if $template.config_groups}
 										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$template.config_groups[0].name}/" class="btn btn-sm btn-default" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
 									{/if}
@@ -62,6 +60,7 @@
 								<a href="{$template.url}" class="btn btn-default btn-sm" target="_blank" title="{lang key='view'}"><i class="i-eye"></i> {lang key='view'}</a>
 							{else}
 								<form method="post" class="clearfix">
+									{preventCsrf}
 									<button type="submit" name="download" value="{$template.name}" class="btn btn-success btn-sm"><i class="i-box-add"></i> {lang key='download'}</button>
 									<a href="{$template.url}" class="btn btn-default btn-sm" target="_blank" title="{lang key='preview'}"><i class="i-eye"></i></a>
 								</form>

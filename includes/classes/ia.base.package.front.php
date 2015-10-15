@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 abstract class abstractPackageFront extends abstractCore
 {
@@ -31,6 +8,9 @@ abstract class abstractPackageFront extends abstractCore
 	protected $_packageName;
 
 	protected $_statuses = array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE);
+
+	public $coreSearchEnabled = false;
+	public $coreSearchOptions = array();
 
 
 	public function getPackageName()
@@ -124,7 +104,10 @@ abstract class abstractPackageFront extends abstractCore
 
 			if ($result)
 			{
-				if ($imageFields = $this->iaCore->factory('field')->getImageFields($this->getPackageName()))
+				$iaField = $this->iaCore->factory('field');
+
+				// delete images field values
+				if ($imageFields = $iaField->getImageFields($this->getItemName()))
 				{
 					$iaPicture = $this->iaCore->factory('picture');
 
@@ -133,6 +116,28 @@ abstract class abstractPackageFront extends abstractCore
 						if (isset($entryData[$imageFieldName]) && $entryData[$imageFieldName])
 						{
 							$iaPicture->delete($entryData[$imageFieldName]);
+						}
+					}
+				}
+
+				// delete storage field values
+				if ($storageFields = $iaField->getStorageFields($this->getItemName()))
+				{
+					foreach ($storageFields as $storageFieldName)
+					{
+						if (isset($entryData[$storageFieldName]) && $entryData[$storageFieldName])
+						{
+							if (':' == $entryData[$storageFieldName][1])
+							{
+								$unpackedData = unserialize($entryData[$storageFieldName]);
+								if (is_array($unpackedData) && $unpackedData)
+								{
+									foreach ($unpackedData as $oneFile)
+									{
+										iaUtil::deleteFile(IA_UPLOADS . $oneFile['path']);
+									}
+								}
+							}
 						}
 					}
 				}
@@ -178,5 +183,15 @@ abstract class abstractPackageFront extends abstractCore
 		$result = $this->iaDb->update(null, iaDb::convertIds($itemId), array($columnName => '`' . $columnName . '` + 1'), self::getTable());
 
 		return (bool)$result;
+	}
+
+	public function coreSearch($stmt, $start, $limit, array $sorting)
+	{
+		$order = $sorting ? ' ORDER BY `' . $sorting[0] . '` ' . $sorting[1] : '';
+
+		$rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt . $order, $start, $limit, self::getTable());
+		$count = $this->iaDb->foundRows();
+
+		return array($count, $rows);
 	}
 }

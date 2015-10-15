@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaAcl extends abstractUtil
 {
@@ -366,28 +343,6 @@ class iaAcl extends abstractUtil
 	public function decodeAction($action)
 	{
 		return explode(self::DELIMITER, $action);
-	}
-
-	/**
-	 * Return free usergroup ID, 0 if no free ID
-	 * @return int
-	 */
-	public function obtainFreeId()
-	{
-		$id = 0;
-		$limit = 28; // be careful with overflow
-		$userGroups = $this->iaCore->factory('users')->getUsergroups();
-
-		for ($i = 0; $i <= $limit; $i++)
-		{
-			if (!isset($userGroups[1 << $i]))
-			{
-				$id = 1 << $i;
-				break;
-			}
-		}
-
-		return $id;
 	}
 
 	// TODO: review

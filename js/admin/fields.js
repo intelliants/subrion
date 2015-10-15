@@ -196,7 +196,7 @@ $(function()
 		var object = $('#js-row-empty-text');
 		($.inArray(type, ['text', 'textarea', 'number']) !== -1) ? object.show() : object.hide();
 
-		if (type && $.inArray(type, ['textarea', 'text', 'number', 'storage', 'image', 'url', 'date', 'pictures']) !== -1)
+		if (type && $.inArray(type, ['textarea', 'text', 'number', 'storage', 'image', 'url', 'date', 'pictures', 'tree']) !== -1)
 		{
 			$('#' + type).css('display', 'block');
 			if ($('#searchable').val() == '1' && ('textarea' == type || 'text' == type) && 'none' == $('#fulltext_search_zone').css('display'))
@@ -206,8 +206,7 @@ $(function()
 		}
 		else if (type && $.inArray(type, ['combo', 'radio', 'checkbox']) !== -1)
 		{
-			$('#multiple').css('display', 'block');
-			('checkbox' == type) ? $('#textany_meta_container').hide() : $('#textany_meta_container').show();
+			$('#js-multiple').css('display', 'block');
 		}
 
 		(type && $.inArray(type, ['text', 'number', 'image', 'date', 'combo', 'radio']) !== -1)
@@ -380,8 +379,6 @@ $(function()
 		intelli.displayUpdown();
 	});
 
-	$('.js-filter-numeric').numeric();
-
 	intelli.displayUpdown();
 
 	$('#toggle-pages')
@@ -487,5 +484,44 @@ $(function()
 					$this.addClass('active').next().slideDown('fast');
 				});
 		}
+	});
+
+
+	// tree field
+	var $tree = $('#input-nodes');
+
+	$('.js-tree-action').on('click', function(e)
+	{
+		e.preventDefault();
+
+		var tree = $tree.jstree(true),
+			selection = tree.get_selected();
+
+		switch ($(this).data('action'))
+		{
+			case 'create':
+				selection = selection.length > 0 ? selection[0] : null;
+				selection = tree.create_node(selection, {type: 'file'});
+				if (selection) tree.edit(selection);
+				break;
+			case 'update':
+				tree.edit(selection[0]);
+				break;
+			case 'delete':
+				tree.delete_node(selection);
+		}
+	});
+
+	var nodes = $('input[name="nodes"]').val();
+
+	$tree.jstree({core: {check_callback: true, data: ('' != nodes) ? JSON.parse(nodes) : null}})
+	.on('changed.jstree', function(e, data)
+	{
+		var actionButtons = $('.js-tree-action[data-action="update"], .js-tree-action[data-action="delete"]');
+		data.selected.length > 0 ? actionButtons.removeClass('disabled') : actionButtons.addClass('disabled');
+	})
+	.on('create_node.jstree rename_node.jstree delete_node.jstree', function(e, data)
+	{
+		$('input[name="nodes"]').val(JSON.stringify(data.instance.get_json('#', {flat: true})));
 	});
 });

@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaField extends abstractCore
 {
@@ -37,6 +14,7 @@ class iaField extends abstractCore
 	const TEXT = 'text';
 	const TEXTAREA = 'textarea';
 	const URL = 'url';
+	const TREE = 'tree';
 
 	const RELATION_DEPENDENT = 'dependent';
 	const RELATION_PARENT = 'parent';
@@ -559,12 +537,7 @@ class iaField extends abstractCore
 
 			if (isset($data['owner']))
 			{
-				if (empty($data['owner']))
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('owner_is_not_specified');
-				}
-				else
+				if (!empty($data['owner']))
 				{
 					if ($memberId = $iaCore->iaDb->one_bind('id', '`username` = :name OR `fullname` = :name', array('name' => iaSanitize::sql($_POST['owner'])), iaUsers::getTable()))
 					{
@@ -575,6 +548,10 @@ class iaField extends abstractCore
 						$error = true;
 						$messages[] = iaLanguage::get('incorrect_owner_specified');
 					}
+				}
+				else
+				{
+					$item['member_id'] = 0;
 				}
 			}
 
@@ -867,6 +844,10 @@ class iaField extends abstractCore
 				// If already has images, append them.
 				$item[$fieldName] = empty($item[$fieldName]) ? '' : serialize(array_merge($item[$fieldName])); // array_merge is used to reset numeric keys
 			}
+			elseif (self::TREE == $field['type'])
+			{
+				$item[$fieldName] = str_replace(' ', '', iaSanitize::tags($data[$fieldName]));
+			}
 
 			if (isset($item[$fieldName]))
 			{
@@ -1044,12 +1025,47 @@ class iaField extends abstractCore
 		return array($tabs, $groups);
 	}
 
-	public function getImageFields($pluginFilter = null)
+	public function getImageFields($itemFilter = null)
 	{
 		$conditions = array("`type` IN ('image','pictures')");
-		empty($pluginFilter) || $conditions[] = "`extras` = '" . iaSanitize::sql($pluginFilter) . "'";
+		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
 		$conditions = implode(' AND ', $conditions);
 
 		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+	}
+
+	public function getStorageFields($itemFilter = null)
+	{
+		$conditions = array("`type` = 'storage'");
+		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
+		$conditions = implode(' AND ', $conditions);
+
+		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+	}
+
+	public function getTreeNodes($condition = '')
+	{
+		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $condition, null, null, 'fields_tree_nodes');
+
+		if ($rows)
+		{
+			foreach ($rows as &$node)
+			{
+				$node['title'] = iaLanguage::get('field_' . $node['item'] . '_' . $node['field'] . '_' . $node['node_id']);
+			}
+		}
+
+		return $rows;
+	}
+
+	public function getTreeNode($condition)
+	{
+		$result = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $condition, 'fields_tree_nodes');
+		if ($result)
+		{
+			$result['title'] = iaLanguage::get('field_' . $result['item'] . '_' . $result['field'] . '_' . $result['node_id']);
+		}
+
+		return $result;
 	}
 }

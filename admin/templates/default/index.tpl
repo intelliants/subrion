@@ -13,6 +13,20 @@
 
 {ia_hooker name='smartyDashboardBeforeContent'}
 
+{if !empty($updatesInfo)}
+	{foreach $updatesInfo as $message}
+		{if !isset($smarty.cookies["alert-{$message[0]}"]) || 'closed' != $smarty.cookies["alert-{$message[0]}"]}
+			<div class="alert alert-danger fade in imp-alert js-imp-alert" data-id="alert-{$message[0]}">
+				<i class="i-warning"></i>
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				{$message[1]}
+			</div>
+		{/if}
+	{/foreach}
+{/if}
+
 <div class="row animated-widgets">
 	<div class="col col-lg-6">
 		<div class="widget-block">
@@ -28,7 +42,7 @@
 						<table>
 							{foreach $info.rows as $key => $value}
 							<tr>
-								<td><a href="{$info.url}?status={$key}">{lang key=$key}</a>:</td>
+								<td><a href="{$info.url}?status={$key}">{lang key=$key default=$key}</a>:</td>
 								<td>{$value}</td>
 							</tr>
 							{/foreach}
@@ -58,7 +72,7 @@
 			<div class="widget widget-package" id="widget-{$itemName}">
 				<div class="widget-content">
 					<div class="widget-total-stats">
-						<span><a href="{$info.url}">{$info.total}</a></span> {$info.item}
+						<span><a href="{$info.url}">{$info.total}</a></span> {lang key=$info.item default=$info.item}
 					</div>
 					<div class="widget-icon"><i class="i-{$info.icon}"></i></div>
 					<hr>
@@ -66,7 +80,7 @@
 						<table>
 							{foreach $info.rows as $key => $value}
 							<tr>
-								<td><a href="{$info.url}?status={$key}">{lang key=$key}</a>:</td>
+								<td><a href="{$info.url}?status={$key}">{lang key=$key default=$key}</a>:</td>
 								<td>{$value}</td>
 							</tr>
 							{/foreach}
@@ -99,7 +113,7 @@
 						<div class="widget-total-stats">
 							<span class="main-stat"><a href="{$info.url}">{$info.total}</a> {$info.item}</span>
 							{foreach $info.rows as $key => $value}
-							<span><a href="{$info.url}?status={$key}">{$value}</a> {lang key=$key}</span>
+							<span><a href="{$info.url}?status={$key}">{$value}</a> {lang key=$key default=$key}</span>
 							{/foreach}
 						</div>
 						<div class="widget-icon"><i class="i-{$info.icon}"></i></div>

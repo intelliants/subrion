@@ -1,30 +1,7 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
-define('IA_VER', '330');
+define('IA_VER', '340');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
@@ -36,18 +13,11 @@ $iaOutput->steps = array(
 	'plugins' => 'Plugins Installation'
 );
 
-if (iaHelper::isScriptInstalled()
-	&& (!iaUsers::hasIdentity() || iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id))
-{
-	$iaOutput->errorCode = 'authorization';
-	return false;
-}
-
 
 $error = false;
 $message = '';
 
-$builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog');
+$builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog', 'elfinder');
 
 switch ($step)
 {
@@ -257,11 +227,7 @@ switch ($step)
 
 			if (empty($errorList))
 			{
-				$link = @mysql_connect(iaHelper::getPost('dbhost') . ':' . iaHelper::getPost('dbport', 3306),
-					iaHelper::getPost('dbuser'), iaHelper::getPost('dbpwd'));
-				$prefix = iaHelper::getPost('prefix');
-
-				if (!$link)
+				if (!($link = @mysql_connect(iaHelper::getPost('dbhost') . ':' . iaHelper::getPost('dbport', 3306), iaHelper::getPost('dbuser'), iaHelper::getPost('dbpwd'))))
 				{
 					$error = true;
 					$message = 'MySQL server: ' . mysql_error() . '<br>';
@@ -272,6 +238,8 @@ switch ($step)
 					$error = true;
 					$message = 'Could not select database ' . iaHelper::_html(iaHelper::getPost('dbname')) . ': ' . mysql_error();
 				}
+
+				$prefix = iaHelper::getPost('prefix');
 
 				if (!$error && !iaHelper::getPost('delete_tables', false))
 				{
@@ -368,6 +336,21 @@ switch ($step)
 					}
 				}
 
+				$iaTemplate = iaHelper::loadCoreClass('template');
+
+				$templateInstallationFile = IA_HOME . 'templates' . IA_DS . iaHelper::getPost('tmpl', '') . IA_DS . 'install.xml';
+				$iaTemplate->getFromPath($templateInstallationFile);
+
+				$iaTemplate->parse();
+				$iaTemplate->check();
+
+				if ($notes = $iaTemplate->getNotes())
+				{
+					$error = true;
+					$errorList[] = 'template';
+					$message = sprintf('&quot;%s&quot; template error: %s', $iaTemplate->title, implode('<br>', $notes));
+				}
+
 				if (!$error)
 				{
 					$config = file_get_contents(IA_INSTALL . 'modules' . IA_DS . 'config.sample');
@@ -405,6 +388,7 @@ The Subrion Support Team
 http://www.subrion.org
 http://www.intelliants.com
 HTML;
+					$salt = '#' . strtoupper(substr(md5(IA_HOME), 21, 10));
 					$params = array(
 						'{version}' => IA_VERSION,
 						'{date}' => date('d F Y H:i:s'),
@@ -415,13 +399,14 @@ HTML;
 						'{dbname}' => iaHelper::getPost('dbname'),
 						'{dbport}' => iaHelper::getPost('dbport'),
 						'{dbprefix}' => iaHelper::getPost('prefix'),
-						'{salt}' => '#' . strtoupper(substr(md5(IA_HOME), 21, 10)),
+						'{salt}' => $salt,
 						'{debug}' => iaHelper::getPost('debug', 0, false),
 						'{username}' => iaHelper::_sql(iaHelper::getPost('admin_username')),
-						'{password}' =>  iaHelper::_sql(iaHelper::getPost('admin_password')),
+						'{password}' => iaHelper::_sql(iaHelper::getPost('admin_password')),
 						'{url}' => URL_HOME . 'admin/'
 					);
 					$body = str_replace(array_keys($params), array_values($params), $body);
+					$params['{dbpass}'] = str_replace("'", "\\'", $params['{dbpass}']);
 					$config = str_replace(array_keys($params), array_values($params), $config);
 
 					@mail(iaHelper::_sql(iaHelper::getPost('admin_email')), 'Subrion CMS Installed', $body, 'From: tech@subrion.com');
@@ -445,13 +430,11 @@ HTML;
 					{
 						if (!$handle = fopen($filename, 'w+'))
 						{
-							$error = true;
 							$configMsg = 'Cannot open file: ' . $filename;
 						}
 
 						if (fwrite($handle, $config) === false)
 						{
-							$error = true;
 							$configMsg = 'Cannot write to file: ' . $filename;
 						}
 
@@ -459,7 +442,6 @@ HTML;
 					}
 					else
 					{
-						$error = true;
 						$configMsg = 'Cannot write to folder.';
 					}
 
@@ -477,27 +459,12 @@ HTML;
 
 				if (!$error)
 				{
+					defined('IA_SALT') || define('IA_SALT', $salt);
+
 					$iaUsers = iaHelper::loadCoreClass('users', 'core');
 					$iaUsers->changePassword(array('id' => 1), iaHelper::getPost('admin_password'), false);
-				}
 
-				iaHelper::cleanUpCacheContents();
-
-				if (!$error)
-				{
-					$iaTemplate = iaHelper::loadCoreClass('template');
-
-					$templateInstallationFile = IA_HOME . 'templates' . IA_DS . iaHelper::getPost('tmpl', '') . IA_DS . 'install.xml';
-					$iaTemplate->getFromPath($templateInstallationFile);
-
-					$iaTemplate->parse();
-					$iaTemplate->check();
-
-					if ($notes = $iaTemplate->getNotes())
-					{
-						$error = true;
-						$message = implode('<br>', $notes);
-					}
+					iaHelper::cleanUpCacheContents();
 
 					$iaTemplate->install(iaTemplate::SETUP_INITIAL);
 
@@ -538,6 +505,11 @@ HTML;
 		break;
 
 	case 'download':
+		if (class_exists('iaCore')) // iaCore isn't loaded when config file hasn't been written
+		{
+			iaCore::instance()->iaView->set('nodebug', true);
+		}
+
 		header('Content-Type: text/x-delimtext; name="config.inc.php"');
 		header('Content-disposition: attachment; filename="config.inc.php"');
 

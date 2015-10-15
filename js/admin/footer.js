@@ -108,6 +108,11 @@ $(function()
 		$(toggleWhat).toggle();
 	});
 
+	if ('function' == typeof $.fn.numeric)
+	{
+		$('.js-filter-numeric').numeric();
+	}
+
 	$('textarea.js-code-editor').each(function()
 	{
 		editAreaLoader.init(
@@ -215,21 +220,21 @@ $(function()
 
 	// activating buttons
 	$('.upload-group')
-		.on('click', '.js-file-browse', function(e)
-		{
-			e.preventDefault();
-			fileUpload(this);
-		})
-		.on('click', '.js-file-add', function(e)
-		{
-			e.preventDefault();
-			addFileUploadField(this);
-		})
-		.on('click', '.js-file-remove', function(e)
-		{
-			e.preventDefault();
-			removeFileUploadField(this);
-		});
+	.on('click', '.js-file-browse', function(e)
+	{
+		e.preventDefault();
+		fileUpload(this);
+	})
+	.on('click', '.js-file-add', function(e)
+	{
+		e.preventDefault();
+		addFileUploadField(this);
+	})
+	.on('click', '.js-file-remove', function(e)
+	{
+		e.preventDefault();
+		removeFileUploadField(this);
+	});
 
 	$('.js-file-delete').on('click', function(e)
 	{
@@ -315,52 +320,40 @@ $(function()
 	}
 
 	/* feedback form START */
-	$('#feedback_subject').change(function()
+	var $feedbackForm = $('form', '#feedback-modal');
+	$('select[name="subject"]', $feedbackForm).on('change', function()
 	{
-		var subject = $(this).val(), classname = '';
-
-		if ('feature_request' == subject)
+		var $option = $('option:selected', this);
+		if ($option.val() != '')
 		{
-			classname = 'i-bug';
+			$('#feedback_subject_label').html('<i class="i-' + $option.data('icon') + '"></i> ' + _t('subject'));
 		}
-		else if ('bug_report' == subject)
-		{
-			classname = 'i-lightning';
-		}
-		else if ('custom_modification' == subject)
-		{
-			classname = 'i-fire';
-		}
-
-		$('#feedback_subject_label').html('<i class="' + classname + '"></i> ' + _t('subject'));
 	});
 
-	$('#feedback_fullname, #feedback_email').focus(function()
+	$('input[name="fullname"], input[name="email"]', $feedbackForm).focus(function()
 	{
-		var _this = $(this);
-		if (_this.data('def') == _this.val())
+		var $this = $(this);
+		if ($this.data('def') == $this.val())
 		{
-			_this.val('');
+			$this.val('');
 		}
 	}).blur(function()
 	{
-		var _this = $(this);
-		if (_this.val() == '')
+		var $this = $(this);
+		if ($this.val() == '')
 		{
-			_this.val(_this.data('def'));
+			$this.val($this.data('def'));
 		}
 	});
 
-	$('#js-cmd-send-feedback').click(function()
+	$feedbackForm.on('submit', function()
 	{
-		var $subject = $('#feedback_subject');
-		var body = $('#feedback_body').val();
-
-		if ('' != body && '' != $subject.val())
+		var $subject = $('[name="subject"]', this);
+		if ('' != $('[name="body"]', this).val() && '' != $('option:selected', $subject).val())
 		{
 			$.ajax(
 			{
-				data: {action: 'request', subject: $subject.find('option:selected').text(), body: body, fullname: $('#feedback_fullname').val(), email: $('#feedback_email').val()},
+				data: $(this).serialize(),
 				success: function(response)
 				{
 					$('#feedback-modal').modal('hide');
@@ -374,11 +367,13 @@ $(function()
 		{
 			intelli.notifFloatBox({msg: _t('body_incorrect'), type: 'error', autohide: true});
 		}
+
+		return false;
 	});
 
 	$('#clearFeedback').on('click', function()
 	{
-		$('#feedback_body').val('');
+		$('[name="body"]').val('');
 	});
 	/* feedback form END */
 

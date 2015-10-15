@@ -5,9 +5,9 @@
 				{ia_url item=$all_item_type data=$item type='link' text=$item.title}
 			{/if}
 
-			{foreach $all_item_fields as $onefield}
-				{if 'plan_id' != $onefield.name}
-					{include file='field-type-content-view.tpl' variable=$onefield wrappedValues=true}
+			{foreach $all_item_fields as $field}
+				{if 'plan_id' != $field.name}
+					{include file='field-type-content-view.tpl' wrappedValues=true}
 				{/if}
 			{/foreach}
 

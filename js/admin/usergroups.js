@@ -5,7 +5,7 @@ Ext.onReady(function()
 		columns: [
 			'numberer',
 			{name: 'name', title: _t('name'), width: 150, hidden: true},
-			{name: 'title', title: _t('title'), width: 150, renderer: function(value, metadata, record)
+			{name: 'title', title: _t('title'), width: 150, sortable: false, renderer: function(value, metadata, record)
 			{
 				if (1 == record.get('admin'))
 				{

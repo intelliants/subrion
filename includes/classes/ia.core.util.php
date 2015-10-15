@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaUtil extends abstractUtil
 {
@@ -181,10 +158,8 @@ class iaUtil extends abstractUtil
 
 	public static function makeDirCascade($path, $mode = 0755, $chmod = false)
 	{
-		if (!is_dir(dirname($path)))
-		{
-			self::makeDirCascade(dirname($path), $mode);
-		}
+		is_dir(dirname($path)) || self::makeDirCascade(dirname($path), $mode);
+
 		if (!is_dir($path))
 		{
 			$result = mkdir($path, $mode);
@@ -192,6 +167,7 @@ class iaUtil extends abstractUtil
 			{
 				chmod($path, $mode);
 			}
+
 			return $result;
 		}
 
@@ -212,11 +188,7 @@ class iaUtil extends abstractUtil
 		$message = is_array($message) ? implode('<br>', $message) : $message;
 		unset($_SESSION['redir']);
 
-		$_SESSION['redir'] = array(
-			'caption' => $title,
-			'msg' => $message,
-			'url' => $url
-		);
+		$_SESSION['redir'] = array('caption' => $title, 'msg' => $message, 'url' => $url);
 
 		if (!$isAjax)
 		{
@@ -360,7 +332,7 @@ class iaUtil extends abstractUtil
 	{
 		if (isset($_POST[$key]))
 		{
-			return $_POST[$key];
+			return trim($_POST[$key]);
 		}
 		if (is_array($default))
 		{
@@ -454,6 +426,50 @@ class iaUtil extends abstractUtil
 		}
 
 		return false;
+	}
+
+	public static function cascadeDeleteFiles($directory, $removeDirectories = true)
+	{
+		if (substr($directory, -1) == IA_DS)
+		{
+			$directory = substr($directory, 0, -1);
+		}
+		if (!file_exists($directory) || !is_dir($directory))
+		{
+			return false;
+		}
+		elseif (is_readable($directory))
+		{
+			$handle = opendir($directory);
+
+			while ($item = readdir($handle))
+			{
+				if ($item != '.' && $item != '..' && $item != '.htaccess')
+				{
+					$path = $directory . IA_DS . $item;
+					is_dir($path) ? self::cascadeDeleteFiles($path, true) : self::deleteFile($path);
+				}
+			}
+			closedir($handle);
+
+			if ($removeDirectories)
+			{
+				$objects = scandir($directory);
+				foreach ($objects as $object)
+				{
+					if ($object != '.' && $object != '..')
+					{
+						if (filetype($directory . IA_DS . $object) == 'dir')
+						{
+							rmdir($directory . IA_DS . $object);
+						}
+					}
+				}
+				reset($objects);
+			}
+		}
+
+		return true;
 	}
 
 	/**

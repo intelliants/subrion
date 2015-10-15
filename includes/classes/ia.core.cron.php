@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaCron extends abstractCore
 {
@@ -41,13 +18,49 @@ class iaCron extends abstractCore
 
 
 	/**
+	 * Execute cron job with the given id (optional)
+	 *
+	 * @param int $jobId job id
+	 *
+	 * @return array
+	 */
+	public function run($jobId = null)
+	{
+		$this->iaDb->setTable(self::getTable());
+
+		$stmt = is_null($jobId) ? '`active` = 1 AND `date_next_launch` <= UNIX_TIMESTAMP() ORDER BY `date_next_launch`' : iaDb::convertIds($jobId);
+		$job = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $stmt);
+
+		if (!$job)
+		{
+			return;
+		}
+
+		$data = $this->_parse($job['data']);
+
+		if (is_file(IA_HOME . $data[self::C_CMD]))
+		{
+			if ($this->iaDb->update(array('date_next_launch' => $data['lastScheduled']), iaDb::convertIds($job['id']), array('date_prev_launch' => 'UNIX_TIMESTAMP()')))
+			{
+				$this->_launchFile($data[self::C_CMD]);
+			}
+		}
+		else
+		{
+			$this->iaDb->update(array('active' => false), iaDb::convertIds($job['id']));
+		}
+
+		$this->iaDb->resetTable();
+	}
+
+	/**
 	 * Parse string that looks like common cron line
 	 *
 	 * @param string $aStr string from cron file
 	 *
 	 * @return array
 	 */
-	public function parseCron($jobString)
+	protected function _parse($jobString)
 	{
 		$regex = '~^([-0-9,/*]+)\\s+([-0-9,/*]+)\\s+([-0-9,/*]+)\\s+([-0-9,/*]+)\\s+([-0-7,/*]+|(-|/|Sun|Mon|Tue|Wed|Thu|Fri|Sat)+)\\s+([^#]*)\\s*(#.*)?$~i';
 		if (preg_match($regex, $jobString, $job))
@@ -67,6 +80,18 @@ class iaCron extends abstractCore
 		}
 
 		return $job;
+	}
+
+	protected function _launchFile($file)
+	{
+		ignore_user_abort(1);
+		@set_time_limit(0);
+
+		$iaCore = iaCore::instance();
+		$iaDb = &$iaCore->iaDb;
+		$iaView = &$iaCore->iaView;
+
+		include IA_HOME . $file;
 	}
 
 	protected function _getLastScheduledRunTime($job)
@@ -147,7 +172,7 @@ class iaCron extends abstractCore
 		}
 	}
 
-	protected function _leftTrimZeros($number)
+	protected static function _leftTrimZeros($number)
 	{
 		while ($number[0] == '0')
 		{
@@ -157,7 +182,7 @@ class iaCron extends abstractCore
 		return $number;
 	}
 
-	protected function _incDate(&$dateArr, $amount, $unit)
+	protected static function _incDate(&$dateArr, $amount, $unit)
 	{
 		if ($unit == 'mday')
 		{

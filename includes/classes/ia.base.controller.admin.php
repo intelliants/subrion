@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 abstract class iaAbstractControllerBackend
 {
@@ -41,6 +18,7 @@ abstract class iaAbstractControllerBackend
 
 	protected $_gridColumns;
 	protected $_gridFilters;
+	protected $_gridSorting;
 	protected $_gridQueryMainTableAlias = '';
 
 	protected $_entryId = 0;
@@ -155,7 +133,7 @@ abstract class iaAbstractControllerBackend
 					if (isset($data['save']))
 					{
 						$reopenOption = empty($data['goto']) ? null : $data['goto'];
-						unset($data['save'], $data['goto'], $data['prevent_csrf'], $data['param']);
+						unset($data['save'], $data['goto'], $data['param']);
 
 						$result = $this->_saveEntry($iaView, $entry, $data);
 
@@ -168,8 +146,7 @@ abstract class iaAbstractControllerBackend
 
 					empty($this->_permissionsEdit) || $this->_assignPermissionsValues($iaView, $entry);
 
-					$iaView->assign('id', $this->getEntryId());
-					$iaView->assign('item', $entry);
+					$this->_defaultAssigns($iaView, $entry);
 
 					if ($this->_tooltipsEnabled)
 					{
@@ -254,6 +231,12 @@ abstract class iaAbstractControllerBackend
 
 	}
 
+	protected function _defaultAssigns(&$iaView, array &$entryData)
+	{
+		$iaView->assign('id', $this->getEntryId());
+		$iaView->assign('item', $entryData);
+	}
+
 	protected function _setDefaultValues(array &$entry)
 	{
 
@@ -313,11 +296,7 @@ abstract class iaAbstractControllerBackend
 
 		$start = isset($params['start']) ? (int)$params['start'] : 0;
 		$limit = isset($params['limit']) ? (int)$params['limit'] : 15;
-
-		$dir = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $params['dir'] : iaDb::ORDER_ASC;
-		$order = (isset($params['sort']) && $params['sort'] && $dir)
-			? ' ORDER BY ' . $this->_gridQueryMainTableAlias . '`' . $params['sort'] . '` ' . $dir
-			: '';
+		$order = $this->_gridGetSorting($params);
 
 		$conditions = $values = array();
 		foreach ($this->_gridFilters as $name => $type)
@@ -357,6 +336,20 @@ abstract class iaAbstractControllerBackend
 		}
 
 		return $output;
+	}
+
+	protected function _gridGetSorting(array $params)
+	{
+		if (empty($params['sort']) || empty($params['dir']))
+		{
+			return '';
+		}
+
+		$direction = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $params['dir'] : iaDb::ORDER_ASC;
+		$column = isset($this->_gridSorting[$params['sort']]) ? (is_array($this->_gridSorting[$params['sort']]) ? $this->_gridSorting[$params['sort']][0] : $this->_gridSorting[$params['sort']]) : $params['sort'];
+		$tableAlias = isset($this->_gridSorting[$params['sort']][1]) && is_array($this->_gridSorting[$params['sort']]) ? $this->_gridSorting[$params['sort']][1] . '.' : $this->_gridQueryMainTableAlias;
+
+		return sprintf(' ORDER BY %s`%s` %s', $tableAlias, $column, $direction);
 	}
 
 	protected function _gridUpdate($params)

@@ -1,31 +1,11 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaBackendController extends iaAbstractControllerBackend
 {
+	const UPDATE_TYPE_PATCH = 'patch';
+	const UPDATE_TYPE_INFO = 'info';
+
 	const STATISTICS_GETTER_METHOD = 'getDashboardStatistics';
 
 	protected $_name = 'dashboard';
@@ -205,48 +185,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($iaCore->get('check_for_updates'))
 		{
-			if ($content = iaUtil::getPageContent(iaUtil::REMOTE_TOOLS_URL . 'get/patch/'))
-			{
-				$content = iaUtil::jsonDecode($content);
-				if (is_array($content) && $content)
-				{
-					foreach ($content as $versionFrom => $versionTo)
-					{
-						if (version_compare($versionFrom, IA_VERSION) === 0 && version_compare($versionTo, IA_VERSION))
-						{
-							$version = explode('.', $versionTo);
-							if (count($version) > 3)
-							{
-								if ($iaCore->get('auto_apply_critical_upgrades'))
-								{
-									$result = iaSystem::forceUpgrade($versionTo);
-									if (is_bool($result) && $result)
-									{
-										$message = iaLanguage::getf('script_upgraded', array('version' => $versionTo));
-										$iaView->setMessages($message, iaView::SUCCESS);
-
-										$iaCore->factory('cache')->clearGlobalCache();
-									}
-									else
-									{
-										iaDebug::debug($result, 'Forced upgrade to the version ' . $versionTo);
-									}
-								}
-							}
-							else
-							{
-								$url = sprintf('%sinstall/upgrade/check/%s/', IA_CLEAR_URL, $versionTo);
-								$iaView->setMessages(iaLanguage::getf('upgrade_available', array('url' => $url, 'version' => $versionTo)), iaView::SYSTEM);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if (false === strtotime(iaUsers::getIdentity()->date_logged))
-		{
-			// $iaCore->factory('sitemap', iaCore::ADMIN)->generate();
+			$this->_checkForUpdates();
 		}
 	}
 
@@ -377,6 +316,63 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (isset($_SERVER['HTTP_REFERER']))
 		{
 			iaUtil::go_to($_SERVER['HTTP_REFERER']);
+		}
+	}
+
+	private function _checkForUpdates()
+	{
+		$url = sprintf(iaUtil::REMOTE_TOOLS_URL . 'get/updates/%s/', IA_VERSION);
+		$content = iaUtil::getPageContent($url);
+
+		if (!$content)
+		{
+			return;
+		}
+
+		$content = iaUtil::jsonDecode($content);
+
+		if (is_array($content) && $content)
+		{
+			$messages = array();
+
+			foreach ($content as $entry)
+			{
+				switch ($entry['type'])
+				{
+					case self::UPDATE_TYPE_INFO:
+						$messages[] = array($entry['id'], $entry['message']);
+						break;
+					case self::UPDATE_TYPE_PATCH:
+						$version = explode('.', $entry['version']);
+						if (count($version) > 3)
+						{
+							if ($this->_iaCore->get('auto_apply_critical_upgrades'))
+							{
+								$result = iaSystem::forceUpgrade($entry['version']);
+								if (is_bool($result) && $result)
+								{
+									$this->_iaCore->factory('cache')->clearGlobalCache();
+
+									$message = iaLanguage::getf('script_upgraded', array('version' => $entry['version']));
+									$this->_iaCore->iaView->setMessages($message, iaView::SUCCESS);
+
+									iaUtil::go_to(IA_SELF);
+								}
+								else
+								{
+									iaDebug::debug($result, 'Forced upgrade to the version ' . $entry['version']);
+								}
+							}
+						}
+						else
+						{
+							$url = sprintf('%sinstall/upgrade/check/%s/', IA_CLEAR_URL, $entry['version']);
+							$this->_iaCore->iaView->setMessages(iaLanguage::getf('upgrade_available', array('url' => $url, 'version' => $entry['version'])), iaView::SYSTEM);
+						}
+				}
+			}
+
+			$this->_iaCore->iaView->assign('updatesInfo', $messages);
 		}
 	}
 }

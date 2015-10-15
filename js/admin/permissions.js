@@ -2,6 +2,7 @@ intelli.permissions =
 {
 	button: null,
 	url: intelli.config.admin_url + '/permissions.json' + window.location.search,
+	token: $('input:first', '#js-security-token').val(),
 
 	save: function($toggler, access)
 	{
@@ -16,7 +17,7 @@ intelli.permissions =
 
 		defaults || (params.access = access);
 
-		$.post(this.url, params, function(response)
+		$.post(this.url, intelli.includeSecurityToken(params, self.token), function(response)
 		{
 			if (response.result)
 			{
@@ -54,7 +55,7 @@ intelli.permissions =
 			params.action = actions;
 		}
 
-		$.post(this.url, params, function(response)
+		$.post(self.url, intelli.includeSecurityToken(params, self.token), function(response)
 		{
 			if (response.result)
 			{

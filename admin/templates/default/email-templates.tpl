@@ -1,4 +1,5 @@
 <form method="post" id="js-email-template-form" class="sap-form form-horizontal">
+	{preventCsrf}
 
 	<div class="wrap-list">
 		<div class="wrap-group">
@@ -7,9 +8,9 @@
 			</div>
 
 			<div class="row">
-				<label class="col col-lg-2 control-label" for="tpl">{lang key='email'}</label>
+				<label class="col col-lg-2 control-label" for="input-id">{lang key='email'}</label>
 				<div class="col col-lg-4">
-					<select id="tpl" name="tpl">
+					<select id="input-id" name="id">
 						<option value="">{lang key='_select_'}</option>
 						{foreach $templates as $entry}
 							{if 'divider' == $entry.type}
@@ -42,9 +43,9 @@
 			</div>
 
 			<div class="row">
-				<label class="col col-lg-2 control-label" for="subject">{lang key='subject'}</label>
+				<label class="col col-lg-2 control-label" for="input-subject">{lang key='subject'}</label>
 				<div class="col col-lg-4">
-					<input type="text" name="subject" id="subject" disabled>
+					<input type="text" name="subject" id="input-subject" disabled>
 				</div>
 			</div>
 

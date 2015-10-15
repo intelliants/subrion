@@ -1,32 +1,7 @@
 <?php
-/******************************************************************************
- *
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- *
- ******************************************************************************/
+//##copyright##
 
-define('IA_VERSION', '3.3.0');
+define('IA_VERSION', '3.4.0');
 
 if (isset($ia_version))
 {
@@ -82,27 +57,6 @@ if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
 	unset($in);
 }
 
-if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], '.') && !filter_var($_SERVER['HTTP_HOST'], FILTER_VALIDATE_IP))
-{
-	$domain = $_SERVER['HTTP_HOST'];
-	$chunks = array_reverse(explode('.', $domain));
-	if (count($chunks) > 2)
-	{
-		if (!in_array($chunks[1], array('co', 'com', 'net', 'org', 'gov', 'ltd', 'ac', 'edu')))
-		{
-			$domain = implode('.', array($chunks[1], $chunks[0]));
-
-			if ($chunks[2] != 'www')
-			{
-				$domain = implode('.', array($chunks[2], $chunks[1], $chunks[0]));
-			}
-		}
-	}
-	$domain = '.' . $domain;
-
-	session_set_cookie_params(0, '/', $domain, false, true);
-}
-
 $performInstallation = false;
 
 if (file_exists(IA_INCLUDES . 'config.inc.php'))
@@ -127,8 +81,32 @@ if ($performInstallation)
 	exit('Install directory was not found!');
 }
 
+$domain = explode(':', $_SERVER['HTTP_HOST']);
+$domain = reset($domain);
+
+if (strpos($domain, '.') && !filter_var($domain, FILTER_VALIDATE_IP))
+{
+	$chunks = array_reverse(explode('.', $domain));
+	if (count($chunks) > 2)
+	{
+		if (!in_array($chunks[1], array('co', 'com', 'net', 'org', 'gov', 'ltd', 'ac', 'edu')))
+		{
+			$domain = implode('.', array($chunks[1], $chunks[0]));
+
+			if ($chunks[2] != 'www')
+			{
+				$domain = implode('.', array($chunks[2], $chunks[1], $chunks[0]));
+			}
+		}
+	}
+	$domain = '.' . $domain;
+}
+
+ini_set('session.gc_maxlifetime', 1800); // 30 minutes
+//session_set_cookie_params(1800, '/', $domain, false, true);
 session_name('INTELLI_' . substr(md5(IA_HOME), 0, 10));
 session_start();
+setcookie(session_name(), session_id(), time() + 1800);
 
 require_once IA_CLASSES . 'ia.system.php';
 require_once IA_INCLUDES . 'function.php';

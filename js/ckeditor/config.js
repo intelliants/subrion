@@ -10,6 +10,7 @@ CKEDITOR.editorConfig = function(config)
 	config.filebrowserImageUploadUrl = intelli.config.ia_url + 'actions/?action=ckeditor_upload&Type=Image';
 	config.extraPlugins = 'mediaembed';
 	config.skin = 'bootstrapck';
+	config.extraAllowedContent = 'a[rel]';
 
 	if (intelli.config.ckeditor_css)
 	{
@@ -22,16 +23,16 @@ CKEDITOR.editorConfig = function(config)
 	}
 
 	config.toolbar_extended = [
-		['Source', '-', 'Maximize'], 
+		['Source', '-', 'Maximize'],
 		['Cut', 'Copy', 'Paste','PasteText','PasteFromWord','-','Undo','Redo'],
 		['Link','Unlink'],
 		['Image','MediaEmbed','Table','HorizontalRule','SpecialChar'],
 		['Form','Checkbox','Radio','TextField','Textarea','Select','Button','ImageButton','HiddenField'],
 		'/',
-		['Bold','Italic','Underline','Strike','-','Subscript','Superscript'], 
+		['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
 		['Styles','Format','Font','FontSize'],
-		['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', '-', 'BidiLtr', 'BidiRtl'], 
-		['NumberedList','BulletedList', '-', 'Outdent', 'Indent'], 
+		['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', '-', 'BidiLtr', 'BidiRtl'],
+		['NumberedList','BulletedList', '-', 'Outdent', 'Indent'],
 		['TextColor','BGColor']
 	];
 
@@ -63,5 +64,12 @@ CKEDITOR.editorConfig = function(config)
 	{
 		config.toolbar = 'dashboard';
 		config.extraPlugins += ',codemirror';
+
+		if (typeof intelli.config['elfinder_ckeditor_integration'] !== 'undefined' && 1 == intelli.config.elfinder_ckeditor_integration)
+		{
+			config.filebrowserBrowseUrl = intelli.config.admin_url + '/elfinder/?mode=file';
+			config.filebrowserImageBrowseUrl = intelli.config.admin_url + '/elfinder/?mode=image';
+			config.filebrowserFlashBrowseUrl = intelli.config.admin_url + '/elfinder/?mode=flash';
+		}
 	}
 };

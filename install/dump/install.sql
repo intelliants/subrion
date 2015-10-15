@@ -131,6 +131,7 @@ CREATE TABLE `{install:prefix}config_custom` (
 	`value` text NOT NULL,
 	`type` enum('user','group','plan') NOT NULL default 'group',
 	`type_id` mediumint(8) unsigned NOT NULL,
+	`extras` varchar(40) NOT NULL,
 	PRIMARY KEY (`id`),
 	KEY `NAME` (`name`)
 ) {install:db_options};
@@ -141,15 +142,17 @@ CREATE TABLE `{install:prefix}config_groups` (
 	`title` varchar(150) NOT NULL,
 	`order` smallint(4) unsigned NOT NULL,
 	`extras` varchar(40) NOT NULL,
-  PRIMARY KEY (`name`),
-  KEY `PLUGIN` (`extras`)
+	PRIMARY KEY (`name`),
+	KEY `EXTRAS` (`extras`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}cron`;
 CREATE TABLE `{install:prefix}cron` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
-	`name` varchar(20) NOT NULL,
-	`nextrun` int(10) unsigned NOT NULL,
+	`name` varchar(60) NOT NULL,
+	`description` tinytext NOT NULL,
+	`date_prev_launch` int(10) unsigned NOT NULL,
+	`date_next_launch` int(10) unsigned NOT NULL,
 	`data` tinytext NOT NULL,
 	`active` tinyint(1) unsigned NOT NULL default 1,
 	`extras` varchar(40) NOT NULL,
@@ -196,7 +199,7 @@ CREATE TABLE `{install:prefix}fields` (
 	`name` varchar(60) NOT NULL,
 	`item` varchar(50) NOT NULL default 'members',
 	`fieldgroup_id` smallint(5) unsigned NOT NULL,
-	`type` enum('text','url','number','date','textarea','combo','radio','checkbox','storage','image','pictures') NOT NULL default 'text',
+	`type` enum('text','url','number','date','textarea','combo','radio','checkbox','storage','image','pictures','tree') NOT NULL default 'text',
 	`length` mediumint(7) unsigned NOT NULL,
 	`values` text,
 	`default` tinytext NOT NULL,
@@ -220,7 +223,7 @@ CREATE TABLE `{install:prefix}fields` (
 	`file_types` text NOT NULL,
 	`use_editor` tinyint(1) unsigned NOT NULL,
 	`plans` varchar(250) NOT NULL,
-  `timepicker` tinyint(1) unsigned NOT NULL,
+	`timepicker` tinyint(1) unsigned NOT NULL,
 	`url_nofollow` tinyint(1) unsigned NOT NULL default 1,
 	`empty_field` tinytext NOT NULL,
 	`link_to` tinyint(1) unsigned NOT NULL,
@@ -268,6 +271,20 @@ CREATE TABLE `{install:prefix}fields_relations` (
 	KEY `ITEMNAME` (`item`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}fields_tree_nodes`;
+CREATE TABLE `{install:prefix}fields_tree_nodes` (
+	`id` mediumint(8) unsigned NOT NULL auto_increment,
+	`field` varchar(50) NOT NULL,
+	`item` varchar(30) NOT NULL,
+	`extras` varchar(40) NOT NULL,
+	`node_id` varchar(30) NOT NULL,
+	`parent_node_id` varchar(30) NOT NULL,
+	`alias` varchar(150) NOT NULL,
+	`num_listings` int(11) NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `ITEMNAME` (`item`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}hooks`;
 CREATE TABLE `{install:prefix}hooks` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
@@ -309,20 +326,20 @@ CREATE TABLE `{install:prefix}items_pages` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}languages`;
 CREATE TABLE `{install:prefix}languages` (
-	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`id` mediumint(7) unsigned NOT NULL auto_increment,
+	`code` char(2) NOT NULL,
 	`title` varchar(100) NOT NULL,
-	`code` varchar(20) NOT NULL,
-	`locale` varchar(50) NOT NULL,
+	`locale` varchar(30) NOT NULL,
 	`date_format` varchar(50) NOT NULL,
-	`author` varchar(120) NOT NULL,
-	`direction` varchar(10) NOT NULL default 'ltr',
-	`master` smallint(6) NOT NULL,
-	`default` smallint(6) NOT NULL,
+	`author` varchar(100) NOT NULL,
+	`direction` varchar(5) NOT NULL default 'ltr',
+	`master` tinyint(1) unsigned NOT NULL,
+	`default` tinyint(1) unsigned NOT NULL,
 	`order` int(11) NOT NULL,
 	`status` enum('active','inactive') NOT NULL default 'active',
-	`flagicon` varchar(255) NOT NULL,
+	`flagicon` tinytext NOT NULL,
 	PRIMARY KEY (`id`),
-	KEY `LANG` (`code`)
+	UNIQUE `CODE` (`code`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}language`;
@@ -363,8 +380,16 @@ CREATE TABLE `{install:prefix}members` (
 	`date_reg` datetime NOT NULL,
 	`date_update` datetime NOT NULL,
 	`date_logged` datetime null,
+	`views_num` mediumint(8) unsigned NOT NULL,
 	`fullname` tinytext NOT NULL,
 	`avatar` tinytext NOT NULL,
+	`website` tinytext NOT NULL,
+	`phone` tinytext NOT NULL,
+	`biography` text NOT NULL,
+	`facebook` tinytext NOT NULL,
+	`twitter` tinytext NOT NULL,
+	`gplus` tinytext NOT NULL,
+	`linkedin` tinytext NOT NULL,
 	`funds` decimal(12,2) unsigned NOT NULL,
 	`disable_fields` tinyint(1) unsigned NOT NULL,
 	`admin_columns` text NOT NULL,
@@ -414,7 +439,7 @@ CREATE TABLE `{install:prefix}online` (
 	`page` varchar(150) NOT NULL,
 	`ip` bigint(12) NOT NULL,
 	PRIMARY KEY (`id`),
-	KEY `SESSION` (`session_id`)
+	UNIQUE `SESSION` (`session_id`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}pages`;
@@ -437,11 +462,12 @@ CREATE TABLE `{install:prefix}pages` (
 	`template_filename` varchar(64) NOT NULL,
 	`custom_url` tinytext NOT NULL,
 	`menus` set('main','bottom','account','inventory') NOT NULL default '',
-	`meta_description` tinytext,
+	`meta_description` text,
 	`meta_keywords` tinytext,
 	`action` varchar(10) NOT NULL default 'read',
 	`parent` varchar(50) NOT NULL,
 	`suburl` varchar(150) NOT NULL,
+	`fields_item` varchar(50) NOT NULL,
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `NAME` (`name`),
 	KEY `ALIAS` (`alias`)
@@ -486,7 +512,7 @@ CREATE TABLE IF NOT EXISTS `{install:prefix}payment_plans` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_subscriptions`;
 CREATE TABLE `{install:prefix}payment_subscriptions` (
-  `id` mediumint(8) unsigned NOT NULL auto_increment,
+  `id` int(9) unsigned NOT NULL auto_increment,
   `date_created` datetime,
   `date_next_payment` datetime,
   `reference_id` varchar(64) default NULL,
@@ -501,7 +527,7 @@ CREATE TABLE `{install:prefix}payment_subscriptions` (
 CREATE TABLE `{install:prefix}payment_transactions` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `member_id` int(11) unsigned NOT NULL,
-  `subscription_id` int(10) unsigned default NULL,
+  `subscription_id` int(9) unsigned default NULL,
   `plan_id` smallint(5) unsigned NOT NULL,
   `reference_id` varchar(64) NOT NULL,
   `item` varchar(30) NOT NULL,
@@ -517,6 +543,7 @@ CREATE TABLE `{install:prefix}payment_transactions` (
   `sec_key` varchar(14) NOT NULL,
   `return_url` tinytext NOT NULL,
   `notes` tinytext default NULL,
+  `demo` tinyint(1) unsigned NOT NULL default 0,
   PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -528,20 +555,9 @@ CREATE TABLE `{install:prefix}positions` (
   PRIMARY KEY (`name`)
 ) {install:db_options};
 
-{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}search`;
-CREATE TABLE `{install:prefix}search` (
-	`id` smallint(5) unsigned NOT NULL auto_increment,
-	`member_id` int(11) unsigned NOT NULL,
-	`ip` bigint(12) NOT NULL,
-	`query` varchar(200) NOT NULL,
-	`terms` text,
-	`time` int(10) NOT NULL,
-	PRIMARY KEY (`id`)
-) {install:db_options};
-
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}usergroups`;
 CREATE TABLE `{install:prefix}usergroups` (
-	`id` smallint(5) unsigned NOT NULL,
+	`id` smallint(5) unsigned NOT NULL auto_increment,
 	`name` varchar(100) NOT NULL,
 	`extras` varchar(40) NOT NULL,
 	`system` tinyint(1) unsigned NOT NULL,
@@ -565,8 +581,7 @@ CREATE TABLE `{install:prefix}views_log` (
 -- Records
 -- ----------------------------
 INSERT INTO `{install:prefix}acl_privileges` (`type_id`,`access`,`object`,`object_id`) VALUES
-(4,0,'page','member_balance'),
-(4,0,'page','favorites'),
+(4,0,'page','member_funds'),
 (4,0,'page','profile'),
 (8,1,'page','profile');
 
@@ -578,6 +593,8 @@ INSERT INTO `{install:prefix}acl_objects` (`pre_object`,`object`,`action`,`acces
 ('admin_page','database_manage','import',0),
 ('admin_page','database_manage','consistency',1),
 ('admin_page','database_manage','reset',1),
+('admin_page','pages','add',1),
+('admin_page','pages','edit',1),
 ('admin_page','pages','home',0),
 ('admin_page','plugins','install',1),
 ('admin_page','plugins','uninstall',0),
@@ -640,7 +657,6 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 INSERT INTO `{install:prefix}admin_pages` (`group`,`title`,`name`,`action`,`parent`,`filename`,`alias`,`menus`,`attr`,`order`) VALUES
 (0,'Dashboard','index','read','','index','','menu',null,0),
 (0,'Actions','actions','read','','actions','actions/',null,null,0),
-(0,'Clear Cache','clear_cache','cache','index','index','clear/cache/','header',null,35),
 (0,'','','','','','','header',null,20),
 (0,'MySQL Tools','adminer','read','','adminer','adminer/','header',null,25),
 (0,'','','','','','','header',null,30),
@@ -652,9 +668,11 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`title`,`name`,`action`,`pare
 (1,'Database','database_manage','read','','database','database/','menu,header',null,10),
 (1,'Languages','languages','read','','languages','languages/','menu',null,15),
 (1,'Hooks','hooks','read','','hooks','hooks/','menu',null,20),
+(1,'Scheduled Tasks','scheduled_tasks','read','','scheduled-tasks','scheduled-tasks/','menu',null,22),
 (1,'E-mail','','','','','','menu',null,25),
 (1,'E-mail Templates','email_templates','read','','email-templates','email-templates/','menu',null,30),
 (1,'Extra','','','','','','menu',null,35),
+(1,'Clear Cache','clear_cache','cache','index','index','clear/cache/','menu,header',null,37),
 (1,'PHP Info','phpinfo','phpinfo','index','index','phpinfo/','menu,header',null,40),
 (1,'Generate Sitemap','sitemap','sitemap','index','index','sitemap/','menu,header',null,45),
 
@@ -696,19 +714,16 @@ INSERT INTO `{install:prefix}admin_pages_groups` (`name`,`title`) VALUES
 ('extensions','Extensions');
 
 INSERT INTO `{install:prefix}blocks` VALUES
-(1,'Actions','item_actions','$iaItem = $iaCore->factory(''item'');\r\n\r\nif (false !== strpos($iaCore->iaView->name(),''view''))\r\n{\r\n	$iaCore->startHook(''smartyItemTools'');\r\n\r\n	$iaItem->setItemTools(array(\r\n		''title'' => iaLanguage::get(''print_preview''),\r\n		''url'' => ''javascript: ;'',\r\n		''id'' => ''print_preview" onclick="window.print(); return false;''\r\n	));\r\n\r\n	$itemData = $iaCore->iaView->iaSmarty->getTemplateVars(''item'');\r\n	if (iaUsers::hasIdentity() && $itemData)\r\n	{\r\n		if ((''members'' != $itemData[''item''] && isset($itemData[''member_id'']) && iaUsers::getIdentity()->id != $itemData[''member_id''])\r\n			|| ($itemData[''item''] == ''members'' && iaUsers::getIdentity()->id != $itemData[''id'']))\r\n		{\r\n			$isAlreadyFavorited = isset($itemData[''favorite'']) && $itemData[''favorite''] == 1;\r\n\r\n			$iaItem->setItemTools(array(\r\n				''title'' => iaLanguage::get($isAlreadyFavorited ? ''favorites_remove_from'' : ''favorites_add_to''),\r\n				''url'' => ''javascript: ;'',\r\n				''id'' => ''action-favorite" onclick="intelli.actionFavorites('' . $itemData[''id''] . ",''"\r\n						. $itemData[''item''] . "'',''" . ($isAlreadyFavorited ? iaCore::ACTION_DELETE : iaCore::ACTION_ADD) . "'');"\r\n			));\r\n		}\r\n	}\r\n\r\n	$links = $js = $html = '''';\r\n	foreach ($iaItem->setItemTools() as $item)\r\n	{\r\n		$id = empty($item[''id'']) ? '''' : '' id="'' . $item[''id''] . ''"'';\r\n		$links .= ''<li><a href="'' . $item[''url''] . ''" rel="nofollow"'' . $id . ''>'' . $item[''title''] . ''</a></li>'' . PHP_EOL;\r\n		if (isset($item[''js'']))\r\n		{\r\n			$js .= $item[''js''];\r\n		}\r\n		$html .= isset($item[''html'']) ? $item[''html''] : '''';\r\n	}\r\n\r\n	echo ''<ul class="nav nav-pills nav-stacked extra-menu">'' . $links . ''</ul>'' . ($html ? $html : '''')\r\n			. ($js ? ''<script type="text/javascript">'' . $js . ''</script>'' : '''');\r\n}',1,'right','php','','active',1,0,0,1,'',1,'','',0,'',0,'',''),
 (2,'Inventory Menu','inventory','',0,'inventory','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
 (3,'Main Menu','main','',0,'mainmenu','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
 (4,'Member Menu','account','',0,'right','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
 (5,'Bottom Menu','bottom','',0,'copyright','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
 (6,'Statistics','common_statistics','',1,'right','smarty','','active',1,0,0,0,'',1,'','',1,'block.common-statistics.tpl',0,'',''),
-(7,'Members filter','members_filter','',1,'right','smarty','','active',1,0,0,0,'',1,'','',1,'block.members-filter.tpl',0,'','');
+(7,'Refine Search','filters','$iaView = &$iaCore->iaView;\r\n\r\n$itemName = $iaView->get(''filtersItemName'') ? $iaView->get(''filtersItemName'') : str_replace(''search_'', '''', $iaView->name());\r\n$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\necho $iaView->iaSmarty->fetch(''block.filters.tpl'');',1,'left','php','','active',1,1,0,1,'',1,'','',0,'',1,'','');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
 ('blocks','',6,0),
-('blocks','index',6,1),
-('blocks','',7,0),
-('blocks','members',7,1);
+('blocks','index',6,1);
 
 INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`private`) VALUES
 ('debug_pass','','hidden','Debug password',1),
@@ -726,7 +741,7 @@ INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`priva
 INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_values`,`type`,`wysiwyg`,`description`,`order`,`extras`,`private`,`custom`,`show`) VALUES
 ('general','general_divider','General','1','divider',0,'',0,'',1,1,''),
 ('general','site','Subrion CMS','1','text',0,'Site title',3,'',0,1,''),
-('general','suffix',':: Powered by Subrion 3.2','1','text',0,'Suffix for page titles',9,'',0,1,''),
+('general','suffix',':: Powered by Subrion 3.3','1','text',0,'Suffix for page titles',9,'',0,1,''),
 ('general','site_logo','','','image',0,'Website logo',12,'',0,0,''),
 ('general','regional_divider','Regional','1','divider',30,'',20,'',1,1,''),
 ('general','lang','{install:lang}','1','select',0,'Default language',33,'',0,1,''),
@@ -738,31 +753,46 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('general','frontend','1','''1'',''0''','radio',0,'Display frontend',69,'',1,1,''),
 ('general','underconstruction','We are sorry. Our site is under construction.','','textarea',1,'Under construction message',72,'',1,1,'frontend|0'),
 
-('pictures','pictures_general','General','1','divider',0,'',0,'',1,0,''),
-('pictures','allow_animated_gifs','1','''1'',''0''','radio',0,'Allow animated GIFs',3,'',1,0,''),
-('pictures','thumb_w','150','','text',0,'Thumbnails default width',9,'',1,0,''),
-('pictures','thumb_h','150','','text',0,'Thumbnails default height',12,'',1,0,''),
-('pictures','watermark','0','''1'',''0''','radio',0,'Watermark',15,'',0,0,''),
-('pictures','site_watermark','','','image',0,'Site watermark',18,'',0,0,'watermark|1'),
+('pictures','thumb_w','150','','hidden',0,'Thumbnails default width',9,'',1,0,''),
+('pictures','thumb_h','150','','hidden',0,'Thumbnails default height',12,'',1,0,''),
+('pictures','pictures_watermark','Watermark','1','divider',0,'',13,'',1,0,''),
+('pictures','watermark','0','''1'',''0''','radio',0,'Enable',14,'',1,0,''),
+('pictures','watermark_position','bottom_right','''top_left'',''top_center'',''top_right'',''middle_left'',''middle_center'',''middle_right'',''bottom_left'',''bottom_center'',''bottom_right''','select',0,'Position',15,'',1,0,'watermark|1'),
+('pictures','watermark_type','text','''text'',''image''','select',0,'Type',16,'',1,0,''),
+('pictures','watermark_text','@ Your Website','','text',0,'Text',17,'',1,0,'watermark_type|text'),
+('pictures','watermark_text_color','#FFFFFF','','text',0,'Text color',18,'',1,0,'watermark_type|text'),
+('pictures','watermark_text_size','11','','text',0,'Text size',19,'',1,0,'watermark_type|text'),
+('pictures','watermark_image','','','image',0,'Image',20,'',1,0,'watermark_type|image'),
 ('pictures','lightbox_divider','Lightbox','','divider',0,'Lightbox',21,'',1,1,''),
 ('pictures','lightbox_name','','','select',0,'Lightbox name',24,'',0,0,''),
 
 ('members','members_config_divider','General','1','divider',0,'',1,'',1,0,''),
 ('members','members_enabled','1','''1'',''0''','radio',0,'Members functionality',2,'',1,0,''),
 ('members','members_autoapproval','1','''1'',''0''','radio',0,'Members auto-approval',3,'',0,0,'members_enabled|1'),
+('members','gravatar_divider','Gravatar','1','divider',0,'',10,'',1,0,''),
+('members','gravatar_enabled','1','''1'',''0''','radio',0,'Enable Gravatars',11,'',1,0,''),
+('members','gravatar_size','100','1','text',0,'Size',12,'',1,0,'gravatar_enabled|1'),
+('members','gravatar_type','mm','''mm'',''identicon'',''monsterid'',''wavatar'',''retro''','select',0,'Image type',13,'',1,0,'gravatar_enabled|1'),
+('members','gravatar_rating','g','''g'',''pg'',''r'',''x''','select',0,'Rating',14,'',1,0,'gravatar_enabled|1'),
+('members','gravatar_secure','0','''1'',''0''','radio',0,'SSL secure requests',15,'',0,0,'gravatar_enabled|1'),
+('members','gravatar_default_image','','','image',0,'Default image',16,'',0,0,'gravatar_enabled|1'),
 
 ('financial','financial_configuration_divider','General','1','divider',0,'',1,'',1,0,''),
 ('financial','currency','USD','','text',0,'Currency',1,'',1,0,''),
-('financial','balance_min_amount','20','','text',0,'Balance min amount',2,'',0,1,''),
+('financial','funds_min_amount','20','','text',0,'Min amount to add to funds',2,'',0,1,''),
 
-('miscellaneous','ckeditor_divider','CKeditor','','divider',0,'CKeditor',1,'',1,1,''),
-('miscellaneous','ckeditor_color','#B0E0E6','','text',0,'Color',2,'',0,1,''),
-('miscellaneous','ckeditor_code_highlighting','0','''1'',''0''','radio',0,'Code highlighting',3,'',0,1,''),
-('miscellaneous','ckeditor_mobile','0','''1'',''0''','radio',0,'Enable on mobile devices',4,'',0,1,''),
-('miscellaneous','captcha_divider','Captcha','','divider',0,'Captcha',5,'',1,1,''),
-('miscellaneous','captcha','1','''1'',''0''','radio',0,'Captcha',6,'',0,1,''),
-('miscellaneous','captcha_name','','','select',0,'Captcha name',7,'',0,0,'captcha|1'),
-('miscellaneous','captcha_preview','','','text',0,'Captcha preview',8,'',0,0,'captcha|1'),
+('miscellaneous','opengraph_divider','Open Graph','','divider',0,'Open Graph',1,'',1,1,''),
+('miscellaneous','opengraph_description','','','textarea',0,'OG default description',2,'',0,1,''),
+('miscellaneous','opengraph_image','','','image',0,'OG default image',3,'',0,0,''),
+
+('miscellaneous','ckeditor_divider','CKeditor','','divider',0,'CKeditor',4,'',1,1,''),
+('miscellaneous','ckeditor_color','#B0E0E6','','text',0,'Color',5,'',0,1,''),
+('miscellaneous','ckeditor_code_highlighting','0','''1'',''0''','radio',0,'Code highlighting',6,'',0,1,''),
+('miscellaneous','ckeditor_mobile','0','''1'',''0''','radio',0,'Enable on mobile devices',7,'',0,1,''),
+('miscellaneous','captcha_divider','Captcha','','divider',0,'Captcha',8,'',1,1,''),
+('miscellaneous','captcha','1','''1'',''0''','radio',0,'Captcha',9,'',0,1,''),
+('miscellaneous','captcha_name','','','select',0,'Captcha name',10,'',0,0,'captcha|1'),
+('miscellaneous','captcha_preview','','','text',0,'Captcha preview',11,'',0,0,'captcha|1'),
 
 ('mail','mail_configuration_divider','General','1','divider',0,'',1,'',1,0,''),
 ('mail','site_from_name','Subrion CMS','1','text',0,'Default mail name',1,'',1,0,''),
@@ -780,7 +810,6 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('mail','mimetype','1','''1'',''0''','radio',0,'Send HTML mime-type emails instead of plain text',3,'',1,0,''),
 
 ('system','admin_panel_config_divider','Admin Panel Settings','1','divider',0,'',1,'',1,0,''),
---('system','session_length','180','','text',0,'Session length',2,'',1,0,''),
 ('system','display_feedbacks','1','''1'',''0''','radio',0,'Feedbacks panel display',3,'',0,0,''),
 ('system','display_changelog','1','''1'',''0''','radio',0,'Changelog panel display',4,'',0,0,''),
 ('system','display_twitter','1','''1'',''0''','hidden',0,'Twitter in Dashboard',5,'',0,0,''),
@@ -836,15 +865,23 @@ INSERT INTO `{install:prefix}config_groups` (`name`,`title`,`order`) VALUES
 ('miscellaneous','Miscellaneous',7),
 ('financial','Financial',8);
 
-INSERT INTO `{install:prefix}cron` (`name`,`nextrun`,`data`) VALUES
-('sitemap',0,'1 1,12 * * * includes/cron/sitemap.php'),
-('cleanup',0,'5 0 * * * includes/cron/cleanup.php');
+INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
+('1 1,12 * * * includes/cron/sitemap.php', 'Sitemap creation and update','Updates (or generates) the sitemap.xml file'),
+('5 0 * * * includes/cron/cleanup.php','System cleanup','Cleans up temporary DB entries'),
+('20 * * * * includes/cron/expiration.php','Check for expiration of sponsored items','Marks expired sponsored items');
 
 INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`length`,`order`,`editable`,`required`,`extra_actions`,`searchable`) VALUES
 ('email','members',1,'text',250,4,0,1,'if ($_POST[$fieldName])\r\n{\r\n	if (!iaValidate::isEmail($_POST[$fieldName]))\r\n	{\r\n		$error = true;\r\n		$messages[] = iaLanguage::get(''error_email_incorrect'');\r\n		$invalidFields[] = $fieldName;\r\n	}\r\n	else\r\n	{\r\n		$_POST[$fieldName] = strtolower($_POST[$fieldName]);\r\n	}\r\n}',0),
-('fullname','members',1,'text',250,3,0,1,'',1),
 ('username','members',1,'text',50,2,0,1,'if ($_POST[$fieldName] && !iaValidate::isUsername($_POST[$fieldName]))\r\n{\r\n	$error = true;\r\n	$messages[] = iaLanguage::get(''username_incorrect'');\r\n	$invalidFields[] = $fieldName;\r\n}',1),
-('avatar','members',1,'image',1,1,0,0,'',0),
+('fullname','members',1,'text',50,3,0,1,'',1),
+('avatar','members',1,'image',1,4,0,0,'',1),
+('website','members',1,'text',250,4,1,0,'',0),
+('phone','members',1,'text',100,5,1,0,'',1),
+('biography','members',1,'textarea',500,6,1,0,'',0),
+('facebook','members',2,'text',150,7,1,0,'',1),
+('twitter','members',2,'text',150,8,1,0,'',1),
+('gplus','members',2,'text',150,9,1,0,'',1),
+('linkedin','members',2,'text',150,10,1,0,'',1),
 ('member_id','transactions',0,'text',100,5,1,0,'',0),
 ('reference_id','transactions',0,'text',100,6,1,0,'',0),
 ('date','transactions',0,'date',0,7,1,0,'',0),
@@ -857,29 +894,57 @@ UPDATE `{install:prefix}fields` SET `relation`='regular';
 UPDATE `{install:prefix}fields` SET `use_editor`=1,`link_to`=1,`thumb_height`=200,`file_prefix`='avat_',`image_width`=300,`image_height`=300,`thumb_width`=200 WHERE `name`='avatar';
 
 INSERT INTO `{install:prefix}fields_groups` (`name`,`item`,`order`,`collapsed`,`tabview`) VALUES
-('general','members',1,0,1);
+('general','members',1,0,0),
+('social','members',2,0,0);
 
 INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`,`extras`) VALUES
 ('members',2,'core'),
 ('members',3,'core'),
 ('members',4,'core'),
+('members',5,'core'),
+('members',6,'core'),
+('members',8,'core'),
+('members',9,'core'),
+('members',10,'core'),
+('members',11,'core'),
 ('profile',1,'core'),
-('profile',2,'core'),
+('profile',3,'core'),
 ('profile',4,'core'),
+('profile',5,'core'),
+('profile',6,'core'),
+('profile',7,'core'),
+('profile',8,'core'),
+('profile',9,'core'),
+('profile',10,'core'),
+('profile',11,'core'),
 ('favorites',2,'core'),
 ('favorites',3,'core'),
 ('favorites',4,'core'),
+('favorites',5,'core'),
+('favorites',6,'core'),
+('favorites',8,'core'),
+('favorites',9,'core'),
+('favorites',10,'core'),
+('favorites',11,'core'),
 ('member_registration',1,'core'),
 ('member_registration',2,'core'),
 ('member_registration',3,'core'),
 ('view_member',2,'core'),
 ('view_member',3,'core'),
-('view_member',4,'core');
+('view_member',4,'core'),
+('view_member',5,'core'),
+('view_member',6,'core'),
+('view_member',7,'core'),
+('view_member',8,'core'),
+('view_member',9,'core'),
+('view_member',10,'core'),
+('view_member',11,'core');
 
 INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`) VALUES
 ('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/opengraph.tpl'),
 ('smartyAdminAfterHeadSection','{if $config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',2,'smarty','admin',''),
-('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''];\r\n		}\r\n	}\r\n}','active',5,'php','admin','');
+('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''];\r\n		}\r\n	}\r\n}','active',5,'php','admin',''),
+('frontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl');
 
 INSERT INTO `{install:prefix}items` (`payable`,`item`,`package`,`pages`) VALUES
 (1,'members','core','profile,view_member'),
@@ -888,8 +953,8 @@ INSERT INTO `{install:prefix}items` (`payable`,`item`,`package`,`pages`) VALUES
 INSERT INTO `{install:prefix}items_pages` (`page_name`,`item`) VALUES
 ('profile','members'),
 ('view_member','members'),
-('member_registration','members'),
-('members','members');
+('favorites','members'),
+('member_registration','members');
 
 INSERT INTO `{install:prefix}members` (`usergroup_id`,`username`,`email`,`date_reg`,`date_update`,`fullname`) VALUES
 (1,'{install:admin_username}','{install:email}',NOW(),NOW(),'Administrator');
@@ -901,7 +966,7 @@ INSERT INTO `{install:prefix}menus` (`parent_id`,`menu_id`,`el_id`,`page_name`) 
 ('0',3,'3_004','search'),
 ('0',4,'14_005','profile'),
 ('0',4,'9_006','favorites'),
-('0',4,'15_007','member_balance'),
+('0',4,'15_007','member_funds'),
 ('0',5,'20_009','about'),
 ('0',5,'21_010','policy'),
 ('0',5,'22_011','terms'),
@@ -912,17 +977,16 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (2,'index',0,0,'',0,'page','main,inventory','',''),
 (1,'redirect',1,1,'',0,'','','',''),
 (1,'search',0,1,'search/',1,'','main','',''),
-(1,'advsearch',0,1,'advsearch/',1,'search','','',''),
 (1,'captcha',1,1,'captcha',1,'','','',''),
 (1,'cron',1,1,'',0,'','','',''),
 (1,'actions',1,1,'',0,'','','',''),
 (1,'pay',1,1,'pay/',0,'','','',''),
-(3,'favorites',0,1,'profile/favorites/',1,'','account','profile',''),
+(3,'favorites',0,1,'favorites/',1,'','account','',''),
 (3,'members',0,1,'members/',0,'','main','','members'),
 (3,'login',0,1,'login/',1,'','','',''),
-(3,'view_member',0,1,'members/info/',1,'','','members','members'),
+(3,'view_member',0,1,'member/',1,'','','members','members'),
 (3,'profile',0,1,'profile/',1,'','account','',''),
-(3,'member_balance',0,1,'profile/balance/',1,'transactions','account','profile',''),
+(3,'member_funds',0,1,'profile/funds/',1,'transactions','account','profile',''),
 (3,'member_registration',0,1,'registration/',1,'registration','','',''),
 (3,'register_confirm',1,1,'confirm/',1,'registration','','',''),
 (3,'member_password_forgot',1,1,'forgot/',1,'registration','','',''),
@@ -941,7 +1005,7 @@ INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`) VALUES
 (8,'registered',1, 1);
 
 INSERT INTO `{install:prefix}languages` VALUES
-(null,'English','en','en_US','%b %e, %Y','Intelliants LLC','ltr',1,1,1,'active','us.gif');
+(null,'en','English','en_US','%b %e, %Y','Intelliants LLC','ltr',1,1,1,'active','us.gif');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('_action_','- Action -','admin'),
@@ -1064,6 +1128,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('block_visibility_exceptions_hidden','Choose where block will be explicitly <b>hidden</b>','admin'),
 ('blocks','Blocks','admin'),
 ('bug_report','Bug Report','admin'),
+('buy_before_install','You need to purchase this plugin in order to install it.','admin'),
 
 ('cache_dropped','Cache has been dropped.','admin'),
 ('cant_open_incorrect_format','Could not open file with SQL instructions: :filename. Only .sql files are allowed.','admin'),
@@ -1162,6 +1227,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_contents','Content field is empty.','admin'),
 ('error_filename','Filename field is empty.','admin'),
 ('error_incorrect_format_from_subrion','The plugins are in the incorrect format. Please contact the Subrion team.','admin'),
+('error_file_type','You need to set allowed file extensions.','admin'),
 ('error_incorrect_response_from_subrion','No response from subrion.org website. Please try again later or contact the Subrion team.','admin'),
 ('error_install_plugin','There is a problem while installing :plugin plugin. Please contact support team.','admin'),
 ('error_lang_contents','Content is empty for ":lang" language. Please input correct content.','admin'),
@@ -1192,7 +1258,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_annotation','Field Annotation','admin'),
 ('field_default','Field default value','admin'),
 ('field_deleted','Field deleted.','admin'),
-('field_created_for_item','This field was created for item','admin'),
 ('field_element_children','Configure item fields for this value','admin'),
 ('field_exists','Field already exists.','admin'),
 ('field_length','Field length','admin'),
@@ -1219,6 +1284,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_type_text','Single Line Text Input','admin'),
 ('field_type_textarea','Multiline Textarea','admin'),
 ('field_type_url','URL Text Input','admin'),
+('field_type_tree','Tree','admin'),
 ('field_type_tip_checkbox','This field allows multiple values selection.','admin'),
 ('field_type_tip_combo','This field will be displayed as dropdown select box.','admin'),
 ('field_type_tip_date','This field adds calendar control to set the date.','admin'),
@@ -1284,6 +1350,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('installation_extra_requirement_exist','Requires the &ldquo;:extra&rdquo; :type to be installed.','admin'),
 ('installation_extra_requirement_incorrect','Invalid dependencies specified. Ignored.','admin'),
 ('installation_impossible','Installation is currently impossible.','admin'),
+('interval','Interval','admin'),
 ('invalid_image_file','Unable to process image, invalid image file.','admin'),
 ('invalid_plugin_dependencies','Invalid plugin dependencies','admin'),
 ('items_fields','Fields','admin'),
@@ -1318,6 +1385,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('language_deleted','Selected language has been deleted.','admin'),
 ('languages_comparison','Comparison','admin'),
 ('last_updated','Last updated','admin'),
+('launch_manually','Launch manually','admin'),
 ('legend','Legend','admin'),
 ('link_to','Display as a link to View Details','admin'),
 ('loading_widgets','Loading widgets...','admin'),
@@ -1353,6 +1421,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('mode','Mode','admin'),
 ('moved','Moved.','admin'),
 ('multilingual','Multilingual','admin'),
+('multiple_selection','Multiple selection','admin'),
 ('mysql_options','MySQL Options','admin');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
@@ -1361,6 +1430,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('name_is_incorrect','Name is incorrect.','admin'),
 ('new_language','New Language','admin'),
 ('new_password','New password','admin'),
+('next_launch','Next launch','admin'),
 ('next_payment_date','Next payment date','admin'),
 ('no_blocks','There are no blocks.','admin'),
 ('no_captcha_preview','No captcha preview.','admin'),
@@ -1372,13 +1442,10 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('no_parent_fields','No main fields for this item','admin'),
 ('no_plans','No Plans','admin'),
 ('no_plugins','No plugins.','admin'),
-('no_rcpt','No Recipients','admin'),
 ('no_upgrades','No patches or upgrades available.','admin'),
-('no_usergroup','No usergroup','admin'),
+('nodes','Nodes','admin'),
 ('not_allowed','Not allowed','admin'),
-('not_remove','You may not delete this item.','admin'),
 ('not_required','not required','admin'),
-('not_saved','No changes have been made. Nothing was saved.','admin'),
 ('nothing','Nothing','admin'),
 ('notification_resolve--resolve','Resolve issue','admin'),
 ('notification_resolve--working','Working...','admin'),
@@ -1446,6 +1513,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('plugins','Plugins','admin'),
 ('plugins_left',':count more plugins left to be installed.','admin'),
 ('preview','Preview','admin'),
+('previous_launch','Previous launch','admin'),
 
 ('query_history','Queries History','admin'),
 ('quick_access','Quick Access','admin'),
@@ -1487,6 +1555,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('save_as_file','Save as file','admin'),
 ('save_to_pc','Save to PC','admin'),
 ('save_to_server','Save to server','admin'),
+('scheduled_task_ran','Task launched.','admin'),
 ('screenshot','Screenshot','admin'),
 ('script_upgraded','Your script has been automatically upgraded to version :version.','admin'),
 ('search_in_phrases','Search in Phrases','admin'),
@@ -1535,6 +1604,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('table_dumped','Table :table dumped into file ":filename".','admin'),
 ('tables','Tables','admin'),
 ('tables_fields','Tables/Fields','admin'),
+('task','Task','admin'),
 ('template_downloaded','":name" template downloaded.','admin'),
 ('template_name_empty','Template name is empty or incorrect.','admin'),
 ('template_file_error','Template file cannot be found. Use this file: :file.','admin'),
@@ -1618,7 +1688,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('author','Author','common'),
 ('avatar','Avatar','common'),
 
-('balance','Balance','common'),
 ('browse','Browse','common'),
 ('by','by','common'),
 
@@ -1692,32 +1761,42 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('filter','Filter','common'),
 ('from','from','common'),
 ('featured_status_finished_date_is_empty','Listing has been marked as featured, but no finished date was specified.','common'),
+('funds','Funds','common'),
 
 ('field__annotation','please upload only image files','common'),
 ('field_amount','Amount','common'),
 ('field_member_id','Member username','common'),
 ('field_avatar','Avatar','common'),
 ('field_avatar_annotation','Please upload image files only','common'),
+('field_biography','Biography','common'),
 ('field_category_id_annotation','Select a category from the list','common'),
 ('field_currency','Currency code','common'),
 ('field_date','Date','common'),
 ('field_description','Description','common'),
 ('field_email','Email','common'),
+('field_facebook','Facebook','common'),
 ('field_fullname','Full Name','common'),
 ('field_gallery','Pictures','common'),
 ('field_gateway','Gateway','common'),
+('field_gplus','Google+','common'),
 ('field_is_empty',':field is empty.','common'),
 ('field_is_not_selected',':field is not selected.','common'),
 ('field_item','Item','common'),
+('field_linkedin','LinkedIn','common'),
 ('field_operation','Operation','common'),
 ('field_reference_id','Order number','common'),
 ('field_pictures','Pictures','common'),
+('field_phone','Phone','common'),
 ('field_sec_key','Secret key','common'),
 ('field_status','Status','common'),
 ('field_total','Total','common'),
+('field_twitter','Twitter','common'),
 ('field_username','Username','common'),
+('field_website','Website','common'),
 ('fieldgroup_general','General','common'),
 ('fieldgroup_description_members_general','','common'),
+('fieldgroup_social','Social','common'),
+('fieldgroup_description_members_social','','common'),
 ('file_click_to_upload','Click Browse to upload file','common'),
 ('file_type_error','Files with ":extension" extension are only allowed.','common'),
 ('file_types',"Allowed file types (comma separated values (don't include point), example: pdf, doc, odf, mov)",'common'),
@@ -1755,7 +1834,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('mark_as','Mark As:','common'),
 ('member','Member','common'),
 ('members','Members','common'),
-('member_balance','Member Balance','common'),
 ('month','Month','common'),
 ('month1','January','common'),
 ('month2','February','common'),
@@ -1793,7 +1871,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('parent','Parent','common'),
 ('passed','Passed','common'),
 ('password','Password','common'),
-('password_confirm','Password Confirmation','common'),
+('password_confirm','Password confirmation','common'),
 ('password_incorrect','Password is incorrect.','common'),
 ('pending','Pending','common'),
 ('plan_added','Plan added.','common'),
@@ -1871,6 +1949,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('active_users','Active Users','frontend'),
 ('advanced','Advanced','frontend'),
+('alphabetical','Alphabetical','frontend'),
 ('all_groups','All groups','frontend'),
 ('amount_incorrect','Please input correct amount.','frontend'),
 ('amount_less_min','Please input a greater amount.','frontend'),
@@ -1879,7 +1958,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('auto_generate_password','Auto generate password','frontend'),
 
 ('back_to_gateway_list','{current_gateway} payment gateway, click <a href=\"javaScript:void(0);\" onclick=\"backToPaymentGatewayList()\">here</a> to choose another one','frontend'),
-('balance_in_your_account','You have :currency :sum balance in your account.','frontend'),
 ('bots','Bots','frontend'),
 ('bots_visits','Visits last 24h (bots)','frontend'),
 ('by_fullname','full name','frontend'),
@@ -1903,19 +1981,22 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('enter_confirmation_code','Please enter confirmation code below','frontend'),
 ('error_no_member_email','No members registered with this email.','frontend'),
 
-('favorites','My Favorites','frontend'),
-('favorites_add_to','Add to Favorites','frontend'),
-('favorites_remove_from','Remove from Favorites','frontend'),
+('favorites','Favorites','frontend'),
+('favorites_action_add','Add to favorites','frontend'),
+('favorites_action_added','Listing has been added to favorites.','frontend'),
+('favorites_action_delete','Remove from favorites','frontend'),
+('favorites_action_deleted','Listing has been deleted from favorites.','frontend'),
 ('field_required','<span class=\"note\">[Required]</span>','frontend'),
 ('first','First','frontend'),
 ('forgot','Forgot password?','frontend'),
 ('forgot_annotation',"Don't remember your login information? We all forget &mdash; no worries. Please enter your e-mail address below and we will send your login credentials.",'frontend'),
+('funds_in_your_account','You have :currency :sum in your account.','frontend'),
 
 ('group_filter','Group filter','frontend'),
 ('guest','Guest','frontend'),
 ('guests','Guests','frontend'),
 
-('howmuch_funds','How much money would you like to add?','frontend'),
+('howmuch_funds','Please input the amount you want to add:','frontend'),
 
 ('invalid_addressee','Invalid addressee specified.','frontend'),
 ('invoice_deleted','Invoice deleted.','frontend'),
@@ -1929,12 +2010,13 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('mail_sent','Email sent.','frontend'),
 ('member_created','Member registered! Thank you!','frontend'),
 ('member_doesnt_exist','The member does not exist anymore.','frontend'),
+('member_since','Member since','frontend'),
 ('msg','Message','frontend'),
 
 ('new_password','New Password','frontend'),
 ('new_password2','New Password [confirm]','frontend'),
 ('new_password_sent','New password has been sent to your email.','frontend'),
-('no_funds','Your balance is empty.','frontend'),
+('no_funds','You have not added funds to your account.','frontend'),
 ('no_favorites','You have not added any favorite items.','frontend'),
 ('no_gateway','You have not installed any payment gateway plugin.','frontend'),
 ('no_members','No members found that match specified params.','frontend'),
@@ -1978,35 +2060,27 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('restore_pass_confirm','We have sent confirmation code to your email. Please check it and follow the instructions.','frontend'),
 
 ('safety','Safety','frontend'),
-('search_equal','Equal','frontend'),
-('search_not_equal','Not Equal','frontend'),
-('search_greater','Greater than','frontend'),
-('search_greater_equal','Greater or Equal','frontend'),
-('search_lower','Lower than','frontend'),
-('search_lower_equal','Lower or Equal','frontend'),
-('search_like','Like This','frontend'),
-('search_not_empty','Not Empty','frontend'),
-('search_not_like','Not Like','frontend'),
-('search_not_set','Not Set','frontend'),
+('search_for','Search for...','frontend'),
 ('send_email','Send email','frontend'),
 ('send_message','Send message','frontend'),
 ('slogan','Content Management Software','frontend'),
-('sort_by','Sort By','frontend'),
+('sort_by','Sort by','frontend'),
 ('starts_with','starts with','frontend'),
-('switch_to_advanced_search','Switch to Advanced search','frontend'),
-('switch_to_regular_search','Switch to Regular search','frontend'),
 
 ('thank_text','to get back to index page.','frontend'),
 ('thanks','Thank you.','frontend'),
-('thankyou_head','<p>Below is the information you submitted so far. You will be able to extend and edit this information via your member account.</p><p><span class=\"label label-important\">IMPORTANT!</span> Your account password has been sent to the following email address:</p>','frontend'),
+('thankyou_head','<p>Below is the information you submitted so far. You will be able to extend and edit this information via your member account.</p><p><span class=\"label label-danger\">Important</span> Your account password has been sent to the following email address:</p>','frontend'),
 ('thankyou_tail','<p>Please read our letter with further instructions.</p>','frontend'),
 ('this_transaction_already_passed','We already have this payment in our database. Transaction passed successfully.','frontend'),
 ('total_paid','Total Paid','frontend'),
 
 ('unable_to_send_email','Unable to send e-mail.','frontend'),
+('usergroups','Usergroups','frontend'),
 ('username_already_exists','Username already taken. Please input different username.','frontend'),
 ('username_empty','Make sure you have entered a valid username and your membership is active.','frontend'),
 ('username_or_email','Username or E-mail','frontend'),
+
+('view_profile','View profile','frontend'),
 
 ('wait_for_gateway_answer','The payment is currently being processed by payment gateway. Please check it later. <a href=":url">Click here</a> to change payment gateway for this transaction.','frontend'),
 ('wait_redirect','Please wait, you will be redirected shortly.','frontend'),
@@ -2032,13 +2106,12 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_about','About Us','page'),
 ('page_title_members','Members','page'),
 ('page_title_member_password_forgot','Forgot Password','page'),
-('page_title_advsearch','Advanced Search','page'),
 ('page_title_advertise','Advertise Us','page'),
-('page_title_favorites','My Favorites','page'),
+('page_title_favorites','Favorites','page'),
 ('page_title_index','Home','page'),
 ('page_title_help','Help','page'),
 ('page_title_login','Login','page'),
-('page_title_member_balance','Member Balance','page'),
+('page_title_member_funds','Funds','page'),
 ('page_title_pay','Pay','page'),
 ('page_title_policy','Privacy Policy','page'),
 ('page_title_profile','My Profile','page'),
@@ -2068,6 +2141,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('members_enabled','Enables members functionality for your Subrion CMS based website.','tooltip'),
 ('members_autoapproval','Members are activated automatically without any confirmation.','tooltip'),
+('multiple_selection','Allows to choose multiple nodes.','tooltip'),
 
 ('plan_cycles','Number of billing cycles for payment period.','tooltip'),
 ('plan_duration','Duration of plan (or each cycle if recurring)','tooltip'),
@@ -2076,7 +2150,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('required_checks','This PHP code validates the field value when Required Field is ON. Please make sure you use correct code.','tooltip'),
 
 ('searchable','Specifies if the field is available to search by on Advanced Search page.','tooltip'),
---('session_length','Length of user session in minutes','tooltip'),
 ('site','This will be your site name.','tooltip'),
 ('site_email','Email address you wish to get member changes and notifications sent to.','tooltip'),
 ('smarty_cache','Forces the template engine to rebuild the cache on every request. Increases the server load. It should only be used for debugging purposes.','tooltip'),

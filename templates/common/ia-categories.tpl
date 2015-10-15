@@ -1,16 +1,16 @@
 {if isset($categories) && $categories}
-	{assign var='num_columns' value=((isset($num_columns)) ? $num_columns : 2)}
-	{assign class_names ['span12', 'span6', 'span4', 'span3']}
+	{$num_columns = ((isset($num_columns)) ? $num_columns : 2)}
+	{$class_names = ['col-md-12', 'col-md-6', 'col-md-4', 'col-md-3']}
 
-	<div class="row-fluid cats">
+	<div class="row ia-cats">
 		{foreach $categories as $category}
 			<div class="{$class_names[$num_columns - 1]}">
-				<div class="cat-wrap">
+				<div class="ia-cat">
 					{if isset($icons) && $icons}
 						{if isset($category.icon) && $category.icon}
 							<img src="{$core.page.nonProtocolUrl}uploads/{$category.icon.path}" alt="{$category.icon.title}">
 						{else}
-							<i class="icon-folder-open"></i>
+							<span class="fa fa-folder-open"></span>
 						{/if}
 					{/if}
 
@@ -20,7 +20,7 @@
 					{/if}
 
 					{if isset($category.subcategories) && $category.subcategories}
-						<div class="subcat-wrap">
+						<div class="ia-cat__sub">
 							{foreach $category.subcategories as $subcategory}
 								<a href="{ia_url type='url' item=$item data=$subcategory}">{$subcategory.title}</a>{if !$subcategory@last}, {/if}
 							{/foreach}
@@ -31,7 +31,7 @@
 
 			{if $category@iteration % $num_columns == 0}
 				</div>
-				<div class="row-fluid cats">
+				<div class="row ia-cats">
 			{/if}
 		{/foreach}
 	</div>

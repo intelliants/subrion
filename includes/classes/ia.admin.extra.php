@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaExtra extends abstractCore
 {
@@ -39,6 +16,9 @@ class iaExtra extends abstractCore
 	const DEPENDENCY_TYPE_TEMPLATE = 'template';
 
 	const INSTALL_FILE_NAME = 'install.xml';
+
+	const BLOCK_FILENAME_PATTERN = 'extra:%s/%s';
+
 
 	protected static $_table = 'extras';
 
@@ -69,7 +49,7 @@ class iaExtra extends abstractCore
 	{
 		parent::init();
 
-		$this->iaCore->factory('acl');
+		$this->iaCore->factory(array('acl', 'util'));
 	}
 
 	protected function _resetValues()
@@ -119,7 +99,7 @@ class iaExtra extends abstractCore
 			'requirements' => null,
 			'screenshots' => null,
 			'url' => null,
-			'user_groups' => null,
+			'usergroups' => null,
 			'sql' => array(
 				'install' => null,
 				'upgrade' => null,
@@ -371,6 +351,7 @@ class iaExtra extends abstractCore
 					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
 				break;
 			case iaField::URL:
+			case iaField::TREE:
 				$sql .= 'TINYTEXT ';
 				break;
 			case iaField::IMAGE:
@@ -743,28 +724,24 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->itemData['user_groups'])
+		if ($this->itemData['usergroups'])
 		{
 			$iaAcl = $this->iaCore->factory('acl');
 
 			$iaDb->setTable(iaUsers::getUsergroupsTable());
-			foreach ($this->itemData['user_groups'] as $item)
+			foreach ($this->itemData['usergroups'] as $item)
 			{
 				if (!$iaDb->exists('`name` = :name', array('name' => $item['name'])))
 				{
 					$configs = $item['configs'];
-					$perms = $item['permissions'];
-
-					$usergroupId = $iaAcl->obtainFreeId();
-					$data = array(
-						'id' => $usergroupId,
+					$permissions = $item['permissions'];
+					$usergroupId = $iaDb->insert(array(
 						'extras' => $item['extras'],
 						'name' => $item['name'],
 						'system' => true,
 						'assignable' => $item['assignable'],
-						'visible' => $item['visible'],
-					);
-					$iaDb->insert($data);
+						'visible' => $item['visible']
+					));
 
 					// update language records
 					foreach ($this->iaCore->languages as $iso => $title)
@@ -772,7 +749,7 @@ class iaExtra extends abstractCore
 						iaLanguage::addPhrase('usergroup_' . $item['name'], $item['title'], $iso);
 					}
 
-					$iaDb->setTable('config_custom');
+					$iaDb->setTable(iaCore::getCustomConfigTable());
 					$iaDb->delete("`type` = 'group' AND `type_id` = '$usergroupId'");
 					foreach ($configs as $config)
 					{
@@ -780,22 +757,24 @@ class iaExtra extends abstractCore
 							'name' => $config['name'],
 							'value' => $config['value'],
 							'type' => iaAcl::GROUP,
-							'type_id' => $usergroupId
+							'type_id' => $usergroupId,
+							'extras' => $this->itemData['name']
 						)); // add custom config
 					}
 					$iaDb->resetTable();
 
 					$iaDb->setTable('acl_privileges');
 					$iaDb->delete('`type` = :type AND `type_id` = :id', null, array('type' => iaAcl::GROUP, 'id' => $usergroupId));
-					foreach ($perms as $perm)
+					foreach ($permissions as $permission)
 					{
 						$data = array(
-							'object' => $perm['object'],
-							'object_id' => $perm['object_id'],
-							'action' => $perm['action'],
-							'access' => $perm['access'],
+							'object' => $permission['object'],
+							'object_id' => $permission['object_id'],
+							'action' => $permission['action'],
+							'access' => $permission['access'],
 							'type' => iaAcl::GROUP,
-							'type_id' => $usergroupId
+							'type_id' => $usergroupId,
+							'extras' => $permission['extras']
 						);
 						$iaDb->insert($data); // add privileges for usergroup
 					}
@@ -882,34 +861,46 @@ class iaExtra extends abstractCore
 			iaLanguage::getTable(),
 			iaCore::getConfigGroupsTable(),
 			iaCore::getConfigTable(),
+			iaCore::getCustomConfigTable(),
 			'pages',
 			'hooks',
 			'acl_objects',
 			'fields_groups',
 			'fields_pages',
 			'fields_relations',
+			'fields_tree_nodes',
 			'cron'
 		);
 		$iaDb->cascadeDelete($tableList, "`extras` = '{$extraName}'");
 
-		$this->iaCore->factory('block', iaCore::ADMIN);
 		$this->iaCore->factory('field');
 
 		$iaDb->setTable(iaField::getTable());
-		$fields = $iaDb->all(array('id', 'extras'), "`extras` LIKE '%{$extraName}%'");
-		foreach ($fields as $field)
+
+		$stmt = '`extras` LIKE :extras';
+		$this->iaDb->bind($stmt, array('extras' => '%' . $extraName . '%'));
+		if ($itemsList)
 		{
-			$pluginsList = explode(',', $field['extras']);
-			if (count($pluginsList) > 1)
+			$stmt.= " OR `item` IN ('" . implode("','", $itemsList) . "')";
+		}
+
+		if ($fields = $iaDb->all(array('id', 'extras'), $stmt))
+		{
+			foreach ($fields as $field)
 			{
-				unset($pluginsList[array_search($extraName, $pluginsList)]);
-				$iaDb->update(array('extras' => implode(',', $pluginsList), 'id' => $field['id']));
-			}
-			else
-			{
-				$iaDb->delete(iaDb::convertIds($field['id']));
+				$pluginsList = explode(',', $field['extras']);
+				if (count($pluginsList) > 1)
+				{
+					unset($pluginsList[array_search($extraName, $pluginsList)]);
+					$iaDb->update(array('extras' => implode(',', $pluginsList), 'id' => $field['id']));
+				}
+				else
+				{
+					$iaDb->delete(iaDb::convertIds($field['id']));
+				}
 			}
 		}
+
 		$iaDb->resetTable();
 
 		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
@@ -1059,8 +1050,6 @@ class iaExtra extends abstractCore
 			$this->isUpdate = true;
 		}
 
-		$this->iaCore->factory('util');
-
 		if ($this->itemData['groups'])
 		{
 			$iaDb->setTable('admin_pages_groups');
@@ -1206,14 +1195,9 @@ class iaExtra extends abstractCore
 			{
 				if (!isset($existPages[$page['name']]))
 				{
-					if (self::TYPE_PACKAGE == $this->itemData['type'])
+					if (self::TYPE_PACKAGE == $this->itemData['type'] && $page['fields_item'])
 					{
-						$iaDb->setTable('items_pages');
-						foreach ($this->itemData['items'] as $item)
-						{
-							$iaDb->insert(array('page_name' => $page['name'], 'item' => $item['item']));
-						}
-						$iaDb->resetTable();
+						$iaDb->insert(array('page_name' => $page['name'], 'item' => $page['fields_item']), null, 'items_pages');
 					}
 
 					$title = (isset($page['title']) && $page['title']) ? $page['title'] : false;
@@ -1227,13 +1211,7 @@ class iaExtra extends abstractCore
 
 					$pageId = $iaDb->insert($page, array('order' => ++$maxOrder, 'last_updated' => iaDb::FUNCTION_NOW));
 
-					if ($title)
-					{
-						foreach ($this->iaCore->languages as $code => $value)
-						{
-							iaLanguage::addPhrase('page_title_' . $page['name'], $title, $code, $this->itemData['name'], iaLanguage::CATEGORY_PAGE, false);
-						}
-					}
+					empty($title) || $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_PAGE);
 
 					// TODO: should be handled by iaBlock
 					if ($blocks)
@@ -1313,13 +1291,7 @@ class iaExtra extends abstractCore
 						$iaDb->resetTable();
 					}
 
-					if ($contents)
-					{
-						foreach ($this->iaCore->languages as $code => $value)
-						{
-							iaLanguage::addPhrase('page_content_' . $page['name'], $contents, $code, $this->itemData['name'], iaLanguage::CATEGORY_PAGE, false);
-						}
-					}
+					empty($contents) || $this->_addPhrase('page_content_' . $page['name'], $contents, iaLanguage::CATEGORY_PAGE);
 
 					$extraPages[] = $page['name'];
 				}
@@ -1370,51 +1342,46 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->itemData['user_groups'])
+		if ($this->itemData['usergroups'])
 		{
-			$iaAcl = $this->iaCore->factory('acl');
+			$this->iaCore->factory('acl');
 
 			$iaDb->setTable(iaUsers::getUsergroupsTable());
-			foreach ($this->itemData['user_groups'] as $item)
+			foreach ($this->itemData['usergroups'] as $item)
 			{
 				if (!$iaDb->exists('`name` = :name', array('name' => $item['name'])))
 				{
 					$configs = $item['configs'];
 					$permissions = $item['permissions'];
 
-					$groupId = $iaAcl->obtainFreeId();
-					$data = array(
-						'id' => $groupId,
+					$groupId = $iaDb->insert(array(
 						'extras' => $item['extras'],
 						'name' => $item['name'],
 						'system' => true,
 						'assignable' => $item['assignable'],
-						'visible' => $item['visible'],
-					);
-					$iaDb->insert($data);
+						'visible' => $item['visible']
+					));
 
 					// update language records
-					foreach ($this->iaCore->languages as $iso => $title)
-					{
-						iaLanguage::addPhrase('usergroup_' . $item['name'], $item['title'], $iso);
-					}
+					$this->_addPhrase('usergroup_' . $item['name'], $item['title']);
 
-					$iaDb->setTable('config_custom');
-					$iaDb->delete("`type` = 'group' AND `type_id` = '$groupId'");
+					$iaDb->setTable(iaCore::getCustomConfigTable());
+					$iaDb->delete('`type` = :type AND `type_id` = :id', null, array('type' => iaAcl::GROUP, 'id' => $groupId));
 					foreach ($configs as $config)
 					{
 						$data = array(
 							'name' => $config['name'],
 							'value' => $config['value'],
-							'type' => 'group',
-							'type_id' => $groupId
+							'type' => iaAcl::GROUP,
+							'type_id' => $groupId,
+							'extras' => $this->itemData['name']
 						);
 						$iaDb->insert($data);
 					}
 					$iaDb->resetTable();
 
 					$iaDb->setTable('acl_privileges');
-					$iaDb->delete("`type` = 'group' AND `type_id` = '$groupId'");
+					$iaDb->delete('`type` = :type AND `type_id` = :id', null, array('type' => iaAcl::GROUP, 'id' => $groupId));
 					foreach ($permissions as $permission)
 					{
 						$data = array(
@@ -1422,8 +1389,9 @@ class iaExtra extends abstractCore
 							'object_id' => $permission['object_id'],
 							'action' => $permission['action'],
 							'access' => $permission['access'],
-							'type' => 'group',
-							'type_id' => $groupId
+							'type' => iaAcl::GROUP,
+							'type_id' => $groupId,
+							'extras' => $permission['extras']
 						);
 						$iaDb->insert($data);
 					}
@@ -1483,7 +1451,7 @@ class iaExtra extends abstractCore
 
 				if ($item['title'] && !$iaDb->exists("`key` = 'fieldgroup_{$item['name']}' AND `code`='" . $this->iaView->language . "'", null, iaLanguage::getTable()))
 				{
-					iaLanguage::addPhrase('fieldgroup_' . $item['name'], $item['title'], null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
+					$this->_addPhrase('fieldgroup_' . $item['name'], $item['title']);
 				}
 				unset($item['title']);
 
@@ -1520,17 +1488,15 @@ class iaExtra extends abstractCore
 						? $fieldGroups[$item['item'] . $item['group']]
 						: 0;
 
-					if ($item['title'])
-					{
-						iaLanguage::addPhrase('field_' . $item['name'], $item['title'], null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
-					}
+					$this->_addPhrase('field_' . $item['name'], $item['title']);
+
 					unset($item['group'], $item['title']);
 
 					if (is_array($item['numberRangeForSearch']))
 					{
 						foreach ($item['numberRangeForSearch'] as $num)
 						{
-							iaLanguage::addPhrase('field_' . $item['name'] . '_range_' . $num, $num, null, $this->itemData['name']);
+							$this->_addPhrase('field_' . $item['name'] . '_range_' . $num, $num, iaLanguage::CATEGORY_FRONTEND);
 						}
 					}
 					unset($item['numberRangeForSearch']);
@@ -1569,27 +1535,20 @@ class iaExtra extends abstractCore
 					{
 						foreach ($item['values'] as $key => $value)
 						{
-							iaLanguage::addPhrase(sprintf('field_%s_%s', $item['name'], $key), $value, null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
+							$key = sprintf('field_%s_%s', $item['name'], $key);
+							$this->_addPhrase($key, $value);
 						}
 
 						if ($item['default'])
 						{
 							// TODO: multiple default values for checkboxes should be implemented
-							if (in_array($item['default'], array_keys($item['values'])))
-							{
-								$item['default'] = $item['default'];
-							}
-							else
+							if (!in_array($item['default'], array_keys($item['values'])))
 							{
 								$item['default'] = array_search($item['default'], $item['values']);
 							}
 						}
 
 						$item['values'] = implode(',', array_keys($item['values']));
-					}
-					else
-					{
-						$item['values'] = '';
 					}
 
 					$fieldPages = $item['item_pages'] ? $item['item_pages'] : array();
@@ -1748,6 +1707,7 @@ class iaExtra extends abstractCore
 	{
 		$this->_inTag = $name;
 		$this->_attributes = $attributes;
+		$this->_currentPath[] = $name;
 
 		if (in_array($this->_inTag, array(self::TYPE_PACKAGE, self::TYPE_PLUGIN)) && isset($attributes['name']))
 		{
@@ -1757,18 +1717,16 @@ class iaExtra extends abstractCore
 
 		if ('usergroup' == $name)
 		{
-			$this->itemData['user_groups'][] = array(
+			$this->itemData['usergroups'][] = array(
 				'extras' => $this->itemData['name'],
-				'name' => $this->itemData['name'] . '_' . ($this->_attr('assignable', strtolower($attributes['title']))),
+				'name' => $this->itemData['name'] . '_' . ($this->_attr('name', iaUtil::generateToken())),
 				'title' => $attributes['title'],
-				'assignable' => $this->_attr('assignable', 0),
+				'assignable' => $this->_attr('assignable', false),
 				'visible' => $this->_attr('visible', true),
 				'configs' => array(),
-				'permissions' => array(),
+				'permissions' => array()
 			);
 		}
-
-		$this->_currentPath[] = $name;
 	}
 
 	public function _parserQuickData($parser, $text)
@@ -1927,7 +1885,8 @@ class iaExtra extends abstractCore
 						'group' => $this->_attr('group', ($this->itemData['type'] == self::TYPE_PLUGIN) ? 'extensions' : $this->itemData['type']),
 						'action' => $this->_attr('action', iaCore::ACTION_READ),
 						'parent' => $this->_attr('parent'),
-						'suburl' => $this->_attr('suburl')
+						'suburl' => $this->_attr('suburl'),
+						'fields_item' => $this->_attr('fields_item', '')
 					);
 				}
 				break;
@@ -1941,9 +1900,9 @@ class iaExtra extends abstractCore
 				break;
 
 			case 'config':
-				if ($this->_checkPath('usergroup') && $this->itemData['user_groups'])
+				if ($this->_checkPath('usergroup') && $this->itemData['usergroups'])
 				{
-					$this->itemData['user_groups'][count($this->itemData['user_groups']) - 1]['configs'][] = array(
+					$this->itemData['usergroups'][count($this->itemData['usergroups']) - 1]['configs'][] = array(
 						'name' => $this->_attr('name'),
 						'value' => $text
 					);
@@ -1959,36 +1918,35 @@ class iaExtra extends abstractCore
 						'description' => $this->_attr('description'),
 						'wysiwyg' => $this->_attr('wysiwyg', false),
 						'code_editor' => $this->_attr('code_editor', false),
-						'private' => $this->_attr('private', false),
+						'private' => $this->_attr('private', true),
 						'custom' => $this->_attr('custom', true),
 						'extras' => $this->itemData['name'],
-						'show' => $this->_attr('show', '')
+						'show' => $this->_attr('show')
 					);
 				}
 				break;
 
 			case 'permission':
+				$entry = array(
+					'access' => $this->_attr('access', 0, array(0, 1)),
+					'action' => $this->_attr('action', iaCore::ACTION_READ),
+					'object' => $this->_attr('object', iaAcl::OBJECT_PAGE),
+					'object_id' => $text,
+					'extras' => $this->itemData['name']
+				);
+
 				if ($this->_checkPath('permissions'))
 				{
-					$this->itemData['permissions'][] = array(
+					$this->itemData['permissions'][] = $entry + array(
 						'type' => $this->_attr('type', iaAcl::GROUP, array(iaAcl::USER, iaAcl::GROUP, iaAcl::PLAN)),
-						'type_id' => $this->_attr('type_id'),
-						'access' => $this->_attr('access', 0, array(0, 1)),
-						'action' => $this->_attr('action', iaCore::ACTION_READ),
-						'object' => $this->_attr('object', iaAcl::OBJECT_PAGE),
-						'object_id' => $text,
-						'extras' => $this->itemData['name']
+						'type_id' => $this->_attr('type_id')
 					);
 				}
-				elseif ($this->_checkPath('usergroup') && $this->itemData['user_groups'])
+				elseif ($this->_checkPath('usergroup') && $this->itemData['usergroups'])
 				{
-					$this->itemData['user_groups'][count($this->itemData['user_groups']) - 1]['permissions'][] = array(
-						'action' => $this->_attr('action', iaCore::ACTION_READ),
-						'object' => $this->_attr('object'),
-						'object_id' => $this->_attr(array('id', 'object_id'), 0),
-						'access' => (int)$text
-					);
+					$this->itemData['usergroups'][count($this->itemData['usergroups']) - 1]['permissions'][] = $entry;
 				}
+
 				break;
 
 			case 'object':
@@ -2032,23 +1990,20 @@ class iaExtra extends abstractCore
 				if ($this->_checkPath('fields'))
 				{
 					$values = '';
+
 					if (isset($this->_attributes['values']))
 					{
-						$values = array();
-						$value = $this->_attributes['values'];
-						$value = (false !== strpos($value, '::'))
-							? explode('::', $value)
-							: explode(',', $value);
-						foreach ($value as $k => $v)
+						$values = $this->_attributes['values'];
+
+						if ('tree' != $this->_attr('type'))
 						{
-							$array = explode('||', $v);
-							if (!isset($array[1]))
+							$array = explode((false !== strpos($values, '::')) ? '::' : ',', $values);
+							$values = array();
+
+							foreach ($array as $k => $v)
 							{
-								$values[$k + 1] = $v;
-							}
-							else
-							{
-								$values[$array[0]] = $array[1];
+								$a = explode('||', $v);
+								isset($a[1]) ? ($values[$a[0]] = $a[1]) : ($values[$k + 1] = $v);
 							}
 						}
 					}
@@ -2077,6 +2032,7 @@ class iaExtra extends abstractCore
 						'name' => $this->_attr('name'),
 						'type' => $this->_attr('type'),
 						'use_editor' => $this->_attr('editor', false),
+						'timepicker' => $this->_attr('timepicker', false),
 						'length' => (int)$this->_attr('length'),
 						'default' => $this->_attr('default'),
 						'editable' => $this->_attr('editable', true),
@@ -2144,6 +2100,12 @@ class iaExtra extends abstractCore
 			case 'block':
 				if ($this->_checkPath('blocks'))
 				{
+					$filename = $this->_attr('filename');
+					if ($filename && 'smarty' == $this->_attr('type'))
+					{
+						$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+					}
+
 					$this->itemData['blocks'][] = array(
 						'name' => $this->_attr('name', 'block_' . mt_rand(1000, 9999)),
 						'title' => $this->_attr('title'),
@@ -2159,7 +2121,7 @@ class iaExtra extends abstractCore
 						'multilingual' => $this->_attr('multilanguage', true),
 						'pages' => $this->_attr('pages'),
 						'rss' => $this->_attr('rss'),
-						'filename' => $this->_attr('filename'),
+						'filename' => $filename,
 						'classname' => $this->_attr('classname')
 					);
 				}
@@ -2293,7 +2255,13 @@ class iaExtra extends abstractCore
 
 						if ($this->iaCore->get($configName) == $entryData['name'])
 						{
-							$this->iaCore->set($configName, $installed[0], true);
+							$value = empty($installed) ? '' : array_shift($installed);
+							
+							if (in_array($entryData['name'], $this->_builtinPlugins))
+							{
+								$value = $entryData['name'];
+							}
+							$this->iaCore->set($configName, $value, true);
 						}
 					}
 				}
@@ -2371,13 +2339,13 @@ class iaExtra extends abstractCore
 
 			foreach ($phrases as $key => $phrase)
 			{
-				foreach ($this->iaCore->languages as $languageCode => $language)
+				foreach ($this->iaCore->languages as $isoCode => $language)
 				{
-					$value = isset($phrase['values'][$languageCode])
-						? $phrase['values'][$languageCode]
+					$value = isset($phrase['values'][$isoCode])
+						? $phrase['values'][$isoCode]
 						: $phrase['values'][$defaultLangCode];
 
-					iaLanguage::addPhrase($key, $value, $languageCode, $this->itemData['name'], $phrase['category'], false);
+					iaLanguage::addPhrase($key, $value, $isoCode, $this->itemData['name'], $phrase['category'], false);
 				}
 			}
 		}
@@ -2391,6 +2359,14 @@ class iaExtra extends abstractCore
 			$iaDb = &$this->iaDb;
 
 			eval($code);
+		}
+	}
+
+	protected function _addPhrase($key, $value, $category = iaLanguage::CATEGORY_COMMON)
+	{
+		foreach ($this->iaCore->languages as $isoCode => $language)
+		{
+			iaLanguage::addPhrase($key, $value, $isoCode, $this->itemData['name'], $category, false);
 		}
 	}
 }

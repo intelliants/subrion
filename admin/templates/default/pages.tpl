@@ -1,4 +1,5 @@
 <form method="post" id="page_form" class="sap-form form-horizontal">
+	{preventCsrf}
 	<input type="hidden" name="language" id="js-active-language">
 	<input type="hidden" name="extras" value="{$item.extras|escape:'html'}">
 

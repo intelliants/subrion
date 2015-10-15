@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaBackendController extends iaAbstractControllerBackend
 {
@@ -161,7 +138,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entry['order'] = $this->_iaDb->getMaxOrder(iaField::getTableGroups()) + 1;
 		}
 
-		foreach ($this->_iaCore->languages as $code => $l)
+		foreach ($this->_iaCore->languages as $code => $language)
 		{
 			if ($data['titles'][$code])
 			{
@@ -172,7 +149,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 			else
 			{
-				$this->addMessage($l . ': ' . iaLanguage::get('title_incorrect'), false);
+				$this->addMessage($language['title'] . ': ' . iaLanguage::get('title_incorrect'), false);
 			}
 
 			if ($data['description'][$code])
@@ -187,7 +164,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return !$this->getMessages();
 	}
 
-	protected function _postSaveEntry(array $entry, array $data, $action)
+	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 		$this->_savePhrases($data, $entry['name'], $entry['item']);
 
@@ -201,7 +178,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$phraseKeyTitle = 'fieldgroup_' . $name;
 		$phraseKeyDescription = "fieldgroup_description_{$item}_{$name}";
 
-		foreach ($this->_iaCore->languages as $code => $l)
+		foreach ($this->_iaCore->languages as $code => $language)
 		{
 			$stmt = '`key` = :phrase AND `code` = :language';
 			$this->_iaDb->bind($stmt, array('phrase' => $phraseKeyTitle, 'language' => $code));

@@ -5,15 +5,14 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<title>{ia_print_title}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="generator" content="Subrion CMS {$config.version}">
+		<meta name="generator" content="Subrion CMS {$core.config.version}">
 
 		<link rel="shortcut icon" href="{$core.page.nonProtocolUrl}favicon.ico">
 
-		<link href="{$core.page.nonProtocolUrl}templates/{$config.tmpl}/css/iabootstrap{if isset($smarty.cookies.template_color_scheme)}-{$smarty.cookies.template_color_scheme}{elseif isset($config.template_color_scheme)}-{$config.template_color_scheme}{/if}.css" rel="stylesheet">
-		<link href="{$core.page.nonProtocolUrl}templates/{$config.tmpl}/css/iabootstrap-responsive.css" rel="stylesheet">
+		<link href="{$core.page.nonProtocolUrl}templates/{$core.config.tmpl}/css/iabootstrap{if isset($smarty.cookies.template_color_scheme)}-{$smarty.cookies.template_color_scheme}{elseif isset($core.config.template_color_scheme)}-{$core.config.template_color_scheme}{/if}.css" rel="stylesheet">
 	</head>
 
-	<body>
+	<body class="page-redirect">
 		{ia_hooker name='smartyRedirectPage'}
 
 		<div class="redirect-block">
@@ -28,7 +27,7 @@
 		{ia_add_js}
 $(function()
 {
-	setTimeout("$('form').submit();", {$config.redirect_time|default:5000});
+	setTimeout("$('form').submit();", {$core.config.redirect_time|default:5000});
 });
 		{/ia_add_js}
 

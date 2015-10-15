@@ -31,7 +31,7 @@
 					</div>
 					<div class="col col-lg-2">
 						<p>{lang key='tables'}</p>
-						<select name="table" id="table" size="6" style="height: 150px;" class="gap">
+						<select id="table" size="6" style="height: 150px;" class="gap">
 							{foreach $tables as $table}
 								<option value="{$table}">{$table}</option>
 							{/foreach}
@@ -40,13 +40,13 @@
 					</div>
 					<div class="col col-lg-2" style="display: none;">
 						<p>{lang key='fields'}</p>
-						<select name="field" id="field" size="6" class="gap" style="height: 150px;"><option>&nbsp;</option></select>
+						<select id="field" size="6" class="gap" style="height: 150px;"><option>&nbsp;</option></select>
 						<a href="#" id="addFieldButton" class="btn btn-sm btn-success"><i class="i-double-angle-left"></i> {lang key='insert'}</a>
 					</div>
 				</div>
 				<div class="checkbox">
 					<label>
-						<input type="checkbox" name="show_query" value="1" id="sh1"{if isset($smarty.post.show_query) && $smarty.post.show_query == '1' || !$smarty.post} checked{/if}> {lang key='show_query_again'}
+						<input type="checkbox" name="show_query" value="1"{if isset($smarty.post.show_query) && $smarty.post.show_query == '1' || !$smarty.post} checked{/if}> {lang key='show_query_again'}
 					</label>
 				</div>
 			</div>

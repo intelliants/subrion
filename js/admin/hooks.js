@@ -21,10 +21,16 @@ Ext.onReady(function()
 			{name: 'filename', title: _t('filename'), width: 120, editor: 'text'},
 			{name: 'open', title: _t('edit'), icon: 'pencil', click: function(record, field)
 			{
-				$.post(intelli.config.admin_url + '/hooks.json', {action: 'get', id: record.get('id')}, function(response)
+				$.ajax(
 				{
-					$('.wrap-list').show();
-					editAreaLoader.openFile('codeContainer', {id: record.get('id'), text: response.code, syntax: record.get('type'), title: record.get('name') + ' | ' + record.get('extras')});
+					url: window.location.href + 'get.json',
+					data: {id: record.get('id')},
+					type: 'get',
+					success: function(response)
+					{
+						$('.wrap-list').show();
+						editAreaLoader.openFile('codeContainer', {id: record.get('id'), text: response.code, syntax: record.get('type'), title: record.get('name') + ' | ' + record.get('extras')});
+					}
 				});
 			}},
 			'delete'
@@ -65,7 +71,25 @@ Ext.onReady(function()
 	}]});
 
 	grid.init();
+});
 
+intelli.handlerSaveHook = function()
+{
+	var params = {
+		id: editAreaLoader.getCurrentFile('codeContainer').id,
+		code: editAreaLoader.getValue('codeContainer')
+	};
+
+	params = intelli.includeSecurityToken(params, $('input:first', '#js-token').val());
+
+	$.post(window.location.href + 'set.json', params, function(response)
+	{
+		intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
+	});
+};
+
+$(function()
+{
 	editAreaLoader.init(
 	{
 		id: 'codeContainer',
@@ -74,11 +98,11 @@ Ext.onReady(function()
 		allow_resize: 'yes',
 		min_height: 300,
 		toolbar: 'save, search, go_to_line, |, undo, redo',
-		save_callback: 'saveHook',
+		save_callback: 'intelli.handlerSaveHook',
 		allow_toggle: false
 	});
 
-	$('#js-save-cmd').on('click', saveHook);
+	$('#js-save-cmd').on('click', intelli.handlerSaveHook);
 	$('#js-close-cmd').on('click', function()
 	{
 		var hooks = editAreaLoader.getAllFiles('codeContainer');
@@ -92,11 +116,3 @@ Ext.onReady(function()
 		}
 	});
 });
-
-function saveHook(id, code)
-{
-	$.post(intelli.config.admin_url + '/hooks.json', {action: 'set', id: editAreaLoader.getCurrentFile('codeContainer').id, code: editAreaLoader.getValue('codeContainer')}, function(response)
-	{
-		intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
-	});
-}
