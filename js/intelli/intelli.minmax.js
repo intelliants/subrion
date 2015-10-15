@@ -10,7 +10,7 @@ $(function($) {
 		var blockId = $(this).attr('id');
 
 		if (!$('.minmax-toggle', this).length > 0) {
-			$('.box-caption, > .title', this).append('<a href="#" class="minmax-toggle"><i></i></a>');
+			$('.box__caption, > .fieldset__header', this).append('<a href="#" class="minmax-toggle"><i></i></a>');
 		}
 
 		if (boxesState[blockId] == 'visible') {
@@ -30,7 +30,7 @@ $(function($) {
 
 		if (o.hasClass('collapsed'))
 		{
-			$('.box-content, > .content', o).slideDown('fast', function()
+			$('.box__content, > .fieldset__content', o).slideDown('fast', function()
 			{
 				o.removeClass('collapsed');
 			});
@@ -39,7 +39,7 @@ $(function($) {
 		}
 		else
 		{
-			$('.box-content, > .content', o).slideUp('fast', function()
+			$('.box__content, > .fieldset__content', o).slideUp('fast', function()
 			{
 				o.addClass('collapsed');
 			});

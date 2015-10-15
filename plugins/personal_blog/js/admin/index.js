@@ -8,6 +8,7 @@ Ext.onReady(function()
 				'selection',
 				{name: 'title', title: _t('title'), width: 2, editor: 'text'},
 				{name: 'alias', title: _t('title_alias'), width: 220},
+				{name: 'owner', title: _t('owner'), width: 150},
 				'status',
 				{name: 'date_added', title: _t('date'), width: 120, editor: 'date'},
 				'update',
@@ -34,6 +35,12 @@ Ext.onReady(function()
 			valueField: 'value',
 			xtype: 'combo'
 		},{
+			emptyText: _t('owner'),
+			listeners: intelli.gridHelper.listener.specialKey,
+			name: 'owner',
+			width: 150,
+			xtype: 'textfield'
+		}, {
 			handler: function(){intelli.gridHelper.search(grid);},
 			id: 'fltBtn',
 			text: '<i class="i-search"></i> ' + _t('search')

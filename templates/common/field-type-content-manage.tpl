@@ -1,197 +1,206 @@
-{assign type $variable.type}
-{assign varname $variable.name}
-{assign name "field_{$varname}"}
+{$type = $field.type}
+{$fieldName = $field.name}
+{$name = "field_{$fieldName}"}
 
-{if isset($field_before[$varname])}{$field_before.$varname}{/if}
+{if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
-{if isset($item.$varname)}
-	{if 'checkbox' == $type}
-		{assign value ','|explode:$item.$varname}
-	{elseif in_array($type, array('image', 'pictures', 'storage'))}
+{if isset($item.$fieldName)}
+	{if iaField::CHECKBOX == $type}
+		{$value = ','|explode:$item.$fieldName}
+	{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
 		{* TODO: refactor the code below *}
-		{if $item.$varname}
-			{assign value $item.$varname|unserialize}
+		{if $item.$fieldName}
+			{$value = $item.$fieldName|unserialize}
 		{else}
-			{assign value array()}
+			{$value = array()}
 		{/if}
 		{* *}
 	{else}
-		{assign value $item.$varname}
+		{$value = $item.$fieldName}
 	{/if}
 {else}
-	{assign value $variable.default}
+	{$value = $field.default}
 {/if}
 
-{if isset($variable.disabled) && $variable.disabled}
-	<input type="hidden" name="{$varname}" value="{$value}">
+{if isset($field.disabled) && $field.disabled}
+	<input type="hidden" name="{$fieldName}" value="{$value}">
 {/if}
 
-<div class="control-group{if $type == 'textarea'} textarea{/if} {$variable.class} {$variable.relation}{if $variable.for_plan && !$variable.required} for_plan" style="display:none;{/if}" id="{$varname}_fieldzone">
-	<label class="control-label" for="{$name}">
+<div class="form-group{if iaField::TEXTAREA == $type} form-group--textarea{/if} {$field.class} {$field.relation}{if $field.for_plan && !$field.required} form-group--plan" style="display:none;{/if}" id="{$fieldName}_fieldzone">
+	<label for="{$name}">
 		{lang key=$name}:
-		{if $variable.required}<span class="required">*</span>{/if}
+		{if $field.required}<span class="is-required">*</span>{/if}
 	</label>
 
-	<div class="controls">
-
 	{switch $type}
+		{case iaField::TEXT break}
+			<input class="form-control" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
-		{case 'text' break}
-			<input type="text" name="{$varname}" value="{if $value}{$value|escape:'html'}{else}{$variable.default}{/if}" id="{$name}" maxlength="{$variable.length}">
+		{case iaField::NUMBER break}
+			<input class="form-control" type="text" class="js-filter-numeric" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
-		{case 'number' break}
-			<input type="text" class="js-filter-numeric" name="{$varname}" value="{if $value}{$value|escape:'html'}{else}{$variable.default}{/if}" id="{$name}" maxlength="{$variable.length}">
-
-		{case 'textarea' break}
-			{if !$variable.use_editor}
-				<textarea name="{$varname}" class="input-block-level" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
-				{if $variable.length > 0}
+		{case iaField::TEXTAREA break}
+			{if !$field.use_editor}
+				<textarea  class="form-control" name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
+				{if $field.length > 0}
 					{ia_add_js}
 $(function()
 {
-	$('#{$name}').dodosTextCounter({$variable.length},
+	$('#{$name}').dodosTextCounter({$field.length},
 	{
 		counterDisplayElement: 'span',
-		counterDisplayClass: 'textcounter_{$varname}'
+		counterDisplayClass: 'textcounter_{$fieldName}'
 	});
-	$('.textcounter_{$varname}').addClass('textcounter').wrap('<p class="help-block text-right"></p>').before('{lang key='chars_left'} ');
+	$('.textcounter_{$fieldName}').addClass('textcounter').wrap('<p class="help-block"></p>').before('{lang key='chars_left'} ');
 });
 					{/ia_add_js}
 					{ia_print_js files='jquery/plugins/jquery.textcounter'}
 				{/if}
 			{else}
-				{ia_wysiwyg value=$value name=$variable.name}
+				{ia_wysiwyg value=$value name=$field.name}
 			{/if}
 
-		{case 'url' break}
+		{case iaField::URL break}
 			{if !is_array($value)}
-				{assign value '|'|explode:$value}
+				{$value = '|'|explode:$value}
 			{/if}
 
-			<div class="row-fluid">
-				<div class="span6">
-					<label for="{$variable.name}[title]" class="control-label">{lang key='title'}:</label>
-					<div class="controls">
-						<input type="text" name="{$variable.name}[title]" value="{if isset($value['title'])}{$value['title']|escape:'html'}{elseif !empty($value[1])}{$value[1]|escape:'html'}{/if}">
-					</div>
+			<div class="row">
+				<div class="col-md-6">
+					<label for="{$fieldName}[title]">{lang key='title'}:</label>
+					<input class="form-control" type="text" name="{$fieldName}[title]" value="{if isset($value['title'])}{$value['title']|escape:'html'}{elseif !empty($value[1])}{$value[1]|escape:'html'}{/if}">
 				</div>
-				<div class="span6">
-					<label for="{$variable.name}[url]" class="control-label">{lang key='url'}:</label>
-					<div class="controls">
-						<input type="text" name="{$variable.name}[url]" value="{if isset($value['url'])}{$value['url']}{elseif !empty($value[0])}{$value[0]}{else}http://{/if}">
-					</div>
+				<div class="col-md-6">
+					<label for="{$fieldName}[url]">{lang key='url'}:</label>
+					<input class="form-control" type="text" name="{$fieldName}[url]" value="{if isset($value['url'])}{$value['url']}{elseif !empty($value[0])}{$value[0]}{else}http://{/if}">
 				</div>
 			</div>
 
-		{case 'date' break}
-			{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
+		{case iaField::DATE break}
+			{$default_date = ($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
 
-			<div class="input-append date" id="field_date_{$varname}">
-				<input type="text" name="{$varname}" class="js-datepicker" {if $variable.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if} id="{$name}" value="{$default_date}">
-				<span class="add-on js-datepicker-toggle"><i class="icon-calendar"></i></span>
+			<div class="row">
+				<div class="col-md-6">
+					<div class="input-group date" id="field_date_{$fieldName}">
+						<input class="form-control js-datepicker" type="text" name="{$fieldName}" {if $field.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if} id="{$name}" value="{$default_date}">
+						<span class="input-group-addon js-datepicker-toggle"><span class="fa fa-calendar"></span></span>
+					</div>
+				</div>
 			</div>
 
 			{ia_add_media files='datepicker'}
 
-		{case 'image' break}
-			<div class="upload-wrap">
-				<div class="input-append">
-					<span class="span2 uneditable-input">{lang key='click_here_to_upload'}</span>
-					<span class="add-on">{lang key='browse'}</span>
-				</div>
-				<input type="file" name="{$varname}[]" id="{$name}" class="upload-hidden">
-			</div>
-
+		{case iaField::IMAGE break}
 			{if $value}
-				<div class="thumbnail" style="width: {$variable.thumb_width}px;">
-					{if $variable.thumb_width == $variable.image_width && $variable.thumb_height == $variable.image_height}
-						{printImage imgfile=$value.path width=$variable.thumb_width height=$variable.thumb_height thumbnail=1}
+				<div class="thumbnail">
+					<div class="thumbnail__actions">
+						<button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$value.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+					</div>
+
+					{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
+						{printImage imgfile=$value.path width=$field.thumb_width height=$field.thumb_height thumbnail=1}
 					{else}
-						<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$varname}]" style="max-width: {$variable.thumb_width}px;">
-							{printImage imgfile=$value.path width=$variable.thumb_width height=$variable.thumb_height}
+						<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
+							{printImage imgfile=$value.path width=$field.thumb_width height=$field.thumb_height}
 						</a>
 					{/if}
 
-					<input type="hidden" name="{$varname}[path]" value="{$value.path}">
-
-					<div class="caption">
-						<button class="btn btn-mini btn-danger js-delete-file" data-item="{$variable.item}" data-field="{$varname}" data-item-id="{$item.id|default:''}" data-picture-path="{$value.path}">{lang key='delete'}</button>
-					</div>
+					<input type="hidden" name="{$fieldName}[path]" value="{$value.path}">
 				</div>
 			{/if}
 
-		{case 'pictures' break}
+			<div class="input-group js-files">
+				<span class="input-group-btn">
+					<span class="btn btn-primary btn-file">
+						{lang key='browse'} <input type="file" name="{$fieldName}[]" id="{$name}">
+					</span>
+				</span>
+				<input type="text" class="form-control js-file-name" readonly value="{if $value}{$value.path}{/if}">
+			</div>
+
+		{case iaField::PICTURES break}
 			{ia_add_media files='js:bootstrap/js/bootstrap-editable.min, css:_IA_URL_js/bootstrap/css/bootstrap-editable' order=5}
 
 			{if $value}
-				<div class="thumbnails-grid" id="{$varname}_upload_list">
-					{foreach $value as $entry}
-						<div class="thumbnail gallery">
-							<a href="{printImage imgfile=$entry.path url=true fullimage=true}" rel="ia_lightbox[{$varname}]" title="{$entry.title|escape:'html'}" style="max-width: 140px;">
-								{printImage imgfile=$entry.path title=$entry.title}
-							</a>
+					<div class="row upload-items" id="{$fieldName}_upload_list">
+						{foreach $value as $entry}
+							<div class="col-md-4">
+								<div class="thumbnail upload-items__item">
+									<div class="btn-group thumbnail__actions">
+										<span class="btn btn-default btn-sm drag-handle"><span class="fa fa-arrows"></span></span>
+										<button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+									</div>
+									
+									<a class="thumbnail__image" href="{printImage imgfile=$entry.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]" title="{$entry.title|escape:'html'}">
+										{printImage imgfile=$entry.path title=$entry.title class='img-responsive'}
+									</a>
 
-							<div class="caption">
-								<a href="#" id="{$varname}_{$entry@index}" data-type="text" data-item="{$variable.item}" data-field="{$varname}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a>
+									<div class="caption">
+										<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
+									</div>
+
+									<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
+									<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path}">
+								</div>
 							</div>
-
-							<input type="hidden" name="{$varname}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
-							<input type="hidden" name="{$varname}[{$entry@index}][path]" value="{$entry.path}">
-
-							<div class="caption clearfix">
-								<span class="btn btn-mini drag-handle pull-right"><i class="icon-move"></i></span>
-								<button class="btn btn-mini btn-danger js-delete-file" data-item="{$variable.item}" data-field="{$varname}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}">{lang key='delete'}</button>
-							</div>
-						</div>
-					{/foreach}
-				</div>
+						{/foreach}
+					</div>
 
 				{ia_add_js}
 $(function()
 {
-	intelli.sortable('{$varname}_upload_list', '.drag-handle');
+	var params = {
+		handle: '.drag-handle'
+	}
+
+	intelli.sortable('{$fieldName}_upload_list', params);
 });
 				{/ia_add_js}
 
-				{assign var='max_num' value=($variable.length - count($value))}
+				{$max_num = ($field.length - count($value))}
 			{else}
-				{assign max_num $variable.length}
+				{$max_num = $field.length}
 			{/if}
 
-			<div class="upload-gallery-wrap-outer" id="wrap_{$variable.name}" {if $max_num <= 0}style="display: none;"{/if}>
-				{lang key='image'}
-				<div class="upload-gallery-wrap clearfix">
-					<div class="upload-wrap pull-left">
-						<div class="input-append">
-							<span class="span2 uneditable-input">{lang key='image_click_to_upload'}</span>
-							<span class="add-on">{lang key='browse'}</span>
+			<div class="upload-list" id="wrap_{$fieldName}" {if $max_num <= 0}style="display: none;"{/if}>
+				<div class="row upload-list__item">
+					<div class="col-md-6">
+						<div class="input-group js-files">
+							<div class="input-group-btn">
+								<span class="btn btn-primary btn-file">
+									{lang key='browse'} <input type="file" name="{$fieldName}[]">
+								</span>
+							</div>
+							<input type="text" readonly class="form-control js-file-name">
 						</div>
-						<input type="file" class="upload-hidden" name="{$variable.name}[]">
 					</div>
-					<input class="upload-title" type="text" placeholder="{lang key='title'}" name="{$variable.name}_title[]" maxlength="100">
-
-					{if $max_num > 0}
-						<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
-						<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
-					{/if}
+					<div class="col-md-6">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="{lang key='title'}" name="{$fieldName}_title[]" maxlength="100">
+							{if $max_num > 0}
+								<div class="input-group-btn">
+									<button type="button" class="js-add-img btn btn-default"><span class="fa fa-plus"></span></button>
+									<button type="button" class="js-remove-img btn btn-default"><span class="fa fa-minus"></span></button>
+								</div>
+							{/if}
+						</div>
+					</div>
 				</div>
-
-				<input type="hidden" value="{$max_num}" id="{$variable.name}">
-				<p class="help-block">{lang key='click'}<strong> {lang key='browse'}... </strong>{lang key='choose_image_file'}</p>
+				
+				<input type="hidden" value="{$max_num}" id="{$fieldName}">
 			</div>
 
-		{case 'storage' break}
+		{case iaField::STORAGE break}
 			{if $value}
-				<div class="files-list" id="{$varname}_upload_list">
+				<div class="upload-items upload-items--files" id="{$fieldName}_upload_list">
 					{foreach $value as $entry}
-						<div class="thumbnail">
-							<input class="input-large" type="text" name="{$varname}[{$entry@index}][title]" value="{$entry.title|escape:'html'}" style="margin-bottom: 0;">
-							<input type="hidden" name="{$varname}[{$entry@index}][path]" value="{$entry.path}">
-
-							<div class="caption">
-								<a class="btn btn-mini btn-success" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}">{lang key='download'}</a>
-								<button class="btn btn-mini btn-danger js-delete-file" data-item="{$variable.item}" data-field="{$variable.name}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}">{lang key='delete'}</button>
-								<span class="btn btn-mini drag-handle"><i class="icon-move"></i></span>
+						<div class="input-group upload-items__item">
+							<input type="text" class="form-control" type="text" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
+							<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path}">
+							<div class="input-group-btn">
+								<a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{lang key='download'}"><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
+								<span class="btn btn-default drag-handle"><span class="fa fa-arrows-v"></span></span>
+								<button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}">{lang key='delete'}</button>
 							</div>
 						</div>
 					{/foreach}
@@ -200,53 +209,112 @@ $(function()
 				{ia_add_js}
 $(function()
 {
-	intelli.sortable('{$varname}_upload_list', '.drag-handle');
+	var params = {
+		handle: '.drag-handle'
+	}
+
+	intelli.sortable('{$fieldName}_upload_list', params);
 });
 				{/ia_add_js}
 
-				{assign var='max_num' value=($variable.length - count($value))}
+				{$max_num = ($field.length - count($value))}
 			{else}
-				{assign max_num $variable.length}
+				{$max_num = $field.length}
 			{/if}
 
-			<div class="upload-gallery-wrap-outer" id="wrap_{$variable.name}"{if $max_num <= 0} style="display: none;"{/if}>
-				<div class="upload-gallery-wrap clearfix">
-					<div class="upload-wrap pull-left">
-						<div class="input-append">
-							<span class="span2 uneditable-input">{lang key='file_click_to_upload'}</span>
-							<span class="add-on">{lang key='browse'}</span>
+			<div class="upload-list" id="wrap_{$fieldName}" {if $max_num <= 0}style="display: none;"{/if}>
+				<div class="row upload-list__item">
+					<div class="col-md-6">
+						<div class="input-group js-files">
+							<div class="input-group-btn">
+								<span class="btn btn-primary btn-file">
+									{lang key='browse'} <input type="file" name="{$fieldName}[]">
+								</span>
+							</div>
+							<input type="text" readonly class="form-control js-file-name">
 						</div>
-						<input type="file" class="upload-hidden" name="{$variable.name}[]">
 					</div>
-					<input class="upload-title" type="text" placeholder="{lang key='title'}" name="{$variable.name}_title[]" maxlength="100">
-					{if $max_num > 0}
-						<button type="button" class="js-add-img btn btn-info"><i class="icon-plus"></i></button>
-						<button type="button" class="js-remove-img btn btn-info"><i class="icon-minus"></i></button>
-					{/if}
+					<div class="col-md-6">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="{lang key='title'}" name="{$fieldName}_title[]" maxlength="100">
+							{if $max_num > 0}
+								<div class="input-group-btn">
+									<button type="button" class="js-add-img btn btn-default"><span class="fa fa-plus"></span></button>
+									<button type="button" class="js-remove-img btn btn-default"><span class="fa fa-minus"></span></button>
+								</div>
+							{/if}
+						</div>
+					</div>
 				</div>
+				
+				<input type="hidden" value="{$max_num}" id="{$fieldName}">
 			</div>
-			<input type="hidden" value="{$max_num}" id="{$variable.name}">
 
+		{case iaField::TREE}
+			<input class="form-control" type="text" id="label-{$fieldName}" disabled>
+			<input type="hidden" name="{$fieldName}" id="input-{$fieldName}" value="{$value|escape:'html'}">
+			<div class="js-tree categories-tree" data-field="{$fieldName}" data-nodes="{$field.values|escape:'html'}" data-multiple="{$field.timepicker}"></div>
+			{ia_add_media files='tree'}
+			{ia_add_js order=5}
+$(function()
+{
+	'use strict';
+
+	$('.js-tree').each(function()
+	{
+		var data = $(this).data(),
+			options = { core: { data: data.nodes, multiple: data.multiple } };
+
+		if (data.multiple) options.plugins = ['checkbox'];
+
+		$(this).jstree(options)
+		.on('changed.jstree', function(e, d)
+		{
+			var nodes = [], ids = [];
+			for (var i = 0; i < d.selected.length; i++)
+			{
+				var node = d.instance.get_node(d.selected[i]);
+				nodes.push(node.text.trim());
+				ids.push(node.id);
+			}
+
+			var fieldName = $(this).data('field');
+
+			$('#label-' + fieldName).val(nodes.join(', '));
+			$('#input-' + fieldName).val(ids.join(', '));
+		})
+		.on('ready.jstree', function(e, d)
+		{
+			var nodes = $('#input-' + $(this).data('field')).val().split(',');
+			d.instance.open_all();
+			for (var i in nodes)
+			{
+				d.instance.select_node(nodes[i]);
+			}
+		})
+	});
+});
+			{/ia_add_js}
 	{/switch}
 
-		{if $type == 'combo'}
-			<select name="{$varname}" class="text" id="{$name}"{if isset($variable.disabled) && $variable.disabled} disabled{/if}>
+		{if $type == iaField::COMBO}
+			<select class="form-control" name="{$fieldName}" id="{$name}"{if isset($field.disabled) && $field.disabled} disabled{/if}>
 				<option value="">{lang key='_select_'}</option>
-				{if !empty($variable.values)}
-					{html_options options=$variable.values selected=$value}
+				{if !empty($field.values)}
+					{html_options options=$field.values selected=$value}
 				{/if}
 			</select>
 
-			{if $variable.relation == 'parent' && $variable.children}
+			{if $field.relation == 'parent' && $field.children}
 				{ia_add_js order=5}
 $(function()
 {
-$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
+$('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
 $('#{$name}').on('change', function()
 {
 	var value = $(this).val();
-	$('.hide_{$variable.name}').hide();
-	{foreach $variable.children as $_field => $_values}
+	$('.hide_{$fieldName}').hide();
+	{foreach $field.children as $_field => $_values}
 	if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 	{/foreach}
 	$('fieldset').show().each(function(index, item)
@@ -263,30 +331,30 @@ $('#{$name}').on('change', function()
 				{/ia_add_js}
 			{/if}
 
-		{elseif $type == 'radio'}
+		{elseif $type == iaField::RADIO}
 			<div class="radios-list">
-				{if !empty($variable.values)}
-					{html_radios assign='radios' name=$varname id=$name options=$variable.values selected=$value separator='</div>'}
+				{if !empty($field.values)}
+					{html_radios assign='radios' name=$fieldName id=$name options=$field.values selected=$value separator='</div>'}
 					<div class="radio">{'<div class="radio">'|implode:$radios}
 				{/if}
 			</div>
 
-			{if $variable.relation == 'parent' && $variable.children}
+			{if $field.relation == 'parent' && $field.children}
 				{ia_add_js order=5}
 $(function()
 {
-	$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
+	$('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
 
-	$('input[name="{$varname}"]').on('change', function()
+	$('input[name="{$fieldName}"]').on('change', function()
 	{
 		var $this = $(this),
 			value = $(this).val();
 
 		if ($this.is(':checked'))
 		{
-			$('hide_{$variable.name}').hide();
+			$('hide_{$fieldName}').hide();
 			
-			{foreach $variable.children as $_field => $_values}
+			{foreach $field.children as $_field => $_values}
 				if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1)
 				{
 					$('#{$_field}_fieldzone').show();
@@ -302,26 +370,26 @@ $(function()
 				{/ia_add_js}
 			{/if}
 
-		{elseif $type == 'checkbox'}
+		{elseif $type == iaField::CHECKBOX}
 			<div class="radios-list">
-				{if !empty($variable.values)}
-					{html_checkboxes assign='checkboxes' name=$varname id=$name options=$variable.values selected=$value separator="</div>"}
+				{if !empty($field.values)}
+					{html_checkboxes assign='checkboxes' name=$fieldName id=$name options=$field.values selected=$value separator='</div>'}
 					<div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
 				{/if}
 			</div>
 
-			{if $variable.relation == 'parent' && $variable.children}
+			{if $field.relation == 'parent' && $field.children}
 			{ia_add_js order=5}
 $(function()
 {
-	$('{foreach $variable.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$variable.name}');
-	$('input[name="{$varname}[]"]').on('change', function()
+	$('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
+	$('input[name="{$fieldName}[]"]').on('change', function()
 	{
-		$('.hide_{$variable.name}').hide();
+		$('.hide_{$fieldName}').hide();
 		$('input[type="checkbox"]:checked', '#type_fieldzone').each(function()
 		{
 			var value = $(this).val();
-			{foreach $variable.children as $_field => $_values}
+			{foreach $field.children as $_field => $_values}
 			if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
 			{/foreach}
 		});
@@ -332,7 +400,6 @@ $(function()
 		{/if}
 
 		{assign annotation {lang key="{$name}_annotation" default=''}}
-		{if $annotation}<p class="annotation help-block">{$annotation}</p>{/if}
-	</div>
+		{if $annotation}<p class="help-block annotation">{$annotation}</p>{/if}
 </div>
-{if isset($field_after[$varname])}{$field_after.$varname}{/if}
+{if isset($field_after[$fieldName])}{$field_after.$fieldName}{/if}

@@ -33,3 +33,4 @@
 		{include file='fields-system.tpl'}
 	{/if}
 </div>
+{ia_print_js files='jquery/plugins/jquery.numeric'}

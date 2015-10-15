@@ -1,2 +1,9 @@
-.idea/*
-.gitmodules
+.idea
+tmp/*
+!tmp/.htaccess
+uploads/*
+!uploads/.htaccess
+backup/*
+!backup/.htaccess
+includes/config.inc.php
+includes/custom.inc.php

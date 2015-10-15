@@ -67,10 +67,12 @@
 }
 .datepicker-dropdown.datepicker-orient-bottom:before {
   bottom: -7px;
+  top: auto;
   border-bottom: 0;
   border-top: 7px solid #999;
 }
 .datepicker-dropdown.datepicker-orient-bottom:after {
+  top: auto;
   bottom: -6px;
   border-bottom: 0;
   border-top: 6px solid #fff;
@@ -776,7 +778,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: 1000;
+  z-index: 1000 !important;
   float: left;
   display: none;
   min-width: 160px;

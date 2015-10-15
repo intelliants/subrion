@@ -1,32 +1,10 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaUsers extends abstractCore
 {
 	const SESSION_KEY = 'user';
+	const SESSION_FAVORITES_KEY = 'favorites';
 
 	const MEMBERSHIP_REGULAR = 8;
 	const MEMBERSHIP_GUEST = 4;
@@ -45,6 +23,10 @@ class iaUsers extends abstractCore
 	protected static $_usergroupTable = 'usergroups';
 
 	public $dashboardStatistics = true;
+
+	public $coreSearchOptions = array(
+		'regularSearchStatements' => array("CONCAT_WS(' ', `username`, `fullname`, `email`) LIKE '%:query%'")
+	);
 
 
 	public static function getItemName()
@@ -178,6 +160,10 @@ class iaUsers extends abstractCore
 
 			foreach ($rows as $entry)
 			{
+				// delete member uploads folder
+				$folder = IA_UPLOADS . iaUtil::getAccountDir($entry['username']);
+				iaUtil::cascadeDeleteFiles($folder, true) && @rmdir($folder);
+
 				$iaLog->write(iaLog::ACTION_DELETE, array('item' => 'member', 'name' => $entry['fullname'], 'id' => $entry['id']));
 
 				$this->iaCore->startHook('phpUserDelete', array('userInfo' => $entry));
@@ -269,57 +255,57 @@ class iaUsers extends abstractCore
 			$memberInfo['username'] = $this->_generateUserName($memberInfo);
 		}
 
-		// send email
-		$this->iaCore->startHook('memberAddEmailSubmission', array('member' => $memberInfo));
-
-		$action = 'member_registration';
-		if ($this->iaCore->get($action) && $memberInfo['email'])
-		{
-			$iaMailer = $this->iaCore->factory('mailer');
-
-			$iaMailer->loadTemplate($action);
-			$iaMailer->addAddress($memberInfo['email']);
-			$iaMailer->setReplacements(array(
-				'fullname' => $memberInfo['fullname'],
-				'username' => $memberInfo['username'],
-				'email' => $memberInfo['email'],
-				'password' => $password,
-				'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
-			));
-
-			$iaMailer->send(true);
-		}
-
-		$this->iaCore->startHook('memberPreAdd', array('member' => &$memberInfo, 'password' => $password));
+		$this->iaCore->startHook('phpUserPreRegister', array('member' => &$memberInfo, 'password' => $password));
 
 		$this->iaDb->setTable(self::getTable());
 		$memberId = $this->iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`username` = :username', array('username' => $memberInfo['username']));
 		if (empty($memberId))
 		{
 			$memberId = $this->iaDb->insert($memberInfo, array('date_reg' => iaDb::FUNCTION_NOW, 'date_update' => iaDb::FUNCTION_NOW));
+
+			if ($memberId)
+			{
+				$iaMailer = $this->iaCore->factory('mailer');
+
+				// send email to a registered member
+				$this->iaCore->startHook('memberAddEmailSubmission', array('member' => $memberInfo));
+
+				$action = 'member_registration';
+				if ($this->iaCore->get($action) && $memberInfo['email'])
+				{
+					$iaMailer->loadTemplate($action);
+					$iaMailer->addAddress($memberInfo['email']);
+					$iaMailer->setReplacements(array(
+						'fullname' => $memberInfo['fullname'],
+						'username' => $memberInfo['username'],
+						'email' => $memberInfo['email'],
+						'password' => $password,
+						'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
+					));
+
+					$iaMailer->send(true);
+				}
+
+				// sending the admin notification
+				$action = 'member_registration_admin';
+				if ($this->iaCore->get($action) && $memberInfo['email'])
+				{
+					$iaMailer->loadTemplate($action);
+					$iaMailer->setReplacements(array(
+						'id' => $memberId,
+						'username' => $memberInfo['username'],
+						'fullname' => $memberInfo['fullname'],
+						'email' => $memberInfo['email'],
+						'password' => $password
+					));
+
+					$iaMailer->sendToAdministrators();
+				}
+			}
 		}
 		$this->iaDb->resetTable();
 
 		$this->iaCore->startHook('phpUserRegister', array('userInfo' => $memberInfo, 'password' => $password));
-
-		// sending the admin notification
-		$action = 'member_registration_admin';
-		if ($this->iaCore->get($action) && $memberInfo['email'])
-		{
-			$iaMailer = $this->iaCore->factory('mailer');
-
-			$iaMailer->loadTemplate($action);
-			$iaMailer->setReplacements(array(
-				'id' => $memberId,
-				'username' => $memberInfo['username'],
-				'fullname' => $memberInfo['fullname'],
-				'email' => $memberInfo['email'],
-				'password' => $password
-			));
-
-			$iaMailer->sendToAdministrators();
-		}
-		//
 
 		return $memberId;
 	}
@@ -362,6 +348,11 @@ class iaUsers extends abstractCore
 		$this->iaDb->bind($stmt, array('email' => $email, 'key' => $key));
 
 		return (bool)$this->iaDb->update(array('sec_key' => '', 'status' => $status), $stmt, array('date_update' => iaDb::FUNCTION_NOW), self::getTable());
+	}
+
+	public function getById($id)
+	{
+		return $this->getInfo($id);
 	}
 
 	public function getInfo($id, $key = 'id')
@@ -421,7 +412,7 @@ class iaUsers extends abstractCore
 
 	public function registerVisitor()
 	{
-		$entryData = array('status' => iaCore::STATUS_ACTIVE, 'page' => IA_SELF);
+		$entryData = array('status' => iaCore::STATUS_ACTIVE, 'page' => IA_SELF, 'date' => date(iaDb::DATETIME_FORMAT));
 
 		if (self::hasIdentity())
 		{
@@ -449,34 +440,30 @@ class iaUsers extends abstractCore
 
 		$iaDb = &$this->iaCore->iaDb;
 		$iaDb->setTable('online');
-		$count = (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, iaDb::convertIds($sessionId, 'session_id'));
 
-		$rawValues = array('date' => iaDb::FUNCTION_NOW);
-
-		if ($count > 0)
+		if ((int)$iaDb->one(iaDb::STMT_COUNT_ROWS, iaDb::convertIds($sessionId, 'session_id')))
 		{
-			$iaDb->update($entryData, "`session_id` = '$sessionId'", $rawValues);
+			$iaDb->update($entryData, "`session_id` = '$sessionId'");
 		}
 		else
 		{
 			$entryData['session_id'] = $sessionId;
 			$entryData['ip'] = iaUtil::getIp();
 
-			$iaDb->insert($entryData, $rawValues);
+			$iaDb->insert($entryData);
 		}
 
-		$iaDb->update(array('status' => 'expired'), '`date` < NOW() - INTERVAL 20 MINUTE');
-		$iaDb->delete('`date` < NOW() - INTERVAL 2 DAY');
+		$iaDb->resetTable();
 	}
 
-	protected function _assignItem($account)
+	protected function _assignItem($memberData)
 	{
 		if ($salt = $this->_getSalt())
 		{
 			foreach ($salt['items'] as $item)
 			{
-				$values = array('salt' => '', 'member_id' => $account['id']);
-				$this->iaDb->update($values, "`salt` = '{$salt['salt']}'", null, $item);
+				$values = array('salt' => '', 'member_id' => $memberData['id']);
+				$this->iaDb->update($values, iaDb::convertIds($salt['salt'], 'salt'), null, iaSanitize::paranoid($item));
 			}
 		}
 
@@ -610,5 +597,49 @@ class iaUsers extends abstractCore
 		$this->iaDb->resetTable();
 
 		return $result;
+	}
+
+	/**
+	 * Increments the number of views for a specified item
+	 *
+	 * Application should ensure if an item is in active status
+	 * and provide appropriate DB column name if differs from "views_num"
+	 */
+	public function incrementViewsCounter($itemId, $columnName = 'views_num')
+	{
+		$viewsTable = 'views_log';
+
+		$itemName = $this->getItemName();
+		$ipAddress = $this->iaCore->util()->getIp();
+		$date = date(iaDb::DATE_FORMAT);
+
+		if ($this->iaDb->exists('`item` = :item AND `item_id` = :id AND `ip` = :ip AND `date` = :date', array('item' => $itemName, 'id' => $itemId, 'ip' => $ipAddress, 'date' => $date), $viewsTable))
+		{
+			return false;
+		}
+
+		$this->iaDb->insert(array('item' => $itemName, 'item_id' => $itemId, 'ip' => $ipAddress, 'date' => $date), null, $viewsTable);
+		$result = $this->iaDb->update(null, iaDb::convertIds($itemId), array($columnName => '`' . $columnName . '` + 1'), self::getTable());
+
+		return (bool)$result;
+	}
+
+	public function coreSearch($stmt, $start, $limit, array $sorting)
+	{
+		if (!$this->iaCore->get('members_enabled'))
+		{
+			return false;
+		}
+
+		$visibleUsergroups = $this->getUsergroups(true);
+		$visibleUsergroups = array_keys($visibleUsergroups);
+
+		$stmt.= ' AND `usergroup_id` IN(' . implode(',', $visibleUsergroups) . ')';
+		empty($sorting) || $stmt.= sprintf('ORDER BY `%s` %s', $sorting[0], $sorting[1]);
+
+		$rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit, self::getTable());
+		$count = $this->iaDb->foundRows();
+
+		return array($count, $rows);
 	}
 }

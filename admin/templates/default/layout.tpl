@@ -35,6 +35,7 @@
 			{foreach $core.customConfig as $key => $value}
 				intelli.config.{$key} = '{$value}';
 			{/foreach}
+			intelli.config.admin_url = '{$smarty.const.IA_URL}{$core.config.admin_page}';
 		{/ia_add_js}
 	</head>
 	<body id="page--{$core.page.name}">
@@ -156,16 +157,7 @@
 							</li>
 							<li id="user-info">
 								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/">
-									{if $member.avatar}
-										{assign avatar $member.avatar|unserialize}
-										{if $avatar}
-											{printImage imgfile=$avatar.path title=$member.fullname|default:$member.username}
-										{else}
-											<img src="{$img}no-avatar.png" alt="{$member.fullname|escape:'html'}">
-										{/if}
-									{else}
-										<img src="{$img}no-avatar.png" alt="{$member.fullname|escape:'html'}">
-									{/if}
+									{printImage imgfile=$member.avatar title=$member.fullname|default:$member.username gravatar=true email=$member.email}
 									{$member.fullname|escape:'html'}
 								</a>
 							</li>
@@ -237,7 +229,9 @@
 			<div class="modal fade" id="feedback-modal">
 				<div class="modal-dialog">
 					<div class="modal-content">
-						<form action="" method="post" class="sap-form form-horizontal">
+						<form method="post" class="sap-form form-horizontal">
+							{preventCsrf}
+							<input type="hidden" name="action" value="request">
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 								<h4 class="modal-title"><i class="i-bubbles-2"></i> {lang key='submit_feedback'}</h4>
@@ -250,36 +244,36 @@
 								</div>
 								<div class="row">
 									<div class="col col-lg-6">
-										<label for="username">{lang key='fullname'}</label>
-										<input type="text" name="feedback_fullname" id="feedback_fullname" data-def="{$member.fullname}" value="{$member.fullname}">
+										<label>{lang key='fullname'}</label>
+										<input type="text" name="fullname" data-def="{$member.fullname}" value="{$member.fullname}">
 									</div>
 									<div class="col col-lg-6">
-										<label for="email">{lang key='email'}</label>
-										<input type="text" name="feedback_email" id="feedback_email" data-def="{$member.email}" value="{$member.email}">
+										<label>{lang key='email'}</label>
+										<input type="text" name="email" data-def="{$member.email}" value="{$member.email}">
 									</div>
 								</div>
 								<div class="row">
 									<div class="col col-lg-12">
-										<label for="feedback_subject" id="feedback_subject_label">{lang key='subject'}</label>
-										<select name="subject" id="feedback_subject">
-											<option>{lang key='_select_'}</option>
-											<option value="bug_report">{lang key='bug_report'}</option>
-											<option value="feature_request">{lang key='feature_request'}</option>
-											<option value="custom_modification">{lang key='custom_modification'}</option>
+										<label id="feedback_subject_label">{lang key='subject'}</label>
+										<select name="subject">
+											<option value="">{lang key='_select_'}</option>
+											<option data-icon="bug">{lang key='bug_report'}</option>
+											<option data-icon="lightning">{lang key='feature_request'}</option>
+											<option data-icon="fire">{lang key='custom_modification'}</option>
 										</select>
 									</div>
 								</div>
 								<div class="row">
 									<div class="col col-lg-12">
-										<label for="message">{lang key='message_body'}</label>
-										<textarea name="feedback_body" id="feedback_body" cols="30" rows="5"></textarea>
+										<label>{lang key='message_body'}</label>
+										<textarea name="body" cols="30" rows="5"></textarea>
 									</div>
 								</div>
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-default" data-dismiss="modal">{lang key='close'}</button>
 								<button type="button" id="clearFeedback" class="btn btn-default">{lang key='clear'}</button>
-								<button type="button" id="js-cmd-send-feedback" class="btn btn-primary">{lang key='send'}</button>
+								<button type="submit" class="btn btn-primary">{lang key='send'}</button>
 							</div>
 						</form>
 					</div>

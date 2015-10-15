@@ -1,37 +1,14 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaItem extends abstractCore
 {
 	const TYPE_PACKAGE = 'package';
 	const TYPE_PLUGIN = 'plugin';
 
-	protected static $_table = 'extras';
+	protected static $_table = 'items';
 	protected static $_favoritesTable = 'favorites';
-	protected static $_itemsTable = 'items';
+	protected static $_extrasTable = 'extras';
 
 	private $_itemTools;
 
@@ -39,6 +16,11 @@ class iaItem extends abstractCore
 	public static function getFavoritesTable()
 	{
 		return self::$_favoritesTable;
+	}
+
+	public static function getExtrasTable()
+	{
+		return self::$_extrasTable;
 	}
 
 	public function getFavoritesByMemberId($memberId)
@@ -95,11 +77,11 @@ class iaItem extends abstractCore
 
 		if (is_null($itemsInfo))
 		{
-			$itemsInfo = $this->iaDb->all('`item`, `package`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::$_itemsTable);
+			$itemsInfo = $this->iaDb->all('`item`, `package`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
 			$itemsInfo = is_array($itemsInfo) ? $itemsInfo : array();
 
 			// get active packages
-			$packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getTable());
+			$packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getExtrasTable());
 			foreach($itemsInfo as $key => $itemInfo)
 			{
 				if ('core' != $itemInfo['package'] && !in_array($itemInfo['package'], $packages))
@@ -179,7 +161,7 @@ class iaItem extends abstractCore
 	 */
 	public function getItemTable($item)
 	{
-		$result = $this->iaDb->one_bind('table_name', '`item` = :item', array('item' => $item), self::$_itemsTable);
+		$result = $this->iaDb->one_bind('table_name', '`item` = :item', array('item' => $item), self::getTable());
 		$result || $result = $item;
 
 		return $result;
@@ -207,62 +189,72 @@ class iaItem extends abstractCore
 
 	/**
 	 * Set items for specified plugin
-	 * @param $plugin
-	 * @param $items
-	 * @return void
+	 *
+	 * @param string $plugin plugin name
+	 * @param array $items items list
 	 */
 	public function setEnabledItemsForPlugin($plugin, $items)
 	{
 		if ($plugin)
 		{
-			$this->iaView->set($plugin.'_items_enabled', implode(',', $items), true);
+			$this->iaView->set($plugin . '_items_enabled', implode(',', $items), true);
 		}
 	}
 
 	/**
 	 * Return list of items with favorites field
-	 * @param $listings
-	 * @param $aItem
-	 * @return array
+	 *
+	 * @param array $listings listings to be processed
+	 * @param $itemName item name
+	 *
+	 * @return mixed
 	 */
 	public function updateItemsFavorites($listings, $itemName)
 	{
-		if (!iaUsers::hasIdentity() || empty($itemName))
+		if (empty($itemName))
 		{
 			return $listings;
 		}
 
-		$itemsList = array();
-
-		foreach ($listings as $entry)
+		if (!iaUsers::hasIdentity())
 		{
-			if ( ('members' == $itemName && $entry['id'] != iaUsers::getIdentity()->id)
-				|| (isset($entry['member_id']) && $entry['member_id'] != iaUsers::getIdentity()->id))
+			if (isset($_SESSION[iaUsers::SESSION_FAVORITES_KEY][$itemName]['items']))
 			{
-				$itemsList[] = $entry['id'];
+				$itemsFavorites = array_keys($_SESSION[iaUsers::SESSION_FAVORITES_KEY][$itemName]['items']);
 			}
 		}
-
-		if (empty($itemsList))
+		else
 		{
-			return $listings;
-		}
+			$itemsList = array();
+			foreach ($listings as $entry)
+			{
+				if (
+					('members' == $itemName && $entry['id'] != iaUsers::getIdentity()->id) ||
+					(isset($entry['member_id']) && $entry['member_id'] != iaUsers::getIdentity()->id)
+				)
+				{
+					$itemsList[] = $entry['id'];
+				}
+			}
 
-		$itemsFavorites = $this->iaDb->onefield('`id`', "`id` IN ('".implode("','", $itemsList)."') AND `item` = '{$itemName}' AND `member_id` = " . iaUsers::getIdentity()->id, 0, null, $this->getFavoritesTable());
+			if (empty($itemsList))
+			{
+				return $listings;
+			}
+
+			// get favorites
+			$itemsFavorites = $this->iaDb->onefield('`id`', "`id` IN ('" . implode("','", $itemsList) . "') && `item` = '{$itemName}' && `member_id` = " . iaUsers::getIdentity()->id, 0, null, $this->getFavoritesTable());
+		}
 
 		if (empty($itemsFavorites))
 		{
 			return $listings;
 		}
 
-		foreach ($listings as $key => $value)
+		// process listing and set flag is in favorites array
+		foreach ($listings as &$listing)
 		{
-			if (('members' == $itemName && $value['id'] != iaUsers::getIdentity()->id && in_array($value['id'], $itemsFavorites))
-			   	|| (isset($value['member_id']) && $value['member_id'] != iaUsers::getIdentity()->id && in_array($value['id'], $itemsFavorites))
-			)
-			{
-				$listings[$key]['favorite'] = 1;
-			}
+			$listing['favorite'] = (int)in_array($listing['id'], $itemsFavorites);
 		}
 
 		return $listings;
@@ -280,7 +272,7 @@ class iaItem extends abstractCore
 			$stmt .= iaDb::printf(" AND `type` = ':type'", array('type' => $type));
 		}
 
-		return (bool)$this->iaDb->exists($stmt, null, self::getTable());
+		return (bool)$this->iaDb->exists($stmt, null, self::getExtrasTable());
 	}
 
 	public function setItemTools($params = null)
@@ -290,6 +282,13 @@ class iaItem extends abstractCore
 			return $this->_itemTools;
 		}
 
-		$this->_itemTools[] = $params;
+		if (isset($params['id']) && $params['id'])
+		{
+			$this->_itemTools[$params['id']] = $params;
+		}
+		else
+		{
+			$this->_itemTools[] = $params;
+		}
 	}
 }

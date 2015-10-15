@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaTemplate extends abstractCore
 {
@@ -309,6 +286,8 @@ class iaTemplate extends abstractCore
 								$itemData['status'] = iaCore::STATUS_INACTIVE;
 							}
 						}
+						// BREAK stmt missed intentionally
+					default:
 						$stmt = iaDb::printf("`name` = ':name'", array('name' => $name));
 				}
 				$this->iaDb->update($itemData, $stmt, null, $dbTable);
@@ -378,7 +357,8 @@ class iaTemplate extends abstractCore
 		{
 			$template = $iaDb->one('value', "`name` = 'tmpl'", iaCore::getConfigTable());
 
-			$tablesList = array('hooks', 'blocks', iaLanguage::getTable(), 'pages', iaCore::getConfigTable(), iaCore::getConfigGroupsTable());
+			$tablesList = array('hooks', 'blocks', iaLanguage::getTable(), 'pages', iaCore::getConfigTable(),
+				iaCore::getConfigGroupsTable(), iaCore::getCustomConfigTable());
 
 			$iaDb->cascadeDelete($tablesList, "`extras` = '{$template}'");
 			$iaDb->cascadeDelete($tablesList, "`extras` = '{$this->name}'");
@@ -605,7 +585,7 @@ class iaTemplate extends abstractCore
 						$entryId = $iaDb->one(iaDb::ID_COLUMN_SELECTION, $stmt, $tableName);
 
 						$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
-						$iaBlock->setVisiblePages($entryId, $pagesList, (bool)$changeset['sticky']);
+						$iaBlock->setVisiblePages($entryId, $pagesList, (isset($changeset['sticky']) ? (bool)$changeset['sticky'] : false));
 					}
 				}
 			}
@@ -693,7 +673,6 @@ class iaTemplate extends abstractCore
 	public function charData($parser, $text)
 	{
 		$text = trim($text);
-		$attr = $this->_attributes;
 
 		switch ($this->_inTag)
 		{
@@ -746,11 +725,11 @@ class iaTemplate extends abstractCore
 					'multiple_values' => $this->attr(array('values', 'multiplevalues')),
 					'type' => $this->attr('type'),
 					'description' => $this->attr('description'),
-					'wysiwyg' => $this->attr('wysiwyg', 0),
-					'code_editor' => $this->attr('code_editor', 0),
-					'private' => $this->attr('private', 0),
+					'wysiwyg' => $this->attr('wysiwyg', false),
+					'code_editor' => $this->attr('code_editor', false),
+					'private' => $this->attr('private', false),
 					'order' => $this->attr('order', false),
-					'show' => $this->attr('show', ''),
+					'show' => $this->attr('show'),
 					'extras' => $this->name
 				);
 				break;

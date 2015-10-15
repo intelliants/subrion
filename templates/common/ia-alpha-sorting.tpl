@@ -1,10 +1,10 @@
 <div class="alpha-sorting">
 	{foreach $letters.all as $letter}
 		{if $letter == $letters.active || !in_array($letter, $letters.existing)}
-			<span class="btn btn-mini{if $letter == $letters.active} btn-success{/if} disabled">{$letter}</span>
+			<a class="btn btn-sm {if $letter == $letters.active} btn-success{else} btn-default{/if} disabled">{$letter}</a>
 		{else}
-			<a href="{$url}{$letter}/" class="btn btn-mini">{$letter}</a>
+			<a href="{$url}{$letter}/" class="btn btn-sm btn-default">{$letter}</a>
 		{/if}
 	{/foreach}
-	<a href="{$url}" class="btn btn-mini btn-warning" title="{lang key='reset'}"><i class="icon-remove"></i></a>
+	<a href="{$url}" class="btn btn-sm btn-warning" title="{lang key='reset'}"><span class="fa fa-remove"></span></a>
 </div>

@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaBackendController extends iaAbstractControllerBackend
 {
@@ -109,29 +86,29 @@ class iaBackendController extends iaAbstractControllerBackend
 			'description' => $data['description']
 		);
 
-		foreach ($this->_iaCore->languages as $languageCode => $languageTitle)
+		foreach ($this->_iaCore->languages as $code => $language)
 		{
-			if (isset($lang['title'][$languageCode]))
+			if (isset($lang['title'][$code]))
 			{
-				if (empty($lang['title'][$languageCode]))
+				if (empty($lang['title'][$code]))
 				{
-					$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $languageTitle)), false);
+					$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $language['title'])), false);
 				}
-				elseif (!utf8_is_valid($lang['title'][$languageCode]))
+				elseif (!utf8_is_valid($lang['title'][$code]))
 				{
-					$lang['title'][$languageCode] = utf8_bad_replace($lang['title'][$languageCode]);
+					$lang['title'][$code] = utf8_bad_replace($lang['title'][$code]);
 				}
 			}
 
-			if (isset($lang['description'][$languageCode]))
+			if (isset($lang['description'][$code]))
 			{
-				if (empty($lang['description'][$languageCode]))
+				if (empty($lang['description'][$code]))
 				{
-					$this->addMessage(iaLanguage::getf('error_lang_description', array('lang' => $languageTitle)), false);
+					$this->addMessage(iaLanguage::getf('error_lang_description', array('lang' => $language['title'])), false);
 				}
-				elseif (!utf8_is_valid($lang['description'][$languageCode]))
+				elseif (!utf8_is_valid($lang['description'][$code]))
 				{
-					$lang['description'][$languageCode] = utf8_bad_replace($lang['description'][$languageCode]);
+					$lang['description'][$code] = utf8_bad_replace($lang['description'][$code]);
 				}
 			}
 		}
@@ -158,9 +135,9 @@ class iaBackendController extends iaAbstractControllerBackend
 		return !$this->getMessages();
 	}
 
-	protected function _postSaveEntry(array $entry, array $data, $action)
+	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
-		foreach ($this->_iaCore->languages as $code => $title)
+		foreach ($this->_iaCore->languages as $code => $language)
 		{
 			iaLanguage::addPhrase(self::PATTERN_TITLE . $this->getEntryId(), iaSanitize::tags($this->_languages['title'][$code]), $code);
 			iaLanguage::addPhrase(self::PATTERN_DESCRIPTION . $this->getEntryId(), $this->_languages['description'][$code], $code);

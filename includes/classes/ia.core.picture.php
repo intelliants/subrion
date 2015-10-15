@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'ImageWorkshop.php';
 use phpimageworkshop\ImageWorkshop as ImageWorkshop;
@@ -31,6 +8,7 @@ class iaPicture extends abstractCore
 {
 	const FIT = 'fit';
 	const CROP = 'crop';
+	const ALLOW_ANIMATED_GIFS = false;
 
 	const SOURCE_PREFIX = 'source_';
 
@@ -72,31 +50,49 @@ class iaPicture extends abstractCore
 	{
 		$iaCore = &$this->iaCore;
 
-		// add watermark to an image
-		$watermarkFile = $iaCore->get('site_watermark') ?
-				IA_UPLOADS . $iaCore->get('site_watermark') :
-				IA_TEMPLATES . $iaCore->get('tmpl') . IA_DS . 'img' . IA_DS . 'watermark.png';
-		if ($iaCore->get('site_watermark') && file_exists($watermarkFile) && !is_dir($watermarkFile))
+		if (!$iaCore->get('watermark'))
 		{
-			$watermark_positions = array(
-				'top_left' => 'TL',
-				'top_center' => 'MT',
-				'top_right' => 'RT',
-				'middle_left' => 'LM',
-				'middle_center' => 'MM',
-				'middle_right' => 'RM',
-				'bottom_left' => 'LB',
-				'bottom_center' => 'MB',
-				'bottom_right' => 'RB'
+			return $image;
+		}
+
+		$watermark_positions = array(
+			'top_left' => 'TL',
+			'top_center' => 'MT',
+			'top_right' => 'RT',
+			'middle_left' => 'LM',
+			'middle_center' => 'MM',
+			'middle_right' => 'RM',
+			'bottom_left' => 'LB',
+			'bottom_center' => 'MB',
+			'bottom_right' => 'RB'
+		);
+
+		$position = $iaCore->get('watermark_position');
+		$position = $position && array_key_exists($position, $watermark_positions) ? $watermark_positions[$position] : $watermark_positions['bottom_right'];
+
+		if ('text' == $iaCore->get('watermark_type'))
+		{
+			$watermark = ImageWorkshop::initTextLayer(
+				$iaCore->get('watermark_text', 'Subrion CMS'),
+				IA_INCLUDES . 'phpimageworkshop/Fonts/arial.ttf',
+				$iaCore->get('watermark_text_size', 11),
+				$iaCore->get('watermark_text_color', '#FFFFFF')
 			);
 
-			$position = $iaCore->get('site_watermark_position');
-			$position = $position && array_key_exists($position, $watermark_positions) ? $watermark_positions[$position] : $watermark_positions['bottom_right'];
-
-			$watermark = ImageWorkshop::initFromPath($watermarkFile);
-			$watermark->opacity(60);
-
 			$image->addLayerOnTop($watermark, 10, 10, $position);
+		}
+		else
+		{
+			$watermarkFile = $iaCore->get('watermark_image') ?
+				IA_UPLOADS . $iaCore->get('watermark_image') :
+				IA_TEMPLATES . $iaCore->get('tmpl') . IA_DS . 'img' . IA_DS . 'watermark.png';
+			if (file_exists($watermarkFile) && !is_dir($watermarkFile))
+			{
+				$watermark = ImageWorkshop::initFromPath($watermarkFile);
+				$watermark->opacity(70);
+
+				$image->addLayerOnTop($watermark, 10, 10, $position);
+			}
 		}
 
 		return $image;
@@ -143,7 +139,7 @@ class iaPicture extends abstractCore
 			}
 
 			// check this is an animated GIF
-			if ('image/gif' == $aFile['type'] && $this->iaCore->get('allow_animated_gifs'))
+			if (self::ALLOW_ANIMATED_GIFS && 'image/gif' == $aFile['type'])
 			{
 				require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifFrameExtractor.php';
 

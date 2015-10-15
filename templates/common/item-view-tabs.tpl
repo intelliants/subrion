@@ -1,9 +1,9 @@
 {function content_hook}
 	{if isset($value[$key])}
 		{$value.$key}
-	{elseif isset($value['__all__']) && isset($value['excludes']) && !in_array($key, $value['excludes'])}
+	{elseif isset($value.__all__) && isset($value.excludes) && !in_array($key, $value.excludes)}
 		{$value.__all__}
-	{elseif isset($value['__all__']) && !isset($value['excludes'])}
+	{elseif isset($value.__all__) && !isset($value.excludes)}
 		{$value.__all__}
 	{/if}
 {/function}
@@ -18,7 +18,7 @@
 					{if $section || isset($tabs_content.$section_name)}
 						{* define active tab *}
 						{if !isset($active)}
-							{assign active $section_name}
+							{$active = $section_name}
 						{/if}
 
 						<li{if $active == $section_name} class="active"{/if}><a data-toggle="tab" href="#tab-{$section_name}"><span>{lang key=$section_name}</span></a></li>
@@ -31,7 +31,7 @@
 					{if $section || isset($tabs_content.$section_name)}
 						{* define active tab *}
 						{if !isset($active)}
-							{assign active $section_name}
+							{$active = $section_name}
 						{/if}
 
 						<li{if $active == $section_name} class="active"{/if}><a data-toggle="tab" href="#tab-{$section_name}"><span>{lang key=$section_name}</span></a></li>
@@ -70,4 +70,7 @@
 			{/if}
 		</div>
 	</div>
+{/if}
+{if !isset($isView)}
+	{ia_print_js files='jquery/plugins/jquery.numeric'}
 {/if}

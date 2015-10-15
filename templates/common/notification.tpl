@@ -1,7 +1,7 @@
 {if $core.notifications}
 	{foreach $core.notifications as $type => $entries}
-		<div class="alert alert-block alert-{$type}">
-			<ul class="unstyled">
+		<div class="alert alert-{$type}">
+			<ul class="list-unstyled">
 				{foreach $entries as $message}
 					<li>{$message}</li>
 				{/foreach}

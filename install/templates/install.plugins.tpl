@@ -59,7 +59,7 @@
 			<div id="js-progress-bar" class="alert alert-info">
 				Installation is in progress... 
 				<strong><span id="js-counter-current">1</span> of <span id="js-counter-total"></span></strong>
-				<img src="<?php echo URL_INSTALL ?>templates/img/loading.gif" alt="loading..." />
+				<img src="<?php echo URL_ASSETS ?>templates/img/loading.gif" alt="loading..." />
 			</div>
 			<p>Check the status of plugins you selected to install.</p>
 			<p>Missed a plugin? <a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/<?php echo $this->step ?>/">Show the list again</a>.</p>
@@ -167,7 +167,8 @@ $(function()
 			elementsSet.each(function(i, item)
 			{
 				item = $(item);
-				$.ajax({
+				$.ajax(
+				{
 					type: 'POST',
 					url: '<?php echo URL_INSTALL ?>install/plugins/',
 					data: {plugin: item.val()},

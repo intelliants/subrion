@@ -1,0 +1,32 @@
+
+//
+// Redirect
+// --------------------------------------------------
+
+.page-redirect {
+  background: #f2f2f2;
+  padding: 20px;
+}
+
+.redirect-block {
+  background: #fff;
+  padding: @vertical-rhythm;
+  .box-shadow(0 0 60px rgba(0,0,0,.1));
+
+  h3 {
+    margin: 0 0 20px;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (min-width: @grid-float-breakpoint) {
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    width: 400px; 
+    margin-left: -200px; 
+    margin-top: -250px;
+  }
+}

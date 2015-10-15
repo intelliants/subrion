@@ -5,7 +5,56 @@ $(function()
 		$('html, body').animate({scrollTop: $('.page-header').offset().top});
 	}
 
-	if ('object' == typeof jQuery.tabs)
+	$('.js-print-page').on('click', function(e)
+	{
+		e.preventDefault();
+
+		window.print();
+	});
+
+	$('body').on('click', '.js-favorites', function(e)
+	{
+		e.preventDefault();
+
+		var $this = $(this);
+		var id = $this.data('id'),
+			item = $this.data('item'),
+			action = $this.data('action'),
+			guests = $this.data('guests'),
+			textAdd = $this.data('text-add'),
+			textDelete = $this.data('text-delete');
+
+		$.ajax(
+		{
+			url: intelli.config.baseurl + 'favorites/read.json',
+			type: 'get',
+			data: {item: item, item_id: id, action: action},
+			success: function(data)
+			{
+				if (!data.error)
+				{
+					intelli.notifFloatBox({msg: data.message, type: 'success', autohide: true});
+					if ('add' == action)
+					{
+						$this.html(textDelete);
+						$this.data('action', 'delete');
+					}
+					else
+					{
+						$this.html(textAdd);
+						$this.data('action', 'add');
+					}
+				}
+				else
+				{
+					intelli.notifFloatBox({msg: data.message, type: 'error', autohide: true});
+					window.location.href = intelli.config.ia_url + 'login/';
+				}
+			}
+		});
+	});
+
+	if ('object' == typeof $.tabs)
 	{
 		$('#ia-tab-container').tabs();
 	}
@@ -41,39 +90,16 @@ $(function()
 		inputPlaceholder(this);
 	});
 
-	$('.js-filter-numeric').each(function()
-	{
-		$(this).numeric();
-	});
-
-	$('.search-text').focus(function () {
+	$('.search-text').focus(function(){
 		$(this).parent().addClass('focused');
-	}).focusout(function () {
+	}).focusout(function(){
 		$(this).parent().removeClass('focused');
 	});
 
-	// Navbar clickable parent menus
-	$('.nav > li:has(ul)').hover(function()
+	if ('function' == typeof $.fn.numeric)
 	{
-		var $this = $(this),
-			thisHref = $('> a', $this).attr('href');
-
-		$this.addClass('open');
-		$this.click(function()
-		{
-			window.location = thisHref;
-		});
-		
-		// disable click on More dropdown
-		$('.dropdown-more').off('click');
-	}, function()
-	{
-		var $this = $(this);
-		setTimeout(function()
-		{
-			$this.removeClass('open');
-		});
-	});
+		$('.js-filter-numeric').numeric();
+	}
 
 	if ($().datepicker)
 	{
@@ -92,43 +118,48 @@ $(function()
 	}
 
 	// update picture titles
-	var $pictureTitles = $('.js-edit-picture-title');
+	if ($.fn.editable) {
+		var $pictureTitles = $('.js-edit-picture-title');
+		$.fn.editableform.buttons = 
+			'<button type="submit" class="btn btn-primary btn-sm editable-submit"><span class="fa fa-check"></span></button>' +
+			'<button type="button" class="btn btn-default btn-sm editable-cancel"><span class="fa fa-times"></span></button>';
 
-	if ($pictureTitles.length)
-	{
-		$pictureTitles.editable(
+		if ($pictureTitles.length)
 		{
-			url: intelli.config.ia_url + 'actions.json',
-			type: 'text',
-			params: function(params)
+			$pictureTitles.editable(
 			{
-				var $self = $(this);
-
-				params.action = 'edit-picture-title';
-				params.field = $self.data('field');
-				params.item = $self.data('item');
-				params.itemid = $self.data('item-id');
-				params.path = $self.data('picture-path');
-
-				return params;
-			},
-			success: function(response, newValue)
-			{
-				var $self = $(this),
-					success = ('boolean' == typeof response.error && !response.error);
-
-				intelli.notifFloatBox({msg: success ? _t('saved') : response.message, type: success ? 'success' : 'error', autohide: true});
-
-				if (success)
+				url: intelli.config.ia_url + 'actions.json',
+				type: 'text',
+				params: function(params)
 				{
-					$self.closest('.gallery').find('input[name*="title"]').val(newValue)
+					var $self = $(this);
+
+					params.action = 'edit-picture-title';
+					params.field = $self.data('field');
+					params.item = $self.data('item');
+					params.itemid = $self.data('item-id');
+					params.path = $self.data('picture-path');
+
+					return params;
+				},
+				success: function(response, newValue)
+				{
+					var $self = $(this),
+						success = ('boolean' == typeof response.error && !response.error);
+
+					intelli.notifFloatBox({msg: success ? _t('saved') : response.message, type: success ? 'success' : 'error', autohide: true});
+
+					if (success)
+					{
+						$self.closest('.gallery').find('input[name*="title"]').val(newValue)
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	// delete picture
-	$('.js-delete-file').click(function(e)
+	$('.js-delete-file').on('click', function(e)
 	{
 		e.preventDefault();
 
@@ -162,14 +193,13 @@ $(function()
 	// add/delete pictures fields
 	function detectFilename()
 	{
-		$('.upload-wrap').on('change', 'input[type="file"]', function()
+		$('.js-files :file').on('change', function()
 		{
-			var filename = $(this).val();
-			var lastIndex = filename.lastIndexOf("\\");
-			if (lastIndex >= 0) {
-				filename = filename.substring(lastIndex + 1);
-			}
-			$(this).prev().find('.uneditable-input').text(filename);
+			var $input = $(this),
+				$parent = $input.closest('.js-files');
+				label = $input.val().replace(/\\/g, '/').replace(/.*\//, '');
+
+			$parent.find('.js-file-name').val(label);
 		});
 	}
 
@@ -177,16 +207,14 @@ $(function()
 
 	var addImgItem = function(btn)
 	{
-		var thisParent = $(btn).closest('.upload-gallery-wrap-outer');
+		var thisParent = $(btn).closest('.upload-list__item');
 		var clone = thisParent.clone(true);
 		var name = $('input[type="file"]', thisParent).attr('name').replace('[]', '');
 		var num = parseInt($('#' + name).val());
 
 		if (num > 1)
 		{
-			$('input[type="file"]', clone).val('');
-			$('.uneditable-input', clone).text(intelli.lang.click_here_to_upload);
-			$('.upload-title', clone).val('');
+			$('input', clone).val('');
 			thisParent.after(clone);
 			$('#' + name).val(num - 1);
 		}
@@ -200,11 +228,11 @@ $(function()
 
 	var removeImgItem = function(btn)
 	{
-		var thisParent = $(btn).closest('.upload-gallery-wrap-outer');
+		var thisParent = $(btn).closest('.upload-list__item');
 		var name = $('input[type="file"]', thisParent).attr('name').replace('[]', '');
 		var num = parseInt($('#' + name).val());
 
-		if (thisParent.prev().hasClass('upload-gallery-wrap-outer') || thisParent.next().hasClass('upload-gallery-wrap-outer'))
+		if (thisParent.prev().hasClass('upload-list__item') || thisParent.next().hasClass('upload-list__item'))
 		{
 			thisParent.remove();
 			$('#' + name).val(num + 1);

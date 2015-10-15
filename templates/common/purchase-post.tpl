@@ -1,4 +1,4 @@
-{if 'passed' == $transaction}
+{if iaTransaction::PASSED == $transaction}
 	<div class="alert alert-success">{lang key='thanks'}</div>
 {/if}
 

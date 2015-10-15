@@ -1,35 +1,35 @@
-{assign type $variable.type}
-{assign name $variable.name}
-{assign fieldName "field_{$name}"}
+{$type = $field.type}
+{$name = $field.name}
+{$fieldName = "field_{$name}"}
 
 {if isset($field_before[$name])}{$field_before.$name}{/if}
 
 {if trim($item.$name)}
 	{capture assign='_field_text'}
 		{* display as a link to view details page *}
-		{if trim($item.$name) && $variable.link_to && isset($all_item_type) && in_array($type, array('text', 'number', 'combo', 'radio', 'date'))}
-		<a href="{ia_url data=$oneitem item=$all_item_type attr='class="view-details-link"' type='url'}">
+		{if trim($item.$name) && $field.link_to && isset($all_item_type) && in_array($type, array(iaField::TEXT, iaField::NUMBER, iaField::COMBO, iaField::RADIO, iaField::DATE))}
+			<a href="{ia_url data=$item item=$all_item_type attr='class="view-details-link"' type='url'}">
 		{/if}
 
 		{switch $type}
-		{case 'text' break}
+		{case iaField::TEXT break}
 			{$item.$name|escape:'html'}
 
-		{case 'textarea' break}
-			{if $variable.use_editor}
+		{case iaField::TEXTAREA break}
+			{if $field.use_editor}
 				{$item.$name}
 			{else}
 				{$item.$name|escape:'html'|nl2br}
 			{/if}
 
-		{case 'number' break}
+		{case iaField::NUMBER break}
 			{$item.$name|escape:'html'}
 
-		{case 'checkbox' break}
+		{case iaField::CHECKBOX break}
 			{arrayToLang values=$item.$name name=$name}
 
-		{case 'storage' break}
-			{assign value $item.$name|unserialize}
+		{case iaField::STORAGE break}
+			{$value = $item.$name|unserialize}
 
 			{if $value}
 				{foreach $value as $entry}
@@ -37,53 +37,70 @@
 				{/foreach}
 			{/if}
 
-		{case 'image' break}
-			{assign entry $item.$name|unserialize}
-			<div class="thumbnail" style="width: {$variable.thumb_width}px;">
-				{if $variable.link_to && isset($all_item_type)}
-					<a href="{ia_url data=$oneitem item=$all_item_type type='url'}" title="{$entry.title|default:''}">
-						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:''}
-						{if !empty($entry.title)}<span class="caption">{$entry.title|default:''}</span>{/if}
+		{case iaField::IMAGE break}
+			{$entry = $item.$name|unserialize}
+			<div class="thumbnail" style="width: {$field.thumb_width}px;">
+				{if $field.link_to && isset($all_item_type)}
+					<a class="thumbnail__image" href="{ia_url data=$item item=$all_item_type type='url'}" title="{$entry.title|default:''}">
+						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:'' class='img-responsive'}
 					</a>
-				{elseif $variable.thumb_width == $variable.image_width && $variable.thumb_height == $variable.image_height}
-					{printImage imgfile=$entry.path|default:'' title=$entry.title|default:'' width=$variable.thumb_width height=$variable.thumb_height}
+					{if !empty($entry.title)}<div class="caption"><h5>{$entry.title|default:''}</h5></div>{/if}
+				{elseif $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
+					{printImage imgfile=$entry.path|default:'' title=$entry.title|default:'' width=$field.thumb_width height=$field.thumb_height class='img-responsive'}
 				{else}
-					<a href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
+					<a class="thumbnail__image" href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
 						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:''}
-						{if !empty($entry.title)}<span class="caption">{$entry.title|default:''}</span>{/if}
 					</a>
+					{if !empty($entry.title)}<div class="caption"><h5>{$entry.title|default:''}</h5></div>{/if}
 				{/if}
 			</div>
 
-		{case 'combo'}
-		{case 'radio' break}
-			{assign field_combo "{$fieldName}_{$item.$name}"}
+		{case iaField::COMBO}
+		{case iaField::RADIO break}
+			{$field_combo = "{$fieldName}_{$item.$name}"}
 			{lang key=$field_combo default='&nbsp;'}
 
-		{case 'date' break}
-			{$item.$name|date_format:$config.date_format}
-
-		{case 'url' break}
-			{assign value '|'|explode:$item.$name}
-			<a href="{$value[0]}"{if $variable.url_nofollow} rel="nofollow"{/if} target="_blank">{$value[1]|escape:'html'}</a>
-
-		{case 'pictures' break}
-			{if $item.$name}
-				<ul id="{$name}" class="thumbnails">
-					{foreach $item.$name|unserialize as $entry}
-						<li class="thumbnail">
-							<a href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" class="gallery" rel="ia_lightbox[{$name}]" title="{$entry.title|escape:'html'}">
-								{printImage imgfile=$entry.path|default:'' title=$entry.title}
-								{if !empty($entry.title)}<div class="caption">{$entry.title|escape:'html'}</div>{/if}
-							</a>
-						</li>
-					{/foreach}
-				</ul>
+		{case iaField::DATE break}
+			{if $field.timepicker}
+				{$item.$name|date_format:"{$core.config.date_format} %H:%M:%S"}
+			{else}
+				{$item.$name|date_format:$core.config.date_format}
 			{/if}
+		{case iaField::URL break}
+			{$value = '|'|explode:$item.$name}
+			<a href="{$value[0]}"{if $field.url_nofollow} rel="nofollow"{/if} target="_blank">{$value[1]|escape:'html'}</a>
+
+		{case iaField::PICTURES break}
+			{if $item.$name}
+				<div id="{$name}">
+					<div class="row upload-items">
+						{foreach $item.$name|unserialize as $entry}
+							<div class="col-md-3">
+								<div class="thumbnail">
+									<a class="thumbnail__image" href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" rel="ia_lightbox[{$name}]" title="{$entry.title|escape:'html'}">
+										{printImage imgfile=$entry.path|default:'' title=$entry.title class='img-responsive'}
+									</a>
+									{if !empty($entry.title)}
+										<div class="caption">
+											<h5>{$entry.title|escape:'html'}</h5>
+										</div>
+									{/if}
+								</div>
+							</div>
+							{if $entry@iteration % 4 == 0}
+								</div>
+								<div class="row upload-items">
+							{/if}
+						{/foreach}
+					</div>
+				</div>
+			{/if}
+		{case iaField::TREE}
+			{displayTreeNodes ids=$item.$name nodes=$field.values}
 		{/switch}
 
 		{* display as a link to view details page *}
-		{if trim($item.$name) && $variable.link_to && isset($all_item_type) && in_array($type, array('text', 'number', 'combo', 'radio', 'date'))}
+		{if trim($item.$name) && $field.link_to && isset($all_item_type) && in_array($type, array(iaField::TEXT, iaField::NUMBER, iaField::COMBO, iaField::RADIO, iaField::DATE))}
 			</a>
 		{/if}
 
@@ -94,18 +111,20 @@
 	{else}
 		<div class="field field-{$type}" id="{$name}_fieldzone">
 			{if !isset($excludedTitles) || !in_array($name, $excludedTitles)}
-				<span>{lang key=$fieldName}:</span>
+				<div class="field__header">{lang key=$fieldName}</div>
 			{/if}
-			{$_field_text}
+			<div class="field__content">
+				{$_field_text}
+			</div>
 		</div>
 	{/if}
-{elseif !trim($item.$name) && $variable.empty_field}
+{elseif !trim($item.$name) && $field.empty_field}
 	{if !isset($wrappedValues)}
-		<span class="empty_field">{$variable.empty_field}</span>
+		<span class="empty_field">{$field.empty_field}</span>
 	{else}
 		<div class="field field-{$type}" id="{$name}_fieldzone">
 			<span>{lang key=$fieldName}:</span>
-			<span class="empty_field">{$variable.empty_field}</span>
+			<span class="empty_field">{$field.empty_field}</span>
 		</div>
 	{/if}
 {/if}

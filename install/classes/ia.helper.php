@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaHelper
 {
@@ -46,7 +23,16 @@ class iaHelper
 
 	public static function isScriptInstalled()
 	{
-		return file_exists(IA_HOME . 'includes' . IA_DS . self::CONFIGURATION_FILE);
+		if (!file_exists(IA_HOME . 'includes' . IA_DS . self::CONFIGURATION_FILE))
+		{
+			return false;
+		}
+
+		self::loadCoreClass('users', 'core');
+
+		return (iaCore::instance()->iaDb->one_bind(iaDb::STMT_COUNT_ROWS,
+				'`usergroup_id` = :group AND `date_logged` IS NOT NULL',
+				array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR), iaUsers::getTable()) > 0);
 	}
 
 	public static function getIniSetting($name)
@@ -57,11 +43,7 @@ class iaHelper
 	public static function cleanUpCacheContents()
 	{
 		self::cleanUpDirectoryContents(IA_CACHEDIR, true);
-
-		if (!file_exists(IA_CACHEDIR))
-		{
-			iaCore::instance()->util()->makeDirCascade(IA_CACHEDIR, 0777);
-		}
+		file_exists(IA_CACHEDIR) || iaCore::instance()->factory('util')->makeDirCascade(IA_CACHEDIR, 0777);
 
 		$mask = !function_exists('posix_getuid') || function_exists('posix_getuid') && posix_getuid() != fileowner(IA_HOME . 'index' . iaSystem::EXECUTABLE_FILE_EXT) ? 0777 : 0755;
 		chmod(IA_CACHEDIR, $mask);
@@ -121,13 +103,13 @@ class iaHelper
 			define('IA_TMP', IA_HOME . 'tmp' . IA_DS);
 			define('IA_CACHEDIR', IA_TMP . 'cache' . IA_DS);
 
-			if (file_exists(IA_INCLUDES . 'config.inc.php'))
+			if (file_exists(IA_INCLUDES . self::CONFIGURATION_FILE))
 			{
-				include_once IA_INCLUDES . 'config.inc.php';
+				include_once IA_INCLUDES . self::CONFIGURATION_FILE;
 			}
 			else
 			{
-				define('INTELLI_CONNECT', 'mysql');
+				define('INTELLI_CONNECT', in_array('mysqli', get_loaded_extensions()) && function_exists('mysqli_connect') ? 'mysqli' : 'mysql');
 				define('INTELLI_DBHOST', self::getPost('dbhost', 'localhost'));
 				define('INTELLI_DBPORT', self::getPost('dbport', 3306));
 				define('INTELLI_DBUSER', self::getPost('dbuser'));
@@ -135,6 +117,8 @@ class iaHelper
 				define('INTELLI_DBNAME', self::getPost('dbname'));
 				define('INTELLI_DBPREFIX', self::getPost('prefix', '', false));
 				define('INTELLI_DEBUG', false);
+
+				define('IA_SALT', '#' . strtoupper(substr(md5(IA_HOME), 21, 10)));
 			}
 
 			set_include_path(IA_CLASSES);
@@ -160,13 +144,13 @@ class iaHelper
 
 			$iaCore->iaCache = $iaCore->factory('cache');
 
-			$config = array('baseurl', 'timezone');
+			$config = array('baseurl', 'timezone', 'lang');
 			$config = $iaCore->iaDb->keyvalue(array('name', 'value'), "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
 
-			$iaCore->languages = array('en' => 'English');
-			$iaCore->iaView->language = 'en';
+			empty($iaCore->languages) && $iaCore->languages = array('en' => array('title' => 'English', 'locale' => 'en_US', 'iso' => 'en'));
+			$iaCore->iaView->language = empty($config['lang']) ? 'en' : $config['lang'];
 
-			date_default_timezone_set($config['timezone']);
+			date_default_timezone_set(empty($config['timezone']) ? 'UTC' : $config['timezone']);
 
 			define('IA_CLEAR_URL', $config['baseurl']);
 			define('IA_URL', IA_CLEAR_URL);

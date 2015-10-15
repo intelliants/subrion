@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaDebug
 {
@@ -107,6 +84,7 @@ class iaDebug
 		self::dump(iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : null, 'Identity');
 		self::dump();
 
+		// process blocks
 		$blocks = array();
 		if ($blocksData = $iaCore->iaView->blocks)
 		{
@@ -120,10 +98,21 @@ class iaDebug
 			}
 		}
 
+		// process constants
+		$constantsList = get_defined_constants(true);
+		foreach ($constantsList['user'] as $key => $value)
+		{
+			if (strpos($key, 'IA_') === 0 && 'IA_SALT' != $key)
+			{
+				$constants[$key] = $value;
+			}
+		}
+
 		self::dump($iaCore->requestPath, 'URL Params');
 		self::dump($blocks, 'Blocks List');
 		self::dump($iaCore->packagesData, 'Installed Packages');
 		self::dump($iaCore->getConfig(), 'Configuration Params');
+		self::dump($constants, 'Constants List');
 
 		if (!empty(self::$_data['info']))
 		{
@@ -478,6 +467,9 @@ class iaDebug
 				break;
 			case is_null($value):
 				$value = '<i style="color:gray">NULL</i>';
+				break;
+			case is_object($value):
+				$value = '<i style="color:blue">Object</i>';
 		}
 
 		if ('debug' == $type && function_exists('debug_backtrace'))

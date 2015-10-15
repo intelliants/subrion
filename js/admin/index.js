@@ -58,6 +58,13 @@ $(function()
 		}
 	});
 
+	$('.js-imp-alert').on('closed.bs.alert', function(e) {
+		var $this = $(this),
+			thisId = $this.data('id');
+
+		intelli.cookie.write(thisId, 'closed');
+	});
+
 	if ($('#js-disabled-widgets-list').length) // CUSTOMIZATION MODE
 	{
 		var dc_widget_tools =

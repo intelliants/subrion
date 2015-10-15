@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaView extends abstractUtil
 {
@@ -73,7 +50,7 @@ class iaView extends abstractUtil
 	public $extrasUrl;
 	public $packageUrl;
 	public $language;
-	public $homePage = self::DEFAULT_HOMEPAGE;
+	public $homePage;
 	public $theme = 'common';
 	public $url;
 
@@ -145,8 +122,8 @@ class iaView extends abstractUtil
 			}
 			else
 			{
-				$this->iaSmarty->setTemplateDir(IA_TEMPLATES . $this->theme . IA_DS);
-				$this->iaSmarty->addTemplateDir(IA_TEMPLATES . 'common' . IA_DS);
+				$this->iaSmarty->setTemplateDir(IA_HOME . 'templates' . IA_DS . $this->theme . IA_DS);
+				$this->iaSmarty->addTemplateDir(IA_HOME . 'templates' . IA_DS . 'common' . IA_DS);
 			}
 
 			Smarty::$_CHARSET = 'UTF-8';
@@ -288,7 +265,7 @@ class iaView extends abstractUtil
 			'prefix' => $iaDb->prefix,
 			'table_admin_pages' => 'admin_pages',
 			'table_config_groups' => iaCore::getConfigGroupsTable(),
-			'table_extras' => iaItem::getTable(),
+			'table_extras' => iaItem::getExtrasTable(),
 			'groups' => implode(',', array_keys($menuGroups)),
 			'status' => iaCore::STATUS_ACTIVE,
 			'extras' => implode("','", $extras)
@@ -338,6 +315,7 @@ class iaView extends abstractUtil
 				continue;
 			}
 
+			$separatorsCount = 0;
 			$menuEntry = $group;
 			$menuEntry['items'] = array();
 
@@ -381,7 +359,17 @@ class iaView extends abstractUtil
 					}
 
 					$menuEntry['items'][] = $data;
+					if (empty($item['name']))
+					{
+						$separatorsCount++;
+					}
 				}
+			}
+
+			// delete separators if no elements allowed
+			if ($separatorsCount == count($menuEntry['items']))
+			{
+				unset($menuEntry['items']);
 			}
 
 			if (isset($menuEntry['items'][0]['name']) && $menuEntry['items'][0]['name'])
@@ -699,6 +687,8 @@ SQL;
 
 	public function definePage()
 	{
+		$this->homePage = (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()) ? $this->iaCore->get('home_page') : self::DEFAULT_HOMEPAGE;
+
 		$pageName = $this->name();
 		$pageParams = $this->getParams();
 
@@ -739,10 +729,12 @@ SQL;
 			}
 		}
 
-		$where = iaDb::printf("p.`name` = ':alias' OR p.`alias` = ':alias:extension' OR p.`alias` LIKE ':alias/%'", array('alias' => $pageName, 'extension' => $this->get('extension')));
+		$where = iaDb::printf("(p.`name` = ':alias' OR p.`alias` = ':alias:extension' OR p.`alias` LIKE ':alias/%')", array('alias' => $pageName, 'extension' => $this->get('extension')));
 
 		if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 		{
+			$where.= " AND p.`custom_url` = ''";
+
 			if (!$this->iaCore->get('frontend', true)
 				&& (!iaUsers::hasIdentity() || iaUsers::getIdentity()->usergroup_id != iaUsers::MEMBERSHIP_ADMINISTRATOR))
 			{
@@ -771,7 +763,7 @@ SQL;
 		$sql = 'SELECT :fields'
 			. 'FROM `:prefix' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages` p '
 			. 'LEFT JOIN `:prefixextras` e ON (e.`name` = p.`extras`) '
-			. "WHERE (:stmt) AND p.`status` = ':status' "
+			. "WHERE :stmt AND p.`status` = ':status' "
 			. "AND (e.`status` = ':status' OR e.`status` IS NULL) "
 			. 'ORDER BY LENGTH(p.`alias`) DESC, p.`extras` DESC';
 		$sql = iaDb::printf($sql, array(
@@ -799,8 +791,6 @@ SQL;
 			$requestPath = $this->iaCore->requestPath;
 			array_unshift($requestPath, $pageName);
 			$requestPath[count($requestPath) - 1] .= $pageExtension;
-
-			$this->homePage = $this->iaCore->get('home_page');
 
 			foreach ($pages as $page)
 			{
@@ -926,13 +916,6 @@ SQL;
 				$this->assign('quickSearchItem', $currentItem);
 				//
 
-				$adminActions = array();
-				if (self::PAGE_ERROR != $this->name())
-				{
-					$adminActions = $this->_getToolbarActions();
-				}
-
-				$this->set('toolbarActions', $adminActions);
 				$this->set('headerMenu', $this->_getAdminHeaderMenu());
 				$this->set('menu', $this->getAdminMenu());
 			}
@@ -1008,14 +991,21 @@ SQL;
 
 				$pageName = $this->name();
 
-				$iaSmarty->assign('config', $this->iaCore->getConfig());
+				if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
+				{
+					$adminActions = (self::PAGE_ERROR == $pageName) ? array() : $this->_getAdminToolbarActions();
+					$this->set('toolbarActions', $adminActions);
+				}
+
 				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
 
 				// TODO: obsolete not used in 3.3.0, kept for minor compatibility
+				$iaSmarty->assign('config', $this->iaCore->getConfig());
 				$iaSmarty->assign('page', $this->getParams());
 
 				// define smarty super global $core
 				$core = array(
+					'actions' => $this->_setActions(),
 					'config' => $this->iaCore->getConfig(),
 					'customConfig' => $this->iaCore->getCustomConfig(),
 					'language' => $this->iaCore->languages[$this->language],
@@ -1027,7 +1017,7 @@ SQL;
 						'nonProtocolUrl' => $this->assetsUrl,
 						'name' => $pageName,
 						'title' => $this->get('caption', $this->get('title', 'Subrion CMS')),
-					),
+					)
 				);
 
 				if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
@@ -1050,6 +1040,7 @@ SQL;
 
 					header('X-Powered-CMS: Subrion CMS');
 				}
+
 				$iaSmarty->assignByRef('core', $core);
 
 				$this->iaCore->startHook('phpCoreDisplayBeforeShowBody');
@@ -1058,8 +1049,7 @@ SQL;
 
 				if ($this->get('body', self::NONE) != self::NONE)
 				{
-					$resource = $iaSmarty->ia_template($this->get('body') . self::TEMPLATE_FILENAME_EXT);
-					$content = $iaSmarty->fetch($resource);
+					$content = $iaSmarty->fetch($this->_retrieveTemplatePath($this->get('body')));
 				}
 
 				if ($this->_layoutEnabled)
@@ -1170,6 +1160,8 @@ SQL;
 
 		$this->add_js($core);
 
+		$this->assign('token', $this->iaCore->getSecurityToken());
+
 		$this->display('grid');
 	}
 
@@ -1194,7 +1186,8 @@ SQL;
 			'filename' => null,
 			'name' => self::PAGE_ERROR,
 			'parent' => '',
-			'title' => $errorCode
+			'title' => $errorCode,
+			'group' => 0
 		));
 
 		switch ($iaView->getRequestType())
@@ -1356,6 +1349,62 @@ SQL;
 		$iaDb->resetTable();
 	}
 
+	private function _setActions()
+	{
+		$result = array();
+
+		if (self::REQUEST_HTML != $this->getRequestType())
+		{
+			return $result;
+		}
+
+		$iaCore = &$this->iaCore;
+
+		if (false !== strpos($iaCore->iaView->name(), 'view'))
+		{
+			$iaItem = $iaCore->factory('item');
+
+			$iaCore->startHook('smartyItemTools');
+
+			$iaItem->setItemTools(array(
+				'id' => 'action-print',
+				'title' => iaLanguage::get('print_preview'),
+				'attributes' => array(
+					'href' => '#',
+					'class' => 'js-print-page'
+				)
+			));
+
+			$itemData = $iaCore->iaView->iaSmarty->getTemplateVars('item');
+			if (iaUsers::hasIdentity() && $itemData)
+			{
+				if ((iaUsers::getItemName() != $itemData['item'] &&
+					isset($itemData['member_id']) && iaUsers::getIdentity()->id != $itemData['member_id']) ||
+					($itemData['item'] == iaUsers::getItemName() && iaUsers::getIdentity()->id != $itemData['id'])
+				)
+				{
+					$isAlreadyFavorited = isset($itemData['favorite']) && $itemData['favorite'] == 1;
+
+					$iaItem->setItemTools(array(
+						'id' => 'action-favorites',
+						'title' => iaLanguage::get($isAlreadyFavorited ? 'favorites_action_delete' : 'favorites_action_add'),
+						'attributes' => array(
+							'href' => '#',
+							'class' => 'js-favorites',
+							'data-id' => $itemData['id'],
+							'data-item' => $itemData['item'],
+							'data-action' => ($isAlreadyFavorited ? iaCore::ACTION_DELETE : iaCore::ACTION_ADD)
+						)
+					));
+				}
+			}
+
+			$result = $iaItem->setItemTools();
+		}
+
+		return $result;
+	}
+
 	protected function _setBreadcrumb()
 	{
 		if (self::REQUEST_HTML != $this->getRequestType())
@@ -1430,7 +1479,7 @@ SQL;
 		}
 	}
 
-	private function _getToolbarActions()
+	private function _getAdminToolbarActions()
 	{
 		$result = array();
 
@@ -1438,7 +1487,7 @@ SQL;
 		$stmt = iaDb::printf($stmt, array(
 			'page' => $this->name(),
 			'action' => $this->get('action')
-		));;
+		));
 
 		$iaAcl = $this->iaCore->factory('acl');
 		$rows = $this->iaCore->iaDb->all(array('attributes', 'name', 'icon', 'text', 'url'), $stmt, null, null, 'admin_actions');
@@ -1450,11 +1499,65 @@ SQL;
 					'attributes' => $entry['attributes'],
 					'icon' => empty($entry['icon']) ? '' : 'i-' . $entry['icon'],
 					'title' => iaLanguage::get($entry['text'], $entry['text']),
-					'url' => $entry['url']
+					'url' => iaDb::printf($entry['url'], $this->iaCore->iaView->get('toolbarActionsReplacements', array()))
 				);
 			}
 		}
 
 		return $result;
+	}
+
+	/*
+	 * Return absolute path to template resource according to the script's logic
+	 *
+	 * @param string resourceName template resource name
+	 * @param bool useCustom
+	 *
+	 * @return string absolute path to a template resource name
+	 */
+	public function _retrieveTemplatePath($resourceName)
+	{
+		$default = ($resourceName.= self::TEMPLATE_FILENAME_EXT);
+		$templateName = $this->theme;
+
+		if (defined('IA_CURRENT_PACKAGE'))
+		{
+			if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
+			{
+				$path = IA_PACKAGE_TEMPLATE . 'admin' . IA_DS . $resourceName;
+				is_file($path) && $resourceName = $path;
+			}
+			elseif (is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS . 'packages' . IA_DS . IA_CURRENT_PACKAGE . IA_DS . $resourceName))
+			{
+				$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS . 'packages' . IA_DS . IA_CURRENT_PACKAGE . IA_DS . $resourceName;
+			}
+			elseif (is_file(IA_PACKAGE_TEMPLATE . 'common' . IA_DS . $resourceName))
+			{
+				$resourceName = IA_PACKAGE_TEMPLATE . 'common' . IA_DS . $resourceName;
+			}
+		}
+		elseif (defined('IA_CURRENT_PLUGIN'))
+		{
+			if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()
+				&& is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS
+					. 'plugins' . IA_DS . IA_CURRENT_PLUGIN . IA_DS . $resourceName))
+			{
+				$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS
+					. 'plugins' . IA_DS . IA_CURRENT_PLUGIN . IA_DS . $resourceName;
+			}
+			else
+			{
+				$resourceName = IA_PLUGIN_TEMPLATE . $resourceName;
+			}
+		}
+
+		$resourceName = ($resourceName == $default)
+			? IA_TEMPLATES . $templateName . IA_DS . $resourceName
+			: $resourceName;
+
+		is_file($resourceName) || $resourceName = IA_TEMPLATES . $templateName . IA_DS . $default;
+		is_file($resourceName) || $resourceName = IA_TEMPLATES . 'common' . IA_DS . $default;
+
+		return $resourceName;
 	}
 }

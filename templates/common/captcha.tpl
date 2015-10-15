@@ -1,10 +1,8 @@
-{if $config.captcha && !$member}
-<div class="fieldset-wrapper">
+{if $core.config.captcha && !$member}
 	<div class="fieldset">
-		<h3 class="title">{lang key='safety'}</h3>
-		<div class="content">
+		<div class="fieldset__header">{lang key='safety'}</div>
+		<div class="fieldset__content">
 			<div class="captcha">{captcha}</div>
 		</div>
 	</div>
-</div>
 {/if}

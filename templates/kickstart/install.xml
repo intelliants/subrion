@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template name="kickstart">
+	<title>Kickstart</title>
+	<summary>Bootstrap 3 developer template</summary>
+	<author>Gleb Surinov</author>
+	<contributor>Intelliants LLC</contributor>
+	<version>3.3.0</version>
+	<date>2015-06-14</date>
+	<compatibility>3.3</compatibility>
+
+	<layout>
+		<position menu="1" movable="0">account</position>
+		<position menu="1" movable="0">mainmenu</position>
+
+		<position>teaser</position>
+		<position>verytop</position>
+		<position>top</position>
+		<position>bottom</position>
+		<position>verybottom</position>
+		<position>copyright</position>
+
+		<section name="content">
+			<position fixed="1">left</position>
+			<position width="6">center</position>
+			<position fixed="1">right</position>
+		</section>
+		<section name="footer-blocks">
+			<position width="3">footer1</position>
+			<position width="3">footer2</position>
+			<position width="3">footer3</position>
+			<position width="3">footer4</position>
+		</section>
+	</layout>
+
+	<configgroup name="template_kickstart">Template</configgroup>
+
+	<config group="template_kickstart" 
+		    name="kickstart_divider1" 
+		    type="divider" 
+		    order="3000">General</config>
+
+	<config group="template_kickstart" 
+		    name="max_top_menu_items" 
+		    type="text" 
+		    description="Max number of items in Main Menu"
+		    order="3002">6</config>
+
+	<config group="template_kickstart"
+		    name="enable_landing" 
+		    type="radio"
+		    order="3003" 
+		    values="1,0" 
+		    description="Enable landing page">0</config>
+
+	<config group="template_kickstart" 
+		    name="website_bg" 
+		    type="image" 
+		    description="Header background"
+		    order="3004"><![CDATA[]]></config>
+
+	<config group="template_kickstart"
+		    name="enable_text_logo" 
+		    type="radio"
+		    order="3005" 
+		    values="1,0" 
+		    description="Enable Logo text">0</config>
+
+	<config group="template_kickstart" 
+		    name="kickstart_divider2" 
+		    type="divider" 
+		    order="3030">Social links</config>
+	
+	<config group="template_kickstart"
+			name="kickstart_social"
+		    type="radio" 
+		    order="3031"
+		    values="1,0" 
+		    description="Show links">1</config>
+	<config group="template_kickstart"
+			name="kickstart_social_t"
+		    type="text"
+		    order="3032"
+		    show="kickstart_social|1" 
+		    description="Twitter Link">https://twitter.com/IntelliantsLLC</config>
+	<config group="template_kickstart"
+			name="kickstart_social_f"
+		    type="text" 
+		    order="3033" 
+		    show="kickstart_social|1" 
+		    description="Facebook Link">https://www.facebook.com/Intelliants</config>
+	<config group="template_kickstart"
+			name="kickstart_social_g"
+		    type="text" 
+		    order="3034" 
+		    show="kickstart_social|1" 
+		    description="Google+ Link">https://plus.google.com/102500660503219569194/posts</config>
+	<config group="template_kickstart"
+			name="kickstart_social_i"
+		    type="text" 
+		    order="3035" 
+		    show="kickstart_social|1" 
+		    description="LinkedIn Link">#</config>
+
+	<config group="template_kickstart" 
+		    name="ckeditor_css" 
+		    type="hidden" 
+		    description="CKEditor CSS"
+		    order="3099">ckeditor.css</config>
+
+	<changeset>
+		<menu position="account" status="active">account</menu>
+
+		<block status="active" classname="box--border">common_statistics</block>
+		<block status="active" classname="box--border">filters</block>
+	</changeset>
+
+	<blocks>
+		<block name="header" 
+			   title="Teaser block" 
+			   position="teaser" 
+			   header="0"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="html">
+			<![CDATA[
+<div class="teaser">
+	<h1>The greatest place<br>to kickstart anything</h1>
+	<h2>You will love how easy<br>it is to manage your content</h2>
+</div>
+			]]>
+		</block>
+		
+		<block name="verytop" 
+			   title="Call to action" 
+			   position="verytop" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active"
+			   type="html">
+			<![CDATA[
+<div class="row">
+	<div class="col-md-8">
+		<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block. You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+	</div>
+	<div class="col-md-4">
+		<p class="text-right"><a class="btn btn-lg btn-warning-outline" href="#">Learn more</a></p>
+	</div>
+</div>
+			]]>
+		</block>
+		<block name="top" 
+			   title="Top block position" 
+			   position="top" 
+			   header="1"
+			   collapsible="1" 
+			   sticky="0" 
+			   pages="index"
+			   status="active" 
+			   type="html">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+<p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod incorrupte, brute laoreet at pri, eam antiopam honestatis efficiantur ea. Velit atomorum voluptaria ad nam, hinc aperiam accumsan ne est, ut dictas dissentias his.</p>
+			]]>
+		</block>
+		<block name="bottom_block" 
+			   title="Bottom block position" 
+			   position="bottom" 
+			   header="1"
+			   collapsible="1" 
+			   sticky="0"
+			   pages="index" 
+			   status="active" 
+			   type="html">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+<p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod incorrupte, brute laoreet at pri, eam antiopam honestatis efficiantur ea. Velit atomorum voluptaria ad nam, hinc aperiam accumsan ne est, ut dictas dissentias his.</p>
+			]]>
+		</block>
+		
+		<block name="html_block1" 
+			   title="HTML block #1" 
+			   position="left" 
+			   header="1"
+			   collapsible="1" 
+			   sticky="1" 
+			   status="active" 
+			   order="99"
+			   type="html"
+			   classname="box--border">
+			<![CDATA[
+<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+<p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod.</p>
+			]]>
+		</block>
+		<block name="footer1" 
+			   title="About CMS" 
+			   position="footer1" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="1" 
+			   status="active" 
+			   type="html">
+			<![CDATA[
+<p>Subrion is a free open source content management system
+that allows you to build websites for any purpose. Yes, from blog to corporate mega portal.</p>
+			]]>
+		</block>
+		<block name="footer2" 
+			   title="For users" 
+			   position="footer2" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="1" 
+			   status="active" 
+			   type="html">
+			<![CDATA[
+<p>It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
+			]]>
+		</block>
+		<block name="footer3" 
+			   title="For developers" 
+			   position="footer3" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="1" 
+			   status="active" 
+			   type="html">
+			<![CDATA[
+<p>Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
+			]]>
+		</block>
+		<block name="footer4" 
+			   title="For designers" 
+			   position="footer4" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="1" 
+			   status="active" 
+			   type="html">
+			<![CDATA[
+<p>Simple templating engine and styles allows you to create any template you wish with just a few lines of code.</p>
+			]]>
+		</block>
+	</blocks>
+
+	<phrases>
+		<phrase category="frontend" key="login">Log in</phrase>
+		<phrase category="frontend" key="register">Sign up</phrase>
+		<phrase category="frontend" key="kickstart">Kickstart</phrase>
+	</phrases>
+</template>

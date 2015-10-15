@@ -36,7 +36,7 @@ function smarty_function_ia_hooker($params, &$smarty)
 						}
 						break;
 					case 'smarty':
-						echo $smarty->fetch(IA_HOME . $hook['filename']);
+						echo $smarty->fetch($hook['filename']);
 				}
 			}
 			else

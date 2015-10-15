@@ -8,20 +8,20 @@
 		<meta name="author" content="Intelliants LLC">
 
 		<!--[if lt IE 9]>
-			<script src="<?php echo URL_INSTALL ?>templates/js/shiv.js"></script>
-			<script src="<?php echo URL_INSTALL ?>templates/js/respond.min.js"></script>
+			<script src="<?php echo URL_ASSETS ?>templates/js/shiv.js"></script>
+			<script src="<?php echo URL_ASSETS ?>templates/js/respond.min.js"></script>
 		<![endif]-->
 
-		<link rel="stylesheet" href="<?php echo URL_INSTALL ?>templates/css/bootstrap.css">
+		<link rel="stylesheet" href="<?php echo URL_ASSETS ?>templates/css/bootstrap.css">
 
-		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="<?php echo URL_INSTALL ?>templates/img/ico/apple-touch-icon-144-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="<?php echo URL_INSTALL ?>templates/img/ico/apple-touch-icon-114-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="<?php echo URL_INSTALL ?>templates/img/ico/apple-touch-icon-72-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" href="<?php echo URL_INSTALL ?>templates/img/ico/apple-touch-icon-57-precomposed.png">
-		<link rel="shortcut icon" href="<?php echo URL_INSTALL ?>templates/img/ico/favicon.ico">
+		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="<?php echo URL_ASSETS ?>templates/img/ico/apple-touch-icon-144-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="<?php echo URL_ASSETS ?>templates/img/ico/apple-touch-icon-114-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="<?php echo URL_ASSETS ?>templates/img/ico/apple-touch-icon-72-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" href="<?php echo URL_ASSETS ?>templates/img/ico/apple-touch-icon-57-precomposed.png">
+		<link rel="shortcut icon" href="<?php echo URL_ASSETS ?>templates/img/ico/favicon.ico">
 
-		<script src="<?php echo URL_INSTALL ?>templates/js/jquery.js"></script>
-		<script src="<?php echo URL_INSTALL ?>templates/js/bootstrap.min.js"></script>
+		<script src="<?php echo URL_ASSETS ?>templates/js/jquery.js"></script>
+		<script src="<?php echo URL_ASSETS ?>templates/js/bootstrap.min.js"></script>
 	</head>
 
 	<body>
@@ -30,7 +30,7 @@
 			<div class="panels-wrapper">
 				<section id="panel-left">
 					<a class="brand" href="<?php echo URL_INSTALL ?>">
-						<img src="<?php echo URL_INSTALL ?>templates/img/logo.png" alt="Subrion CMS &middot; <?php echo IA_VERSION ?>">
+						<img src="<?php echo URL_ASSETS ?>templates/img/logo.png" alt="Subrion CMS &middot; <?php echo IA_VERSION ?>">
 					</a>
 					<ul class="nav-main">
 						<?php if (in_array('install', $this->modules)): ?>
@@ -78,7 +78,7 @@
 ?>
 					</ul>
 				</section>
-				
+
 				<section id="panel-content">
 					<div class="navbar navbar-static-top navbar-inverse">
 						<ul class="nav navbar-nav navbar-left">

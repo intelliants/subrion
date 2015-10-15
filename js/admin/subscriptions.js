@@ -13,6 +13,7 @@ Ext.onReady(function()
 				{name: 'date_next_payment', title: _t('next_payment_date'), width: 180},
 				'status'
 			],
+			sorters: [{property: 'date_created', direction: 'DESC'}],
 			statuses: ['active','suspended','canceled','failed','completed']
 		}, false);
 

@@ -10,7 +10,7 @@
 		<link rel="stylesheet" type="text/css" href="<?php echo $this->iaCore->get('baseurl') ?>js/bootstrap/css/bootstrap.min.css" />
 	</head>
 	<body>
-		<div class="container">
+		<div class="container" style="padding-top: 100px;">
 			<h1><?php echo $this->iaCore->get('site') ?></h1>
 
 			<div class="well">

@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 final class iaCore
 {
@@ -50,12 +27,17 @@ final class iaCore
 
 	const INTELLI = 'intelli';
 
+	const SECURITY_TOKEN_MEMORY_KEY = 'csrftoken';
+	const SECURITY_TOKEN_FORM_KEY = '__st';
+
+
 	private static $_instance;
 
 	private $_classInstances = array();
 
 	protected static $_configDbTable = 'config';
 	protected static $_configGroupsDbTable = 'config_groups';
+	protected static $_customConfigDbTable = 'config_custom';
 
 	protected $_accessType = self::ACCESS_FRONT;
 
@@ -301,18 +283,7 @@ final class iaCore
 			case 'package':
 				define('IA_CURRENT_PACKAGE', $extrasName);
 				define('IA_PACKAGE_URL', ($iaView->packageUrl ? $iaView->packageUrl . IA_URL_LANG : $iaView->domainUrl . IA_URL_LANG . $iaView->extrasUrl));
-				define('IA_PACKAGE_PATH', IA_PACKAGES . $extrasName . IA_DS);
 				define('IA_PACKAGE_TEMPLATE', IA_PACKAGES . $extrasName . IA_DS . 'templates' . IA_DS);
-				define('IA_PACKAGE_TEMPLATE_ADMIN', IA_PACKAGE_TEMPLATE . 'admin' . IA_DS);
-				define('IA_PACKAGE_TEMPLATE_COMMON', IA_PACKAGE_TEMPLATE . 'common' . IA_DS);
-
-				iaDebug::debug('<br>', null, 'info');
-				iaDebug::debug(IA_PACKAGE_PATH, 'IA_PACKAGE_PATH', 'info');
-				iaDebug::debug(IA_CURRENT_PACKAGE, 'IA_CURRENT_PACKAGE', 'info');
-				iaDebug::debug(IA_PACKAGE_URL, 'IA_PACKAGE_URL', 'info');
-				iaDebug::debug(IA_PACKAGE_TEMPLATE, 'IA_PACKAGE_TEMPLATE', 'info');
-				iaDebug::debug(IA_PACKAGE_TEMPLATE_ADMIN, 'IA_PACKAGE_TEMPLATE_ADMIN', 'info');
-				iaDebug::debug(IA_PACKAGE_TEMPLATE_COMMON, 'IA_PACKAGE_TEMPLATE_COMMON', 'info');
 
 				$module = empty($fileName) ? iaView::DEFAULT_HOMEPAGE : $fileName;
 				$module = IA_PACKAGES . $extrasName . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . $module . iaSystem::EXECUTABLE_FILE_EXT;
@@ -324,10 +295,6 @@ final class iaCore
 			case 'plugin':
 				define('IA_CURRENT_PLUGIN', $extrasName);
 				define('IA_PLUGIN_TEMPLATE', IA_PLUGINS . $extrasName . IA_DS . 'templates' . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' : 'front') . IA_DS);
-
-				iaDebug::debug('<br>', null, 'info');
-				iaDebug::debug(IA_CURRENT_PLUGIN, 'IA_CURRENT_PLUGIN', 'info');
-				iaDebug::debug(IA_PLUGIN_TEMPLATE, 'IA_PLUGIN_TEMPLATE', 'info');
 
 				$module = empty($fileName) ? iaView::DEFAULT_HOMEPAGE : $fileName;
 				$module = IA_PLUGINS . $extrasName . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . $module . iaSystem::EXECUTABLE_FILE_EXT;
@@ -604,10 +571,11 @@ final class iaCore
 		elseif ($authorized == 2 && $login && $pass)
 		{
 			$auth = (bool)$iaUsers->getAuth(0, $login, $pass);
+
+			$this->startHook('phpUserLogin', array('userInfo' => iaUsers::getIdentity(true), 'password' => $pass));
+
 			if (!$auth)
 			{
-				$this->startHook('phpUserLogin', array('userInfo' => $iaUsers->getIdentity(), 'password' => $pass));
-
 				if ($isBackend)
 				{
 					$this->iaView->assign('error_login', true);
@@ -620,8 +588,6 @@ final class iaCore
 			}
 			else
 			{
-				$this->startHook('phpUserLogin', array('userInfo' => $iaUsers->getIdentity(), 'password' => $pass));
-
 				unset($_SESSION['_achkych']);
 				if (isset($_SESSION['referrer'])) // this variable is set by Login page handler
 				{
@@ -650,6 +616,8 @@ final class iaCore
 				$this->iaView->name('login');
 			}
 		}
+
+		$this->getSecurityToken() || $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] = $this->factory('util')->generateToken(92);
 	}
 
 	public function getHooks()
@@ -682,10 +650,11 @@ final class iaCore
 
 	protected function _forgeryCheck()
 	{
-		// FIXME: this implementation provides a basic (!) forgery protection only.
-		// Referrer info could be faked easily
-		if ($_POST && $this->get('prevent_csrf') && $this->iaView->get('nocsrf'))
+		if ($_POST && $this->get('prevent_csrf') && !$this->iaView->get('nocsrf'))
 		{
+			$referrerValid = false;
+			$tokenValid = true;//(isset($_POST[self::SECURITY_TOKEN_FORM_KEY]) && $this->getSecurityToken() == $_POST[self::SECURITY_TOKEN_FORM_KEY]);
+
 			if (isset($_SERVER['HTTP_REFERER']))
 			{
 				$wwwChunk = 'www.';
@@ -700,15 +669,24 @@ final class iaCore
 
 				if ($referrerDomain === $domain)
 				{
-					return;
+					$referrerValid = true;
 				}
 			}
+			else
+			{
+				$referrerValid = true; // sad, but no other way
+			}
 
-			header('HTTP/1.1 203'); // reply with 203 "Non-Authoritative Information" status
+			if (!$referrerValid || !$tokenValid)
+			{
+				header('HTTP/1.1 203'); // reply with 203 "Non-Authoritative Information" status
 
-			$this->iaView->set('nodebug', true);
-			die('Request treated as a potential CSRF attack.');
+				$this->iaView->set('nodebug', true);
+				die('Request treated as a potential CSRF attack.');
+			}
 		}
+
+		unset($_POST[self::SECURITY_TOKEN_FORM_KEY]);
 	}
 
 	public function checkDomain()
@@ -972,6 +950,11 @@ final class iaCore
 		return self::$_configGroupsDbTable;
 	}
 
+	public static function getCustomConfigTable()
+	{
+		return self::$_customConfigDbTable;
+	}
+
 	protected function _setConstants()
 	{
 		$iaView = &$this->iaView;
@@ -1009,5 +992,10 @@ final class iaCore
 		$offset = sprintf('%+d:%02d', $hours * $sign, $minutes);
 
 		$this->iaDb->setTimezoneOffset($offset);
+	}
+
+	public function getSecurityToken()
+	{
+		return isset($_SESSION[self::SECURITY_TOKEN_MEMORY_KEY]) ? $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] : null;
 	}
 }

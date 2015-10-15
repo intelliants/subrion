@@ -4,7 +4,7 @@
 		<div class="row">
 			{foreach $packages as $package}
 				<div class="col col-lg-3">
-					<div class="media plate{if $package.remote} plate--remote{/if}{if 'active' == $package.status} plate--active{/if}">
+					<div class="media plate{if $package.remote} plate--remote{/if}{if iaCore::STATUS_ACTIVE == $package.status} plate--active{/if}">
 						<div class="plate__image">
 							{if isset($package.preview) && count($package.preview) > 0}
 								{foreach $package.preview as $preview}

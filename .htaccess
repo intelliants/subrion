@@ -18,9 +18,23 @@ Options -MultiViews
 </IfModule>
 
 <IfModule mod_deflate.c>
-	AddOutputFilterByType DEFLATE \
-		text/html text/plain text/xml text/css text/javascript \
-		application/xml application/xhtml+xml application/rss+xml \
-		application/javascript application/x-javascript \
-		image/svg+xml font/opentype application/x-font-ttf
+	<IfModule mod_setenvif.c>
+		<IfModule mod_headers.c>
+			SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
+			RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+		</IfModule>
+	</IfModule>
+
+	<IfModule mod_filter.c>
+		AddOutputFilterByType DEFLATE \
+			text/html text/plain text/xml text/css text/javascript text/xml \
+			application/xml application/xhtml+xml application/rss+xml \
+			application/javascript application/x-javascript application/json \
+			font/opentype application/x-font-ttf font/eot \
+			image/x-icon image/vnd.microsoft.icon image/svg+xml image/svg+xml
+	</IfModule>
+
+	<IfModule mod_mime.c>
+		AddEncoding gzip svgz
+	</IfModule>
 </IfModule>

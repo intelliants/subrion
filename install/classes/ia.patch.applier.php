@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaPatchApplier
 {
@@ -110,11 +87,18 @@ class iaPatchApplier
 				$this->_processFile($entry);
 			}
 		}
-		if (count($patch['extras']) > 0)
+
+		empty($patch['extras']) || $this->_processExtras($patch['extras']);
+
+		$patchVersion = $patch['header']['major'] . '.' . $patch['header']['minor'];
+
+		// implemented from the 4.0+
+		if (version_compare($patchVersion, '4.0', '>='))
 		{
-			foreach ($patch['extras'] as $entry)
+			if ($patch['info']['num_phrases'])
 			{
-				$this->_processExtra($entry);
+				$this->_logInfo('Starting to process language phrases...', self::LOG_INFO);
+				$this->_processPhrases($patch['phrases']);
 			}
 		}
 
@@ -122,7 +106,7 @@ class iaPatchApplier
 		if ($this->_dbConnectionParams['link'])
 		{
 			$sql = sprintf("UPDATE `{prefix}config` SET `value` = '%s' WHERE `name` = '%s'", $version, 'version');
-			$this->_processQuery($sql);
+			$this->_processQuery($sql, false);
 		}
 
 		if ($patch['executables']['post'])
@@ -135,20 +119,31 @@ class iaPatchApplier
 	{
 		if (is_array($params) && $params)
 		{
-			foreach ($params as $key => $value) {
+			foreach ($params as $key => $value)
+			{
 				$message = str_replace(':' . $key, $value, $message);
 			}
 		}
 		$this->_log[] = array('type' => $type, 'message' => $message);
 	}
 
-	protected function _processQuery($query)
+	protected function _processQuery($query, $log = true)
 	{
-		$query = str_replace('{prefix}', $this->_dbConnectionParams['prefix'], $query);
+		$options = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
 
-		mysql_query($query, $this->_dbConnectionParams['link'])
-			? $this->_logInfo('Query executed: :query (affected: :num)', self::LOG_SUCCESS, array('query' => $query, 'num' => mysql_affected_rows($this->_dbConnectionParams['link'])))
-			: $this->_logInfo('Query failed: :query (:error)', self::LOG_ERROR, array('query' => $query, 'error' => mysql_error($this->_dbConnectionParams['link'])));
+		$query = str_replace(
+			array('{prefix}', '{db.options}'),
+			array($this->_dbConnectionParams['prefix'], $options),
+			$query);
+
+		$result = mysql_query($query, $this->_dbConnectionParams['link']);
+
+		if ($log)
+		{
+			$result
+				? $this->_logInfo('Query executed: :query (affected: :num)', self::LOG_SUCCESS, array('query' => $query, 'num' => mysql_affected_rows($this->_dbConnectionParams['link'])))
+				: $this->_logInfo('Query failed: :query (:error)', self::LOG_ERROR, array('query' => $query, 'error' => mysql_error($this->_dbConnectionParams['link'])));
+		}
 	}
 
 	protected function _processFile($entry)
@@ -232,19 +227,37 @@ class iaPatchApplier
 		}
 	}
 
-	protected function _processExtra($entry)
+	protected function _processExtras(array $entries)
 	{
-		$friendlyName = ucfirst($entry['name']);
-		if ($entry['type'] == self::EXTRA_TYPE_PLUGIN)
+		foreach ($entries as $entry)
 		{
-			iaHelper::installRemotePlugin($entry['name'])
-				? $this->_logInfo('Installation of :name is successfully completed.', self::LOG_SUCCESS, array('name' => $friendlyName))
-				: $this->_logInfo('Unable to install :name due to errors.', self::LOG_ERROR, array('name' => $friendlyName));
+			$friendlyName = ucfirst($entry['name']);
+			if ($entry['type'] == self::EXTRA_TYPE_PLUGIN)
+			{
+				iaHelper::installRemotePlugin($entry['name'])
+					? $this->_logInfo('Installation of :name is successfully completed.', self::LOG_SUCCESS, array('name' => $friendlyName))
+					: $this->_logInfo('Unable to install :name due to errors.', self::LOG_ERROR, array('name' => $friendlyName));
+			}
+			else
+			{
+				$this->_logInfo('Installation of ":name" requested. Ignored since installation of this type is not currently implemented.', self::LOG_ALERT, array('name' => $friendlyName));
+			}
 		}
-		else
+	}
+
+	protected function _processPhrases(array $entries)
+	{
+		$languages = iaCore::instance()->languages;
+
+		foreach ($entries as $phrase)
 		{
-			$this->_logInfo('Installation of ":name" requested. Ignored since installation of this type is not currently implemented.', self::LOG_ALERT, array('name' => $friendlyName));
+			foreach ($languages as $code => $data)
+			{
+				iaLanguage::addPhrase($phrase['key'], $phrase['value'], $code, '', $phrase['category']);
+			}
 		}
+
+		$this->_logInfo(':num phrases added.', self::LOG_SUCCESS, array('num' => count($entries)));
 	}
 
 	protected function _writeFile($filename, $content, $isBinary)
@@ -267,7 +280,7 @@ class iaPatchApplier
 
 	protected function _runPhpCode($phpCode)
 	{
-		if (@eval('return true;' . $phpCode))
+		if (@eval('return true;' . $phpCode)) // first, check if php code is valid to avoid fatal script stop
 		{
 			$iaCore = iaCore::instance();
 			eval($phpCode);

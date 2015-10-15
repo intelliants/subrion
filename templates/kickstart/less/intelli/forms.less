@@ -1,0 +1,225 @@
+
+//
+// Intelli form controls and stuff
+// --------------------------------------------------
+
+.ia-form {
+  
+  &--bordered {
+    border: 1px solid @nav-tabs-border-color;
+    padding: @fieldest-padding-vertical @fieldest-padding-horizontal;
+  }
+
+  .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    color: @form-label-color;
+  }
+
+  &__label-mini {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: normal;
+    margin-bottom: 0;
+  }
+}
+
+.required,
+.is-required {
+  color: @brand-danger;
+}
+
+
+
+//
+// Fieldsets
+// --------------------------------------------------
+
+.fieldset {
+
+  &:first-of-type .fieldset__header {
+    padding-top: 0;
+  }
+
+  &__header {
+    .font-normalize(18px, 0 -@fieldest-padding-horizontal @fieldest-padding-vertical);
+    padding: @fieldest-padding-vertical/2 @fieldest-padding-horizontal;
+    text-transform: none;
+    border-bottom: 1px solid @nav-tabs-border-color;
+    color: fade(@text-color, 50%);
+
+    + .fieldset__content {
+      padding-top: 0;
+    }
+  }
+
+  &__content {
+    padding: @fieldest-padding-vertical 0;
+  }
+
+  &__actions {
+    background: #f0f0f0;
+    margin: 0 -@fieldest-padding-horizontal -@fieldest-padding-vertical;
+    padding: @fieldest-padding-vertical @fieldest-padding-horizontal;
+  }
+}
+
+
+
+//
+// Single field
+// --------------------------------------------------
+
+.field {
+
+  + .field {
+    margin-top: @vertical-rhythm /2;
+  }
+  
+  &__header {
+    color: @form-label-color;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+}
+
+
+
+//
+// Tabs
+// --------------------------------------------------
+
+.tabbable {
+  margin-bottom: @vertical-rhythm /2;
+
+  .nav-tabs {
+    margin-bottom: 0;
+  }
+
+  .tab-content {
+    border: 1px solid @nav-tabs-border-color;
+    border-top: 0 none;
+  }
+
+  .tab-pane {
+    padding: @fieldest-padding-vertical @fieldest-padding-horizontal;
+  }
+}
+
+.ia-form {
+
+  .tab-pane .fieldset:first-of-type .fieldset__header {
+    padding-top: 0;
+  }
+}
+
+
+//
+// Inputs
+// --------------------------------------------------
+
+.btn-file {
+  position: relative;
+  overflow: hidden;
+}
+.btn-file input[type=file] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 100px;
+  text-align: right;
+  filter: alpha(opacity=0);
+  opacity: 0;
+  outline: none;
+  background: white;
+  cursor: inherit;
+  display: block;
+}
+
+.thumbnail {
+  position: relative;
+  margin-bottom: 10px;
+
+  &__image {
+    display: block;
+
+    img {
+      width: 100%;
+    }
+  }
+
+  &__actions {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+}
+
+.upload-list {
+
+  &__item {
+    margin-left: -5px;
+    margin-right: -5px;
+
+    [class^="col"] {
+      padding: 0 5px;
+    }
+
+    & + & {
+      margin-top: 10px;
+    }
+  }
+}
+
+.upload-items {
+  margin-left: -5px;
+  margin-right: -5px;
+
+  [class^="col"] {
+    padding: 0 5px;
+  }
+
+  + .upload-list {
+    margin-top: 10px;
+  }
+
+  &--files {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  &__item {
+
+    & + & {
+      margin-top: 10px;
+    }
+  }
+
+  &:last-of-type .thumbnail {
+    margin-bottom: 0;
+  }
+}
+
+
+
+//
+// Filters
+// --------------------------------------------------
+
+.ia-form-filters {
+
+  .row {
+    margin-left: -5px;
+    margin-right: -5px;
+
+    [class^="col-md"] {
+      padding-left: 5px;
+      padding-right: 5px;
+    } 
+  }
+}

@@ -11,7 +11,7 @@ intelli.gridHelper = {
 	{
 		$.ajax(
 		{
-			data: data,
+			data: intelli.includeSecurityToken(data, $('#' + caller.config.target).data('token')),
 			dataType: 'json',
 			failure: function()
 			{
@@ -397,7 +397,7 @@ function IntelliGrid(params, autoInit)
 			pagingBar.push(self.config.bottomBar);
 		}
 
-		Ext.state.Manager.setProvider(Ext.create('Ext.state.CookieProvider'));
+		Ext.state.Manager.setProvider(Ext.create(Ext.supports.LocalStorage ? 'Ext.state.LocalStorageProvider' : 'Ext.state.CookieProvider'));
 
 		var stateId = window.location.href,
 			bases = document.getElementsByTagName('base'),

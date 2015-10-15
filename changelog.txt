@@ -64,11 +64,11 @@
 	- Bug #653: Edit Phrases - Table Visibility
 	- Bug #654: Listing fields check box set - required field
 	- Bug #702: Add Menu - Improper naming of added pages in list
-	- Bug #1010: Listings with non-valid captcha can be submitted
+	- Bug #1010: Listings with non-valid captcha can be submitted 
 	- Bug #1012: Dependencies are not considered when installing a plugin
 	- Bug #1013: Manage database errors
 	- Bug #1022: Loop redirect when making Login page as site home page
-	- Bug #1023: "Field Group" and "Show on Pages" options can't be saved
+	- Bug #1023: "Field Group" and "Show on Pages" options can't be saved 
 	- Bug #1024: Add log notice about successful upgrades
 	- Bug #1025: Disable automatic upgrades
 	- Bug #1027: Remote plugins list does not displays correctly
@@ -505,6 +505,7 @@
 	+ Feature #2037: Session tmp folder
 
 >> From 3.2.7 to 3.3.0 <<
+
 	- Bug #1456: No action buttons in search for some packages
 	- Bug #1939: https:// is not using by default
 	- Bug #1972: Incorrect working of multilingual functionality for blocks
@@ -615,5 +616,3 @@
 	+ Feature #2192: Allow datepicker for fields
 	+ Feature #2195: .htaccess warning for Mac users
 	+ Feature #2198: Implement 'Scheduled Tasks' admin panel section
-
->> From 3.3.5 to 3.4.0 <<

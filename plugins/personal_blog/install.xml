@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin name="personal_blog">
 	<title>Personal Blog</title>
-	<summary>Allows to create a personal admin blog.</summary>
+	<summary>Allows to create a personal admin blog</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.2.0</version>
-	<date>2014-10-20</date>
-	<compatibility>3.2</compatibility>
+	<version>3.4.0</version>
+	<date>2015-10-05</date>
+	<compatibility>3.4</compatibility>
 
 	<actions>
 		<action name="blogs" url="blog/" icon="list" pages="personal_blog:add,personal_blog:edit">List</action>
@@ -20,6 +20,8 @@
 
 	<pages>
 		<page menus="main,bottom" name="blog" url="blog/">Blog</page>
+		<page name="tag" url="tag/" filename="tag">Tag</page>
+		<page name="blog_date" url="blog/date/" filename="date">Blog Archive</page>
 	</pages>
 
 	<phrases>
@@ -29,52 +31,44 @@
 		<phrase category="admin" key="blog_entry_deleted">Blog entry deleted.</phrase>
 		<phrase category="admin" key="body_is_empty">Body is empty.</phrase>
 		<phrase category="admin" key="edit_blog_entry">Edit Blog entry</phrase>
+		<phrase category="admin" key="owner">Owner</phrase>
+		<phrase category="admin" key="separate_with_comma_or_enter">Use comma or press enter to separate tags</phrase>
 
-		<phrase category="common" key="personal_blog">Personal Blog</phrase>
 		<phrase category="common" key="blog">Blog</phrase>
+		<phrase category="common" key="personal_blog">Personal Blog</phrase>
+		<phrase category="common" key="tags">Tags</phrase>
 
-		<phrase category="frontend" key="view_all_blog_entries">View all blog entries</phrase>
-		<phrase category="frontend" key="no_blog_entries">Administrator has not posted any blogposts yet.</phrase>
 		<phrase category="frontend" key="blogroll">Blogroll</phrase>
+		<phrase category="frontend" key="no_blog_entries">Administrator has not posted any blogposts yet.</phrase>
+		<phrase category="frontend" key="no_tags">No tags added.</phrase>
+		<phrase category="frontend" key="page_title_tag">Blog Tags</phrase>
 		<phrase category="frontend" key="posted_on">Posted on</phrase>
+		<phrase category="frontend" key="view_all_blog_entries">View all blog entries</phrase>
 	</phrases>
 
 	<configgroup name="blog">Blog</configgroup>
 
 	<config group="blog" name="blog_plugin" type="divider">General</config>
-	<config group="blog" name="blog_display_grid" type="radio" values="1,0" description="Display blog as image grid">0</config>
-	<config group="blog" name="blog_number_block" type="text" description="Number of displayed entries in Blogroll entries">6</config>
+	<config group="blog" name="blog_number_block" type="text" description="Number of displayed entries in Blogroll entries">4</config>
 	<config group="blog" name="blog_number_new_block" type="text" description="Number of displayed entries in New Blog Posts block">3</config>
 	<config group="blog" name="blog_max_block" type="text" description="Number of chars in short description in Latest Blog entries">200</config>
 	<config group="blog" name="blog_number" type="text" description="Number of displayed entries">5</config>
 	<config group="blog" name="blog_max" type="text" description="Number of chars in short description">500</config>
 	<config group="blog" name="blog_order" type="select" values="alphabetic,date" description="Entries order by">date</config>
+	<config group="blog" name="tag_number" type="text" description="Number of displayed tags">10</config>
 
 	<tooltips>
 		<tooltip key="blog_display_grid">This option allows you to display only images in Blogroll section. This display type suits best for portfolios.</tooltip>
 	</tooltips>
 
 	<blocks>
-		<block title="Blogroll" name="blogroll" position="bottom" sticky="0" header="0" pages="index" order="1" type="smarty" filename="plugin:personal_blog:block.blogroll.tpl"><![CDATA[]]></block>
-		<block title="New blog posts" name="new_blog_posts" position="left" type="smarty" classname="box-clear" order="5" filename="plugin:personal_blog:block.new-posts.tpl"><![CDATA[]]></block>
+		<block title="Blogroll" name="blogroll" position="verybottom" sticky="0" pages="index" order="1" type="smarty" filename="block.blogroll"><![CDATA[]]></block>
+		<block title="New blog posts" name="new_blog_posts" position="left" type="smarty" order="5" filename="block.new-posts"><![CDATA[]]></block>
+		<block title="Blogs Archive" name="blogs_archive" position="left" type="smarty" order="5" filename="block.blogs-archive"><![CDATA[]]></block>
 	</blocks>
 
 	<hooks>
-		<hook name="phpCoreBeforePageDisplay" page_type="front">
-			<![CDATA[
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if ($iaView->blockExists('blogroll') || $iaView->blockExists('new_blog_posts'))
-	{
-		$stmt = '`status` = :status AND `lang` = :language ORDER BY `date_added` DESC';
-		$iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'language' => $iaView->language));
-
-		$array = $iaDb->all(array('id', 'title', 'date_added', 'alias', 'body', 'image'), $stmt, 0, $iaCore->get('blog_number_block'), 'blog_entries');
-		$iaView->assign('block_blog_entries', $array);
-	}
-}
-			]]>
-		</hook>
+		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="plugins/personal_blog/includes/hook.blocks-load.php"><![CDATA[]]></hook>
 		<hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['personal_blog:blogs'] = 'plugin';]]></hook>
 		<hook name="sitemapGeneration" page_type="admin" pages="index"><![CDATA[$items[] = 'personal_blog:blog';]]></hook>
 	</hooks>
@@ -83,7 +77,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		<sql>
 			<![CDATA[
 CREATE TABLE IF NOT EXISTS `{prefix}blog_entries` (
-	`id` smallint(5) unsigned NOT NULL auto_increment,
+	`id` mediumint(8) unsigned NOT NULL auto_increment,
+	`member_id` int(11) unsigned NOT NULL,
 	`title` tinytext NOT NULL,
 	`alias` varchar(155) NOT NULL,
 	`body` text NOT NULL,
@@ -97,12 +92,31 @@ CREATE TABLE IF NOT EXISTS `{prefix}blog_entries` (
 ) {mysql_version};
 			]]>
 		</sql>
+		<sql>
+			<![CDATA[
+CREATE TABLE IF NOT EXISTS `{prefix}blog_tags` (
+	`id` mediumint(8) unsigned NOT NULL auto_increment,
+	`title` varchar(50) NOT NULL,
+	`alias` varchar(50) NOT NULL,
+	PRIMARY KEY (`id`)
+) {mysql_version};
+			]]>
+		</sql>
+		<sql>
+			<![CDATA[
+CREATE TABLE IF NOT EXISTS `{prefix}blog_entries_tags` (
+	`blog_id` mediumint(8) unsigned NOT NULL,
+	`tag_id` mediumint(8) unsigned NOT NULL,
+	UNIQUE KEY `UNIQUE` (`tag_id`, `blog_id`)
+) {mysql_version};
+			]]>
+		</sql>
 	</install>
 
 	<uninstall>
 		<sql>
 			<![CDATA[
-DROP TABLE IF EXISTS `{prefix}blog_entries`;
+DROP TABLE IF EXISTS `{prefix}blog_entries`, `{prefix}blog_tags`, `{prefix}blog_entries_tags`;
 			]]>
 		</sql>
 	</uninstall>
@@ -111,6 +125,35 @@ DROP TABLE IF EXISTS `{prefix}blog_entries`;
 		<sql version="3.1.3">
 			<![CDATA[
 ALTER TABLE `{prefix}blog_entries` CHANGE `date` `date_added` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00';
+			]]>
+		</sql>
+		<sql version="3.3.0">
+			<![CDATA[
+ALTER TABLE `{prefix}blog_entries` ADD `member_id` int(11) unsigned NOT NULL AFTER `id`;
+			]]>
+		</sql>
+		<sql version="3.3.2">
+			<![CDATA[
+ALTER TABLE `{prefix}blog_entries` MODIFY `id` mediumint(8) auto_increment;
+			]]>
+		</sql>
+		<sql version="3.3.2">
+			<![CDATA[
+CREATE TABLE IF NOT EXISTS `{prefix}blog_tags` (
+	`id` mediumint(8) unsigned NOT NULL auto_increment,
+	`title` varchar(50) NOT NULL,
+	`alias` varchar(50) NOT NULL,
+	PRIMARY KEY (`id`)
+) {mysql_version};
+			]]>
+		</sql>
+		<sql version="3.3.2">
+			<![CDATA[
+CREATE TABLE IF NOT EXISTS `{prefix}blog_entries_tags` (
+	`blog_id` mediumint(8) unsigned NOT NULL,
+	`tag_id` mediumint(8) unsigned NOT NULL,
+	UNIQUE KEY `UNIQUE` (`tag_id`, `blog_id`)
+) {mysql_version};
 			]]>
 		</sql>
 	</upgrade>

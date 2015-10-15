@@ -23,7 +23,7 @@
 
 				<div class="col col-lg-4">
 					<div class="input-group">
-						<input type="text" name="cost" value="{$item.cost|escape:'html'}" maxlength="11">
+						<input class="js-filter-numeric" type="text" name="cost" value="{$item.cost|escape:'html'}" maxlength="11">
 						<div class="input-group-addon">{$config.currency}</div>
 					</div>
 				</div>
@@ -35,7 +35,7 @@
 				<div class="col col-lg-4">
 					<div class="row">
 						<div class="col-lg-3">
-							<input type="text" name="duration" value="{$item.duration|escape:'html'}" maxlength="10">
+							<input class="js-filter-numeric" type="text" name="duration" value="{$item.duration|escape:'html'}" maxlength="10">
 						</div>
 						<div class="col-lg-8 col-lg-offset-1">
 							<select name="unit">
@@ -153,7 +153,7 @@
 				<label class="col col-lg-2 control-label">{lang key='number_of_cycles'} <a href="#" class="js-tooltip" title="{$tooltips.plan_cycles}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-1">
-					<input type="text" name="cycles" class="js-numeric" value="{$item.cycles|escape:'html'}" maxlength="5">
+					<input type="text" name="cycles" class="js-filter-numeric" value="{$item.cycles|escape:'html'}" maxlength="5">
 				</div>
 			</div>
 		</div>
@@ -192,4 +192,4 @@
 		{include file='fields-system.tpl'}
 	</div>
 </form>
-{ia_print_js files='ckeditor/ckeditor, admin/plans'}
+{ia_print_js files='ckeditor/ckeditor,jquery/plugins/jquery.numeric,admin/plans'}

@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBackend
 {
@@ -200,10 +177,10 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 			if ($result)
 			{
-				$this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
+				$iaField = $this->_iaCore->factory('field');
 
 				// we have to check for uploaded images of this listing
-				if ($imageFields = $this->_iaCore->factory('field')->getImageFields($this->getPackageName()))
+				if ($imageFields = $iaField->getImageFields($this->getItemName()))
 				{
 					$iaPicture = $this->_iaCore->factory('picture');
 
@@ -215,6 +192,30 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 						}
 					}
 				}
+
+				// delete storage field values
+				if ($storageFields = $iaField->getStorageFields($this->getPackageName()))
+				{
+					foreach ($storageFields as $storageFieldName)
+					{
+						if (isset($entryData[$storageFieldName]) && $entryData[$storageFieldName])
+						{
+							if (':' == $entryData[$storageFieldName][1])
+							{
+								$unpackedData = unserialize($entryData[$storageFieldName]);
+								if (is_array($unpackedData) && $unpackedData)
+								{
+									foreach ($unpackedData as $oneFile)
+									{
+										iaUtil::deleteFile(IA_UPLOADS . $oneFile['path']);
+									}
+								}
+							}
+						}
+					}
+				}
+
+				$this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
 
 				$this->updateCounters($entryId, $entryData, iaCore::ACTION_DELETE);
 
@@ -229,7 +230,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		return $result;
 	}
 
-	protected function _postSaveEntry(array $entry, array $data, $action)
+	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 		if ($this->getItemName())
 		{

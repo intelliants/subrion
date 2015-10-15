@@ -30,6 +30,15 @@
 			</div>
 
 			<div class="row">
+				<label class="col col-lg-2 control-label" for="input-tag">{lang key='tags'}</label>
+				<div class="col col-lg-4">
+					<input type="text" name="tags" value="{$item.tags|escape:'html'}" id="input-tag">
+					<p class="help-block text-break-word" id="title_box">{lang key='separate_with_comma_or_enter'}</p>
+				</div>
+			</div>
+
+
+			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-image">{lang key='image'}</label>
 				<div class="col col-lg-4">
 					{if isset($item.image) && $item.image}
@@ -63,7 +72,18 @@
 		{/capture}
 
 		{include file='fields-system.tpl' datetime=true}
-	</div>
+
+    </div>
 </form>
 
-{ia_add_media files='js:_IA_URL_plugins/personal_blog/js/admin/index'}
+{ia_add_media files='tagsinput, js:_IA_URL_plugins/personal_blog/js/admin/index'}
+
+{ia_add_js}
+	$(function()
+	{
+		$('#input-tag').tagsInput({
+			width: '100%',
+			height: 'auto',
+		});
+	});
+{/ia_add_js}

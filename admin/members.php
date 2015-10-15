@@ -1,35 +1,13 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'members';
 
 	protected $_gridColumns = array('username', 'fullname', 'usergroup_id', 'email', 'status', 'date_reg', 'date_logged');
-	protected $_gridFilters = array('status' => 'equal', 'usergroup_id' => 'equal', 'id' => 'equal');
+	protected $_gridFilters = array('status' => self::EQUAL, 'usergroup_id' => self::EQUAL, 'id' => self::EQUAL);
+	protected $_gridSorting = array('usergroup' => 'usergroup_id');
 
 	protected $_phraseAddSuccess = 'member_added';
 	protected $_phraseGridEntryDeleted = 'member_deleted';
@@ -57,16 +35,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$stmt = iaDb::printf($stmt, array('id' => (int)$entryId, 'user' => (int)iaUsers::getIdentity()->id));
 
 		return $this->getHelper()->delete($stmt);
-	}
-
-	protected function _gridRead($params)
-	{
-		if ('usergroup' == $params['sort'])
-		{
-			$params['sort'] = 'usergroup_id';
-		}
-
-		return parent::_gridRead($params);
 	}
 
 	protected function _modifyGridParams(&$conditions, &$values)
@@ -231,7 +199,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return !$this->getMessages();
 	}
 
-	protected function _postSaveEntry(array $entry, array $data, $action)
+	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 		if (iaCore::ACTION_ADD == $action)
 		{

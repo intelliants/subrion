@@ -44,7 +44,7 @@ function _t($key = '', $default = null)
 		return false;
 	}
 
-	iaDebug::debug($key, 'Deprecated type of obtaining language phrase');
+	iaDebug::debug($key, 'Deprecated language phrase obtaining');
 
 	return iaLanguage::get($key, $default);
 }

@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 class iaCache extends abstractUtil
 {
@@ -200,59 +177,7 @@ class iaCache extends abstractUtil
 	public function clearGlobalCache()
 	{
 		$this->clearAll();
-		$this->_cascadeRemoveFiles(IA_TMP, true);
-	}
-
-	public function _cascadeRemoveFiles($directory, $removeDirectories = true)
-	{
-		if (substr($directory, -1) == IA_DS)
-		{
-			$directory = substr($directory, 0, -1);
-		}
-		if (!file_exists($directory) || !is_dir($directory))
-		{
-			return false;
-		}
-		elseif (is_readable($directory))
-		{
-			$handle = opendir($directory);
-
-			while ($item = readdir($handle))
-			{
-				if ($item != '.' && $item != '..' && $item != '.htaccess')
-				{
-					$path = $directory . IA_DS . $item;
-
-					if (is_dir($path))
-					{
-						$this->_cascadeRemoveFiles($path, true);
-					}
-					else
-					{
-						iaUtil::deleteFile($path);
-					}
-				}
-			}
-			closedir($handle);
-
-			if ($removeDirectories)
-			{
-				$objects = scandir($directory);
-				foreach ($objects as $object)
-				{
-					if ($object != '.' && $object != '..')
-					{
-						if (filetype($directory . IA_DS . $object) == 'dir')
-						{
-							rmdir($directory . IA_DS . $object);
-						}
-					}
-				}
-				reset($objects);
-			}
-		}
-
-		return true;
+		iaUtil::cascadeDeleteFiles(IA_TMP, true);
 	}
 
 	public function createJsCache($forceRebuild = false)
@@ -298,7 +223,6 @@ class iaCache extends abstractUtil
 		{
 			case 'lang':
 			case 'admin_lang':
-
 				// get phrases
 				$stmt = "`code` = :lang AND `category` NOT IN ('tooltip', 'page', :category)";
 				$iaDb->bind($stmt, array('lang' => $this->iaCore->iaView->language, 'category' => $type == 'admin_lang' ? 'frontend' : iaCore::ADMIN));
@@ -317,7 +241,6 @@ class iaCache extends abstractUtil
 				break;
 
 			case 'config':
-
 				$stmt = "`private` = 0 && `type` != 'divider' && `config_group` != 'email_templates'";
 				$config = $iaDb->keyvalue(array('name', 'value'), $stmt, iaCore::getConfigTable());
 
@@ -327,8 +250,6 @@ class iaCache extends abstractUtil
 				}
 
 				$config['ia_url'] = IA_CLEAR_URL;
-				$config['admin_url'] = IA_URL . $this->iaCore->get('admin_page');
-				$config['tpl_url'] = IA_FRONT_TEMPLATES . $this->iaCore->iaView->theme . IA_URL_DELIMITER;
 				$config['packages'] = $this->iaCore->setPackagesData();
 				$config['items'] = array();
 				$config['extras'] = array(array('core', iaLanguage::get('core', 'Core')));

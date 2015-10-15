@@ -1,32 +1,27 @@
 {if isset($plans) && $plans}
-	<div class="fieldset-wrapper">
-		<div class="fieldset">
-			<h3 class="title">{lang key='plans'}</legend></h3>
+	<div class="fieldset">
+		<div class="fieldset__header">{lang key='plans'}</div>
 
-			<div class="content">
-				<div id="js-plans-list" class="plans well-subrion">
-					<div class="plan well-item">
-						<label for="input-plan0" class="radio">
-							<input type="radio" name="plan_id" value="0"{if empty($item.sponsored_plan_id)} checked{/if}
-								id="input-plan0" data-fields="">
-							<strong>{lang key='_not_assigned_'}</strong>
-							{if isset($item.sponsored_plan_id) && $item.sponsored_plan_id > 0}
+		<div class="fieldset__content">
+			<div id="js-plans-list" class="plans">
+				<div class="plans__item">
+					<label for="input-plan0" class="plans__item__header radio">
+						<input type="radio" name="plan_id" value="0"{if empty($item.sponsored_plan_id)} checked{/if} id="input-plan0" data-fields="">
+						<strong>{lang key='_not_assigned_'}</strong>
+						{if isset($item.sponsored_plan_id) && $item.sponsored_plan_id > 0}
 							<span class="label label-info">{lang key='paid_subscription_will_cancel'}</span>
-							{/if}
-						</label>
-					</div>
-					{foreach $plans as $plan}
-						<div class="plan well-item">
-							<label for="input-plan{$plan.id}" class="radio">
-								<input type="radio" name="plan_id" value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} checked{/if}
-									id="input-plan{$plan.id}"
-									data-fields="{if isset($plan.fields)}{$plan.fields|escape:'html'}{/if}">
-								<strong>{lang key="plan_title_{$plan.id}"} - {$plan.cost} {$config.currency}</strong>
-							</label>
-							<div class="description">{lang key="plan_description_{$plan.id}"}</div>
-						</div>
-					{/foreach}
+						{/if}
+					</label>
 				</div>
+				{foreach $plans as $plan}
+					<div class="plans__item">
+						<label for="input-plan{$plan.id}" class="plans__item__header radio">
+							<input type="radio" name="plan_id" value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} checked{/if} id="input-plan{$plan.id}" data-fields="{if isset($plan.fields)}{$plan.fields|escape:'html'}{/if}">
+							<strong>{lang key="plan_title_{$plan.id}"} &mdash; {$plan.cost} {$core.config.currency}</strong>
+						</label>
+						<div class="plans__item__body">{lang key="plan_description_{$plan.id}"}</div>
+					</div>
+				{/foreach}
 			</div>
 		</div>
 	</div>
@@ -40,20 +35,23 @@ $(function()
 		var $this = $(this);
 		var plan = $this.val();
 		var fields = $this.data('fields').split(',');
+
+		$this.closest('.plans__item').addClass('active')
+			.siblings().removeClass('active');
 		
-		$('.for_plan').hide().addClass('hide');
+		$('.form-group--plan').hide().addClass('hide');
 
 		$.each(fields, function(index, item)
 		{
 			$('#'+item+'_fieldzone').show().removeClass('hide');
 		});
 
-		$('.fieldset-wrapper').each(function()
+		$('.fieldset__content').each(function()
 		{
-			if ($('.fieldzone', this).length > 0 && $('.fieldzone:not(.for_plan),.fieldzone:not(.hide)', this).length == 0) {
-				$(this).parent('fieldset').hide();
+			if ($('.fieldzone', this).length > 0 && $('.fieldzone:not(.form-group--plan),.fieldzone:not(.hide)', this).length == 0) {
+				$(this).parent('.fieldset').hide();
 			} else {
-				$(this).parent('fieldset').show();
+				$(this).parent('.fieldset').show();
 			}
 		});
 	});

@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 define('INSTALL', 'install');
 define('IA_DS', '/');
@@ -56,8 +33,11 @@ $scriptFolder = trim(str_replace(INSTALL . IA_URL_DELIMITER . 'index.php', '', $
 $scriptFolder = empty($scriptFolder) ? '' : $scriptFolder . IA_URL_DELIMITER;
 $scriptPort = (80 == $_SERVER['SERVER_PORT']) ? '' : ':' . $_SERVER['SERVER_PORT'];
 
-define('URL_HOME', 'http://' . $_SERVER['SERVER_NAME'] . $scriptPort . IA_URL_DELIMITER . $scriptFolder);
+$url = '//' . $_SERVER['SERVER_NAME'] . $scriptPort . IA_URL_DELIMITER . $scriptFolder;
+
+define('URL_HOME', 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $url);
 define('URL_INSTALL', URL_HOME . INSTALL . IA_URL_DELIMITER);
+define('URL_ASSETS', $url . INSTALL . IA_URL_DELIMITER);
 
 $url = trim(!isset($_SERVER['REDIRECT_URL']) || $_SERVER['REQUEST_URI'] != $_SERVER['REDIRECT_URL'] ? $_SERVER['REQUEST_URI'] : $_SERVER['REDIRECT_URL'], IA_URL_DELIMITER);
 $url = isset($_GET['_p']) ? trim($_GET['_p'], IA_URL_DELIMITER) : substr($url, strlen(trim(INSTALL . $scriptFolder, IA_URL_DELIMITER)) - 1);
@@ -87,18 +67,7 @@ if (is_dir($modulesPath))
 				switch ($mod)
 				{
 					case 'install':
-						if (iaHelper::isScriptInstalled())
-						{
-							$iaUsers = iaHelper::loadCoreClass('users', 'core');
-							if (iaUsers::hasIdentity() && iaUsers::MEMBERSHIP_ADMINISTRATOR == iaUsers::getIdentity()->usergroup_id)
-							{
-								$modules[] = $mod;
-							}
-						}
-						else
-						{
-							$modules[] = $mod;
-						}
+						$modules[] = $mod;
 						break;
 					case 'upgrade':
 						if (iaHelper::isScriptInstalled())

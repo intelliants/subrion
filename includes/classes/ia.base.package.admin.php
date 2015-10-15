@@ -1,28 +1,5 @@
 <?php
-/******************************************************************************
- *
- * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
- *
- * This file is part of Subrion.
- *
- * Subrion is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Subrion is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * @link http://www.subrion.org/
- *
- ******************************************************************************/
+//##copyright##
 
 abstract class abstractPackageAdmin extends iaGrid
 {
@@ -232,10 +209,10 @@ abstract class abstractPackageAdmin extends iaGrid
 
 			if ($result)
 			{
-				$this->_writeLog(iaCore::ACTION_DELETE, $entryData, $itemId);
+				$iaField = $this->iaCore->factory('field');
 
-				// we have to check for uploaded images of this listing
-				if ($imageFields = $this->iaCore->factory('field')->getImageFields($this->getPackageName()))
+				// delete images field values
+				if ($imageFields = $iaField->getImageFields($this->getItemName()))
 				{
 					$iaPicture = $this->iaCore->factory('picture');
 
@@ -247,6 +224,30 @@ abstract class abstractPackageAdmin extends iaGrid
 						}
 					}
 				}
+
+				// delete storage field values
+				if ($storageFields = $iaField->getStorageFields($this->getPackageName()))
+				{
+					foreach ($storageFields as $storageFieldName)
+					{
+						if (isset($entryData[$storageFieldName]) && $entryData[$storageFieldName])
+						{
+							if (':' == $entryData[$storageFieldName][1])
+							{
+								$unpackedData = unserialize($entryData[$storageFieldName]);
+								if (is_array($unpackedData) && $unpackedData)
+								{
+									foreach ($unpackedData as $oneFile)
+									{
+										iaUtil::deleteFile(IA_UPLOADS . $oneFile['path']);
+									}
+								}
+							}
+						}
+					}
+				}
+
+				$this->_writeLog(iaCore::ACTION_DELETE, $entryData, $itemId);
 
 				$this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
 

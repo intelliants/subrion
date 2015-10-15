@@ -6,7 +6,7 @@
 			<div class="widget widget-package" id="widget-{$itemName}-stats">
 				<div class="widget-content">
 					<div class="widget-total-stats">
-						<span><a href="{$smarty.const.IA_ADMIN_URL}{$entry.url}">{$entry.total}</a></span> {$entry.item}
+						<span><a href="{$smarty.const.IA_ADMIN_URL}{$entry.url}">{$entry.total}</a></span> {lang key=$entry.item default=$entry.item}
 					</div>
 					<div class="widget-icon"><i class="i-{$entry.icon}"></i></div>
 					<hr>

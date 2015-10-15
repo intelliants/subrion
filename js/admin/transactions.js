@@ -8,7 +8,7 @@ Ext.onReady(function()
 		{
 			columns: [
 				'selection',
-				{name: 'username', title: _t('username'), width: 1},
+				{name: 'user', title: _t('username'), width: 1},
 				{name: 'operation', title: _t('plan'), width: 1, renderer: function(value, metadata, record)
 				{
 					return (value && record.get('plan_id') > 0)
@@ -19,6 +19,7 @@ Ext.onReady(function()
 				{name: 'item_id', title: _t('item_id'), width: 60},
 				{name: 'reference_id', title: _t('reference_id'), editor: 'text', width: 1},
 				{name: 'amount', title: _t('total'), width: 100},
+				{name: 'gateway', title: _t('gateway'), width: 70},
 				'status',
 				{name: 'date', title: _t('date'), width: 170},
 				'delete'
@@ -37,12 +38,14 @@ Ext.onReady(function()
 			xtype: 'textfield',
 			name: 'username',
 			emptyText: _t('username'),
-			listeners: intelli.gridHelper.listener.specialKey
+			listeners: intelli.gridHelper.listener.specialKey,
+			width: 120,
 		}, {
 			xtype: 'textfield',
 			name: 'reference_id',
 			emptyText: _t('reference_id'),
-			listeners: intelli.gridHelper.listener.specialKey
+			listeners: intelli.gridHelper.listener.specialKey,
+			width: 100
 		}, {
 			emptyText: _t('item'),
 			xtype: 'combo',
@@ -51,7 +54,18 @@ Ext.onReady(function()
 			store: intelli.gridHelper.store.ajax(window.location.href + 'items.json'),
 			displayField: 'title',
 			name: 'item',
-			valueField: 'value'
+			valueField: 'value',
+			width: 90
+		}, {
+			emptyText: _t('gateway'),
+			xtype: 'combo',
+			typeAhead: true,
+			editable: false,
+			store: intelli.gridHelper.store.ajax(window.location.href + 'gateways.json'),
+			displayField: 'title',
+			name: 'gateway',
+			valueField: 'value',
+			width: 95
 		}, {
 			emptyText: _t('status'),
 			name: 'status',
@@ -61,7 +75,8 @@ Ext.onReady(function()
 			editable: false,
 			store: grid.stores.statuses,
 			displayField: 'title',
-			valueField: 'value'
+			valueField: 'value',
+			width: 80
 		}, {
 			handler: function(){intelli.gridHelper.search(grid)},
 			id: 'fltBtn',

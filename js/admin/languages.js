@@ -290,14 +290,17 @@ Ext.onReady(function()
 
 	if (Ext.get('languagesList'))
 	{
-		intelli.sortable('languagesList', '.uploads-list-item__drag-handle', 0, function (e) {
-			var langs = $('.iso-val').map(function() {
-				return $(this).text();
-			}).get();
+		intelli.sortable('languagesList', {
+			handle: '.uploads-list-item__drag-handle',
+			animation: 0,
+			onEnd: function (e) {
+				var langs = $('.iso-val').map(function() {
+					return $(this).text();
+				}).get();
 
-			$.post(window.location.href + 'add.json', {sorting: 'save', langs: langs}, function(response) {
-				intelli.notifFloatBox({msg: response.message, type: (response.success ? 'success' : 'error'), autohide: true, pause: 1500});
-			});
+				$.post(window.location.href + 'add.json', {sorting: 'save', langs: langs}, function(response) {intelli.notifFloatBox({msg: response.message, type: (response.success ? 'success' : 'error'), autohide: true, pause: 1500});
+				});
+			}
 		});
 	}
 

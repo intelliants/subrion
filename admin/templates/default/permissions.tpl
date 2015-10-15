@@ -143,16 +143,16 @@ $(function()
 			{foreach $list as $key => $group}
 			<div class="p-list{if iaAcl::OBJECT_ADMIN_PAGE == $pageType} js-dashboard-action{if !$adminAccess.access}" style="display: none;{/if}{/if}">
 				<div class="p-list__title">
-					<!-- <div class="p-list__actions">
+					{*<div class="p-list__actions">
 						<a href="#" class=""><i class="i-chevron-up"></i></a>
-					</div> -->
+					</div>*}
 					<h4>
 						{$pageGroupTitles.$key}
-						<!-- <small>
+						{*<small>
 							<a href="#"><i class="i-checkmark"></i> Allow all</a>
 							<a href="#"><i class="i-close"></i> Deny all</a>
 							<a href="#"><i class="i-loop"></i> Reset all to default</a>
-						</small> -->
+						</small>*}
 					</h4>
 				</div>
 
@@ -176,7 +176,6 @@ $(function()
 						<tr class="p-table__row{if $data.modified} p-table__row--modified{/if}">
 							<td class="p-table__label">
 								<p>{$data.title}</p>
-								{*<p class="help-block">{_v($objects.access)} / {_v($objects)}</p>*}
 							</td>
 							<td class="p-table__actions js-toggler" data-default-access="{$data.default}" data-page-type="{$pageType}" data-object="{$object}" data-action="{$action}">
 								<span class="label label-{if $data.access}success{else}default{/if}" data-access="1"><i class="i-checkmark"></i> Yes</span>
@@ -196,5 +195,6 @@ $(function()
 		</div>
 		{/foreach}
 	</div>
+	<div id="js-security-token">{preventCsrf}</div>
 	{ia_add_media files='js:admin/permissions'}
 {/if}
