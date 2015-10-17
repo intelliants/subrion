@@ -332,7 +332,7 @@ class iaUtil extends abstractUtil
 	{
 		if (isset($_POST[$key]))
 		{
-			return trim($_POST[$key]);
+			return is_array($_POST[$key]) ? $_POST[$key] : trim($_POST[$key]);
 		}
 		if (is_array($default))
 		{
