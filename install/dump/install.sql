@@ -2073,6 +2073,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('thankyou_tail','<p>Please read our letter with further instructions.</p>','frontend'),
 ('this_transaction_already_passed','We already have this payment in our database. Transaction passed successfully.','frontend'),
 ('total_paid','Total Paid','frontend'),
+('tools','Tools','frontend'),
 
 ('unable_to_send_email','Unable to send e-mail.','frontend'),
 ('usergroups','Usergroups','frontend'),
