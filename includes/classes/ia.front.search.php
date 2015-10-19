@@ -17,7 +17,7 @@ class iaSearch extends abstractCore
 
 	protected $_start;
 	protected $_limit;
-	protected $_sorting = array();
+	protected $_sorting = '';
 
 	protected $_itemName;
 	protected $_params;
@@ -76,7 +76,7 @@ class iaSearch extends abstractCore
 		$page = isset($params[self::GET_PARAM_PAGE]) ? max((int)$params[self::GET_PARAM_PAGE], 1) : 1;
 		$sorting = array(
 			isset($params[self::GET_PARAM_SORTING_FIELD]) ? $params[self::GET_PARAM_SORTING_FIELD] : null,
-			isset($params[self::GET_PARAM_SORTING_ORDER]) && in_array($params[self::GET_PARAM_SORTING_ORDER], array('asc', 'desc')) ? $params[self::GET_PARAM_SORTING_ORDER] : null
+			isset($params[self::GET_PARAM_SORTING_ORDER]) ? $params[self::GET_PARAM_SORTING_ORDER] : null
 		);
 
 		$result = array(
@@ -87,10 +87,10 @@ class iaSearch extends abstractCore
 
 		if ($this->_loadItemInstance($itemName))
 		{
-			$this->_limit = 1;
+			$this->_limit = 10;
 			$this->_start = ($page - 1) * $this->_limit;
-			$this->_sorting = empty($sorting[0]) ? array() : array(iaSanitize::paranoid($sorting[0]), $sorting[1]);
 
+			$this->_processSorting($sorting);
 			$this->_processParams($params);
 
 			if ($search = $this->_performItemSearch())
@@ -651,6 +651,25 @@ class iaSearch extends abstractCore
 		}
 
 		return $result;
+	}
+
+	private function _processSorting(array $sorting)
+	{
+		if ($sorting[0])
+		{
+			$field = $this->getOption('columnAlias')->{$sorting[0]}
+				? $this->getOption('columnAlias')->{$sorting[0]}
+				: iaSanitize::sql($sorting[0]);
+			$order = (empty($sorting[1]) || !in_array($sorting[1], array('asc', 'desc')))
+				? iaDb::ORDER_ASC
+				: strtoupper($sorting[1]);
+
+			$this->_sorting = sprintf('`%s` %s', $field, $order);
+		}
+		else
+		{
+			$this->_sorting = '';
+		}
 	}
 
 	private function _processParams($params, $processRequestUri = false)

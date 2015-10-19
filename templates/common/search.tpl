@@ -9,7 +9,7 @@
 	</form>
 {else}
 	<div class="js-search-sorting-header">
-		{ia_hooker name="frontSearchSorting{$itemName|ucfirst}"}
+		{ia_hooker name="smartyFrontSearchSorting{$itemName|ucfirst}"}
 	</div>
 {/if}
 

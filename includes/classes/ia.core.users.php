@@ -25,7 +25,7 @@ class iaUsers extends abstractCore
 	public $dashboardStatistics = true;
 
 	public $coreSearchOptions = array(
-		'regularSearchStatements' => array("CONCAT_WS(' ', `username`, `fullname`, `email`) LIKE '%:query%'")
+		'regularSearchStatements' => array("`username` LIKE '%:query%' OR `fullname` LIKE '%:query%')")
 	);
 
 
@@ -624,7 +624,7 @@ class iaUsers extends abstractCore
 		return (bool)$result;
 	}
 
-	public function coreSearch($stmt, $start, $limit, array $sorting)
+	public function coreSearch($stmt, $start, $limit, $order)
 	{
 		if (!$this->iaCore->get('members_enabled'))
 		{
@@ -635,7 +635,7 @@ class iaUsers extends abstractCore
 		$visibleUsergroups = array_keys($visibleUsergroups);
 
 		$stmt.= ' AND `usergroup_id` IN(' . implode(',', $visibleUsergroups) . ')';
-		empty($sorting) || $stmt.= sprintf('ORDER BY `%s` %s', $sorting[0], $sorting[1]);
+		empty($order) || $stmt.= ' ORDER BY ' . $order;
 
 		$rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit, self::getTable());
 		$count = $this->iaDb->foundRows();
