@@ -1751,6 +1751,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_login','Either login or password is invalid.','common'),
 ('error_password_empty','Please input correct password.','common'),
 ('error_password_match','Password does not match.','common'),
+('error_phone_incorrect','Phone is incorrect.','common'),
 ('error_tmp_directory_readonly','Temp directory is readonly. Please make it writable.','common'),
 ('error_url','Site URL is incorrect.','common'),
 
@@ -1874,6 +1875,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('password_confirm','Password confirmation','common'),
 ('password_incorrect','Password is incorrect.','common'),
 ('pending','Pending','common'),
+('phone','Phone','common'),
 ('plan_added','Plan added.','common'),
 ('plans','Plans','common'),
 ('position','Position','common'),
