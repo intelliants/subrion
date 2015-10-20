@@ -30,7 +30,8 @@ class iaSmarty extends Smarty
 		'underscore' => 'js:utils/underscore.min',
 		'iadropdown' => 'js:jquery/plugins/jquery.ia-dropdown.min',
 		'select2' => 'js:jquery/plugins/select2/select2.min, css:_IA_URL_js/jquery/plugins/select2/select2.min',
-		'flexslider' => 'js:jquery/plugins/flexslider/jquery.flexslider.min, css:_IA_URL_js/jquery/plugins/flexslider/flexslider'
+		'flexslider' => 'js:jquery/plugins/flexslider/jquery.flexslider.min, css:_IA_URL_js/jquery/plugins/flexslider/flexslider',
+		'fotorama' => 'js:jquery/plugins/fotorama/fotorama, css:_IA_URL_js/jquery/plugins/fotorama/fotorama'
 	);
 
 
