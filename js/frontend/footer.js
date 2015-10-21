@@ -170,24 +170,25 @@ $(function()
 		var item = self.data('item');
 		var field = self.data('field');
 
-		if (confirm(_t('sure_rm_file')))
-		{
-			$.post(intelli.config.ia_url + 'actions/read.json', {action: 'delete-file', item: item, field: field, path: path, itemid: id}, function(data)
-			{
-				if ('boolean' == typeof data.error && !data.error)
+		bootbox.confirm(_t('sure_rm_file'), function(result) {
+			if (result) {
+				$.post(intelli.config.ia_url + 'actions/read.json', {action: 'delete-file', item: item, field: field, path: path, itemid: id}, function(data)
 				{
-					self.closest('.thumbnail').remove();
-
-					var counter = $('#' + field);
-					if (counter.val() == 0)
+					if ('boolean' == typeof data.error && !data.error)
 					{
-						$('#wrap_' + field).show();
-					}
+						self.closest('.thumbnail').parent().remove();
 
-					intelli.notifFloatBox({msg: data.message, type: 'success', autohide: true});
-				}
-			});
-		}
+						var counter = $('#' + field);
+						if (counter.val() == 0)
+						{
+							$('#wrap_' + field).show();
+						}
+
+						intelli.notifFloatBox({msg: data.message, type: 'success', autohide: true});
+					}
+				});
+			}
+		});
 	});
 
 	// add/delete pictures fields
