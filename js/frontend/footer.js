@@ -170,7 +170,7 @@ $(function()
 		var item = self.data('item');
 		var field = self.data('field');
 
-		bootbox.confirm(_t('sure_rm_file'), function(result) {
+		intelli.confirm(_t('sure_rm_file'), '', function(result) {
 			if (result) {
 				$.post(intelli.config.ia_url + 'actions/read.json', {action: 'delete-file', item: item, field: field, path: path, itemid: id}, function(data)
 				{
