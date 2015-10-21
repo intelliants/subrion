@@ -4,9 +4,9 @@
 	<summary>Bootstrap 3 developer template</summary>
 	<author>Gleb Surinov</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.4.0</version>
-	<date>2015-10-10</date>
-	<compatibility>3.4</compatibility>
+	<version>1.0.0</version>
+	<date>2015-10-21</date>
+	<compatibility>4.0</compatibility>
 
 	<layout>
 		<position menu="1" movable="0">account</position>
