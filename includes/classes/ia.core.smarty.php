@@ -95,7 +95,7 @@ class iaSmarty extends Smarty
 				? 'js:_IA_TPL_bootstrap.min, js:bootstrap/js/bootstrap-switch.min, js:bootstrap/js/passfield.min, js:intelli/intelli.admin, js:admin/footer, css:_IA_URL_js/bootstrap/css/passfield'
 				: 'js:intelli/intelli.minmax, js:frontend/footer')
 			. ',js:_IA_URL_tmp/cache/intelli' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? '.admin' : '') . '.lang.' . $this->iaCore->iaView->language;
-		$this->resources['extjs'] = 'text:Loading ExtJS..., css:_IA_URL_js/extjs/resources/ext-theme-neptune/ext-theme-neptune-all' . ($this->iaCore->get('sap_style', false) ? '-' . $this->iaCore->get('sap_style') : '') . ', js:extjs/ext-all';
+		$this->resources['extjs'] = 'text:Loading ExtJS..., css:_IA_URL_js/extjs/resources/ext-theme-neptune/ext-theme-neptune-all' . ($this->iaCore->get('sap_style') ? '-' . $this->iaCore->get('sap_style') : '') . ', js:extjs/ext-all';
 		$this->resources['datepicker'] = 'js:bootstrap/js/datepicker/bootstrap-datepicker, js:bootstrap/js/datepicker/locales/bootstrap-datepicker.' . $this->iaCore->get('lang') . ', css:_IA_URL_js/bootstrap/css/datepicker3';
 
 
@@ -436,7 +436,7 @@ class iaSmarty extends Smarty
 					}
 
 					// start compress
-					if ($iaCore->get('compress_js', false) && !in_array($filename, $excludedFiles))
+					if ($iaCore->get('compress_js') && !in_array($filename, $excludedFiles))
 					{
 						$minifiedFilename = IA_TMP . $tmp . self::EXTENSION_JS;
 						$minifiedLastModifiedTime = 0;

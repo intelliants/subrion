@@ -121,7 +121,7 @@ class iaValidate extends abstractUtil
 		$iaCore = iaCore::instance();
 
 		$result = true;
-		if ($iaCore->get('captcha', false))
+		if ($iaCore->get('captcha'))
 		{
 			if ($pluginName = $iaCore->get('captcha_name'))
 			{

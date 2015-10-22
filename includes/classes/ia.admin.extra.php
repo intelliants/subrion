@@ -816,7 +816,7 @@ class iaExtra extends abstractCore
 
 		$this->iaCore->startHook('phpExtrasUninstallBefore', array('extra' => $extraName));
 
-		if ($this->iaCore->get('default_package', false) == $extraName)
+		if ($this->iaCore->get('default_package') == $extraName)
 		{
 			$this->iaCore->set('default_package', '', true);
 		}

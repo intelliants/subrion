@@ -464,7 +464,7 @@ final class iaCore
 		return $result;
 	}
 
-	public function get($key, $default = '', $custom = true, $db = false)
+	public function get($key, $default = false, $custom = true, $db = false)
 	{
 		if ($custom && isset($this->_customConfig[$key]))
 		{
@@ -475,7 +475,7 @@ final class iaCore
 
 		if ($db)
 		{
-			if ($value = $this->iaDb->one_bind('`value`', '`name` = :key', array('key' => $key), self::getConfigTable()))
+			if ($value = $this->iaDb->one('`value`', iaDb::convertIds($key, 'name'), self::getConfigTable()))
 			{
 				$result = $value;
 			}
@@ -493,9 +493,9 @@ final class iaCore
 		return $result;
 	}
 
-	public function set($key, $value, $db = false)
+	public function set($key, $value, $permanent = false)
 	{
-		if ($db && !is_scalar($value))
+		if ($permanent && !is_scalar($value))
 		{
 			trigger_error(__METHOD__ . '() Could not write a non-scalar value to the database.', E_USER_ERROR);
 		}
@@ -503,9 +503,9 @@ final class iaCore
 		$result = true;
 		$this->_config[$key] = $value;
 
-		if ($db)
+		if ($permanent)
 		{
-			$result = (bool)$this->iaDb->update(array('value' => $value), "`name`='{$key}'", null, self::getConfigTable());
+			$result = (bool)$this->iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'), null, self::getConfigTable());
 
 			$this->iaCache->createJsCache(array('config'));
 			$this->iaCache->remove('config.inc');

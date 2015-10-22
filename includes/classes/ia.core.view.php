@@ -132,7 +132,7 @@ class iaView extends abstractUtil
 			$this->iaSmarty->setCacheDir(IA_TMP . 'smartycache' . IA_DS);
 			$this->iaSmarty->setPluginsDir(array(IA_SMARTY . 'plugins', IA_SMARTY . 'intelli_plugins'));
 
-			$this->iaSmarty->force_compile = $this->iaCore->get('smarty_cache', false);
+			$this->iaSmarty->force_compile = $this->iaCore->get('smarty_cache');
 			$this->iaSmarty->cache_modified_check = false;
 			$this->iaSmarty->debugging = false;
 			$this->iaSmarty->compile_check = true;
@@ -1440,7 +1440,7 @@ SQL;
 				}
 				elseif ($pluginName && 'package' == $this->get('type') && $pluginName . '_home' != $this->name())
 				{
-					if ($this->iaCore->get('default_package', false) != $pluginName)
+					if ($this->iaCore->get('default_package') != $pluginName)
 					{
 						iaBreadcrumb::add(iaLanguage::get($pluginName), IA_PACKAGE_URL);
 					}
