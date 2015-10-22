@@ -26,7 +26,7 @@ Ext.onReady(function()
 			{name: 'date_reg', title: _t('date'), width: 120},
 			{name: 'date_logged', title: _t('last_login_date'), hidden: true, width: 100},
 			{name: 'permissions', title: _t('permissions'), href: intelli.config.admin_url + '/permissions/?user={id}', icon: 'lock'},
-			//{name: 'config', title: _t('go_to_config'), href: intelli.config.admin_url + '/configuration/?user={id}', icon: 'cogs'},
+			{name: 'config', title: _t('go_to_config'), href: intelli.config.admin_url + '/configuration/?user={id}', icon: 'cogs'},
 			'update',
 			'delete'
 		],

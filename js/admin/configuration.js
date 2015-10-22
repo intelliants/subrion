@@ -1,6 +1,6 @@
 $(function()
 {
-	$('input[name^="param"], select[name^="param"]').on('change', function()
+	$('input[name^="v"], select[name^="v"]').on('change', function()
 	{
 		var id = $(this).attr('id');
 
@@ -8,14 +8,14 @@ $(function()
 		$('[data-id="js-' + id + '-' + $(this).val() + '"]').show();
 	});
 
-	$('.js-set-default').on('click', function()
+	$('.set-default').on('click', function()
 	{
 		var div = $(this).parent().parent().parent().get(0);
 		$(div).removeClass('common').addClass('custom');
 		$(div).find('.chck').val('0');
 	});
 
-	$('.js-set-custom').on('click', function()
+	$('.set-custom').on('click', function()
 	{
 		var div = $(this).parent().parent().parent().get(0);
 		$(div).removeClass('custom').addClass('common');
