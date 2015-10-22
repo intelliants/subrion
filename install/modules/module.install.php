@@ -1,7 +1,7 @@
 <?php
 //##copyright##
 
-define('IA_VER', '340');
+define('IA_VER', '400');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
