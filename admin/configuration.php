@@ -37,11 +37,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			iaBreadcrumb::preEnd(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
 		}
 
-		if (isset($_POST['save']))
-		{
-			$this->_save($iaView);
-		}
-
 		$groupName = isset($this->_iaCore->requestPath[0]) ? $this->_iaCore->requestPath[0] : 'general';
 		$groupData = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $groupName), iaCore::getConfigGroupsTable());
 
@@ -51,6 +46,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$this->_setGroup($iaView, $groupData);
+
+		if (isset($_POST['save']))
+		{
+			$this->_save($iaView);
+		}
 
 		$iaView->assign('custom', (bool)$this->_type);
 		$iaView->assign('group', $groupData);
@@ -329,7 +329,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$this->_iaDb->setTable(iaCore::getCustomConfigTable());
 
-					if ($_POST['c'][$key] && $value != $this->_iaCore->get($key))
+					if ($_POST['c'][$key])
 					{
 						$values = array('name' => $key, 'value' => $value, 'type' => $this->_type, 'type_id' => $this->_typeId);
 
