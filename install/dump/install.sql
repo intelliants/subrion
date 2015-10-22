@@ -741,7 +741,7 @@ INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`priva
 INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_values`,`type`,`wysiwyg`,`description`,`order`,`extras`,`private`,`custom`,`show`) VALUES
 ('general','general_divider','General','1','divider',0,'',0,'',1,1,''),
 ('general','site','Subrion CMS','1','text',0,'Site title',3,'',0,1,''),
-('general','suffix',':: Powered by Subrion 3.3','1','text',0,'Suffix for page titles',9,'',0,1,''),
+('general','suffix',':: Powered by Subrion 4.0','1','text',0,'Suffix for page titles',9,'',0,1,''),
 ('general','site_logo','','','image',0,'Website logo',12,'',0,0,''),
 ('general','regional_divider','Regional','1','divider',30,'',20,'',1,1,''),
 ('general','lang','{install:lang}','1','select',0,'Default language',33,'',0,1,''),
