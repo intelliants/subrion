@@ -76,8 +76,8 @@
 
 					{if $custom}
 						<div class="pull-right">
-							<span class="set-custom">{lang key='config_set_custom'}</span>
-							<span class="set-default">{lang key='config_set_default'}</span>
+							<span class="set-custom" data-value="1">{lang key='config_set_custom'}</span>
+							<span class="set-default" data-value="0">{lang key='config_set_default'}</span>
 						</div>
 					{/if}
 

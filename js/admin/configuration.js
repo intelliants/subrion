@@ -8,25 +8,18 @@ $(function()
 		$('[data-id="js-' + id + '-' + $(this).val() + '"]').show();
 	});
 
-	$('.set-default').on('click', function()
+	$('.set-default, .set-custom').on('click', function()
 	{
-		var div = $(this).parent().parent().parent().get(0);
-		$(div).removeClass('common').addClass('custom');
-		$(div).find('.chck').val('0');
+		$(this).parent().parent().parent().eq(0)
+			.toggleClass('common custom')
+			.find('.chck').val($(this).data('value'));
 	});
 
-	$('.set-custom').on('click', function()
+	$('.item-val').dblclick(function()
 	{
-		var div = $(this).parent().parent().parent().get(0);
-		$(div).removeClass('custom').addClass('common');
-		$(div).find('.chck').val('1');
-	});
-
-	$('.item_val').dblclick(function()
-	{
-		var div = $(this).parent().parent().get(0);
-		$(div).removeClass('custom').addClass('common');
-		$(div).find('.chck').val('1');
+		$(this).parent().parent().eq(0)
+			.toggleClass('common custom')
+			.find('.chck').val('1');
 	});
 
 
