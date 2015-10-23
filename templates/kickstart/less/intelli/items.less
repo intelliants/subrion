@@ -16,6 +16,8 @@
 .ia-sorting {
   .clearfix();
   margin-bottom: @gap;
+  padding: 10px;
+  background: #f2f2f2;
 }
 
 .alpha-sorting {
@@ -109,17 +111,6 @@
       position: absolute;
       left: 10px;
       bottom: 10px;
-    }
-  }
-
-  &__labels {
-    position: absolute;
-    left: 15px;
-    bottom: 100%;
-    margin-bottom: -6px;
-
-    .label {
-
     }
   }
 
@@ -231,6 +222,49 @@
 
   }
 }
+
+
+
+//
+// Labels
+// --------------------------------------------------
+
+.ia-item__labels {
+  position: absolute;
+  left: 15px;
+  bottom: 100%;
+  margin-bottom: -6px;
+}
+
+.label-available {
+  .label-variant(@label-success-bg);
+}
+
+.label-approval {
+  .label-variant(@label-warning-bg);
+}
+
+.label-sold {
+  .label-variant(@label-danger-bg);
+}
+
+.ia-item--sold {
+  border-color: @brand-danger;
+}
+
+.label-rented {
+  .label-variant(#999);
+}
+
+.label-hidden {
+  .label-variant(#444);
+}
+
+.ia-item--rented,
+.ia-item--hidden {
+  .opacity(.7);
+}
+
 
 
 
