@@ -127,7 +127,9 @@
 
 								{ia_hooker name='smartyFrontBeforeMainContent'}
 
-								{$_content_}
+								<div class="content__body">
+									{$_content_}
+								</div>
 
 								{ia_hooker name='smartyFrontAfterMainContent'}
 
