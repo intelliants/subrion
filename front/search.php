@@ -54,9 +54,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	if ('search' != $iaView->name() || isset($iaCore->requestPath[0]))
 	{
-		$itemName = isset($iaCore->requestPath[0]) ? $iaCore->requestPath[0] : str_replace('search_', '', $iaView->name());
+		$itemName = ('search' != $iaView->name())
+			? str_replace('search_', '', $iaView->name())
+			: $iaCore->requestPath[0];
 
-		if ($itemName && in_array($itemName, $iaItem->getItems()))
+		if (in_array($itemName, $iaItem->getItems()))
 		{
 			$results = $iaSearch->doRegularItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
 
@@ -64,6 +66,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$iaView->set('filtersParams', $iaSearch->getParams());
 
 			$iaView->assign('itemName', $itemName);
+
+			$iaView->title($iaSearch->getCaption());
 		}
 		else
 		{

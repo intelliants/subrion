@@ -194,4 +194,9 @@ abstract class abstractPackageFront extends abstractCore
 
 		return array($count, $rows);
 	}
+
+	public function coreSearchTranslateColumn($column, $value)
+	{
+		return null;
+	}
 }

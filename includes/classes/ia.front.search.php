@@ -22,6 +22,8 @@ class iaSearch extends abstractCore
 	protected $_itemName;
 	protected $_params;
 
+	protected $_caption = '';
+
 	protected $_packageName;
 	protected $_options = array();
 
@@ -128,6 +130,11 @@ class iaSearch extends abstractCore
 	public function getParams()
 	{
 		return $this->_params;
+	}
+
+	public function getCaption()
+	{
+		return $this->_caption;
 	}
 	//
 
@@ -700,6 +707,8 @@ class iaSearch extends abstractCore
 		// support for custom parameters field:value within request URL
 		if ($processRequestUri)
 		{
+			$captions = array();
+
 			foreach ($this->iaCore->requestPath as $chunk)
 			{
 				if (false === strstr($chunk, ':'))
@@ -717,15 +726,33 @@ class iaSearch extends abstractCore
 					switch ($this->_fieldTypes[$key])
 					{
 						case iaField::NUMBER:
-							$data[$key] = (count($value) > 1)
-								? array('f' => (int)$value[0], 't' => (int)$value[1])
-								: array('f' => (int)$value[0], 't' => (int)$value[0]);
+							if (count($value) > 1)
+							{
+								$data[$key] = array('f' => (int)$value[0], 't' => (int)$value[1]);
+								$captions[] = sprintf('%d-%d', $value[0], $value[1]);
+							}
+							else
+							{
+								$data[$key] = array('f' => (int)$value[0], 't' => (int)$value[0]);
+								$captions[] = $value[0];
+							}
+							break;
+						case iaField::COMBO:
+							foreach ($value as $v)
+							{
+								$title = iaLanguage::get(sprintf('field_%s_%s', $key, $v), false);
+								empty($title) || $captions[] = $title;
+							}
+							$data[$key] = $value;
 							break;
 						default:
 							$data[$key] = $value;
+							$captions[] = $value;
 					}
 				}
 			}
+
+			$this->_caption = implode(' ', $captions);
 		}
 
 		$this->_params = $data;
