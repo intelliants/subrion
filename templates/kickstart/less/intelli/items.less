@@ -30,7 +30,10 @@
 
 // lists
 .ia-items { 
-
+  
+  + .box {
+    margin-top: @vertical-rhythm;
+  }
 }
 
 .ia-items--cards {
@@ -78,6 +81,7 @@
   &__image {
     position: relative;
     text-align: center;
+    display: block;
     margin-bottom: @gap;
     text-decoration: none;
 
@@ -93,7 +97,6 @@
     @media (min-width: @screen-phone) {
       text-align: left;
       float: left;
-      margin-bottom: 0;
       margin-right: @gap;
       max-width: 100px;  
     }
@@ -197,6 +200,26 @@
   }
 }
 
+.ia-item__panel {
+  clear: both;
+  .clearfix();
+  background: #f5f5f5;
+  padding: 5px 10px;
+  margin: @gap 0 0;
+  font-size: 12px;
+
+  &__item {
+    display: inline-block;
+    margin-right: @gap;
+    color: fade(@text-color, 70%);
+
+    &.pull-right {
+      margin-right: 0;
+      margin-left: @gap;
+    }
+  }
+}
+
 // as card
 
 .ia-item--card {
@@ -263,29 +286,4 @@
 .ia-item--rented,
 .ia-item--hidden {
   .opacity(.7);
-}
-
-
-
-
-//
-// Item view page
-// --------------------------------------------------
-
-.ia-item--view {
-
-  .ia-item__image {
-
-    @media (min-width: @screen-phone) {
-      margin-right: @gap+@gap;
-    }
-
-    @media (min-width: @grid-float-breakpoint) {
-      max-width: 200px;
-    }
-  }
-
-  + .tabbable {
-    margin-top: @gap;
-  }
 }

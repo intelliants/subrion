@@ -1,5 +1,29 @@
 
 //
+// Item view page
+// --------------------------------------------------
+
+.ia-item--view {
+
+  .ia-item__image {
+
+    @media (min-width: @screen-phone) {
+      margin-right: @gap+@gap;
+    }
+
+    @media (min-width: @grid-float-breakpoint) {
+      max-width: 200px;
+    }
+  }
+
+  + .tabbable {
+    margin-top: @gap;
+  }
+}
+
+
+
+//
 // View pages for items: packages and etc.
 // --------------------------------------------------
 
@@ -11,6 +35,12 @@
     font-weight: bold;
     float: right;
     font-size: 20px;
+  }
+
+  &__sub-header {
+    font-size: 16px;
+    margin: 0 0 @gap;
+    line-height: @line-height-base;
   }
 
   &__info {
@@ -28,14 +58,14 @@
   }
 
   &__section {
-    margin-bottom: 15px;
+    margin-bottom: @gap+@gap;
 
     > h3 {
       text-transform: uppercase;
       font-size: 18px;
       line-height: 18px;
       border-bottom: 2px solid #ddd;
-      margin: 0 0 20px;
+      margin: 0 0 @gap;
       padding: 0 0 6px;
       font-weight: bold;
       color: #bbb;
@@ -94,10 +124,28 @@
   }
 
   &__content {
-    padding: 30px;
+    padding: 30px 15px;
 
     > h4 {
       text-align: center;
+    }
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .ia-item__additional {
+    background: #f6f6f6;
+    margin: 0 -15px 30px;
+    padding: 15px;
+
+    p {
+      float: none;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
     }
   }
 }
