@@ -67,7 +67,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			$iaView->assign('itemName', $itemName);
 
-			$iaView->title($iaSearch->getCaption());
+			$iaView->title($iaSearch->getCaption() ? $iaSearch->getCaption : $iaView->title());
 		}
 		else
 		{
