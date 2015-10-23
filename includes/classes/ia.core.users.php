@@ -25,7 +25,7 @@ class iaUsers extends abstractCore
 	public $dashboardStatistics = true;
 
 	public $coreSearchOptions = array(
-		'regularSearchStatements' => array("`username` LIKE '%:query%' OR `fullname` LIKE '%:query%')")
+		'regularSearchStatements' => array("`username` LIKE '%:query%' OR `fullname` LIKE '%:query%'")
 	);
 
 

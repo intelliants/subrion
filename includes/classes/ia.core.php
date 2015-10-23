@@ -441,7 +441,7 @@ final class iaCore
 			$stmt[] = "(`type` = 'group' AND `type_id` = $group) ";
 		}
 
-		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, implode(' OR ', $stmt), null, null, self::getCustomConfigTable());
+		$rows = $this->iaDb->all(array('type', 'name', 'value'), implode(' OR ', $stmt), null, null, self::getCustomConfigTable());
 
 		if (empty($rows))
 		{
@@ -454,6 +454,7 @@ final class iaCore
 		{
 			$result[$row['type']][$row['name']] = $row['value'];
 		}
+
 		$result = array_merge($result['group'], $result['user'], $result['plan']);
 
 		if ($local)
