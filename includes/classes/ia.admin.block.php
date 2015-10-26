@@ -270,7 +270,7 @@ class iaBlock extends abstractPlugin
 			$entry = array(
 				'object_type' => 'blocks',
 				'object' => $blockId,
-				'access' => $visibility
+				'access' => $reset ? !$visibility : $visibility
 			);
 
 			foreach ($pages as $pageName)

@@ -239,7 +239,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 
 				$iaMailer->FromName = $_POST['from_name'];
 				$iaMailer->From = $_POST['from_email'];
-				$iaMailer->AddAddress($memberInfo['email']);
+				$iaMailer->AddAddress($memberInfo['email'], $memberInfo['fullname']);
 				$iaMailer->Subject = $subject;
 				$iaMailer->Body = strip_tags($_POST['email_body']);
 
