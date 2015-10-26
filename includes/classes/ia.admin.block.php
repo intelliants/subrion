@@ -92,7 +92,7 @@ class iaBlock extends abstractPlugin
 
 		if (isset($blockData['pages']))
 		{
-			$pagesList = $this->_preparePages($blockData['pages']);
+			$pages = $this->_preparePages($blockData['pages']);
 			unset($blockData['pages']);
 		}
 
@@ -121,9 +121,9 @@ class iaBlock extends abstractPlugin
 				}
 			}
 
-			if (isset($pagesList))
+			if (isset($pages))
 			{
-				$this->setVisiblePages($id, $pagesList, $blockData['sticky']);
+				$this->setVisibility($id, $blockData['sticky'], $pages);
 			}
 		}
 
@@ -138,7 +138,7 @@ class iaBlock extends abstractPlugin
 
 		if (isset($itemData['pages']))
 		{
-			$pagesList = $this->_preparePages($itemData['pages']);
+			$pages = $this->_preparePages($itemData['pages']);
 			unset($itemData['pages']);
 		}
 
@@ -161,9 +161,9 @@ class iaBlock extends abstractPlugin
 
 		$result = parent::update($itemData, $id);
 
-		if (isset($pagesList))
+		if (isset($pages))
 		{
-			$this->setVisiblePages($id, $pagesList, $itemData['sticky']);
+			$this->setVisibility($id, $itemData['sticky'], $pages);
 		}
 
 		if (isset($itemData['multilingual']) && !$itemData['multilingual'])
@@ -250,31 +250,37 @@ class iaBlock extends abstractPlugin
 		return $result;
 	}
 
-	public function setVisiblePages($blockId, array $pagesList, $accessLevel = 1)
+	public function setVisibility($blockId, $visibility, array $pages = array(), $reset = true)
 	{
 		$this->iaDb->setTable(self::getPagesTable());
 
-		$this->iaDb->delete("`object_type` = 'blocks' && " . iaDb::convertIds($blockId, 'object'));
-
-		// set global visibility for disabled blocks
-		if (!$accessLevel)
+		if ($reset)
 		{
-			$this->iaDb->insert(array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => '', 'access' => '0'));
+			$this->iaDb->delete("`object_type` = 'blocks' && " . iaDb::convertIds($blockId, 'object'));
+
+			// set global visibility for non-sticky blocks
+			if (!$visibility)
+			{
+				$this->iaDb->insert(array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => '', 'access' => 0));
+			}
 		}
 
-		if ($pagesList)
+		if ($pages)
 		{
-			$rows = array();
-			foreach ($pagesList as $pageName)
+			$entry = array(
+				'object_type' => 'blocks',
+				'object' => $blockId,
+				'access' => $visibility
+			);
+
+			foreach ($pages as $pageName)
 			{
-				$pageName = trim($pageName);
-				if ($pageName)
+				if ($pageName = trim($pageName))
 				{
-					$rows[] = array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => $pageName, 'access' => !$accessLevel);
+					$entry['page_name'] = $pageName;
+					$this->iaDb->insert($entry);
 				}
 			}
-
-			$this->iaDb->insert($rows);
 		}
 
 		$this->iaDb->resetTable();
