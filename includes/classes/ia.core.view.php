@@ -994,6 +994,10 @@ SQL;
 
 				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
 
+				// TODO: obsolete not used in 3.3.0, kept for minor compatibility
+				$iaSmarty->assign('config', $this->iaCore->getConfig());
+				$iaSmarty->assign('packages', $this->iaCore->packagesData);
+
 				// define smarty super global $core
 				$core = array(
 					'actions' => $this->_setActions(),
@@ -1002,6 +1006,7 @@ SQL;
 					'language' => $this->iaCore->languages[$this->language],
 					'languages' => $this->iaCore->languages,
 					'notifications' => $notifications,
+					'packages' => $this->iaCore->packagesData,
 					'page' => array(
 						'breadcrumb' => iaBreadcrumb::render(),
 						'info' => $this->getParams(),

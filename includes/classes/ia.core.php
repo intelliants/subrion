@@ -730,13 +730,6 @@ final class iaCore
 		}
 
 		$this->packagesData = $packages;
-
-		if (iaView::REQUEST_HTML == $this->iaView->getRequestType())
-		{
-			$this->iaView->assign('packages', $packages);
-		}
-
-		return $packages;
 	}
 
 	public function getExtras($package)
