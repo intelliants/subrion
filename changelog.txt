@@ -617,21 +617,24 @@
 	+ Feature #2195: .htaccess warning for Mac users
 	+ Feature #2198: Implement 'Scheduled Tasks' admin panel section
 
->> From 3.3.5 to 3.4.0 <<
+>> From 3.3.5 to 4.0.0 <<
 
 	- Bug #1786: Consider the need for General section in Pictures configuration
 	- Bug #1968: 404 errors on the backend when installed to some servers
 	- Bug #2201: Incorrect display of paid plugins in the Admin Panel
 	- Bug #2218: Error notices at 404 page in admin panel
 	- Bug #2244: Facebook plugin bug with user ids
+	- Bug #2251: Unused foreach loop in ia.admin.extra.php
 	+ Feature #94: Improved actions functionality
 	+ Feature #219: CKEditor images enlargements
+	+ Feature #309: Jquery boxes instead of Confirm pop-up
 	+ Feature #327: Improve search functionality
 	+ Feature #335: Multilingual option on Edit block page
 	+ Feature #773: Possible integration of more icon fonts
 	+ Feature #1398: Implement pagination at the "My Favorites" page
 	+ Feature #1563: Make it possible to add lightbox effect to images within CKeditor
 	+ Feature #1699: Review Favorites functionality for non common cases
+	+ Feature #1701: Integrate fotorama for photogallery
 	+ Feature #1702: Add styles for XML output
 	+ Feature #1720: Add the feature that will allow to choose/edit to which plan assign member on Add Member page in Admin Panel
 	+ Feature #1873: Implement 'Add to favorites' feature in the 'Actions' block for non registered users
