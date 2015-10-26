@@ -144,7 +144,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'type' => iaUtil::checkPostParam('type'),
 			'annotation' => iaUtil::checkPostParam('annotation'),
 			'fieldgroup_id' => (int)iaUtil::checkPostParam('fieldgroup_id'),
-			'text_length' => (int)iaUtil::checkPostParam('text_length', 100),
+			'text_length' => (int)iaUtil::checkPostParam('text_length', 255),
 			'length' => iaUtil::checkPostParam('length', false),
 			'title' => iaUtil::checkPostParam('title'),
 			'pages' => iaUtil::checkPostParam('pages', array()),
@@ -227,7 +227,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				case iaField::TEXT:
 					if (empty($entry['text_length']))
 					{
-						$entry['text_length'] = 100;
+						$entry['text_length'] = 255;
 					}
 					$entry['length'] = min(255, max(1, $entry['text_length']));
 					$entry['default'] = $entry['text_default'];
