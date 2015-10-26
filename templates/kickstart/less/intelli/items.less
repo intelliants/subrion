@@ -68,21 +68,35 @@
     padding: @gap;
   }
 
+  &--border-bottom {
+    border-bottom: 1px solid @border-color;
+    padding-bottom: @gap;
+
+    & + & {
+      margin-top: @gap;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
   &--featured {
     border: 1px solid @brand-info;
     padding: @gap;
+    background: fade(@brand-info, 10%);
   }
 
   &--sponsored {
     border: 1px solid @brand-warning;
     padding: @gap;
+    background: fade(@brand-warning, 10%);
   }
 
   &__image {
     position: relative;
     text-align: center;
     display: block;
-    margin-bottom: @gap;
     text-decoration: none;
 
     &:hover {
@@ -197,6 +211,12 @@
         width: 18%;
       }
     }
+  }
+}
+
+.ia-item.has-panel {
+  .ia-item__image {
+    margin-bottom: @gap;
   }
 }
 

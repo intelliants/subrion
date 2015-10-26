@@ -10,6 +10,18 @@
     border: 1px solid #ddd;
   }
 
+  &--featured {
+    border: 1px solid @brand-info;
+    padding: @gap;
+    background: fade(@brand-info, 10%);
+  }
+
+  &--sponsored {
+    border: 1px solid @brand-warning;
+    padding: @gap;
+    background: fade(@brand-warning, 10%);
+  }
+
   + .box,
   + div {
     margin-top: @vertical-rhythm*2;
