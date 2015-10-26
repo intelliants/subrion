@@ -619,6 +619,7 @@
 
 >> From 3.3.5 to 4.0.0 <<
 
+	- Bug #17: Unused foreach loop in ia.admin.extra.php
 	- Bug #1786: Consider the need for General section in Pictures configuration
 	- Bug #1968: 404 errors on the backend when installed to some servers
 	- Bug #2201: Incorrect display of paid plugins in the Admin Panel

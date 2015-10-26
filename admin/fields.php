@@ -24,7 +24,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaCore->factory('picture');
 	}
 
-	// support displaying of custom item's fields
+	/**
+	 * Custom item fields support
+	 *
+	 * @param $iaView
+	 */
 	protected function _htmlAction(&$iaView)
 	{
 		$this->_indexPage($iaView);
@@ -37,7 +41,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		return parent::_gridRead($params);
 	}
-	//
 
 	protected function _gridRead($params)
 	{
