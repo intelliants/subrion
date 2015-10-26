@@ -1,35 +1,3 @@
-<style>{literal}
-	.row.custom .item-val {
-		display: block;
-		font-weight: bold;
-		min-height: 18px;
-		padding: 4px;
-	}
-	.row.custom .item-input {
-		display: none;
-	}
-	.row.common .item-val {
-		display: none;
-	}
-	.row.common .item-input {
-		display: block;
-	}
-	.row.custom .set-custom {
-		cursor: pointer;
-		display: block;
-	}
-	.row.custom .set-default {
-		display: none;
-	}
-	.row.common .set-custom {
-		display: none;
-	}
-	.row.common .set-default {
-		cursor: pointer;
-		display: block;
-	}{/literal}
-</style>
-
 {if isset($params)}
 <form enctype="multipart/form-data" method="post" class="sap-form form-horizontal">
 	{preventCsrf}
@@ -71,20 +39,13 @@
 					{if in_array($entry.type, array('textarea', 'tpl'))}
 						<div class="col col-lg-8">
 					{else}
-						<div class="col col-lg-4">
-					{/if}
-
-					{if $custom}
-						<div class="pull-right">
-							<span class="set-custom" data-value="1">{lang key='config_set_custom'}</span>
-							<span class="set-default" data-value="0">{lang key='config_set_default'}</span>
-						</div>
+						<div class="col col-lg-5">
 					{/if}
 
 					<input type="hidden" class="chck" name="c[{$entry.name}]" value="{if 'custom' != $entry.class}1{else}0{/if}" />
 					{if 'password' == $entry.type}
 						{if $custom}
-							<div class="item-val">{if empty($entry.default)}{lang key='config_empty_password'}{else}***********{/if}</div>
+							<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_password'}{else}***********{/if}</div>
 						{/if}
 
 						<div class="item-input">
@@ -95,7 +56,7 @@
 							{captcha preview=true}
 						{else}
 							{if $custom}
-								<div class="item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default|escape:'html'}{/if}</div>
+								<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default|escape:'html'}{/if}</div>
 							{/if}
 
 							<div class="item-input">
@@ -104,7 +65,7 @@
 						{/if}
 					{elseif 'textarea' == $entry.type}
 						{if $custom}
-							<div class="item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default}{/if}</div>
+							<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default}{/if}</div>
 						{/if}
 
 						<div class="item-input">
@@ -138,7 +99,7 @@
 						</div>
 					{elseif 'radio' == $entry.type}
 						{if $custom}
-							<div class="item-val">{if $entry.default == 1}ON{else}OFF{/if}</div>
+							<div class="form-control disabled item-val">{if $entry.default == 1}ON{else}OFF{/if}</div>
 						{/if}
 
 						<div class="item-input">
@@ -146,7 +107,7 @@
 						</div>
 					{elseif 'select' == $entry.type}
 						{if $custom}
-							<div class="item-val">{if $entry.name == 'lang'}{$entry.values[$entry.default].title|escape:'html'}{else}{$entry.default}{/if}</div>
+							<div class="form-control disabled item-val">{if $entry.name == 'lang'}{$entry.values[$entry.default].title|escape:'html'}{else}{$entry.default}{/if}</div>
 						{/if}
 
 						<div class="item-input">
@@ -187,8 +148,14 @@
 							{lang key='template_file_error' file=$entry.multiple_values}
 						{/if}
 					{/if}
-					</div>
-				</div>
+					</div> <!-- /.col -->
+					{if $custom}
+						<div class="col col-lg-2">
+							<span class="btn btn-default set-custom" data-value="1">{lang key='config_set_custom'}</span>
+							<span class="btn btn-default set-default" data-value="0">{lang key='config_set_default'}</span>
+						</div>
+					{/if}
+				</div><!-- /.row -->
 			{/if}
 		{/foreach}
 	</div>

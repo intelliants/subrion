@@ -10,14 +10,14 @@ $(function()
 
 	$('.set-default, .set-custom').on('click', function()
 	{
-		$(this).parent().parent().parent().eq(0)
+		$(this).closest('.row')
 			.toggleClass('common custom')
 			.find('.chck').val($(this).data('value'));
 	});
 
 	$('.item-val').dblclick(function()
 	{
-		$(this).parent().parent().eq(0)
+		$(this).closest('.row')
 			.toggleClass('common custom')
 			.find('.chck').val('1');
 	});
