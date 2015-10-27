@@ -40,7 +40,6 @@
 	</head>
 
 	<body class="page-{$core.page.name}">
-		{_v($core.config.website_bg)}
 		<header class="header"{if $core.config.website_bg} style="background-image: url('{$smarty.const.IA_URL}uploads/{$core.config.website_bg}');"{/if}>
 			<div class="inventory">
 				<div class="container">
