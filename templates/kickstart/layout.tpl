@@ -173,7 +173,7 @@
 						<p class="copyright">&copy; {$smarty.server.REQUEST_TIME|date_format:'%Y'} {lang key='powered_by_subrion'}</p>
 					</div>
 					<div class="col-md-6">
-						<a href="#" class="back-to-top js-back-to-top"><span class="fa fa-angle-up"></span></a>
+						<a href="#" class="back-to-top js-back-to-top"><span class="fa fa-angle-up"></span> {lang key='back_to_top'}</a>
 						{if $core.config.kickstart_social}
 							<div class="social">
 								<h4>Share your love</h4>

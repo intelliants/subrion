@@ -97,13 +97,23 @@
 // Back to top button
 // --------------------------------------------------
 
-.back-to-top {
+.back-to-top,
+.back-to-top:focus {
 	float: right;
 	display: block;
-	width: 30px;
-	height: 30px;
-	font-size: 24px;
-	line-height: 28px;
+	// width: 30px;
+	height: 24px;
+	font-size: 14px;
+	line-height: 24px;
+	padding-left: 10px;
+	padding-right: 10px;
 	text-align: center;
 	background: #ccc;
+	color: #aaa;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: none;
+		background: #bbb;
+	}
 }
