@@ -32,7 +32,6 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	$query = empty($_GET['q']) ? null : $_GET['q'];
-	if (!isset($_GET['q']) && isset($_POST['q'])) $query = $_POST['q']; // compatibility layer. to be removed later
 
 	$params = $_GET;
 	unset($params['page']);

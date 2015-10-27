@@ -150,6 +150,7 @@ class iaSearch extends abstractCore
 				'customConfig' => $this->iaCore->getCustomConfig(),
 				'language' => $this->iaCore->languages[$iaView->language],
 				'languages' => $this->iaCore->languages,
+				'packages' => $this->iaCore->packagesData,
 				'page' => array(
 					'info' => $iaView->getParams(),
 					'name' => $iaView->name(),
@@ -159,9 +160,7 @@ class iaSearch extends abstractCore
 			);
 
 			$iaSmarty->assign('core', $core);
-			$iaSmarty->assign('config', $core['config']);
 			$iaSmarty->assign('member', iaUsers::getIdentity(true));
-			$iaSmarty->assign('packages', $this->iaCore->packagesData);
 
 			$this->_smartyVarsAssigned = true;
 		}

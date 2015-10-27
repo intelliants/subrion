@@ -44,7 +44,7 @@ $(function()
 	if ($filtersForm.length > 0)
 	{
 		$('select.js-interactive', $filtersForm).select2();
-		$('select, input', $filtersForm).on('change', function()
+		$('select, input', $filtersForm).not('.no-js').on('change', function()
 		{
 			intelli.search.run();
 		});
