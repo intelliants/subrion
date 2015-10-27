@@ -5,8 +5,8 @@
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
 	<version>1.0.2</version>
-	<date>2015-10-15</date>
-	<compatibility>3.4</compatibility>
+	<date>2015-10-27</date>
+	<compatibility>4.0</compatibility>
 
 	<adminpages>
 		<page group="content" name="elfinder" url="elfinder/" menus="menu" filename="index" order="45">Uploads Manager</page>
