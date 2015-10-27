@@ -193,7 +193,7 @@
 					<label class="col col-lg-2 control-label">{lang key='field_length'}</label>
 
 					<div class="col col-lg-4">
-						<input class="js-filter-numeric" type="text" name="text_length" value="{if !$item.length || $item.length > 255}100{else}{$item.length}{/if}">
+						<input class="js-filter-numeric" type="text" name="text_length" value="{if !$item.length || $item.length > 255}255{else}{$item.length}{/if}">
 						<p class="help-block">{lang key='digits_only'}</p>
 					</div>
 				</div>
