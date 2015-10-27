@@ -14,9 +14,9 @@ function smarty_function_ia_html_file($params, &$smarty)
 		$result = <<<OUT
 <div class="upload-group">
 	<div class="input-group file-upload">
-		<input type="hidden" name="param[{$params['name']}]">
+		<input type="hidden" name="v[{$params['name']}]">
 		<input type="file" name="{$params['name']}" id="{$id}">
-		<input type="text" class="disabled" disabled="disabled" placeholder="{$placeholder}">
+		<input type="text" class="disabled" placeholder="{$placeholder}" disabled>
 		<span class="input-group-btn">
 			<a class="btn btn-primary js-file-browse" href="#">{$browse}</a>
 		</span>
