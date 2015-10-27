@@ -4,8 +4,8 @@
 // --------------------------------------------------
 
 @gap:                   15px;
-@item-link-color:       @text-color;
-@item-link-color-hover: lighten(@item-link-color, 10%);
+@item-link-color:       @link-color;
+@item-link-color-hover: @link-hover-color;
 
 
 
@@ -150,6 +150,15 @@
 
     a {
       margin-left: @gap;
+    }
+
+    a:not(.btn),
+    a:not(.btn):focus {
+      color: @text-color;
+
+      &:hover {
+        color: lighten(@text-color, 10%);
+      }
     }
   }
 
