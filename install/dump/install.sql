@@ -1195,7 +1195,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('days_ago',':days days ago','admin'),
 ('deactivate','Deactivate package','admin'),
 ('default_language','Default Language','admin'),
-('digits_only','digits only (1-255), default is 100','admin'),
+('digits_only','digits only (1-255), default is 255','admin'),
 ('directory_not_writable','Directory ":directory" is not writable. You could not save to server.','admin'),
 ('display','Display','admin'),
 ('do','Do','admin'),
