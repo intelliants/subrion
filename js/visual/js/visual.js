@@ -1,5 +1,7 @@
 $(function()
 {
+	intelli.visualModeUrl = intelli.config.ia_url + $('#js-config-admin-page').val() + '/visual-mode.json';
+
 	$('body').addClass('visual-mode').css('overflow-x', 'visible');
 	$('body > *:not(.sb-left, .vm-bar, .sb-slide, #debug-toggle, #debug)').wrapAll('<div id="sb-site"></div>');
 
@@ -14,6 +16,36 @@ $(function()
 				'<div class="groupWrapper__header__title">' + id[0] + '</div>' +
 				'<a class="js-config-open" data-type="positions" data-name="' + id[0] + '" href="#"><span class="v-icon v-icon--settings"></span></a>' +
 			'</div>');
+	}).sortable(
+	{
+		items: '> .box',
+		connectWith: '.groupWrapper',
+		handle: '.box-visual__actions__item--move',
+		placeholder: 'box-visual__placeholder',
+		revert: 300,
+		delay: 100,
+		opacity: 0.8,
+		forcePlaceholderSize: true,
+		start: function(e,ui)
+		{
+			$(ui.helper).addClass('dragging');
+		},
+		stop: function(e,ui)
+		{
+			$(ui.item).css({width:''}).removeClass('dragging');
+			$('.groupWrapper').sortable('enable');
+
+			var blocksPos = [];
+			$('.groupWrapper > .box').each(function(){
+				var parentId = $(this).closest('.groupWrapper').attr('id');
+				blocksPos.push(parentId + '[]=' + $(this).attr('id'));
+			});
+
+			$.get(intelli.visualModeUrl + '?' + blocksPos.join('&'), function(response)
+			{
+				intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true, pause: 1500});
+			});
+		}
 	});
 
 	// attach config boxes for blocks
@@ -58,39 +90,6 @@ $(function()
 		closeSlideBar(vmBar);
 	});
 
-
-	$('.groupWrapper').sortable(
-	{
-		items: '> .box',
-		connectWith: '.groupWrapper',
-		handle: '.box-visual__actions__item--move',
-		placeholder: 'box-visual__placeholder',
-		revert: 300,
-		delay: 100,
-		opacity: 0.8,
-		forcePlaceholderSize: true,
-		start: function(e,ui)
-		{
-			$(ui.helper).addClass('dragging');
-		},
-		stop: function(e,ui)
-		{
-			$(ui.item).css({width:''}).removeClass('dragging');
-			$('.groupWrapper').sortable('enable');
-
-			var blocksPos = [];
-			$('.groupWrapper > .box').each(function(){
-				var parentId = $(this).closest('.groupWrapper').attr('id');
-				blocksPos.push(parentId + '[]=' + $(this).attr('id'));
-			});
-
-			$.get(intelli.config.admin_url+'/visual-mode/read.json?' + blocksPos.join('&'), function(response)
-			{
-				intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true, pause: 1500});
-			});
-		}
-	});
-
 	// custom checkboxes
 	$('.vm-checkbox').on('click', function()
 	{
@@ -104,7 +103,7 @@ function openSlideBar(bar, type, name)
 {
 	$('.js-config-save').prop('disabled', false).text('Save');
 
-	$.get(intelli.config.admin_url + '/visual-mode/read.json?get=access&type=' + type + '&object=' + name + '&page=' + intelli.pageName, function(response)
+	$.get(intelli.visualModeUrl + '?get=access&type=' + type + '&object=' + name + '&page=' + intelli.pageName, function(response)
 	{
 		$('#js-object').val(name);
 
@@ -164,7 +163,7 @@ function closeSlideBar(bar, type, btn)
 		pageVisibility ? $('#block_' + name).removeClass('box-visual--hidden') : $('#block_' + name).addClass('box-visual--hidden');
 	}
 
-	$.post(intelli.config.admin_url + '/visual-mode/read.json', {action: 'save', type: type, global: globalVisibility, page: pageVisibility, name: name, pagename: intelli.pageName},
+	$.post(intelli.visualModeUrl, {action: 'save', type: type, global: globalVisibility, page: pageVisibility, name: name, pagename: intelli.pageName},
 		function(data)
 		{
 			// TODO: reserved for notifications
