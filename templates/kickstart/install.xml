@@ -12,6 +12,7 @@
 		<position menu="1" movable="0">account</position>
 		<position menu="1" movable="0">mainmenu</position>
 
+		<position>inventory</position>
 		<position>teaser</position>
 		<position>verytop</position>
 		<position>top</position>
