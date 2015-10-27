@@ -65,6 +65,12 @@
 		    order="3005" 
 		    values="1,0" 
 		    description="Enable Logo text">0</config>
+	<config group="template_kickstart"
+			name="logo_text"
+		    type="text" 
+		    order="3006" 
+		    show="enable_text_logo|1" 
+		    description="Logo text">Kickstart</config>
 
 	<config group="template_kickstart" 
 		    name="kickstart_divider2" 
@@ -251,7 +257,6 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 	<phrases>
 		<phrase category="frontend" key="login">Log in</phrase>
 		<phrase category="frontend" key="register">Sign up</phrase>
-		<phrase category="frontend" key="kickstart">Kickstart</phrase>
 		<phrase category="frontend" key="back_to_top">Back to top</phrase>
 	</phrases>
 </template>

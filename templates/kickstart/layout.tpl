@@ -40,7 +40,7 @@
 	</head>
 
 	<body class="page-{$core.page.name}">
-
+		{_v($core.config.website_bg)}
 		<header class="header"{if $core.config.website_bg} style="background-image: url('{$smarty.const.IA_URL}uploads/{$core.config.website_bg}');"{/if}>
 			<div class="inventory">
 				<div class="container">
@@ -59,7 +59,7 @@
 						</button>
 						<a class="navbar-brand{if !$core.config.enable_text_logo} navbar-brand--img{/if}" href="{$smarty.const.IA_URL}">
 							{if $core.config.enable_text_logo}
-								{lang key='kickstart'}
+								{$core.config.logo_text}
 							{else}
 								{if !empty($core.config.site_logo)}
 									<img src="{$core.page.nonProtocolUrl}uploads/{$core.config.site_logo}" alt="{$core.config.site}">
