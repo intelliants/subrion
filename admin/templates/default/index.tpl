@@ -149,7 +149,7 @@
 						<div class="icon">
 							<img src="{$img}logo-intelliants-80-inverse.png" alt="Intelliants">
 						</div>
-						<div class="date">{$tweet.created_at|date_format:$config.date_format}</div>
+						<div class="date">{$tweet.created_at|date_format:$core.config.date_format}</div>
 						<p>{$tweet.text}</p>
 					</div>
 					{/foreach}

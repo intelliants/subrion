@@ -8,7 +8,7 @@
 				{assign field_show explode('|', $entry.show)}
 
 				{capture assign='dependent_fields'}
-					data-id="js-{$field_show[0]}-{$field_show[1]}" {if (!empty($field_show[0]) && $config.{$field_show[0]} != $field_show[1])} style="display: none;"{/if}
+					data-id="js-{$field_show[0]}-{$field_show[1]}" {if (!empty($field_show[0]) && $core.config.{$field_show[0]} != $field_show[1])} style="display: none;"{/if}
 				{/capture}
 			{else}
 				{assign dependent_fields ''}
@@ -80,7 +80,7 @@
 									{if !empty($entry.value)}
 										<img src="{$core.page.nonProtocolUrl}uploads/{$entry.value}">
 									{elseif $entry.name == 'site_logo'}
-										<img src="{$core.page.nonProtocolUrl}templates/{$config.tmpl}/img/logo.png">
+										<img src="{$core.page.nonProtocolUrl}templates/{$core.config.tmpl}/img/logo.png">
 									{/if}
 								</div>
 

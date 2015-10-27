@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 	<title>{ia_print_title}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="generator" content="Subrion CMS &middot; {$config.version}">
+	<meta name="generator" content="Subrion CMS &middot; {$core.config.version}">
 	<base href="{$smarty.const.IA_ADMIN_URL}">
 
 	<!--[if lt IE 9]>
@@ -87,7 +87,7 @@
 				</form>
 			</div>
 			<p class="copyright">
-				Powered by <a href="http://www.subrion.org/" title="Subrion CMS">Subrion CMS v{$config.version}</a><br>
+				Powered by <a href="http://www.subrion.org/" title="Subrion CMS">Subrion CMS v{$core.config.version}</a><br>
 				Copyright &copy; 2008-{$smarty.now|date_format:'%Y'} <a href="http://www.intelliants.com/" title="Intelligent Web Solutions">Intelliants LLC</a>
 			</p>
 			<a href="{$smarty.const.IA_URL}" class="back-to-home"><span>←</span> {lang key='back_to_homepage'}</a>

@@ -729,7 +729,7 @@ final class iaCore
 			$packages[$entry['name']] = $entry;
 		}
 
-		$this->packagesData = $packages;
+		return $this->packagesData = $packages;
 	}
 
 	public function getExtras($package)

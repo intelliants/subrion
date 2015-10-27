@@ -50,7 +50,7 @@
 				{/if}
 				<tr>
 					<td>{lang key='member_since'}</td>
-					<td>{$item.date_reg|date_format:$config.date_format}</td>
+					<td>{$item.date_reg|date_format:$core.config.date_format}</td>
 				</tr>
 			</tbody>
 		</table>

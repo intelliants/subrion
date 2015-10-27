@@ -34,7 +34,7 @@
 							<h4>{$template.title} <small>{$template.version}</small></h4>
 						</div>
 						<p class="plate__info">
-							{lang key='date'}: {$template.date|date_format:$config.date_format}<br>
+							{lang key='date'}: {$template.date|date_format:$core.config.date_format}<br>
 							{lang key='compatibility'}: {$template.compatibility}
 						</p>
 

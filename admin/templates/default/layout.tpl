@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<title>{ia_print_title}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="generator" content="Subrion CMS &middot; {$config.version}">
+		<meta name="generator" content="Subrion CMS &middot; {$core.config.version}">
 		<base href="{$smarty.const.IA_ADMIN_URL}">
 
 		<!--[if lt IE 9]>
@@ -21,8 +21,8 @@
 
 		{ia_hooker name='smartyAdminAfterHeadSection'}
 
-		{if isset($config.sap_style)}
-			{ia_print_css files="bootstrap-{$config.sap_style}" order=0}
+		{if isset($core.config.sap_style)}
+			{ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
 		{else}
 			{ia_print_css files='bootstrap' order=0}
 		{/if}
@@ -43,7 +43,7 @@
 			<div class="panels-wrapper">
 				<section id="panel-left">
 					<a class="brand" href="{$smarty.const.IA_ADMIN_URL}">
-						<img src="{$img}logo.png" alt="Subrion CMS &middot; {$config.version}">
+						<img src="{$img}logo.png" alt="Subrion CMS &middot; {$core.config.version}">
 					</a>
 					<ul class="nav-main">
 						<li{if 0 == $core.page.info.group} class="current active"{/if}>
@@ -58,7 +58,7 @@
 					<div class="system-info">
 						Subrion CMS
 						<br>
-						<span class="version">v {$config.version}</span>
+						<span class="version">v {$core.config.version}</span>
 					</div>
 					<div class="social-links">
 						<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><i class="i-twitter-2"></i></a>
@@ -134,7 +134,7 @@
 									<span> Help and Support</span>
 								</a>
 								<ul class="dropdown-menu pull-right">
-									{if isset($config.display_feedbacks) && $config.display_feedbacks}
+									{if !empty($core.config.display_feedbacks)}
 										<li>
 											<a data-toggle="modal" href="#feedback-modal">Submit feedback</a>
 										</li>

@@ -174,13 +174,13 @@
 					</div>
 					<div class="col-md-6">
 						<a href="#" class="back-to-top js-back-to-top"><span class="fa fa-angle-up"></span></a>
-						{if $config.kickstart_social}
+						{if $core.config.kickstart_social}
 							<div class="social">
 								<h4>Share your love</h4>
-								{if $config.kickstart_social_t}<a href="{$config.kickstart_social_t}" class="twitter"><span class="fa fa-twitter"></span></a>{/if}
-								{if $config.kickstart_social_f}<a href="{$config.kickstart_social_f}" class="facebook"><span class="fa fa-facebook"></span></a>{/if}
-								{if $config.kickstart_social_g}<a href="{$config.kickstart_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a>{/if}
-								{if $config.kickstart_social_i}<a href="{$config.kickstart_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a>{/if}
+								{if $core.config.kickstart_social_t}<a href="{$core.config.kickstart_social_t}" class="twitter"><span class="fa fa-twitter"></span></a>{/if}
+								{if $core.config.kickstart_social_f}<a href="{$core.config.kickstart_social_f}" class="facebook"><span class="fa fa-facebook"></span></a>{/if}
+								{if $core.config.kickstart_social_g}<a href="{$core.config.kickstart_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a>{/if}
+								{if $core.config.kickstart_social_i}<a href="{$core.config.kickstart_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a>{/if}
 							</div>
 						{/if}
 					</div>

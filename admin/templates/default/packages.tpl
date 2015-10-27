@@ -1,5 +1,5 @@
 {if $packages}
-	<input type="hidden" id="js-default-package-value" value="{$config.default_package}">
+	<input type="hidden" id="js-default-package-value" value="{$core.config.default_package}">
 	<div class="plates plates--templates">
 		<div class="row">
 			{foreach $packages as $package}
@@ -32,7 +32,7 @@
 								<h4>{$package.title} <small>{$package.version}</small></h4>
 							</div>
 							<p class="plate__info">
-								{lang key='date'}: {$package.date|date_format:$config.date_format}<br>
+								{lang key='date'}: {$package.date|date_format:$core.config.date_format}<br>
 								{*if $package.date_updated}
 									{lang key='last_updated'}: {$package.date_updated|date_format:$config.date_format}<br />
 								{/if*}
@@ -53,7 +53,7 @@
 									{/if}
 									{if $package.items.set_default}
 										{access object='admin_pages' id='packages' action='set_default'}
-											{if $config.default_package != $package.name}
+											{if $core.config.default_package != $package.name}
 												<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/set_default/" href="javascript:;" onclick="setDefault(this)" class="btn btn-primary btn-small" title="{lang key='set_as_default_package'}"><i class="i-loop"></i></a>
 											{else}
 												<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$package.name}')" class="btn btn-primary btn-small" title="{lang key='reset_default'}"><i class="i-loop"></i></a>
