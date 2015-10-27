@@ -39,7 +39,7 @@
 				{if isset($item.website) && $item.website}
 					<tr>
 						<td>{lang key='field_website'}</td>
-						<td><a href="{$item.website}">{$item.website}</a></td>
+						<td>{$item.website|linkify}</td>
 					</tr>
 				{/if}
 				{if isset($item.biography) && $item.biography}
