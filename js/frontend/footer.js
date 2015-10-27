@@ -105,7 +105,6 @@ $(function()
 	{
 		$('.js-datepicker').datepicker(
 		{
-			format: 'yyyy-mm-dd H:i:s',
 			language: intelli.config.lang
 		});
 
