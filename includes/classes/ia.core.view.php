@@ -996,7 +996,6 @@ SQL;
 
 				// TODO: obsolete not used in 3.3.0, kept for minor compatibility
 				$iaSmarty->assign('config', $this->iaCore->getConfig());
-				$iaSmarty->assign('packages', $this->iaCore->packagesData);
 
 				// define smarty super global $core
 				$core = array(
