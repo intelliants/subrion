@@ -1965,6 +1965,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('bots_visits','Visits last 24h (bots)','frontend'),
 ('by_fullname','full name','frontend'),
 ('by_username','username','frontend'),
+('by_name','By name','frontend'),
+('by_registration_date','By registration date','frontend'),
 
 ('change_gateway','Change gateway','frontend'),
 ('chars_left','Chars left','frontend'),
