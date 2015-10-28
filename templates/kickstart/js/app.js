@@ -1,7 +1,9 @@
 $(function() {
 
 	// toggle tooltips
-	$('[data-toggle="tooltip"]').tooltip();
+	$('[data-toggle="tooltip"]').tooltip({
+		container: 'body'
+	});
 	
 	// back to top button
 	$('.js-back-to-top').on('click', function(e){

@@ -115,8 +115,8 @@
 												{if 'action-favorites' == $name}
 													{printFavorites item=$item itemtype=$item.item}
 												{else}
-													<a {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
-														<span class="fa fa-{$name}" title="{$action.title}"></span>
+													<a data-toggle="tooltip" title="{$action.title}" {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
+														<span class="fa fa-{$name}"></span>
 													</a>
 												{/if}
 											</li>

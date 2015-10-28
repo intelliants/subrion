@@ -43,7 +43,7 @@
 		{/capture}
 
 		{if trim($smarty.capture.field_text) != ''}
-			<div class="fieldset {if isset($section.collapsed) && $section.collapsible} is-collapsible{if $section.collapsed} is-collapsed{/if}{/if}" id="{$grouptitle}">
+			<div class="fieldset {if isset($section.collapsible) && $section.collapsible} is-collapsible{if $section.collapsed} is-collapsed{/if}{/if}" id="{$grouptitle}">
 				{if isset($fieldset_before[$section.name])}{$fieldset_before[$section.name]}{/if}
 
 				{if isset($grouptitle)}
