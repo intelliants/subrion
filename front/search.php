@@ -53,14 +53,14 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	if ('search' != $iaView->name() || isset($iaCore->requestPath[0]))
 	{
-		$empty = empty($params);
+		$empty = empty($params) && empty($iaCore->requestPath);
 		$itemName = ('search' != $iaView->name())
 			? str_replace('search_', '', $iaView->name())
 			: $iaCore->requestPath[0];
 
 		if (in_array($itemName, $iaItem->getItems()))
 		{
-			empty($params) || $results = $iaSearch->doRegularItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
+			$empty || $results = $iaSearch->doRegularItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
 
 			$iaView->set('filtersItemName', $itemName);
 			$iaView->set('filtersParams', $iaSearch->getParams());
