@@ -19,7 +19,7 @@
 
 			<div id="copyright">
 				<p><?php echo iaLanguage::get('powered_by_subrion') ?> Version <?php echo IA_VERSION ?><br />
-					Copyright &copy; <?php echo date('Y') ?> <a href="http://www.intelliants.com/" title="Software Development Company">Intelliants LLC</a></p>
+					Copyright &copy; <?php echo date('Y') ?> <a href="https://intelliants.com/" title="Software Development Company">Intelliants LLC</a></p>
 			</div>
 		</div>
 	</body>

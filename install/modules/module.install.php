@@ -386,7 +386,7 @@ http://www.subrion.org/forums/
 __________________________
 The Subrion Support Team
 http://www.subrion.org
-http://www.intelliants.com
+https://intelliants.com
 HTML;
 					$salt = '#' . strtoupper(substr(md5(IA_HOME), 21, 10));
 					$params = array(
