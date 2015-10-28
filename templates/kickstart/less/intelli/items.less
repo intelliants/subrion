@@ -93,6 +93,11 @@
     background: fade(@brand-warning, 10%);
   }
 
+  &--inactive,
+  &--hidden {
+    background: #f5f5f5;
+  }
+
   &__image {
     position: relative;
     text-align: center;
@@ -293,7 +298,7 @@
 }
 
 .label-approval {
-  .label-variant(@label-warning-bg);
+  .label-variant(spin(@label-warning-bg, 15%));
 }
 
 .label-sold {
@@ -308,11 +313,13 @@
   .label-variant(#999);
 }
 
+.label-inactive,
 .label-hidden {
-  .label-variant(#444);
+  .label-variant(@label-default-bg);
 }
 
 .ia-item--rented,
 .ia-item--hidden {
   .opacity(.7);
 }
+
