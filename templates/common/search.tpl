@@ -28,7 +28,9 @@
 			{$results[1]}
 		{/if}
 	{elseif !$regular}
-		<div class="message alert">{lang key='nothing_found'}</div>
+		{if !$empty}
+			<div class="message alert">{lang key='nothing_found'}</div>
+		{/if}
 	{/if}
 </div>
 
