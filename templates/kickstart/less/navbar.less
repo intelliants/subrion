@@ -48,14 +48,6 @@
   }
 }
 
-.navbar-nav > li {
-
-  > .dropdown-menu {
-    border-radius: 0;
-    border-color: #fff;
-  }
-}
-
 // Account nav
 @avatar-height: 30px;
 
@@ -89,6 +81,9 @@
     
     .navbar-nav__drop {
       float: right;
+      position: relative;
+      z-index: 20;
+      cursor: pointer;
       color: @navbar-default-link-color;
       line-height: @navbar-height;
       margin-left: -@navbar-padding-horizontal;
@@ -107,12 +102,14 @@
       margin-top: -15px;
       .transition(all .15s ease-in-out);
       .opacity(0);
-      border-radius: 0;
       display: block;
       visibility: hidden;
       left: 50%;
       width: 200px;
       margin-left: -100px;
+      border-color: #fff;
+      border-radius: 0;
+      .box-shadow(0 0 22px rgba(0,0,0,0.5));
 
       &:before {
         content: '';

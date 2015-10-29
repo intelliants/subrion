@@ -24,7 +24,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaCore->factory('picture');
 	}
 
-	// support displaying of custom item's fields
+	/**
+	 * Custom item fields support
+	 *
+	 * @param $iaView
+	 */
 	protected function _htmlAction(&$iaView)
 	{
 		$this->_indexPage($iaView);
@@ -37,7 +41,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		return parent::_gridRead($params);
 	}
-	//
 
 	protected function _gridRead($params)
 	{
@@ -144,7 +147,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'type' => iaUtil::checkPostParam('type'),
 			'annotation' => iaUtil::checkPostParam('annotation'),
 			'fieldgroup_id' => (int)iaUtil::checkPostParam('fieldgroup_id'),
-			'text_length' => (int)iaUtil::checkPostParam('text_length', 100),
+			'text_length' => (int)iaUtil::checkPostParam('text_length', 255),
 			'length' => iaUtil::checkPostParam('length', false),
 			'title' => iaUtil::checkPostParam('title'),
 			'pages' => iaUtil::checkPostParam('pages', array()),
@@ -227,7 +230,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				case iaField::TEXT:
 					if (empty($entry['text_length']))
 					{
-						$entry['text_length'] = 100;
+						$entry['text_length'] = 255;
 					}
 					$entry['length'] = min(255, max(1, $entry['text_length']));
 					$entry['default'] = $entry['text_default'];

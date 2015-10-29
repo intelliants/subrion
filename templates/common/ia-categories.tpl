@@ -8,7 +8,7 @@
 				<div class="ia-cat">
 					{if isset($icons) && $icons}
 						{if isset($category.icon) && $category.icon}
-							<img src="{$core.page.nonProtocolUrl}uploads/{$category.icon.path}" alt="{$category.icon.title}">
+							<img src="{$core.page.nonProtocolUrl}uploads/{$category.icon.path}" alt="{$category.title}">
 						{else}
 							<span class="fa fa-folder-open"></span>
 						{/if}

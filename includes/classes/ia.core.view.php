@@ -132,7 +132,7 @@ class iaView extends abstractUtil
 			$this->iaSmarty->setCacheDir(IA_TMP . 'smartycache' . IA_DS);
 			$this->iaSmarty->setPluginsDir(array(IA_SMARTY . 'plugins', IA_SMARTY . 'intelli_plugins'));
 
-			$this->iaSmarty->force_compile = $this->iaCore->get('smarty_cache', false);
+			$this->iaSmarty->force_compile = $this->iaCore->get('smarty_cache');
 			$this->iaSmarty->cache_modified_check = false;
 			$this->iaSmarty->debugging = false;
 			$this->iaSmarty->compile_check = true;
@@ -934,11 +934,6 @@ SQL;
 			$this->assign('img', IA_TPL_URL . 'img/');
 			$this->assign('pageAction', $this->get('action'));
 
-			// TODO: obsolete not used in 3.3.0, kept for minor compatibility
-			$this->assign('nonProtocolUrl', $this->assetsUrl);
-			$this->assign('languages', $this->iaCore->languages);
-			$this->assign('url', (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? IA_ADMIN_URL : IA_URL));
-
 			if (isset($_SESSION['msg']) && is_array($_SESSION['msg']))
 			{
 				foreach ($_SESSION['msg'] as $type => $text)
@@ -999,10 +994,6 @@ SQL;
 
 				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
 
-				// TODO: obsolete not used in 3.3.0, kept for minor compatibility
-				$iaSmarty->assign('config', $this->iaCore->getConfig());
-				$iaSmarty->assign('page', $this->getParams());
-
 				// define smarty super global $core
 				$core = array(
 					'actions' => $this->_setActions(),
@@ -1011,6 +1002,7 @@ SQL;
 					'language' => $this->iaCore->languages[$this->language],
 					'languages' => $this->iaCore->languages,
 					'notifications' => $notifications,
+					'packages' => $this->iaCore->packagesData,
 					'page' => array(
 						'breadcrumb' => iaBreadcrumb::render(),
 						'info' => $this->getParams(),
@@ -1440,7 +1432,7 @@ SQL;
 				}
 				elseif ($pluginName && 'package' == $this->get('type') && $pluginName . '_home' != $this->name())
 				{
-					if ($this->iaCore->get('default_package', false) != $pluginName)
+					if ($this->iaCore->get('default_package') != $pluginName)
 					{
 						iaBreadcrumb::add(iaLanguage::get($pluginName), IA_PACKAGE_URL);
 					}

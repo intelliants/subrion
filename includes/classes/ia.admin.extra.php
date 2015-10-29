@@ -647,12 +647,12 @@ class iaExtra extends abstractCore
 
 			foreach ($this->itemData['pages']['front'] as $page)
 			{
-				if ($page['blocks'])
+				if ($page['blocks'] && ($ids = $this->iaDb->onefield(iaDb::ID_COLUMN_SELECTION,
+						"`name` IN ('" . implode("','", $page['blocks']) . "')", null, null, iaBlock::getTable())))
 				{
-					$blocks = $iaDb->keyvalue(array('name', 'id'), "`name` IN ('" . implode("','", $page['blocks']) . "')", iaBlock::getTable(), 0, 1);
-					foreach ($blocks as $blockId)
+					foreach ($ids as $blockId)
 					{
-//						$iaDb->insert(array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => $page['name']), null, 'objects_pages');
+						$iaBlock->setVisibility($blockId, true, array($page['name']), false);
 					}
 				}
 
@@ -816,7 +816,7 @@ class iaExtra extends abstractCore
 
 		$this->iaCore->startHook('phpExtrasUninstallBefore', array('extra' => $extraName));
 
-		if ($this->iaCore->get('default_package', false) == $extraName)
+		if ($this->iaCore->get('default_package') == $extraName)
 		{
 			$this->iaCore->set('default_package', '', true);
 		}
@@ -1200,10 +1200,10 @@ class iaExtra extends abstractCore
 						$iaDb->insert(array('page_name' => $page['name'], 'item' => $page['fields_item']), null, 'items_pages');
 					}
 
-					$title = (isset($page['title']) && $page['title']) ? $page['title'] : false;
-					$blocks = (isset($page['blocks']) && $page['blocks']) ? $page['blocks'] : false;
-					$menus = (isset($page['menus']) && $page['menus']) ? explode(',', $page['menus']) : array();
-					$contents = (isset($page['contents']) && $page['contents']) ? $page['contents'] : false;
+					$title = empty($page['title']) ? false : $page['title'];
+					$blocks = empty($page['blocks']) ? false : $page['blocks'];
+					$menus = empty($page['menus']) ? array() : explode(',', $page['menus']);
+					$contents = empty($page['contents']) ? false : $page['contents'];
 
 					unset($page['title'], $page['blocks'], $page['menus'], $page['contents']);
 
@@ -1213,13 +1213,12 @@ class iaExtra extends abstractCore
 
 					empty($title) || $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_PAGE);
 
-					// TODO: should be handled by iaBlock
-					if ($blocks)
+					if ($blocks && ($ids = $this->iaDb->onefield(iaDb::ID_COLUMN_SELECTION,
+							"`name` IN ('" . implode("','", $blocks) . "')", null, null, iaBlock::getTable())))
 					{
-						$blocks = $iaDb->keyvalue(array('name', 'id'), "`name` IN ('" . implode("','", $blocks) . "')", iaBlock::getTable(), 0, 1);
-						foreach ($blocks as $blockId)
+						foreach ($ids as $blockId)
 						{
-							$iaDb->insert(array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => $page['name']), null, 'objects_pages');
+							$iaBlock->setVisibility($blockId, true, array($page['name']), false);
 						}
 					}
 
@@ -1865,6 +1864,9 @@ class iaExtra extends abstractCore
 					$url = $this->itemData['url'] && $url ? str_replace('|PACKAGE|', ltrim($this->_url, IA_URL_DELIMITER), $url) : $url;
 					$url = empty($url) ? $this->itemData['name'] . IA_URL_DELIMITER : $url;
 
+					$blocks = trim($this->_attr('blocks'));
+					$blocks = empty($blocks) ? null : explode(',', $blocks);
+
 					// TODO: add pages param to display some existing blocks on new page
 					$this->itemData['pages']['front'][] = array(
 						'name' => $this->_attr('name'),
@@ -1877,7 +1879,7 @@ class iaExtra extends abstractCore
 						'alias' => $url,
 						'custom_url' => $this->_attr('custom_url'),
 						'service' => $this->_attr('service', false),
-						'blocks' => explode(',', $this->_attr('blocks', '')),
+						'blocks' => $blocks,
 						'nofollow' => $this->_attr('nofollow', false),
 						'new_window' => $this->_attr('new_window', false),
 						'readonly' => $this->_attr('readonly', true),

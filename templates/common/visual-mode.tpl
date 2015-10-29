@@ -2,6 +2,8 @@
 	<a href="#" class="sb-slide js-vm-config-toggle vm-config__toggle"></a>
 *}
 
+<input type="hidden" id="js-config-admin-page" value="{$core.config.admin_page}">
+
 <div class="sb-slide vm-bar">
 	<div class="vm-bar__title">Visual mode</div>
 	<a class="vm-bar__exit" href="?manage_exit=y" title="{lang key='exit'}"><span class="v-icon v-icon--exit"></span> {lang key='exit'}</a>

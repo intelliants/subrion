@@ -392,7 +392,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			isset($_SESSION['preview_pages']) || $_SESSION['preview_pages'] = array();
 			$_SESSION['preview_pages'][$name] = $newPage;
 
-			$languagesEnabled = $this->_iaCore->get('language_switch', false) && count($this->_iaCore->languages);
+			$languagesEnabled = $this->_iaCore->get('language_switch') && count($this->_iaCore->languages);
 			$redirectUrl = IA_CLEAR_URL . ($languagesEnabled ? $_POST['language'] . IA_URL_DELIMITER : '') . 'page' . IA_URL_DELIMITER . $name . IA_URL_DELIMITER . '?preview';
 
 			iaUtil::go_to($redirectUrl);

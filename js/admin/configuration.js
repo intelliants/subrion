@@ -1,6 +1,6 @@
 $(function()
 {
-	$('input[name^="param"], select[name^="param"]').on('change', function()
+	$('input[name^="v"], select[name^="v"]').on('change', function()
 	{
 		var id = $(this).attr('id');
 
@@ -8,25 +8,18 @@ $(function()
 		$('[data-id="js-' + id + '-' + $(this).val() + '"]').show();
 	});
 
-	$('.js-set-default').on('click', function()
+	$('.set-default, .set-custom').on('click', function()
 	{
-		var div = $(this).parent().parent().parent().get(0);
-		$(div).removeClass('common').addClass('custom');
-		$(div).find('.chck').val('0');
+		$(this).closest('.row')
+			.toggleClass('common custom')
+			.find('.chck').val($(this).data('value'));
 	});
 
-	$('.js-set-custom').on('click', function()
+	$('.item-val').dblclick(function()
 	{
-		var div = $(this).parent().parent().parent().get(0);
-		$(div).removeClass('custom').addClass('common');
-		$(div).find('.chck').val('1');
-	});
-
-	$('.item_val').dblclick(function()
-	{
-		var div = $(this).parent().parent().get(0);
-		$(div).removeClass('custom').addClass('common');
-		$(div).find('.chck').val('1');
+		$(this).closest('.row')
+			.toggleClass('common custom')
+			.find('.chck').val('1');
 	});
 
 

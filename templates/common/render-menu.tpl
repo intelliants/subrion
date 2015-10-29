@@ -1,7 +1,7 @@
 {if 'mainmenu' == $position}
 	{ia_menu menus=$menu.contents class="nav navbar-nav navbar-right nav-main {$menu.classname}"}
 {elseif 'inventory' == $position}
-	{ia_menu menus=$menu.contents class="nav navbar-nav navbar-right nav-inventory {$menu.classname}" loginout=true}
+	{ia_menu menus=$menu.contents class="nav navbar-nav navbar-right nav-inventory {$menu.classname}"}
 {elseif 'account' == $position}
 	{if 'account' == $menu.name && $member && $core.config.members_enabled}
 		<ul class="nav navbar-nav navbar-right nav-account">

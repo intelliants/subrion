@@ -127,6 +127,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	iaBreadcrumb::preEnd($alpha, $iaPage->getUrlByName('members') . $alpha . IA_URL_DELIMITER);
 
+	// TODO: custom http validation
+	if (isset($member['website']) && $member['website'] && preg_match('#^http#i', $member['website']) !== 1)
+	{
+		$member['website'] = 'http://' . $member['website'];
+	}
+
 	$iaView->assign('item', $member);
 	$iaView->assign('sections', $sections);
 

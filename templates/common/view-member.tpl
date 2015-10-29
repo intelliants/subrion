@@ -39,7 +39,7 @@
 				{if isset($item.website) && $item.website}
 					<tr>
 						<td>{lang key='field_website'}</td>
-						<td><a href="{$item.website}">{$item.website}</a></td>
+						<td>{$item.website|linkify}</td>
 					</tr>
 				{/if}
 				{if isset($item.biography) && $item.biography}
@@ -50,7 +50,7 @@
 				{/if}
 				<tr>
 					<td>{lang key='member_since'}</td>
-					<td>{$item.date_reg|date_format:$config.date_format}</td>
+					<td>{$item.date_reg|date_format:$core.config.date_format}</td>
 				</tr>
 			</tbody>
 		</table>

@@ -244,8 +244,23 @@ intelli = {
 		Sortable.create(el, params);
 	},
 
-	includeSecurityToken: function(params, tokenValue)
-	{
+	confirm: function(text, options, callback) {
+		bootbox.confirm(text, function(result) {
+			if (result) {
+				if (typeof options === 'object') {
+					if ('' != options.url) {
+						window.location = options.url;
+					}
+				}
+			}
+
+			if (typeof callback === 'function') {
+				callback(result);
+			}
+		});
+	},
+
+	includeSecurityToken: function(params, tokenValue) {
 		if ('object' == typeof params)
 		{
 			params[this.securityTokenKey] = tokenValue;

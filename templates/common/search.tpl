@@ -9,7 +9,7 @@
 	</form>
 {else}
 	<div class="js-search-sorting-header">
-		{ia_hooker name="frontSearchSorting{$itemName|ucfirst}"}
+		{ia_hooker name="smartyFrontSearchSorting{$itemName|ucfirst}"}
 	</div>
 {/if}
 
@@ -28,7 +28,9 @@
 			{$results[1]}
 		{/if}
 	{elseif !$regular}
-		<div class="message alert">{lang key='nothing_found'}</div>
+		{if !$empty}
+			<div class="message alert">{lang key='nothing_found'}</div>
+		{/if}
 	{/if}
 </div>
 

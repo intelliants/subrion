@@ -741,7 +741,7 @@ INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`priva
 INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_values`,`type`,`wysiwyg`,`description`,`order`,`extras`,`private`,`custom`,`show`) VALUES
 ('general','general_divider','General','1','divider',0,'',0,'',1,1,''),
 ('general','site','Subrion CMS','1','text',0,'Site title',3,'',0,1,''),
-('general','suffix',':: Powered by Subrion 3.3','1','text',0,'Suffix for page titles',9,'',0,1,''),
+('general','suffix',':: Powered by Subrion 4.0','1','text',0,'Suffix for page titles',9,'',0,1,''),
 ('general','site_logo','','','image',0,'Website logo',12,'',0,0,''),
 ('general','regional_divider','Regional','1','divider',30,'',20,'',1,1,''),
 ('general','lang','{install:lang}','1','select',0,'Default language',33,'',0,1,''),
@@ -876,12 +876,12 @@ INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`leng
 ('fullname','members',1,'text',50,3,0,1,'',1),
 ('avatar','members',1,'image',1,4,0,0,'',1),
 ('website','members',1,'text',250,4,1,0,'',0),
-('phone','members',1,'text',100,5,1,0,'',1),
+('phone','members',1,'text',100,5,1,0,'',0),
 ('biography','members',1,'textarea',500,6,1,0,'',0),
-('facebook','members',2,'text',150,7,1,0,'',1),
-('twitter','members',2,'text',150,8,1,0,'',1),
-('gplus','members',2,'text',150,9,1,0,'',1),
-('linkedin','members',2,'text',150,10,1,0,'',1),
+('facebook','members',2,'text',150,7,1,0,'',0),
+('twitter','members',2,'text',150,8,1,0,'',0),
+('gplus','members',2,'text',150,9,1,0,'',0),
+('linkedin','members',2,'text',150,10,1,0,'',0),
 ('member_id','transactions',0,'text',100,5,1,0,'',0),
 ('reference_id','transactions',0,'text',100,6,1,0,'',0),
 ('date','transactions',0,'date',0,7,1,0,'',0),
@@ -942,9 +942,9 @@ INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`,`extras`) VAL
 
 INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`) VALUES
 ('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/opengraph.tpl'),
-('smartyAdminAfterHeadSection','{if $config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',2,'smarty','admin',''),
+('smartyAdminAfterHeadSection','{if $core.config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',2,'smarty','admin',''),
 ('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''];\r\n		}\r\n	}\r\n}','active',5,'php','admin',''),
-('frontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl');
+('smartyFrontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl');
 
 INSERT INTO `{install:prefix}items` (`payable`,`item`,`package`,`pages`) VALUES
 (1,'members','core','profile,view_member'),
@@ -1177,10 +1177,11 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('csv_format','CSV format','admin'),
 ('current_home_page','Current homepage','admin'),
 ('custom','Custom','admin'),
-('custom_perm','Custom Permissions','admin'),
+('custom_configuration_title',':settings configuration for :type ":title"','admin'),
 ('custom_modification','Custom Modification','admin'),
 ('custom_template','Use custom tpl','admin'),
 ('custom_template_filename','Template filename','admin'),
+('custom_perm','Custom Permissions','admin'),
 ('custom_url','Custom URL','admin'),
 ('customize','Customize','admin'),
 ('customization_mode_alert','You are in customization mode. Do not forget to save your changes.','admin'),
@@ -1194,7 +1195,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('days_ago',':days days ago','admin'),
 ('deactivate','Deactivate package','admin'),
 ('default_language','Default Language','admin'),
-('digits_only','digits only (1-255), default is 100','admin'),
+('digits_only','digits only (1-255), default is 255','admin'),
 ('directory_not_writable','Directory ":directory" is not writable. You could not save to server.','admin'),
 ('display','Display','admin'),
 ('do','Do','admin'),
@@ -1751,6 +1752,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_login','Either login or password is invalid.','common'),
 ('error_password_empty','Please input correct password.','common'),
 ('error_password_match','Password does not match.','common'),
+('error_phone_incorrect','Phone is incorrect.','common'),
 ('error_tmp_directory_readonly','Temp directory is readonly. Please make it writable.','common'),
 ('error_url','Site URL is incorrect.','common'),
 
@@ -1874,6 +1876,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('password_confirm','Password confirmation','common'),
 ('password_incorrect','Password is incorrect.','common'),
 ('pending','Pending','common'),
+('phone','Phone','common'),
 ('plan_added','Plan added.','common'),
 ('plans','Plans','common'),
 ('position','Position','common'),
@@ -1962,6 +1965,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('bots_visits','Visits last 24h (bots)','frontend'),
 ('by_fullname','full name','frontend'),
 ('by_username','username','frontend'),
+('by_name','By name','frontend'),
+('by_registration_date','By registration date','frontend'),
 
 ('change_gateway','Change gateway','frontend'),
 ('chars_left','Chars left','frontend'),
@@ -2073,6 +2078,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('thankyou_tail','<p>Please read our letter with further instructions.</p>','frontend'),
 ('this_transaction_already_passed','We already have this payment in our database. Transaction passed successfully.','frontend'),
 ('total_paid','Total Paid','frontend'),
+('tools','Tools','frontend'),
 
 ('unable_to_send_email','Unable to send e-mail.','frontend'),
 ('usergroups','Usergroups','frontend'),

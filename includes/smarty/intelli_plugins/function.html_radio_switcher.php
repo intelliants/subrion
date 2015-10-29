@@ -8,7 +8,7 @@ function smarty_function_html_radio_switcher(array $params)
 
 	if (isset($params['conf']))
 	{
-		$name = 'param[' . $name . ']';
+		$name = 'v[' . $name . ']';
 	}
 
 	$attr = $value ? ' checked' : '';

@@ -193,7 +193,7 @@
 					<label class="col col-lg-2 control-label">{lang key='field_length'}</label>
 
 					<div class="col col-lg-4">
-						<input class="js-filter-numeric" type="text" name="text_length" value="{if !$item.length || $item.length > 255}100{else}{$item.length}{/if}">
+						<input class="js-filter-numeric" type="text" name="text_length" value="{if !$item.length || $item.length > 255}255{else}{$item.length}{/if}">
 						<p class="help-block">{lang key='digits_only'}</p>
 					</div>
 				</div>
@@ -287,10 +287,10 @@
 						<div class="col col-lg-4">
 							<div class="row">
 								<div class="col col-lg-6">
-									<input type="text" name="thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape:'html'}{else}{$config.thumb_w}{/if}">
+									<input type="text" name="thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape:'html'}{else}{$core.config.thumb_w}{/if}">
 								</div>
 								<div class="col col-lg-6">
-									<input type="text" name="thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape:'html'}{else}{$config.thumb_h}{/if}">
+									<input type="text" name="thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape:'html'}{else}{$core.config.thumb_h}{/if}">
 								</div>
 							</div>
 						</div>
@@ -504,10 +504,10 @@
 						<div class="col col-lg-4">
 							<div class="row">
 								<div class="col col-lg-6">
-									<input type="text" name="pic_thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape:'html'}{else}{$config.thumb_w}{/if}">
+									<input type="text" name="pic_thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape:'html'}{else}{$core.config.thumb_w}{/if}">
 								</div>
 								<div class="col col-lg-6">
-									<input type="text" name="pic_thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape:'html'}{else}{$config.thumb_h}{/if}">
+									<input type="text" name="pic_thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape:'html'}{else}{$core.config.thumb_h}{/if}">
 								</div>
 							</div>
 						</div>

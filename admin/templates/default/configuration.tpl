@@ -3,180 +3,166 @@
 	{preventCsrf}
 	<div class="wrap-list">
 		<div class="wrap-group">
-		{foreach $params as $key => $value}
-			{if !empty($value.show)}
-				{assign field_show explode('|', $value.show)}
+		{foreach $params as $entry}
+			{if !empty($entry.show)}
+				{assign field_show explode('|', $entry.show)}
 
 				{capture assign='dependent_fields'}
-					data-id="js-{$field_show[0]}-{$field_show[1]}" {if (!empty($field_show[0]) && $config.{$field_show[0]} != $field_show[1])} style="display: none;"{/if}
+					data-id="js-{$field_show[0]}-{$field_show[1]}" {if (!empty($field_show[0]) && $core.config.{$field_show[0]} != $field_show[1])} style="display: none;"{/if}
 				{/capture}
 			{else}
 				{assign dependent_fields ''}
 			{/if}
 
-			{if 'divider' == $value.type}
-				{if !$value@first}
+			{if 'divider' == $entry.type}
+				{if !$entry@first}
 					</div>
 					<div class="wrap-group" {$dependent_fields}>
 				{/if}
-				<a name="{$value.name}"></a>
+				<a name="{$entry.name}"></a>
 				<div class="wrap-group-heading" {$dependent_fields}>
-					{$value.value|escape:'html'}
+					{$entry.value|escape:'html'}
 
-					{if isset($tooltips[$value.name])}
-						<a href="#" class="js-tooltip" data-placement="right" title="{$tooltips[$value.name]}"><i class="i-info"></i></a>
+					{if isset($tooltips[$entry.name])}
+						<a href="#" class="js-tooltip" data-placement="right" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
 					{/if}
 				</div>
-			{elseif 'hidden' != $value.type}
-				<div class="row {if 'custom' == $pageAction}custom{/if}" {$dependent_fields}>
-					<label class="col col-lg-2 control-label" for="{$value.name}">
-						{$value.description|escape:'html'}
-						{if isset($tooltips[$value.name])}
-							<a href="#" class="js-tooltip" title="{$tooltips[$value.name]}"><i class="i-info"></i></a>
+			{elseif 'hidden' != $entry.type}
+				<div class="row {$entry.class}" {$dependent_fields}>
+					<label class="col col-lg-2 control-label" for="{$entry.name}">
+						{$entry.description|escape:'html'}
+						{if isset($tooltips[$entry.name])}
+							<a href="#" class="js-tooltip" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
 						{/if}
 					</label>
 
-					{if in_array($value.type, array('textarea', 'tpl'))}
+					{if in_array($entry.type, array('textarea', 'tpl'))}
 						<div class="col col-lg-8">
 					{else}
-						<div class="col col-lg-4">
+						<div class="col col-lg-5">
 					{/if}
 
-					{if 'custom' == $pageAction}
-						<div class="pull-right">
-							<span class="js-set-custom">{lang key='config_set_custom'}</span>
-							<span class="js-set-default">{lang key='config_set_default'}</span>
-						</div>
-					{/if}
-
-					<input type="hidden" class="chck" name="chck[{$value.name}]" value="{if $value.classname != 'custom'}1{else}0{/if}" />
-					{if 'password' == $value.type}
-						{if 'custom' == $pageAction}
-							<div class="item_val">{if empty($value.default)}{lang key='config_empty_password'}{else}***********{/if}</div>
+					<input type="hidden" class="chck" name="c[{$entry.name}]" value="{if 'custom' != $entry.class}1{else}0{/if}" />
+					{if 'password' == $entry.type}
+						{if $custom}
+							<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_password'}{else}***********{/if}</div>
 						{/if}
 
-						<div class="item_input">
-							<input type="password" class="js-input-password" name="param[{$value.name}]" id="{$value.name}" value="{$value.value|escape:"html"}" />
+						<div class="item-input">
+							<input type="password" class="js-input-password" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:"html"}" />
 						</div>
-					{elseif 'text' == $value.type}
-						{if 'expiration_action' == $value.name}
-							<select name="param[expiration_action]">
-								<option value=""{if $value.value == ''} selected{/if}>{lang key='nothing'}</option>
-								<option value="remove"{if $value.value == 'remove'} selected{/if}>{lang key='remove'}</option>
-								<optgroup label="Status">
-									<option value="approval"{if $value.value == 'approval'} selected{/if}>{lang key='approval'}</option>
-									<option value="banned"{if $value.value == 'banned'} selected{/if}>{lang key='banned'}</option>
-									<option value="suspended"{if $value.value == 'suspended'} selected{/if}>{lang key='suspended'}</option>
-								</optgroup>
-								<optgroup label="Type">
-									<option value="regular"{if $value.value == 'regular'} selected{/if}>{lang key='regular'}</option>
-									<option value="featured"{if $value.value == 'featured'} selected{/if}>{lang key='featured'}</option>
-									<option value="partner"{if $value.value == 'partner'} selected{/if}>{lang key='partner'}</option>
-								</optgroup>
-							</select>
-						{elseif 'captcha_preview' == $value.name}
+					{elseif 'text' == $entry.type}
+						{if 'captcha_preview' == $entry.name}
 							{captcha preview=true}
 						{else}
-							{if 'custom' == $pageAction}
-								<div class="item_val">{if empty($value.default)}{lang key='config_empty_value'}{else}{$value.default|escape:'html'}{/if}</div>
+							{if $custom}
+								<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default|escape:'html'}{/if}</div>
 							{/if}
 
-							<div class="item_input">
-								<input type="text" name="param[{$value.name}]" id="{$value.name}" value="{$value.value|escape:'html'}" />
+							<div class="item-input">
+								<input type="text" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:'html'}" />
 							</div>
 						{/if}
-					{elseif 'textarea' == $value.type}
-						{if 'custom' == $pageAction}
-							<div class="item_val">{if empty($value.default)}{lang key='config_empty_value'}{else}{$value.default}{/if}</div>
+					{elseif 'textarea' == $entry.type}
+						{if $custom}
+							<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default}{/if}</div>
 						{/if}
 
-						<div class="item_input">
-							<textarea name="param[{$value.name}]" id="{$value.name}" class="{if $value.wysiwyg == '1'}js-wysiwyg {elseif $value.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$value.value|escape:'html'}</textarea>
+						<div class="item-input">
+							<textarea name="v[{$entry.name}]" id="{$entry.name}" class="{if $entry.wysiwyg == 1}js-wysiwyg {elseif $entry.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value|escape:'html'}</textarea>
 						</div>
-					{elseif 'image' == $value.type}
+					{elseif 'image' == $entry.type}
 						{if !is_writeable($smarty.const.IA_UPLOADS)}
 							<div class="alert alert-info">{lang key='upload_writable_permission'}</div>
 						{else}
-							{if !empty($value.value) || $value.name == 'site_logo'}
+							{if !empty($entry.value) || $entry.name == 'site_logo'}
 								<div class="thumbnail">
-									{if !empty($value.value)}
-										<img src="{$core.page.nonProtocolUrl}uploads/{$value.value}">
-									{elseif $value.name == 'site_logo'}
-										<img src="{$core.page.nonProtocolUrl}templates/{$config.tmpl}/img/logo.png">
+									{if !empty($entry.value)}
+										<img src="{$core.page.nonProtocolUrl}uploads/{$entry.value}">
+									{elseif $entry.name == 'site_logo'}
+										<img src="{$core.page.nonProtocolUrl}templates/{$core.config.tmpl}/img/logo.png">
 									{/if}
 								</div>
 
-								{if !empty($value.value)}
+								{if !empty($entry.value)}
 									<div class="checkbox">
-										<label><input type="checkbox" name="delete[{$value.name}]"> {lang key='delete'}</label>
+										<label><input type="checkbox" name="delete[{$entry.name}]"> {lang key='delete'}</label>
 									</div>
 								{/if}
 							{/if}
 
-							{ia_html_file name=$value.name value=$value.value}
+							{ia_html_file name=$entry.name value=$entry.value}
 						{/if}
-					{elseif 'checkbox' == $value.type}
-						<div class="item_input">
-							<input type="checkbox" name="param[{$value.name}]" id="{$value.name}">
+					{elseif 'checkbox' == $entry.type}
+						<div class="item-input">
+							<input type="checkbox" name="v[{$entry.name}]" id="{$entry.name}">
 						</div>
-					{elseif 'radio' == $value.type}
-						{if 'custom' == $pageAction}
-							<div class="item_val">{if $value.default == 1}ON{else}OFF{/if}</div>
+					{elseif 'radio' == $entry.type}
+						{if $custom}
+							<div class="form-control disabled item-val">{if $entry.default == 1}ON{else}OFF{/if}</div>
 						{/if}
 
-						<div class="item_input">
-							{html_radio_switcher value=$value.value name=$value.name conf=true}
+						<div class="item-input">
+							{html_radio_switcher value=$entry.value name=$entry.name conf=true}
 						</div>
-					{elseif 'select' == $value.type}
-						{if 'custom' == $pageAction}
-							<div class="item_val">{if $value.name == 'lang'}{$value.values[$value.default]}{else}{$value.default}{/if}</div>
+					{elseif 'select' == $entry.type}
+						{if $custom}
+							<div class="form-control disabled item-val">{if $entry.name == 'lang'}{$entry.values[$entry.default].title|escape:'html'}{else}{$entry.default}{/if}</div>
 						{/if}
 
-						<div class="item_input">
-							<select name="param[{$value.name}]" {if count($value.values) == 1} disabled="disabled"{/if} id="{$value.name}">
-								{foreach $value.values as $key => $value2}
-									{if 'lang' == $value.name}
-										<option value="{$key}"{if $key == $value.value || $value2 == $value.value} selected{/if}>{$value2.title}</option>
+						<div class="item-input">
+							<select name="v[{$entry.name}]" {if count($entry.values) == 1} disabled="disabled"{/if} id="{$entry.name}">
+								{foreach $entry.values as $key => $value2}
+									{if 'lang' == $entry.name}
+										<option value="{$key}"{if $key == $entry.value || $value2 == $entry.value} selected{/if}>{$value2.title}</option>
 									{elseif is_array($value2)}
 										<optgroup label="{$key}">
 											{foreach $value2 as $subkey => $subvalue}
-												<option value="{$subkey}"{if $subkey == $value.value} selected{/if}>{$subvalue}</option>
+												<option value="{$subkey}"{if $subkey == $entry.value} selected{/if}>{$subvalue}</option>
 											{/foreach}
 										</optgroup>
 									{else}
-										<option value="{$value2|trim:"'"}"{if $value2|trim:"'" == $value.value} selected{/if}>{$value2|trim:"'"}</option>
+										<option value="{$value2|trim:"'"}"{if $value2|trim:"'" == $entry.value} selected{/if}>{$value2|trim:"'"}</option>
 									{/if}
 								{/foreach}
 							</select>
 						</div>
-					{elseif $value.type == 'itemscheckbox' && 'custom' != $pageAction}
-						{if isset($value.items)}
-							<div class="item_input">
-								<input type="hidden" name="param[{$value.name}][]">
-								{foreach $value.items as $item name=items}
+					{elseif $entry.type == 'itemscheckbox' && !$custom}
+						{if isset($entry.items)}
+							<div class="item-input">
+								<input type="hidden" name="v[{$entry.name}][]">
+								{foreach $entry.items as $item name=items}
 									<p>
-										<input type="checkbox" id="icb_{$value.name}_{$smarty.foreach.items.iteration}" name="param[{$value.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
-										<label for="icb_{$value.name}_{$smarty.foreach.items.iteration}">{$item.title}</label>
+										<input type="checkbox" id="icb_{$entry.name}_{$smarty.foreach.items.iteration}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
+										<label for="icb_{$entry.name}_{$smarty.foreach.items.iteration}">{$item.title}</label>
 									</p>
 								{/foreach}
 							</div>
 						{else}
 							<div class="alert alert-info">{lang key='no_implemented_packages'}</div>
 						{/if}
-					{elseif 'tpl' == $value.type}
-						{if file_exists($value.multiple_values)}
-							{include $value.multiple_values}
+					{elseif 'tpl' == $entry.type}
+						{if file_exists($entry.multiple_values)}
+							{include $entry.multiple_values}
 						{else}
-							{lang key='template_file_error' file=$value.multiple_values}
+							{lang key='template_file_error' file=$entry.multiple_values}
 						{/if}
 					{/if}
-					</div>
-				</div>
+					</div> <!-- /.col -->
+					{if $custom}
+						<div class="col col-lg-2">
+							<span class="btn btn-default set-custom" data-value="1">{lang key='config_set_custom'}</span>
+							<span class="btn btn-default set-default" data-value="0">{lang key='config_set_default'}</span>
+						</div>
+					{/if}
+				</div><!-- /.row -->
 			{/if}
 		{/foreach}
 	</div>
 
-	<div class="form-actions"><input type="submit" name="save" id="save" class="btn btn-primary" value="{lang key='save_changes'}"></div>
+	<div class="form-actions">
+		<input type="submit" name="save" id="save" class="btn btn-primary" value="{lang key='save_changes'}">
+	</div>
 </form>
 {/if}
 

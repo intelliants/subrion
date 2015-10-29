@@ -185,13 +185,18 @@ abstract class abstractPackageFront extends abstractCore
 		return (bool)$result;
 	}
 
-	public function coreSearch($stmt, $start, $limit, array $sorting)
+	public function coreSearch($stmt, $start, $limit, $order)
 	{
-		$order = $sorting ? ' ORDER BY `' . $sorting[0] . '` ' . $sorting[1] : '';
+		$order = empty($order) ? '' : ' ORDER BY ' . $order;
 
 		$rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt . $order, $start, $limit, self::getTable());
 		$count = $this->iaDb->foundRows();
 
 		return array($count, $rows);
+	}
+
+	public function coreSearchTranslateColumn($column, $value)
+	{
+		return null;
 	}
 }

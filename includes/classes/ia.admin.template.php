@@ -479,9 +479,11 @@ class iaTemplate extends abstractCore
 			}
 		}
 
+		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
+
 		if ($this->blocks)
 		{
-			$iaDb->setTable('blocks');
+			$iaDb->setTable($iaBlock::getTable());
 
 			$maxOrder = $iaDb->one('MAX(`order`)');
 			$maxOrder = ($maxOrder ? $maxOrder : 1);
@@ -495,7 +497,7 @@ class iaTemplate extends abstractCore
 				}
 				else
 				{
-					$block['order'] = intval($block['order']);
+					$block['order'] = (int)$block['order'];
 				}
 
 				if (!empty($block['filename']))
@@ -521,8 +523,7 @@ class iaTemplate extends abstractCore
 
 				if ($blockPages)
 				{
-					$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
-					$iaBlock->setVisiblePages($id, explode(',', $blockPages), $block['sticky']);
+					$iaBlock->setVisibility($id, $block['sticky'], explode(',', $blockPages));
 				}
 			}
 
@@ -584,8 +585,7 @@ class iaTemplate extends abstractCore
 					{
 						$entryId = $iaDb->one(iaDb::ID_COLUMN_SELECTION, $stmt, $tableName);
 
-						$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
-						$iaBlock->setVisiblePages($entryId, $pagesList, (isset($changeset['sticky']) ? (bool)$changeset['sticky'] : false));
+						$iaBlock->setVisibility($entryId, (isset($changeset['sticky']) ? (bool)$changeset['sticky'] : false), $pagesList);
 					}
 				}
 			}

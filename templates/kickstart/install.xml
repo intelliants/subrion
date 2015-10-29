@@ -4,14 +4,15 @@
 	<summary>Bootstrap 3 developer template</summary>
 	<author>Gleb Surinov</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.4.0</version>
-	<date>2015-10-10</date>
-	<compatibility>3.4</compatibility>
+	<version>1.0.0</version>
+	<date>2015-10-21</date>
+	<compatibility>4.0</compatibility>
 
 	<layout>
 		<position menu="1" movable="0">account</position>
 		<position menu="1" movable="0">mainmenu</position>
 
+		<position>inventory</position>
 		<position>teaser</position>
 		<position>verytop</position>
 		<position>top</position>
@@ -64,6 +65,12 @@
 		    order="3005" 
 		    values="1,0" 
 		    description="Enable Logo text">0</config>
+	<config group="template_kickstart"
+			name="logo_text"
+		    type="text" 
+		    order="3006" 
+		    show="enable_text_logo|1" 
+		    description="Logo text">Kickstart</config>
 
 	<config group="template_kickstart" 
 		    name="kickstart_divider2" 
@@ -250,6 +257,6 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 	<phrases>
 		<phrase category="frontend" key="login">Log in</phrase>
 		<phrase category="frontend" key="register">Sign up</phrase>
-		<phrase category="frontend" key="kickstart">Kickstart</phrase>
+		<phrase category="frontend" key="back_to_top">Back to top</phrase>
 	</phrases>
 </template>

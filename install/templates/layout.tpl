@@ -101,7 +101,7 @@
 								</a>
 							</li>
 						</ul>
-						<p class="navbar-text pull-right">Copyright &copy; <?php echo date('Y') ?> <a href="http://www.intelliants.com/" title="Software Development Company">Intelliants LLC</a></p>
+						<p class="navbar-text pull-right">Copyright &copy; <?php echo date('Y') ?> <a href="https://intelliants.com/" title="Software Development Company">Intelliants LLC</a></p>
 					</div>
 				
 					<div class="content-wrapper">

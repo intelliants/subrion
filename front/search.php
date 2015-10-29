@@ -32,7 +32,6 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	$query = empty($_GET['q']) ? null : $_GET['q'];
-	if (!isset($_GET['q']) && isset($_POST['q'])) $query = $_POST['q']; // compatibility layer. to be removed later
 
 	$params = $_GET;
 	unset($params['page']);
@@ -54,16 +53,22 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	if ('search' != $iaView->name() || isset($iaCore->requestPath[0]))
 	{
-		$itemName = isset($iaCore->requestPath[0]) ? $iaCore->requestPath[0] : str_replace('search_', '', $iaView->name());
+		$empty = empty($params) && empty($iaCore->requestPath);
+		$itemName = ('search' != $iaView->name())
+			? str_replace('search_', '', $iaView->name())
+			: $iaCore->requestPath[0];
 
-		if ($itemName && in_array($itemName, $iaItem->getItems()))
+		if (in_array($itemName, $iaItem->getItems()))
 		{
-			$results = $iaSearch->doRegularItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
+			$empty || $results = $iaSearch->doRegularItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
 
 			$iaView->set('filtersItemName', $itemName);
 			$iaView->set('filtersParams', $iaSearch->getParams());
 
 			$iaView->assign('itemName', $itemName);
+			$iaView->assign('empty', $empty);
+
+			$iaView->title($iaSearch->getCaption() ? $iaSearch->getCaption() : $iaView->title());
 		}
 		else
 		{

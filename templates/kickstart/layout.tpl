@@ -46,7 +46,6 @@
 					{ia_blocks block='inventory'}
 				</div>
 			</div>
-
 			<nav class="navbar navbar-default">
 				<div class="container">
 					<!-- Brand and toggle get grouped for better mobile display -->
@@ -59,7 +58,7 @@
 						</button>
 						<a class="navbar-brand{if !$core.config.enable_text_logo} navbar-brand--img{/if}" href="{$smarty.const.IA_URL}">
 							{if $core.config.enable_text_logo}
-								{lang key='kickstart'}
+								{$core.config.logo_text}
 							{else}
 								{if !empty($core.config.site_logo)}
 									<img src="{$core.page.nonProtocolUrl}uploads/{$core.config.site_logo}" alt="{$core.config.site}">
@@ -116,8 +115,8 @@
 												{if 'action-favorites' == $name}
 													{printFavorites item=$item itemtype=$item.item}
 												{else}
-													<a {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
-														<span class="fa fa-{$name}" title="{$action.title}"></span>
+													<a data-toggle="tooltip" title="{$action.title}" {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
+														<span class="fa fa-{$name}"></span>
 													</a>
 												{/if}
 											</li>
@@ -127,7 +126,9 @@
 
 								{ia_hooker name='smartyFrontBeforeMainContent'}
 
-								{$_content_}
+								<div class="content__body">
+									{$_content_}
+								</div>
 
 								{ia_hooker name='smartyFrontAfterMainContent'}
 
@@ -171,14 +172,14 @@
 						<p class="copyright">&copy; {$smarty.server.REQUEST_TIME|date_format:'%Y'} {lang key='powered_by_subrion'}</p>
 					</div>
 					<div class="col-md-6">
-						<a href="#" class="back-to-top js-back-to-top"><span class="fa fa-angle-up"></span></a>
-						{if $config.kickstart_social}
+						<a href="#" class="back-to-top js-back-to-top"><span class="fa fa-angle-up"></span> {lang key='back_to_top'}</a>
+						{if $core.config.kickstart_social}
 							<div class="social">
 								<h4>Share your love</h4>
-								{if $config.kickstart_social_t}<a href="{$config.kickstart_social_t}" class="twitter"><span class="fa fa-twitter"></span></a>{/if}
-								{if $config.kickstart_social_f}<a href="{$config.kickstart_social_f}" class="facebook"><span class="fa fa-facebook"></span></a>{/if}
-								{if $config.kickstart_social_g}<a href="{$config.kickstart_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a>{/if}
-								{if $config.kickstart_social_i}<a href="{$config.kickstart_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a>{/if}
+								{if $core.config.kickstart_social_t}<a href="{$core.config.kickstart_social_t}" class="twitter"><span class="fa fa-twitter"></span></a>{/if}
+								{if $core.config.kickstart_social_f}<a href="{$core.config.kickstart_social_f}" class="facebook"><span class="fa fa-facebook"></span></a>{/if}
+								{if $core.config.kickstart_social_g}<a href="{$core.config.kickstart_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a>{/if}
+								{if $core.config.kickstart_social_i}<a href="{$core.config.kickstart_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a>{/if}
 							</div>
 						{/if}
 					</div>

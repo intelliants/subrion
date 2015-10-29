@@ -28,7 +28,7 @@
 					{else}
 						<a href="pay/{$transaction.sec_key}/?repay" class="btn btn-mini">{lang key='change_gateway'}</a>
 					{/if}
-					<a href="pay/{$transaction.sec_key}/?delete" class="btn btn-mini btn-danger" onclick="return confirm(_f('are_you_sure_to_cancel_invoice'))">{lang key='cancel'}</a>
+					<a href="pay/{$transaction.sec_key}/?delete" class="btn btn-mini btn-danger js-cancel-invoice">{lang key='cancel'}</a>
 				{/if}
 			</td>
 		</tr>
@@ -37,6 +37,16 @@
 	</table>
 
 	{navigation aTotal=$pagination.total aTemplate=$pagination.template aItemsPerPage=$pagination.limit aNumPageItems=5 aTruncateParam=1}
+
+	{ia_add_js}
+$(function() {
+	$('.js-cancel-invoice').on('click', function(e) {
+		e.preventDefault();
+
+		intelli.confirm(_t('are_you_sure_to_cancel_invoice'), { url: $(this).attr('href') });
+	});
+});
+	{/ia_add_js}
 {else}
 	<div class="alert alert-info">{lang key='no_transactions_records'}</div>
 {/if}

@@ -24,7 +24,7 @@
 				<div class="col col-lg-4">
 					<div class="input-group">
 						<input class="js-filter-numeric" type="text" name="cost" value="{$item.cost|escape:'html'}" maxlength="11">
-						<div class="input-group-addon">{$config.currency}</div>
+						<div class="input-group-addon">{$core.config.currency}</div>
 					</div>
 				</div>
 			</div>

@@ -4,6 +4,8 @@
 class iaBackendController extends iaAbstractControllerBackend
 {
 	const TYPE_DIVIDER = 'divider';
+	const TYPE_IMAGE = 'image';
+	const TYPE_SELECT = 'select';
 
 	protected $_name = 'configuration';
 
@@ -14,33 +16,26 @@ class iaBackendController extends iaAbstractControllerBackend
 		'image/png' => 'png'
 	);
 
+	private $_type;
+	private $_typeId;
+
 
 	protected function _indexPage(&$iaView)
 	{
-		$type = null;
-		$customEntryId = false;
-
-		if (isset($_GET['group']))
+		if (!empty($_GET['group']))
 		{
-			$type = 'group';
-			$customEntryId = (int)$_GET['group'];
+			$this->_type = 'group';
+			$this->_typeId = (int)$_GET['group'];
 
 			iaBreadcrumb::preEnd(iaLanguage::get('usergroups'), IA_ADMIN_URL . 'usergroups/');
 		}
-		elseif (isset($_GET['user']))
+		elseif (!empty($_GET['user']))
 		{
-			$type = 'user';
-			$customEntryId = (int)$_GET['user'];
+			$this->_type = 'user';
+			$this->_typeId = (int)$_GET['user'];
 
 			iaBreadcrumb::preEnd(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
 		}
-
-		if (isset($_POST['save']))
-		{
-			$this->_save($iaView, $type, $customEntryId);
-		}
-
-		$iaItem = $this->_iaCore->factory('item');
 
 		$groupName = isset($this->_iaCore->requestPath[0]) ? $this->_iaCore->requestPath[0] : 'general';
 		$groupData = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $groupName), iaCore::getConfigGroupsTable());
@@ -50,109 +45,17 @@ class iaBackendController extends iaAbstractControllerBackend
 			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 		}
 
-		$this->_setGroup($iaView, $iaItem, $groupData);
+		$this->_setGroup($iaView, $groupData);
 
-		$where = "`config_group` = '{$groupName}' AND `type` != 'hidden' " . ($type ? 'AND `custom` = 1' : '') . ' ORDER BY `order`';
-		$params = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, iaCore::getConfigTable());
-		if ($type)
+		if (isset($_POST['save']))
 		{
-			$custom = ('user' == $type)
-				? $this->_iaCore->getCustomConfig($customEntryId)
-				: $this->_iaCore->getCustomConfig(false, $customEntryId);
-			$custom2 = array();
-			if ('user' == $type)
-			{
-				$custom2 = $this->_iaDb->getKeyValue('SELECT d.`name`, d.`value` '
-					. "FROM `{$this->_iaCore->iaDb->prefix}config_custom` d, `{$this->_iaCore->iaDb->prefix}members` a "
-					. "WHERE d.`type` = 'group' AND d.`type_id` = a.`usergroup_id` AND a.`id` = '{$customEntryId}'");
-			}
+			$this->_save($iaView);
 		}
 
-		$itemsList = $iaItem->getItems();
-
-		foreach ($params as $index => $item)
-		{
-			$className = 'default';
-
-			if ($type)
-			{
-				$className = 'custom';
-
-				if (self::TYPE_DIVIDER != $item['type'])
-				{
-					if (isset($custom2[$item['name']]))
-					{
-						$params[$index]['dtype'] = 'usergroup';
-						$params[$index]['default'] = $custom2[$item['name']];
-						$params[$index]['value'] = $custom2[$item['name']];
-					}
-					else
-					{
-						$params[$index]['dtype'] = 'core';
-						$params[$index]['default'] = $this->_iaCore->get($item['name']);
-					}
-
-					if (isset($custom[$item['name']]))
-					{
-						$className = 'common';
-						$params[$index]['value'] = $custom[$item['name']];
-					}
-				}
-			}
-
-			if ('itemscheckbox' == $item['type'])
-			{
-				$array = $this->_iaCore->get($item['extras'] . '_items_implemented');
-				$array = $array ? explode(',', $array) : array();
-				$array = array_values(array_intersect($array, $itemsList));
-
-				if ($array)
-				{
-					$enabledItems = $iaItem->getEnabledItemsForPlugin($item['extras']);
-
-					for ($i = 0; $i < count($array); $i++)
-					{
-						$array[$i] = trim($array[$i]);
-						$params[$index]['items'][] = array(
-							'name' => $array[$i],
-							'title' => iaLanguage::get($array[$i]),
-							'checked' => (int)in_array($array[$i], $enabledItems)
-						);
-					}
-				}
-			}
-
-			if ('select' == $item['type'])
-			{
-				switch ($item['name'])
-				{
-					case 'timezone':
-						$params[$index]['values'] = iaUtil::getFormattedTimezones();
-						break;
-					case 'lang':
-						$params[$index]['values'] = $this->_iaCore->languages;
-						break;
-					default:
-						$params[$index]['values'] = explode(',', $item['multiple_values']);
-				}
-			}
-
-			$params[$index]['classname'] = $className;
-		}
-
-		$customUrl = '';
-		if ($type)
-		{
-			$customUrl = isset($_GET['user'])
-				? '?user=' . $_GET['user']
-				: '?group=' . $_GET['group'];
-			$customUrl = iaSanitize::html($customUrl);
-		}
-
+		$iaView->assign('custom', (bool)$this->_type);
 		$iaView->assign('group', $groupData);
-		$iaView->assign('params', $params);
+		$iaView->assign('params', $this->_getParams($groupName));
 		$iaView->assign('tooltips', iaLanguage::getTooltips());
-		$iaView->assign('url_custom', $customUrl);
 	}
 
 	protected function _gridRead($params)
@@ -228,9 +131,37 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $output;
 	}
 
-	private function _setGroup(&$iaView, &$iaItem, array $groupData)
+	private function _setGroup(&$iaView, array $groupData)
 	{
-		$iaView->title($groupData['title']);
+		$iaItem = $this->_iaCore->factory('item');
+
+		if ($this->_type)
+		{
+			$entity = ('user' == $this->_type)
+				? $this->_iaCore->factory('users')->getInfo($this->_typeId)
+				: $this->_iaDb->row(array('name'), iaDb::convertIds($this->_typeId), iaUsers::getUsergroupsTable());
+
+			if (!$entity)
+			{
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			}
+
+			$title = ('user' == $this->_type)
+				? $entity['fullname']
+				: iaLanguage::get('usergroup_' . $entity['name']);
+
+			$title = iaLanguage::getf('custom_configuration_title', array(
+				'settings' => $groupData['title'],
+				'title' => $title,
+				'type' => strtolower(iaLanguage::get('user' == $this->_type ? 'member' : 'usergroup'))
+			));
+		}
+		else
+		{
+			$title = $groupData['title'];
+		}
+
+		$iaView->title($title);
 
 		if ($groupData['extras']) // special cases
 		{
@@ -275,14 +206,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->set('active_menu', $activeMenu);
 	}
 
-	private function _save(&$iaView, $type, $customEntryId)
+	private function _save(&$iaView)
 	{
-		$where = "`type` != 'hidden' " . ($type ? 'AND `custom` = 1' : '');
-		$params = $this->_iaDb->keyvalue(array('name', 'type'), $where, iaCore::getConfigTable());
-
-		// correct admin dashboard URL generation
-		$adminPage = $this->_iaCore->get('admin_page');
-
 		$iaAcl = $this->_iaCore->factory('acl');
 
 		if (!$iaAcl->checkAccess($iaView->name() . iaAcl::SEPARATOR . iaCore::ACTION_EDIT))
@@ -290,25 +215,31 @@ class iaBackendController extends iaAbstractControllerBackend
 			return iaView::accessDenied();
 		}
 
+		$where = "`type` != 'hidden' " . ($this->_type ? 'AND `custom` = 1' : '');
+		$params = $this->_iaDb->keyvalue(array('name', 'type'), $where, iaCore::getConfigTable());
+
+		// correct admin dashboard URL generation
+		$adminPage = $this->_iaCore->get('admin_page');
+
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 		$messages = array();
 		$error = false;
 
-		if ($_POST['param'] && is_array($_POST['param']))
+		if ($_POST['v'] && is_array($_POST['v']))
 		{
-			$values = $_POST['param'];
-
-			$this->_iaDb->setTable(iaCore::getConfigTable());
+			$values = $_POST['v'];
 
 			$this->_iaCore->startHook('phpConfigurationChange', array('configurationValues' => &$values));
+
+			$this->_iaDb->setTable(iaCore::getConfigTable());
 
 			foreach ($values as $key => $value)
 			{
 				$s = strpos($key, '_items_enabled');
 				if ($s !== false)
 				{
-					$p = $this->_iaCore->get($key, '', !is_null($type));
+					$p = $this->_iaCore->get($key, '', !is_null($this->_type));
 					$array = $p ? explode(',', $p) : array();
 
 					$data = array();
@@ -347,9 +278,9 @@ class iaBackendController extends iaAbstractControllerBackend
 					trigger_error('Bad UTF-8 detected (replacing with "?") in configuration', E_USER_NOTICE);
 				}
 
-				if ('image' == $params[$key])
+				if (self::TYPE_IMAGE == $params[$key])
 				{
-					if (isset($_POST['delete'][$key]) && $_POST['delete'][$key] == 'on')
+					if (isset($_POST['delete'][$key]))
 					{
 						$value = '';
 					}
@@ -388,18 +319,19 @@ class iaBackendController extends iaAbstractControllerBackend
 					}
 					else
 					{
-						$value = $this->_iaCore->get($key, '', !is_null($type));
+						$value = $this->_iaCore->get($key, '', !is_null($this->_type));
 					}
 				}
 
-				if ($type)
+				if ($this->_type)
 				{
-					$where = "`name` = '{$key}' AND `type` = '{$type}' AND `type_id` = '{$customEntryId}'";
+					$where = sprintf("`name` = '%s' AND `type` = '%s' AND `type_id` = %d", $key, $this->_type, $this->_typeId);
 
-					$this->_iaDb->setTable('config_custom');
-					if ($_POST['chck'][$key] == 1)
+					$this->_iaDb->setTable(iaCore::getCustomConfigTable());
+
+					if ($_POST['c'][$key])
 					{
-						$values = array('name' => $key, 'value' => $value, 'type' => $type, 'type_id' => $customEntryId);
+						$values = array('name' => $key, 'value' => $value, 'type' => $this->_type, 'type_id' => $this->_typeId);
 
 						if ($this->_iaDb->exists($where))
 						{
@@ -416,14 +348,12 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						$this->_iaDb->delete($where);
 					}
+
 					$this->_iaDb->resetTable();
 				}
 				else
 				{
-					$stmt = '`name` = :key';
-					$this->_iaDb->bind($stmt, array('key' => $key));
-
-					$this->_iaDb->update(array('value' => $value), $stmt);
+					$this->_iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'));
 				}
 			}
 
@@ -445,5 +375,108 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$iaView->setMessages($messages);
 		}
+	}
+
+	private function _getUsersSpecificConfig()
+	{
+		$sql = 'SELECT c.`name`, c.`value` '
+			. 'FROM `:prefix:table_custom_config` c, `:prefix:table_members` m '
+			. "WHERE c.`type` = ':type' AND c.`type_id` = m.`usergroup_id` AND m.`id` = :id";
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_custom_config' => iaCore::getCustomConfigTable(),
+			'table_members' => iaUsers::getTable(),
+			'id' => $this->_typeId
+		));
+
+		return ($rows = $this->_iaDb->getKeyValue($sql)) ? $rows : array();
+	}
+
+	private function _getParams($groupName)
+	{
+		$where = "`config_group` = '{$groupName}' AND `type` != 'hidden' " . ($this->_type ? 'AND `custom` = 1' : '') . ' ORDER BY `order`';
+		$params = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, iaCore::getConfigTable());
+
+		if ($this->_type)
+		{
+			$custom = ('user' == $this->_type)
+				? $this->_iaCore->getCustomConfig($this->_typeId)
+				: $this->_iaCore->getCustomConfig(null, $this->_typeId);
+			$custom2 = ('user' == $this->_type) ? $this->_getUsersSpecificConfig() : array();
+		}
+
+		$iaItem = $this->_iaCore->factory('item');
+		$itemsList = $iaItem->getItems();
+
+		foreach ($params as &$entry)
+		{
+			$className = 'default';
+
+			if ($this->_type)
+			{
+				$className = 'custom';
+
+				if (self::TYPE_DIVIDER != $entry['type'])
+				{
+					if (isset($custom2[$entry['name']]))
+					{
+						$entry['default'] = $custom2[$entry['name']];
+						$entry['value'] = $custom2[$entry['name']];
+					}
+					else
+					{
+						$entry['default'] = $this->_iaCore->get($entry['name']);
+					}
+
+					if (isset($custom[$entry['name']]))
+					{
+						$className = 'common';
+						$entry['value'] = $custom[$entry['name']];
+					}
+				}
+			}
+
+			if ('itemscheckbox' == $entry['type'])
+			{
+				$array = $this->_iaCore->get($entry['extras'] . '_items_implemented');
+				$array = $array ? explode(',', $array) : array();
+				$array = array_values(array_intersect($array, $itemsList));
+
+				if ($array)
+				{
+					$enabledItems = $iaItem->getEnabledItemsForPlugin($entry['extras']);
+
+					for ($i = 0; $i < count($array); $i++)
+					{
+						$array[$i] = trim($array[$i]);
+						$entry['items'][] = array(
+							'name' => $array[$i],
+							'title' => iaLanguage::get($array[$i]),
+							'checked' => (int)in_array($array[$i], $enabledItems)
+						);
+					}
+				}
+			}
+
+			if (self::TYPE_SELECT == $entry['type'])
+			{
+				switch ($entry['name'])
+				{
+					case 'timezone':
+						$entry['values'] = iaUtil::getFormattedTimezones();
+						break;
+					case 'lang':
+						$entry['values'] = $this->_iaCore->languages;
+						break;
+					default:
+						$entry['values'] = explode(',', $entry['multiple_values']);
+				}
+			}
+
+			$entry['class'] = $className;
+		}
+
+		return $params;
 	}
 }

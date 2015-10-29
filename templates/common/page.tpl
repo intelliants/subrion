@@ -3,7 +3,7 @@
 		<div class="alert alert-warning">{$page_protect}</div>
 	{/if}
 
-	<div class="content__body">{$content}</div>
+	{$content}
 {else}
 	<div class="alert alert-warning">{lang key='password_protected_page'}</div>
 

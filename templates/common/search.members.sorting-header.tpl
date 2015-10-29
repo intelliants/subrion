@@ -1,9 +1,13 @@
-<strong>By Name
-	<a href="#" data-field="fullname"><i class="fa-arrow-up"></i></a>
-	<a href="#" data-field="fullname" data-order="desc"><i class="fa-arrow-down"></i></a>
-</strong>
+<div class="ia-sorting">
+	{lang key='by_name'}:
+	<div class="btn-group m-r">
+		<a class="btn btn-default" href="#" data-field="fullname" data-order="asc"><span class="fa fa-arrow-up"></span></a>
+		<a class="btn btn-default" href="#" data-field="fullname" data-order="desc"><span class="fa fa-arrow-down"></span></a>
+	</div>
 
-<strong>By Registration Date
-	<a href="#" data-field="date_reg"><i class="fa-arrow-up"></i></a>
-	<a href="#" data-field="date_reg" data-order="desc"><i class="fa-arrow-down"></i></a>
-</strong>
+	{lang key='by_registration_date'}:
+	<div class="btn-group">
+		<a class="btn btn-default" href="#" data-field="date_reg" data-order="asc"><span class="fa fa-arrow-up"></span></a>
+		<a class="btn btn-default" href="#" data-field="date_reg" data-order="desc"><span class="fa fa-arrow-down"></span></a>
+	</div>
+</div>

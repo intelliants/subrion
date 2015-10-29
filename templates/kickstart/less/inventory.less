@@ -4,5 +4,35 @@
 // --------------------------------------------------
 
 .inventory {
-  display: none;
+  // display: none;
+  background: fade(@inventory-bg, 30%);
+  font-size: 12px;
+
+  .nav-inventory {
+    > li {
+
+      > a {
+        &,
+        &:focus {
+          padding-top: 0;
+          padding-bottom: 0;
+          line-height: @inventory-height;
+          color: @inventory-link-color; 
+          background: none;
+        }
+
+        &:hover {
+          color: @inventory-link-hover-color; 
+          background: none;
+        }
+      }
+
+      &.active > a,
+      &.active > a:focus,
+      &.active > a:hover {
+        color: @inventory-link-active-color; 
+        background: none;
+      }
+    }
+  }
 }

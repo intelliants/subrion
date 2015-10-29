@@ -347,7 +347,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$this->addMessage('set_default_success');
 
-		if (!$this->_iaCore->get('default_package', false))
+		if (!$this->_iaCore->get('default_package'))
 		{
 			$this->addMessage('reset_previous_default_success');
 		}
@@ -359,7 +359,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$iaDb = &$this->_iaDb;
 
-		$defaultPackage = $this->_iaCore->get('default_package', false);
+		$defaultPackage = $this->_iaCore->get('default_package');
 
 		if ($defaultPackage != $package)
 		{

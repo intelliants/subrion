@@ -45,7 +45,7 @@ Ext.onReady(function()
 					: '<span style="color:red;">' + _t('not_allowed') + '</span>';
 			}},
 			{name: 'permissions', title: _t('permissions'), href: intelli.config.admin_url + '/permissions/?group={id}', icon: 'lock'},
-			//{name: 'config', title: _t('go_to_config'), href: intelli.config.admin_url + '/configuration/?group={id}', icon: 'cogs'},
+			{name: 'config', title: _t('go_to_config'), href: intelli.config.admin_url + '/configuration/?group={id}', icon: 'cogs'},
 			'delete'
 		],
 		texts: {delete_single: _t('are_you_sure_to_delete_this_usergroup')}

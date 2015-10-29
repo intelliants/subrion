@@ -64,11 +64,11 @@
 	- Bug #653: Edit Phrases - Table Visibility
 	- Bug #654: Listing fields check box set - required field
 	- Bug #702: Add Menu - Improper naming of added pages in list
-	- Bug #1010: Listings with non-valid captcha can be submitted 
+	- Bug #1010: Listings with non-valid captcha can be submitted
 	- Bug #1012: Dependencies are not considered when installing a plugin
 	- Bug #1013: Manage database errors
 	- Bug #1022: Loop redirect when making Login page as site home page
-	- Bug #1023: "Field Group" and "Show on Pages" options can't be saved 
+	- Bug #1023: "Field Group" and "Show on Pages" options can't be saved
 	- Bug #1024: Add log notice about successful upgrades
 	- Bug #1025: Disable automatic upgrades
 	- Bug #1027: Remote plugins list does not displays correctly
@@ -616,3 +616,33 @@
 	+ Feature #2192: Allow datepicker for fields
 	+ Feature #2195: .htaccess warning for Mac users
 	+ Feature #2198: Implement 'Scheduled Tasks' admin panel section
+
+>> From 3.3.5 to 4.0.0 <<
+
+	- Bug #17: Unused foreach loop in ia.admin.extra.php
+	- Bug #1786: Consider the need for General section in Pictures configuration
+	- Bug #1968: 404 errors on the backend when installed to some servers
+	- Bug #2201: Incorrect display of paid plugins in the Admin Panel
+	- Bug #2218: Error notices at 404 page in admin panel
+	- Bug #2244: Facebook plugin bug with user ids
+	- Bug #2251: Unused foreach loop in ia.admin.extra.php
+	+ Feature #94: Improved actions functionality
+	+ Feature #219: CKEditor images enlargements
+	+ Feature #309: Jquery boxes instead of Confirm pop-up
+	+ Feature #327: Improve search functionality
+	+ Feature #335: Multilingual option on Edit block page
+	+ Feature #773: Possible integration of more icon fonts
+	+ Feature #1398: Implement pagination at the "My Favorites" page
+	+ Feature #1563: Make it possible to add lightbox effect to images within CKeditor
+	+ Feature #1699: Review Favorites functionality for non common cases
+	+ Feature #1701: Integrate fotorama for photogallery
+	+ Feature #1702: Add styles for XML output
+	+ Feature #1720: Add the feature that will allow to choose/edit to which plan assign member on Add Member page in Admin Panel
+	+ Feature #1873: Implement 'Add to favorites' feature in the 'Actions' block for non registered users
+	+ Feature #2113: Way to notify members about critical changes
+	+ Feature #2203: Improve watermarks
+	+ Feature #2226: Add all intelli constants output to Debugger
+	+ Feature #2229: Improve pages/item fields relations
+	+ Feature #2230: More default images for templates
+	+ Feature #2231: More member fields
+	+ Feature #2236: Implement Gravatars

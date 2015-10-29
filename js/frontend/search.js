@@ -26,10 +26,10 @@ $(function()
 
 		var data = $(this).data();
 
-		if (undefined !== data.field)
+		if (undefined !== data.field || undefined !== data.order)
 		{
-			intelli.search.setParam('sortingField', data.field);
-			intelli.search.setParam('sortingOrder', data.order || 'asc');
+			if (undefined !== data.field) intelli.search.setParam('sortingField', data.field);
+			if (undefined !== data.order) intelli.search.setParam('sortingOrder', data.order);
 
 			intelli.search.run();
 		}
@@ -44,14 +44,21 @@ $(function()
 	if ($filtersForm.length > 0)
 	{
 		$('select.js-interactive', $filtersForm).select2();
-		$('select, input', $filtersForm).on('change', function()
+		$('select, input', $filtersForm).not('.no-js').on('change', function()
 		{
 			intelli.search.run();
 		});
 
-		intelli.search.initFilters();
+		var $container = $('#js-search-results-container'),
+			$defaultOptions = $('#js-default-search-options');
 
-		var $container = $('#js-search-results-container');
+		if ($defaultOptions.length)
+		{
+			intelli.search.setParam('sortingField', $defaultOptions.data('field'));
+			intelli.search.setParam('sortingOrder', $defaultOptions.data('order'));
+		}
+
+		intelli.search.initFilters();
 
 		intelli.search.bindEvents(
 			function(){$container.css('opacity', .3);},

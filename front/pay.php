@@ -3,8 +3,6 @@
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
-	iaBreadcrumb::preEnd(iaLanguage::get('payment'), IA_SELF);
-
 	$transactionId = isset($iaCore->requestPath[0]) ? iaSanitize::paranoid($iaCore->requestPath[0]) : 0;
 	$action = isset($iaCore->requestPath[1]) ? iaSanitize::sql($iaCore->requestPath[1]) : null;
 
@@ -127,6 +125,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 						}
 					}
 				}
+
+				iaBreadcrumb::add(iaLanguage::get('page_title_member_funds'),
+					$iaCore->factory('page', iaCore::FRONT)->getUrlByName('member_funds'));
 			}
 			elseif (!empty($transaction['gateway']) && 'completed' == $action)
 			{

@@ -72,25 +72,16 @@
 
 		{case iaField::PICTURES break}
 			{if $item.$name}
-				<div id="{$name}">
-					<div class="row upload-items">
+				{ia_add_media files='fotorama'}
+				<div id="{$name}" class="ia-gallery">
+					<div class="fotorama" 
+						 data-nav="thumbs"
+						 data-width="100%"
+						 data-ratio="800/400"
+						 data-allowfullscreen="true"
+						 data-fit="cover">
 						{foreach $item.$name|unserialize as $entry}
-							<div class="col-md-3">
-								<div class="thumbnail">
-									<a class="thumbnail__image" href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" rel="ia_lightbox[{$name}]" title="{$entry.title|escape:'html'}">
-										{printImage imgfile=$entry.path|default:'' title=$entry.title class='img-responsive'}
-									</a>
-									{if !empty($entry.title)}
-										<div class="caption">
-											<h5>{$entry.title|escape:'html'}</h5>
-										</div>
-									{/if}
-								</div>
-							</div>
-							{if $entry@iteration % 4 == 0}
-								</div>
-								<div class="row upload-items">
-							{/if}
+							<a class="ia-gallery__item" {if !empty($entry.title)}data-caption="{$entry.title|escape:'html'}"{/if} href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}">{printImage imgfile=$entry.path|default:'' title=$entry.title}</a>
 						{/foreach}
 					</div>
 				</div>

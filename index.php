@@ -1,7 +1,7 @@
 <?php
 //##copyright##
 
-define('IA_VERSION', '3.4.0');
+define('IA_VERSION', '4.0.0');
 
 if (isset($ia_version))
 {

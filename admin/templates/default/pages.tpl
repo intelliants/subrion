@@ -110,7 +110,7 @@
 						<div class="alert alert-info">{lang key='already_home_page'}</div>
 					{else}
 						{html_radio_switcher value=$isHomePage name='home_page'}
-						<p class="help-block">{lang key='current_home_page'}: <span class="text-danger">{lang key="page_title_{$config.home_page}"}</span></p>
+						<p class="help-block">{lang key='current_home_page'}: <span class="text-danger">{lang key="page_title_{$core.config.home_page}"}</span></p>
 					{/if}
 				</div>
 			</div>

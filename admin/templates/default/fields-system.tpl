@@ -32,7 +32,7 @@
 				{if isset($plans) && $plans}
 					<select name="plan_id" id="input-plan">
 						{foreach $plans as $plan}
-							<option value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} selected{/if} data-date="{$plan.defaultEndDate}">{lang key="plan_title_{$plan.id}"} - {$config.currency} {$plan.cost}</option>
+							<option value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} selected{/if} data-date="{$plan.defaultEndDate}">{lang key="plan_title_{$plan.id}"} - {$core.config.currency} {$plan.cost}</option>
 						{/foreach}
 					</select>
 					{ia_add_js}

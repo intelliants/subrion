@@ -72,9 +72,9 @@
 
 	<h4>{lang key='common'}</h4>
 	<ul class="js-tags">
-		<li><a href="#">{literal}{%SITE_NAME%}{/literal}</a> - <span>{$config.site}</span></li>
+		<li><a href="#">{literal}{%SITE_NAME%}{/literal}</a> - <span>{$core.config.site}</span></li>
 		<li><a href="#">{literal}{%SITE_URL%}{/literal}</a> - <span>{$smarty.const.IA_URL}</span></li>
-		<li><a href="#">{literal}{%SITE_EMAIL%}{/literal}</a> - <span>{$config.site_email}</span></li>
+		<li><a href="#">{literal}{%SITE_EMAIL%}{/literal}</a> - <span>{$core.config.site_email}</span></li>
 	</ul>
 </div>
 {ia_add_media files='js:admin/email-templates'}

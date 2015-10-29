@@ -1,0 +1,66 @@
+
+//
+// Tools box for any kind of stuff
+// --------------------------------------------------
+
+.b-tools {
+
+  &__header {
+    .clearfix();
+    border: 1px solid @border-color;
+    border-bottom: none;
+    background: #f5f5f5;
+
+    h4 {
+      margin: 0;
+      float: left;
+    }
+
+    .nav-tabs {
+      // float: right;
+
+      &-title {
+        float: left !important;
+        font-weight: bold;
+
+        span {
+          color: @headings-color !important;
+          font-size: 18px;
+        }
+      }
+
+      > li {
+        float: right;
+
+        > a {
+          margin-right: 0;
+          margin-left: 2px;
+          font-size: 18px;
+          border-radius: 0;
+        }
+
+        &.active > a {
+          &,
+          &:hover,
+          &:focus {
+            border-top-color: @brand-primary;
+            border-top-width: 2px;
+          }
+        }
+      }
+    }
+  }
+
+  &__content {
+    .clearfix();
+    border: 1px solid @border-color;
+    border-top: none;
+    padding: 15px;
+
+    .tab-pane {
+      > .alert {
+        margin: 0;
+      }      
+    }
+  }
+}

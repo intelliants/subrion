@@ -17,10 +17,12 @@ class iaSearch extends abstractCore
 
 	protected $_start;
 	protected $_limit;
-	protected $_sorting = array();
+	protected $_sorting = '';
 
 	protected $_itemName;
 	protected $_params;
+
+	protected $_caption = '';
 
 	protected $_packageName;
 	protected $_options = array();
@@ -76,7 +78,7 @@ class iaSearch extends abstractCore
 		$page = isset($params[self::GET_PARAM_PAGE]) ? max((int)$params[self::GET_PARAM_PAGE], 1) : 1;
 		$sorting = array(
 			isset($params[self::GET_PARAM_SORTING_FIELD]) ? $params[self::GET_PARAM_SORTING_FIELD] : null,
-			isset($params[self::GET_PARAM_SORTING_ORDER]) && in_array($params[self::GET_PARAM_SORTING_ORDER], array('asc', 'desc')) ? $params[self::GET_PARAM_SORTING_ORDER] : null
+			isset($params[self::GET_PARAM_SORTING_ORDER]) ? $params[self::GET_PARAM_SORTING_ORDER] : null
 		);
 
 		$result = array(
@@ -87,10 +89,10 @@ class iaSearch extends abstractCore
 
 		if ($this->_loadItemInstance($itemName))
 		{
-			$this->_limit = 1;
+			$this->_limit = 10;
 			$this->_start = ($page - 1) * $this->_limit;
-			$this->_sorting = empty($sorting[0]) ? array() : array(iaSanitize::paranoid($sorting[0]), $sorting[1]);
 
+			$this->_processSorting($sorting);
 			$this->_processParams($params);
 
 			if ($search = $this->_performItemSearch())
@@ -129,6 +131,11 @@ class iaSearch extends abstractCore
 	{
 		return $this->_params;
 	}
+
+	public function getCaption()
+	{
+		return $this->_caption;
+	}
 	//
 
 	protected function _renderResults($rows)
@@ -143,6 +150,7 @@ class iaSearch extends abstractCore
 				'customConfig' => $this->iaCore->getCustomConfig(),
 				'language' => $this->iaCore->languages[$iaView->language],
 				'languages' => $this->iaCore->languages,
+				'packages' => $this->iaCore->packagesData,
 				'page' => array(
 					'info' => $iaView->getParams(),
 					'name' => $iaView->name(),
@@ -152,9 +160,7 @@ class iaSearch extends abstractCore
 			);
 
 			$iaSmarty->assign('core', $core);
-			$iaSmarty->assign('config', $core['config']);
 			$iaSmarty->assign('member', iaUsers::getIdentity(true));
-			$iaSmarty->assign('packages', $this->iaCore->packagesData);
 
 			$this->_smartyVarsAssigned = true;
 		}
@@ -653,6 +659,25 @@ class iaSearch extends abstractCore
 		return $result;
 	}
 
+	private function _processSorting(array $sorting)
+	{
+		if ($sorting[0])
+		{
+			$field = $this->getOption('columnAlias')->{$sorting[0]}
+				? $this->getOption('columnAlias')->{$sorting[0]}
+				: iaSanitize::sql($sorting[0]);
+			$order = (empty($sorting[1]) || !in_array($sorting[1], array('asc', 'desc')))
+				? iaDb::ORDER_ASC
+				: strtoupper($sorting[1]);
+
+			$this->_sorting = sprintf('`%s` %s', $field, $order);
+		}
+		else
+		{
+			$this->_sorting = '';
+		}
+	}
+
 	private function _processParams($params, $processRequestUri = false)
 	{
 		$data = array();
@@ -681,6 +706,8 @@ class iaSearch extends abstractCore
 		// support for custom parameters field:value within request URL
 		if ($processRequestUri)
 		{
+			$captions = array();
+
 			foreach ($this->iaCore->requestPath as $chunk)
 			{
 				if (false === strstr($chunk, ':'))
@@ -698,15 +725,33 @@ class iaSearch extends abstractCore
 					switch ($this->_fieldTypes[$key])
 					{
 						case iaField::NUMBER:
-							$data[$key] = (count($value) > 1)
-								? array('f' => (int)$value[0], 't' => (int)$value[1])
-								: array('f' => (int)$value[0], 't' => (int)$value[0]);
+							if (count($value) > 1)
+							{
+								$data[$key] = array('f' => (int)$value[0], 't' => (int)$value[1]);
+								$captions[] = sprintf('%d-%d', $value[0], $value[1]);
+							}
+							else
+							{
+								$data[$key] = array('f' => (int)$value[0], 't' => (int)$value[0]);
+								$captions[] = $value[0];
+							}
+							break;
+						case iaField::COMBO:
+							foreach ($value as $v)
+							{
+								$title = iaLanguage::get(sprintf('field_%s_%s', $key, $v), false);
+								empty($title) || $captions[] = $title;
+							}
+							$data[$key] = $value;
 							break;
 						default:
 							$data[$key] = $value;
+							$captions[] = $value;
 					}
 				}
 			}
+
+			$this->_caption = implode(' ', $captions);
 		}
 
 		$this->_params = $data;

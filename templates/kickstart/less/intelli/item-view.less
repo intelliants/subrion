@@ -1,0 +1,151 @@
+
+//
+// Item view page
+// --------------------------------------------------
+
+.ia-item--view {
+
+  .ia-item__image {
+
+    @media (min-width: @screen-phone) {
+      margin-right: @gap+@gap;
+    }
+
+    @media (min-width: @grid-float-breakpoint) {
+      max-width: 200px;
+    }
+  }
+
+  + .tabbable {
+    margin-top: @gap;
+  }
+}
+
+
+
+//
+// View pages for items: packages and etc.
+// --------------------------------------------------
+
+.ia-item-view {
+  .clearfix();
+
+  &__price {
+    color: @brand-success;
+    font-weight: bold;
+    float: right;
+    font-size: 20px;
+  }
+
+  &__sub-header {
+    font-size: 16px;
+    margin: 0 0 @gap;
+    line-height: @line-height-base;
+  }
+
+  &__info {
+    margin-bottom: 15px;
+
+    &__item {
+      color: fade(@text-color, 70%);
+      display: inline-block;
+      margin-right: 15px;
+    }
+  }
+
+  &__gallery {
+    margin-bottom: 15px;
+  }
+
+  &__section {
+    margin-bottom: @gap+@gap;
+
+    > h3 {
+      text-transform: uppercase;
+      font-size: 18px;
+      line-height: 18px;
+      border-bottom: 2px solid #ddd;
+      margin: 0 0 @gap;
+      padding: 0 0 6px;
+      font-weight: bold;
+      color: #bbb;
+    }
+  }
+
+  &__table {
+    width: 100%;
+
+    td {
+      padding: 10px 0;
+      vertical-align: top;
+      border-bottom: 1px solid #eee;
+
+      &:first-child {
+        width: 40%;
+        font-weight: bold;
+      }
+    }
+
+    tr:last-child td {
+      border-bottom: 0 none;
+    }
+  }
+
+  &__features {
+    .clearfix();
+
+    &__item {
+      float: left;
+      width: 200px;
+      margin: 0 20px 10px 0;
+    }
+  }
+}
+
+
+
+//
+// Author block with short info
+// --------------------------------------------------
+
+.ia-item-author {
+  background: #f2f2f2;
+
+  &__image {
+    padding: 30px 30px 0;
+    display: block;
+    text-decoration: none;
+
+    > img {
+      display: block;
+      margin: 0 auto;
+      border-radius: 50%;
+    }
+  }
+
+  &__content {
+    padding: 30px 15px;
+
+    > h4 {
+      text-align: center;
+    }
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .ia-item__additional {
+    background: #f6f6f6;
+    margin: 0 -15px 30px;
+    padding: 15px;
+
+    p {
+      float: none;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

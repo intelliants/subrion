@@ -10,6 +10,18 @@
     border: 1px solid #ddd;
   }
 
+  &--featured {
+    border: 1px solid @brand-info;
+    padding: @gap;
+    background: fade(@brand-info, 10%);
+  }
+
+  &--sponsored {
+    border: 1px solid @brand-warning;
+    padding: @gap;
+    background: fade(@brand-warning, 10%);
+  }
+
   + .box,
   + div {
     margin-top: @vertical-rhythm*2;
@@ -19,11 +31,11 @@
     .font-normalize(18px, 0);
     color: @box-caption-color;
     position: relative;
-    padding-bottom: @vertical-rhythm/2;
   }
 
   &__content {
     color: @box-content-color;
+    padding-top: @vertical-rhythm/2;
 
     > *:last-child {
       margin-bottom: 0;
@@ -58,7 +70,7 @@
   position: absolute;
   right: 0;
   top: 50%;
-  margin-top: -20px;
+  margin-top: -12px;
   font-size: 24px;
   width: 24px;
   height: 24px;

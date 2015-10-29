@@ -4,8 +4,8 @@
 // --------------------------------------------------
 
 @gap:                   15px;
-@item-link-color:       @text-color;
-@item-link-color-hover: lighten(@item-link-color, 10%);
+@item-link-color:       @link-color;
+@item-link-color-hover: @link-hover-color;
 
 
 
@@ -16,6 +16,8 @@
 .ia-sorting {
   .clearfix();
   margin-bottom: @gap;
+  padding: 10px;
+  background: #f2f2f2;
 }
 
 .alpha-sorting {
@@ -28,7 +30,10 @@
 
 // lists
 .ia-items { 
-
+  
+  + .box {
+    margin-top: @vertical-rhythm;
+  }
 }
 
 .ia-items--cards {
@@ -63,20 +68,40 @@
     padding: @gap;
   }
 
+  &--border-bottom {
+    border-bottom: 1px solid @border-color;
+    padding-bottom: @gap;
+
+    & + & {
+      margin-top: @gap;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
   &--featured {
     border: 1px solid @brand-info;
     padding: @gap;
+    background: fade(@brand-info, 10%);
   }
 
   &--sponsored {
     border: 1px solid @brand-warning;
     padding: @gap;
+    background: fade(@brand-warning, 10%);
+  }
+
+  &--inactive,
+  &--hidden {
+    background: #f5f5f5;
   }
 
   &__image {
     position: relative;
     text-align: center;
-    margin-bottom: @gap;
+    display: block;
     text-decoration: none;
 
     &:hover {
@@ -91,7 +116,6 @@
     @media (min-width: @screen-phone) {
       text-align: left;
       float: left;
-      margin-bottom: 0;
       margin-right: @gap;
       max-width: 100px;  
     }
@@ -109,17 +133,6 @@
       position: absolute;
       left: 10px;
       bottom: 10px;
-    }
-  }
-
-  &__labels {
-    position: absolute;
-    left: 15px;
-    bottom: 100%;
-    margin-bottom: -6px;
-
-    .label {
-
     }
   }
 
@@ -142,6 +155,15 @@
 
     a {
       margin-left: @gap;
+    }
+
+    a:not(.btn),
+    a:not(.btn):focus {
+      color: @text-color;
+
+      &:hover {
+        color: lighten(@text-color, 10%);
+      }
     }
   }
 
@@ -206,6 +228,32 @@
   }
 }
 
+.ia-item.has-panel {
+  .ia-item__image {
+    margin-bottom: @gap;
+  }
+}
+
+.ia-item__panel {
+  clear: both;
+  .clearfix();
+  background: #f5f5f5;
+  padding: 5px 10px;
+  margin: @gap 0 0;
+  font-size: 12px;
+
+  &__item {
+    display: inline-block;
+    margin-right: @gap;
+    color: fade(@text-color, 70%);
+
+    &.pull-right {
+      margin-right: 0;
+      margin-left: @gap;
+    }
+  }
+}
+
 // as card
 
 .ia-item--card {
@@ -235,23 +283,43 @@
 
 
 //
-// Item view page
+// Labels
 // --------------------------------------------------
 
-.ia-item--view {
-
-  .ia-item__image {
-
-    @media (min-width: @screen-phone) {
-      margin-right: @gap+@gap;
-    }
-
-    @media (min-width: @grid-float-breakpoint) {
-      max-width: 200px;
-    }
-  }
-
-  + .tabbable {
-    margin-top: @gap;
-  }
+.ia-item__labels {
+  position: absolute;
+  left: 15px;
+  bottom: 100%;
+  margin-bottom: -6px;
 }
+
+.label-available {
+  .label-variant(@label-success-bg);
+}
+
+.label-approval {
+  .label-variant(spin(@label-warning-bg, 15%));
+}
+
+.label-sold {
+  .label-variant(@label-danger-bg);
+}
+
+.ia-item--sold {
+  border-color: @brand-danger;
+}
+
+.label-rented {
+  .label-variant(#999);
+}
+
+.label-inactive,
+.label-hidden {
+  .label-variant(@label-default-bg);
+}
+
+.ia-item--rented,
+.ia-item--hidden {
+  .opacity(.7);
+}
+

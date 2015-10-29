@@ -43,7 +43,7 @@ final class iaCore
 
 	protected $_hooks = array();
 	protected $_config = array();
-	protected $_customConfig = array();
+	protected $_customConfig;
 
 	protected $_checkDomain;
 
@@ -403,13 +403,11 @@ final class iaCore
 		return $this->_config;
 	}
 
-	public function getCustomConfig($user = false, $group = false)
+	public function getCustomConfig($user = null, $group = null)
 	{
-		$where = array();
-		$config = array();
 		$local = false;
 
-		if ($user === false && $group === false)
+		if (is_null($user) && is_null($group))
 		{
 			$this->factory('users');
 
@@ -426,38 +424,48 @@ final class iaCore
 			}
 		}
 
-		if ($user !== false)
+		if ($local && !is_null($this->_customConfig))
 		{
-			$where[] = "(`type` = 'user' AND `type_id` = $user) ";
-		}
-		if ($group !== false)
-		{
-			$where[] = "(`type` = 'group' AND `type_id` = $group) ";
-		}
-		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, implode(' OR ', $where), null, null, 'config_custom');
-		if (empty($rows))
-		{
-			return $config;
+			return $this->_customConfig;
 		}
 
-		$config['plan'] = array();
-		$config['user'] = array();
-		$config['group'] = array();
+		$result = array();
+		$stmt = array();
+
+		if ($user)
+		{
+			$stmt[] = "(`type` = 'user' AND `type_id` = $user) ";
+		}
+		if ($group)
+		{
+			$stmt[] = "(`type` = 'group' AND `type_id` = $group) ";
+		}
+
+		$rows = $this->iaDb->all(array('type', 'name', 'value'), implode(' OR ', $stmt), null, null, self::getCustomConfigTable());
+
+		if (empty($rows))
+		{
+			return $result;
+		}
+
+		$result = array('group' => array(), 'user' => array(), 'plan' => array());
+
 		foreach ($rows as $row)
 		{
-			$config[$row['type']][$row['name']] = $row['value'];
+			$result[$row['type']][$row['name']] = $row['value'];
 		}
-		$config = array_merge($config['group'], $config['user'], $config['plan']);
+
+		$result = array_merge($result['group'], $result['user'], $result['plan']);
 
 		if ($local)
 		{
-			$this->_customConfig = $config;
+			$this->_customConfig = $result;
 		}
 
-		return $config;
+		return $result;
 	}
 
-	public function get($key, $default = '', $custom = true, $db = false)
+	public function get($key, $default = false, $custom = true, $db = false)
 	{
 		if ($custom && isset($this->_customConfig[$key]))
 		{
@@ -468,7 +476,7 @@ final class iaCore
 
 		if ($db)
 		{
-			if ($value = $this->iaDb->one_bind('`value`', '`name` = :key', array('key' => $key), self::getConfigTable()))
+			if ($value = $this->iaDb->one('`value`', iaDb::convertIds($key, 'name'), self::getConfigTable()))
 			{
 				$result = $value;
 			}
@@ -486,9 +494,9 @@ final class iaCore
 		return $result;
 	}
 
-	public function set($key, $value, $db = false)
+	public function set($key, $value, $permanent = false)
 	{
-		if ($db && !is_scalar($value))
+		if ($permanent && !is_scalar($value))
 		{
 			trigger_error(__METHOD__ . '() Could not write a non-scalar value to the database.', E_USER_ERROR);
 		}
@@ -496,9 +504,9 @@ final class iaCore
 		$result = true;
 		$this->_config[$key] = $value;
 
-		if ($db)
+		if ($permanent)
 		{
-			$result = (bool)$this->iaDb->update(array('value' => $value), "`name`='{$key}'", null, self::getConfigTable());
+			$result = (bool)$this->iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'), null, self::getConfigTable());
 
 			$this->iaCache->createJsCache(array('config'));
 			$this->iaCache->remove('config.inc');
@@ -721,14 +729,7 @@ final class iaCore
 			$packages[$entry['name']] = $entry;
 		}
 
-		$this->packagesData = $packages;
-
-		if (iaView::REQUEST_HTML == $this->iaView->getRequestType())
-		{
-			$this->iaView->assign('packages', $packages);
-		}
-
-		return $packages;
+		return $this->packagesData = $packages;
 	}
 
 	public function getExtras($package)

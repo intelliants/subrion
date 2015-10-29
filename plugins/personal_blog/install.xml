@@ -4,9 +4,9 @@
 	<summary>Allows to create a personal admin blog</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.4.0</version>
-	<date>2015-10-05</date>
-	<compatibility>3.4</compatibility>
+	<version>4.0.0</version>
+	<date>2015-10-27</date>
+	<compatibility>4.0</compatibility>
 
 	<actions>
 		<action name="blogs" url="blog/" icon="list" pages="personal_blog:add,personal_blog:edit">List</action>
@@ -120,41 +120,4 @@ DROP TABLE IF EXISTS `{prefix}blog_entries`, `{prefix}blog_tags`, `{prefix}blog_
 			]]>
 		</sql>
 	</uninstall>
-
-	<upgrade>
-		<sql version="3.1.3">
-			<![CDATA[
-ALTER TABLE `{prefix}blog_entries` CHANGE `date` `date_added` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00';
-			]]>
-		</sql>
-		<sql version="3.3.0">
-			<![CDATA[
-ALTER TABLE `{prefix}blog_entries` ADD `member_id` int(11) unsigned NOT NULL AFTER `id`;
-			]]>
-		</sql>
-		<sql version="3.3.2">
-			<![CDATA[
-ALTER TABLE `{prefix}blog_entries` MODIFY `id` mediumint(8) auto_increment;
-			]]>
-		</sql>
-		<sql version="3.3.2">
-			<![CDATA[
-CREATE TABLE IF NOT EXISTS `{prefix}blog_tags` (
-	`id` mediumint(8) unsigned NOT NULL auto_increment,
-	`title` varchar(50) NOT NULL,
-	`alias` varchar(50) NOT NULL,
-	PRIMARY KEY (`id`)
-) {mysql_version};
-			]]>
-		</sql>
-		<sql version="3.3.2">
-			<![CDATA[
-CREATE TABLE IF NOT EXISTS `{prefix}blog_entries_tags` (
-	`blog_id` mediumint(8) unsigned NOT NULL,
-	`tag_id` mediumint(8) unsigned NOT NULL,
-	UNIQUE KEY `UNIQUE` (`tag_id`, `blog_id`)
-) {mysql_version};
-			]]>
-		</sql>
-	</upgrade>
 </plugin>
