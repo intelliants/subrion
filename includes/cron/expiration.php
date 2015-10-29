@@ -2,8 +2,9 @@
 //##copyright##
 
 $iaPlan = $iaCore->factory('plan');
+$iaItem = $iaCore->factory('item');
 
-$itemNames = $iaDb->onefield('item', "`status` = 'active' AND `duration` > 0 GROUP BY `item`", null, null, iaPlan::getTable());
+$itemNames = $iaDb->onefield('item', "`status` = 'active' AND `duration` > 0 GROUP BY `item`", null, null, $iaPlan::getTable());
 
 foreach ($itemNames as $itemName)
 {
