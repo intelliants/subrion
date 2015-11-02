@@ -9,29 +9,6 @@ class iaBlog extends abstractPlugin
 	protected $_tableBlogTags = 'blog_tags';
 	protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
-	public $dashboardStatistics = true;
-
-
-	public function getDashboardStatistics()
-	{
-		$statuses = array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE);
-		$rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status`', self::getTable());
-		$total = 0;
-
-		foreach ($statuses as $status)
-		{
-			isset($rows[$status]) || $rows[$status] = 0;
-			$total += $rows[$status];
-		}
-
-		return array(
-			'icon' => 'quill',
-			'item' => iaLanguage::get('blogposts'),
-			'rows' => $rows,
-			'total' => $total,
-			'url' => 'blog/'
-		);
-	}
 
 	public function titleAlias($title)
 	{
@@ -78,8 +55,8 @@ class iaBlog extends abstractPlugin
 
 			$sql = iaDb::printf($sql, array(
 				'prefix' => $this->_iaDb->prefix,
-				'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
-				'table_blog_tags' => $this->_tableBlogTags
+				'table_blog_entries_tags' => 'blog_entries_tags',
+				'table_blog_tags' => 'blog_tags'
 			));
 			$result[] = (bool)$this->iaDb->query($sql);
 
@@ -114,20 +91,63 @@ class iaBlog extends abstractPlugin
 		return $this->_iaDb->getOne($sql);
 	}
 
-	public function getSitemapEntries()
+	public function saveTags($id, $tags)
 	{
-		$result = array();
+		$tags = array_filter(explode(',', $tags));
 
-		$stmt = '`status` = :status';
-		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE));
-		if ($rows = $this->iaDb->all(array('id', 'alias'), $stmt, null, null, self::getTable()))
+		$this->_iaDb->setTable($this->_tableBlogEntriesTags);
+
+		$sql =
+			'DELETE ' .
+			'FROM `:prefix:table_blog_tags` ' .
+			'WHERE `id` IN (' .
+			'SELECT DISTINCT `tag_id` ' .
+			'FROM `:prefix:table_blog_entries_tags` ' .
+			'WHERE `tag_id` IN (' .
+			'SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` ' .
+			'WHERE `blog_id` = :id) ' .
+			'GROUP BY 1 ' .
+			'HAVING COUNT(*) = 1)';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_blog_tags' => $this->_tableBlogTags,
+			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
+			'id' => $id
+		));
+
+		$this->_iaDb->query($sql);
+		$sql =
+			'DELETE ' .
+			'FROM :prefix:table_blog_entries_tags ' .
+			'WHERE `blog_id` = :id';
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
+			'id' => $id
+		));
+
+		$this->_iaDb->query($sql);
+
+		$allTagTitles = $this->_iaDb->keyvalue(array('title','id'), null,$this->_tableBlogTags);
+
+		foreach ($tags as $tag)
 		{
-			foreach ($rows as $row)
-			{
-				$result[] = IA_URL . 'blog' . IA_URL_DELIMITER . $row['id'] . '-' . $row['alias'];
-			}
-		}
+			$tagAlias = iaSanitize::alias(strtolower($tag));
+			$tagEntry = array(
+				'title' => $tag,
+				'alias' => $tagAlias
+			);
+			$tagId = isset($allTagTitles[$tag])
+				? $allTagTitles[$tag]
+				: $this->_iaDb->insert($tagEntry, null, $this->_tableBlogTags);
 
-		return $result;
+			$tagBlogIds = array(
+				'blog_id' => $id,
+				'tag_id' => $tagId
+			);
+
+			$this->_iaDb->insert($tagBlogIds);
+		}
 	}
 }
