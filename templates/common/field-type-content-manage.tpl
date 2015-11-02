@@ -41,7 +41,7 @@
 
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
-				<textarea  class="form-control" name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
+				<textarea class="form-control" name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
 				{if $field.length > 0}
 					{ia_add_js}
 $(function()
