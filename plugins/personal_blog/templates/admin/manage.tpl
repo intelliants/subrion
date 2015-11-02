@@ -74,4 +74,4 @@
 
     </div>
 </form>
-{ia_add_media files='tagsinput, js:_IA_URL_plugins/personal_blog/js/admin/index'}
+{ia_add_media files='tagsinput, js:_IA_URL_plugins/personal_blog/js/manage'}

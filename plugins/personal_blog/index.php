@@ -3,14 +3,15 @@
 
 $iaBlog = $iaCore->factoryPlugin(IA_CURRENT_PLUGIN, iaCore::FRONT, 'blog');
 
+$baseUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
+
 $iaDb->setTable($iaBlog::getTable());
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
 	if (isset($iaCore->requestPath[0]) && 'alias' == $iaCore->requestPath[0])
 	{
-		$url = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
-		$url.= $iaDb->getNextId() . '-' . $iaBlog->titleAlias($_POST['title']);
+		$url = $baseUrl . $iaDb->getNextId() . '-' . $iaBlog->titleAlias($_POST['title']);
 
 		$iaView->output(array('url' => $url));
 	}
@@ -123,11 +124,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 						$iaBlog->saveTags($id, $_POST['tags']);
 
-						$url = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
-						$url.= sprintf('%d-%s', $id, $entry['alias']);
-
 						$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
-						iaUtil::go_to($url);
+						iaUtil::go_to($baseUrl . sprintf('%d-%s', $id, $entry['alias']));
 					}
 					else
 					{
@@ -158,7 +156,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				}
 
 				$sql =
-					'SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname` ' .
+					'SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname`, b.`member_id` ' .
 					'FROM `:prefix:table_blog_entries` b ' .
 					'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) ' .
 					'WHERE b.`id` = :id AND b.`status` = \':status\' ';
@@ -212,6 +210,33 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				$iaView->assign('tags', $blogTags);
 				$iaView->assign('blog_entry', $blogEntry);
+
+				if (iaUsers::hasIdentity() && iaUsers::getIdentity()->id == $blogEntry['member_id'])
+				{
+					$iaItem = $iaCore->factory('item');
+
+					$actionUrls = array(
+						iaCore::ACTION_EDIT => $baseUrl . 'edit/' . $id . '/',
+						iaCore::ACTION_DELETE => $baseUrl . 'delete/' . $id . '/'
+					);
+					$iaView->assign('tools', $actionUrls);
+
+					$iaItem->setItemTools(array(
+						'id' => 'action-edit',
+						'title' => iaLanguage::get('edit_blog_entry'),
+						'attributes' => array(
+							'href' => $actionUrls[iaCore::ACTION_EDIT],
+						)
+					));
+					$iaItem->setItemTools(array(
+						'id' => 'action-delete',
+						'title' => iaLanguage::get('delete'),
+						'attributes' => array(
+							'href' => $actionUrls[iaCore::ACTION_DELETE],
+							'class' => 'js-delete-listing'
+						)
+					));
+				}
 			}
 			else
 			{

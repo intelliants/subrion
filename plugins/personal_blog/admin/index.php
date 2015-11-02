@@ -140,7 +140,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 
 			if ($image = $iaPicture->processImage($file, $path, $token, $info))
 			{
-				if ($entry['image']) // it has an already assigned image
+				if (!empty($entry['image'])) // already has an assigned image
 				{
 					$iaPicture = $this->_iaCore->factory('picture');
 					$iaPicture->delete($entry['image']);
@@ -149,7 +149,8 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 				$entry['image'] = $image;
 			}
 		}
-		unset($entry['tags']);
+
+		unset($entry['tags'], $entry['v']);
 
 		return true;
 	}
