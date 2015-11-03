@@ -136,7 +136,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$iaView->setMessages($messages);
 			}
 
-			$tags = (iaCore::ACTION_ADD == $pageAction) ? '' : $iaBlog->getTags($id);
+			$tags = (iaCore::ACTION_ADD == $pageAction) ? '' : $iaBlog->getTagsString($id);
 
 			$iaView->assign('item', $entry);
 			$iaView->assign('tags', $tags);
@@ -168,6 +168,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		default:
 			$iaView->display('index');
 
+			$pageActions = array();
+
 			if (isset($iaCore->requestPath[0]))
 			{
 				$id = (int)$iaCore->requestPath[0];
@@ -176,80 +178,46 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
+				
+				$entry = $iaBlog->getById($id);
 
-				$sql =
-					'SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname`, b.`member_id` ' .
-					'FROM `:prefix:table_blog_entries` b ' .
-					'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) ' .
-					'WHERE b.`id` = :id AND b.`status` = \':status\' ';
-
-				$sql = iaDb::printf($sql, array(
-					'prefix' => $iaDb->prefix,
-					'table_blog_entries' => $iaBlog::getTable(),
-					'table_members' => iaUsers::getTable(),
-					'id' => iaSanitize::sql($id),
-					'status' => iaCore::STATUS_ACTIVE
-				));
-
-				$blogEntry = $iaDb->getRow($sql);
-
-
-				$sql =
-					'SELECT DISTINCT bt.`title`, bt.`alias` ' .
-					'FROM `:prefix:table_blog_tags` bt ' .
-					'LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) ' .
-					'WHERE bet.`blog_id` = :id';
-
-				$sql = iaDb::printf($sql, array(
-					'prefix' => $iaDb->prefix,
-					'table_blog_entries_tags' => 'blog_entries_tags',
-					'table_blog_tags' => 'blog_tags',
-					'id' => iaSanitize::sql($id)
-				));
-				$blogTags = $iaDb->getAll($sql);
-
-				if (empty($blogEntry))
+				if (empty($entry))
 				{
 					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
 
-				$title = iaSanitize::tags($blogEntry['title']);
+				$title = iaSanitize::tags($entry['title']);
 				iaBreadcrumb::toEnd($title);
-
 				$iaView->title($title);
 
 				// add open graph data
 				$openGraph = array(
 					'title' => $title,
 					'url' => IA_SELF,
-					'description' => $blogEntry['body']
+					'description' => $entry['body']
 				);
-				empty($blogEntry['image']) || $openGraph['image'] = IA_CLEAR_URL . 'uploads/' . $blogEntry['image'];
+				empty($entry['image']) || $openGraph['image'] = IA_CLEAR_URL . 'uploads/' . $entry['image'];
 
 				$iaView->set('og', $openGraph);
 
-				$iaView->assign('tags', $blogTags);
-				$iaView->assign('blog_entry', $blogEntry);
+				$iaView->assign('tags', $iaBlog->getTags($id));
+				$iaView->assign('blog_entry', $entry);
 
 				if ($iaAcl->isAccessible(iaBlog::PAGE_NAME, iaCore::ACTION_EDIT) && iaUsers::hasIdentity()
-					&& iaUsers::getIdentity()->id == $blogEntry['member_id'])
+					&& iaUsers::getIdentity()->id == $entry['member_id'])
 				{
-					$pageActions = array(
-						array(
-							'icon' => 'icon-pencil',
-							'title' => iaLanguage::get('edit_blog_entry'),
-							'url' => $baseUrl . 'edit/' . $id . '/',
-							'classes' => 'btn-info'
-						),
-						array(
-							'icon' => 'icon-remove',
-							'title' => iaLanguage::get('delete'),
-							'url' => $baseUrl . 'delete/' . $id . '/',
-							'classes' => 'btn-danger'
-						)
+					$pageActions[] = array(
+						'icon' => 'pencil',
+						'title' => iaLanguage::get('edit_blog_entry'),
+						'url' => $baseUrl . 'edit/' . $id . '/',
+						'classes' => 'btn-info'
 					);
-
-					$iaView->set('actions', $pageActions);
+					$pageActions[] = array(
+						'icon' => 'remove',
+						'title' => iaLanguage::get('delete'),
+						'url' => $baseUrl . 'delete/' . $id . '/',
+						'classes' => 'btn-danger'
+					);
 				}
 			}
 			else
@@ -257,58 +225,33 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$page = empty($_GET['page']) ? 0 : (int)$_GET['page'];
 				$page = ($page < 1) ? 1 : $page;
 
-				$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
-
 				$pagination = array(
 					'start' => ($page - 1) * $iaCore->get('blog_number'),
 					'limit' => (int)$iaCore->get('blog_number'),
-					'template' => $pageUrl . '?page={page}'
+					'template' => $baseUrl . '?page={page}'
 				);
 
-				$order = ('date' == $iaCore->get('blog_order')) ? 'ORDER BY `date_added` DESC' : 'ORDER BY `title` ASC';
-
-				$stmt = '`status` = :status AND `lang` = :language';
-				$iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'language' => $iaView->language));
-
-				$sql =
-					'SELECT SQL_CALC_FOUND_ROWS ' .
-					'b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname` ' .
-					'FROM `:prefix:table_blog_entries` b ' .
-					'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) ' .
-					'WHERE b.' . $stmt . $order . ' LIMIT :start, :limit';
-
-				$sql = iaDb::printf($sql, array(
-					'prefix' => $iaDb->prefix,
-					'table_blog_entries' => $iaBlog::getTable(),
-					'table_members' => iaUsers::getTable(),
-					'start' => $pagination['start'],
-					'limit' => $pagination['limit']
-				));
-				$rows = $iaDb->getAll($sql);
-
+				$entries = $iaBlog->get($pagination['start'], $pagination['limit']);
 				$pagination['total'] = $iaDb->foundRows();
 
-				$sql =
-					'SELECT bt.`title`, bt.`alias`, bet.`blog_id` ' .
-					'FROM `:prefix:table_blog_tags` bt ' .
-					'LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) ' .
-					'ORDER BY bt.`title`';
-
-				$sql = iaDb::printf($sql, array(
-					'prefix' => $iaDb->prefix,
-					'table_blog_entries_tags' => 'blog_entries_tags',
-					'table_blog_tags' => 'blog_tags'
-				));
-				$blogTags = $iaDb->getAll($sql);
-
-				$iaView->assign('tags', $blogTags);
-				$iaView->assign('blog_entries', $rows);
+				$iaView->assign('tags', $iaBlog->getAllTags());
+				$iaView->assign('blog_entries', $entries);
 				$iaView->assign('pagination', $pagination);
+			}
+
+			if ($iaAcl->isAccessible('blog', iaCore::ACTION_ADD))
+			{
+				$pageActions[] = array(
+					'icon' => 'plus',
+					'title' => iaLanguage::get('add_blog_entry'),
+					'url' => $baseUrl . 'add/',
+					'classes' => 'btn-success'
+				);
 			}
 
 			$pageActions[] = array(
 				'icon' => 'rss',
-				'title' => '',
+				'title' => null,
 				'url' => IA_URL . 'blog.xml',
 				'classes' => 'btn-warning'
 			);
@@ -326,14 +269,13 @@ if (iaView::REQUEST_XML == $iaView->getRequestType())
 		'item' => array()
 	);
 
-	$listings = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`lang`= '" . $iaView->language . "'", 0, 20);
-	$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
+	$entries = $iaBlog->get(0, 20);
 
-	foreach ($listings as $entry)
+	foreach ($entries as $entry)
 	{
 		$output['item'][] = array(
 			'title' => $entry['title'],
-			'link' => $pageUrl . $entry['id'] . '-' . $entry['alias'],
+			'link' => $baseUrl . $entry['id'] . '-' . $entry['alias'],
 			'pubDate' => date('D, d M Y H:i:s T', strtotime($entry['date_modified'])),
 			'description' => iaSanitize::tags($entry['body'])
 		);
