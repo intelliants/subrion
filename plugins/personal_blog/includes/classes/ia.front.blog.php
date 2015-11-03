@@ -5,6 +5,8 @@ class iaBlog extends abstractPlugin
 {
 	const ALIAS_SUFFIX = '.html';
 
+	const PAGE_NAME = 'blog';
+
 	protected static $_table = 'blog_entries';
 	protected $_tableBlogTags = 'blog_tags';
 	protected $_tableBlogEntriesTags = 'blog_entries_tags';
