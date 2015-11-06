@@ -323,3 +323,19 @@
   .opacity(.7);
 }
 
+
+
+//
+// Categories
+// --------------------------------------------------
+
+.ia-categories {
+
+  @media (max-width: @grid-float-breakpoint) {
+    .row {
+      [class*="col-md"] + [class*="col-md"] {
+        margin-top: 0px;
+      }
+    }
+  }
+}
