@@ -646,3 +646,9 @@
 	+ Feature #2230: More default images for templates
 	+ Feature #2231: More member fields
 	+ Feature #2236: Implement Gravatars
+
+>> From 4.0.0 to 4.0.1 <<
+
+	- Bug #2249: Tag cloud plugin
+	+ Feature #2276: Improve styles
+	+ Feature #39: Copyrights in source files
