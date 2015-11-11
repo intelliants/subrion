@@ -37,7 +37,6 @@
 				</div>
 			</div>
 
-
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-image">{lang key='image'}</label>
 				<div class="col col-lg-4">
@@ -75,15 +74,4 @@
 
     </div>
 </form>
-
-{ia_add_media files='tagsinput, js:_IA_URL_plugins/personal_blog/js/admin/index'}
-
-{ia_add_js}
-	$(function()
-	{
-		$('#input-tag').tagsInput({
-			width: '100%',
-			height: 'auto',
-		});
-	});
-{/ia_add_js}
+{ia_add_media files='tagsinput, js:_IA_URL_plugins/personal_blog/js/manage'}

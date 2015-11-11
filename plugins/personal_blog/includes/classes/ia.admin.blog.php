@@ -1,11 +1,35 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @link http://www.subrion.org/
+ *
+ ******************************************************************************/
 
 class iaBlog extends abstractPlugin
 {
 	const ALIAS_SUFFIX = '.html';
 
 	protected static $_table = 'blog_entries';
+	protected $_tableBlogTags = 'blog_tags';
 	protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
 	public $dashboardStatistics = true;
@@ -77,8 +101,8 @@ class iaBlog extends abstractPlugin
 
 			$sql = iaDb::printf($sql, array(
 				'prefix' => $this->_iaDb->prefix,
-				'table_blog_entries_tags' => 'blog_entries_tags',
-				'table_blog_tags' => 'blog_tags'
+				'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
+				'table_blog_tags' => $this->_tableBlogTags
 			));
 			$result[] = (bool)$this->iaDb->query($sql);
 
@@ -91,6 +115,26 @@ class iaBlog extends abstractPlugin
 		$this->iaDb->resetTable();
 
 		return $result;
+	}
+
+	public function getTags($id)
+	{
+		$sql =
+			'SELECT GROUP_CONCAT(`title`) ' .
+			'FROM `:prefix:table_blog_tags` bt ' .
+			'WHERE `id` IN (' .
+			'SELECT `tag_id` ' .
+			'FROM `:prefix:table_blog_entries_tags` ' .
+			'WHERE `blog_id` = :id)';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_blog_tags' => $this->_tableBlogTags,
+			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
+			'id' => $id
+		));
+
+		return $this->_iaDb->getOne($sql);
 	}
 
 	public function getSitemapEntries()

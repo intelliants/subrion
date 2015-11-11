@@ -1617,7 +1617,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('thumb_height','Thumbnail height','admin'),
 ('timepicker','Enable time selection','admin'),
 ('title_alias','Title Alias','admin'),
-('title_is_empty','Title is empty.','admin'),
 ('total_income','total income','admin'),
 ('total_members','total members','admin'),
 ('tooltip','Tooltip','admin'),
@@ -1916,6 +1915,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('title','Title','common'),
 ('title_incorrect','Title is incorrect.','common'),
+('title_is_empty','Title is empty.','common'),
 ('templates','Templates','common'),
 ('time','Time','common'),
 ('total','Total','common'),

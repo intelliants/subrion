@@ -12,7 +12,7 @@ What is Subrion?
 
 Updates are free!
 ---------------------
-* Always use the [latest version](http://www.subrion.org/downloads/).
+* Always use the [latest version](http://www.subrion.org/download/).
 
 Using LESS
 ---------------------
