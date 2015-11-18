@@ -44,6 +44,7 @@ class iaUsers extends abstractCore
 	protected static $_itemName = 'members';
 
 	protected static $_usergroupTable = 'usergroups';
+	protected static $_providersTable = 'members_auth_providers';
 
 	public $dashboardStatistics = true;
 
@@ -62,8 +63,163 @@ class iaUsers extends abstractCore
 		return self::$_usergroupTable;
 	}
 
+	public static function getProvidersTable()
+	{
+		return self::$_providersTable;
+	}
+
 	/* IDENTITY STORAGE MECH */
 	// currently uses the standard PHP session
+
+	/**
+	 * User authorization
+	 * Registers new user when authorizing via HybridAuth
+	 * Updates user details while logging via HybridAuth when email matches a registered user
+	 */
+	public function authorize()
+	{
+		$this->iaCore->startHook('phpCoreBeforeAuth');
+
+		$authorized = 0;
+
+		if (isset($_POST['register']))
+		{
+			$login = '';
+		}
+		elseif (isset($_POST['username']))
+		{
+			$login = $_POST['username'];
+			$authorized++;
+		}
+		else
+		{
+			$login = '';
+		}
+
+		if (isset($_POST['register']))
+		{
+			$pass = '';
+		}
+		elseif (isset($_POST['password']))
+		{
+			$pass = $_POST['password'];
+			$authorized++;
+		}
+		else
+		{
+			$pass = '';
+		}
+
+		$isBackend = (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType());
+
+		if (IA_EXIT && $authorized != 2)
+		{
+			// use this hook to logout
+			$this->iaCore->startHook('phpUserLogout', array('userInfo' => iaUsers::getIdentity(true)));
+
+			if ($this->iaCore->get('hybrid_enabled'))
+			{
+				require_once IA_INCLUDES . 'hybrid/Auth.php';
+
+				Hybrid_Auth::logoutAllProviders();
+			}
+
+			iaUsers::clearIdentity();
+
+			unset($_SESSION['_achkych']);
+			if (strpos($_SERVER['HTTP_REFERER'], $this->iaView->domainUrl) === 0)
+			{
+				if ($isBackend)
+				{
+					$_SESSION['IA_EXIT'] = true;
+				}
+				$url = $isBackend ? IA_ADMIN_URL : IA_URL;
+				header('Location: ' . $url);
+			}
+			else
+			{
+				header('Location: ' . $this->iaView->domainUrl . ($isBackend ? $this->iaCore->get('admin_page') . IA_URL_DELIMITER : ''));
+			}
+			exit();
+		}
+		elseif ($authorized == 2 && $login && $pass)
+		{
+			$auth = (bool)$this->getAuth(0, $login, $pass);
+
+			$this->iaCore->startHook('phpUserLogin', array('userInfo' => iaUsers::getIdentity(true), 'password' => $pass));
+
+			if (!$auth)
+			{
+				if ($isBackend)
+				{
+					$this->iaView->assign('error_login', true);
+				}
+				else
+				{
+					$this->iaView->setMessages(iaLanguage::get('error_login'));
+					$this->iaView->name('login');
+				}
+			}
+			else
+			{
+				unset($_SESSION['_achkych']);
+				if (isset($_SESSION['referrer'])) // this variable is set by Login page handler
+				{
+					header('Location: ' . $_SESSION['referrer']);
+					unset($_SESSION['referrer']);
+					exit();
+				}
+				else
+				{
+					if ($isBackend)
+					{
+						$this->iaCore->factory('log')->write(iaLog::ACTION_LOGIN, array('ip' => $this->iaCore->util()->getIp(false)));
+					}
+				}
+			}
+		}
+		elseif (2 == $authorized)
+		{
+			if ($isBackend)
+			{
+				$this->iaView->assign('empty_login', true);
+			}
+			else
+			{
+				$this->iaView->setMessages(iaLanguage::get('empty_login'));
+				$this->iaView->name('login');
+			}
+		}
+
+		$this->iaCore->getSecurityToken() || $_SESSION[iaCore::SECURITY_TOKEN_MEMORY_KEY] = $this->iaCore->factory('util')->generateToken(92);
+	}
+
+	public static function getAuthProviders()
+	{
+		if (!(iaCore::instance()->get('hybrid_enabled')))
+		{
+			return false;
+		}
+
+		require_once IA_INCLUDES . 'hybrid/Auth.php';
+		new Hybrid_Auth(IA_INCLUDES . 'hybridauth.inc.php');
+
+		if (empty(Hybrid_Auth::$config["providers"]))
+		{
+			return false;
+		}
+
+		$output = array();
+		foreach (Hybrid_Auth::$config["providers"] as $key => $provider)
+		{
+			if ($provider['enabled'])
+			{
+				$output[$key] = $provider;
+			}
+		}
+
+		return $output;
+	}
 
 	/**
 	 * Checks if the current user is signed in as a member
@@ -183,6 +339,9 @@ class iaUsers extends abstractCore
 
 			foreach ($rows as $entry)
 			{
+				// delete associated auth providers
+				$this->iaDb->delete(iaDb::convertIds($entry['id'], 'member_id'), self::$_providersTable);
+
 				// delete member uploads folder
 				$folder = IA_UPLOADS . iaUtil::getAccountDir($entry['username']);
 				iaUtil::cascadeDeleteFiles($folder, true) && @rmdir($folder);

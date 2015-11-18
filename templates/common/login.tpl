@@ -17,3 +17,9 @@
 		<a class="btn btn-link" href="{$smarty.const.IA_URL}registration/" rel="nofollow">{lang key='registration'}</a>
 	</div>
 </form>
+
+{if $core.providers}
+	{foreach $core.providers as $name => $provider}
+		<a class="btn btn-{$name|lower}" href="{$smarty.const.IA_URL}login/{$name|lower}/"><i class="icon-{$name|lower}"></i> {$name}</a>
+	{/foreach}
+{/if}

@@ -406,6 +406,15 @@ CREATE TABLE `{install:prefix}members` (
 	KEY `STATUS` (`status`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}members_auth_providers`;
+CREATE TABLE `{install:prefix}members_auth_providers` (
+	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`member_id` int(11) NOT NULL,
+	`name` varchar(50) NOT NULL,
+	`value` varchar(100) NOT NULL,
+	PRIMARY KEY (`id`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}menus`;
 CREATE TABLE `{install:prefix}menus` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
@@ -769,6 +778,9 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('members','members_config_divider','General','1','divider',0,'',1,'',1,0,''),
 ('members','members_enabled','1','''1'',''0''','radio',0,'Members functionality',2,'',1,0,''),
 ('members','members_autoapproval','1','''1'',''0''','radio',0,'Members auto-approval',3,'',0,0,'members_enabled|1'),
+('members','hybrid_config_divider', 'HybridAuth', '1', 'divider', 0, '', 5, '', 1, 0,''),
+('members','hybrid_enabled', '0','''1'',''0''','radio',0,'Enable HybridAuth', 6, '', 1, 0,''),
+('members','hybrid_debug_mode','0','''1'',''0''','radio',0,'Debug mode', 7, '', 1, 0,'hybrid_enabled|1'),
 ('members','gravatar_divider','Gravatar','1','divider',0,'',10,'',1,0,''),
 ('members','gravatar_enabled','1','''1'',''0''','radio',0,'Enable Gravatars',11,'',1,0,''),
 ('members','gravatar_size','100','1','text',0,'Size',12,'',1,0,'gravatar_enabled|1'),
@@ -984,6 +996,7 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (3,'favorites',0,1,'favorites/',1,'','account','',''),
 (3,'members',0,1,'members/',0,'','main','','members'),
 (3,'login',0,1,'login/',1,'','','',''),
+(3,'hybrid',1,1,'hybrid/',1,'login','','',''),
 (3,'view_member',0,1,'member/',1,'','','members','members'),
 (3,'profile',0,1,'profile/',1,'','account','',''),
 (3,'member_funds',0,1,'profile/funds/',1,'transactions','account','profile',''),
