@@ -40,6 +40,8 @@ class iaUsers extends abstractCore
 	const METHOD_NAME_GET_LISTINGS = 'fetchMemberListings';
 	const METHOD_NAME_GET_FAVORITES = 'getFavorites';
 
+	const AUTO_LOGIN_COOKIE_NAME = '_utcpl';
+
 	protected static $_table = 'members';
 	protected static $_itemName = 'members';
 
@@ -144,7 +146,7 @@ class iaUsers extends abstractCore
 		}
 		elseif ($authorized == 2 && $login && $pass)
 		{
-			$auth = (bool)$this->getAuth(0, $login, $pass);
+			$auth = (bool)$this->getAuth(null, $login, $pass, isset($_POST['remember']));
 
 			$this->iaCore->startHook('phpUserLogin', array('userInfo' => iaUsers::getIdentity(true), 'password' => $pass));
 
@@ -189,6 +191,10 @@ class iaUsers extends abstractCore
 				$this->iaView->setMessages(iaLanguage::get('empty_login'));
 				$this->iaView->name('login');
 			}
+		}
+		elseif (isset($_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]))
+		{
+			$this->_checkAutoLoginCookie();
 		}
 
 		$this->iaCore->getSecurityToken() || $_SESSION[iaCore::SECURITY_TOKEN_MEMORY_KEY] = $this->iaCore->factory('util')->generateToken(92);
@@ -257,6 +263,9 @@ class iaUsers extends abstractCore
 	 */
 	public static function clearIdentity()
 	{
+		unset($_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]);
+		setcookie(self::AUTO_LOGIN_COOKIE_NAME);
+
 		self::_setIdentity(null);
 	}
 
@@ -547,7 +556,7 @@ class iaUsers extends abstractCore
 		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status', array('id' => $id, 'status' => iaCore::STATUS_ACTIVE), self::getTable());
 	}
 
-	public function getAuth($userId, $user = null, $password = null)
+	public function getAuth($userId, $user = null, $password = null, $remember = false)
 	{
 		$sql =
 			'SELECT u.*, g.`name` `usergroup` ' .
@@ -584,7 +593,7 @@ class iaUsers extends abstractCore
 
 			$this->iaDb->update(null, iaDb::convertIds($row['id']), array('date_logged' => iaDb::FUNCTION_NOW), self::getTable());
 
-			$this->_assignItem($row);
+			$this->_assignItem($row, $remember);
 
 			return $row;
 		}
@@ -638,7 +647,7 @@ class iaUsers extends abstractCore
 		$iaDb->resetTable();
 	}
 
-	protected function _assignItem($memberData)
+	protected function _assignItem($memberData, $remember)
 	{
 		if ($salt = $this->_getSalt())
 		{
@@ -650,6 +659,30 @@ class iaUsers extends abstractCore
 		}
 
 		setcookie('salt', '', time() - 3600, '/');
+		empty($remember) || $this->_setAutoLoginCookie($memberData);
+	}
+
+	private function _setAutoLoginCookie(array $member)
+	{
+		$time = time() + (60 * 60 * 24 * 30);
+		$value = $this->_autoLoginValue($member) . ':' . $member['id'];
+
+		setcookie(self::AUTO_LOGIN_COOKIE_NAME, $value, $time);
+	}
+
+	private function _checkAutoLoginCookie()
+	{
+		$array = explode(':', $_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]);
+
+		if (2 == count($array) && $array[0] == $this->_autoLoginValue($array[1]))
+		{
+			$this->getAuth($array[1]);
+		}
+	}
+
+	private function _autoLoginValue(array $row)
+	{
+		return md5($_SERVER['HTTP_USER_AGENT'] . '_' . IA_SALT . '_' . $row['id']);
 	}
 
 	protected function _getSalt()
