@@ -264,7 +264,7 @@ class iaUsers extends abstractCore
 	public static function clearIdentity()
 	{
 		unset($_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]);
-		setcookie(self::AUTO_LOGIN_COOKIE_NAME);
+		setcookie(self::AUTO_LOGIN_COOKIE_NAME, '', -1, '/');
 
 		self::_setIdentity(null);
 	}
@@ -665,14 +665,14 @@ class iaUsers extends abstractCore
 	private function _setAutoLoginCookie(array $member)
 	{
 		$time = time() + (60 * 60 * 24 * 30);
-		$value = $this->_autoLoginValue($member) . ':' . $member['id'];
+		$value = $this->_autoLoginValue($member) . 's' . $member['id'];
 
-		setcookie(self::AUTO_LOGIN_COOKIE_NAME, $value, $time);
+		setcookie(self::AUTO_LOGIN_COOKIE_NAME, $value, $time, '/');
 	}
 
 	private function _checkAutoLoginCookie()
 	{
-		$array = explode(':', $_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]);
+		$array = explode('s', $_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]);
 
 		if (2 == count($array) && $array[0] == $this->_autoLoginValue($array[1]))
 		{
