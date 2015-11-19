@@ -302,6 +302,33 @@ CREATE TABLE `{install:prefix}hooks` (
 	KEY `STATUS` (`status`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}invoices`;
+CREATE TABLE `{install:prefix}invoices`(
+  `id` bigint(12) unsigned NOT NULL,
+  `transaction_id` int(10) unsigned NOT NULL,
+  `date_created` datetime NOT NULL,
+  `date_due` datetime default NULL,
+  `fullname` varchar(200) NOT NULL,
+  `address1` tinytext NOT NULL,
+  `address2` tinytext NOT NULL,
+  `zip` varchar(12) NOT NULL,
+  `country` varchar(32) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE `TRANSACTION` (`transaction_id`)
+) {install:db_options};
+
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}invoices_items`;
+CREATE TABLE `{install:prefix}invoices_items`(
+  `id` int(9) unsigned NOT NULL auto_increment,
+  `invoice_id` bigint(12) unsigned NOT NULL,
+  `title` tinytext NOT NULL,
+  `price` decimal(11,2) unsigned NOT NULL,
+  `quantity` smallint(5) unsigned NOT NULL,
+  `tax` tinyint(3) unsigned,
+  PRIMARY KEY (`id`),
+  KEY `INVOICE` (`invoice_id`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}items`;
 CREATE TABLE `{install:prefix}items` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
@@ -645,6 +672,7 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('field_add','fields/add/','plus-alt','','fields,members_fields','add_field','regular',2),
 ('field_groups_list','fieldgroups/','list-2','','fieldgroups,members_fields','Field Groups','regular',3),
 ('field_groups_add','fieldgroups/add/','folder-plus','','fieldgroups,members_fields','Add Field Group','regular',4),
+('invoice_add','invoices/add/','plus-alt','','invoices,invoices:edit','Add Invoice','regular',1),
 ('languages_list','languages/','list','','languages','view','regular',1),
 ('language_add','languages/add/','copy','','languages','new_language','regular',2),
 ('languages_download','languages/download/','box-remove','','languages','Download','regular',3),
@@ -657,6 +685,7 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('pages_add','pages/add/','plus-alt','','pages','Add Page','regular',3),
 ('plans_list','plans/','list','','plans:add,plans:edit','Plans','regular',3),
 ('plans_add','plans/add/','plus-alt','','plans','Add Plan','regular',4),
+('print_invoice','invoices/printable/:id/','file','target="_blank"','invoices:edit','Printable Version','regular',2),
 ('transaction_add','javascript:;','plus','id="js-add-transaction-cmd"','transactions','Add Transaction','regular',1),
 ('tags_list','javascript:;','eye','id="js-view-tags"','email_templates','View Tags','regular',1),
 
@@ -706,6 +735,7 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`title`,`name`,`action`,`pare
 (4,'Plans','plans','read','','plans','plans/','menu',null,5),
 (4,'Subscriptions','subscriptions','read','','subscriptions','subscriptions/','menu',null,10),
 (4,'Transactions','transactions','read','','transactions','transactions/','menu',null,15),
+(4,'Invoices','invoices','read','','invoices','invoices/','menu',null,20),
 
 -- EXTENSIONS
 (5,'Templates','templates','read','','templates','templates/','menu',null,5),
@@ -956,7 +986,8 @@ INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page
 ('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/opengraph.tpl'),
 ('smartyAdminAfterHeadSection','{if $core.config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',2,'smarty','admin',''),
 ('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''];\r\n		}\r\n	}\r\n}','active',5,'php','admin',''),
-('smartyFrontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl');
+('smartyFrontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl'),
+('phpTransactionCreated','$iaCore->factory(\'invoice\')->create($id, $transaction);','active',0,'php','both','');
 
 INSERT INTO `{install:prefix}items` (`payable`,`item`,`package`,`pages`) VALUES
 (1,'members','core','profile,view_member'),
@@ -1039,7 +1070,9 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('add_drop_table','Add DROP TABLE','admin'),
 ('add_field','Add Field','admin'),
 ('add_fieldgroup','Add Field Group','admin'),
+('add_invoice','Add Invoice','admin'),
 ('add_item_value','Add Item Value','admin'),
+('add_line','Add line','admin'),
 ('add_member','Add Member','admin'),
 ('add_menu','Add Menu','admin'),
 ('add_new_phrase','Add New Phrase','admin'),
@@ -1202,6 +1235,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('dashboard','Dashboard','admin'),
 ('date_added','Date Added','admin'),
+('date_created','Date Created','admin'),
+('date_due','Date Due','admin'),
 ('date_modified','Date Modified','admin'),
 ('day','day','admin'),
 ('days','days','admin'),
@@ -1220,6 +1255,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('edit_block','Edit Block','admin'),
 ('edit_field','Edit Field ":field"','admin'),
 ('edit_fieldgroup','Edit Field Group','admin'),
+('edit_invoice','Edit Invoice','admin'),
 ('edit_language','Edit Language','admin'),
 ('edit_member','Edit Member','admin'),
 ('edit_menu','Edit Menu','admin'),
@@ -1367,6 +1403,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('interval','Interval','admin'),
 ('invalid_image_file','Unable to process image, invalid image file.','admin'),
 ('invalid_plugin_dependencies','Invalid plugin dependencies','admin'),
+('invoice_id','Invoice ID','admin'),
 ('items_fields','Fields','admin'),
 ('invert','Invert','admin'),
 ('iso_code','ISO Code','admin'),
@@ -1528,7 +1565,10 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('plugins_left',':count more plugins left to be installed.','admin'),
 ('preview','Preview','admin'),
 ('previous_launch','Previous launch','admin'),
+('price','Price','admin'),
+('product_items','Product Items','admin'),
 
+('quantity','Quantity','admin'),
 ('query_history','Queries History','admin'),
 ('quick_access','Quick Access','admin'),
 
@@ -1610,6 +1650,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('subdomain_about','You can install the package as a subdomain. Note you should be able to modify your Apache config file to use package on a subdomain. More instructions can be found in our <a href="http://www.subrion.org/forums/">User Forums.</a><br /> Ex.: articles.domain.com, links.domain.com, autos.domain.com, etc.','admin'),
 ('subdomain_title','Subdomain Installation','admin'),
 ('submit_feedback','Submit Feedback to the Subrion Team','admin'),
+('subtotal','Subtotal','admin'),
 ('sure_uninstall_package','Are you sure you want to uninstall this package? Please be informed that all your package data will be lost.','admin'),
 ('system_fields','System Fields','admin'),
 ('system_notifications','System Notifications','admin'),
@@ -1619,6 +1660,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('tables','Tables','admin'),
 ('tables_fields','Tables/Fields','admin'),
 ('task','Task','admin'),
+('tax','Tax','admin'),
 ('template_downloaded','":name" template downloaded.','admin'),
 ('template_name_empty','Template name is empty or incorrect.','admin'),
 ('template_file_error','Template file cannot be found. Use this file: :file.','admin'),
@@ -1630,12 +1672,14 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('thumb_height','Thumbnail height','admin'),
 ('timepicker','Enable time selection','admin'),
 ('title_alias','Title Alias','admin'),
+('total','Total','admin'),
 ('total_income','total income','admin'),
 ('total_members','total members','admin'),
 ('tooltip','Tooltip','admin'),
 ('tpl','Template filename','admin'),
 ('transaction_added','Transaction added.','admin'),
 ('transaction_deleted','Transaction deleted.','admin'),
+('transaction_id','Transaction ID','admin'),
 ('twitter_news','Twitter News','admin'),
 ('type','Type','admin'),
 ('type_here_to_search','Type here to search','admin'),
@@ -1691,6 +1735,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('add_funds','Add Funds','common'),
 ('added','Added','common'),
 ('address','Address','common'),
+('address_line','Address Line','common'),
 ('admin_panel','Admin Panel','common'),
 ('all','All','common'),
 ('amount','Amount','common'),
@@ -1723,6 +1768,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('confirm','Confirm','common'),
 ('contributor','Contributor','common'),
 ('copy','Copy','common'),
+('country','Country','common'),
 ('currency','Currency','common'),
 ('current','Current','common'),
 ('current_page','Current Page','common'),
@@ -1960,7 +2006,9 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('write','Write','common'),
 
 ('years','years','common'),
-('yes','Yes','common');
+('yes','Yes','common'),
+
+('zip','ZIP','common');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('active_users','Active Users','frontend'),
@@ -1974,6 +2022,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('auto_generate_password','Auto generate password','frontend'),
 
 ('back_to_gateway_list','{current_gateway} payment gateway, click <a href=\"javaScript:void(0);\" onclick=\"backToPaymentGatewayList()\">here</a> to choose another one','frontend'),
+('billing_address','Billing Address','frontend'),
 ('bots','Bots','frontend'),
 ('bots_visits','Visits last 24h (bots)','frontend'),
 ('by_fullname','full name','frontend'),
@@ -2064,6 +2113,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('payment_status','Payment status','frontend'),
 ('pictures','Pictures','frontend'),
 ('powered_by_subrion','Powered by <a href="http://www.subrion.org" title="Open Source CMS">Subrion CMS</a>','frontend'),
+('print_invoice','Print invoice','frontend'),
 ('print_preview','Print Page','frontend'),
 ('proceed_pay','Proceed to Payment','frontend'),
 ('protected_page','Protected page','frontend'),

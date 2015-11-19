@@ -252,6 +252,12 @@ class iaBackendController extends iaAbstractControllerBackend
 				: iaLanguage::get('invalid_parameters');
 		}
 
+		if (isset($output['success']) && $output['success'])
+		{
+			$this->_iaCore->startHook('phpTransactionCreated', array('id' => $output['success'], 'transaction' => $transaction));
+			$output['success'] = (bool)$output['success'];
+		}
+
 		return $output;
 	}
 }

@@ -29,6 +29,8 @@
 						<a href="pay/{$transaction.sec_key}/?repay" class="btn btn-mini">{lang key='change_gateway'}</a>
 					{/if}
 					<a href="pay/{$transaction.sec_key}/?delete" class="btn btn-mini btn-danger js-cancel-invoice">{lang key='cancel'}</a>
+				{elseif iaTransaction::PASSED == $transaction.status}
+					<a href="{$smarty.const.IA_SELF}invoice/{$transaction.sec_key}/" class="btn btn-mini btn-info" target="_blank">{lang key='print_invoice'}</a>
 				{/if}
 			</td>
 		</tr>
