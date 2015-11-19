@@ -665,7 +665,7 @@ class iaUsers extends abstractCore
 	private function _setAutoLoginCookie(array $member)
 	{
 		$time = time() + (60 * 60 * 24 * 30);
-		$value = $this->_autoLoginValue($member) . 's' . $member['id'];
+		$value = $this->_autoLoginValue($member['id']) . 's' . $member['id'];
 
 		setcookie(self::AUTO_LOGIN_COOKIE_NAME, $value, $time, '/');
 	}
@@ -680,9 +680,9 @@ class iaUsers extends abstractCore
 		}
 	}
 
-	private function _autoLoginValue(array $row)
+	private function _autoLoginValue($id)
 	{
-		return md5($_SERVER['HTTP_USER_AGENT'] . '_' . IA_SALT . '_' . $row['id']);
+		return md5($_SERVER['HTTP_USER_AGENT'] . '_' . IA_SALT . '_' . $id);
 	}
 
 	protected function _getSalt()
