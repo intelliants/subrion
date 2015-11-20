@@ -61,9 +61,9 @@
 					<p>
 						<input type="password" id="dummy_password" name="password" tabindex="2" placeholder="{lang key='password'}">
 					</p>
-					<p>
-						<label>{lang key='remember_me'} <input type="checkbox" name="remember"{if isset($smarty.post.remember)} checked{/if}></label>
-					</p>
+					<div class="checkbox">
+						<label><input type="checkbox" name="remember"{if isset($smarty.post.remember)} checked{/if}> {lang key='remember_me'}</label>
+					</div>
 					{if count($core.languages) > 1}
 					<p>
 						<select name="_lang" id="_lang">

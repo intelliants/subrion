@@ -11,8 +11,8 @@
 		<input class="form-control" type="password" tabindex="5" name="password">
 	</div>
 
-	<div class="form-group">
-		<label for="field_password"><input class="form-control" type="checkbox" name="remember"> {lang key='remember_me'}:</label>
+	<div class="checkbox">
+		<label><input type="checkbox" name="remember"> {lang key='remember_me'}</label>
 	</div>
 
 	<div class="form-group form-actions">
