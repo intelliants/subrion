@@ -91,6 +91,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					if ($iaPlan->extractFunds($transaction))
 					{
+						empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']); /*-- MOD // jjangaraev --*/
 						$iaPlan->setPaid($transaction);
 						iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('payment_done'), $transaction['return_url']);
 					}
@@ -109,7 +110,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				}
 
 				$plan['title'] = $transaction['item'] . ' - ' . $plan['title'];
+
 				$iaView->assign('plan', $plan);
+				$iaView->assign('address', $iaCore->factory('invoice')->getAddress($transaction['id']));
 
 				foreach ($gateways as $key => $gateway)
 				{
@@ -125,6 +128,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					if (isset($gateways[$gate]))
 					{
 						$affected = $iaDb->update(array('id' => $transaction['id'], 'gateway' => $gate), null, array('date' => iaDb::FUNCTION_NOW), iaTransaction::getTable());
+						$iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
 
 						// include pre form send files
 						$paymentGatewayHandler = IA_PLUGINS . $gate . IA_DS . 'includes' . IA_DS . 'pre-processing' . iaSystem::EXECUTABLE_FILE_EXT;

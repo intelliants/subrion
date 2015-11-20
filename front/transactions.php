@@ -61,6 +61,41 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
+	$iaInvoice = $iaCore->factory('invoice');
+
+	if (isset($iaCore->requestPath[0]) && 'invoice' == $iaCore->requestPath[0])
+	{
+		if (isset($iaCore->requestPath[1]))
+		{
+			$iaTransaction = $iaCore->factory('transaction');
+
+			$transaction = $iaTransaction->getBy('sec_key', $iaCore->requestPath[1]);
+
+			if (!$transaction)
+			{
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			}
+
+			$invoice = $iaInvoice->getBy('transaction_id', $transaction['id']);
+
+			if (!$invoice)
+			{
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			}
+
+			$iaView->assign('invoice', $invoice);
+			$iaView->assign('items', $iaInvoice->getItemsByInvoiceId($invoice['id']));
+
+			$iaView->disableLayout();
+			echo $iaView->display('printable.invoice');
+			return;
+		}
+		else
+		{
+			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		}
+	}
+
 	iaUsers::reloadIdentity();
 
 	if (isset($_POST['amount']))

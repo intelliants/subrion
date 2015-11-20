@@ -156,7 +156,7 @@ abstract class iaAbstractControllerBackend
 					if (isset($data['save']))
 					{
 						$reopenOption = empty($data['goto']) ? null : $data['goto'];
-						unset($data['save'], $data['goto'], $data['param']);
+						unset($data['save'], $data['goto'], $data['v']);
 
 						$result = $this->_saveEntry($iaView, $entry, $data);
 

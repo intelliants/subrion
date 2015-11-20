@@ -40,10 +40,13 @@ class iaUsers extends abstractCore
 	const METHOD_NAME_GET_LISTINGS = 'fetchMemberListings';
 	const METHOD_NAME_GET_FAVORITES = 'getFavorites';
 
+	const AUTO_LOGIN_COOKIE_NAME = '_utcpl';
+
 	protected static $_table = 'members';
 	protected static $_itemName = 'members';
 
 	protected static $_usergroupTable = 'usergroups';
+	protected static $_providersTable = 'members_auth_providers';
 
 	public $dashboardStatistics = true;
 
@@ -62,8 +65,167 @@ class iaUsers extends abstractCore
 		return self::$_usergroupTable;
 	}
 
+	public static function getProvidersTable()
+	{
+		return self::$_providersTable;
+	}
+
 	/* IDENTITY STORAGE MECH */
 	// currently uses the standard PHP session
+
+	/**
+	 * User authorization
+	 * Registers new user when authorizing via HybridAuth
+	 * Updates user details while logging via HybridAuth when email matches a registered user
+	 */
+	public function authorize()
+	{
+		$this->iaCore->startHook('phpCoreBeforeAuth');
+
+		$authorized = 0;
+
+		if (isset($_POST['register']))
+		{
+			$login = '';
+		}
+		elseif (isset($_POST['username']))
+		{
+			$login = $_POST['username'];
+			$authorized++;
+		}
+		else
+		{
+			$login = '';
+		}
+
+		if (isset($_POST['register']))
+		{
+			$pass = '';
+		}
+		elseif (isset($_POST['password']))
+		{
+			$pass = $_POST['password'];
+			$authorized++;
+		}
+		else
+		{
+			$pass = '';
+		}
+
+		$isBackend = (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType());
+
+		if (IA_EXIT && $authorized != 2)
+		{
+			// use this hook to logout
+			$this->iaCore->startHook('phpUserLogout', array('userInfo' => iaUsers::getIdentity(true)));
+
+			if ($this->iaCore->get('hybrid_enabled'))
+			{
+				require_once IA_INCLUDES . 'hybrid/Auth.php';
+
+				Hybrid_Auth::logoutAllProviders();
+			}
+
+			iaUsers::clearIdentity();
+
+			unset($_SESSION['_achkych']);
+			if (strpos($_SERVER['HTTP_REFERER'], $this->iaView->domainUrl) === 0)
+			{
+				if ($isBackend)
+				{
+					$_SESSION['IA_EXIT'] = true;
+				}
+				$url = $isBackend ? IA_ADMIN_URL : IA_URL;
+				header('Location: ' . $url);
+			}
+			else
+			{
+				header('Location: ' . $this->iaView->domainUrl . ($isBackend ? $this->iaCore->get('admin_page') . IA_URL_DELIMITER : ''));
+			}
+			exit();
+		}
+		elseif ($authorized == 2 && $login && $pass)
+		{
+			$auth = (bool)$this->getAuth(null, $login, $pass, isset($_POST['remember']));
+
+			$this->iaCore->startHook('phpUserLogin', array('userInfo' => iaUsers::getIdentity(true), 'password' => $pass));
+
+			if (!$auth)
+			{
+				if ($isBackend)
+				{
+					$this->iaView->assign('error_login', true);
+				}
+				else
+				{
+					$this->iaView->setMessages(iaLanguage::get('error_login'));
+					$this->iaView->name('login');
+				}
+			}
+			else
+			{
+				unset($_SESSION['_achkych']);
+				if (isset($_SESSION['referrer'])) // this variable is set by Login page handler
+				{
+					header('Location: ' . $_SESSION['referrer']);
+					unset($_SESSION['referrer']);
+					exit();
+				}
+				else
+				{
+					if ($isBackend)
+					{
+						$this->iaCore->factory('log')->write(iaLog::ACTION_LOGIN, array('ip' => $this->iaCore->util()->getIp(false)));
+					}
+				}
+			}
+		}
+		elseif (2 == $authorized)
+		{
+			if ($isBackend)
+			{
+				$this->iaView->assign('empty_login', true);
+			}
+			else
+			{
+				$this->iaView->setMessages(iaLanguage::get('empty_login'));
+				$this->iaView->name('login');
+			}
+		}
+		elseif (isset($_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]))
+		{
+			$this->_checkAutoLoginCookie();
+		}
+
+		$this->iaCore->getSecurityToken() || $_SESSION[iaCore::SECURITY_TOKEN_MEMORY_KEY] = $this->iaCore->factory('util')->generateToken(92);
+	}
+
+	public static function getAuthProviders()
+	{
+		if (!(iaCore::instance()->get('hybrid_enabled')))
+		{
+			return false;
+		}
+
+		require_once IA_INCLUDES . 'hybrid/Auth.php';
+		new Hybrid_Auth(IA_INCLUDES . 'hybridauth.inc.php');
+
+		if (empty(Hybrid_Auth::$config["providers"]))
+		{
+			return false;
+		}
+
+		$output = array();
+		foreach (Hybrid_Auth::$config["providers"] as $key => $provider)
+		{
+			if ($provider['enabled'])
+			{
+				$output[$key] = $provider;
+			}
+		}
+
+		return $output;
+	}
 
 	/**
 	 * Checks if the current user is signed in as a member
@@ -101,6 +263,9 @@ class iaUsers extends abstractCore
 	 */
 	public static function clearIdentity()
 	{
+		unset($_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]);
+		setcookie(self::AUTO_LOGIN_COOKIE_NAME, '', -1, '/');
+
 		self::_setIdentity(null);
 	}
 
@@ -183,6 +348,9 @@ class iaUsers extends abstractCore
 
 			foreach ($rows as $entry)
 			{
+				// delete associated auth providers
+				$this->iaDb->delete(iaDb::convertIds($entry['id'], 'member_id'), self::$_providersTable);
+
 				// delete member uploads folder
 				$folder = IA_UPLOADS . iaUtil::getAccountDir($entry['username']);
 				iaUtil::cascadeDeleteFiles($folder, true) && @rmdir($folder);
@@ -388,7 +556,7 @@ class iaUsers extends abstractCore
 		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status', array('id' => $id, 'status' => iaCore::STATUS_ACTIVE), self::getTable());
 	}
 
-	public function getAuth($userId, $user = null, $password = null)
+	public function getAuth($userId, $user = null, $password = null, $remember = false)
 	{
 		$sql =
 			'SELECT u.*, g.`name` `usergroup` ' .
@@ -425,7 +593,7 @@ class iaUsers extends abstractCore
 
 			$this->iaDb->update(null, iaDb::convertIds($row['id']), array('date_logged' => iaDb::FUNCTION_NOW), self::getTable());
 
-			$this->_assignItem($row);
+			$this->_assignItem($row, $remember);
 
 			return $row;
 		}
@@ -479,7 +647,7 @@ class iaUsers extends abstractCore
 		$iaDb->resetTable();
 	}
 
-	protected function _assignItem($memberData)
+	protected function _assignItem($memberData, $remember)
 	{
 		if ($salt = $this->_getSalt())
 		{
@@ -491,6 +659,30 @@ class iaUsers extends abstractCore
 		}
 
 		setcookie('salt', '', time() - 3600, '/');
+		empty($remember) || $this->_setAutoLoginCookie($memberData);
+	}
+
+	private function _setAutoLoginCookie(array $member)
+	{
+		$time = time() + (60 * 60 * 24 * 30);
+		$value = $this->_autoLoginValue($member['id']) . 's' . $member['id'];
+
+		setcookie(self::AUTO_LOGIN_COOKIE_NAME, $value, $time, '/');
+	}
+
+	private function _checkAutoLoginCookie()
+	{
+		$array = explode('s', $_COOKIE[self::AUTO_LOGIN_COOKIE_NAME]);
+
+		if (2 == count($array) && $array[0] == $this->_autoLoginValue($array[1]))
+		{
+			$this->getAuth($array[1]);
+		}
+	}
+
+	private function _autoLoginValue($id)
+	{
+		return md5($_SERVER['HTTP_USER_AGENT'] . '_' . IA_SALT . '_' . $id);
 	}
 
 	protected function _getSalt()

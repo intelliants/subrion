@@ -22,6 +22,33 @@
 
 	<form method="post" id="payment_form" class="form-horizontal">
 		{preventCsrf}
+		<div class="well">
+			<div class="fieldset">
+				<div class="fieldset__header">{lang key='billing_address'}</div>
+				<div class="fieldset__content" style="margin-left: 20px; margin-right: 60px">
+					<div class="form-group">
+						<label>{lang key='address_line'} 1:</label>
+						<input class="form-control" type="text" name="invaddr[address1]" value="{$address.address1|escape:'html'}">
+					</div>
+
+					<div class="form-group">
+						<label>{lang key='address_line'} 2:</label>
+						<input class="form-control" type="text" name="invaddr[address2]" value="{$address.address2|escape:'html'}">
+					</div>
+
+					<div class="form-group">
+						<label>{lang key='zip'}:</label>
+						<input class="form-control" type="text" name="invaddr[zip]" maxlength="12" value="{$address.zip|escape:'html'}">
+					</div>
+
+					<div class="form-group">
+						<label>{lang key='country'}:</label>
+						<input class="form-control" type="text" name="invaddr[country]" maxlength="32" value="{$address.country|escape:'html'}">
+					</div>
+				</div>
+			</div>
+
+		</div>
 		<div class="plans">
 			{if $member && !$isBalancePayment}
 				<div class="plans__item">

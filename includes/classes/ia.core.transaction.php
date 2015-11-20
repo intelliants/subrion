@@ -137,6 +137,7 @@ class iaTransaction extends abstractCore
 		if ($transactionId)
 		{
 			$result = (bool)$this->iaDb->delete('`id` = :id AND `status` != :status', self::getTable(), array('id' => (int)$transactionId, 'status' => self::PASSED));
+			empty($result) || $this->iaCore->factory('invoice')->deleteCorrespondingInvoice($transactionId);
 		}
 
 		return $result;
@@ -206,7 +207,8 @@ class iaTransaction extends abstractCore
 			'date' => date(iaDb::DATETIME_FORMAT)
 		);
 
-		$result = (bool)$this->iaDb->insert($transaction, null, $this->getTable());
+		$result = $this->iaDb->insert($transaction, null, $this->getTable());
+		$result && $this->iaCore->startHook('phpTransactionCreated', array('id' => $result, 'transaction' => $transaction));
 		$return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 
 		return $result ? $transactionId : false;

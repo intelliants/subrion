@@ -37,3 +37,9 @@
 </form>
 
 {ia_print_js files='frontend/registration'}
+
+{if $core.providers}
+	{foreach $core.providers as $name => $provider}
+		<a class="btn btn-{$name|lower}" href="{$smarty.const.IA_URL}login/{$name|lower}/"><i class="icon-{$name|lower}"></i> {$name}</a>
+	{/foreach}
+{/if}

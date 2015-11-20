@@ -122,7 +122,10 @@ final class iaCore
 
 		$this->startHook('init');
 
-		$this->_authorize();
+		// authorize user
+		$iaUsers = $this->factory('users');
+		$iaUsers->authorize();
+
 		$this->_forgeryCheck();
 		$this->getCustomConfig();
 
@@ -145,7 +148,7 @@ final class iaCore
 			&& iaView::REQUEST_HTML == $this->iaView->getRequestType()
 			&& iaView::PAGE_ERROR != $this->iaView->name())
 		{
-			$this->factory('users')->registerVisitor();
+			$iaUsers->registerVisitor();
 		}
 
 		$this->startHook('phpCoreBeforePageDisplay');
@@ -398,6 +401,13 @@ final class iaCore
 		$this->startHook('phpCoreCodeAfterAll');
 	}
 
+	/**
+	 * Get the list of configuration values & cache it when needed
+	 *
+	 * @param bool|false $reloadRequired true forces cache reload
+	 *
+	 * @return array
+	 */
 	public function getConfig($reloadRequired = false)
 	{
 		if (empty($this->_config) || $reloadRequired)
@@ -426,6 +436,14 @@ final class iaCore
 		return $this->_config;
 	}
 
+	/**
+	 * Get the list of user/group specific configuration values
+	 *
+	 * @param null $user user id
+	 * @param null $group group id
+	 *
+	 * @return array
+	 */
 	public function getCustomConfig($user = null, $group = null)
 	{
 		$local = false;
@@ -488,6 +506,16 @@ final class iaCore
 		return $result;
 	}
 
+	/**
+	 * Get the specified configuration value
+	 *
+	 * @param string $key configuration key
+	 * @param bool|false $default default value
+	 * @param bool|true $custom custom config flag
+	 * @param bool|false $db true gets from database directly
+	 *
+	 * @return string
+	 */
 	public function get($key, $default = false, $custom = true, $db = false)
 	{
 		if ($custom && isset($this->_customConfig[$key]))
@@ -517,6 +545,15 @@ final class iaCore
 		return $result;
 	}
 
+	/**
+	 * Set a given configuration value
+	 *
+	 * @param string $key configuration key
+	 * @param string $value configuration value
+	 * @param bool|false $permanent saves permanently in db
+	 *
+	 * @return bool
+	 */
 	public function set($key, $value, $permanent = false)
 	{
 		if ($permanent && !is_scalar($value))
@@ -538,124 +575,19 @@ final class iaCore
 		return $result;
 	}
 
-	private function _authorize()
-	{
-		$this->startHook('phpCoreBeforeAuth');
-
-		$authorized = 0;
-
-		if (isset($_POST['register']))
-		{
-			$login = '';
-		}
-		elseif (isset($_POST['username']))
-		{
-			$login = $_POST['username'];
-			$authorized++;
-		}
-		else
-		{
-			$login = '';
-		}
-
-		$iaUsers = $this->factory('users');
-
-		if (isset($_POST['register']))
-		{
-			$pass = '';
-		}
-		elseif (isset($_POST['password']))
-		{
-			$pass = $_POST['password'];
-			$authorized++;
-		}
-		else
-		{
-			$pass = '';
-		}
-
-		$isBackend = (self::ACCESS_ADMIN == $this->getAccessType());
-
-		if (IA_EXIT && $authorized != 2)
-		{
-			// use this hook to logout
-			$this->startHook('phpUserLogout', array('userInfo' => iaUsers::getIdentity(true)));
-
-			iaUsers::clearIdentity();
-
-			unset($_SESSION['_achkych']);
-			if (strpos($_SERVER['HTTP_REFERER'], $this->iaView->domainUrl) === 0)
-			{
-				if ($isBackend)
-				{
-					$_SESSION['IA_EXIT'] = true;
-				}
-				$url = $isBackend ? IA_ADMIN_URL : IA_URL;
-				header('Location: ' . $url);
-			}
-			else
-			{
-				header('Location: ' . $this->iaView->domainUrl . ($isBackend ? $this->get('admin_page') . IA_URL_DELIMITER : ''));
-			}
-			exit();
-		}
-		elseif ($authorized == 2 && $login && $pass)
-		{
-			$auth = (bool)$iaUsers->getAuth(0, $login, $pass);
-
-			$this->startHook('phpUserLogin', array('userInfo' => iaUsers::getIdentity(true), 'password' => $pass));
-
-			if (!$auth)
-			{
-				if ($isBackend)
-				{
-					$this->iaView->assign('error_login', true);
-				}
-				else
-				{
-					$this->iaView->setMessages(iaLanguage::get('error_login'));
-					$this->iaView->name('login');
-				}
-			}
-			else
-			{
-				unset($_SESSION['_achkych']);
-				if (isset($_SESSION['referrer'])) // this variable is set by Login page handler
-				{
-					header('Location: ' . $_SESSION['referrer']);
-					unset($_SESSION['referrer']);
-					exit();
-				}
-				else
-				{
-					if ($isBackend)
-					{
-						$this->factory('log')->write(iaLog::ACTION_LOGIN, array('ip' => $this->util()->getIp(false)));
-					}
-				}
-			}
-		}
-		elseif (2 == $authorized)
-		{
-			if ($isBackend)
-			{
-				$this->iaView->assign('empty_login', true);
-			}
-			else
-			{
-				$this->iaView->setMessages(iaLanguage::get('empty_login'));
-				$this->iaView->name('login');
-			}
-		}
-
-		$this->getSecurityToken() || $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] = $this->factory('util')->generateToken(92);
-	}
-
+	/**
+	 * Get the list of hooks
+	 *
+	 * @return array
+	 */
 	public function getHooks()
 	{
 		return $this->_hooks;
 	}
 
+	/**
+	 * Set the list of available hooks
+	 */
 	protected function _fetchHooks()
 	{
 		$columns = array('name', 'code', 'type', 'extras', 'filename', 'pages');
@@ -964,21 +896,39 @@ final class iaCore
 		return false;
 	}
 
+	/**
+	 * Get config table name
+	 *
+	 * @return string
+	 */
 	public static function getConfigTable()
 	{
 		return self::$_configDbTable;
 	}
 
+	/**
+	 * Get config groups table name
+	 *
+	 * @return string
+	 */
 	public static function getConfigGroupsTable()
 	{
 		return self::$_configGroupsDbTable;
 	}
 
+	/**
+	 * Get custom config table name
+	 *
+	 * @return string
+	 */
 	public static function getCustomConfigTable()
 	{
 		return self::$_customConfigDbTable;
 	}
 
+	/**
+	 * Set constants
+	 */
 	protected function _setConstants()
 	{
 		$iaView = &$this->iaView;
