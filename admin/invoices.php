@@ -42,9 +42,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _indexPage(&$iaView)
 	{
-		if (2 == count($this->_iaCore->requestPath) && 'printable' == $this->_iaCore->requestPath[0])
+		if (2 == count($this->_iaCore->requestPath) && 'view' == $this->_iaCore->requestPath[0])
 		{
-			$this->_printableVersion($iaView, $this->_iaCore->requestPath[1]);
+			$this->_view($iaView, $this->_iaCore->requestPath[1]);
 		}
 		else
 		{
@@ -88,8 +88,10 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 	}
 
-	protected function _printableVersion(&$iaView, $invoiceId)
+	protected function _view(&$iaView, $invoiceId)
 	{
+		iaBreadcrumb::add(iaLanguage::get('view'), IA_SELF);
+
 		$invoice = $this->getHelper()->getById($invoiceId);
 
 		if (!$invoice)
@@ -100,10 +102,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->assign('invoice', $invoice);
 		$iaView->assign('items', $this->getHelper()->getItemsByInvoiceId($invoiceId));
 
-		$iaView->display('printable.invoice');
-		$iaView->disableLayout();
-
-		return;
+		$iaView->display('invoice-view');
 	}
 
 	protected function _setDefaultValues(array &$entry)

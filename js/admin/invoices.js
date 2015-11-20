@@ -13,7 +13,7 @@ Ext.onReady(function()
 				{name: 'gateway', title: _t('gateway'), width: 90},
 				{name: 'amount', title: _t('total'), width: 100},
 				'status',
-				//{name: 'pdf', title: _t('download_pdf'), icon: 'file', href: intelli.config.admin_url + '/invoices/download/{id}/'},
+				{name: 'pdf', title: _t('view'), icon: 'file', href: intelli.config.admin_url + '/invoices/view/{id}/'},
 				'update',
 				'delete'
 			],
