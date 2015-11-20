@@ -1949,6 +1949,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('refresh','Refresh','common'),
 ('refunded','Refunded','common'),
 ('regular','Regular','common'),
+('remember_me','Remember me','common'),
 ('remove','Remove','common'),
 ('reset','Reset','common'),
 ('restore_password','Restore Password','common'),
