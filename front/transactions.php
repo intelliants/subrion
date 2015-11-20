@@ -87,7 +87,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$iaView->assign('items', $iaInvoice->getItemsByInvoiceId($invoice['id']));
 
 			$iaView->disableLayout();
-			echo $iaView->display('printable.invoice');
+			echo $iaView->display('invoice');
+
 			return;
 		}
 		else
