@@ -83,9 +83,10 @@ $(function()
 			CKEDITOR.instances.body.updateElement();
 		}
 
-		var data = $(this).serialize();
+		var data = {};
+		$(this).serializeArray().map(function(x){data[x.name] = x.value;});
 
-		if ('' == data.tpl)
+		if ('' == data.id)
 		{
 			return;
 		}
