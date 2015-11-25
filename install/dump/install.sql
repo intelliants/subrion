@@ -2074,6 +2074,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('listing_successfully_submitted','Listing has been successfully submitted.','frontend'),
 ('listing_successfully_updated','Listing data has been successfully updated.','frontend'),
 ('live_visits','Visits last 24h (live)','frontend'),
+('login_with_social_network','Login with social network','frontend'),
 
 ('mail_sent','Email sent.','frontend'),
 ('member_created','Member registered! Thank you!','frontend'),
