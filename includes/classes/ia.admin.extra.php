@@ -1636,6 +1636,7 @@ class iaExtra extends abstractCore
 				'field' => 'fields',
 				'menu' => 'blocks'
 			);
+
 			foreach ($this->itemData['changeset'] as $entry)
 			{
 				if (!isset($tablesMapping[$entry['type']]))
@@ -1672,6 +1673,7 @@ class iaExtra extends abstractCore
 						$iaBlock->setVisibility($entryData['id'], $entry['sticky'], $pages);
 					}
 					unset($entryData['id']);
+
 					$rollbackData[$tableName][$name] = $entryData;
 				}
 			}
