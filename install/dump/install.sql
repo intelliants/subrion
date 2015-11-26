@@ -459,18 +459,18 @@ CREATE TABLE `{install:prefix}objects_pages` (
 	`object_type` varchar(50) NOT NULL,
 	`page_name` varchar(50) NOT NULL,
 	`object` varchar(100) NOT NULL,
-	`access` tinyint(1) unsigned NOT NULL DEFAULT '1',
+	`access` tinyint(1) unsigned NOT NULL default 1,
 	UNIQUE KEY `unique` (`object_type`,`page_name`,`object`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}online`;
 CREATE TABLE `{install:prefix}online` (
 	`id` int(11) unsigned NOT NULL auto_increment,
-	`is_bot` tinyint(1) unsigned NOT NULL,
+	`is_bot` tinyint(1) unsigned NOT NULL default 0,
 	`session_id` char(32) NOT NULL,
 	`date` datetime NOT NULL,
 	`status` enum('active','expired') NOT NULL default 'active',
-	`username` varchar(50) NOT NULL,
+	`username` varchar(50) NOT NULL default '',
 	`fullname` tinytext NOT NULL,
 	`page` varchar(150) NOT NULL,
 	`ip` bigint(12) NOT NULL,
