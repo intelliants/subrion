@@ -2124,7 +2124,7 @@ class iaExtra extends abstractCore
 					'extras' => $this->itemData['name'],
 					'code' => $text,
 					'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)),
-					'order' => $this->_attr('order')
+					'order' => $this->_attr('order', 0)
 				);
 				break;
 
