@@ -14,13 +14,13 @@
 			</div>
 
 			<div class="form-group">
-				<a class="pull-right" href="{$smarty.const.IA_URL}forgot/">{lang key='forgot'}</a>
 				<div class="checkbox">
 					<label><input type="checkbox" name="remember"> {lang key='remember_me'}</label>
 				</div>
 			</div>
 
 			<div class="form-group form-actions">
+				<a class="btn btn-link pull-right" href="{$smarty.const.IA_URL}forgot/">{lang key='forgot'}</a>
 				<button class="btn btn-primary" type="submit" tabindex="6" name="login">{lang key='login'}</button>
 				<a class="btn btn-link" href="{$smarty.const.IA_URL}registration/" rel="nofollow">{lang key='registration'}</a>
 			</div>
