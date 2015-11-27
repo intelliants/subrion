@@ -151,7 +151,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_iaDb->insert($entryData);
 
-		return (0 == $this->_iaDb->getErrorNumber) ? $entryData['id'] : false;
+		return (0 == $this->_iaDb->getErrorNumber()) ? $entryData['id'] : false;
 	}
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)

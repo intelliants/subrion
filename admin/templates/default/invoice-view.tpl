@@ -56,6 +56,7 @@
 		<div class="wrap-group">
 			<div class="wrap-group-heading">{lang key='product_items'}</div>
 
+			{if $items}
 			<table class="table">
 				<tr>
 					<th width="30">#</th>
@@ -95,6 +96,9 @@
 					<td class="text-right"><strong>{$amount|number_format:2}</strong></td>
 				</tr>
 			</table>
+			{else}
+			<p class="help-block">{lang key='no_items'}</p>
+			{/if}
 		</div>
 
 		<div class="form-actions inline">

@@ -314,7 +314,7 @@ CREATE TABLE `{install:prefix}invoices`(
   `zip` varchar(12) NOT NULL,
   `country` varchar(32) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE `TRANSACTION` (`transaction_id`)
+  KEY `TRANSACTION` (`transaction_id`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}invoices_items`;
@@ -1919,6 +1919,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('name','Name','common'),
 ('next','Next','common'),
 ('no','No','common'),
+('no_items','No items.','common'),
 ('no_more_files','You can not upload more files. Limit exceeded.','common'),
 ('nothing_found','Nothing found.','common'),
 

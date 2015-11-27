@@ -62,6 +62,8 @@ class iaInvoice extends abstractCore
 	{
 		$this->iaDb->setTable(self::$_tableItems);
 
+		$this->iaDb->delete(iaDb::convertIds($invoiceId, 'invoice_id'));
+
 		foreach ($data['title'] as $i => $title)
 		{
 			if ($title)
