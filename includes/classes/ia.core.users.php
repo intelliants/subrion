@@ -387,7 +387,7 @@ class iaUsers extends abstractCore
 		// generate password if no password is passed
 		if (!$password)
 		{
-			$password = $this->_createPassword();
+			$password = $this->createPassword();
 		}
 
 		$result = $this->iaDb->update(array(
@@ -428,7 +428,7 @@ class iaUsers extends abstractCore
 	public function register(array $memberInfo)
 	{
 		$memberInfo['password'] = (isset($memberInfo['disable_fields']) && $memberInfo['disable_fields'])
-			? $this->_createPassword()
+			? $this->createPassword()
 			: $memberInfo['password'];
 
 		unset($memberInfo['disable_fields']);
@@ -436,7 +436,7 @@ class iaUsers extends abstractCore
 		$password = $memberInfo['password'];
 
 		$memberInfo['usergroup_id'] = self::MEMBERSHIP_REGULAR;
-		$memberInfo['sec_key'] = md5($this->_createPassword());
+		$memberInfo['sec_key'] = md5($this->createPassword());
 		$memberInfo['status'] = self::STATUS_UNCONFIRMED;
 		$memberInfo['password'] = $this->encodePassword($password);
 
@@ -456,42 +456,10 @@ class iaUsers extends abstractCore
 
 			if ($memberId)
 			{
-				$iaMailer = $this->iaCore->factory('mailer');
-
-				// send email to a registered member
 				$this->iaCore->startHook('memberAddEmailSubmission', array('member' => $memberInfo));
 
-				$action = 'member_registration';
-				if ($this->iaCore->get($action) && $memberInfo['email'])
-				{
-					$iaMailer->loadTemplate($action);
-					$iaMailer->addAddress($memberInfo['email']);
-					$iaMailer->setReplacements(array(
-						'fullname' => $memberInfo['fullname'],
-						'username' => $memberInfo['username'],
-						'email' => $memberInfo['email'],
-						'password' => $password,
-						'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
-					));
-
-					$iaMailer->send(true);
-				}
-
-				// sending the admin notification
-				$action = 'member_registration_admin';
-				if ($this->iaCore->get($action) && $memberInfo['email'])
-				{
-					$iaMailer->loadTemplate($action);
-					$iaMailer->setReplacements(array(
-						'id' => $memberId,
-						'username' => $memberInfo['username'],
-						'fullname' => $memberInfo['fullname'],
-						'email' => $memberInfo['email'],
-						'password' => $password
-					));
-
-					$iaMailer->sendToAdministrators();
-				}
+				// send email to a registered member
+				$this->sendRegistrationEmail($memberId, $password, $memberInfo);
 			}
 		}
 		$this->iaDb->resetTable();
@@ -499,6 +467,42 @@ class iaUsers extends abstractCore
 		$this->iaCore->startHook('phpUserRegister', array('userInfo' => $memberInfo, 'password' => $password));
 
 		return $memberId;
+	}
+
+	public function sendRegistrationEmail($id, $password, array $memberInfo)
+	{
+		$iaMailer = $this->iaCore->factory('mailer');
+
+		$action = 'member_registration';
+		if ($this->iaCore->get($action) && $memberInfo['email'])
+		{
+			$iaMailer->loadTemplate($action);
+			$iaMailer->addAddress($memberInfo['email']);
+			$iaMailer->setReplacements(array(
+				'fullname' => $memberInfo['fullname'],
+				'username' => $memberInfo['username'],
+				'email' => $memberInfo['email'],
+				'password' => $password,
+				'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
+			));
+
+			$iaMailer->send(true);
+		}
+
+		$action = 'member_registration_admin';
+		if ($this->iaCore->get($action) && $memberInfo['email'])
+		{
+			$iaMailer->loadTemplate($action);
+			$iaMailer->setReplacements(array(
+				'id' => $id,
+				'username' => $memberInfo['username'],
+				'fullname' => $memberInfo['fullname'],
+				'email' => $memberInfo['email'],
+				'password' => $password
+			));
+
+			$iaMailer->sendToAdministrators();
+		}
 	}
 
 	private function _generateUserName(array $memberInfo)
@@ -516,7 +520,7 @@ class iaUsers extends abstractCore
 		return $result;
 	}
 
-	protected function _createPassword($length = 7)
+	public function createPassword($length = 7)
 	{
 		$chars = 'abcdefghijkmnopqrstuvwxyz023456789';
 		$password = '';

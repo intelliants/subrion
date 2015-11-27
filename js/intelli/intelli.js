@@ -247,7 +247,7 @@ intelli = {
 	confirm: function(text, options, callback) {
 		bootbox.confirm(text, function(result) {
 			if (result) {
-				if (typeof options === 'object') {
+				if (typeof options === 'object' && options) {
 					if ('' != options.url) {
 						window.location = options.url;
 					}

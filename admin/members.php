@@ -52,6 +52,16 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_userGroups = $iaUsers->getUsergroups();
 	}
 
+	protected function _gridRead($params)
+	{
+		if (1 == count($this->_iaCore->requestPath) && 'registration-email' == $this->_iaCore->requestPath[0])
+		{
+			return $this->_resendRegistrationEmail();
+		}
+
+		return parent::_gridRead($params);
+	}
+
 	protected function _entryDelete($entryId)
 	{
 		$stmt = '`id` = :id AND `id` != :user';
@@ -299,5 +309,31 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return parent::_gridUpdate($params);
+	}
+
+	private function _resendRegistrationEmail()
+	{
+		$output = array('message' => iaLanguage::get('invalid_params'), 'result' => false);
+
+		if (isset($_POST['id']) && is_numeric($_POST['id']))
+		{
+			$member = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($_POST['id']));
+
+			if ($member && iaUsers::STATUS_UNCONFIRMED == $member['status'])
+			{
+				$password = $this->getHelper()->createPassword();
+				$passwordHash = $this->getHelper()->encodePassword($password);
+
+				if ($this->_iaDb->update(array('password' => $passwordHash), iaDb::convertIds($member['id'])))
+				{
+					$this->getHelper()->sendRegistrationEmail($member['id'], $password, $member);
+
+					$output['message'] = iaLanguage::get('registration_email_resent');
+					$output['result'] = true;
+				}
+			}
+		}
+
+		return $output;
 	}
 }
