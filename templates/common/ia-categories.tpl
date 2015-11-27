@@ -29,7 +29,7 @@
 				</div>
 			</div>
 
-			{if $category@iteration % $num_columns == 0}
+			{if $category@iteration % $num_columns == 0 && !$category@last}
 				</div>
 				<div class="row ia-cats">
 			{/if}
