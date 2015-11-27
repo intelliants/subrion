@@ -782,6 +782,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('general','site','Subrion CMS','1','text',0,'Site title',3,'',0,1,''),
 ('general','suffix',':: Powered by Subrion 4.0','1','text',0,'Suffix for page titles',9,'',0,1,''),
 ('general','site_logo','','','image',0,'Website logo',12,'',0,0,''),
+('general','site_favicon','','','image',0,'Website favicon',13,'',0,0,''),
 ('general','regional_divider','Regional','1','divider',30,'',20,'',1,1,''),
 ('general','lang','{install:lang}','1','select',0,'Default language',33,'',0,1,''),
 ('general','language_switch','1','''1'',''0''','radio',0,'Language switching',36,'',0,1,''),

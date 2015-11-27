@@ -21,7 +21,7 @@
 			<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
 
-		<link rel="shortcut icon" href="{$core.page.nonProtocolUrl}favicon.ico">
+		<link rel="shortcut icon" href="{if !empty($core.config.site_favicon)}{$core.page.nonProtocolUrl}uploads/{$core.config.site_favicon}{else}{$core.page.nonProtocolUrl}favicon.ico{/if}">
 
 		{ia_add_media files='jquery, subrion, bootstrap' order=0}
 		{ia_print_js files='_IA_TPL_app' order=999}

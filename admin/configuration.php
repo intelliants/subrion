@@ -36,7 +36,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		'image/gif' => 'gif',
 		'image/jpeg' => 'jpg',
 		'image/pjpeg' => 'jpg',
-		'image/png' => 'png'
+		'image/png' => 'png',
+		'image/x-icon' => 'ico'
 	);
 
 	private $_type;
