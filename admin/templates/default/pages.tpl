@@ -87,7 +87,7 @@
 				</div>
 
 				<div class="row">
-					<label class="col col-lg-2 control-label">{lang key='open_in_new_window'}</label>
+					<label class="col col-lg-2 control-label">{lang key='open_in_new_tab'}</label>
 					<div class="col col-lg-4">
 						{html_radio_switcher value=$item.new_window name='new_window'}
 					</div>

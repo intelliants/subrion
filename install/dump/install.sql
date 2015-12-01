@@ -591,6 +591,18 @@ CREATE TABLE `{install:prefix}positions` (
   PRIMARY KEY (`name`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}search`;
+CREATE TABLE `{install:prefix}search` (
+  `id` int(9) unsigned NOT NULL auto_increment,
+  `member_id` int(11) unsigned NOT NULL,
+  `date` datetime NOT NULL,
+  `item` varchar(16) NOT NULL,
+  `params` varchar(400) NOT NULL,
+  `title` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `SEARCH` (`member_id`,`item`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}usergroups`;
 CREATE TABLE `{install:prefix}usergroups` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
@@ -1508,7 +1520,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('one_day_ago','one day ago','admin'),
 ('one_hour_ago','one hour ago','admin'),
 ('one_value','You have to add at least one value.','admin'),
-('open_in_new_window','Open in a new window','admin'),
 ('optimize_complete','Tables optimizing complete.','admin'),
 ('optimize_tables','Optimize tables','admin'),
 ('optional','optional','admin'),
@@ -1928,6 +1939,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('online_members','Online Members','common'),
 ('operation','Operation','common'),
 ('open_close','Show / Hide the tree','common'),
+('open_in_new_tab','Open in new tab','admin'),
 ('order','Order','common'),
 ('other','Other','common'),
 
@@ -2046,6 +2058,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('date_added','Date','frontend'),
 ('delete_listing','Remove Listing','frontend'),
+('do_authorize_to_save_search','Please, authorize to be able to save your searches.','frontend'),
 ('dont_wait_redir','Click here if you do not want to wait.','frontend'),
 
 ('edit_listing','Edit Listing','frontend'),
@@ -2086,6 +2099,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('member_doesnt_exist','The member does not exist anymore.','frontend'),
 ('member_since','Member since','frontend'),
 ('msg','Message','frontend'),
+('my_saved_searches','My saved searches','frontend'),
+('my_searches','My searches','frontend'),
 
 ('new_password','New Password','frontend'),
 ('new_password2','New Password [confirm]','frontend'),
@@ -2135,6 +2150,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('restore_pass_confirm','We have sent confirmation code to your email. Please check it and follow the instructions.','frontend'),
 
 ('safety','Safety','frontend'),
+('save_this_search','Save this search','frontend'),
 ('search_for','Search for...','frontend'),
 ('send_email','Send email','frontend'),
 ('send_message','Send message','frontend'),
@@ -2151,6 +2167,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('tools','Tools','frontend'),
 
 ('unable_to_send_email','Unable to send e-mail.','frontend'),
+('untitled','Untitled','frontend'),
 ('usergroups','Usergroups','frontend'),
 ('username_already_exists','Username already taken. Please input different username.','frontend'),
 ('username_empty','Make sure you have entered a valid username and your membership is active.','frontend'),
@@ -2166,6 +2183,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('your_email','Your email','frontend'),
 ('your_password','Your password','frontend'),
 ('your_password_confirm','Confirm your password','frontend'),
+('your_title_for_this_search','Your title for this search (optional)','frontend'),
 ('your_username','Your username','frontend'),
 ('youre_admin_browsing_disabled_front','Frontend is disabled for regular members. It''s only available for admin members.','frontend'),
 ('youre_in_manage_mode','You are in manage mode. <a href="?manage_exit=y">Exit</a>','frontend'),
