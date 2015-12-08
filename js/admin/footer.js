@@ -11,17 +11,20 @@ $(function()
 	{
 		e.preventDefault();
 
-		var $o = $('.overall-wrapper');
+		var $o = $('#panel-center'),
+			$this = $(this);
 
-		if (!$o.hasClass('moved'))
+		if (!$o.hasClass('is-hidden'))
 		{
-			$o
-				.animate({marginLeft: 0, marginRight: '-370px'})
-				.addClass('moved');
-		} else {
-			$o
-				.animate({marginLeft: '-370px', marginRight: 0})
-				.removeClass('moved');
+			$o.addClass('is-hidden');
+			$this.find('i').removeClass('i-chevron-left').addClass('i-chevron-right');
+			intelli.cookie.write('panelHidden', '1');
+		}
+		else
+		{
+			$o.removeClass('is-hidden');
+			$this.find('i').removeClass('i-chevron-right').addClass('i-chevron-left');
+			intelli.cookie.write('panelHidden', '0');
 		}
 	});
 
@@ -37,10 +40,16 @@ $(function()
 		{
 			e.preventDefault();
 
-			var toggler = $(this).data('toggle');
+			var toggler = $(this).data('toggle'),
+				$panel = $('#panel-center');
 
 			$(this).parent().addClass('active').siblings().removeClass('active');
 			$('#' + toggler).addClass('active').siblings().removeClass('active');
+
+			if ($panel.hasClass('is-hidden'))
+			{
+				$panel.removeClass('is-hidden');
+			}
 
 			if ($(window).scrollTop() > 0)
 			{

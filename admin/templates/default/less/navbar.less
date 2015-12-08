@@ -489,6 +489,7 @@
 .navbar-inverse {
   background-color: @navbar-inverse-bg;
   border-color: @navbar-inverse-border;
+  position: relative;
 
   .navbar-brand {
     color: @navbar-inverse-brand-color;
@@ -625,10 +626,20 @@
 //---------------------------
 
 .panel-toggle {
-  display: none !important;
-
   a {
-    background: @base-dark-color;
+    &,
+    &:focus {
+      font-size: 12px !important;
+      padding-left: 5px !important;
+      padding-right: 5px !important;
+      background: fade(#fff, 10%);
+      text-decoration: none;
+      color: fade(#fff, 50%) !important;
+    }
+
+    &:hover {
+      color: #fff !important;
+    }
   }
 }
 
@@ -683,7 +694,6 @@
     }
   }
 }
-
 
 // USER INFO
 //---------------------------

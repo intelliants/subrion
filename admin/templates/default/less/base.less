@@ -27,15 +27,15 @@ a:focus {
 	display: table;
 }
 
-@media (max-width: @screen-sm-max) {
-	.panel-toggle {
-		display: block !important;
-	}
+// @media (max-width: @screen-sm-max) {
+// 	.panel-toggle {
+// 		display: block !important;
+// 	}
 
-	.overall-wrapper {
-		margin-left: -370px;
-	}
-}
+// 	.overall-wrapper {
+// 		margin-left: -370px;
+// 	}
+// }
 
 
 // MAIN NAVIGATION BLOCK
@@ -175,6 +175,10 @@ a:focus {
 	background: @sub-nav-bg;
 	display: table-cell;
 	vertical-align: top;
+
+	&.is-hidden {
+		display: none;
+	}
 
 	.nav-sub {
 		display: none;
@@ -323,7 +327,7 @@ a:focus {
 		.clearfix();
 
 		h3 {
-			font-size: 42px;	
+			font-size: 42px;
 			font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 			color: @base-dark-color;
 			margin: 0;

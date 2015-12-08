@@ -67,7 +67,7 @@
 					</div>
 				</section>
 
-				<section id="panel-center">
+				<section id="panel-center" class="{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden}is-hidden{/if}">
 					{if isset($dashboard)}
 						<ul id="nav-sub-dashboard" class="nav-sub{if 0 == $core.page.info.group} active{/if}">
 							<li class="single">
@@ -153,7 +153,7 @@
 						</ul>
 						<ul class="nav navbar-nav navbar-left">
 							<li class="panel-toggle">
-								<a href="#"><i class="i-menu"></i></a>
+								<a href="#"><i class="{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden}i-chevron-right{else}i-chevron-left{/if}"></i></a>
 							</li>
 							<li id="user-info">
 								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/">
