@@ -64,11 +64,11 @@ switch ($step)
 		);
 
 		$checks['server']['mysql_version'] = array(
-			'required' => function_exists('mysql_connect'),
+			'required' => function_exists('mysqli_connect'),
 			'class' => true,
 			'name' => 'Mysql version',
-			'value' => function_exists('mysql_connect')
-				? '<td class="success">' . substr(mysql_get_client_info(), 0, (false === $pos = strpos(mysql_get_client_info(), '-')) ? 10 : $pos) . '</td>'
+			'value' => function_exists('mysqli_connect')
+				? '<td class="success">' . substr(mysqli_get_client_info(), 0, (false === $pos = strpos(mysqli_get_client_info(), '-')) ? 10 : $pos) . '</td>'
 				: '<td class="danger">MySQL 5.x or upper required</td>'
 		);
 		$checks['server']['php_version'] = array(
@@ -92,8 +92,8 @@ switch ($step)
 				: '<td class="danger">Unavailable (recommended)</td>'
 		);
 		$checks['server']['mysql_support'] = array(
-			'name' => 'MySQL support',
-			'value' => function_exists('mysql_connect')
+			'name' => 'MySQL support (MySQLi)',
+			'value' => function_exists('mysqli_connect')
 				? '<td class="success">Available</td>'
 				: '<td class="danger">Unavailable (required)</td>'
 		);
@@ -250,34 +250,37 @@ switch ($step)
 
 			if (empty($errorList))
 			{
-				if (!($link = @mysql_connect(iaHelper::getPost('dbhost') . ':' . iaHelper::getPost('dbport', 3306), iaHelper::getPost('dbuser'), iaHelper::getPost('dbpwd'))))
+				$link = @mysqli_connect(iaHelper::getPost('dbhost') . ':' . iaHelper::getPost('dbport', 3306), iaHelper::getPost('dbuser'), iaHelper::getPost('dbpwd'));
+				if (mysqli_connect_errno())
 				{
 					$error = true;
-					$message = 'MySQL server: ' . mysql_error() . '<br>';
+					$message = 'MySQL server: ' . mysqli_connect_error() . '<br>';
 				}
 
-				if (!$error && !mysql_select_db(iaHelper::getPost('dbname'), $link))
+				if (!$error && !mysqli_select_db($link, iaHelper::getPost('dbname')))
 				{
 					$error = true;
-					$message = 'Could not select database ' . iaHelper::_html(iaHelper::getPost('dbname')) . ': ' . mysql_error();
+					$message = 'Could not select database ' . iaHelper::_html(iaHelper::getPost('dbname')) . ': ' . mysqli_error($link);
 				}
 
 				$prefix = iaHelper::getPost('prefix');
 
 				if (!$error && !iaHelper::getPost('delete_tables', false))
 				{
-					$query = mysql_query('SHOW TABLES', $link);
-					if (mysql_num_rows($query) > 0)
+					if ($query = mysqli_query($link, 'SHOW TABLES'))
 					{
-						while ($array = mysql_fetch_row($query))
+						if (mysqli_num_rows($query) > 0)
 						{
-							if (strpos($array[0], iaHelper::_sql($prefix)) !== false)
+							while ($array = mysqli_fetch_row($query))
 							{
-								$error = true;
-								$message = 'Tables with prefix "' . $prefix . '" already exist.';
-								$errorList[] = 'prefix';
+								if (strpos($array[0], iaHelper::_sql($prefix, $link)) !== false)
+								{
+									$error = true;
+									$message = 'Tables with prefix "' . $prefix . '" already exist.';
+									$errorList[] = 'prefix';
 
-								break;
+									break;
+								}
 							}
 						}
 					}
@@ -302,14 +305,14 @@ switch ($step)
 						'{install:dir}' => trim(IA_HOME, '/'),
 						'{install:base}' => IA_HOME,
 						'{install:base_url}' => URL_HOME,
-						'{install:tmpl}' => iaHelper::_sql(iaHelper::getPost('tmpl')),
+						'{install:tmpl}' => iaHelper::_sql(iaHelper::getPost('tmpl'), $link),
 						'{install:lang}' => 'en',
-						'{install:admin_username}' => iaHelper::_sql(iaHelper::getPost('admin_username')),
-						'{install:email}' => iaHelper::_sql(iaHelper::getPost('admin_email')),
+						'{install:admin_username}' => iaHelper::_sql(iaHelper::getPost('admin_username'), $link),
+						'{install:email}' => iaHelper::_sql(iaHelper::getPost('admin_email'), $link),
 						'{install:db_options}' => $dbOptions,
 						'{install:version}' => IA_VERSION,
 						'{install:drop_tables}' => ('on' == iaHelper::getPost('delete_tables')) ? '' : '#',
-						'{install:prefix}' => iaHelper::_sql(iaHelper::getPost('prefix', '', false))
+						'{install:prefix}' => iaHelper::_sql(iaHelper::getPost('prefix', '', false), $link)
 					);
 					$message = $s_sql = '';
 					$counter = 0;
@@ -336,7 +339,7 @@ switch ($step)
 
 							$s_sql = str_replace(array_keys($search), array_values($search), $s_sql);
 
-							if (!mysql_query($s_sql, $link))
+							if (!mysqli_query($link, $s_sql))
 							{
 								$error = true;
 								if ($counter == 0)
@@ -344,8 +347,8 @@ switch ($step)
 									$counter++;
 									$message .= '<div class="db_errors">';
 								}
-								$errorCode = function_exists('mysql_errno') ? mysql_errno() . ' ' : '';
-								$message .= "<div class=\"qerror\">'" . $errorCode . mysql_error()
+								$errorCode = function_exists('mysqli_errno') ? mysqli_errno($link) . ' ' : '';
+								$message .= "<div class=\"qerror\">'" . $errorCode . mysqli_error($link)
 									. "' during the following query:</div> <div class=\"query\"><pre>{$s_sql}</pre></div>";
 							}
 							$s_sql = '';
@@ -424,8 +427,8 @@ HTML;
 						'{dbprefix}' => iaHelper::getPost('prefix'),
 						'{salt}' => $salt,
 						'{debug}' => iaHelper::getPost('debug', 0, false),
-						'{username}' => iaHelper::_sql(iaHelper::getPost('admin_username')),
-						'{password}' => iaHelper::_sql(iaHelper::getPost('admin_password')),
+						'{username}' => iaHelper::_sql(iaHelper::getPost('admin_username'), $link),
+						'{password}' => iaHelper::_sql(iaHelper::getPost('admin_password'), $link),
 						'{url}' => URL_HOME . 'admin/'
 					);
 					$body = str_replace(array_keys($params), array_values($params), $body);

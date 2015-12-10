@@ -282,19 +282,20 @@ class iaHelper
 		return htmlspecialchars($string, $mode);
 	}
 
-	public static function _sql($string)
+	public static function _sql($string, $link)
 	{
 		if (is_array($string))
 		{
 			foreach ($string as $k => $v)
 			{
-				$string[$k] = self::_sql($v);
+				$string[$k] = self::_sql($v, $link);
 			}
 		}
 		else
 		{
-			$string = mysql_real_escape_string($string);
+			$string = mysqli_real_escape_string($link, $string);
 		}
+
 		return $string;
 	}
 
