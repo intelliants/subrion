@@ -26,23 +26,27 @@
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
-	$transactionId = isset($iaCore->requestPath[0]) ? iaSanitize::paranoid($iaCore->requestPath[0]) : 0;
-	$action = isset($iaCore->requestPath[1]) ? iaSanitize::sql($iaCore->requestPath[1]) : null;
-
-	if (empty($transactionId))
+	if (!isset($iaCore->requestPath[0]))
 	{
 		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
 	$iaTransaction = $iaCore->factory('transaction');
-	$iaPage = $iaCore->factory('page', iaCore::FRONT);
 
-	$transaction = $iaTransaction->getBy('sec_key', $transactionId);
+	$transaction = $iaTransaction->getBy('sec_key', $iaCore->requestPath[0]);
 
 	if (empty($transaction))
 	{
 		return iaView::errorPage(iaView::ERROR_NOT_FOUND, iaLanguage::get('no_transaction'));
 	}
+
+	if ($transaction['member_id'] != iaUsers::getIdentity()->id)
+	{
+		return iaView::errorPage(iaView::ERROR_FORBIDDEN);
+	}
+
+	$iaPage = $iaCore->factory('page', iaCore::FRONT);
+	$action = isset($iaCore->requestPath[1]) ? iaSanitize::sql($iaCore->requestPath[1]) : null;
 
 	// delete transaction
 	if (isset($_GET['delete']))
@@ -56,7 +60,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	// cancel payment
 	if ('canceled' == $action)
 	{
-		$iaTransaction->update(array('status' => iaTransaction::FAILED), $transaction['id']);
+		if (iaTransaction::FAILED != $transaction['status'])
+		{
+			$iaTransaction->update(array('status' => iaTransaction::FAILED), $transaction['id']);
+		}
 
 		$iaView->setMessages(iaLanguage::get('payment_canceled'), iaView::SUCCESS);
 		iaUtil::go_to($iaPage->getUrlByName('member_funds'));
