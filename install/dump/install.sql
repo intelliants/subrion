@@ -834,7 +834,9 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 
 ('financial','financial_configuration_divider','General','1','divider',0,'',1,'',1,0,''),
 ('financial','currency','USD','','text',0,'Currency',1,'',1,0,''),
-('financial','funds_min_amount','20','','text',0,'Min amount to add to funds',2,'',0,1,''),
+('financial','funds_min_deposit','20','','text',0,'Minimum deposit',2,'',0,1,''),
+('financial','funds_max_deposit','300','','text',0,'Maximum deposit',3,'',0,1,''),
+('financial','funds_max','1000','','text',0,'Maximum balance',4,'',0,1,''),
 
 ('miscellaneous','opengraph_divider','Open Graph','','divider',0,'Open Graph',1,'',1,1,''),
 ('miscellaneous','opengraph_description','','','textarea',0,'OG default description',2,'',0,1,''),
@@ -2030,11 +2032,13 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('active_users','Active Users','frontend'),
+('add_funds_text','Add funds to your account with us to avoid lots of small transactions and to automatically take care of any new invoices to generate','frontend'),
 ('advanced','Advanced','frontend'),
 ('alphabetical','Alphabetical','frontend'),
 ('all_groups','All groups','frontend'),
 ('amount_incorrect','Please input correct amount.','frontend'),
 ('amount_less_min','Please input a greater amount.','frontend'),
+('amount_to_add','Amount to add','frontend'),
 ('are_you_sure_to_cancel_invoice','Are you sure you want to cancel your invoice?','frontend'),
 ('author_contact_request','Contact request regarding ":title"','frontend'),
 ('auto_generate_password','Auto generate password','frontend'),

@@ -53,11 +53,41 @@ $(function() {
 	<div class="alert alert-info">{lang key='no_transactions_records'}</div>
 {/if}
 
-<form method="post" class="form-inline ia-form">
-	{preventCsrf}
-	<div class="form-group">
-		<label for="amount">{lang key='add_funds'}</label>
-		<input class="form-control" type="text" name="amount" id="amount">
+<div class="row">
+	<div class="col-md-6">
+		<h3>{lang key='add_funds'}</h3>
+		<p>{lang key='add_funds_text'}</p>
 	</div>
-	<button type="submit" class="btn btn-primary">{lang key='add_funds'}</button>
-</form>
+	<div class="col-md-6">
+		<form method="post" class="well ia-form">
+			<table class="table table-condensed">
+				<tbody>
+					<tr>
+						<td>Minimum deposit</td>
+						<td>{$core.config.currency} {$core.config.funds_min_deposit}</td>
+					</tr>
+					<tr>
+						<td>Maximum deposit</td>
+						<td>{$core.config.currency} {$core.config.funds_max_deposit}</td>
+					</tr>
+					<tr>
+						<td>Maximum balance</td>
+						<td>{$core.config.currency} {$core.config.funds_max}</td>
+					</tr>
+				</tbody>
+			</table>
+
+			{preventCsrf}
+
+			<div class="form-group">
+				<div class="input-group">
+					<span class="input-group-addon">{lang key='amount_to_add'}</span>
+					<input class="form-control" type="text" name="amount" id="amount" placeholder="{$core.config.funds_min_deposit}">
+					<span class="input-group-btn">
+						<button class="btn btn-primary" type="submit">{lang key='add_funds'}</button>
+					</span>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
