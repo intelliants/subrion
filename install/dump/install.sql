@@ -1542,7 +1542,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_preview','Page in draft','admin'),
 ('page_title','Page Title','admin'),
 ('page_title_incorrect','Please make sure you have added all page titles.','admin'),
-('page_url_will_be','Page URL will be','admin'),
 ('pages','Frontend Pages','admin'),
 ('pages_contains','Include pages','admin'),
 ('package_activated','Package activated.','admin'),
@@ -1946,6 +1945,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('other','Other','common'),
 
 ('page','Page','common'),
+('page_url_will_be','Page URL will be','common'),
 ('pages','Pages','common'),
 ('parent','Parent','common'),
 ('passed','Passed','common'),

@@ -34,9 +34,9 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
 	if (isset($iaCore->requestPath[0]) && 'alias' == $iaCore->requestPath[0])
 	{
-		$url = $baseUrl . $iaDb->getNextId() . '-' . $iaBlog->titleAlias($_POST['title']);
+		$output['url'] = $baseUrl . $iaDb->getNextId() . '-' . $iaBlog->titleAlias($_POST['title']);
 
-		$iaView->output(array('url' => $url));
+		$iaView->assign($output);
 	}
 }
 
