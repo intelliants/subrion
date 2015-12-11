@@ -599,6 +599,8 @@ class iaUsers extends abstractCore
 
 			$this->_assignItem($row, $remember);
 
+			$this->_assignFavorites();
+
 			return $row;
 		}
 
@@ -703,6 +705,34 @@ class iaUsers extends abstractCore
 		}
 
 		return $salt;
+	}
+
+	protected function _assignFavorites()
+	{
+		if (!isset($_SESSION[iaUsers::SESSION_FAVORITES_KEY]) || empty($_SESSION[iaUsers::SESSION_FAVORITES_KEY]))
+		{
+			return;
+		}
+
+		$iaItem = $this->iaCore->factory('item');
+		foreach ($_SESSION[iaUsers::SESSION_FAVORITES_KEY] as $item => $items)
+		{
+			if (!$items['items'])
+			{
+				continue;
+			}
+
+			foreach ($items['items'] as $row)
+			{
+				$this->iaDb->replace(array(
+					'id' => $row['id'],
+					'member_id' => iaUsers::getIdentity()->id,
+					'item' => $item
+				), null, $iaItem->getFavoritesTable());
+			}
+		}
+
+		return true;
 	}
 
 	public function encodePassword($rawPassword)
