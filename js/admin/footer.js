@@ -14,6 +14,8 @@ $(function()
 		var $o = $('#panel-center'),
 			$this = $(this);
 
+		window.dispatchEvent(new Event('resize'));
+
 		if (!$o.hasClass('is-hidden'))
 		{
 			$o.addClass('is-hidden');

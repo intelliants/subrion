@@ -303,7 +303,7 @@ a:focus {
 
 #panel-content {
 	background: @body-bg;
-	margin-left: @main-nav-width + @sub-nav-width;
+	// margin-left: @main-nav-width + @sub-nav-width;
 	min-height: 100%;
 	position: relative;
 	display: table-cell;
@@ -311,6 +311,7 @@ a:focus {
 	.clearfix();
 
 	.content-wrapper {
+		overflow: hidden;
 		padding: 30px;
 		min-height: 100%;
 	}
