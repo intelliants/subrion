@@ -313,6 +313,7 @@ CREATE TABLE `{install:prefix}invoices`(
   `address2` tinytext NOT NULL,
   `zip` varchar(12) NOT NULL,
   `country` varchar(32) NOT NULL,
+  `notes` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `TRANSACTION` (`transaction_id`)
 ) {install:db_options};
@@ -1511,6 +1512,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('no_plugins','No plugins.','admin'),
 ('no_upgrades','No patches or upgrades available.','admin'),
 ('nodes','Nodes','admin'),
+('notes','Notes','admin'),
 ('not_allowed','Not allowed','admin'),
 ('not_required','not required','admin'),
 ('nothing','Nothing','admin'),

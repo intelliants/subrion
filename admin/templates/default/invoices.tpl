@@ -27,7 +27,7 @@
 			{/if}
 
 			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='date_due'}</label>
+				<label class="col col-lg-2 control-label">{lang key='date_due'} {lang key='field_required'}</label>
 				<div class="col col-lg-4">
 					{$value = $item.date_due}
 					{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
@@ -40,7 +40,7 @@
 			</div>
 
 			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='fullname'}</label>
+				<label class="col col-lg-2 control-label">{lang key='fullname'} {lang key='field_required'}</label>
 				<div class="col col-lg-4">
 					<input type="text" name="fullname" value="{$item.fullname|escape:'html'}" autocomplete="off">
 				</div>
@@ -73,6 +73,16 @@
 				<label class="col col-lg-2 control-label">{lang key='country'}</label>
 				<div class="col col-lg-4">
 					<input type="text" name="country" maxlength="32" value="{$item.country|escape:'html'}">
+				</div>
+			</div>
+
+			<hr>
+
+			<div class="row">
+				<label class="col col-lg-2 control-label">{lang key='notes'}</label>
+				<div class="col col-lg-4">
+					<textarea name="notes" rows="5" id="notes">{$item.notes|escape:'html'}</textarea>
+					<span class="help-block">{lang key='visible_for_admin'}</span>
 				</div>
 			</div>
 		</div>

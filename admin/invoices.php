@@ -110,6 +110,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['id'] = $this->getHelper()->generateId();
 		$entry['date_due'] = '';
 		$entry['fullname'] = '';
+		$entry['notes'] = '';
 
 		$entry['address1'] = $entry['address2'] = $entry['zip'] = $entry['country'] = '';
 	}
@@ -132,6 +133,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['address2'] = $data['address2'];
 		$entry['zip'] = $data['zip'];
 		$entry['country'] = $data['country'];
+		$entry['notes'] = $data['notes'];
 
 		if (iaCore::ACTION_ADD == $action)
 		{
