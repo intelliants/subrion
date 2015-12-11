@@ -2032,12 +2032,11 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('active_users','Active Users','frontend'),
-('add_funds_text','Add funds to your account with us to avoid lots of small transactions and to automatically take care of any new invoices to generate','frontend'),
+('add_funds_text','Add funds to your account with us to avoid lots of small transactions and to automatically take care of any new invoices to generate.','frontend'),
 ('advanced','Advanced','frontend'),
 ('alphabetical','Alphabetical','frontend'),
 ('all_groups','All groups','frontend'),
-('amount_incorrect','Please input correct amount.','frontend'),
-('amount_less_min','Please input a greater amount.','frontend'),
+('amount_incorrect','Please input correct amount. It should be within :min & :max :currency.','frontend'),
 ('amount_to_add','Amount to add','frontend'),
 ('are_you_sure_to_cancel_invoice','Are you sure you want to cancel your invoice?','frontend'),
 ('author_contact_request','Contact request regarding ":title"','frontend'),
