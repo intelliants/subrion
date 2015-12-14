@@ -652,3 +652,24 @@
 	- Bug #2249: Tag cloud plugin
 	+ Feature #2276: Improve styles
 	+ Feature #39: Copyrights in source files
+
+>> From 4.0.1 to 4.0.2 <<
+
+	- Bug #2272: Bug in changeset of templates' install.xml
+	- Bug #2289: Backend: bug in email templates
+	- Bug #2300: It's possible to cancel transaction in any status of any user
+	- Bug #2301: Output should be sanitized in purchase-post.tpl
+	- Edit invoice duplicates items
+	+ Feature #587: PDO move
+	+ Feature #1547: Implement the way to easily change Cropped images to Fit images
+	+ Feature #2238: Permanent login
+	+ Feature #2267: Personal Blog: make possible to manage content on the frontend
+	+ Feature #2269: Improve balance page
+	+ Feature #2295: Save filters for items
+	+ Link visitor favorites to account
+	+ Migrate installation to MySQLi
+	+ Add panel toggle in admin dashboard
+	+ Social login integration
+	+ install.xml - proper changeset
+	+ Resend confirmation email
+	* Third party libraries improvements
