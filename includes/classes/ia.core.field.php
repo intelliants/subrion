@@ -778,7 +778,7 @@ class iaField extends abstractCore
 					}
 				}
 			}
-			elseif (in_array($field['type'], array(self::IMAGE, self::STORAGE, self::PICTURES)) && is_array($_FILES[$fieldName]['tmp_name']) && !empty($_FILES[$fieldName]['tmp_name']))
+			elseif (in_array($field['type'], array(self::IMAGE, self::STORAGE, self::PICTURES)))
 			{
 				if (!is_writable(IA_UPLOADS))
 				{
@@ -792,7 +792,7 @@ class iaField extends abstractCore
 					{
 						eval($field['required_checks']);
 					}
-					elseif ($field['required'] && empty($_FILES[$fieldName]['tmp_name']))
+					elseif ($field['required'] && !in_array(UPLOAD_ERR_OK, $_FILES[$fieldName]['error']))
 					{
 						$error = true;
 						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));

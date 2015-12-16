@@ -29,6 +29,22 @@ $iaItem = $iaCore->factory('item');
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
+	if (isset($_POST['action']) && 'save' == $_POST['action']
+		&& isset($_POST['item']) && isset($_POST['params']) && isset($_POST['name']))
+	{
+		if (!iaUsers::hasIdentity())
+		{
+			return iaView::errorPage(iaView::ERROR_UNAUTHORIZED, iaLanguage::get('do_authorize_to_save_search'));
+		}
+
+		$result = $iaSearch->save($_POST['item'], $_POST['params'], $_POST['name']);
+
+		$iaView->assign('result', $result);
+		$iaView->assign('message', iaLanguage::get($result ? 'saved' : 'db_error'));
+
+		return;
+	}
+
 	$itemName = (1 == count($iaCore->requestPath)) ? $iaCore->requestPath[0] : str_replace('search_', '', $iaView->name());
 
 	if (in_array($itemName, $iaItem->getItems()))
@@ -90,6 +106,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			$iaView->assign('itemName', $itemName);
 			$iaView->assign('empty', $empty);
+			$iaView->assign('searches', $iaSearch->get());
 
 			$iaView->title($iaSearch->getCaption() ? $iaSearch->getCaption() : $iaView->title());
 		}

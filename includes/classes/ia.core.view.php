@@ -1032,7 +1032,8 @@ SQL;
 						'nonProtocolUrl' => $this->assetsUrl,
 						'name' => $pageName,
 						'title' => $this->get('caption', $this->get('title', 'Subrion CMS')),
-					)
+					),
+					'providers' => iaUsers::getAuthProviders()
 				);
 
 				if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())

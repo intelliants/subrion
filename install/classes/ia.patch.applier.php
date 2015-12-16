@@ -159,13 +159,13 @@ class iaPatchApplier
 			array($this->_dbConnectionParams['prefix'], $options),
 			$query);
 
-		$result = mysql_query($query, $this->_dbConnectionParams['link']);
+		$result = mysqli_query($this->_dbConnectionParams['link'], $query);
 
 		if ($log)
 		{
 			$result
-				? $this->_logInfo('Query executed: :query (affected: :num)', self::LOG_SUCCESS, array('query' => $query, 'num' => mysql_affected_rows($this->_dbConnectionParams['link'])))
-				: $this->_logInfo('Query failed: :query (:error)', self::LOG_ERROR, array('query' => $query, 'error' => mysql_error($this->_dbConnectionParams['link'])));
+				? $this->_logInfo('Query executed: :query (affected: :num)', self::LOG_SUCCESS, array('query' => $query, 'num' => mysqli_affected_rows($this->_dbConnectionParams['link'])))
+				: $this->_logInfo('Query failed: :query (:error)', self::LOG_ERROR, array('query' => $query, 'error' => mysqli_error($this->_dbConnectionParams['link'])));
 		}
 	}
 
@@ -314,14 +314,11 @@ class iaPatchApplier
 	{
 		if (is_array($this->_dbConnectionParams) && $this->_dbConnectionParams)
 		{
-			if ($link = mysql_connect($this->_dbConnectionParams['host'], $this->_dbConnectionParams['user'], $this->_dbConnectionParams['password']))
+			if ($link = mysqli_connect($this->_dbConnectionParams['host'], $this->_dbConnectionParams['user'], $this->_dbConnectionParams['password'], $this->_dbConnectionParams['database']))
 			{
-				if (mysql_select_db($this->_dbConnectionParams['database'], $link))
-				{
-					$this->_dbConnectionParams['link'] = $link;
+				$this->_dbConnectionParams['link'] = $link;
 
-					return true;
-				}
+				return true;
 			}
 		}
 

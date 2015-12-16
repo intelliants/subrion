@@ -37,7 +37,7 @@
 			<input class="form-control" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::NUMBER break}
-			<input class="form-control" type="text" class="js-filter-numeric" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+			<input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}

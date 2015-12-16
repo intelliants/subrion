@@ -27,15 +27,15 @@ a:focus {
 	display: table;
 }
 
-@media (max-width: @screen-sm-max) {
-	.panel-toggle {
-		display: block !important;
-	}
+// @media (max-width: @screen-sm-max) {
+// 	.panel-toggle {
+// 		display: block !important;
+// 	}
 
-	.overall-wrapper {
-		margin-left: -370px;
-	}
-}
+// 	.overall-wrapper {
+// 		margin-left: -370px;
+// 	}
+// }
 
 
 // MAIN NAVIGATION BLOCK
@@ -176,6 +176,10 @@ a:focus {
 	display: table-cell;
 	vertical-align: top;
 
+	&.is-hidden {
+		display: none;
+	}
+
 	.nav-sub {
 		display: none;
 		overflow: hidden;
@@ -299,7 +303,7 @@ a:focus {
 
 #panel-content {
 	background: @body-bg;
-	margin-left: @main-nav-width + @sub-nav-width;
+	// margin-left: @main-nav-width + @sub-nav-width;
 	min-height: 100%;
 	position: relative;
 	display: table-cell;
@@ -307,6 +311,7 @@ a:focus {
 	.clearfix();
 
 	.content-wrapper {
+		overflow: hidden;
 		padding: 30px;
 		min-height: 100%;
 	}
@@ -323,7 +328,7 @@ a:focus {
 		.clearfix();
 
 		h3 {
-			font-size: 42px;	
+			font-size: 42px;
 			font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 			color: @base-dark-color;
 			margin: 0;

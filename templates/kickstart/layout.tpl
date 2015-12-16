@@ -21,7 +21,7 @@
 			<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
 
-		<link rel="shortcut icon" href="{$core.page.nonProtocolUrl}favicon.ico">
+		<link rel="shortcut icon" href="{if !empty($core.config.site_favicon)}{$core.page.nonProtocolUrl}uploads/{$core.config.site_favicon}{else}{$core.page.nonProtocolUrl}favicon.ico{/if}">
 
 		{ia_add_media files='jquery, subrion, bootstrap' order=0}
 		{ia_print_js files='_IA_TPL_app' order=999}
@@ -173,13 +173,13 @@
 					</div>
 					<div class="col-md-6">
 						<a href="#" class="back-to-top js-back-to-top"><span class="fa fa-angle-up"></span> {lang key='back_to_top'}</a>
-						{if $core.config.kickstart_social}
+						{if $core.config.website_social}
 							<div class="social">
-								<h4>Share your love</h4>
-								{if $core.config.kickstart_social_t}<a href="{$core.config.kickstart_social_t}" class="twitter"><span class="fa fa-twitter"></span></a>{/if}
-								{if $core.config.kickstart_social_f}<a href="{$core.config.kickstart_social_f}" class="facebook"><span class="fa fa-facebook"></span></a>{/if}
-								{if $core.config.kickstart_social_g}<a href="{$core.config.kickstart_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a>{/if}
-								{if $core.config.kickstart_social_i}<a href="{$core.config.kickstart_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a>{/if}
+								<h4>{lang key='share_your_love'}</h4>
+								{if $core.config.website_social_t}<a href="{$core.config.website_social_t}" class="twitter"><span class="fa fa-twitter"></span></a>{/if}
+								{if $core.config.website_social_f}<a href="{$core.config.website_social_f}" class="facebook"><span class="fa fa-facebook"></span></a>{/if}
+								{if $core.config.website_social_g}<a href="{$core.config.website_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a>{/if}
+								{if $core.config.website_social_i}<a href="{$core.config.website_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a>{/if}
 							</div>
 						{/if}
 					</div>

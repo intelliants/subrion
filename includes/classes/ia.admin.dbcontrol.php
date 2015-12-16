@@ -31,31 +31,24 @@ class iaDbControl extends abstractCore
 	/**
 	 * Returns array of tables
 	 *
-	 * @return array|bool
+	 * @return array
 	 */
 	public function getTables()
 	{
-		$result = false;
+		$where = '`table_schema` = :schema && `table_name` LIKE :name';
+		$this->iaDb->bind($where, array('schema' => INTELLI_DBNAME, 'name' => INTELLI_DBPREFIX . '%'));
 
-		$sql = "SHOW TABLES LIKE '{$this->iaDb->prefix}%'";
-		$query = $this->iaDb->query($sql);
+		$sql = "SELECT `table_name` FROM `information_schema`.`tables` WHERE " . $where;
+		$tables = $this->iaDb->getAssoc($sql);
 
-		if ($this->iaDb->getNumRows($query) > 0)
-		{
-			$result = array();
-			$function = INTELLI_CONNECT . '_fetch_row';
-			while ($row = $function($query))
-			{
-				$result[] = $row[0];
-			}
-		}
-
-		return $result;
+		return $tables ? array_keys($tables) : array();
 	}
 
 	/**
-	 * Truncate table
+	 * Truncates table
+	 *
 	 * @param string $table - without prefix
+	 *
 	 * @return bool
 	 */
 	public function truncate($table)
@@ -126,6 +119,7 @@ class iaDbControl extends abstractCore
 	 * @param string $tableName table name
 	 * @param bool $aDrop if true use DROP TABLE
 	 * @param bool $prefix if true use prefix
+	 *
 	 * @return string
 	 */
 	public function makeStructureBackup($tableName, $aDrop = false, $prefix = true)
@@ -223,6 +217,7 @@ class iaDbControl extends abstractCore
 	 * @param bool $aComplete if true use complete inserts
 	 * @param bool $prefix if true use prefix
 	 * @access public
+	 *
 	 * @return string
 	 */
 	public function makeDataBackup($tableName, $aComplete = false, $prefix = true)

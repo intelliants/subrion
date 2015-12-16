@@ -1,7 +1,7 @@
 <form method="post" enctype="multipart/form-data" class="sap-form form-horizontal">
 	{preventCsrf}
 
-	{capture name='email' append='field_after'}
+	{capture 'email' append='field_after'}
 		{access object='admin_pages' id='members' action='password'}
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-password">{lang key='password'}</label>
@@ -35,6 +35,40 @@
 				</div>
 			</div>
 		{/access}
+	{/capture}
+
+	{ia_hooker name='smartyAdminSubmitItemBeforeFields'}
+
+	{capture 'systems' append='fieldset_after'}
+		{if iaUsers::STATUS_UNCONFIRMED == $item.status}
+			<div class="row">
+				<div class="col col-lg-2"></div>
+				<div class="col col-lg-4">
+					<button type="button" class="btn btn-sm btn-default btn-warning" id="js-cmd-send-reg-email">{lang key='resend_registration_email'}</button>
+				</div>
+			</div>
+			{ia_add_js}
+$(function()
+{
+	$('#js-cmd-send-reg-email').on('click', function()
+	{
+		var $btn = $(this);
+
+		intelli.confirm(_t('are_you_sure_resend_registration_email'), null, function(result)
+		{
+			if (result)
+			{
+				$.post(intelli.config.admin_url + '/members/registration-email.json', { id: {$id} }, function(response)
+				{
+					intelli.notifFloatBox({ msg: response.message, type: response.result ? 'success' : 'error', autohide: true });
+					$btn.prop('disabled', true);
+				});
+			}
+		});
+	});
+});
+			{/ia_add_js}
+		{/if}
 	{/capture}
 
 	{include file='field-type-content-fieldset.tpl' isSystem=true}

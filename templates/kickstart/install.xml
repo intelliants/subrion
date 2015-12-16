@@ -78,34 +78,34 @@
 		    order="3030">Social links</config>
 	
 	<config group="template_kickstart"
-			name="kickstart_social"
+			name="website_social"
 		    type="radio" 
 		    order="3031"
 		    values="1,0" 
 		    description="Show links">1</config>
 	<config group="template_kickstart"
-			name="kickstart_social_t"
+			name="website_social_t"
 		    type="text"
 		    order="3032"
-		    show="kickstart_social|1" 
+		    show="website_social|1" 
 		    description="Twitter Link">https://twitter.com/IntelliantsLLC</config>
 	<config group="template_kickstart"
-			name="kickstart_social_f"
+			name="website_social_f"
 		    type="text" 
 		    order="3033" 
-		    show="kickstart_social|1" 
+		    show="website_social|1" 
 		    description="Facebook Link">https://www.facebook.com/Intelliants</config>
 	<config group="template_kickstart"
-			name="kickstart_social_g"
+			name="website_social_g"
 		    type="text" 
 		    order="3034" 
-		    show="kickstart_social|1" 
+		    show="website_social|1" 
 		    description="Google+ Link">https://plus.google.com/102500660503219569194/posts</config>
 	<config group="template_kickstart"
-			name="kickstart_social_i"
+			name="website_social_i"
 		    type="text" 
 		    order="3035" 
-		    show="kickstart_social|1" 
+		    show="website_social|1" 
 		    description="LinkedIn Link">#</config>
 
 	<config group="template_kickstart" 
@@ -258,5 +258,6 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 		<phrase category="frontend" key="login">Log in</phrase>
 		<phrase category="frontend" key="register">Sign up</phrase>
 		<phrase category="frontend" key="back_to_top">Back to top</phrase>
+		<phrase category="frontend" key="share_your_love">Share your love</phrase>
 	</phrases>
 </template>

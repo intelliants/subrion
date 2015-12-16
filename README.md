@@ -10,6 +10,10 @@ What is Subrion?
 * It is a powerful web application which requires a server with PHP / MySQL to run.
 * Subrion is a **free and open source software** distributed under the GPL v3.
 
+Development Roadmap
+---------------------
+We migrated our development to GitHub with the release of Subrion 4.x version. Please check our previous issue tracker [here](http://dev.subrion.org/projects/subrion-cms/roadmap).
+
 Updates are free!
 ---------------------
 * Always use the [latest version](http://www.subrion.org/download/).

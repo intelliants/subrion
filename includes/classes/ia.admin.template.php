@@ -570,12 +570,12 @@ class iaTemplate extends abstractCore
 					continue;
 				}
 
-				$type = $changeset['type'];
+				$entity = $changeset['type'];
 				$name = $changeset['name'];
 
 				unset($changeset['type'], $changeset['name']);
 
-				switch ($type)
+				switch ($entity)
 				{
 					case 'field':
 						list($fieldName, $itemName) = explode('-', $name);
@@ -587,29 +587,26 @@ class iaTemplate extends abstractCore
 						break;
 					case 'block':
 					case 'menu':
-						if (isset($changeset['pages']) && $changeset['pages'])
-						{
-							$pagesList = explode(',', $changeset['pages']);
-							unset($changeset['pages']);
-						}
+						$pagesList = isset($changeset['pages']) ? explode(',', $changeset['pages']) : array();
+						unset($changeset['pages']);
 						// intentionally missing break stmt
 					default:
 						$stmt = iaDb::printf("`name` = ':name'", array('name' => $name));
 				}
 
-				$tableName = $tablesMapping[$type];
+				$tableName = $tablesMapping[$entity];
 
-				$entryData = $iaDb->row('`' . implode('`,`', array_keys($changeset)) . '`', $stmt, $tableName);
+				$entryData = $iaDb->row('`id`, `' . implode('`,`', array_keys($changeset)) . '`', $stmt, $tableName);
+
 				if ($iaDb->update($changeset, $stmt, null, $tableName))
 				{
-					$rollbackData[$tableName][$name] = $entryData;
-
-					if (isset($pagesList))
+					if (isset($changeset['sticky']) && ('block' == $entity || 'menu' == $entity))
 					{
-						$entryId = $iaDb->one(iaDb::ID_COLUMN_SELECTION, $stmt, $tableName);
-
-						$iaBlock->setVisibility($entryId, (isset($changeset['sticky']) ? (bool)$changeset['sticky'] : false), $pagesList);
+						$iaBlock->setVisibility($entryData['id'], $changeset['sticky'], $pagesList);
 					}
+					unset($entryData['id']);
+
+					$rollbackData[$tableName][$name] = $entryData;
 				}
 			}
 		}
@@ -809,7 +806,7 @@ class iaTemplate extends abstractCore
 						'classname' => $this->attr('classname')
 					);
 				}
-			// intentionally missing break stmt
+				// intentionally missing break stmt
 			case 'field':
 			case 'menu':
 			case 'page':

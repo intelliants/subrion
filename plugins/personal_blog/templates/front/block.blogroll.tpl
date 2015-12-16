@@ -23,7 +23,7 @@
 					</div>
 				</div>
 
-				{if $one_blog_entry@iteration % 4 == 0}
+				{if $one_blog_entry@iteration % 4 == 0 && !$one_blog_entry@last}
 					</div>
 					<div class="row">
 				{/if}

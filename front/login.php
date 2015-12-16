@@ -26,15 +26,109 @@
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
-	if (iaUsers::hasIdentity())
-	{
-		$iaPage = $iaCore->factory('page', iaCore::FRONT);
+	require_once IA_INCLUDES . 'hybrid/Auth.php';
 
-		$iaCore->factory('util')->go_to($iaPage->getUrlByName('profile'));
-	}
-
-	if (isset($_SERVER['HTTP_REFERER']) && IA_SELF != $_SERVER['HTTP_REFERER']) // used by login redirecting mech
+	switch ($iaView->name())
 	{
-		$_SESSION['referrer'] = $_SERVER['HTTP_REFERER'];
+		case 'hybrid':
+
+			require_once IA_INCLUDES . 'hybrid/Endpoint.php';
+			Hybrid_Endpoint::process();
+
+			break;
+
+		case 'login':
+
+			$iaUsers = $this->factory('users');
+
+			if ($iaCore->get('hybrid_enabled') && isset($iaCore->requestPath[0]) && $iaCore->requestPath[0])
+			{
+				try {
+
+					$providerName = strtolower($iaCore->requestPath[0]);
+
+					if (!file_exists(IA_INCLUDES . 'hybridauth.inc.php'))
+					{
+						throw new Exception("No HybridAuth config file. Please configure provider adapters.");
+					}
+
+					$hybridauth = new Hybrid_Auth(IA_INCLUDES . 'hybridauth.inc.php');
+
+					if (empty(Hybrid_Auth::$config["providers"]))
+					{
+						throw new Exception("Please configure at least one adapter for HybridAuth.");
+					}
+
+					$provider = $hybridauth->authenticate(ucfirst($providerName));
+
+					if ($user_profile = $provider->getUserProfile())
+					{
+						// identify by Hybrid identifier
+						$memberId = $iaCore->iaDb->one('member_id', iaDb::convertIds($user_profile->identifier, 'value'), iaUsers::getProvidersTable());
+
+						// identify by email address
+						if (!$memberId)
+						{
+							if ($memberInfo = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, "`email` = :email_address", array('email_address' => $user_profile->email), iaUsers::getTable()))
+							{
+								$iaCore->iaDb->insert(array(
+										'member_id' => $memberInfo['id'],
+										'name' => $providerName,
+										'value' => $user_profile->identifier
+								), null, iaUsers::getProvidersTable());
+
+								$memberId = $memberInfo['id'];
+							}
+						}
+
+						// register new member if no matches
+						if (!$memberId)
+						{
+							$memberRegInfo['username'] = '';
+							$memberRegInfo['email'] = $user_profile->email;
+							$memberRegInfo['fullname'] = $user_profile->displayName;
+							// $memberRegInfo['avatar'] = $user_profile->photoURL;
+							$memberRegInfo['disable_fields'] = true;
+
+							$memberId = $iaUsers->register($memberRegInfo);
+
+							// add providers match
+							$iaCore->iaDb->insert(array(
+									'member_id' => $memberId,
+									'name' => $providerName,
+									'value' => $user_profile->identifier
+							), null, iaUsers::getProvidersTable());
+
+							// no need to validate address
+							$iaUsers->update(array('id' => $memberId, 'sec_key' => '', 'status' => iaCore::STATUS_ACTIVE));
+						}
+
+						// authorize
+						$iaUsers->getAuth($memberId);
+					}
+					else
+					{
+						throw new Exception("User is not logged in.");
+					}
+				}
+				catch (Exception $e)
+				{
+					$iaCore->iaView->setMessages("HybridAuth error: " . $e->getMessage(), iaView::ERROR);
+				}
+			}
+
+			if (iaUsers::hasIdentity())
+			{
+				$iaPage = $iaCore->factory('page', iaCore::FRONT);
+
+				$iaCore->factory('util')->go_to($iaPage->getUrlByName('profile'));
+			}
+
+			if (isset($_SERVER['HTTP_REFERER']) && IA_SELF != $_SERVER['HTTP_REFERER']) // used by login redirecting mech
+			{
+				$_SESSION['referrer'] = $_SERVER['HTTP_REFERER'];
+			}
+
+			break;
 	}
 }

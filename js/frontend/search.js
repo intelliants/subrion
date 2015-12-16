@@ -65,4 +65,33 @@ $(function()
 			function(){$container.css('opacity', 1);}
 		);
 	}
+
+	$('#js-cmd-save-search').on('click', function(e)
+	{
+		e.preventDefault();
+
+		bootbox.prompt(_t('your_title_for_this_search'), function(name)
+		{
+			if (null === name)
+			{
+				return;
+			}
+
+			var location = window.location.pathname + window.location.search + window.location.hash,
+				data = {action: 'save', params: location, item: $filtersForm.data('item'), name: name};
+
+			$.post(intelli.config.ia_url + 'search.json', data, function(response)
+			{
+				if ('boolean' == typeof response.result && response.result)
+				{
+					intelli.notifFloatBox({msg: response.message, type: 'success'});
+					window.location.reload();
+				}
+				else
+				{
+					intelli.notifFloatBox({msg: response.message, autohide: true});
+				}
+			});
+		});
+	});
 });

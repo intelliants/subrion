@@ -36,6 +36,8 @@ class iaSearch extends abstractCore
 	const GET_PARAM_SORTING_FIELD = '__s';
 	const GET_PARAM_SORTING_ORDER = '__so';
 
+	protected static $_table = 'search';
+
 	protected $_query = '';
 
 	protected $_start;
@@ -140,6 +142,37 @@ class iaSearch extends abstractCore
 		);
 
 		return $result;
+	}
+
+	public function save($item, $params, $name)
+	{
+		if (is_string($item) && is_string($params))
+		{
+			$entry = array(
+				'member_id' => (int)iaUsers::getIdentity()->id,
+				'date' => date(iaDb::DATETIME_FORMAT),
+				'item' => trim($item),
+				'params' => ltrim($params, IA_URL_DELIMITER),
+				'title' => iaSanitize::tags((string)$name)
+			);
+
+			return (bool)$this->iaDb->insert($entry, null, self::getTable());
+		}
+
+		return false;
+	}
+
+	public function get()
+	{
+		if(iaUsers::hasIdentity())
+		{
+			$stmt = '`member_id` = :member ORDER BY `date` DESC';
+			$this->iaDb->bind($stmt, array('member' => (int)iaUsers::getIdentity()->id));
+
+			return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt, null, null, self::getTable());
+		}
+
+		return false;
 	}
 
 	// getters

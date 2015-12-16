@@ -1322,10 +1322,10 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
+		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
+
 		if ($this->itemData['blocks'])
 		{
-			$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
-
 			foreach ($this->itemData['blocks'] as $block)
 			{
 				$iaBlock->insert($block);
@@ -1636,6 +1636,7 @@ class iaExtra extends abstractCore
 				'field' => 'fields',
 				'menu' => 'blocks'
 			);
+
 			foreach ($this->itemData['changeset'] as $entry)
 			{
 				if (!isset($tablesMapping[$entry['type']]))
@@ -1659,13 +1660,20 @@ class iaExtra extends abstractCore
 
 				$tableName = $tablesMapping[$entry['type']];
 				$name = $entry['name'];
+				$pages = isset($entry['pages']) ? explode(',', $entry['pages']) : array();
 
-				unset($entry['type'], $entry['name']);
+				unset($entry['type'], $entry['name'], $entry['pages']);
 
-				$entryData = $iaDb->row('`' . implode('`,`', array_keys($entry)) . '`', $stmt, $tableName);
+				$entryData = $iaDb->row('`id`, `' . implode('`,`', array_keys($entry)) . '`', $stmt, $tableName);
 
 				if ($iaDb->update($entry, $stmt, null, $tableName))
 				{
+					if ('field' != $entry['type'] && isset($entry['sticky']))
+					{
+						$iaBlock->setVisibility($entryData['id'], $entry['sticky'], $pages);
+					}
+					unset($entryData['id']);
+
 					$rollbackData[$tableName][$name] = $entryData;
 				}
 			}
@@ -2118,7 +2126,7 @@ class iaExtra extends abstractCore
 					'extras' => $this->itemData['name'],
 					'code' => $text,
 					'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)),
-					'order' => $this->_attr('order')
+					'order' => $this->_attr('order', 0)
 				);
 				break;
 

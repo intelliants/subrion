@@ -39,7 +39,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 
 	if ($amount > 0)
 	{
-		if ($amount >= (float)$iaCore->get('funds_min_amount'))
+		if ($amount >= (float)$iaCore->get('funds_min_deposit') && $amount <= (float)$iaCore->get('funds_max_deposit'))
 		{
 			$transactionId = $iaTransaction->createInvoice(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl, 0, true);
 			$transactionId
@@ -48,7 +48,12 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 		}
 		else
 		{
-			$output['error'] = iaLanguage::get('amount_less_min');
+			iaLanguage::set('amount_incorrect', iaLanguage::getf('amount_incorrect', array(
+				'min' => $iaCore->get('funds_min_deposit'),
+				'max' => $iaCore->get('funds_max_deposit'),
+				'currency' => $iaCore->get('currency')))
+			);
+			$output['error'] = iaLanguage::get('amount_incorrect');
 		}
 	}
 	else
@@ -61,6 +66,42 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
+	$iaInvoice = $iaCore->factory('invoice');
+
+	if (isset($iaCore->requestPath[0]) && 'invoice' == $iaCore->requestPath[0])
+	{
+		if (isset($iaCore->requestPath[1]))
+		{
+			$iaTransaction = $iaCore->factory('transaction');
+
+			$transaction = $iaTransaction->getBy('sec_key', $iaCore->requestPath[1]);
+
+			if (!$transaction)
+			{
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			}
+
+			$invoice = $iaInvoice->getBy('transaction_id', $transaction['id']);
+
+			if (!$invoice)
+			{
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			}
+
+			$iaView->assign('invoice', $invoice);
+			$iaView->assign('items', $iaInvoice->getItemsByInvoiceId($invoice['id']));
+
+			$iaView->disableLayout();
+			echo $iaView->display('invoice');
+
+			return;
+		}
+		else
+		{
+			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		}
+	}
+
 	iaUsers::reloadIdentity();
 
 	if (isset($_POST['amount']))
@@ -68,13 +109,18 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$amount = (float)$_POST['amount'];
 		if ($amount > 0)
 		{
-			if ($amount >= (float)$iaCore->get('funds_min_amount'))
+			if ($amount >= (float)$iaCore->get('funds_min_deposit') && $amount <= (float)$iaCore->get('funds_max_deposit'))
 			{
 				$iaTransaction->createInvoice(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl);
 			}
 			else
 			{
-				$iaView->setMessages(iaLanguage::get('amount_less_min'));
+				iaLanguage::set('amount_incorrect', iaLanguage::getf('amount_incorrect', array(
+					'min' => $iaCore->get('funds_min_deposit'),
+					'max' => $iaCore->get('funds_max_deposit'),
+					'currency' => $iaCore->get('currency')))
+				);
+				$iaView->setMessages(iaLanguage::get('amount_incorrect'));
 			}
 		}
 		else
