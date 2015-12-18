@@ -250,7 +250,7 @@ switch ($step)
 
 			if (empty($errorList))
 			{
-				$link = @mysqli_connect(iaHelper::getPost('dbhost') . ':' . iaHelper::getPost('dbport', 3306), iaHelper::getPost('dbuser'), iaHelper::getPost('dbpwd'));
+				$link = @mysqli_connect(iaHelper::getPost('dbhost'), iaHelper::getPost('dbuser'), iaHelper::getPost('dbpwd'), '', iaHelper::getPost('dbport', 3306));
 				if (mysqli_connect_errno())
 				{
 					$error = true;
