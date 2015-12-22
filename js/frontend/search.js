@@ -66,6 +66,25 @@ $(function()
 		);
 	}
 
+	$('#js-cmd-open-searches').on('click', function(e)
+	{
+		e.preventDefault();
+
+		var $o = $(this);
+
+		$o.button('loading');
+
+		$.get($(this).attr('href'), null, function(response)
+		{
+			var $modal = $('#js-modal-searches');
+
+			$('.modal-content', $modal).html(response);
+			$modal.modal();
+
+			$o.button('reset');
+		})
+	});
+
 	$('#js-cmd-save-search').on('click', function(e)
 	{
 		e.preventDefault();

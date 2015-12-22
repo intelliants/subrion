@@ -70,6 +70,17 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
+	if (1 == count($iaCore->requestPath) && 'my' == $iaCore->requestPath[0])
+	{
+		$iaView->assign('searches', $iaSearch->get());
+
+		$iaView->display('my-searches');
+		$iaView->disableLayout();
+		$iaView->set('nodebug', true);
+
+		return;
+	}
+
 	$query = empty($_GET['q']) ? null : $_GET['q'];
 
 	$params = $_GET;
