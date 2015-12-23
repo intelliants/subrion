@@ -113,7 +113,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					if ($classInstance->dashboardStatistics)
 					{
-						$data = $classInstance->{self::STATISTICS_GETTER_METHOD}();
+						$data = call_user_func(array($classInstance, self::STATISTICS_GETTER_METHOD));
 
 						isset($data['icon']) || $data['icon'] = $itemName;
 						isset($data['caption']) || $data['caption'] = $itemName;
