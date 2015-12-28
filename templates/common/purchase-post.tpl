@@ -2,6 +2,8 @@
 	<div class="alert alert-success">{lang key='thanks'}</div>
 {/if}
 
+{ia_hooker name='smartyPostPurchase'}
+
 <h2>{lang key='payment_details'}</h2>
 <div class="transaction_info">
 	<table class="table table-striped">

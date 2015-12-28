@@ -40,7 +40,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 	if ($amount >= (float)$iaCore->get('funds_min_deposit')
 		&& $amount <= (float)$iaCore->get('funds_max_deposit'))
 	{
-		$transactionId = $iaTransaction->createInvoice(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl, 0, true);
+		$transactionId = $iaTransaction->create(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl, 0, true);
 		$transactionId
 			? $output['url'] = IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER
 			: $output['error'] = iaLanguage::get('db_error');
@@ -104,7 +104,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		if ($amount >= (float)$iaCore->get('funds_min_deposit')
 			&& $amount <= (float)$iaCore->get('funds_max_deposit'))
 		{
-			$iaTransaction->createInvoice(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl);
+			$iaTransaction->create(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl);
 		}
 		else
 		{

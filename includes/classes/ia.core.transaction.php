@@ -33,6 +33,8 @@ class iaTransaction extends abstractCore
 
 	const TRANSACTION_MEMBER_BALANCE = 'funds';
 
+	const GATEWAY_CALLBACK_NAME = 'emailNotification';
+
 	protected static $_table = 'payment_transactions';
 	protected $_tableGateways = 'payment_gateways';
 	protected $_tableIpnLog = 'payment_gateways_ipn_log';
@@ -101,9 +103,10 @@ class iaTransaction extends abstractCore
 		{
 			$result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), array('date' => iaDb::FUNCTION_NOW), self::getTable());
 
-			if ($result && !empty($transactionData['status']))
+			if ($result && isset($transactionData['status']))
 			{
 				$operation = empty($transactionData['item']) ? $transaction['item'] : $transactionData['item'];
+
 				if (self::TRANSACTION_MEMBER_BALANCE == $operation)
 				{
 					$itemId = empty($transactionData['item_id']) ? $transaction['item_id'] : $transactionData['item_id'];
@@ -117,6 +120,14 @@ class iaTransaction extends abstractCore
 					{
 						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), array('funds' => '`funds` - ' . $amount), iaUsers::getTable());
 					}
+				}
+
+				if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
+				{
+					$transaction = $this->getById($id);
+
+					$this->_sendEmailNotification($transaction);
+					$this->_createInvoice($transaction);
 				}
 			}
 		}
@@ -182,7 +193,7 @@ class iaTransaction extends abstractCore
 	 *
 	 * @return string
 	 */
-	public function createInvoice($title, $cost, $itemName = 'members', $itemData = array(), $returnUrl = '', $planId = 0, $return = false)
+	public function create($title, $cost, $itemName = 'members', $itemData = array(), $returnUrl = '', $planId = 0, $return = false)
 	{
 		if (!isset($itemData['id']))
 		{
@@ -212,6 +223,13 @@ class iaTransaction extends abstractCore
 		$return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 
 		return $result ? $transactionId : false;
+	}
+
+	protected function _createInvoice($transaction)
+	{
+		$iaInvoice = $this->iaCore->factory('invoice');
+
+		return $iaInvoice->create($transaction);
 	}
 
 	/**
@@ -274,5 +292,79 @@ class iaTransaction extends abstractCore
 		);
 
 		return (bool)$this->iaDb->insert($entry, array('date' => iaDb::FUNCTION_NOW), $this->getTableIpnLog());
+	}
+
+	protected function _sendEmailNotification(array $transaction)
+	{
+		// first, do check if gateway has its own email submission
+		if ($result = $this->_doGatewayCallback($transaction['gateway'], $transaction))
+		{
+			return $result;
+		}
+
+		$result1 = true;
+
+		$notification = 'transaction_paid';
+		if ($this->iaCore->get($notification))
+		{
+			$iaUsers = $this->iaCore->factory('users');
+
+			$member = $iaUsers->getById($transaction['member_id']);
+
+			if (!$member)
+			{
+				return false;
+			}
+
+			$iaMailer = $this->iaCore->factory('mailer');
+
+			$iaMailer->loadTemplate('transaction_paid');
+			$iaMailer->addAddress($member['email']);
+
+			$iaMailer->setReplacements($transaction);
+			$iaMailer->setReplacements(array(
+				'email' => $member['username'],
+				'username' => $member['username'],
+				'fullname' => $member['fullname']
+			));
+
+			$result1 = $iaMailer->send();
+		}
+
+		// notify admin
+		$result2 = true;
+
+		$notification.= '_admin';
+		if ($this->iaCore->get($notification))
+		{
+			$iaMailer->loadTemplate($notification);
+			$iaMailer->addAddress($this->iaCore->get('site_email'));
+			$iaMailer->setReplacements(array(
+				'username' => iaUsers::getIdentity()->username,
+				'amount' => $transaction['amount'],
+				'operation' => $transaction['operation']
+			));
+
+			$result2 = $iaMailer->send();
+		}
+
+		return $result1 && $result2;
+	}
+
+	protected function _doGatewayCallback($gatewayName, array $transaction)
+	{
+		if (!$gatewayName)
+		{
+			return false;
+		}
+
+		$gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common');
+
+		if ($gatewayInstance && method_exists($gatewayInstance, self::GATEWAY_CALLBACK_NAME))
+		{
+			return call_user_func(array($gatewayInstance, self::GATEWAY_CALLBACK_NAME), $transaction);
+		}
+
+		return false;
 	}
 }

@@ -210,25 +210,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 									$iaPlan->setPaid($transaction);
 								}
 
-								// notify admin of a completed payment
-								$action = 'payment_completion_admin';
-								if ($iaCore->get($action))
-								{
-									$iaMailer = $iaCore->factory('mailer');
-
-									$iaMailer->loadTemplate($action);
-									$iaMailer->addAddress($iaCore->get('site_email'));
-									$iaMailer->setReplacements(array(
-										'username' => iaUsers::getIdentity()->username,
-										'amount' => $transaction['amount'],
-										'operation' => $transaction['operation']
-									));
-
-									$iaMailer->send();
-								}
-
 								// disable debug display
 								$iaView->set('nodebug', true);
+
+								$iaView->assign('gateway', $transaction['gateway']);
 
 								$tplFile = 'purchase-post';
 							}
