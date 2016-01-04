@@ -32,7 +32,7 @@ if (!$iaAcl->isAdmin())
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
-	error_reporting(0); // Set E_ALL for debuging
+	error_reporting(0); // Set E_ALL for debugging
 
 	$pluginPath = IA_PLUGINS . IA_CURRENT_PLUGIN . IA_DS . 'includes' . IA_DS . 'elfinder' . IA_DS . 'php' . IA_DS;
 	include_once $pluginPath . 'elFinderConnector.class.php';

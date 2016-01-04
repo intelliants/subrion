@@ -2117,11 +2117,19 @@ class iaExtra extends abstractCore
 				break;
 
 			case 'hook':
+				$filename = $this->_attr('filename');
+				$type = $this->_attr('type', 'php', array('php', 'html', 'smarty', 'plain'));
+
+				if ($filename && 'smarty' == $type)
+				{
+					$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+				}
+
 				$this->itemData['hooks'][] = array(
 					'name' => $this->_attr('name'),
-					'type' => $this->_attr('type', 'php', array('php', 'html', 'smarty', 'plain')),
+					'type' => $type,
 					'page_type' => $this->_attr('page_type', 'both', array('both', iaCore::ADMIN, iaCore::FRONT)),
-					'filename' => $this->_attr('filename'),
+					'filename' => $filename,
 					'pages' => $this->_attr('pages'),
 					'extras' => $this->itemData['name'],
 					'code' => $text,

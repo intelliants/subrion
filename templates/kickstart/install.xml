@@ -129,7 +129,6 @@
 			   collapsible="0" 
 			   sticky="0" 
 			   pages="index"
-			   status="active" 
 			   type="html">
 			<![CDATA[
 <div class="teaser">
@@ -146,7 +145,6 @@
 			   collapsible="0" 
 			   sticky="0" 
 			   pages="index"
-			   status="active"
 			   type="html">
 			<![CDATA[
 <div class="row">
@@ -166,7 +164,6 @@
 			   collapsible="1" 
 			   sticky="0" 
 			   pages="index"
-			   status="active" 
 			   type="html">
 			<![CDATA[
 <p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
@@ -180,7 +177,6 @@
 			   collapsible="1" 
 			   sticky="0"
 			   pages="index" 
-			   status="active" 
 			   type="html">
 			<![CDATA[
 <p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
@@ -194,7 +190,6 @@
 			   header="1"
 			   collapsible="1" 
 			   sticky="1" 
-			   status="active" 
 			   order="99"
 			   type="html"
 			   classname="box--border">
@@ -209,7 +204,6 @@
 			   header="1"
 			   collapsible="0" 
 			   sticky="1" 
-			   status="active" 
 			   type="html">
 			<![CDATA[
 <p>Subrion is a free open source content management system
@@ -222,7 +216,6 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 			   header="1"
 			   collapsible="0" 
 			   sticky="1" 
-			   status="active" 
 			   type="html">
 			<![CDATA[
 <p>It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
@@ -234,7 +227,6 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 			   header="1"
 			   collapsible="0" 
 			   sticky="1" 
-			   status="active" 
 			   type="html">
 			<![CDATA[
 <p>Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
@@ -246,7 +238,6 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 			   header="1"
 			   collapsible="0" 
 			   sticky="1" 
-			   status="active" 
 			   type="html">
 			<![CDATA[
 <p>Simple templating engine and styles allows you to create any template you wish with just a few lines of code.</p>

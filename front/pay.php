@@ -123,7 +123,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				foreach ($gateways as $key => $gateway)
 				{
-					$htmlFormTemplate = IA_PLUGINS . $key . IA_DS . 'templates' . IA_DS . 'form.tpl';
+					$htmlFormTemplate = IA_PLUGINS . $key . IA_DS . 'templates' . IA_DS . 'front' . IA_DS . 'form.tpl';
 					$gateways[$key] = file_exists($htmlFormTemplate) ? $htmlFormTemplate : false;
 				}
 
