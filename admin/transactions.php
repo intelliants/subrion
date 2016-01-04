@@ -193,7 +193,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'item_id' => (int)$_POST['itemid'],
 			'gateway' => (string)$_POST['gateway'],
 			'sec_key' => uniqid('t'),
-			'reference_id' => empty($_POST['reference_id']) ? date('mdyHis') : $_POST['reference_id'],
+			'reference_id' => empty($_POST['reference_id']) ? date('mdyHis') : iaSanitize::htmlInjectionFilter($_POST['reference_id']),
 			'amount' => (float)$_POST['amount'],
 			'currency' => $this->_iaCore->get('currency'),
 			'date' => $_POST['date'] . ' ' . $_POST['time']

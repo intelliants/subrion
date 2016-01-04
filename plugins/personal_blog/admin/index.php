@@ -150,9 +150,6 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		{
 			$iaPicture = $this->_iaCore->factory('picture');
 
-			$path = iaUtil::getAccountDir();
-			$file = $_FILES['image'];
-			$token = iaUtil::generateToken();
 			$info = array(
 				'image_width' => 1000,
 				'image_height' => 750,
@@ -161,19 +158,14 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 				'resize_mode' => iaPicture::CROP
 			);
 
-			if ($image = $iaPicture->processImage($file, $path, $token, $info))
+			if ($image = $iaPicture->processImage($_FILES['image'], iaUtil::getAccountDir(), iaUtil::generateToken(), $info))
 			{
-				if (!empty($entry['image'])) // already has an assigned image
-				{
-					$iaPicture = $this->_iaCore->factory('picture');
-					$iaPicture->delete($entry['image']);
-				}
-
+				empty($entry['image']) || $iaPicture->delete($entry['image']); // already has an assigned image
 				$entry['image'] = $image;
 			}
 		}
 
-		unset($entry['tags'], $entry['v']);
+		unset($entry['tags']);
 
 		return true;
 	}

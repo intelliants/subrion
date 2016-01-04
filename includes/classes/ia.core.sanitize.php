@@ -178,7 +178,7 @@ class iaSanitize extends abstractUtil
 	 *
 	 * @return mixed
 	 */
-	public static function urlInjectionFilter($url)
+	public static function htmlInjectionFilter($url)
 	{
 		return str_replace(array('<', '>', '"', "'", '&'), '', $url);
 	}
