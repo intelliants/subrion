@@ -152,10 +152,14 @@ class iaBackendController extends iaAbstractControllerBackend
 					return iaView::accessDenied();
 				}
 
-				if ($this->_activate($package, 'deactivate' == $action))
+				$deactivate = ('deactivate' == $action);
+
+				if ($this->_activate($package, $deactivate))
 				{
-					$type = ('deactivate' == $action) ? iaLog::ACTION_DISABLE : iaLog::ACTION_ENABLE;
-					$iaLog->write($type, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
+					$this->_iaCore->startHook($deactivate ? 'phpPackageDeactivated' : 'phpPackageActivated',
+						array('extra' => $package));
+					$iaLog->write($deactivate ? iaLog::ACTION_DISABLE : iaLog::ACTION_ENABLE,
+						array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
 				}
 				else
 				{
