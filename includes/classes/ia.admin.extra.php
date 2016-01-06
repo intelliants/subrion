@@ -2122,6 +2122,12 @@ class iaExtra extends abstractCore
 
 				if ($filename && 'smarty' == $type)
 				{
+					// compatibility layer for 4.0 plugins
+					if (false !== stripos($filename, '.tpl'))
+					{
+						$filename = str_replace('.tpl', '', basename($filename));
+					}
+					//
 					$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
 				}
 
