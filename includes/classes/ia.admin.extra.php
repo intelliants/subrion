@@ -2122,13 +2122,23 @@ class iaExtra extends abstractCore
 
 				if ($filename && 'smarty' == $type)
 				{
-					// compatibility layer for 4.0 plugins
+					//$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+
+					// compatibility layer for v4.0 plugins
+					// todo: remove in v5
 					if (false !== stripos($filename, '.tpl'))
 					{
-						$filename = str_replace('.tpl', '', basename($filename));
+						if ('payments' != @$this->itemData['info']['category'])
+						{
+							$filename = str_replace('.tpl', '', basename($filename));
+							$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+						}
+					}
+					else
+					{
+						$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
 					}
 					//
-					$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
 				}
 
 				$this->itemData['hooks'][] = array(
