@@ -19,6 +19,14 @@ $(function()
 				}
 			});
 	}
+	else
+	{
+		$('#js-search-results-pagination').on('click', '.pagination a', function(e)
+		{
+			e.preventDefault();
+			intelli.search.run($(this).text());
+		});
+	}
 
 	$('.js-search-sorting-header a').on('click', function(e)
 	{
@@ -33,12 +41,6 @@ $(function()
 
 			intelli.search.run();
 		}
-	});
-
-	$('#js-search-results-pagination').on('click', '.pagination a', function(e)
-	{
-		e.preventDefault();
-		intelli.search.run($(this).text());
 	});
 
 	if ($filtersForm.length > 0)

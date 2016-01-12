@@ -54,7 +54,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('search_' . $itemName);
 			$pageUrl || $pageUrl = IA_URL . 'search/' . $itemName . '/';
 
-			if (parse_url($pageUrl, PHP_URL_PATH) != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH))
+			if (parse_url($pageUrl, PHP_URL_PATH) != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH)
+				|| false !== stripos($_SERVER['HTTP_REFERER'], '?q='))
 			{
 				$pageUrl.= '#' . $iaSearch->httpBuildQuery($_GET);
 
@@ -81,12 +82,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		return;
 	}
 
-	$query = empty($_GET['q']) ? null : $_GET['q'];
-
-	$params = $_GET;
-	unset($params['page']);
-
-	$iaCore->startHook('phpSearchAfterGetQuery', array('query' => &$query));
+	$results = null;
+	$regular = false;
+	$query = isset($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : null;
 
 	$pagination = array(
 		'limit' => 10,
@@ -98,38 +96,43 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$page = isset($_GET['page']) && is_numeric($_GET['page']) ? max($_GET['page'], 1) : 1;
 	$pagination['start'] = ($page - 1) * $pagination['limit'];
 
-	$results = null;
-	$regular = false;
-
 	if ('search' != $iaView->name() || isset($iaCore->requestPath[0]))
 	{
-		$empty = empty($params) && empty($iaCore->requestPath);
 		$itemName = ('search' != $iaView->name())
 			? str_replace('search_', '', $iaView->name())
 			: $iaCore->requestPath[0];
 
-		if (in_array($itemName, $iaItem->getItems()))
-		{
-			$empty || $results = $iaSearch->doRegularItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
-
-			$iaView->set('filtersItemName', $itemName);
-			$iaView->set('filtersParams', $iaSearch->getParams());
-
-			$iaView->assign('itemName', $itemName);
-			$iaView->assign('empty', $empty);
-			$iaView->assign('searches', $iaSearch->get());
-
-			$iaView->title($iaSearch->getCaption() ? $iaSearch->getCaption() : $iaView->title());
-		}
-		else
+		if (!in_array($itemName, $iaItem->getItems()))
 		{
 			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 		}
+
+		$empty = empty($_GET) && !$iaCore->requestPath;
+
+		if (!$empty)
+		{
+			$params = $query ? $query : $_GET;
+			$results = $iaSearch->doItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
+
+			$pagination['total'] = $results[0];
+		}
+
+		$iaView->set('filtersItemName', $itemName);
+		$iaView->set('filtersParams', $iaSearch->getParams());
+
+		$iaView->assign('itemName', $itemName);
+		$iaView->assign('empty', $empty);
+		$iaView->assign('searches', $iaSearch->get());
+
+		$iaView->title($iaSearch->getCaption() ? $iaSearch->getCaption() : $iaView->title());
 	}
 	else
 	{
 		$regular = true;
-		empty($query) || $results = $iaSearch->doRegularSearch($query, $pagination['start'], $pagination['limit']);
+
+		$iaCore->startHook('phpSearchAfterGetQuery', array('query' => &$query));
+
+		empty($query) || $results = $iaSearch->doRegularSearch($query, $pagination['limit']);
 	}
 
 	$iaView->assign('pagination', $pagination);

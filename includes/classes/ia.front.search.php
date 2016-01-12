@@ -64,12 +64,12 @@ class iaSearch extends abstractCore
 		$this->iaCore->factory(array('field', 'item'));
 	}
 
-	public function doRegularSearch($query, $start, $limit)
+	public function doRegularSearch($query, $limit)
 	{
 		$this->_query = $query;
 
-		$this->_start = (int)$start;
-		$this->_limit = (int)$limit;
+		$this->_start = 0;
+		$this->_limit = $limit;
 
 		$results = array('pages' => $this->_searchByPages());
 		$results = array_merge($results, $this->_searchByItems());
@@ -78,7 +78,7 @@ class iaSearch extends abstractCore
 		return $results;
 	}
 
-	public function doRegularItemSearch($itemName, array $params, $start, $limit)
+	public function doItemSearch($itemName, $params, $start, $limit)
 	{
 		if (!$this->_loadItemInstance($itemName))
 		{
@@ -88,9 +88,18 @@ class iaSearch extends abstractCore
 		$this->_start = (int)$start;
 		$this->_limit = (int)$limit;
 
-		$this->_processParams($params, true);
+		if (is_string($params))
+		{
+			$fieldsSearch = false;
+			$this->_query = $params;
+		}
+		else
+		{
+			$fieldsSearch = true;
+			$this->_processParams($params, true);
+		}
 
-		if ($search = $this->_performItemSearch())
+		if ($search = $this->_performItemSearch($fieldsSearch))
 		{
 			return array($search[0], $this->_renderResults($search[1]));
 		}

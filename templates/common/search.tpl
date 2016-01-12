@@ -1,4 +1,4 @@
-{if $regular}
+{if $query || $regular}
 	<form class="ia-form">
 		<div class="input-group">
 			<input type="text" class="form-control" name="q" id="input-search-query" placeholder="{lang key='search_for'}" value="{$query|escape:'html'}">
@@ -22,6 +22,12 @@
 						<h3 class="title">{lang key=$item}</h3>
 						{$data[1]}
 					</div>
+					{if $data[0] > $pagination.limit}
+						<div class="text-center">
+							…{lang key='and_more'}
+							<a href="{$smarty.const.IA_URL}search/{$item}/?q={$query}" class="btn btn-success">{lang key='show_all_num_results' num=$data[0]}</a>
+						</div>
+					{/if}
 				{/if}
 			{/foreach}
 		{else}
@@ -35,7 +41,7 @@
 </div>
 
 <div id="js-search-results-pagination">
-	{navigation aTotal=$pagination.total aTemplate=$pagination.url aItemsPerPage=$pagination.limit aNumPageItems=5}
+	{navigation aTotal=$pagination.total aTemplate=$pagination.url aItemsPerPage=$pagination.limit aNumPageItems=5 aIgnore=true}
 </div>
 
 {ia_print_js files='frontend/search'}
