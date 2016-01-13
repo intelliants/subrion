@@ -459,7 +459,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$installationFile = $this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME;
 		if (!file_exists($installationFile))
 		{
-			'remote' == $_POST['mode'] ? $result['message'] = iaLanguage::get('buy_before_install') : $result['message'] = iaLanguage::get('file_doesnt_exist');
+			$result['message'] = iaLanguage::get('file_doesnt_exist');
 		}
 		else
 		{

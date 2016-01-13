@@ -29,6 +29,12 @@ intelli.plugins = {
 
 var installClick = function(record, action)
 {
+	if ('remote' == Ext.getCmp('modeFilter').getValue() && (record.get('price') != '0.00'))
+	{
+		intelli.notifFloatBox({msg: _t('buy_before_install'), type: 'error', autohide: true});
+		return;
+	}
+
 	if (record.get('notes'))
 	{
 		Ext.Msg.show({title: _t('invalid_plugin_dependencies'), msg: record.get('notes'), buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING});
@@ -216,7 +222,10 @@ intelli.available = {
 		'numberer',
 		'selection',
 		'expander',
-		{name: 'title', title: _t('title'), width: 1},
+		{name: 'title', title: _t('title'), width: 1, renderer: function(value, metadata, record)
+		{
+			return value + ' ' + ((record.get('price') && record.get('price') != '0.00') ? ' - $' + record.get('price') : '');
+		}},
 		{name: 'version', title: _t('version'), width: 70, sortable: false},
 		{name: 'compatibility', title: _t('compatibility'), width: 70, renderer: function(value, metadata, record)
 		{
@@ -228,7 +237,7 @@ intelli.available = {
 		{name: 'install', title: _t('install'), icon: 'box-add', click: installClick}
 	],
 	expanderTemplate: '{description}',
-	fields: ['file', 'description'],
+	fields: ['file', 'description', 'price'],
 	resizer: false,
 /*	rowselect: function(that)
 	{
