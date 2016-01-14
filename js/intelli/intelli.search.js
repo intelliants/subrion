@@ -98,7 +98,7 @@ intelli.search = (function()
 		initFilters: function()
 		{
 			var values = parseHash();
-console.log(values);
+
 			if (!values)
 			{
 				return;
