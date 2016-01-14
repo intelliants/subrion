@@ -1,16 +1,16 @@
 {if !empty($filters.fields)}
 	<form class="ia-form ia-form-filters" id="js-item-filters-form" data-item="{$filters.item}" action="{$smarty.const.IA_CLEAR_URL}search/{$filters.item}.json">
-		<div class="ia-form-filters__actions">
-			{if $member}
+		{if $member}
+			<div class="ia-form-filters__actions">
 				<a href="{$smarty.const.IA_URL}search/my/" class="btn btn-xs btn-success" data-loading-text="{lang key='loading'}" id="js-cmd-open-searches">{lang key='my_searches'}</a>
 				<div class="modal fade" id="js-modal-searches" tabindex="-1" role="dialog">
 					<div class="modal-dialog" role="document"><div class="modal-content"></div></div>
 				</div>
-			{/if}
-			{if isset($regular)}
-				<button type="button" class="btn btn-xs btn-default" id="js-cmd-save-search">{lang key='save_this_search'}</button>
-			{/if}
-		</div>
+				{if isset($regular)}
+					<button type="button" class="btn btn-xs btn-default" id="js-cmd-save-search">{lang key='save_this_search'}</button>
+				{/if}
+			</div>
+		{/if}
 
 		{ia_hooker name='smartyFrontFiltersBeforeFields'}
 
