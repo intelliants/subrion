@@ -62,7 +62,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					'status' => iaCore::STATUS_ACTIVE,
 					'member_id' => iaUsers::getIdentity()->id,
 					'title' => '',
-					'body' => ''
+					'body' => '',
+					'image' => ''
 				);
 			}
 			else
