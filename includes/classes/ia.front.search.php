@@ -600,6 +600,7 @@ class iaSearch extends abstractCore
 
 				case iaField::TEXT:
 				case iaField::TEXTAREA:
+				case iaField::URL:
 					$condition = 'LIKE';
 					$val = "'%" . iaSanitize::sql($value) . "%'";
 
@@ -610,10 +611,6 @@ class iaSearch extends abstractCore
 				case iaField::STORAGE:
 					$condition = '!=';
 					$val = "''";
-
-					break;
-
-				case iaField::URL:
 
 					break;
 
@@ -913,20 +910,20 @@ class iaSearch extends abstractCore
 		$result = array();
 		$nodes = iaUtil::jsonDecode($packedNodes);
 
-		$level = array();
-		foreach ($nodes as $node)
-		{
-			$parent = $node['parent'];
-			('#' != $parent) && (isset($level[$parent]) ? ($level[$parent]++) : ($level[$parent] = 0));
-			$level[$node['id']] = 0;
-		}
-
-		$max = max($level);
-
+		$indent = array();
 		foreach ($nodes as $node)
 		{
 			$id = $node['id'];
-			$result[$id] = str_repeat('&mdash;', $max - $level[$id]) . ' ' . $node['text'];
+			$parent = $node['parent'];
+
+			$indent[$id] = 0;
+			('#' != $parent) && (++$indent[$id]) && (isset($indent[$parent]) ?
+				($indent[$id]+= $indent[$parent]) : ($indent[$parent] = 0));
+		}
+
+		foreach ($nodes as $node)
+		{
+			$result[$node['id']] = str_repeat('&nbsp;&nbsp;&nbsp;', $indent[$node['id']]) . ' &mdash; ' . $node['text'];
 		}
 
 		return $result;
