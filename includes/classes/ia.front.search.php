@@ -343,6 +343,7 @@ class iaSearch extends abstractCore
 			foreach ($rows as $row)
 			{
 				$pageName = str_replace(array('page_title_', 'page_content_'), '', $row['key']);
+
 				$key = (false === stripos($row['key'], 'page_content_')) ? 'title' : 'content';
 				$value = iaSanitize::tags($row['value']);
 

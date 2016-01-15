@@ -1299,7 +1299,7 @@ class iaExtra extends abstractCore
 
 								$menuItem['id'] = $iaBlock->insert($menuItem);
 
-								$contents = array(
+								$entry = array(
 									'parent_id' => 0,
 									'menu_id' => $menuItem['id'],
 									'el_id' => $pageId . '_' . iaUtil::generateToken(5),
@@ -1307,7 +1307,7 @@ class iaExtra extends abstractCore
 									'page_name' => $page['name']
 								);
 
-								$iaDb->insert($contents, null, iaBlock::getMenusTable());
+								$iaDb->insert($entry, null, iaBlock::getMenusTable());
 							}
 						}
 						$iaDb->resetTable();
