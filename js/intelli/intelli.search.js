@@ -120,9 +120,10 @@ intelli.search = (function()
 						switch ($ctl.attr('type'))
 						{
 							case 'checkbox':
+							case 'radio':
 								$ctl.filter('[value="' + value + '"]').prop('checked', true);
 								break;
-							case 'text':
+							default:
 								$ctl.val(value);
 						}
 						break;
@@ -131,7 +132,7 @@ intelli.search = (function()
 				}
 			}
 
-			this.run();
+			//this.run();
 		}
 	};
 })();

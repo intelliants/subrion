@@ -753,7 +753,7 @@ class iaSearch extends abstractCore
 		$this->iaDb->bind($stmt, array('item' => $this->_itemName));
 
 		$this->_fieldTypes = $this->iaDb->keyvalue(array('name', 'type'), $stmt, iaField::getTable());
-
+//print_r($params);
 		if ($params && is_array($params))
 		{
 			foreach ($params as $fieldName => $value)
@@ -769,7 +769,7 @@ class iaSearch extends abstractCore
 				$data[$fieldName] = $value;
 			}
 		}
-
+//print_r($data);die;
 		// support for custom parameters field:value within request URL
 		if ($processRequestUri)
 		{
