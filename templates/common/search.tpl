@@ -23,7 +23,7 @@
 						{$data[1]}
 					</div>
 					{if $data[0] > $pagination.limit}
-						<div class="text-center">
+						<div class="text-center m-t search-results-more">
 							…{lang key='and_more'}
 							<a href="{$smarty.const.IA_URL}search/{$item}/?q={$query}" class="btn btn-success">{lang key='show_all_num_results' num=$data[0]}</a>
 						</div>
