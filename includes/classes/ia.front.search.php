@@ -291,6 +291,11 @@ class iaSearch extends abstractCore
 						$this->iaDb->bind($stmt, array('category' => iaLanguage::CATEGORY_FRONTEND, 'key' => $phraseKey . '%', 'code' => $this->iaView->language));
 
 						$row['range'] = $this->iaDb->keyvalue(array('key', 'value'), $stmt, iaLanguage::getTable());*/
+
+						break;
+
+					case iaField::TREE:
+						$row['values'] = $this->_getTreeNodes($row['values']);
 				}
 
 				$result[$row['name']] = $row;
@@ -576,16 +581,20 @@ class iaSearch extends abstractCore
 					continue 2;
 
 				case iaField::COMBO:
+				case iaField::TREE:
 					$array = array();
 					$value = is_array($value) ? $value : array($value);
 
 					foreach ($value as $v)
 					{
-						$v = "'" . iaSanitize::sql($v) . "'";
-						$array[] = array('col' => $column, 'cond' => $condition, 'val' => $v, 'field' => $fieldName);
+						if (trim($v))
+						{
+							$v = "'" . iaSanitize::sql($v) . "'";
+							$array[] = array('col' => $column, 'cond' => $condition, 'val' => $v, 'field' => $fieldName);
+						}
 					}
 
-					$statements[] = $array;
+					empty($array) || $statements[] = $array;
 
 					continue 2;
 
@@ -610,11 +619,6 @@ class iaSearch extends abstractCore
 
 				case iaField::DATE:
 
-					break;
-
-				case iaField::TREE:
-
-					break;
 			}
 
 			$statements[] = array(
@@ -880,5 +884,51 @@ class iaSearch extends abstractCore
 			$column,
 			$value
 		));
+	}
+
+	private function _getTreeNodes($packedNodes)
+	{
+		if (!$packedNodes)
+		{
+			return array();
+		}
+
+		$key = 'filter_tree_' . md5($packedNodes);
+
+		if ($result = $this->iaCore->iaCache->get($key, 25920000, true)) // 30 days
+		{
+			return $result;
+		}
+		else
+		{
+			$result = $this->_parseTreeNodes($packedNodes);
+			$this->iaCore->iaCache->write($key, $result);
+
+			return $result;
+		}
+	}
+
+	protected function _parseTreeNodes($packedNodes)
+	{
+		$result = array();
+		$nodes = iaUtil::jsonDecode($packedNodes);
+
+		$level = array();
+		foreach ($nodes as $node)
+		{
+			$parent = $node['parent'];
+			('#' != $parent) && (isset($level[$parent]) ? ($level[$parent]++) : ($level[$parent] = 0));
+			$level[$node['id']] = 0;
+		}
+
+		$max = max($level);
+
+		foreach ($nodes as $node)
+		{
+			$id = $node['id'];
+			$result[$id] = str_repeat('&mdash;', $max - $level[$id]) . ' ' . $node['text'];
+		}
+
+		return $result;
 	}
 }

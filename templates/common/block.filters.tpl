@@ -30,6 +30,7 @@
 							</div>
 					{case iaField::COMBO break}
 						<select class="form-control js-interactive" name="{$field.name}[]" multiple>
+							<option value="">{lang key='_any_'}</option>
 							{if !empty($field.values)}
 								{html_options options=$field.values selected=$selected}
 							{/if}
@@ -50,11 +51,11 @@
 					{case iaField::NUMBER break}
 						<div class="row">
 							<div class="col-md-6">
-								<label for="" class="ia-form__label-mini">{lang key='from'}</label>
+								<label class="ia-form__label-mini">{lang key='from'}</label>
 								<input class="form-control" type="text" name="{$field.name}[f]" maxlength="{$field.length}" placeholder="{$field.range[0]}"{if $selected} value="{$selected.f|escape:'html'}"{/if}>
 							</div>
 							<div class="col-md-6">
-								<label for="" class="ia-form__label-mini">{lang key='to'}</label>
+								<label class="ia-form__label-mini">{lang key='to'}</label>
 								<input class="form-control" type="text" name="{$field.name}[t]" maxlength="{$field.length}" placeholder="{$field.range[1]}"{if $selected} value="{$selected.t|escape:'html'}"{/if}>
 							</div>
 						</div>
@@ -62,6 +63,14 @@
 					{case iaField::TEXT}
 					{case iaField::TEXTAREA break}
 						<input class="form-control" type="text" name="{$field.name}"{if is_string($selected)} value="{$selected|escape:'html'}"{/if}>
+
+					{case iaField::TREE}
+						<select class="form-control" name="{$field.name}[]" multiple>
+							<option value="">{lang key='_any_'}</option>
+							{if !empty($field.values)}
+								{html_options options=$field.values selected=$selected}
+							{/if}
+						</select>
 				{/switch}
 			</div>
 		{/foreach}
