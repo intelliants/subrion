@@ -470,6 +470,20 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
+		if ($this->itemData['items'])
+		{
+			$iaDb->setTable('items');
+
+			foreach ($this->itemData['items'] as $item)
+			{
+				if (!$this->iaDb->exists('`item` = :item', $item))
+				{
+					$iaDb->insert(array_merge($item, array('package' => $this->itemData['name'])));
+				}
+			}
+			$iaDb->resetTable();
+		}
+
 		if ($this->itemData['item_fields'])
 		{
 			$itemFields = $this->itemData['item_fields'];
