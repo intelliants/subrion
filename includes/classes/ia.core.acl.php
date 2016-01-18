@@ -245,7 +245,7 @@ class iaAcl extends abstractUtil
 				$objectId = $parentPagesMap[$object][$objectId];
 			}
 		}
-
+if('delete'==$action){var_dump($object, $action, $objectId);die;}
 		return $this->checkAccess($object . self::SEPARATOR . $action, $objectId);
 	}
 

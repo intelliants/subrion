@@ -771,7 +771,7 @@ INSERT INTO `{install:prefix}blocks` VALUES
 (4,'Member Menu','account','',0,'right','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
 (5,'Bottom Menu','bottom','',0,'copyright','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
 (6,'Statistics','common_statistics','',1,'right','smarty','','active',1,0,0,0,'',1,'','',1,'block.common-statistics.tpl',0,'',''),
-(7,'Refine Search','filters','$iaView = &$iaCore->iaView;\r\n\r\n$itemName = $iaView->get(''filtersItemName'') ? $iaView->get(''filtersItemName'') : str_replace(''search_'', '''', $iaView->name());\r\n$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\necho $iaView->iaSmarty->fetch(''block.filters.tpl'');',1,'left','php','','active',1,1,0,1,'',1,'','',0,'',1,'','');
+(7,'Refine Search','filters','$iaView = &$iaCore->iaView;\r\n\r\nif (($itemName = $iaView->get(''filtersItemName''))\r\n	|| (($itemName = str_replace(''search_'', '''', $iaView->name())) && $itemName != $iaView->name()))\r\n{\r\n	$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\n	echo $iaView->iaSmarty->fetch(''block.filters.tpl'');\r\n}',1,'left','php','','active',1,1,0,1,'',1,'','',0,'',1,'','');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
 ('blocks','',6,0),
