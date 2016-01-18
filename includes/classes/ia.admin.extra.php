@@ -2128,7 +2128,8 @@ class iaExtra extends abstractCore
 					// todo: remove in v5
 					if (false !== stripos($filename, '.tpl'))
 					{
-						if ('payments' != @$this->itemData['info']['category'])
+						if ('payments' != @$this->itemData['info']['category']
+							&& false !== stripos($filename, '/templates/front/'))
 						{
 							$filename = str_replace('.tpl', '', basename($filename));
 							$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
