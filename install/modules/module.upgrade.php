@@ -144,7 +144,8 @@ switch ($step)
 			}
 
 			$patchApplier = new iaPatchApplier(IA_HOME, array(
-				'host' => INTELLI_DBHOST . ':' . INTELLI_DBPORT,
+				'host' => INTELLI_DBHOST,
+				'port' => INTELLI_DBPORT,
 				'database' => INTELLI_DBNAME,
 				'user' => INTELLI_DBUSER,
 				'password' => INTELLI_DBPASS,
