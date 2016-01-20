@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VER', '402');
+define('IA_VER', '403');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 

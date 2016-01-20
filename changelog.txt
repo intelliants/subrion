@@ -673,3 +673,12 @@
 	+ install.xml - proper changeset
 	+ Resend confirmation email
 	* Third party libraries improvements
+
+>> From 4.0.2 to 4.0.3 <<
+
+	- Bug #2040: Incorrect member fetch
+	- Bug #2224: Add validation on listing field creation
+	- Issue #82: Quick search: results bug
+	+ Feature #1763: Refactor output of listings list on View member page
+	* Issue #81: Package upgrade - items creation
+	* Issue #54: Implement new inclusion of tpl files for templates and hooks
