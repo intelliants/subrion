@@ -226,9 +226,14 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (iaCore::ACTION_ADD == $action)
 		{
 			$entry['name'] = trim(strtolower(iaSanitize::paranoid($entry['name'])));
+
 			if (empty($entry['name']))
 			{
-				$this->addMessage('field_name_incorrect');
+				$this->addMessage('field_name_invalid');
+			}
+			elseif ($this->_dbColumnExists($entry['item'], $entry['name']))
+			{
+				$this->addMessage('field_name_exists');
 			}
 		}
 		else
@@ -1191,5 +1196,23 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return array(iaUtil::jsonEncode($data), $nestedIds);
+	}
+
+	private function _dbColumnExists($itemName, $columnName)
+	{
+		$result = false;
+
+		$iaItem = $this->_iaCore->factory('item');
+
+		foreach ($this->_iaDb->describe($iaItem->getItemTable($itemName)) as $column)
+		{
+			if ($columnName == $column['Field'])
+			{
+				$result = true;
+				break;
+			}
+		}
+
+		return $result;
 	}
 }
