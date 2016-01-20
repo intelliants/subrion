@@ -30,7 +30,6 @@
 							</div>
 					{case iaField::COMBO break}
 						<select class="form-control js-interactive" name="{$field.name}[]" multiple>
-							<option value="">{lang key='_any_'}</option>
 							{if !empty($field.values)}
 								{html_options options=$field.values selected=$selected}
 							{/if}
@@ -66,7 +65,7 @@
 
 					{case iaField::TREE}
 						<select class="form-control" name="{$field.name}[]" multiple>
-							<option value="">{lang key='_any_'}</option>
+							<option value="">&lt;{lang key='any'}&gt;</option>
 							{if !empty($field.values)}
 								{html_options options=$field.values selected=$selected}
 							{/if}
