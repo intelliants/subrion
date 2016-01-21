@@ -736,6 +736,44 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
+		if ($this->itemData['item_field_groups'])
+		{
+			$this->iaCore->factory('field');
+
+			$iaDb->setTable(iaField::getTableGroups());
+
+			$maxOrder = $iaDb->getMaxOrder();
+			foreach ($this->itemData['item_field_groups'] as $entry)
+			{
+				$entry['order'] || $entry['order'] = ++$maxOrder;
+
+				$title = $entry['title'];
+				$description = $entry['description'];
+
+				unset($entry['title'], $entry['description']);
+
+				if ($id = $iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`name` = :name AND `item` = :item', $entry))
+				{
+					unset($entry['name'], $entry['item']);
+
+					$iaDb->update($entry, iaDb::convertIds($id));
+					$result = (0 == $iaDb->getErrorNumber());
+				}
+				else
+				{
+					$result = $iaDb->insert($entry);
+				}
+
+				if ($result)
+				{
+					$this->_addPhrase('fieldgroup_' . $entry['name'], $title);
+					$this->_addPhrase('fieldgroup_description_' . $entry['item'] . '_' . $entry['name'], $description);
+				}
+			}
+
+			$iaDb->resetTable();
+		}
+
 		if ($this->itemData['item_fields'])
 		{
 			$this->_processFields($this->itemData['item_fields']);
@@ -1395,27 +1433,26 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['item_field_groups'])
 		{
-			$maxOrder = $iaDb->getMaxOrder(iaField::getTableGroups());
+			$iaDb->setTable(iaField::getTableGroups());
+
+			$maxOrder = $iaDb->getMaxOrder();
 			foreach ($this->itemData['item_field_groups'] as $entry)
 			{
 				$entry['order'] || $entry['order'] = ++$maxOrder;
 
-				if ($entry['title'] && !$iaDb->exists("`key` = 'fieldgroup_{$entry['name']}' AND `code`='" . $this->iaView->language . "'", null, iaLanguage::getTable()))
-				{
-					$this->_addPhrase('fieldgroup_' . $entry['name'], $entry['title']);
-				}
-				unset($entry['title']);
+				$title = $entry['title'];
+				$description = $entry['description'];
 
-				$description = 'fieldgroup_description_' . $entry['item'] . '_' . $entry['name'];
-				if (!$iaDb->exists('`key` = :key AND `code` = :language', array('key' => $description, 'language' => $this->iaView->language), iaLanguage::getTable()))
-				{
-					// insert fieldgroup description
-					iaLanguage::addPhrase($description, $entry['description'], null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
-				}
-				unset($entry['description']);
+				unset($entry['title'], $entry['description']);
 
-				$iaDb->insert($entry, null, iaField::getTableGroups());
+				if ($iaDb->insert($entry))
+				{
+					$this->_addPhrase('fieldgroup_' . $entry['name'], $title);
+					$this->_addPhrase('fieldgroup_description_' . $entry['item'] . '_' . $entry['name'], $description);
+				}
 			}
+
+			$iaDb->resetTable();
 		}
 
 		if ($this->itemData['item_fields'])
