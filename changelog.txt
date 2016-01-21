@@ -680,5 +680,8 @@
 	- Bug #2224: Add validation on listing field creation
 	- Issue #82: Quick search: results bug
 	+ Feature #1763: Refactor output of listings list on View member page
-	* Issue #81: Package upgrade - items creation
+	+ Issue #86: Make possible to specify an execution phase for SQL queries in install.xml files
+	+ Issue #87: Package installation: add fieldgroups processing
 	* Issue #54: Implement new inclusion of tpl files for templates and hooks
+	* Issue #81: Package upgrade - items creation
+	* Issue #85: Upgrade subsystem: invalid 'Host' parameter
