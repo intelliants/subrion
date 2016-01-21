@@ -38,6 +38,12 @@ class iaExtra extends abstractCore
 	const DEPENDENCY_TYPE_PLUGIN = 'plugin';
 	const DEPENDENCY_TYPE_TEMPLATE = 'template';
 
+	const SQL_STAGE_START = 'start';
+	const SQL_STAGE_MIDDLE = 'middle';
+	const SQL_STAGE_END = 'end';
+
+	const VERSION_EMPTY = '0.0.0';
+
 	const INSTALL_FILE_NAME = 'install.xml';
 
 	const BLOCK_FILENAME_PATTERN = 'extra:%s/%s';
@@ -321,6 +327,7 @@ class iaExtra extends abstractCore
 	protected function _attr($key, $default = '', $inArray = false)
 	{
 		$result = false;
+
 		if (is_array($key))
 		{
 			foreach ($key as $item)
@@ -355,7 +362,7 @@ class iaExtra extends abstractCore
 		return $result;
 	}
 
-	protected function _addAlter($fieldData)
+	protected function _alterTable($fieldData)
 	{
 		$iaDb = $this->iaDb;
 		$this->iaCore->factory('field');
@@ -437,6 +444,9 @@ class iaExtra extends abstractCore
 		$iaDb = &$this->iaDb;
 		$this->iaCore->startHook('phpExtrasUpgradeBefore', array('extra' => $this->itemData['name']));
 
+		$this->_processQueries('install', self::SQL_STAGE_START, true);
+		$this->_processQueries('upgrade', self::SQL_STAGE_START);
+
 		if ($this->itemData['groups'])
 		{
 			$iaDb->setTable('admin_pages_groups');
@@ -472,26 +482,6 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->itemData['items'])
-		{
-			$iaDb->setTable('items');
-
-			foreach ($this->itemData['items'] as $item)
-			{
-				if (!$this->iaDb->exists('`item` = :item', $item))
-				{
-					$iaDb->insert(array_merge($item, array('package' => $this->itemData['name'])));
-				}
-			}
-
-			$iaDb->resetTable();
-		}
-
-		if ($this->itemData['item_fields'])
-		{
-			$this->_processFields($this->itemData['item_fields']);
-		}
-
 		if ($this->itemData['actions'])
 		{
 			$iaDb->setTable('admin_actions');
@@ -521,7 +511,7 @@ class iaExtra extends abstractCore
 		if ($this->itemData['config_groups'])
 		{
 			$iaDb->setTable(iaCore::getConfigGroupsTable());
-			$iaDb->delete("`extras` = '{$this->itemData['name']}'");
+			$iaDb->delete(iaDb::convertIds($this->itemData['name'], 'extras'));
 
 			$maxOrder = $iaDb->getMaxOrder();
 
@@ -536,6 +526,7 @@ class iaExtra extends abstractCore
 		if ($this->itemData['objects'])
 		{
 			$iaDb->setTable('acl_objects');
+
 			foreach ($this->itemData['objects'] as $obj)
 			{
 				$where = "`object` = '{$obj['object']}' AND `action` = '{$obj['action']}'";
@@ -549,6 +540,7 @@ class iaExtra extends abstractCore
 					? $iaDb->update(array('access' => $obj['access']), $where)
 					: $iaDb->insert($obj);
 			}
+
 			$iaDb->resetTable();
 		}
 
@@ -566,6 +558,7 @@ class iaExtra extends abstractCore
 					{
 						unset($config['value']);
 					}
+
 					$iaDb->update($config, "`name` = '{$config['name']}'");
 				}
 				else
@@ -716,6 +709,7 @@ class iaExtra extends abstractCore
 							'type_id' => $usergroupId,
 							'extras' => $permission['extras']
 						);
+
 						$iaDb->insert($data); // add privileges for usergroup
 					}
 					$iaDb->resetTable();
@@ -724,20 +718,41 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->itemData['sql']['upgrade'])
+		$this->_processQueries('install', self::SQL_STAGE_MIDDLE, true);
+		$this->_processQueries('upgrade', self::SQL_STAGE_MIDDLE);
+
+		if ($this->itemData['items'])
 		{
-			$this->_processQueries($this->itemData['sql']['upgrade']);
+			$iaDb->setTable('items');
+
+			foreach ($this->itemData['items'] as $item)
+			{
+				if (!$this->iaDb->exists('`item` = :item', $item))
+				{
+					$iaDb->insert(array_merge($item, array('package' => $this->itemData['name'])));
+				}
+			}
+
+			$iaDb->resetTable();
 		}
+
+		if ($this->itemData['item_fields'])
+		{
+			$this->_processFields($this->itemData['item_fields']);
+		}
+
+		$this->_processQueries('install', self::SQL_STAGE_END, true);
+		$this->_processQueries('upgrade', self::SQL_STAGE_END);
 
 		if ($this->itemData['code']['upgrade'])
 		{
-			eval($this->itemData['code']['upgrade']);
+			$this->_runPhpCode($this->itemData['code']['upgrade']);
 		}
+
 		$this->iaCore->startHook('phpExtrasUpgradeBeforeSql', array('extra' => $this->itemData['name'], 'data' => &$this->itemData['info']));
 
-		$iaDb->setTable(self::getTable());
-		$iaDb->update($this->itemData['info'], "`name` = '{$this->itemData['name']}' AND `type` = '{$this->itemData['type']}'", array('date' => iaDb::FUNCTION_NOW));
-		$iaDb->resetTable();
+		$iaDb->update($this->itemData['info'], "`name` = '{$this->itemData['name']}' AND `type` = '{$this->itemData['type']}'",
+			array('date' => iaDb::FUNCTION_NOW), self::getTable());
 
 		$this->iaCore->startHook('phpExtrasUpgradeAfter', array('extra' => $this->itemData['name']));
 
@@ -989,6 +1004,8 @@ class iaExtra extends abstractCore
 		{
 			$this->isUpdate = true;
 		}
+
+		$this->_processQueries('install', self::SQL_STAGE_START);
 
 		if ($this->itemData['groups'])
 		{
@@ -1356,10 +1373,7 @@ class iaExtra extends abstractCore
 			$extraEntry['uninstall_code'] = $this->itemData['code']['uninstall'];
 		}
 
-		if ($this->itemData['sql']['install'])
-		{
-			$this->_processQueries($this->itemData['sql']['install']);
-		}
+		$this->_processQueries('install', self::SQL_STAGE_MIDDLE);
 
 		if (self::TYPE_PACKAGE == $this->itemData['type'])
 		{
@@ -1404,7 +1418,21 @@ class iaExtra extends abstractCore
 			}
 		}
 
-		empty($this->itemData['item_fields']) || $this->_processFields($this->itemData['item_fields']);
+		if ($this->itemData['item_fields'])
+		{
+			$this->_processFields($this->itemData['item_fields']);
+		}
+
+		if ($this->itemData['cron_jobs'])
+		{
+			$this->iaCore->factory('cron');
+
+			foreach ($this->itemData['cron_jobs'] as $job)
+			{
+				$job['extras'] = $this->itemData['name'];
+				$iaDb->insert($job, null, iaCron::getTable());
+			}
+		}
 
 		$rollbackData = array();
 		if ($this->itemData['changeset'])
@@ -1471,20 +1499,13 @@ class iaExtra extends abstractCore
 
 		$this->_processCategory($extraEntry);
 
+		$this->_processQueries('install', self::SQL_STAGE_END);
+
 		if ($this->itemData['code']['install'])
 		{
 			$this->_runPhpCode($this->itemData['code']['install']);
 		}
 
-		if ($this->itemData['cron_jobs'])
-		{
-			$this->iaCore->factory('cron');
-			foreach ($this->itemData['cron_jobs'] as $job)
-			{
-				$job['extras'] = $this->itemData['name'];
-				$iaDb->insert($job, null, iaCron::getTable());
-			}
-		}
 		$this->iaCore->startHook('phpExtrasInstallAfter', array('extra' => $this->itemData['name']));
 
 		$this->iaCore->factory('cache')->clearAll();
@@ -1990,20 +2011,23 @@ class iaExtra extends abstractCore
 			case 'sql':
 				$entry = array(
 					'query' => $text,
-					'external' => isset($this->_attributes['external']) ? true : false
+					'external' => isset($this->_attributes['external'])
 				);
+
+				$version = $this->_attr('version', self::VERSION_EMPTY);
+				$stage = $this->_attr('stage', self::SQL_STAGE_MIDDLE, array(self::SQL_STAGE_START, self::SQL_STAGE_MIDDLE, self::SQL_STAGE_END));
+
 				if ($this->_checkPath('install'))
 				{
-					$this->itemData['sql']['install'][$this->itemData['info']['version']][] = $entry;
+					$this->itemData['sql']['install'][$stage][$version][] = $entry;
+				}
+				elseif ($this->_checkPath('upgrade'))
+				{
+					$this->itemData['sql']['upgrade'][$stage][$version][] = $entry;
 				}
 				elseif ($this->_checkPath('uninstall'))
 				{
 					$this->itemData['sql']['uninstall'][] = $entry;
-				}
-				elseif ($this->_checkPath('upgrade'))
-				{
-					$key = isset($this->_attributes['version']) ? $this->_attributes['version'] : IA_VERSION;
-					$this->itemData['sql']['upgrade'][$key][] = $entry;
 				}
 		}
 	}
@@ -2058,11 +2082,12 @@ class iaExtra extends abstractCore
 
 			case 'lightbox':
 			case 'captchas':
-				$configName = 'lightbox' == $entryData['category'] ? 'lightbox_name' : 'captcha_name';
+				$configName = ('lightbox' == $entryData['category']) ? 'lightbox_name' : 'captcha_name';
 
 				$stmt = iaDb::convertIds($configName, 'name');
 
 				$this->iaDb->setTable(iaCore::getConfigTable());
+
 				if (self::ACTION_INSTALL == $action)
 				{
 					if ($currentValues = $this->iaDb->one('`multiple_values`', $stmt))
@@ -2090,23 +2115,28 @@ class iaExtra extends abstractCore
 						if ($this->iaCore->get($configName) == $entryData['name'])
 						{
 							$value = empty($installed) ? '' : array_shift($installed);
-							
+
 							if (in_array($entryData['name'], $this->_builtinPlugins))
 							{
 								$value = $entryData['name'];
 							}
+
 							$this->iaCore->set($configName, $value, true);
 						}
 					}
 				}
-				$this->iaDb->resetTable();
 
-				break;
+				$this->iaDb->resetTable();
 		}
 	}
 
-	protected function _processQueries(array $entries)
+	protected function _processQueries($type, $stage, $ignoreNonVersionedQueries = false)
 	{
+		if (!isset($this->itemData['sql'][$type][$stage]))
+		{
+			return;
+		}
+
 		$iaDb = &$this->iaDb;
 		$iaDbControl = $this->iaCore->factory('dbcontrol', iaCore::ADMIN);
 
@@ -2116,20 +2146,25 @@ class iaExtra extends abstractCore
 		$pathsMap = array(self::TYPE_PLUGIN => IA_PLUGINS, self::TYPE_PACKAGE => IA_PACKAGES);
 
 		$path = isset($pathsMap[$this->itemData['type']]) ? $pathsMap[$this->itemData['type']] : IA_HOME;
-		$versionInstalled = $iaDb->one_bind('version', '`name` = :name', array('name' => $this->itemData['name']), self::getTable());
+		$extrasVersion = $this->itemData['info']['version'];
 
-		foreach ($entries as $version => $entry)
+		foreach ($this->itemData['sql'][$type][$stage] as $version => $entries)
 		{
-			if ($versionInstalled && version_compare($versionInstalled, $version, '>'))
+			if (($ignoreNonVersionedQueries && self::VERSION_EMPTY == $version))
 			{
 				continue;
 			}
 
-			foreach ($entry as $data)
+			if (self::VERSION_EMPTY != $version && version_compare($version, $extrasVersion) > 0)
 			{
-				if ($data['external'])
+				continue;
+			}
+
+			foreach ($entries as $entry)
+			{
+				if ($entry['external'])
 				{
-					$filePath = str_replace(array('{DIRECTORY_SEPARATOR}', '{DS}'), IA_DS, $data['query']);
+					$filePath = str_replace('{DS}', IA_DS, $entry['query']);
 					$fileFullPath = $path . $this->itemData['name'] . IA_DS . $filePath;
 
 					if (iaUtil::isZip($fileFullPath))
@@ -2156,9 +2191,10 @@ class iaExtra extends abstractCore
 				}
 				else
 				{
-					if ($data['query'])
+					if ($entry['query'])
 					{
-						$iaDb->query(str_replace(array('{prefix}', '{mysql_version}'), array($iaDb->prefix, $mysqlOptions), $data['query']));
+						$query = str_replace(array('{prefix}', '{mysql_version}'), array($iaDb->prefix, $mysqlOptions), $entry['query']);
+						$iaDb->query($query);
 					}
 				}
 			}
@@ -2317,7 +2353,7 @@ class iaExtra extends abstractCore
 				}
 			}
 
-			$columnExists || $this->_addAlter($entry);
+			$columnExists || $this->_alterTable($entry);
 		}
 
 		$this->iaDb->resetTable();
