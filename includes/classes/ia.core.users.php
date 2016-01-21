@@ -552,7 +552,7 @@ class iaUsers extends abstractCore
 
 	public function getInfo($id, $key = 'id')
 	{
-		if ($key != 'id' && $key != 'username')
+		if ($key != 'id' && $key != 'username' && $key != 'email')
 		{
 			$key = 'id';
 		}
