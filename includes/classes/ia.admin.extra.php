@@ -536,6 +536,7 @@ class iaExtra extends abstractCore
 					iaLanguage::addPhrase($key, $obj['title'], null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
 					unset($obj['title']);
 				}
+
 				$iaDb->exists($where)
 					? $iaDb->update(array('access' => $obj['access']), $where)
 					: $iaDb->insert($obj);
@@ -589,25 +590,29 @@ class iaExtra extends abstractCore
 					}
 				}
 
+				$title = empty($page['title']) ? null : $page['title'];
+				$content = empty($page['contents']) ? null : $page['contents'];
+
 				is_int($page['group']) || $page['group'] = $this->_lookupGroupId($page['group']);
+				$page['last_updated'] = date(iaDb::DATETIME_FORMAT);
+				$page['order'] = ++$maxOrder;
 
-				if (!$iaDb->exists("`name` = '{$page['name']}' AND `extras` = '{$this->itemData['name']}'"))
+				unset($page['blocks'], $page['title']);
+
+				$result = $iaDb->exists('`name` = :name', $page)
+					? $iaDb->update($page, iaDb::convertIds($page['name'], 'name'))
+					: $iaDb->insert($page);
+
+				if ($result)
 				{
-					// insert titles
-					if (isset($page['title']) && $page['title'])
+					empty($title) || $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_PAGE);
+					empty($contents) || $this->_addPhrase('page_content_' . $page, $content, iaLanguage::CATEGORY_PAGE);
+
+					if ($page['fields_item'] && self::TYPE_PACKAGE == $this->itemData['type']
+						&& !$iaDb->exists('`page_name` = :name AND `item` = :item', $page, 'items_pages'))
 					{
-						foreach ($this->iaCore->languages as $code => $value)
-						{
-							iaLanguage::addPhrase('page_title_' . $page['name'], $page['title'], $code, $this->itemData['name'], iaLanguage::CATEGORY_PAGE, false);
-						}
+						$iaDb->insert(array('page_name' => $page['name'], 'item' => $page['fields_item']), null, 'items_pages');
 					}
-
-					unset($page['blocks'], $page['title']);
-
-					$page['last_updated'] = date(iaDb::DATETIME_FORMAT);
-					$page['order'] = ++$maxOrder;
-
-					$iaDb->insert($page);
 				}
 			}
 
@@ -676,11 +681,7 @@ class iaExtra extends abstractCore
 						'visible' => $item['visible']
 					));
 
-					// update language records
-					foreach ($this->iaCore->languages as $iso => $title)
-					{
-						iaLanguage::addPhrase('usergroup_' . $item['name'], $item['title'], $iso);
-					}
+					$this->_addPhrase('usergroup_' . $item['name'], $item['title']);
 
 					$iaDb->setTable(iaCore::getCustomConfigTable());
 					$iaDb->delete("`type` = 'group' AND `type_id` = '$usergroupId'");
