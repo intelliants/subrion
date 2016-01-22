@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -314,7 +314,11 @@ class iaPatchApplier
 	{
 		if (is_array($this->_dbConnectionParams) && $this->_dbConnectionParams)
 		{
-			if ($link = mysqli_connect($this->_dbConnectionParams['host'], $this->_dbConnectionParams['user'], $this->_dbConnectionParams['password'], $this->_dbConnectionParams['database']))
+			$link = mysqli_init();
+			mysqli_real_connect($link, $this->_dbConnectionParams['host'], $this->_dbConnectionParams['user'],
+				$this->_dbConnectionParams['password'], $this->_dbConnectionParams['database'], $this->_dbConnectionParams['port']);
+
+			if ($link && mysqli_select_db($link, $this->_dbConnectionParams['database']))
 			{
 				$this->_dbConnectionParams['link'] = $link;
 

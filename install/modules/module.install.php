@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VER', '402');
+define('IA_VER', '403');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
@@ -250,7 +250,7 @@ switch ($step)
 
 			if (empty($errorList))
 			{
-				$link = @mysqli_connect(iaHelper::getPost('dbhost') . ':' . iaHelper::getPost('dbport', 3306), iaHelper::getPost('dbuser'), iaHelper::getPost('dbpwd'));
+				$link = @mysqli_connect(iaHelper::getPost('dbhost'), iaHelper::getPost('dbuser'), iaHelper::getPost('dbpwd'), '', iaHelper::getPost('dbport', 3306));
 				if (mysqli_connect_errno())
 				{
 					$error = true;

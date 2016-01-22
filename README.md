@@ -27,6 +27,6 @@ Subrion templates are based on the Bootstrap 3 framework and use LESS language f
 
 Copyright
 ---------------------
-* Copyright (C) 2008 - 2015 Intelliants LLC. All rights reserved.
+* Copyright (C) 2008 - 2016 Intelliants LLC. All rights reserved.
 * Distributed under the GNU GPL v3
 * See [License details](http://www.subrion.org/license.html)

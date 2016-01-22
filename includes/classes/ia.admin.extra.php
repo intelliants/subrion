@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -37,6 +37,12 @@ class iaExtra extends abstractCore
 	const DEPENDENCY_TYPE_PACKAGE = 'package';
 	const DEPENDENCY_TYPE_PLUGIN = 'plugin';
 	const DEPENDENCY_TYPE_TEMPLATE = 'template';
+
+	const SQL_STAGE_START = 'start';
+	const SQL_STAGE_MIDDLE = 'middle';
+	const SQL_STAGE_END = 'end';
+
+	const VERSION_EMPTY = '0.0.0';
 
 	const INSTALL_FILE_NAME = 'install.xml';
 
@@ -321,6 +327,7 @@ class iaExtra extends abstractCore
 	protected function _attr($key, $default = '', $inArray = false)
 	{
 		$result = false;
+
 		if (is_array($key))
 		{
 			foreach ($key as $item)
@@ -355,7 +362,7 @@ class iaExtra extends abstractCore
 		return $result;
 	}
 
-	protected function _addAlter($fieldData)
+	protected function _alterTable($fieldData)
 	{
 		$iaDb = $this->iaDb;
 		$this->iaCore->factory('field');
@@ -420,9 +427,11 @@ class iaExtra extends abstractCore
 					}
 				}
 			}
+
 			if (!$keyExists)
 			{
-				$iaDb->query('ALTER TABLE `' . $iaDb->prefix . $fieldData['table_name'] . '` ADD FULLTEXT (`' . $fieldData['name'] . '`)');
+				$sql = sprintf('ALTER TABLE `%s%s` ADD FULLTEXT(`%s`)', $iaDb->prefix, $fieldData['table_name'], $fieldData['name']);
+				$iaDb->query($sql);
 			}
 		}
 
@@ -434,6 +443,9 @@ class iaExtra extends abstractCore
 		$this->isUpgrade = true;
 		$iaDb = &$this->iaDb;
 		$this->iaCore->startHook('phpExtrasUpgradeBefore', array('extra' => $this->itemData['name']));
+
+		$this->_processQueries('install', self::SQL_STAGE_START, true);
+		$this->_processQueries('upgrade', self::SQL_STAGE_START);
 
 		if ($this->itemData['groups'])
 		{
@@ -470,116 +482,10 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->itemData['item_fields'])
-		{
-			$itemFields = $this->itemData['item_fields'];
-
-			$rows = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`extras` = '" . $this->itemData['name'] . "'", null, null, 'fields_groups');
-			$fieldGroups = array();
-			foreach ($rows as $row)
-			{
-				$fieldGroups[$row['item']][$row['name']] = $row['id'];
-			}
-
-			$maxOrder = $iaDb->getMaxOrder('fields');
-
-			foreach ($itemFields as $item)
-			{
-				if ($iaDb->exists('`item` = :item AND `name` = :name', array('item' => $item['item'], 'name' => $item['name']), 'fields'))
-				{
-					continue;
-				}
-
-				$item['order'] || $item['order'] = ++$maxOrder;
-				$item['fieldgroup_id'] = isset($fieldGroups[$item['item']][$item['group']])
-					? $fieldGroups[$item['item']][$item['group']]
-					: 0;
-
-				unset($item['group']);
-
-				if ($item['title'])
-				{
-					iaLanguage::addPhrase('field_' . $item['name'], $item['title'], null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
-				}
-				unset($item['title']);
-
-				//add language number field search ranges
-				if (is_array($item['numberRangeForSearch']))
-				{
-					foreach ($item['numberRangeForSearch'] as $num)
-					{
-						iaLanguage::addPhrase('field_' . $item['name'] . '_range_' . $num, $num, null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
-					}
-				}
-				unset($item['numberRangeForSearch']);
-
-				// add language values for multiple type fields (combo, checkbox,radio)
-				if (is_array($item['values']))
-				{
-					foreach ($item['values'] as $key => $value)
-					{
-						iaLanguage::addPhrase(sprintf('field_%s_%s', $item['name'], $key), $value, null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
-					}
-
-					if ($item['default'])
-					{
-						$item['default'] = array_search($item['default'], $item['values']);
-					}
-
-					$item['values'] = implode(',', array_keys($item['values']));
-				}
-				else
-				{
-					$item['values'] = '';
-				}
-
-				$fieldPages = $item['item_pages'] ? $item['item_pages'] : array();
-				$tableName = $item['table_name'];
-				$className = $item['class_name'];
-
-				unset($item['item_pages'], $item['table_name'], $item['class_name']);
-
-				$fieldId = $iaDb->insert($item, null, 'fields');
-
-				$item['table_name'] = $tableName;
-				$item['class_name'] = $className;
-
-				if ($fieldPages)
-				{
-					foreach ($fieldPages as $pageName)
-					{
-						if (trim($pageName))
-						{
-							$iaDb->insert(array('page_name' => $pageName, 'field_id' => $fieldId, 'extras' => $this->itemData['name']), null, 'fields_pages');
-						}
-					}
-				}
-
-				$iaDb->setTable($tableName);
-
-				$fields = $iaDb->describe();
-				$isExist = false;
-				foreach ($fields as $f)
-				{
-					if ($f['Field'] == $item['name'])
-					{
-						$isExist = true;
-						break;
-					}
-				}
-
-				if (!$isExist)
-				{
-					$this->_addAlter($item);
-				}
-
-				$iaDb->resetTable();
-			}
-		}
-
 		if ($this->itemData['actions'])
 		{
 			$iaDb->setTable('admin_actions');
+
 			foreach ($this->itemData['actions'] as $action)
 			{
 				if ($action['name'] = strtolower(str_replace(' ', '_', $action['name'])))
@@ -593,6 +499,7 @@ class iaExtra extends abstractCore
 						: $iaDb->insert($action);
 				}
 			}
+
 			$iaDb->resetTable();
 		}
 
@@ -604,7 +511,7 @@ class iaExtra extends abstractCore
 		if ($this->itemData['config_groups'])
 		{
 			$iaDb->setTable(iaCore::getConfigGroupsTable());
-			$iaDb->delete("`extras` = '{$this->itemData['name']}'");
+			$iaDb->delete(iaDb::convertIds($this->itemData['name'], 'extras'));
 
 			$maxOrder = $iaDb->getMaxOrder();
 
@@ -619,6 +526,7 @@ class iaExtra extends abstractCore
 		if ($this->itemData['objects'])
 		{
 			$iaDb->setTable('acl_objects');
+
 			foreach ($this->itemData['objects'] as $obj)
 			{
 				$where = "`object` = '{$obj['object']}' AND `action` = '{$obj['action']}'";
@@ -632,6 +540,7 @@ class iaExtra extends abstractCore
 					? $iaDb->update(array('access' => $obj['access']), $where)
 					: $iaDb->insert($obj);
 			}
+
 			$iaDb->resetTable();
 		}
 
@@ -649,6 +558,7 @@ class iaExtra extends abstractCore
 					{
 						unset($config['value']);
 					}
+
 					$iaDb->update($config, "`name` = '{$config['name']}'");
 				}
 				else
@@ -799,6 +709,7 @@ class iaExtra extends abstractCore
 							'type_id' => $usergroupId,
 							'extras' => $permission['extras']
 						);
+
 						$iaDb->insert($data); // add privileges for usergroup
 					}
 					$iaDb->resetTable();
@@ -807,20 +718,79 @@ class iaExtra extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->itemData['sql']['upgrade'])
+		$this->_processQueries('install', self::SQL_STAGE_MIDDLE, true);
+		$this->_processQueries('upgrade', self::SQL_STAGE_MIDDLE);
+
+		if ($this->itemData['items'])
 		{
-			$this->_processQueries($this->itemData['sql']['upgrade']);
+			$iaDb->setTable('items');
+
+			foreach ($this->itemData['items'] as $item)
+			{
+				if (!$this->iaDb->exists('`item` = :item', $item))
+				{
+					$iaDb->insert(array_merge($item, array('package' => $this->itemData['name'])));
+				}
+			}
+
+			$iaDb->resetTable();
 		}
+
+		if ($this->itemData['item_field_groups'])
+		{
+			$this->iaCore->factory('field');
+
+			$iaDb->setTable(iaField::getTableGroups());
+
+			$maxOrder = $iaDb->getMaxOrder();
+			foreach ($this->itemData['item_field_groups'] as $entry)
+			{
+				$entry['order'] || $entry['order'] = ++$maxOrder;
+
+				$title = $entry['title'];
+				$description = $entry['description'];
+
+				unset($entry['title'], $entry['description']);
+
+				if ($id = $iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`name` = :name AND `item` = :item', $entry))
+				{
+					unset($entry['name'], $entry['item']);
+
+					$iaDb->update($entry, iaDb::convertIds($id));
+					$result = (0 == $iaDb->getErrorNumber());
+				}
+				else
+				{
+					$result = $iaDb->insert($entry);
+				}
+
+				if ($result)
+				{
+					$this->_addPhrase('fieldgroup_' . $entry['name'], $title);
+					$this->_addPhrase('fieldgroup_description_' . $entry['item'] . '_' . $entry['name'], $description);
+				}
+			}
+
+			$iaDb->resetTable();
+		}
+
+		if ($this->itemData['item_fields'])
+		{
+			$this->_processFields($this->itemData['item_fields']);
+		}
+
+		$this->_processQueries('install', self::SQL_STAGE_END, true);
+		$this->_processQueries('upgrade', self::SQL_STAGE_END);
 
 		if ($this->itemData['code']['upgrade'])
 		{
-			eval($this->itemData['code']['upgrade']);
+			$this->_runPhpCode($this->itemData['code']['upgrade']);
 		}
+
 		$this->iaCore->startHook('phpExtrasUpgradeBeforeSql', array('extra' => $this->itemData['name'], 'data' => &$this->itemData['info']));
 
-		$iaDb->setTable(self::getTable());
-		$iaDb->update($this->itemData['info'], "`name` = '{$this->itemData['name']}' AND `type` = '{$this->itemData['type']}'", array('date' => iaDb::FUNCTION_NOW));
-		$iaDb->resetTable();
+		$iaDb->update($this->itemData['info'], "`name` = '{$this->itemData['name']}' AND `type` = '{$this->itemData['type']}'",
+			array('date' => iaDb::FUNCTION_NOW), self::getTable());
 
 		$this->iaCore->startHook('phpExtrasUpgradeAfter', array('extra' => $this->itemData['name']));
 
@@ -1073,6 +1043,8 @@ class iaExtra extends abstractCore
 			$this->isUpdate = true;
 		}
 
+		$this->_processQueries('install', self::SQL_STAGE_START);
+
 		if ($this->itemData['groups'])
 		{
 			$iaDb->setTable('admin_pages_groups');
@@ -1299,7 +1271,7 @@ class iaExtra extends abstractCore
 
 								$menuItem['id'] = $iaBlock->insert($menuItem);
 
-								$contents = array(
+								$entry = array(
 									'parent_id' => 0,
 									'menu_id' => $menuItem['id'],
 									'el_id' => $pageId . '_' . iaUtil::generateToken(5),
@@ -1307,7 +1279,7 @@ class iaExtra extends abstractCore
 									'page_name' => $page['name']
 								);
 
-								$iaDb->insert($contents, null, iaBlock::getMenusTable());
+								$iaDb->insert($entry, null, iaBlock::getMenusTable());
 							}
 						}
 						$iaDb->resetTable();
@@ -1439,10 +1411,7 @@ class iaExtra extends abstractCore
 			$extraEntry['uninstall_code'] = $this->itemData['code']['uninstall'];
 		}
 
-		if ($this->itemData['sql']['install'])
-		{
-			$this->_processQueries($this->itemData['sql']['install']);
-		}
+		$this->_processQueries('install', self::SQL_STAGE_MIDDLE);
 
 		if (self::TYPE_PACKAGE == $this->itemData['type'])
 		{
@@ -1462,170 +1431,44 @@ class iaExtra extends abstractCore
 
 		$this->iaCore->factory('field');
 
-		$fieldGroups = $iaDb->keyvalue('CONCAT(`item`, `name`) `key`, `id`', null, iaField::getTableGroups());
-
 		if ($this->itemData['item_field_groups'])
 		{
-			$maxOrder = $iaDb->getMaxOrder(iaField::getTableGroups());
-			foreach ($this->itemData['item_field_groups'] as $item)
+			$iaDb->setTable(iaField::getTableGroups());
+
+			$maxOrder = $iaDb->getMaxOrder();
+			foreach ($this->itemData['item_field_groups'] as $entry)
 			{
-				$item['order'] || $item['order'] = ++$maxOrder;
+				$entry['order'] || $entry['order'] = ++$maxOrder;
 
-				if ($item['title'] && !$iaDb->exists("`key` = 'fieldgroup_{$item['name']}' AND `code`='" . $this->iaView->language . "'", null, iaLanguage::getTable()))
+				$title = $entry['title'];
+				$description = $entry['description'];
+
+				unset($entry['title'], $entry['description']);
+
+				if ($iaDb->insert($entry))
 				{
-					$this->_addPhrase('fieldgroup_' . $item['name'], $item['title']);
-				}
-				unset($item['title']);
-
-				$description = 'fieldgroup_description_' . $item['item'] . '_' . $item['name'];
-				if (!$iaDb->exists('`key` = :key AND `code` = :language', array('key' => $description, 'language' => $this->iaView->language), iaLanguage::getTable()))
-				{
-					// insert fieldgroup description
-					iaLanguage::addPhrase(
-						$description,
-						$item['description'],
-						null,
-						$this->itemData['name'],
-						iaLanguage::CATEGORY_COMMON,
-						false
-					);
-				}
-				unset($item['description']);
-
-				$fieldGroups[$item['item'] . $item['name']] = $iaDb->insert($item, null, iaField::getTableGroups());
-			}
-		}
-
-		if ($this->itemData['item_fields'])
-		{
-			$iaDb->setTable(iaField::getTable());
-
-			$maxOrder = $iaDb->getMaxOrder(iaField::getTable());
-			foreach ($this->itemData['item_fields'] as $item)
-			{
-				if (!$iaDb->exists('`item` = :item AND `name` = :name', array('item' => $item['item'], 'name' => $item['name'])))
-				{
-					$item['order'] || $item['order'] = ++$maxOrder;
-					$item['fieldgroup_id'] = isset($fieldGroups[$item['item'] . $item['group']])
-						? $fieldGroups[$item['item'] . $item['group']]
-						: 0;
-
-					$this->_addPhrase('field_' . $item['name'], $item['title']);
-
-					unset($item['group'], $item['title']);
-
-					if (is_array($item['numberRangeForSearch']))
-					{
-						foreach ($item['numberRangeForSearch'] as $num)
-						{
-							$this->_addPhrase('field_' . $item['name'] . '_range_' . $num, $num, iaLanguage::CATEGORY_FRONTEND);
-						}
-					}
-					unset($item['numberRangeForSearch']);
-
-					if ('dependent' == $item['relation'])
-					{
-						$iaDb->setTable(iaField::getTableRelations());
-
-						foreach (explode(';', $item['parent']) as $parent)
-						{
-							$list = explode(':', $parent);
-							if (2 == count($list))
-							{
-								list($fieldName, $fieldValues) = $list;
-
-								foreach (explode(',', $fieldValues) as $fieldValue)
-								{
-									$entryData = array(
-										'field' => $fieldName,
-										'element' => $fieldValue,
-										'child' => $item['name'],
-										'item' => $item['item'],
-										'extras' => $this->itemData['name']
-									);
-
-									$iaDb->insert($entryData);
-								}
-							}
-						}
-
-						$iaDb->resetTable();
-					}
-					unset($item['parent']);
-
-					if (is_array($item['values']))
-					{
-						foreach ($item['values'] as $key => $value)
-						{
-							$key = sprintf('field_%s_%s', $item['name'], $key);
-							$this->_addPhrase($key, $value);
-						}
-
-						if ($item['default'])
-						{
-							// TODO: multiple default values for checkboxes should be implemented
-							if (!in_array($item['default'], array_keys($item['values'])))
-							{
-								$item['default'] = array_search($item['default'], $item['values']);
-							}
-						}
-
-						$item['values'] = implode(',', array_keys($item['values']));
-					}
-
-					$fieldPages = $item['item_pages'] ? $item['item_pages'] : array();
-					$tableName = $item['table_name'];
-					$className = $item['class_name'];
-
-					unset($item['item_pages'], $item['table_name'], $item['class_name']);
-
-					$fieldId = $iaDb->insert($item);
-
-					$item['table_name'] = $tableName;
-					$item['class_name'] = $className;
-
-					if ($fieldPages)
-					{
-						foreach ($fieldPages as $pageName)
-						{
-							if (trim($pageName) != '')
-							{
-								$iaDb->insert(array('page_name' => $pageName, 'field_id' => $fieldId, 'extras' => $this->itemData['name']), null, iaField::getTablePages());
-							}
-						}
-					}
-
-					$iaDb->setTable($tableName);
-
-					$tableFields = $iaDb->describe();
-
-					$isExist = false;
-					foreach ($tableFields as $f)
-					{
-						if ($f['Field'] == $item['name'])
-						{
-							$isExist = true;
-							break;
-						}
-					}
-
-					if (!$isExist)
-					{
-						$this->_addAlter($item);
-					}
-
-					$iaDb->resetTable();
-				}
-				else
-				{
-					$stmt = '`item` = :item AND `name` = :name';
-					$iaDb->bind($stmt, $item);
-
-					$iaDb->update(null, $stmt, array('extras' => "CONCAT(`extras`, ',', '" . $this->itemData['name'] . "')"));
+					$this->_addPhrase('fieldgroup_' . $entry['name'], $title);
+					$this->_addPhrase('fieldgroup_description_' . $entry['item'] . '_' . $entry['name'], $description);
 				}
 			}
 
 			$iaDb->resetTable();
+		}
+
+		if ($this->itemData['item_fields'])
+		{
+			$this->_processFields($this->itemData['item_fields']);
+		}
+
+		if ($this->itemData['cron_jobs'])
+		{
+			$this->iaCore->factory('cron');
+
+			foreach ($this->itemData['cron_jobs'] as $job)
+			{
+				$job['extras'] = $this->itemData['name'];
+				$iaDb->insert($job, null, iaCron::getTable());
+			}
 		}
 
 		$rollbackData = array();
@@ -1693,20 +1536,13 @@ class iaExtra extends abstractCore
 
 		$this->_processCategory($extraEntry);
 
+		$this->_processQueries('install', self::SQL_STAGE_END);
+
 		if ($this->itemData['code']['install'])
 		{
 			$this->_runPhpCode($this->itemData['code']['install']);
 		}
 
-		if ($this->itemData['cron_jobs'])
-		{
-			$this->iaCore->factory('cron');
-			foreach ($this->itemData['cron_jobs'] as $job)
-			{
-				$job['extras'] = $this->itemData['name'];
-				$iaDb->insert($job, null, iaCron::getTable());
-			}
-		}
 		$this->iaCore->startHook('phpExtrasInstallAfter', array('extra' => $this->itemData['name']));
 
 		$this->iaCore->factory('cache')->clearAll();
@@ -2042,15 +1878,13 @@ class iaExtra extends abstractCore
 					}
 
 					// get item table & class names
-					$itemTable = (isset($this->itemData['items'][$this->_attr('item')]['table_name'])
-						&& $this->itemData['items'][$this->_attr('item')]['table_name'])
-						? $this->itemData['items'][$this->_attr('item')]['table_name']
-						: $this->_attr('item');
+					$itemTable = empty($this->itemData['items'][$this->_attr('item')]['table_name'])
+						? $this->_attr('item')
+						: $this->itemData['items'][$this->_attr('item')]['table_name'];
 
-					$itemClass = (isset($this->itemData['items'][$this->_attr('item')]['class_name'])
-						&& $this->itemData['items'][$this->_attr('item')]['class_name'])
-						? $this->itemData['items'][$this->_attr('item')]['class_name']
-						: $this->_attr('item');
+					$itemClass = empty($this->itemData['items'][$this->_attr('item')]['class_name'])
+						? $this->_attr('item')
+						: $this->itemData['items'][$this->_attr('item')]['class_name'];
 
 					$this->itemData['item_fields'][] = array(
 						'extras' => $this->itemData['name'],
@@ -2117,11 +1951,36 @@ class iaExtra extends abstractCore
 				break;
 
 			case 'hook':
+				$filename = $this->_attr('filename');
+				$type = $this->_attr('type', 'php', array('php', 'html', 'smarty', 'plain'));
+
+				if ($filename && 'smarty' == $type)
+				{
+					//$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+
+					// compatibility layer for v4.0 plugins
+					// todo: remove in v5
+					if (false !== stripos($filename, '.tpl'))
+					{
+						if ('payments' != @$this->itemData['info']['category']
+							&& false !== stripos($filename, '/templates/front/'))
+						{
+							$filename = str_replace('.tpl', '', basename($filename));
+							$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+						}
+					}
+					else
+					{
+						$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+					}
+					//
+				}
+
 				$this->itemData['hooks'][] = array(
 					'name' => $this->_attr('name'),
-					'type' => $this->_attr('type', 'php', array('php', 'html', 'smarty', 'plain')),
+					'type' => $type,
 					'page_type' => $this->_attr('page_type', 'both', array('both', iaCore::ADMIN, iaCore::FRONT)),
-					'filename' => $this->_attr('filename'),
+					'filename' => $filename,
 					'pages' => $this->_attr('pages'),
 					'extras' => $this->itemData['name'],
 					'code' => $text,
@@ -2189,20 +2048,23 @@ class iaExtra extends abstractCore
 			case 'sql':
 				$entry = array(
 					'query' => $text,
-					'external' => isset($this->_attributes['external']) ? true : false
+					'external' => isset($this->_attributes['external'])
 				);
+
+				$version = $this->_attr('version', self::VERSION_EMPTY);
+				$stage = $this->_attr('stage', self::SQL_STAGE_MIDDLE, array(self::SQL_STAGE_START, self::SQL_STAGE_MIDDLE, self::SQL_STAGE_END));
+
 				if ($this->_checkPath('install'))
 				{
-					$this->itemData['sql']['install'][$this->itemData['info']['version']][] = $entry;
+					$this->itemData['sql']['install'][$stage][$version][] = $entry;
+				}
+				elseif ($this->_checkPath('upgrade'))
+				{
+					$this->itemData['sql']['upgrade'][$stage][$version][] = $entry;
 				}
 				elseif ($this->_checkPath('uninstall'))
 				{
 					$this->itemData['sql']['uninstall'][] = $entry;
-				}
-				elseif ($this->_checkPath('upgrade'))
-				{
-					$key = isset($this->_attributes['version']) ? $this->_attributes['version'] : IA_VERSION;
-					$this->itemData['sql']['upgrade'][$key][] = $entry;
 				}
 		}
 	}
@@ -2257,11 +2119,12 @@ class iaExtra extends abstractCore
 
 			case 'lightbox':
 			case 'captchas':
-				$configName = 'lightbox' == $entryData['category'] ? 'lightbox_name' : 'captcha_name';
+				$configName = ('lightbox' == $entryData['category']) ? 'lightbox_name' : 'captcha_name';
 
 				$stmt = iaDb::convertIds($configName, 'name');
 
 				$this->iaDb->setTable(iaCore::getConfigTable());
+
 				if (self::ACTION_INSTALL == $action)
 				{
 					if ($currentValues = $this->iaDb->one('`multiple_values`', $stmt))
@@ -2289,23 +2152,28 @@ class iaExtra extends abstractCore
 						if ($this->iaCore->get($configName) == $entryData['name'])
 						{
 							$value = empty($installed) ? '' : array_shift($installed);
-							
+
 							if (in_array($entryData['name'], $this->_builtinPlugins))
 							{
 								$value = $entryData['name'];
 							}
+
 							$this->iaCore->set($configName, $value, true);
 						}
 					}
 				}
-				$this->iaDb->resetTable();
 
-				break;
+				$this->iaDb->resetTable();
 		}
 	}
 
-	protected function _processQueries(array $entries)
+	protected function _processQueries($type, $stage, $ignoreNonVersionedQueries = false)
 	{
+		if (!isset($this->itemData['sql'][$type][$stage]))
+		{
+			return;
+		}
+
 		$iaDb = &$this->iaDb;
 		$iaDbControl = $this->iaCore->factory('dbcontrol', iaCore::ADMIN);
 
@@ -2315,20 +2183,25 @@ class iaExtra extends abstractCore
 		$pathsMap = array(self::TYPE_PLUGIN => IA_PLUGINS, self::TYPE_PACKAGE => IA_PACKAGES);
 
 		$path = isset($pathsMap[$this->itemData['type']]) ? $pathsMap[$this->itemData['type']] : IA_HOME;
-		$versionInstalled = $iaDb->one_bind('version', '`name` = :name', array('name' => $this->itemData['name']), self::getTable());
+		$extrasVersion = $this->itemData['info']['version'];
 
-		foreach ($entries as $version => $entry)
+		foreach ($this->itemData['sql'][$type][$stage] as $version => $entries)
 		{
-			if ($versionInstalled && version_compare($versionInstalled, $version, '>'))
+			if (($ignoreNonVersionedQueries && self::VERSION_EMPTY == $version))
 			{
 				continue;
 			}
 
-			foreach ($entry as $data)
+			if (self::VERSION_EMPTY != $version && version_compare($version, $extrasVersion) > 0)
 			{
-				if ($data['external'])
+				continue;
+			}
+
+			foreach ($entries as $entry)
+			{
+				if ($entry['external'])
 				{
-					$filePath = str_replace(array('{DIRECTORY_SEPARATOR}', '{DS}'), IA_DS, $data['query']);
+					$filePath = str_replace('{DS}', IA_DS, $entry['query']);
 					$fileFullPath = $path . $this->itemData['name'] . IA_DS . $filePath;
 
 					if (iaUtil::isZip($fileFullPath))
@@ -2355,9 +2228,10 @@ class iaExtra extends abstractCore
 				}
 				else
 				{
-					if ($data['query'])
+					if ($entry['query'])
 					{
-						$iaDb->query(str_replace(array('{prefix}', '{mysql_version}'), array($iaDb->prefix, $mysqlOptions), $data['query']));
+						$query = str_replace(array('{prefix}', '{mysql_version}'), array($iaDb->prefix, $mysqlOptions), $entry['query']);
+						$iaDb->query($query);
 					}
 				}
 			}
@@ -2366,22 +2240,160 @@ class iaExtra extends abstractCore
 
 	protected function _processPhrases(array $phrases)
 	{
-		if ($phrases)
+		if (!$phrases)
 		{
-			$defaultLangCode = $this->iaView->language;
+			return;
+		}
 
-			foreach ($phrases as $key => $phrase)
+		$defaultLangCode = $this->iaView->language;
+
+		foreach ($phrases as $key => $phrase)
+		{
+			foreach ($this->iaCore->languages as $isoCode => $language)
 			{
-				foreach ($this->iaCore->languages as $isoCode => $language)
-				{
-					$value = isset($phrase['values'][$isoCode])
-						? $phrase['values'][$isoCode]
-						: $phrase['values'][$defaultLangCode];
+				$value = isset($phrase['values'][$isoCode])
+					? $phrase['values'][$isoCode]
+					: $phrase['values'][$defaultLangCode];
 
-					iaLanguage::addPhrase($key, $value, $isoCode, $this->itemData['name'], $phrase['category'], false);
-				}
+				iaLanguage::addPhrase($key, $value, $isoCode, $this->itemData['name'], $phrase['category'], false);
 			}
 		}
+	}
+
+	protected function _processFields(array $fields)
+	{
+		if (!$fields)
+		{
+			return;
+		}
+
+		$this->iaCore->factory('field');
+
+		$fieldGroups = $this->iaDb->keyvalue('CONCAT(`item`, `name`) `key`, `id`', null, iaField::getTableGroups());
+
+		$this->iaDb->setTable(iaField::getTable());
+
+		$maxOrder = $this->iaDb->getMaxOrder();
+		foreach ($fields as $entry)
+		{
+			$stmt = '`item` = :item AND `name` = :name';
+			$this->iaDb->bind($stmt, array('item' => $entry['item'], 'name' => $entry['name']));
+
+			if ($row = $this->iaDb->row(array('id', 'extras'), $stmt))
+			{
+				if (false === stripos($row['extras'], $this->itemData['name']))
+				{
+					$value = ($row['extras'] ? ',' : '') . $this->itemData['name'];
+					$value = sprintf("CONCAT(`extras`, '%s')", $value);
+
+					$this->iaDb->update(null, iaDb::convertIds($row['id']), array('extras' => $value));
+				}
+
+				continue;
+			}
+
+			$entry['order'] || $entry['order'] = ++$maxOrder;
+			$entry['fieldgroup_id'] = isset($fieldGroups[$entry['item'] . $entry['group']])
+				? $fieldGroups[$entry['item'] . $entry['group']]
+				: 0;
+
+			$this->_addPhrase('field_' . $entry['name'], $entry['title']);
+
+			unset($entry['group'], $entry['title']);
+
+			if (is_array($entry['numberRangeForSearch']))
+			{
+				foreach ($entry['numberRangeForSearch'] as $num)
+				{
+					$this->_addPhrase('field_' . $entry['name'] . '_range_' . $num, $num, iaLanguage::CATEGORY_FRONTEND);
+				}
+			}
+			unset($entry['numberRangeForSearch']);
+
+			if (iaField::RELATION_DEPENDENT == $entry['relation'])
+			{
+				$this->iaDb->setTable(iaField::getTableRelations());
+
+				foreach (explode(';', $entry['parent']) as $parent)
+				{
+					$list = explode(':', $parent);
+					if (2 == count($list))
+					{
+						list($fieldName, $fieldValues) = $list;
+
+						foreach (explode(',', $fieldValues) as $fieldValue)
+						{
+							$entryData = array(
+								'field' => $fieldName,
+								'element' => $fieldValue,
+								'child' => $entry['name'],
+								'item' => $entry['item'],
+								'extras' => $this->itemData['name']
+							);
+
+							$this->iaDb->insert($entryData);
+						}
+					}
+				}
+
+				$this->iaDb->resetTable();
+			}
+			unset($entry['parent']);
+
+			if (is_array($entry['values']))
+			{
+				foreach ($entry['values'] as $key => $value)
+				{
+					$key = sprintf('field_%s_%s', $entry['name'], $key);
+					$this->_addPhrase($key, $value);
+				}
+
+				if ($entry['default'])
+				{
+					// TODO: multiple default values for checkboxes should be implemented
+					if (!in_array($entry['default'], array_keys($entry['values'])))
+					{
+						$entry['default'] = array_search($entry['default'], $entry['values']);
+					}
+				}
+
+				$entry['values'] = implode(',', array_keys($entry['values']));
+			}
+
+			$fieldPages = $entry['item_pages'] ? $entry['item_pages'] : array();
+			$tableName = $entry['table_name'];
+			$className = $entry['class_name'];
+
+			unset($entry['item_pages'], $entry['table_name'], $entry['class_name']);
+
+			$fieldId = $this->iaDb->insert($entry);
+
+			$entry['table_name'] = $tableName;
+			$entry['class_name'] = $className;
+
+			foreach ($fieldPages as $pageName)
+			{
+				if (trim($pageName))
+				{
+					$row = array('page_name' => $pageName, 'field_id' => $fieldId, 'extras' => $this->itemData['name']);
+					$this->iaDb->insert($row, null, iaField::getTablePages());
+				}
+			}
+
+			$columnExists = false;
+			foreach ($this->iaDb->describe($tableName) as $f)
+			{
+				if ($f['Field'] == $entry['name'])
+				{
+					$columnExists = true;
+					break;
+				}
+			}
+
+			$columnExists || $this->_alterTable($entry);
+		}
+
+		$this->iaDb->resetTable();
 	}
 
 	protected function _runPhpCode($code)

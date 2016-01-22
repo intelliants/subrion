@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -64,12 +64,12 @@ class iaSearch extends abstractCore
 		$this->iaCore->factory(array('field', 'item'));
 	}
 
-	public function doRegularSearch($query, $start, $limit)
+	public function doRegularSearch($query, $limit)
 	{
 		$this->_query = $query;
 
-		$this->_start = (int)$start;
-		$this->_limit = (int)$limit;
+		$this->_start = 0;
+		$this->_limit = $limit;
 
 		$results = array('pages' => $this->_searchByPages());
 		$results = array_merge($results, $this->_searchByItems());
@@ -78,7 +78,7 @@ class iaSearch extends abstractCore
 		return $results;
 	}
 
-	public function doRegularItemSearch($itemName, array $params, $start, $limit)
+	public function doItemSearch($itemName, $params, $start, $limit)
 	{
 		if (!$this->_loadItemInstance($itemName))
 		{
@@ -88,9 +88,18 @@ class iaSearch extends abstractCore
 		$this->_start = (int)$start;
 		$this->_limit = (int)$limit;
 
-		$this->_processParams($params, true);
+		if (is_string($params))
+		{
+			$fieldsSearch = false;
+			$this->_query = $params;
+		}
+		else
+		{
+			$fieldsSearch = true;
+			$this->_processParams($params, true);
+		}
 
-		if ($search = $this->_performItemSearch())
+		if ($search = $this->_performItemSearch($fieldsSearch))
 		{
 			return array($search[0], $this->_renderResults($search[1]));
 		}
@@ -282,6 +291,11 @@ class iaSearch extends abstractCore
 						$this->iaDb->bind($stmt, array('category' => iaLanguage::CATEGORY_FRONTEND, 'key' => $phraseKey . '%', 'code' => $this->iaView->language));
 
 						$row['range'] = $this->iaDb->keyvalue(array('key', 'value'), $stmt, iaLanguage::getTable());*/
+
+						break;
+
+					case iaField::TREE:
+						$row['values'] = $this->_getTreeNodes($row['values']);
 				}
 
 				$result[$row['name']] = $row;
@@ -329,6 +343,7 @@ class iaSearch extends abstractCore
 			foreach ($rows as $row)
 			{
 				$pageName = str_replace(array('page_title_', 'page_content_'), '', $row['key']);
+
 				$key = (false === stripos($row['key'], 'page_content_')) ? 'title' : 'content';
 				$value = iaSanitize::tags($row['value']);
 
@@ -567,21 +582,26 @@ class iaSearch extends abstractCore
 					continue 2;
 
 				case iaField::COMBO:
+				case iaField::TREE:
 					$array = array();
 					$value = is_array($value) ? $value : array($value);
 
 					foreach ($value as $v)
 					{
-						$v = "'" . iaSanitize::sql($v) . "'";
-						$array[] = array('col' => $column, 'cond' => $condition, 'val' => $v, 'field' => $fieldName);
+						if (trim($v))
+						{
+							$v = "'" . iaSanitize::sql($v) . "'";
+							$array[] = array('col' => $column, 'cond' => $condition, 'val' => $v, 'field' => $fieldName);
+						}
 					}
 
-					$statements[] = $array;
+					empty($array) || $statements[] = $array;
 
 					continue 2;
 
 				case iaField::TEXT:
 				case iaField::TEXTAREA:
+				case iaField::URL:
 					$condition = 'LIKE';
 					$val = "'%" . iaSanitize::sql($value) . "%'";
 
@@ -595,17 +615,8 @@ class iaSearch extends abstractCore
 
 					break;
 
-				case iaField::URL:
-
-					break;
-
 				case iaField::DATE:
 
-					break;
-
-				case iaField::TREE:
-
-					break;
 			}
 
 			$statements[] = array(
@@ -871,5 +882,51 @@ class iaSearch extends abstractCore
 			$column,
 			$value
 		));
+	}
+
+	private function _getTreeNodes($packedNodes)
+	{
+		if (!$packedNodes)
+		{
+			return array();
+		}
+
+		$key = 'filter_tree_' . md5($packedNodes);
+
+		if ($result = $this->iaCore->iaCache->get($key, 25920000, true)) // 30 days
+		{
+			return $result;
+		}
+		else
+		{
+			$result = $this->_parseTreeNodes($packedNodes);
+			$this->iaCore->iaCache->write($key, $result);
+
+			return $result;
+		}
+	}
+
+	protected function _parseTreeNodes($packedNodes)
+	{
+		$result = array();
+		$nodes = iaUtil::jsonDecode($packedNodes);
+
+		$indent = array();
+		foreach ($nodes as $node)
+		{
+			$id = $node['id'];
+			$parent = $node['parent'];
+
+			$indent[$id] = 0;
+			('#' != $parent) && (++$indent[$id]) && (isset($indent[$parent]) ?
+				($indent[$id]+= $indent[$parent]) : ($indent[$parent] = 0));
+		}
+
+		foreach ($nodes as $node)
+		{
+			$result[$node['id']] = str_repeat('&nbsp;&nbsp;&nbsp;', $indent[$node['id']]) . ' &mdash; ' . $node['text'];
+		}
+
+		return $result;
 	}
 }

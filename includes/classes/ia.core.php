@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -219,7 +219,7 @@ final class iaCore
 
 		$url = explode('?', $url);
 		$url = array_shift($url);
-		$url = explode(IA_URL_DELIMITER, iaSanitize::urlInjectionFilter(trim($url, IA_URL_DELIMITER)));
+		$url = explode(IA_URL_DELIMITER, iaSanitize::htmlInjectionFilter(trim($url, IA_URL_DELIMITER)));
 
 		$lastChunk = end($url);
 		if ($pos = strrpos($lastChunk, '.'))

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -123,7 +123,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				foreach ($gateways as $key => $gateway)
 				{
-					$htmlFormTemplate = IA_PLUGINS . $key . IA_DS . 'templates' . IA_DS . 'form.tpl';
+					$htmlFormTemplate = IA_PLUGINS . $key . IA_DS . 'templates' . IA_DS . 'front' . IA_DS . 'form.tpl';
 					$gateways[$key] = file_exists($htmlFormTemplate) ? $htmlFormTemplate : false;
 				}
 
@@ -210,25 +210,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 									$iaPlan->setPaid($transaction);
 								}
 
-								// notify admin of a completed payment
-								$action = 'payment_completion_admin';
-								if ($iaCore->get($action))
-								{
-									$iaMailer = $iaCore->factory('mailer');
-
-									$iaMailer->loadTemplate($action);
-									$iaMailer->addAddress($iaCore->get('site_email'));
-									$iaMailer->setReplacements(array(
-										'username' => iaUsers::getIdentity()->username,
-										'amount' => $transaction['amount'],
-										'operation' => $transaction['operation']
-									));
-
-									$iaMailer->send();
-								}
-
 								// disable debug display
 								$iaView->set('nodebug', true);
+
+								$iaView->assign('gateway', $transaction['gateway']);
 
 								$tplFile = 'purchase-post';
 							}

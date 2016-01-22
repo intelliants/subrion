@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -459,7 +459,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$installationFile = $this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME;
 		if (!file_exists($installationFile))
 		{
-			'remote' == $_POST['mode'] ? $result['message'] = iaLanguage::get('buy_before_install') : $result['message'] = iaLanguage::get('file_doesnt_exist');
+			$result['message'] = iaLanguage::get('file_doesnt_exist');
 		}
 		else
 		{

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -125,22 +125,27 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		foreach ($this->_iaCore->languages as $code => $language)
 		{
-			$title = utf8_is_valid($data['title'][$code]) ? $data['title'][$code] : utf8_bad_replace($data['title'][$code]);
+			$title = iaSanitize::tags($data['title'][$code]);
+			utf8_is_valid($title) || $title = utf8_bad_replace($title);
 			iaLanguage::addPhrase('usergroup_' . $entry['name'], $title, $code);
 		}
 
 		// copy privileges
-		$copyFrom = isset($data['copy_from']) ? (int)$data['copy_from'] : 0;
-		if ($copyFrom)
+		if ($data['copy_from'])
 		{
 			$this->_iaDb->setTable('acl_privileges');
 
-			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`type_id` = '{$copyFrom}' AND `type` = 'group'");
+			$where = '`type_id` = :id AND `type` = :type';
+			$this->_iaDb->bind($where, array('id' => (int)$data['copy_from'], 'type' => 'group'));
+
+			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where);
+
 			foreach ($rows as $key => &$row)
 			{
-				$row['type_id'] = $entry['id'];
+				$row['type_id'] = $this->getEntryId();
 				unset($rows[$key]['id']);
 			}
+
 			$this->_iaDb->insert($rows);
 
 			$this->_iaDb->resetTable();

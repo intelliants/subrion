@@ -2,6 +2,11 @@ intelli.search = (function()
 {
 	var paramsMapping = {page: '__p', sortingField: '__s', sortingOrder: '__so'},
 
+	decodeUri = function(uriComponent)
+	{
+		return (decodeURIComponent(uriComponent) + '').replace(/\+/g,' ');
+	},
+
 	events = {},
 	params = {},
 
@@ -33,7 +38,7 @@ intelli.search = (function()
 			for (var i = 0; i < hash.length; i++)
 			{
 				var a = hash[i].split('=');
-				result[decodeURIComponent(a[0])] = decodeURIComponent(a[1])
+				result[decodeUri(a[0])] = decodeUri(a[1])
 			}
 		}
 
@@ -115,9 +120,10 @@ intelli.search = (function()
 						switch ($ctl.attr('type'))
 						{
 							case 'checkbox':
+							case 'radio':
 								$ctl.filter('[value="' + value + '"]').prop('checked', true);
 								break;
-							case 'text':
+							default:
 								$ctl.val(value);
 						}
 						break;
@@ -126,7 +132,7 @@ intelli.search = (function()
 				}
 			}
 
-			this.run();
+			//this.run();
 		}
 	};
 })();

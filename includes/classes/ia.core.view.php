@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -1391,10 +1391,9 @@ SQL;
 				)
 			));
 
-			$itemData = $iaCore->iaView->iaSmarty->getTemplateVars('item');
-			if (iaUsers::hasIdentity() && $itemData)
+			if ($itemData = $iaCore->iaView->iaSmarty->getTemplateVars('item'))
 			{
-				if ((iaUsers::getItemName() != $itemData['item'] &&
+				if (!iaUsers::hasIdentity() || (iaUsers::getItemName() != $itemData['item'] &&
 					isset($itemData['member_id']) && iaUsers::getIdentity()->id != $itemData['member_id']) ||
 					($itemData['item'] == iaUsers::getItemName() && iaUsers::getIdentity()->id != $itemData['id'])
 				)

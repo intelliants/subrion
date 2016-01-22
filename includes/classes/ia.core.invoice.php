@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -30,17 +30,33 @@ class iaInvoice extends abstractCore
 	protected static $_tableItems = 'invoices_items';
 
 
-	public function create($id, array $transaction)
+	public function create(array $transaction)
 	{
+		if ($invoiceId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($transaction['id'], 'transaction_id'), self::getTable()))
+		{
+			return $invoiceId;
+		}
+
+		$id = $this->generateId();
+
 		$invoice = array(
-			'id' => $this->generateId(),
-			'transaction_id' => $id,
+			'id' => $id,
+			'transaction_id' => $transaction['id'],
 			'date_created' => date(iaDb::DATETIME_FORMAT),
 			'date_due' => null,
-			'fullname' => $transaction['fullname'] ? $transaction['fullname'] : iaUsers::getIdentity()->fullname
+			'fullname' => empty($transaction['fullname']) ? iaUsers::getIdentity()->fullname : $transaction['fullname']
 		);
 
-		return $this->iaDb->insert($invoice, null, self::getTable());
+		$this->iaDb->insert($invoice, null, self::getTable());
+
+		if (0 === $this->iaDb->getErrorNumber())
+		{
+			$this->_sendEmailNotification($invoice, $transaction);
+
+			return $id;
+		}
+
+		return false;
 	}
 
 	public function getById($id)
@@ -150,5 +166,34 @@ class iaInvoice extends abstractCore
 		$result = date('ymd') . str_pad($count + 1, 5, '0', STR_PAD_LEFT);
 
 		return $result;
+	}
+
+	protected function _sendEmailNotification(array $invoice, array $transaction)
+	{
+		$iaUsers = $this->iaCore->factory('users');
+
+		$member = $iaUsers->getById($transaction['member_id']);
+
+		if (!$member)
+		{
+			return false;
+		}
+
+		$iaMailer = $this->iaCore->factory('mailer');
+
+		$iaMailer->loadTemplate('invoice_created');
+		$iaMailer->addAddress($member['email']);
+
+		$iaMailer->setReplacements($transaction);
+		$iaMailer->setReplacements(array(
+			'invoice' => $invoice['id'],
+			'date' => $invoice['date_created'],
+			'gateway' => iaLanguage::get($transaction['gateway'], $transaction['gateway']),
+			'email' => $member['username'],
+			'username' => $member['username'],
+			'fullname' => $member['fullname']
+		));
+
+		return $iaMailer->send();
 	}
 }

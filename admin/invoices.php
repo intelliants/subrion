@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -29,7 +29,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_name = 'invoices';
 
 	protected $_gridFilters = array('fullname' => self::LIKE, 'status' => self::EQUAL);
-	protected $_gridQueryMainTableAlias = 't';
+	protected $_gridQueryMainTableAlias = 'i';
 
 
 	public function __construct()
@@ -54,9 +54,18 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridQuery($columns, $where, $order, $start, $limit)
 	{
+		foreach (array('amount', 'gateway', 'status') as $joinedColumnName) // joined columns
+		{
+			if (false !== stripos($order, $joinedColumnName))
+			{
+				$order = str_replace(' i.`', ' t.`', $order);
+				break;
+			}
+		}
+
 		$sql =
 			'SELECT SQL_CALC_FOUND_ROWS '
-				. 'i.`id`, i.`date_created`, i.`fullname` `user`, '
+				. 'i.`id`, i.`date_created`, i.`fullname`, '
 				. 't.`plan_id`, t.`operation`, '
 				. 't.`status`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, t.`currency`, t.`gateway`, '
 				. "1 `pdf`, 1 `update`, IF(t.`status` != 'passed', 1, 0) `delete` " .
@@ -75,6 +84,15 @@ class iaBackendController extends iaAbstractControllerBackend
 		));
 
 		return $this->_iaDb->getAll($sql);
+	}
+
+	protected function _modifyGridParams(&$conditions, &$values)
+	{
+		if (!empty($_GET['gateway']))
+		{
+			$conditions[] = 't.`gateway` = :gateway';
+			$values['gateway'] = $_GET['gateway'];
+		}
 	}
 
 	protected function _modifyGridResult(array &$entries)

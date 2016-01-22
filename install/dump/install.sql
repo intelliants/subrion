@@ -771,7 +771,7 @@ INSERT INTO `{install:prefix}blocks` VALUES
 (4,'Member Menu','account','',0,'right','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
 (5,'Bottom Menu','bottom','',0,'copyright','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
 (6,'Statistics','common_statistics','',1,'right','smarty','','active',1,0,0,0,'',1,'','',1,'block.common-statistics.tpl',0,'',''),
-(7,'Refine Search','filters','$iaView = &$iaCore->iaView;\r\n\r\n$itemName = $iaView->get(''filtersItemName'') ? $iaView->get(''filtersItemName'') : str_replace(''search_'', '''', $iaView->name());\r\n$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\necho $iaView->iaSmarty->fetch(''block.filters.tpl'');',1,'left','php','','active',1,1,0,1,'',1,'','',0,'',1,'','');
+(7,'Refine Search','filters','$iaView = &$iaCore->iaView;\r\n\r\nif (($itemName = $iaView->get(''filtersItemName''))\r\n	|| (($itemName = str_replace(''search_'', '''', $iaView->name())) && $itemName != $iaView->name()))\r\n{\r\n	$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\n	echo $iaView->iaSmarty->fetch(''block.filters.tpl'');\r\n}',1,'left','php','','active',1,1,0,1,'',1,'','',0,'',1,'','');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
 ('blocks','',6,0),
@@ -883,7 +883,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('system','smarty_cache','0','''1'',''0''','radio',0,'Smarty force compile',35,'',0,0,''),
 ('system','compress_js','0','''1'',''0''','radio',0,'Compress Javascript',36,'',0,0,''),
 
-('email_templates','members_optgroup','','','divider',0,'Members',0,'',1,1,''),
+('email_templates','','','','divider',0,'Members',0,'',1,1,''),
 ('email_templates','member_approved','1','''1'',''0''','radio',0,'Member approval',1,'',1,1,''),
 ('email_templates','member_approved_subject','Member was approved at {%SITE_NAME%}',null,'text',0,'',17,'',1,1,''),
 ('email_templates','member_approved_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was approved in {%SITE_NAME%}. Now you can log in.</p>','fullname|User','textarea',0,'',18,'',1,1,''),
@@ -908,10 +908,22 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('email_templates','password_changement','1','''1'',''0''','radio',0,'Member password change',7,'',1,1,''),
 ('email_templates','password_changement_subject','Password change request at {%SITE_NAME%}',null,'text',0,'',13,'',1,1,''),
 ('email_templates','password_changement_body','<p>Dear {%FULLNAME%},</p>\r\n\r\n<p>You requested a password change in {%SITE_NAME%}. Now you should use the following credentials to log in as member:</p>\r\n\r\n<p>username: {%USERNAME%}<br />\r\npassword:  {%PASSWORD%}</p>','fullname|User,username|Username,password|New password','textarea',0,'',14,'',1,1,''),
-('email_templates','payments_optgroup','','','divider',0,'Payments',50,'',1,1,''),
-('email_templates','payment_completion_admin','1','''1'',''0''','radio',0,'Administrator\'s notification on payment completion',55,'',1,1,''),
-('email_templates','payment_completion_admin_subject','Payment completed at {%SITE_NAME%}',null,'text',0,'',0,'',1,1,''),
-('email_templates','payment_completion_admin_body','<p>Dear Administrator,</p>\r\n<p>A payment has been completed on your site. Here is the information on the payment:</p><ul><li><b>Username:</b> {%USERNAME%}</li><li><b>Amount:</b> {%AMOUNT%}</li><li><b>Operation:</b> {%OPERATION%}</li></ul>','username|User,amount|Amount of transaction,operation|Operation name','textarea',0,'',8,'',1,1,'');
+('email_templates','','','','divider',0,'Payments',50,'',1,1,''),
+('email_templates','plan_activated','1','''1'',''0''','radio',0,'Item paid and activated',55,'',1,1,''),
+('email_templates','plan_activated_subject','Plan activated at {%SITE_NAME%}',null,'text',0,'',0,'',1,1,''),
+('email_templates','plan_activated_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your listing has been activated.</p>\r\n\r\n<ul>\r\n	<li><b>Plan:</b> {%PLAN%}</li>\r\n	<li><b>Cost:</b> {%CURRENCY%} {%COST%}</li>\r\n	<li><b>Duration:</b> {%DURATION%} {%UNIT%}(s)</li>\r\n</ul>','plan|Plan name,cost|Plan''s cost,duration|Plan''s duration,unit|Duration unit,fullname|User,currency|Currency code','textarea',0,'',0,'',1,1,''),
+('email_templates','plan_expired','1','''1'',''0''','radio',0,'Paid item expired',60,'',1,1,''),
+('email_templates','plan_expired_subject','Plan expired at {%SITE_NAME%}',null,'text',0,'',0,'',1,1,''),
+('email_templates','plan_expired_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your paid listing submission expired.</p>\r\n\r\n<ul>\r\n	<li><b>Plan:</b> {%PLAN%}</li>\r\n	<li><b>Cost:</b> {%CURRENCY%} {%COST%}</li>\r\n	<li><b>Duration:</b> {%DURATION%} {%UNIT%}(s)</li>\r\n</ul>\r\n\r\n<p>It may always be renewed through the site.</p>','plan|Plan name,cost|Plan''s cost,duration|Plan''s duration,unit|Duration unit,fullname|User,currency|Currency code','textarea',0,'',0,'',1,1,''),
+('email_templates','transaction_paid','1','''1'',''0''','radio',0,'Transaction passed',65,'',1,1,''),
+('email_templates','transaction_paid_subject','Payment received at {%SITE_NAME%}',null,'text',0,'',0,'',1,1,''),
+('email_templates','transaction_paid_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Your payment has been successfully received.</p>\r\n\r\n<p>Order Number: <strong>{%REFERENCE_ID%}</strong></p>\r\n\r\n<p>Payment details are below:</p>\r\n\r\n<ul>\r\n	<li><b>Operation:</b> {%OPERATION%}</li>\r\n	<li><b>Amount:</b> {%CURRENCY%} {%AMOUNT%}</li>\r\n	<li><b>Item:</b> {%ITEM%} #{%ITEM_ID%}</li>\r\n	<li><b>Date:</b> {%DATE%}</li>\r\n</ul>\r\n\r\n<p>All your transactions could always be seen on the <a href="{%SITE_URL%}profile/funds/" target="_blank">Funds</a> page.</p>','email|Email,username|Username,fullname|Fullname,operation|Operation name,amount|Amount,reference_id|Reference ID,currency|Currency,item|Item,item_id|Item ID,date|Date','textarea',0,'',0,'',1,1,''),
+('email_templates','transaction_paid_admin','1','''1'',''0''','radio',0,'Administrator\'s notification on payment completion',70,'',1,1,''),
+('email_templates','transaction_paid_admin_subject','Payment completed at {%SITE_NAME%}',null,'text',0,'',0,'',1,1,''),
+('email_templates','transaction_paid_admin_body','<p>Dear Administrator,</p>\r\n<p>A payment has been completed on your site. Here is the information on the payment:</p><ul><li><b>Username:</b> {%USERNAME%}</li><li><b>Amount:</b>{%CURRENCY%} {%AMOUNT%}</li><li><b>Operation:</b> {%OPERATION%}</li></ul>','username|User,amount|Amount of transaction,operation|Operation name,currency|Currency','textarea',0,'',8,'',1,1,''),
+('email_templates','invoice_created','1','''1'',''0''','radio',0,'Invoice created',75,'',1,1,''),
+('email_templates','invoice_created_subject','Customer Invoice',null,'text',0,'',0,'',1,1,''),
+('email_templates','invoice_created_body','<p>Dear {%FULLNAME%},</p>\r\n<p>This is a notice that an invoice has been generated on {%DATE%}</p>\r\n\r\n<p>Your payment method is: {%GATEWAY%}</p>\r\n\r\n<p>Invoice #{%INVOICE%},<br>\r\nAmount Due: {%CURRENCY%} {%AMOUNT%}\r\n</p>\r\n\r\n<p>All your invoices could always be seen on the <a href="{%SITE_URL%}profile/funds/" target="_blank">Funds</a> page.</p>','invoice|Invoice ID,gateway|Gateway,date|Invoice creation date,fullname|User,amount|Amount,currency|Currency','textarea',0,'',0,'',1,1,'');
 
 INSERT INTO `{install:prefix}config_groups` (`name`,`title`,`order`) VALUES
 ('general','General',1),
@@ -1002,8 +1014,7 @@ INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page
 ('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/opengraph.tpl'),
 ('smartyAdminAfterHeadSection','{if $core.config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',2,'smarty','admin',''),
 ('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''];\r\n		}\r\n	}\r\n}','active',5,'php','admin',''),
-('smartyFrontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl'),
-('phpTransactionCreated','$iaCore->factory(\'invoice\')->create($id, $transaction);','active',0,'php','both','');
+('smartyFrontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl');
 
 INSERT INTO `{install:prefix}items` (`payable`,`item`,`package`,`pages`) VALUES
 (1,'members','core','profile,view_member'),
@@ -1328,7 +1339,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_element_children','Configure item fields for this value','admin'),
 ('field_exists','Field already exists.','admin'),
 ('field_length','Field length','admin'),
-('field_name_incorrect','Field name should consist of letters and numbers only. Length 2-60.','admin'),
+('field_name_exists','This name can not be chosen for selected item.','admin'),
+('field_name_invalid','Field name should consist of letters and numbers only. Length 2-60.','admin'),
 ('field_relation','Field relation','admin'),
 ('field_relation_dependent','Dependent field','admin'),
 ('field_relation_parent','Parent field','admin'),
@@ -2040,6 +2052,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('all_groups','All groups','frontend'),
 ('amount_incorrect','Please input correct amount. It should be within :min & :max :currency.','frontend'),
 ('amount_to_add','Amount to add','frontend'),
+('and_more','and more','frontend'),
 ('are_you_sure_to_cancel_invoice','Are you sure you want to cancel your invoice?','frontend'),
 ('author_contact_request','Contact request regarding ":title"','frontend'),
 ('auto_generate_password','Auto generate password','frontend'),
@@ -2159,6 +2172,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('search_for','Search for...','frontend'),
 ('send_email','Send email','frontend'),
 ('send_message','Send message','frontend'),
+('show_all_num_results','Show all :num results','frontend'),
 ('slogan','Content Management Software','frontend'),
 ('sort_by','Sort by','frontend'),
 ('starts_with','starts with','frontend'),

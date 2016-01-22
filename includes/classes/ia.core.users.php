@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -552,7 +552,7 @@ class iaUsers extends abstractCore
 
 	public function getInfo($id, $key = 'id')
 	{
-		if ($key != 'id' && $key != 'username')
+		if ($key != 'id' && $key != 'username' && $key != 'email')
 		{
 			$key = 'id';
 		}

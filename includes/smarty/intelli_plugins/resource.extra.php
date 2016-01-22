@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -55,6 +55,12 @@ class Smarty_Resource_Extra extends Smarty_Resource_Custom
 		$extraName = array_shift($array);
 		$extraType = $this->_getExtraType($extraName) . 's';
 		$templateName = implode('.', $array) . iaView::TEMPLATE_FILENAME_EXT;
+
+		if (iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType())
+		{
+			$filePath = sprintf('%s/%s/templates/admin/%s', $extraType, $extraName, $templateName);
+			return IA_HOME . $filePath;
+		}
 
 		$filePath = sprintf('templates/%s/%s/%s/%s', iaCore::instance()->get('tmpl'), $extraType, $extraName, $templateName);
 		is_file($filePath) || $filePath = sprintf('%s/%s/templates/%s/%s', $extraType, $extraName, $this->_commonFilesPath[$extraType], $templateName);

@@ -8,8 +8,8 @@ Ext.onReady(function()
 				'selection',
 				{name: 'id', title: _t('invoice_id'), width: 110},
 				{name: 'date_created', title: _t('date'), width: 170},
-				{name: 'user', title: _t('username'), width: 1},
-				{name: 'plan', title: _t('plan'), width: 1},
+				{name: 'fullname', title: _t('username'), width: 1},
+				{name: 'plan', title: _t('plan'), width: 1, sortable: false},
 				{name: 'gateway', title: _t('gateway'), width: 90},
 				{name: 'amount', title: _t('total'), width: 100},
 				'status',
@@ -17,7 +17,7 @@ Ext.onReady(function()
 				'update',
 				'delete'
 			],
-			sorters: [{property: 'date', direction: 'DESC'}],
+			sorters: [{property: 'date_created', direction: 'DESC'}],
 			statuses: ['pending','passed','failed','refunded']
 		}, false);
 
@@ -27,7 +27,7 @@ Ext.onReady(function()
 			name: 'fullname',
 			emptyText: _t('username'),
 			listeners: intelli.gridHelper.listener.specialKey,
-			width: 120
+			width: 125
 		}, {
 			emptyText: _t('gateway'),
 			xtype: 'combo',
@@ -37,7 +37,7 @@ Ext.onReady(function()
 			displayField: 'title',
 			name: 'gateway',
 			valueField: 'value',
-			width: 95
+			width: 100
 		}, {
 			emptyText: _t('status'),
 			name: 'status',

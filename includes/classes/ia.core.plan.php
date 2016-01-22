@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2015 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -83,7 +83,7 @@ class iaPlan extends abstractCore
 		}
 
 		$iaTransaction = $this->iaCore->factory('transaction');
-		$paymentId = $iaTransaction->createInvoice(null, $cost, $itemName, $itemData, $returnUrl, $planId, true);
+		$paymentId = $iaTransaction->create(null, $cost, $itemName, $itemData, $returnUrl, $planId, true);
 
 		return IA_URL . 'pay' . IA_URL_DELIMITER . $paymentId . IA_URL_DELIMITER;
 	}
@@ -167,7 +167,7 @@ class iaPlan extends abstractCore
 		$remainingBalance = $userInfo['funds'] - $transactionData['amount'];
 		if ($remainingBalance >= 0)
 		{
-			$result = (bool)$iaUsers->update(array('funds' => $remainingBalance), iaDb::convertIds(iaUsers::getIdentity()->id));
+			$result = (bool)$iaUsers->update(array('funds' => $remainingBalance), iaDb::convertIds($userInfo['id']));
 
 			if ($result)
 			{
@@ -197,7 +197,7 @@ class iaPlan extends abstractCore
 		$stmt = iaDb::convertIds($itemId);
 
 		$entry = $this->iaDb->row(array(self::SPONSORED, self::SPONSORED_PLAN_ID), $stmt, $tableName);
-		if (empty($entry) || !$entry[self::SPONSORED])
+		if (empty($entry) || !$entry[self::SPONSORED] || !isset($entry['member_id']))
 		{
 			return false;
 		}
@@ -218,10 +218,10 @@ class iaPlan extends abstractCore
 
 		$result = $this->iaDb->update($values, $stmt, null, $tableName);
 
+		$this->_sendEmailNotification('expired', $plan, $entry['member_id']);
+
 		// then, try to call class' helper
 		$this->_runClassMethod($itemName, self::METHOD_CANCEL_PLAN, array($itemId));
-
-		// TODO: #1804 (the respective email should be sent here)
 
 		return $result;
 	}
@@ -253,6 +253,8 @@ class iaPlan extends abstractCore
 			$iaItem = $this->iaCore->factory('item');
 			$result = $this->iaDb->update($values, iaDb::convertIds($transaction['item_id']), null, $iaItem->getItemTable($item));
 		}
+
+		$this->_sendEmailNotification('activated', $plan, $transaction['member_id']);
 
 		// perform item specific actions
 		$this->_runClassMethod($item, self::METHOD_POST_PAYMENT, array($plan, $transaction));
@@ -291,6 +293,40 @@ class iaPlan extends abstractCore
 			date(iaDb::DATETIME_SHORT_FORMAT, $dateStarted),
 			date(iaDb::DATETIME_SHORT_FORMAT, $dateFinished)
 		);
+	}
+
+	protected function _sendEmailNotification($type, array $plan, $memberId)
+	{
+		$notificationType = 'plan_' . $type;
+
+		if (empty($plan) || empty($memberId) || !$this->iaCore->get($notificationType))
+		{
+			return false;
+		}
+
+		$iaUsers = $this->iaCore->factory('users');
+
+		$member = $iaUsers->getById($memberId);
+
+		if (!$member)
+		{
+			return false;
+		}
+
+		$iaMailer = $this->iaCore->factory('mailer');
+
+		$iaMailer->loadTemplate($notificationType);
+		$iaMailer->addAddress($member['email']);
+
+		$iaMailer->setReplacements($plan);
+		$iaMailer->setReplacements(array(
+			'email' => $member['email'],
+			'username' => $member['username'],
+			'fullname' => $member['fullname'],
+			'plan' => iaLanguage::get('plan_title_' . $plan['id'])
+		));
+
+		return $iaMailer->send();
 	}
 
 	private function _runClassMethod($itemName, $method, array $args = array())
