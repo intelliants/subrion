@@ -560,17 +560,10 @@ class iaField extends abstractCore
 
 			if (isset($data['owner']))
 			{
-				if (!empty($data['owner']))
+				if (!empty(trim($data['owner'])) && isset($data['member_id']) && $data['member_id'] &&
+					$memberId = $iaCore->iaDb->one('id', iaDb::convertIds((int)$data['member_id']), iaUsers::getTable()))
 				{
-					if ($memberId = $iaCore->iaDb->one_bind('id', '`username` = :name OR `fullname` = :name', array('name' => iaSanitize::sql($_POST['owner'])), iaUsers::getTable()))
-					{
-						$item['member_id'] = $memberId;
-					}
-					else
-					{
-						$error = true;
-						$messages[] = iaLanguage::get('incorrect_owner_specified');
-					}
+					$item['member_id'] = $memberId;
 				}
 				else
 				{

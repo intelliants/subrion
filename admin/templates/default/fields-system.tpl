@@ -12,6 +12,7 @@
 
 			<div class="col col-lg-4">
 				<input type="text" class="common text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner}" maxlength="50" size="50">
+				<input type="hidden" name="member_id" id="member-id" {if isset($item.member_id) && $item.member_id}value="{$item.member_id}"{/if}>
 			</div>
 		</div>
 	{/if}
@@ -161,21 +162,32 @@ $(function()
 		(1 == this.value) ? $('#tr_featured').show() : $('#tr_featured').hide();
 	});
 
+	var objects = items = [];
+
 	$('#js-owner-autocomplete').typeahead(
 	{
 		source: function(query, process)
 		{
-			return $.ajax(
+			$.ajax(
 			{
 				url: intelli.config.ia_url + 'members.json',
 				type: 'get',
 				dataType: 'json',
 				data: { q: query },
-				success: function(response)
-				{
-					return process(response);
+				success: function(response) {
+					objects = items = [];
+					$.each(response, function(i, object) {
+						items[object.fullname] = object;
+						objects.push(object.fullname);
+					});
+
+					return process(objects);
 				}
-			});
+			})
+		},
+		updater: function(item) {
+			$('#member-id').val(items[item].id);
+				return item;
 		}
 	});
 });

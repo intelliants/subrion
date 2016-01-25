@@ -36,7 +36,15 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 		$stmt = '(`username` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
 		$iaDb->bind($stmt, array('name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE));
 
-		$output = $iaDb->onefield('fullname', $stmt, 0, 20, iaUsers::getTable());
+		$sql = 'SELECT `id`, CONCAT (`fullname`, \' (\',`email`, \')\') `fullname` ' .
+			'FROM :table_members ' .
+			'WHERE :conditions ' .
+			'LIMIT 0, 20';
+		$sql = iaDb::printf($sql, array(
+			'table_members' => iaUsers::getTable(true),
+			'conditions' => $stmt,
+		));
+		$output = $iaDb->getAll($sql);
 
 		$iaView->assign($output);
 	}
