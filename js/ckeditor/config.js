@@ -64,6 +64,7 @@ CKEDITOR.editorConfig = function(config)
 	{
 		config.toolbar = 'dashboard';
 		config.extraPlugins += ',codemirror';
+		config.protectedSource.push(/<ins[\s|\S]+?<\/ins>/g); // Protects <INS> tags
 
 		if (typeof intelli.config['elfinder_ckeditor_integration'] !== 'undefined' && 1 == intelli.config.elfinder_ckeditor_integration)
 		{
