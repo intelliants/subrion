@@ -560,7 +560,7 @@ class iaField extends abstractCore
 
 			if (isset($data['owner']))
 			{
-				if (!empty(trim($data['owner'])) && isset($data['member_id']) && $data['member_id'] &&
+				if (trim($data['owner']) && isset($data['member_id']) && $data['member_id'] &&
 					$memberId = $iaCore->iaDb->one('id', iaDb::convertIds((int)$data['member_id']), iaUsers::getTable()))
 				{
 					$item['member_id'] = $memberId;
