@@ -777,7 +777,7 @@ SQL;
 					$pageName = '';
 				}
 				$where = iaDb::printf("p.`name` = ':name' OR p.`alias` LIKE ':domain:name%'",
-					array('name' => $pageName, 'domain' => iaSanitize::sql($this->domainUrl)));
+					array('name' => $pageName, 'domain' => $this->domainUrl));
 			}
 		}
 
