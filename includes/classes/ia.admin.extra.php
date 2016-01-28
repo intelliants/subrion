@@ -48,7 +48,6 @@ class iaExtra extends abstractCore
 
 	const BLOCK_FILENAME_PATTERN = 'extra:%s/%s';
 
-
 	protected static $_table = 'extras';
 
 	private $_builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog');
@@ -73,12 +72,17 @@ class iaExtra extends abstractCore
 	public $isUpgrade = false;
 	public $isUpdate = false;
 
+	protected $_extrasTypePaths = array();
+
 
 	public function init()
 	{
 		parent::init();
 
 		$this->iaCore->factory(array('acl', 'util'));
+
+		$this->_extrasTypePaths[self::TYPE_PLUGIN] = IA_PLUGINS;
+		$this->_extrasTypePaths[self::TYPE_PACKAGE] = IA_PACKAGES;
 	}
 
 	protected function _resetValues()
@@ -1952,29 +1956,47 @@ class iaExtra extends abstractCore
 				break;
 
 			case 'hook':
-				$filename = $this->_attr('filename');
 				$type = $this->_attr('type', 'php', array('php', 'html', 'smarty', 'plain'));
 
-				if ($filename && 'smarty' == $type)
+				if ($filename = $this->_attr('filename'))
 				{
-					//$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+					switch ($type)
+					{
+						case 'php':
+							$filename = $this->itemData['type'] . 's' . IA_DS . $this->itemData['name']
+								. IA_DS . 'includes' . IA_DS . $filename . iaSystem::EXECUTABLE_FILE_EXT;
 
-					// compatibility layer for v4.0 plugins
-					// todo: remove in v5
-					if (false !== stripos($filename, '.tpl'))
-					{
-						if ('payments' != @$this->itemData['info']['category']
-							&& false !== stripos($filename, '/templates/front/'))
-						{
-							$filename = str_replace('.tpl', '', basename($filename));
-							$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-						}
+							// compatibility layer
+							// todo: remove in v5
+							if (false !== strpos($this->_attr('filename'), '/'))
+							{
+								$filename = $this->_attr('filename');
+							}
+							//
+
+							break;
+
+						case 'smarty':
+							//$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+
+							// compatibility layer for v4.0 plugins
+							// todo: remove in v5
+							if (false !== stripos($filename, '.tpl'))
+							{
+								if ('payments' != @$this->itemData['info']['category']
+									&& false !== stripos($filename, '/templates/front/'))
+								{
+									$filename = str_replace('.tpl', '', basename($filename));
+									$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+								}
+							}
+							else
+							{
+								$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+							}
+						//
 					}
-					else
-					{
-						$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-					}
-					//
+
 				}
 
 				$this->itemData['hooks'][] = array(
@@ -2181,9 +2203,8 @@ class iaExtra extends abstractCore
 		require_once IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php';
 
 		$mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
-		$pathsMap = array(self::TYPE_PLUGIN => IA_PLUGINS, self::TYPE_PACKAGE => IA_PACKAGES);
 
-		$path = isset($pathsMap[$this->itemData['type']]) ? $pathsMap[$this->itemData['type']] : IA_HOME;
+		$path = isset($this->_extrasTypePaths[$this->itemData['type']]) ? $this->_extrasTypePaths[$this->itemData['type']] : IA_HOME;
 		$extrasVersion = $this->itemData['info']['version'];
 
 		foreach ($this->itemData['sql'][$type][$stage] as $version => $entries)
