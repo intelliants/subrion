@@ -2250,6 +2250,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('for_plan_only','Specifies if the field should be available only when plan chosen.','tooltip'),
 
+('https','Use secure HTTPS protocol for your site. Before enabling this, please make sure you have properly configured your hosting account and/or webserver.','tooltip'),
+
 ('lang','Select the preferred language of your site.','tooltip'),
 ('language_switch','Allows users to choose a language on the frontend of your site.','tooltip'),
 ('link_to_details','If specified, the field will be a link to the item details page.','tooltip'),

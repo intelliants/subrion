@@ -121,7 +121,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				if ($class && method_exists($class, iaUsers::METHOD_NAME_GET_FAVORITES))
 				{
-					$favorites[$itemName]['items'] = $class->{iaUsers::METHOD_NAME_GET_FAVORITES}($ids, $fields);
+					$favorites[$itemName]['items'] = $class->{iaUsers::METHOD_NAME_GET_FAVORITES}($ids);
 				}
 				else
 				{

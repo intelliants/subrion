@@ -417,14 +417,20 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _updateParam($key, $value)
 	{
-		in_array($key, $this->_customConfigParams)
-			? $this->_updateCustomParam($key, $value)
-			: $this->_iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'));
+		if (in_array($key, $this->_customConfigParams))
+		{
+			if (!$this->_updateCustomParam($key, $value))
+			{
+				return;
+			}
+		}
+
+		$this->_iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'));
 	}
 
 	protected function _updateCustomParam($key, $value)
 	{
-		switch ($key)
+		switch ($key) // exit with false in case if config should not be updated
 		{
 			case 'https':
 				$baseUrl = $this->_iaCore->get('baseurl');
@@ -440,7 +446,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$this->_redirectUrl = IA_URL . iaSanitize::htmlInjectionFilter($value) . '/configuration/general/';
 		}
 
-		$this->_iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'));
+		return true;
 	}
 
 	private function _getParams($groupName)
