@@ -186,7 +186,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			$title = $groupData['title'];
+			$title = iaLanguage::get('config_group_' . $groupData['name']);
 		}
 
 		$iaView->title($title);
@@ -215,7 +215,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$activeMenu = null;
 
-				iaBreadcrumb::insert($groupData['title'], IA_ADMIN_URL . $pluginPage['alias'], iaBreadcrumb::POSITION_FIRST);
+				iaBreadcrumb::insert(iaLanguage::get('config_group_' . $groupData['name']), IA_ADMIN_URL
+					. $pluginPage['alias'], iaBreadcrumb::POSITION_FIRST);
 			}
 			elseif ($iaItem->isExtrasExist($groupData['extras'], iaItem::TYPE_PLUGIN))
 			{

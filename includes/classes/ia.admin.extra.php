@@ -456,12 +456,12 @@ class iaExtra extends abstractCore
 			$iaDb->setTable('admin_pages_groups');
 
 			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['groups'] as $block)
+			foreach ($this->itemData['groups'] as $title => $entry)
 			{
-				$iaDb->exists("`extras` = '{$this->itemData['name']}' AND `name` = '{$block['name']}'")
-					? $iaDb->update($block, "`extras` = '{$this->itemData['name']}' AND `name` = '{$block['name']}'")
-					: $iaDb->insert($block, array('order' => ++$maxOrder));
+				$iaDb->exists("`extras` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
+					? $iaDb->update($entry, "`extras` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
+					: $iaDb->insert($entry, array('order' => ++$maxOrder));
+				$this->_addPhrase('pages_group_' . $entry['name'], $title);
 			}
 
 			$iaDb->resetTable();
@@ -1056,10 +1056,10 @@ class iaExtra extends abstractCore
 			$iaDb->setTable('admin_pages_groups');
 
 			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['groups'] as $block)
+			foreach ($this->itemData['groups'] as $title => $entry)
 			{
-				$iaDb->insert($block, array('order' => ++$maxOrder));
+				$iaDb->insert($entry, array('order' => ++$maxOrder));
+				$this->_addPhrase('pages_group_' . $entry['name'], $title);
 			}
 
 			$iaDb->resetTable();
@@ -1155,10 +1155,9 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['config'])
 		{
-			$iaDb->setTable('config');
+			$iaDb->setTable(iaCore::getConfigTable());
 
 			$maxOrder = $iaDb->getMaxOrder();
-
 			foreach ($this->itemData['config'] as $config)
 			{
 				$iaDb->insert($config, array('order' => ++$maxOrder));
@@ -1390,6 +1389,7 @@ class iaExtra extends abstractCore
 							'type_id' => $groupId,
 							'extras' => $permission['extras']
 						);
+
 						$iaDb->insert($data);
 					}
 					$iaDb->resetTable();
@@ -1847,10 +1847,9 @@ class iaExtra extends abstractCore
 						);
 						break;
 					case $this->_checkPath('groups'):
-						$this->itemData['groups'][] = array(
+						$this->itemData['groups'][$text] = array(
 							'name' => $this->_attr('name'),
-							'extras' => $this->itemData['name'],
-							'title' => $text
+							'extras' => $this->itemData['name']
 						);
 				}
 				break;
