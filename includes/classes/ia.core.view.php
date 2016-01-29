@@ -340,7 +340,7 @@ class iaView extends abstractUtil
 			$menuEntry = $group;
 
 			$menuEntry['id'] = $id;
-			$menuEntry['title'] = iaLanguage::get('sidebar_section_' . $menuEntry['name']);
+			$menuEntry['title'] = iaLanguage::get('pages_group_' . $menuEntry['name']);
 			$menuEntry['items'] = array();
 
 			if (1 == $id) // the group 'System'

@@ -265,14 +265,13 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$groupList = $this->_iaDb->onefield('`group`', '1 = 1 GROUP BY `group`', null, null, 'pages');
 
-		$this->_iaDb->setTable('admin_pages_groups');
-		$array = $this->_iaDb->all(array('id', 'name', 'title'));
+		$array = $this->_iaDb->all(array('id', 'name'), null, null, null, 'admin_pages_groups');
 		$pagesGroups = array();
 		foreach ($array as $row)
 		{
+			$row['title'] = iaLanguage::get('pages_group_' . $row['name']);
 			in_array($row['id'], $groupList) && $pagesGroups[$row['id']] = $row;
 		}
-		$this->_iaDb->resetTable();
 
 		$menuPages = array();
 

@@ -480,7 +480,8 @@ class iaExtra extends abstractCore
 					? $iaDb->one_bind('MAX(`order`) + 5', '`group` = :group', $page)
 					: $page['order']);
 
-				$iaDb->insert($page) && $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_ADMIN);
+				$iaDb->insert($page);
+				$this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -1082,7 +1083,8 @@ class iaExtra extends abstractCore
 				empty($page['group']) || ($this->_menuGroups[] = $page['group']);
 				$page['group'] = $this->_lookupGroupId($page['group']);
 
-				$iaDb->insert($page) && $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_ADMIN);
+				$iaDb->insert($page);
+				$this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();

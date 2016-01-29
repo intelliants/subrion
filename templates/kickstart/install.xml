@@ -36,8 +36,7 @@
 	<configgroup name="template_kickstart">Template</configgroup>
 
 	<config group="template_kickstart" 
-		    name="kickstart_divider1" 
-		    type="divider" 
+		    type="divider"
 		    order="3000">General</config>
 
 	<config group="template_kickstart" 
@@ -73,8 +72,7 @@
 		    description="Logo text">Kickstart</config>
 
 	<config group="template_kickstart" 
-		    name="kickstart_divider2" 
-		    type="divider" 
+		    type="divider"
 		    order="3030">Social links</config>
 	
 	<config group="template_kickstart"
