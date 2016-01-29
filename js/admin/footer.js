@@ -254,7 +254,10 @@ $(function()
 	});
 
 	// tooltips
-	$('.js-tooltip').tooltip().on('click', function(e)
+	$('.js-tooltip').tooltip(
+	{
+		container: 'body'
+	}).on('click', function(e)
 	{
 		e.preventDefault();
 	});
