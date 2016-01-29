@@ -398,23 +398,26 @@ class iaTemplate extends abstractCore
 		{
 			$iaDb->setTable(iaCore::getConfigTable());
 
-			$maxOrder = $iaDb->one('MAX(`order`) + 1');
+			$maxOrder = $iaDb->one_bind('MAX(`order`) + 1', '`extras` = :extras', array('extras' => $this->name));
 			$maxOrder = $maxOrder ? (int)$maxOrder : 1;
 
-			foreach ($this->_config as $config)
+			foreach ($this->_config as $entry)
 			{
-				$order = $config['order'];
-				unset($config['order']);
+				$id = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($entry['name'], 'name'));
+				$entry['order'] = isset($entry['order']) ? $entry['order'] : ++$maxOrder;
 
-				$stmt = iaDb::printf("`name` = ':name'", $config);
-				if ($iaDb->exists($stmt))
+				if (!$id || empty($entry['name']))
 				{
-					$iaDb->update($config, $stmt);
+					$this->iaDb->insert($entry);
 				}
-				else
+				elseif ($id)
 				{
-					$iaDb->insert($config, array('order' => $order ? $order : $maxOrder));
-					$maxOrder++;
+					if (isset($entry['value']))
+					{
+						unset($entry['value']);
+					}
+
+					$this->iaDb->update($entry, iaDb::convertIds($id));
 				}
 			}
 

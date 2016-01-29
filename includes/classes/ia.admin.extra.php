@@ -538,28 +538,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['config'])
 		{
-			$iaDb->setTable('config');
-
-			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['config'] as $config)
-			{
-				if ($iaDb->exists("`name` = '{$config['name']}'"))
-				{
-					if (isset($config['value']))
-					{
-						unset($config['value']);
-					}
-
-					$iaDb->update($config, "`name` = '{$config['name']}'");
-				}
-				else
-				{
-					$iaDb->insert($config, array('order' => ++$maxOrder));
-				}
-			}
-
-			$iaDb->resetTable();
+			$this->_processConfig($this->itemData['config']);
 		}
 
 		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
@@ -1120,15 +1099,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['config'])
 		{
-			$iaDb->setTable(iaCore::getConfigTable());
-
-			$maxOrder = $iaDb->getMaxOrder();
-			foreach ($this->itemData['config'] as $config)
-			{
-				$iaDb->insert($config, array('order' => ++$maxOrder));
-			}
-
-			$iaDb->resetTable();
+			$this->_processConfig($this->itemData['config']);
 		}
 
 		if ($this->itemData['pages']['custom'] && $this->itemData['type'] == self::TYPE_PACKAGE)
@@ -2381,7 +2352,7 @@ class iaExtra extends abstractCore
 	{
 		$this->iaDb->setTable('admin_pages');
 
-		$this->iaDb->delete('`extras` = :plugin', null, array('plugin' => $this->itemData['name']));
+		$this->iaDb->delete(iaDb::convertIds($this->itemData['name'], 'extras'));
 
 		foreach ($entries as $title => $entry)
 		{
@@ -2395,6 +2366,34 @@ class iaExtra extends abstractCore
 
 			$this->iaDb->insert($entry);
 			$this->_addPhrase('page_title_' . ($entry['name'] ? $entry['name'] : $entry['attr']), $title, iaLanguage::CATEGORY_ADMIN);
+		}
+
+		$this->iaDb->resetTable();
+	}
+
+	protected function _processConfig(array $entries)
+	{
+		$this->iaDb->setTable(iaCore::getConfigTable());
+
+		$maxOrder = $this->iaDb->getMaxOrder();
+		foreach ($entries as $entry)
+		{
+			$id = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($entry['name'], 'name'));
+			$entry['order'] = isset($entry['order']) ? $entry['order'] : ++$maxOrder;
+
+			if (!$id || empty($entry['name']))
+			{
+				$this->iaDb->insert($entry);
+			}
+			elseif ($id)
+			{
+				if (isset($entry['value']))
+				{
+					unset($entry['value']);
+				}
+
+				$this->iaDb->update($entry, iaDb::convertIds($id));
+			}
 		}
 
 		$this->iaDb->resetTable();

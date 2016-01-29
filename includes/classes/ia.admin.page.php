@@ -111,6 +111,9 @@ class iaPage extends abstractPlugin
 
 	public function getByName($pageName, $lookupThroughBackend = true)
 	{
-		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $pageName), $lookupThroughBackend ? self::getAdminTable() : self::getTable());
+		$result = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $pageName), $lookupThroughBackend ? self::getAdminTable() : self::getTable());
+		empty($result) || $result['title'] = iaLanguage::get('page_title_' . $pageName);
+
+		return $result;
 	}
 }
