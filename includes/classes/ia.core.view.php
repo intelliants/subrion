@@ -355,7 +355,7 @@ class iaView extends abstractUtil
 					$data = array(
 						'name' => $item['name'],
 						'parent' => isset($item['parent']) ? $item['parent'] : null,
-						'title' => $item['name'] ? iaLanguage::get('page_title_' . $item['name']) : $item['attr']
+						'title' => iaLanguage::get('page_title_' . ($item['name'] ? $item['name'] : $item['attr']))
 					);
 
 					if ($item['alias'])

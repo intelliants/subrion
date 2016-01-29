@@ -461,7 +461,7 @@ class iaExtra extends abstractCore
 				$iaDb->exists("`extras` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
 					? $iaDb->update($entry, "`extras` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
 					: $iaDb->insert($entry, array('order' => ++$maxOrder));
-				$this->_addPhrase('pages_group_' . $entry['name'], $title);
+				$this->_addPhrase('pages_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -469,22 +469,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['pages']['admin'])
 		{
-			$iaDb->setTable('admin_pages');
-
-			$iaDb->delete('`extras` = :plugin', null, array('plugin' => $this->itemData['name']));
-
-			foreach ($this->itemData['pages']['admin'] as $title => $page)
-			{
-				$page['group'] = $this->_lookupGroupId($page['group']);
-				$page['order'] = (int)(is_null($page['order'])
-					? $iaDb->one_bind('MAX(`order`) + 5', '`group` = :group', $page)
-					: $page['order']);
-
-				$iaDb->insert($page);
-				$this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_ADMIN);
-			}
-
-			$iaDb->resetTable();
+			$this->_processAdminPages($this->itemData['pages']['admin']);
 		}
 
 		if ($this->itemData['actions'])
@@ -1059,7 +1044,7 @@ class iaExtra extends abstractCore
 			foreach ($this->itemData['groups'] as $title => $entry)
 			{
 				$iaDb->insert($entry, array('order' => ++$maxOrder));
-				$this->_addPhrase('pages_group_' . $entry['name'], $title);
+				$this->_addPhrase('pages_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -1067,27 +1052,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['pages']['admin'])
 		{
-			$iaDb->setTable('admin_pages');
-
-			$order = (int)$iaDb->one('MAX(`order`)', "`menus` IN ('menu')");
-			$order = max($order, 1);
-
-			foreach ($this->itemData['pages']['admin'] as $title => $page)
-			{
-				if (is_null($page['order']))
-				{
-					$order += 5;
-					$page['order'] = $order;
-				}
-
-				empty($page['group']) || ($this->_menuGroups[] = $page['group']);
-				$page['group'] = $this->_lookupGroupId($page['group']);
-
-				$iaDb->insert($page);
-				$this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_ADMIN);
-			}
-
-			$iaDb->resetTable();
+			$this->_processAdminPages($this->itemData['pages']['admin']);
 		}
 
 		if ($this->itemData['actions'])
@@ -2407,6 +2372,29 @@ class iaExtra extends abstractCore
 			}
 
 			$columnExists || $this->_alterTable($entry);
+		}
+
+		$this->iaDb->resetTable();
+	}
+
+	protected function _processAdminPages(array $entries)
+	{
+		$this->iaDb->setTable('admin_pages');
+
+		$this->iaDb->delete('`extras` = :plugin', null, array('plugin' => $this->itemData['name']));
+
+		foreach ($entries as $title => $entry)
+		{
+			$entry['group'] = $this->_lookupGroupId($entry['group']);
+			$entry['order'] = (int)(is_null($entry['order'])
+				? $this->iaDb->one_bind('MAX(`order`) + 5', '`group` = :group', $entry)
+				: $entry['order']);
+
+			empty($entry['group']) || ($this->_menuGroups[] = $entry['group']);
+			empty($entry['name']) && $entry['attr'] = iaUtil::generateToken(8);
+
+			$this->iaDb->insert($entry);
+			$this->_addPhrase('page_title_' . ($entry['name'] ? $entry['name'] : $entry['attr']), $title, iaLanguage::CATEGORY_ADMIN);
 		}
 
 		$this->iaDb->resetTable();
