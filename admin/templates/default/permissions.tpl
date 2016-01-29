@@ -147,7 +147,7 @@ $(function()
 						<a href="#" class=""><i class="i-chevron-up"></i></a>
 					</div>*}
 					<h4>
-						{$pageGroupTitles.$key}
+						{lang key="pages_group_{$pageGroupTitles.$key}"}
 						{*<small>
 							<a href="#"><i class="i-checkmark"></i> Allow all</a>
 							<a href="#"><i class="i-close"></i> Deny all</a>
