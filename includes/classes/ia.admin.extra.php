@@ -50,7 +50,7 @@ class iaExtra extends abstractCore
 
 	protected static $_table = 'extras';
 
-	private $_builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog');
+	private $_builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog', 'elfinder');
 
 	protected $_inTag;
 	protected $_currentPath;
@@ -473,14 +473,14 @@ class iaExtra extends abstractCore
 
 			$iaDb->delete('`extras` = :plugin', null, array('plugin' => $this->itemData['name']));
 
-			foreach ($this->itemData['pages']['admin'] as $page)
+			foreach ($this->itemData['pages']['admin'] as $title => $page)
 			{
 				$page['group'] = $this->_lookupGroupId($page['group']);
 				$page['order'] = (int)(is_null($page['order'])
 					? $iaDb->one_bind('MAX(`order`) + 5', '`group` = :group', $page)
 					: $page['order']);
 
-				$iaDb->insert($page);
+				$iaDb->insert($page) && $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -519,9 +519,10 @@ class iaExtra extends abstractCore
 
 			$maxOrder = $iaDb->getMaxOrder();
 
-			foreach ($this->itemData['config_groups'] as $config)
+			foreach ($this->itemData['config_groups'] as $title => $entry)
 			{
-				$iaDb->insert($config, array('order' => ++$maxOrder));
+				$iaDb->insert($entry, array('order' => ++$maxOrder));
+				$this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -583,7 +584,7 @@ class iaExtra extends abstractCore
 
 			$maxOrder = $iaDb->getMaxOrder();
 
-			foreach ($this->itemData['pages']['front'] as $page)
+			foreach ($this->itemData['pages']['front'] as $title => $page)
 			{
 				if ($page['blocks'] && ($ids = $this->iaDb->onefield(iaDb::ID_COLUMN_SELECTION,
 						"`name` IN ('" . implode("','", $page['blocks']) . "')", null, null, iaBlock::getTable())))
@@ -594,14 +595,13 @@ class iaExtra extends abstractCore
 					}
 				}
 
-				$title = empty($page['title']) ? null : $page['title'];
 				$content = empty($page['contents']) ? null : $page['contents'];
 
 				is_int($page['group']) || $page['group'] = $this->_lookupGroupId($page['group']);
 				$page['last_updated'] = date(iaDb::DATETIME_FORMAT);
 				$page['order'] = ++$maxOrder;
 
-				unset($page['blocks'], $page['title']);
+				unset($page['blocks']);
 
 				$result = $iaDb->exists('`name` = :name', $page)
 					? $iaDb->update($page, iaDb::convertIds($page['name'], 'name'))
@@ -610,7 +610,7 @@ class iaExtra extends abstractCore
 				if ($result)
 				{
 					empty($title) || $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_PAGE);
-					empty($contents) || $this->_addPhrase('page_content_' . $page, $content, iaLanguage::CATEGORY_PAGE);
+					empty($contents) || $this->_addPhrase('page_content_' . $page['name'], $content, iaLanguage::CATEGORY_PAGE);
 
 					if ($page['fields_item'] && self::TYPE_PACKAGE == $this->itemData['type']
 						&& !$iaDb->exists('`page_name` = :name AND `item` = :item', $page, 'items_pages'))
@@ -1071,7 +1071,7 @@ class iaExtra extends abstractCore
 			$order = (int)$iaDb->one('MAX(`order`)', "`menus` IN ('menu')");
 			$order = max($order, 1);
 
-			foreach ($this->itemData['pages']['admin'] as $page)
+			foreach ($this->itemData['pages']['admin'] as $title => $page)
 			{
 				if (is_null($page['order']))
 				{
@@ -1079,14 +1079,10 @@ class iaExtra extends abstractCore
 					$page['order'] = $order;
 				}
 
-				if ($page['group'])
-				{
-					$this->_menuGroups[] = $page['group'];
-				}
-
+				empty($page['group']) || ($this->_menuGroups[] = $page['group']);
 				$page['group'] = $this->_lookupGroupId($page['group']);
 
-				$iaDb->insert($page);
+				$iaDb->insert($page) && $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -1120,10 +1116,10 @@ class iaExtra extends abstractCore
 			$iaDb->setTable(iaCore::getConfigGroupsTable());
 
 			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['config_groups'] as $config)
+			foreach ($this->itemData['config_groups'] as $title => $entry)
 			{
-				$iaDb->insert($config, array('order' => ++$maxOrder));
+				$iaDb->insert($entry, array('order' => ++$maxOrder));
+				$this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -1191,7 +1187,7 @@ class iaExtra extends abstractCore
 			$maxOrder = $iaDb->getMaxOrder();
 			$existPages = $iaDb->keyvalue(array('name', 'id'));
 
-			foreach ($this->itemData['pages']['front'] as $page)
+			foreach ($this->itemData['pages']['front'] as $title => $page)
 			{
 				if (!isset($existPages[$page['name']]))
 				{
@@ -1200,12 +1196,11 @@ class iaExtra extends abstractCore
 						$iaDb->insert(array('page_name' => $page['name'], 'item' => $page['fields_item']), null, 'items_pages');
 					}
 
-					$title = empty($page['title']) ? false : $page['title'];
 					$blocks = empty($page['blocks']) ? false : $page['blocks'];
 					$menus = empty($page['menus']) ? array() : explode(',', $page['menus']);
 					$contents = empty($page['contents']) ? false : $page['contents'];
 
-					unset($page['title'], $page['blocks'], $page['menus'], $page['contents']);
+					unset($page['blocks'], $page['menus'], $page['contents']);
 
 					$page['group'] = $pageGroups[$page['group']];
 
@@ -1287,6 +1282,7 @@ class iaExtra extends abstractCore
 								$iaDb->insert($entry, null, iaBlock::getMenusTable());
 							}
 						}
+
 						$iaDb->resetTable();
 					}
 
@@ -1716,7 +1712,7 @@ class iaExtra extends abstractCore
 			case 'page':
 				if ($this->_checkPath('adminpages'))
 				{
-					$this->itemData['pages']['admin'][] = array(
+					$this->itemData['pages']['admin'][$text] = array(
 						'name' => $this->_attr('name'),
 						'filename' => $this->_attr('filename'),
 						'alias' => $this->_attr('url'),
@@ -1726,7 +1722,6 @@ class iaExtra extends abstractCore
 						'menus' => $this->_attr('menus'),
 						'action' => $this->_attr('action', iaCore::ACTION_READ),
 						'parent' => $this->_attr('parent'),
-						'title' => $text,
 						'extras' => $this->itemData['name']
 					);
 				}
@@ -1740,12 +1735,11 @@ class iaExtra extends abstractCore
 					$blocks = empty($blocks) ? null : explode(',', $blocks);
 
 					// TODO: add pages param to display some existing blocks on new page
-					$this->itemData['pages']['front'][] = array(
+					$this->itemData['pages']['front'][$text] = array(
 						'name' => $this->_attr('name'),
 						'filename' => $this->_attr('filename'),
 						'custom_tpl' => (bool)$this->_attr('template', 0),
 						'template_filename' => $this->_attr('template', ''),
-						'title' => $text,
 						'menus' => $this->_attr('menus'),
 						'status' => $this->_attr('status', iaCore::STATUS_ACTIVE),
 						'alias' => $url,
@@ -1766,10 +1760,9 @@ class iaExtra extends abstractCore
 				break;
 
 			case 'configgroup':
-				$this->itemData['config_groups'][] = array(
+				$this->itemData['config_groups'][$text] = array(
 					'name' => $this->_attr('name'),
-					'extras' => $this->itemData['name'],
-					'title' => $text
+					'extras' => $this->itemData['name']
 				);
 				break;
 

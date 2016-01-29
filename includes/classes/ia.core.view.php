@@ -258,22 +258,17 @@ class iaView extends abstractUtil
 	public function getAdminMenu()
 	{
 		$iaDb = &$this->iaCore->iaDb;
-
-		$result = array();
-		$menuGroups = array();
-		$extras = $this->iaCore->get('extras');
-
-		$stmt = "`extras` IN ('', '" . implode("','", $extras) . "')";
-		$rows = $iaDb->all(array('id', 'name', 'title'), $stmt . ' ORDER BY `order`', null, null, 'admin_pages_groups');
-		foreach ($rows as $row)
-		{
-			$menuGroups[$row['id']] = array_merge($row, array('items' => array()));
-		}
-
 		$this->iaCore->factory('item');
 
+		$result = array();
+
+		$extras = implode("','", $this->iaCore->get('extras'));
+		$stmt = "`extras` IN ('', '" . $extras . "')";
+
+		$menuGroups = $iaDb->assoc(array('id', 'name'), $stmt . ' ORDER BY `order`', 'admin_pages_groups');
+
 		$sql = 'SELECT g.`name` `config`, e.`type`, '
-				. 'p.`id`, p.`group`, p.`name`, p.`parent`, p.`title`, p.`attr`, p.`alias`, p.`extras` '
+				. 'p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`extras` '
 			. 'FROM `:prefix:table_admin_pages` p '
 			. 'LEFT JOIN `:prefix:table_config_groups` g ON '
 				. "(p.`extras` IN (':extras') AND p.`extras` = g.`extras`) "
@@ -291,23 +286,26 @@ class iaView extends abstractUtil
 			'table_extras' => iaItem::getExtrasTable(),
 			'groups' => implode(',', array_keys($menuGroups)),
 			'status' => iaCore::STATUS_ACTIVE,
-			'extras' => implode("','", $extras)
+			'extras' => $extras
 		));
-		$rows = $iaDb->getAll($sql);
-		foreach ($rows as $row)
+
+		foreach ($iaDb->getAll($sql) as $row)
 		{
+			isset($menuGroups[$row['group']]['items']) || $menuGroups[$row['group']]['items'] = array();
 			$menuGroups[$row['group']]['items'][] = $row;
 		}
 
 		$iaAcl = $this->iaCore->factory('acl');
 
 		// config groups to be included as menu items
-		$rows = $iaDb->all(array('name', 'title', 'extras'), "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
+		$rows = $iaDb->all(array('name', 'extras'), "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
 		$configGroups = array();
 		$templateName = $this->iaCore->get('tmpl');
 
 		foreach ($rows as $row)
 		{
+			$row['title'] = iaLanguage::get('config_group_' . $row['name']);
+
 			switch (true)
 			{
 				case ($templateName == $row['extras']):
@@ -331,7 +329,7 @@ class iaView extends abstractUtil
 		}
 		//
 
-		foreach ($menuGroups as $group)
+		foreach ($menuGroups as $id => $group)
 		{
 			if (!$group['items'])
 			{
@@ -340,9 +338,12 @@ class iaView extends abstractUtil
 
 			$separatorsCount = 0;
 			$menuEntry = $group;
+
+			$menuEntry['id'] = $id;
+			$menuEntry['title'] = iaLanguage::get('sidebar_section_' . $menuEntry['name']);
 			$menuEntry['items'] = array();
 
-			if (1 == $group['id']) // the group 'System'
+			if (1 == $id) // the group 'System'
 			{
 				$menuEntry['items'] = $configGroups['common'];
 			}
@@ -351,11 +352,10 @@ class iaView extends abstractUtil
 			{
 				if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE . iaAcl::SEPARATOR . iaCore::ACTION_READ, $item['name']))
 				{
-					$title = iaLanguage::get($item['title'], $item['title']);
 					$data = array(
 						'name' => $item['name'],
 						'parent' => isset($item['parent']) ? $item['parent'] : null,
-						'title' => $title
+						'title' => $item['name'] ? iaLanguage::get('page_title_' . $item['name']) : $item['attr']
 					);
 
 					if ($item['alias'])
@@ -382,10 +382,8 @@ class iaView extends abstractUtil
 					}
 
 					$menuEntry['items'][] = $data;
-					if (empty($item['name']))
-					{
-						$separatorsCount++;
-					}
+
+					$item['name'] || $separatorsCount++;
 				}
 			}
 
@@ -420,7 +418,7 @@ class iaView extends abstractUtil
 	{
 		$result = array();
 
-		if ($rows = $this->iaCore->iaDb->all(array('name', 'title', 'alias', 'attr'), "FIND_IN_SET('header', `menus`) AND `status` = 'active' ORDER BY `order`", null, null, 'admin_pages'))
+		if ($rows = $this->iaCore->iaDb->all(array('name', 'alias', 'attr'), "FIND_IN_SET('header', `menus`) AND `status` = 'active' ORDER BY `order`", null, null, 'admin_pages'))
 		{
 			$iaAcl = $this->iaCore->factory('acl');
 
@@ -430,7 +428,7 @@ class iaView extends abstractUtil
 				{
 					$result[] = array(
 						'name' => $entry['name'],
-						'title' => $entry['title'],
+						'title' => $entry['name'] ? iaLanguage::get('page_title_' . $entry['name']) : '',
 						'url' => IA_ADMIN_URL . ($entry['alias'] ? $entry['alias'] : $entry['name'] . IA_URL_DELIMITER),
 						'attr' => $entry['attr']
 					);
@@ -781,7 +779,7 @@ SQL;
 			}
 		}
 
-		$fields = 'p.`id`, e.`type`, e.`url`, ' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'p.`title`, ' : '') . ' p.`name`, '
+		$fields = 'p.`id`, e.`type`, e.`url`, p.`name`, '
 			. 'p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`'
 			. (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? ' ' : ', p.`meta_description` `description`, p.`meta_keywords` `keywords` ');
 		$sql = 'SELECT :fields'

@@ -427,9 +427,11 @@ class iaTemplate extends abstractCore
 
 			$maxOrder = $iaDb->getMaxOrder() + 1;
 
-			foreach ($this->_configGroups as $config)
+			foreach ($this->_configGroups as $title => $entry)
 			{
-				$iaDb->insert($config, array('order' => $maxOrder));
+				$iaDb->insert($entry, array('order' => $maxOrder));
+				$this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
+
 				$maxOrder++;
 			}
 
@@ -755,10 +757,9 @@ class iaTemplate extends abstractCore
 				break;
 
 			case 'configgroup':
-				$this->_configGroups[] = array(
+				$this->_configGroups[$text] = array(
 					'name' => $this->attr('name'),
-					'extras' => $this->name,
-					'title' => $text
+					'extras' => $this->name
 				);
 				break;
 
@@ -858,6 +859,14 @@ class iaTemplate extends abstractCore
 					iaLanguage::addPhrase($key, $value, $languageCode, $this->name, $phrase['category'], false);
 				}
 			}
+		}
+	}
+
+	protected function _addPhrase($key, $value, $category = iaLanguage::CATEGORY_COMMON)
+	{
+		foreach ($this->iaCore->languages as $isoCode => $language)
+		{
+			iaLanguage::addPhrase($key, $value, $isoCode, $this->name, $category, false);
 		}
 	}
 }
