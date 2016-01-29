@@ -106,51 +106,47 @@
 				<label class="col col-lg-2 control-label"></label>
 
 				<div class="col col-lg-8">
-					{if !empty($pagesGroup)}
-						{if !empty($pages)}
-							<ul class="nav nav-tabs">
-								{foreach $pagesGroup as $group => $row}
-									<li{if $row@iteration == 1} class="active"{/if}><a href="#tab-pages_{$row.name}" data-toggle="tab">{$row.title}</a></li>
-								{/foreach}
-							</ul>
+					<ul class="nav nav-tabs">
+						{foreach $pagesGroup as $group => $row}
+							<li{if $row@iteration == 1} class="active"{/if}><a href="#tab-pages_{$row.name}" data-toggle="tab">{$row.title}</a></li>
+						{/foreach}
+					</ul>
 
-							<div class="tab-content">
-								{foreach $pagesGroup as $group => $row}
-									{assign post_key "all_pages_{$row.name}"}
-									{assign classname "pages_{$row.name}"}
-									<div class="tab-pane{if $row@iteration == 1} active{/if}" id="tab-{$classname}">
-										<div class="checkbox checkbox-all">
-											<label>
-												<input type="checkbox" value="1" class="{$classname}" data-group="{$classname}" name="{$post_key}" id="{$post_key}"{if isset($smarty.post.$post_key) && $smarty.post.$post_key == '1'} checked{/if}> {lang key='select_all_in_tab'}
-											</label>
-										</div>
+					<div class="tab-content">
+						{foreach $pagesGroup as $group => $row}
+							{$post_key = "all_pages_{$row.name}"}
+							{$classname = "pages_{$row.name}"}
+							<div class="tab-pane{if $row@iteration == 1} active{/if}" id="tab-{$classname}">
+								<div class="checkbox checkbox-all">
+									<label>
+										<input type="checkbox" value="1" class="{$classname}" data-group="{$classname}" name="{$post_key}" id="{$post_key}"{if isset($smarty.post.$post_key) && $smarty.post.$post_key == '1'} checked{/if}> {lang key='select_all_in_tab'}
+									</label>
+								</div>
 
-										{foreach $pages as $key => $page}
-											{if $page.group == $group}
-											<div class="checkbox">
-												<label>
-													<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $visibleOn)} checked{/if}>
-													{if empty($page.title)}{$page.name}{else}{$page.title|escape:'html'}{/if}
+								{foreach $pages as $key => $page}
+									{if $page.group == $group}
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $visibleOn)} checked{/if}>
+											{if empty($page.title)}{$page.name}{else}{$page.title|escape:'html'}{/if}
 
-													{if $page.suburl}
-														<div class="subpages" style="display: none" rel="{$page.suburl}::{$key}">&nbsp;</div>
-														<input type="hidden" name="subpages[{$page.name}]" value="{if isset($block.subpages[$page.name])}{$block.subpages[$page.name]}{elseif isset($smarty.post.subpages[$page.name])}{$smarty.post.subpages[$page.name]}{/if}" id="subpage_{$key}">
-													{/if}
-												</label>
-											</div>
+											{if $page.suburl}
+												<div class="subpages" style="display: none" rel="{$page.suburl}::{$key}">&nbsp;</div>
+												<input type="hidden" name="subpages[{$page.name}]" value="{if isset($block.subpages[$page.name])}{$block.subpages[$page.name]}{elseif isset($smarty.post.subpages[$page.name])}{$smarty.post.subpages[$page.name]}{/if}" id="subpage_{$key}">
 											{/if}
-										{/foreach}
+										</label>
 									</div>
+									{/if}
 								{/foreach}
 							</div>
+						{/foreach}
+					</div>
 
-							<div class="checkbox checkbox-all">
-								<label>
-									<input type="checkbox" value="1" name="all_pages" id="js-select-all-pages"{if isset($smarty.post.all_pages) && $smarty.post.all_pages == 1} checked{/if}> {lang key='select_all'}
-								</label>
-							</div>
-						{/if}
-					{/if}
+					<div class="checkbox checkbox-all">
+						<label>
+							<input type="checkbox" value="1" name="all_pages" id="js-select-all-pages"{if isset($smarty.post.all_pages) && $smarty.post.all_pages == 1} checked{/if}> {lang key='select_all'}
+						</label>
+					</div>
 				</div>
 			</div>
 		</div>

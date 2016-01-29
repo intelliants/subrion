@@ -77,13 +77,13 @@ class iaPage extends abstractPlugin
 			$pages[$page['group']][$page['id']] = iaLanguage::get('page_title_' . $page['name']);
 		}
 
-		$rows = $this->iaDb->all(array('title', 'id', 'name'), null, null, null, self::getAdminGroupsTable());
+		$rows = $this->iaDb->all(array('id', 'name'), null, null, null, self::getAdminGroupsTable());
 		foreach ($rows as $row)
 		{
 			if (isset($pages[$row['id']]))
 			{
 				$result[$row['id']] = array(
-					'title' => $row['title'],
+					'title' => iaLanguage::get('pages_group_' . $row['name']),
 					'children' => $pages[$row['id']]
 				);
 			}

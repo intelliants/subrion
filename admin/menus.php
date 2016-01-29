@@ -240,12 +240,12 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->getHelper()->update($entryData, $entryId);
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
-		if (!empty($_GET['name']))
+		if (!empty($params['name']))
 		{
 			$conditions[] = '(`name` LIKE :name OR `title` LIKE :name)';
-			$values['name'] = '%' . $_GET['name'] . '%';
+			$values['name'] = '%' . $params['name'] . '%';
 		}
 
 		$conditions[] = "`type` = 'menu'";
@@ -349,11 +349,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		// get groups
 		$groups = $this->_iaDb->onefield('`group`', '1 GROUP BY `group`', null, null, 'pages');
-		$rows = $this->_iaDb->all(array('id', 'name', 'title'), null, null, null, 'admin_pages_groups');
+		$rows = $this->_iaDb->all(array('id', 'name'), null, null, null, 'admin_pages_groups');
 		foreach ($rows as $row)
 		{
 			if (in_array($row['id'], $groups))
 			{
+				$row['title'] = iaLanguage::get('pages_group_' . $row['name']);
 				$pageGroups[$row['id']] = $row;
 			}
 		}
@@ -375,6 +376,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$iaView->assign('treeData', iaSanitize::html(iaUtil::jsonEncode($_POST['menus'])));
 		}
 
+		$iaView->assign('pageGroups', $pageGroups);
 		$iaView->assign('visibleOn', $visibleOn);
 		$iaView->assign('pages', $this->_getPages());
 		$iaView->assign('pagesGroup', $pageGroups);
