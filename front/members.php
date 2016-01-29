@@ -151,4 +151,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaView->assign('fields', $fields);
 
 	$iaView->title(iaLanguage::get('members') . ($letters['active'] ? " [{$letters['active']}] " : ''));
+
+	$iaView->set('filtersItemName', $iaUsers->getItemName());
 }
