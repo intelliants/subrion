@@ -907,7 +907,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('email_templates','password_restoration_body','<p>Dear {%FULLNAME%},</p>\r\n<p>Please follow this link if you wish to change the password at {%SITE_URL%}:<br />\r\n{%URL%}\r\n</p>\r\n<p>\r\nOr use confirmation code on page: <a href="{%SITE_URL%}forgot/?code">{%SITE_URL%}forgot/?code</a><br />\r\nE-mail: {%EMAIL%}<br />\r\nCode: {%CODE%}\r\n</p>','fullname|User,email|Email,code|Restoration code','textarea',0,'',11,'',1,1,''),
 ('email_templates','password_changement','1','''1'',''0''','radio',0,'Member password change',7,'',1,1,''),
 ('email_templates','password_changement_subject','Password change request at {%SITE_NAME%}',null,'text',0,'',13,'',1,1,''),
-('email_templates','password_changement_body','<p>Dear {%FULLNAME%},</p>\r\n\r\n<p>You requested a password change in {%SITE_NAME%}. Now you should use the following credentials to log in as member:</p>\r\n\r\n<p>username: {%USERNAME%}<br />\r\npassword:  {%PASSWORD%}</p>','fullname|User,username|Username,password|New password','textarea',0,'',14,'',1,1,''),
+('email_templates','password_changement_body','<p>Dear {%FULLNAME%},</p>\r\n\r\n<p>You requested a password change in {%SITE_NAME%}. Now you should use the following credentials to log in as member:</p>\r\n\r\n<p>username: {%USERNAME%}<br />\r\npassword: {%PASSWORD%}</p>','fullname|User,username|Username,password|New password','textarea',0,'',14,'',1,1,''),
 ('email_templates','','','','divider',0,'Payments',50,'',1,1,''),
 ('email_templates','plan_activated','1','''1'',''0''','radio',0,'Item paid and activated',55,'',1,1,''),
 ('email_templates','plan_activated_subject','Plan activated at {%SITE_NAME%}',null,'text',0,'',0,'',1,1,''),
