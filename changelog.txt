@@ -685,3 +685,20 @@
 	* Issue #54: Implement new inclusion of tpl files for templates and hooks
 	* Issue #81: Package upgrade - items creation
 	* Issue #85: Upgrade subsystem: invalid 'Host' parameter
+
+>> From 4.0.3 to 4.0.4 <<
+
+	- Issue #79: Refactor owner field
+	- Issue #91: Left sidebar in admin panel covers tooltips
+	- Issue #93: CKEditor changes asynchronous adsense code
+	- Issue #94: Mistype in Admin Panel
+	- Issue #95: Incorrect working of 'Forgot password' functionality
+	- Issue #97: No filters on Members page
+	+ Feature #532: Make it possible to translate admin panel menus
+	+ Feature #618: Ability to set @type and @length to the config_groups section
+	+ Feature #640: Provide the way to fill in the ALT attribute with the relevant data
+	+ Feature #1867: Create better accounts page
+	+ Feature #1871: Improve path routing for hooks
+	+ Feature #2088: Allow to run external upgrade SQL file
+	+ Feature #2101: Add config that will allow to switch http to https and back
+	+ Feature #2107: Adding phrases to all existing languages during a script upgrade
