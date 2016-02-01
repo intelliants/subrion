@@ -66,7 +66,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$groupName = isset($this->_iaCore->requestPath[0]) ? $this->_iaCore->requestPath[0] : 'general';
-		$groupData = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $groupName), iaCore::getConfigGroupsTable());
+		$groupData = $this->_getGroupByName($groupName);
 
 		if (empty($groupData))
 		{
@@ -186,7 +186,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			$title = iaLanguage::get('config_group_' . $groupData['name']);
+			$title = $groupData['title'];
 		}
 
 		$iaView->title($title);
@@ -414,6 +414,14 @@ class iaBackendController extends iaAbstractControllerBackend
 		));
 
 		return ($rows = $this->_iaDb->getKeyValue($sql)) ? $rows : array();
+	}
+
+	protected function _getGroupByName($groupName)
+	{
+		$result = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $groupName), iaCore::getConfigGroupsTable());
+		empty($result) || $result['title'] = iaLanguage::get('config_group_' . $result['name']);
+
+		return $result;
 	}
 
 	protected function _updateParam($key, $value)
