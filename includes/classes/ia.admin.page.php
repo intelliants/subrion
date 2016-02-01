@@ -77,13 +77,13 @@ class iaPage extends abstractPlugin
 			$pages[$page['group']][$page['id']] = iaLanguage::get('page_title_' . $page['name']);
 		}
 
-		$rows = $this->iaDb->all(array('title', 'id', 'name'), null, null, null, self::getAdminGroupsTable());
+		$rows = $this->iaDb->all(array('id', 'name'), null, null, null, self::getAdminGroupsTable());
 		foreach ($rows as $row)
 		{
 			if (isset($pages[$row['id']]))
 			{
 				$result[$row['id']] = array(
-					'title' => $row['title'],
+					'title' => iaLanguage::get('pages_group_' . $row['name']),
 					'children' => $pages[$row['id']]
 				);
 			}
@@ -111,6 +111,9 @@ class iaPage extends abstractPlugin
 
 	public function getByName($pageName, $lookupThroughBackend = true)
 	{
-		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $pageName), $lookupThroughBackend ? self::getAdminTable() : self::getTable());
+		$result = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $pageName), $lookupThroughBackend ? self::getAdminTable() : self::getTable());
+		empty($result) || $result['title'] = iaLanguage::get('page_title_' . $pageName);
+
+		return $result;
 	}
 }

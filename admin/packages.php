@@ -583,7 +583,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($cachedData = $this->_iaCore->iaCache->get('subrion_packages', 3600 * 24 * 7, true))
 		{
-			$remotePackages = $cachedData; // get templates list from cache, cache lives for 1 hour
+			$remotePackages = $cachedData; // get templates list from cache
 		}
 		else
 		{

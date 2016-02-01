@@ -215,7 +215,7 @@ Ext.onReady(function()
 			store: new Ext.data.SimpleStore(
 			{
 				fields: ['value', 'title'],
-				data: [['admin', 'Administration Board'],['frontend', 'User Frontend'],['common', 'Common'],['tooltip', 'Toolytip']]
+				data: [['admin', 'Administration Board'],['frontend', 'User Frontend'],['common', 'Common'],['tooltip', 'Tooltip']]
 			}),
 			typeAhead: true,
 			valueField: 'value',

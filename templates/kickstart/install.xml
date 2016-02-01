@@ -4,8 +4,8 @@
 	<summary>Bootstrap 3 developer template</summary>
 	<author>Gleb Surinov</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>1.0.0</version>
-	<date>2015-10-21</date>
+	<version>1.0.2</version>
+	<date>2016-01-22</date>
 	<compatibility>4.0</compatibility>
 
 	<layout>
@@ -36,8 +36,7 @@
 	<configgroup name="template_kickstart">Template</configgroup>
 
 	<config group="template_kickstart" 
-		    name="kickstart_divider1" 
-		    type="divider" 
+		    type="divider"
 		    order="3000">General</config>
 
 	<config group="template_kickstart" 
@@ -73,8 +72,7 @@
 		    description="Logo text">Kickstart</config>
 
 	<config group="template_kickstart" 
-		    name="kickstart_divider2" 
-		    type="divider" 
+		    type="divider"
 		    order="3030">Social links</config>
 	
 	<config group="template_kickstart"
@@ -129,6 +127,7 @@
 			   collapsible="0" 
 			   sticky="0" 
 			   pages="index"
+			   status="active"
 			   type="html">
 			<![CDATA[
 <div class="teaser">
@@ -145,6 +144,7 @@
 			   collapsible="0" 
 			   sticky="0" 
 			   pages="index"
+			   status="active"
 			   type="html">
 			<![CDATA[
 <div class="row">
@@ -164,6 +164,7 @@
 			   collapsible="1" 
 			   sticky="0" 
 			   pages="index"
+			   status="active"
 			   type="html">
 			<![CDATA[
 <p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
@@ -177,6 +178,7 @@
 			   collapsible="1" 
 			   sticky="0"
 			   pages="index" 
+			   status="active"
 			   type="html">
 			<![CDATA[
 <p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
@@ -191,6 +193,7 @@
 			   collapsible="1" 
 			   sticky="1" 
 			   order="99"
+			   status="active"
 			   type="html"
 			   classname="box--border">
 			<![CDATA[
@@ -204,6 +207,7 @@
 			   header="1"
 			   collapsible="0" 
 			   sticky="1" 
+			   status="active"
 			   type="html">
 			<![CDATA[
 <p>Subrion is a free open source content management system
@@ -216,6 +220,7 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 			   header="1"
 			   collapsible="0" 
 			   sticky="1" 
+			   status="active"
 			   type="html">
 			<![CDATA[
 <p>It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
@@ -227,6 +232,7 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 			   header="1"
 			   collapsible="0" 
 			   sticky="1" 
+			   status="active"
 			   type="html">
 			<![CDATA[
 <p>Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
@@ -238,6 +244,7 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 			   header="1"
 			   collapsible="0" 
 			   sticky="1" 
+			   status="active"
 			   type="html">
 			<![CDATA[
 <p>Simple templating engine and styles allows you to create any template you wish with just a few lines of code.</p>

@@ -146,7 +146,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			);
 
 			$iaView->assign('adminAccess', $adminAccess);
-			$iaView->assign('pageGroupTitles', $this->_iaDb->keyvalue(array('id', 'title'), null, 'admin_pages_groups'));
+			$iaView->assign('pageGroupTitles', $this->_iaDb->keyvalue(array('id', 'name'), null, 'admin_pages_groups'));
 			$iaView->assign('permissions', $this->_getPermissionsInfo($settings, $userPermissions, $custom));
 		}
 		else
@@ -165,7 +165,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach (array(iaAcl::OBJECT_PAGE, iaAcl::OBJECT_ADMIN_PAGE) as $i => $pageType)
 		{
 			$fieldsList = array('name', 'action', 'group', 'parent');
-			if (1 == $i) $fieldsList[] = 'title';
 			$pages = $this->_iaDb->all($fieldsList, '`' . (1 == $i ? 'readonly' : 'service') . "` = 0 AND `name` != '' ORDER BY `parent` DESC, `id`", null, null, $pageType . 's');
 
 			foreach ($pages as $page)

@@ -326,7 +326,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 				$iaUsers = $this->_iaCore->factory('users');
 				if ($ownerInfo = $iaUsers->getInfo((int)$entryData['member_id']))
 				{
-					$entryData['owner'] = $ownerInfo['fullname'];
+					$entryData['owner'] = $ownerInfo['fullname'] . ' (' . $ownerInfo['email'] . ')';
 				}
 			}
 		}

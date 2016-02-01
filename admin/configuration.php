@@ -32,6 +32,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_name = 'configuration';
 
+	protected $_customConfigParams = array('admin_page', 'https');
+
+	protected $_redirectUrl;
+
 	private $_imageTypes = array(
 		'image/gif' => 'gif',
 		'image/jpeg' => 'jpg',
@@ -182,7 +186,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			$title = $groupData['title'];
+			$title = iaLanguage::get('config_group_' . $groupData['name']);
 		}
 
 		$iaView->title($title);
@@ -211,7 +215,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$activeMenu = null;
 
-				iaBreadcrumb::insert($groupData['title'], IA_ADMIN_URL . $pluginPage['alias'], iaBreadcrumb::POSITION_FIRST);
+				iaBreadcrumb::insert(iaLanguage::get('config_group_' . $groupData['name']), IA_ADMIN_URL
+					. $pluginPage['alias'], iaBreadcrumb::POSITION_FIRST);
 			}
 			elseif ($iaItem->isExtrasExist($groupData['extras'], iaItem::TYPE_PLUGIN))
 			{
@@ -241,9 +246,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$where = "`type` != 'hidden' " . ($this->_type ? 'AND `custom` = 1' : '');
 		$params = $this->_iaDb->keyvalue(array('name', 'type'), $where, iaCore::getConfigTable());
-
-		// correct admin dashboard URL generation
-		$adminPage = $this->_iaCore->get('admin_page');
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
@@ -355,17 +357,17 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					if ($_POST['c'][$key])
 					{
-						$values = array('name' => $key, 'value' => $value, 'type' => $this->_type, 'type_id' => $this->_typeId);
+						$array = array('name' => $key, 'value' => $value, 'type' => $this->_type, 'type_id' => $this->_typeId);
 
 						if ($this->_iaDb->exists($where))
 						{
-							unset($values['value']);
-							$this->_iaDb->bind($where, $values);
+							unset($array['value']);
+							$this->_iaDb->bind($where, $array);
 							$this->_iaDb->update(array('value' => $value), $where);
 						}
 						else
 						{
-							$this->_iaDb->insert($values);
+							$this->_iaDb->insert($array);
 						}
 					}
 					else
@@ -377,7 +379,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 				else
 				{
-					$this->_iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'));
+					$this->_updateParam($key, $value);
 				}
 			}
 
@@ -390,10 +392,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
 
-			if (isset($_POST['param']['admin_page']) && $_POST['param']['admin_page'] != $adminPage)
-			{
-				iaUtil::go_to(IA_URL . $_POST['param']['admin_page'] . '/configuration/general/');
-			}
+			empty($this->_redirectUrl) || iaUtil::go_to($this->_redirectUrl);
 		}
 		elseif ($messages)
 		{
@@ -415,6 +414,40 @@ class iaBackendController extends iaAbstractControllerBackend
 		));
 
 		return ($rows = $this->_iaDb->getKeyValue($sql)) ? $rows : array();
+	}
+
+	protected function _updateParam($key, $value)
+	{
+		if (in_array($key, $this->_customConfigParams))
+		{
+			if (!$this->_updateCustomParam($key, $value))
+			{
+				return;
+			}
+		}
+
+		$this->_iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'));
+	}
+
+	protected function _updateCustomParam($key, $value)
+	{
+		switch ($key) // exit with false in case if config should not be updated
+		{
+			case 'https':
+				$baseUrl = $this->_iaCore->get('baseurl');
+				$newBaseUrl = 'http' . ($value ? 's' : '') . substr($baseUrl, strpos($baseUrl, '://'));
+
+				$this->_iaDb->update(array('value' => $newBaseUrl), iaDb::convertIds('baseurl', 'name'));
+
+				$this->_redirectUrl = str_replace($baseUrl, $newBaseUrl, IA_SELF);
+
+				break;
+
+			case 'admin_page':
+				$this->_redirectUrl = IA_URL . iaSanitize::htmlInjectionFilter($value) . '/configuration/general/';
+		}
+
+		return true;
 	}
 
 	private function _getParams($groupName)

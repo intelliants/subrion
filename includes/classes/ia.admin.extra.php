@@ -48,10 +48,9 @@ class iaExtra extends abstractCore
 
 	const BLOCK_FILENAME_PATTERN = 'extra:%s/%s';
 
-
 	protected static $_table = 'extras';
 
-	private $_builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog');
+	private $_builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog', 'elfinder');
 
 	protected $_inTag;
 	protected $_currentPath;
@@ -73,12 +72,17 @@ class iaExtra extends abstractCore
 	public $isUpgrade = false;
 	public $isUpdate = false;
 
+	protected $_extrasTypePaths = array();
+
 
 	public function init()
 	{
 		parent::init();
 
 		$this->iaCore->factory(array('acl', 'util'));
+
+		$this->_extrasTypePaths[self::TYPE_PLUGIN] = IA_PLUGINS;
+		$this->_extrasTypePaths[self::TYPE_PACKAGE] = IA_PACKAGES;
 	}
 
 	protected function _resetValues()
@@ -452,12 +456,12 @@ class iaExtra extends abstractCore
 			$iaDb->setTable('admin_pages_groups');
 
 			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['groups'] as $block)
+			foreach ($this->itemData['groups'] as $title => $entry)
 			{
-				$iaDb->exists("`extras` = '{$this->itemData['name']}' AND `name` = '{$block['name']}'")
-					? $iaDb->update($block, "`extras` = '{$this->itemData['name']}' AND `name` = '{$block['name']}'")
-					: $iaDb->insert($block, array('order' => ++$maxOrder));
+				$iaDb->exists("`extras` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
+					? $iaDb->update($entry, "`extras` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
+					: $iaDb->insert($entry, array('order' => ++$maxOrder));
+				$this->_addPhrase('pages_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -465,21 +469,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['pages']['admin'])
 		{
-			$iaDb->setTable('admin_pages');
-
-			$iaDb->delete('`extras` = :plugin', null, array('plugin' => $this->itemData['name']));
-
-			foreach ($this->itemData['pages']['admin'] as $page)
-			{
-				$page['group'] = $this->_lookupGroupId($page['group']);
-				$page['order'] = (int)(is_null($page['order'])
-					? $iaDb->one_bind('MAX(`order`) + 5', '`group` = :group', $page)
-					: $page['order']);
-
-				$iaDb->insert($page);
-			}
-
-			$iaDb->resetTable();
+			$this->_processAdminPages($this->itemData['pages']['admin']);
 		}
 
 		if ($this->itemData['actions'])
@@ -515,9 +505,10 @@ class iaExtra extends abstractCore
 
 			$maxOrder = $iaDb->getMaxOrder();
 
-			foreach ($this->itemData['config_groups'] as $config)
+			foreach ($this->itemData['config_groups'] as $title => $entry)
 			{
-				$iaDb->insert($config, array('order' => ++$maxOrder));
+				$iaDb->insert($entry, array('order' => ++$maxOrder));
+				$this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -536,6 +527,7 @@ class iaExtra extends abstractCore
 					iaLanguage::addPhrase($key, $obj['title'], null, $this->itemData['name'], iaLanguage::CATEGORY_COMMON, false);
 					unset($obj['title']);
 				}
+
 				$iaDb->exists($where)
 					? $iaDb->update(array('access' => $obj['access']), $where)
 					: $iaDb->insert($obj);
@@ -546,28 +538,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['config'])
 		{
-			$iaDb->setTable('config');
-
-			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['config'] as $config)
-			{
-				if ($iaDb->exists("`name` = '{$config['name']}'"))
-				{
-					if (isset($config['value']))
-					{
-						unset($config['value']);
-					}
-
-					$iaDb->update($config, "`name` = '{$config['name']}'");
-				}
-				else
-				{
-					$iaDb->insert($config, array('order' => ++$maxOrder));
-				}
-			}
-
-			$iaDb->resetTable();
+			$this->_processConfig($this->itemData['config']);
 		}
 
 		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
@@ -578,7 +549,7 @@ class iaExtra extends abstractCore
 
 			$maxOrder = $iaDb->getMaxOrder();
 
-			foreach ($this->itemData['pages']['front'] as $page)
+			foreach ($this->itemData['pages']['front'] as $title => $page)
 			{
 				if ($page['blocks'] && ($ids = $this->iaDb->onefield(iaDb::ID_COLUMN_SELECTION,
 						"`name` IN ('" . implode("','", $page['blocks']) . "')", null, null, iaBlock::getTable())))
@@ -589,25 +560,28 @@ class iaExtra extends abstractCore
 					}
 				}
 
+				$content = empty($page['contents']) ? null : $page['contents'];
+
 				is_int($page['group']) || $page['group'] = $this->_lookupGroupId($page['group']);
+				$page['last_updated'] = date(iaDb::DATETIME_FORMAT);
+				$page['order'] = ++$maxOrder;
 
-				if (!$iaDb->exists("`name` = '{$page['name']}' AND `extras` = '{$this->itemData['name']}'"))
+				unset($page['blocks']);
+
+				$result = $iaDb->exists('`name` = :name', $page)
+					? $iaDb->update($page, iaDb::convertIds($page['name'], 'name'))
+					: $iaDb->insert($page);
+
+				if ($result)
 				{
-					// insert titles
-					if (isset($page['title']) && $page['title'])
+					empty($title) || $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_PAGE);
+					empty($contents) || $this->_addPhrase('page_content_' . $page['name'], $content, iaLanguage::CATEGORY_PAGE);
+
+					if ($page['fields_item'] && self::TYPE_PACKAGE == $this->itemData['type']
+						&& !$iaDb->exists('`page_name` = :name AND `item` = :item', $page, 'items_pages'))
 					{
-						foreach ($this->iaCore->languages as $code => $value)
-						{
-							iaLanguage::addPhrase('page_title_' . $page['name'], $page['title'], $code, $this->itemData['name'], iaLanguage::CATEGORY_PAGE, false);
-						}
+						$iaDb->insert(array('page_name' => $page['name'], 'item' => $page['fields_item']), null, 'items_pages');
 					}
-
-					unset($page['blocks'], $page['title']);
-
-					$page['last_updated'] = date(iaDb::DATETIME_FORMAT);
-					$page['order'] = ++$maxOrder;
-
-					$iaDb->insert($page);
 				}
 			}
 
@@ -676,11 +650,7 @@ class iaExtra extends abstractCore
 						'visible' => $item['visible']
 					));
 
-					// update language records
-					foreach ($this->iaCore->languages as $iso => $title)
-					{
-						iaLanguage::addPhrase('usergroup_' . $item['name'], $item['title'], $iso);
-					}
+					$this->_addPhrase('usergroup_' . $item['name'], $item['title']);
 
 					$iaDb->setTable(iaCore::getCustomConfigTable());
 					$iaDb->delete("`type` = 'group' AND `type_id` = '$usergroupId'");
@@ -1050,10 +1020,10 @@ class iaExtra extends abstractCore
 			$iaDb->setTable('admin_pages_groups');
 
 			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['groups'] as $block)
+			foreach ($this->itemData['groups'] as $title => $entry)
 			{
-				$iaDb->insert($block, array('order' => ++$maxOrder));
+				$iaDb->insert($entry, array('order' => ++$maxOrder));
+				$this->_addPhrase('pages_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -1061,30 +1031,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['pages']['admin'])
 		{
-			$iaDb->setTable('admin_pages');
-
-			$order = (int)$iaDb->one('MAX(`order`)', "`menus` IN ('menu')");
-			$order = max($order, 1);
-
-			foreach ($this->itemData['pages']['admin'] as $page)
-			{
-				if (is_null($page['order']))
-				{
-					$order += 5;
-					$page['order'] = $order;
-				}
-
-				if ($page['group'])
-				{
-					$this->_menuGroups[] = $page['group'];
-				}
-
-				$page['group'] = $this->_lookupGroupId($page['group']);
-
-				$iaDb->insert($page);
-			}
-
-			$iaDb->resetTable();
+			$this->_processAdminPages($this->itemData['pages']['admin']);
 		}
 
 		if ($this->itemData['actions'])
@@ -1115,10 +1062,10 @@ class iaExtra extends abstractCore
 			$iaDb->setTable(iaCore::getConfigGroupsTable());
 
 			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['config_groups'] as $config)
+			foreach ($this->itemData['config_groups'] as $title => $entry)
 			{
-				$iaDb->insert($config, array('order' => ++$maxOrder));
+				$iaDb->insert($entry, array('order' => ++$maxOrder));
+				$this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();
@@ -1152,16 +1099,7 @@ class iaExtra extends abstractCore
 
 		if ($this->itemData['config'])
 		{
-			$iaDb->setTable('config');
-
-			$maxOrder = $iaDb->getMaxOrder();
-
-			foreach ($this->itemData['config'] as $config)
-			{
-				$iaDb->insert($config, array('order' => ++$maxOrder));
-			}
-
-			$iaDb->resetTable();
+			$this->_processConfig($this->itemData['config']);
 		}
 
 		if ($this->itemData['pages']['custom'] && $this->itemData['type'] == self::TYPE_PACKAGE)
@@ -1186,7 +1124,7 @@ class iaExtra extends abstractCore
 			$maxOrder = $iaDb->getMaxOrder();
 			$existPages = $iaDb->keyvalue(array('name', 'id'));
 
-			foreach ($this->itemData['pages']['front'] as $page)
+			foreach ($this->itemData['pages']['front'] as $title => $page)
 			{
 				if (!isset($existPages[$page['name']]))
 				{
@@ -1195,12 +1133,11 @@ class iaExtra extends abstractCore
 						$iaDb->insert(array('page_name' => $page['name'], 'item' => $page['fields_item']), null, 'items_pages');
 					}
 
-					$title = empty($page['title']) ? false : $page['title'];
 					$blocks = empty($page['blocks']) ? false : $page['blocks'];
 					$menus = empty($page['menus']) ? array() : explode(',', $page['menus']);
 					$contents = empty($page['contents']) ? false : $page['contents'];
 
-					unset($page['title'], $page['blocks'], $page['menus'], $page['contents']);
+					unset($page['blocks'], $page['menus'], $page['contents']);
 
 					$page['group'] = $pageGroups[$page['group']];
 
@@ -1282,6 +1219,7 @@ class iaExtra extends abstractCore
 								$iaDb->insert($entry, null, iaBlock::getMenusTable());
 							}
 						}
+
 						$iaDb->resetTable();
 					}
 
@@ -1387,6 +1325,7 @@ class iaExtra extends abstractCore
 							'type_id' => $groupId,
 							'extras' => $permission['extras']
 						);
+
 						$iaDb->insert($data);
 					}
 					$iaDb->resetTable();
@@ -1711,7 +1650,7 @@ class iaExtra extends abstractCore
 			case 'page':
 				if ($this->_checkPath('adminpages'))
 				{
-					$this->itemData['pages']['admin'][] = array(
+					$this->itemData['pages']['admin'][$text] = array(
 						'name' => $this->_attr('name'),
 						'filename' => $this->_attr('filename'),
 						'alias' => $this->_attr('url'),
@@ -1721,7 +1660,6 @@ class iaExtra extends abstractCore
 						'menus' => $this->_attr('menus'),
 						'action' => $this->_attr('action', iaCore::ACTION_READ),
 						'parent' => $this->_attr('parent'),
-						'title' => $text,
 						'extras' => $this->itemData['name']
 					);
 				}
@@ -1735,12 +1673,11 @@ class iaExtra extends abstractCore
 					$blocks = empty($blocks) ? null : explode(',', $blocks);
 
 					// TODO: add pages param to display some existing blocks on new page
-					$this->itemData['pages']['front'][] = array(
+					$this->itemData['pages']['front'][$text] = array(
 						'name' => $this->_attr('name'),
 						'filename' => $this->_attr('filename'),
 						'custom_tpl' => (bool)$this->_attr('template', 0),
 						'template_filename' => $this->_attr('template', ''),
-						'title' => $text,
 						'menus' => $this->_attr('menus'),
 						'status' => $this->_attr('status', iaCore::STATUS_ACTIVE),
 						'alias' => $url,
@@ -1761,10 +1698,9 @@ class iaExtra extends abstractCore
 				break;
 
 			case 'configgroup':
-				$this->itemData['config_groups'][] = array(
+				$this->itemData['config_groups'][$text] = array(
 					'name' => $this->_attr('name'),
-					'extras' => $this->itemData['name'],
-					'title' => $text
+					'extras' => $this->itemData['name']
 				);
 				break;
 
@@ -1847,10 +1783,9 @@ class iaExtra extends abstractCore
 						);
 						break;
 					case $this->_checkPath('groups'):
-						$this->itemData['groups'][] = array(
+						$this->itemData['groups'][$text] = array(
 							'name' => $this->_attr('name'),
-							'extras' => $this->itemData['name'],
-							'title' => $text
+							'extras' => $this->itemData['name']
 						);
 				}
 				break;
@@ -1951,29 +1886,47 @@ class iaExtra extends abstractCore
 				break;
 
 			case 'hook':
-				$filename = $this->_attr('filename');
 				$type = $this->_attr('type', 'php', array('php', 'html', 'smarty', 'plain'));
 
-				if ($filename && 'smarty' == $type)
+				if ($filename = $this->_attr('filename'))
 				{
-					//$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+					switch ($type)
+					{
+						case 'php':
+							$filename = $this->itemData['type'] . 's' . IA_DS . $this->itemData['name']
+								. IA_DS . 'includes' . IA_DS . $filename . iaSystem::EXECUTABLE_FILE_EXT;
 
-					// compatibility layer for v4.0 plugins
-					// todo: remove in v5
-					if (false !== stripos($filename, '.tpl'))
-					{
-						if ('payments' != @$this->itemData['info']['category']
-							&& false !== stripos($filename, '/templates/front/'))
-						{
-							$filename = str_replace('.tpl', '', basename($filename));
-							$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-						}
+							// compatibility layer
+							// todo: remove in v5
+							if (false !== strpos($this->_attr('filename'), '/'))
+							{
+								$filename = $this->_attr('filename');
+							}
+							//
+
+							break;
+
+						case 'smarty':
+							//$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+
+							// compatibility layer for v4.0 plugins
+							// todo: remove in v5
+							if (false !== stripos($filename, '.tpl'))
+							{
+								if ('payments' != @$this->itemData['info']['category']
+									&& false !== stripos($filename, '/templates/front/'))
+								{
+									$filename = str_replace('.tpl', '', basename($filename));
+									$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+								}
+							}
+							else
+							{
+								$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+							}
+						//
 					}
-					else
-					{
-						$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-					}
-					//
+
 				}
 
 				$this->itemData['hooks'][] = array(
@@ -2180,9 +2133,8 @@ class iaExtra extends abstractCore
 		require_once IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php';
 
 		$mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
-		$pathsMap = array(self::TYPE_PLUGIN => IA_PLUGINS, self::TYPE_PACKAGE => IA_PACKAGES);
 
-		$path = isset($pathsMap[$this->itemData['type']]) ? $pathsMap[$this->itemData['type']] : IA_HOME;
+		$path = isset($this->_extrasTypePaths[$this->itemData['type']]) ? $this->_extrasTypePaths[$this->itemData['type']] : IA_HOME;
 		$extrasVersion = $this->itemData['info']['version'];
 
 		foreach ($this->itemData['sql'][$type][$stage] as $version => $entries)
@@ -2391,6 +2343,57 @@ class iaExtra extends abstractCore
 			}
 
 			$columnExists || $this->_alterTable($entry);
+		}
+
+		$this->iaDb->resetTable();
+	}
+
+	protected function _processAdminPages(array $entries)
+	{
+		$this->iaDb->setTable('admin_pages');
+
+		$this->iaDb->delete(iaDb::convertIds($this->itemData['name'], 'extras'));
+
+		foreach ($entries as $title => $entry)
+		{
+			$entry['group'] = $this->_lookupGroupId($entry['group']);
+			$entry['order'] = (int)(is_null($entry['order'])
+				? $this->iaDb->one_bind('MAX(`order`) + 5', '`group` = :group', $entry)
+				: $entry['order']);
+
+			empty($entry['group']) || ($this->_menuGroups[] = $entry['group']);
+			empty($entry['name']) && $entry['attr'] = iaUtil::generateToken(8);
+
+			$this->iaDb->insert($entry);
+			$this->_addPhrase('page_title_' . ($entry['name'] ? $entry['name'] : $entry['attr']), $title, iaLanguage::CATEGORY_ADMIN);
+		}
+
+		$this->iaDb->resetTable();
+	}
+
+	protected function _processConfig(array $entries)
+	{
+		$this->iaDb->setTable(iaCore::getConfigTable());
+
+		$maxOrder = $this->iaDb->getMaxOrder();
+		foreach ($entries as $entry)
+		{
+			$id = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($entry['name'], 'name'));
+			$entry['order'] = isset($entry['order']) ? $entry['order'] : ++$maxOrder;
+
+			if (!$id || empty($entry['name']))
+			{
+				$this->iaDb->insert($entry);
+			}
+			elseif ($id)
+			{
+				if (isset($entry['value']))
+				{
+					unset($entry['value']);
+				}
+
+				$this->iaDb->update($entry, iaDb::convertIds($id));
+			}
 		}
 
 		$this->iaDb->resetTable();
