@@ -137,7 +137,6 @@ CREATE TABLE `{install:prefix}config_custom` (
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}config_groups`;
 CREATE TABLE `{install:prefix}config_groups` (
 	`name` varchar(50) NOT NULL,
-	`title` varchar(150) NOT NULL,
 	`order` smallint(4) unsigned NOT NULL,
 	`extras` varchar(40) NOT NULL,
 	PRIMARY KEY (`name`),
@@ -925,15 +924,15 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('email_templates','invoice_created_subject','Customer Invoice',null,'text',0,'',0,'',1,1,''),
 ('email_templates','invoice_created_body','<p>Dear {%FULLNAME%},</p>\r\n<p>This is a notice that an invoice has been generated on {%DATE%}</p>\r\n\r\n<p>Your payment method is: {%GATEWAY%}</p>\r\n\r\n<p>Invoice #{%INVOICE%},<br>\r\nAmount Due: {%CURRENCY%} {%AMOUNT%}\r\n</p>\r\n\r\n<p>All your invoices could always be seen on the <a href="{%SITE_URL%}profile/funds/" target="_blank">Funds</a> page.</p>','invoice|Invoice ID,gateway|Gateway,date|Invoice creation date,fullname|User,amount|Amount,currency|Currency','textarea',0,'',0,'',1,1,'');
 
-INSERT INTO `{install:prefix}config_groups` (`name`,`title`,`order`) VALUES
-('general','General',1),
-('members','Members',2),
-('mail','Mail',3),
-('email_templates','Email Templates',4),
-('system','System',5),
-('pictures','Pictures',6),
-('miscellaneous','Miscellaneous',7),
-('financial','Financial',8);
+INSERT INTO `{install:prefix}config_groups` (`name`,`order`) VALUES
+('general',1),
+('members',2),
+('mail',3),
+('email_templates',4),
+('system',5),
+('pictures',6),
+('miscellaneous',7),
+('financial',8);
 
 INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('1 1,12 * * * includes/cron/sitemap.php', 'Sitemap creation and update','Updates (or generates) the sitemap.xml file'),
