@@ -861,10 +861,8 @@ SQL;
 			return self::errorPage(self::ERROR_NOT_FOUND);
 		}
 
-		if (!isset($pageParams['title'])) // frontend page
-		{
-			$pageParams['title'] = iaLanguage::get(sprintf('page_title_%s', $pageParams['name']));
-		}
+		$pageParams['title'] = iaLanguage::get(sprintf('page_title_%s', $pageParams['name']));
+
 		if (!isset($pageParams['body']))
 		{
 			$pageParams['body'] = isset($pageParams['name']) ? $pageParams['name'] : self::DEFAULT_HOMEPAGE;

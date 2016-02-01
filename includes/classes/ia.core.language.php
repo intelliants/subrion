@@ -124,13 +124,12 @@ class iaLanguage
 	{
 		$iaCore = iaCore::instance();
 
-		$stmt = "`code` = :language AND `category` != 'tooltip' AND `category` != :exclusion ORDER BY `extras`";
-		$iaCore->iaDb->bind($stmt, array(
-			'language' => $languageCode,
-			'exclusion' => (iaCore::ACCESS_FRONT == $iaCore->getAccessType()) ? 'admin' : 'frontend'
-		));
+		$where = (iaCore::ACCESS_FRONT == $iaCore->getAccessType())
+			? "`code` = '%s' AND `category` NOT IN('tooltip', 'admin') ORDER BY `extras`"
+			: "`code` = '%s' AND `category` NOT IN('tooltip', 'frontend', 'page')";
+		$where = sprintf($where, $languageCode);
 
-		self::$_phrases = $iaCore->iaDb->keyvalue(array('key', 'value'), $stmt, self::getTable());
+		self::$_phrases = $iaCore->iaDb->keyvalue(array('key', 'value'), $where, self::getTable());
 	}
 
 	public static function getPhrases()

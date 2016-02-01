@@ -2229,6 +2229,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_fields','Fields','admin'),
 ('page_title_fieldgroups','Field Groups','admin'),
 ('page_title_hooks','Hooks','admin'),
+('page_title_index','Dashboard','admin'),
 ('page_title_invoices','Invoices','admin'),
 ('page_title_languages','Languages','admin'),
 ('page_title_members','Members','admin'),
