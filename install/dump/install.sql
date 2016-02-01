@@ -137,7 +137,6 @@ CREATE TABLE `{install:prefix}config_custom` (
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}config_groups`;
 CREATE TABLE `{install:prefix}config_groups` (
 	`name` varchar(50) NOT NULL,
-	`title` varchar(150) NOT NULL,
 	`order` smallint(4) unsigned NOT NULL,
 	`extras` varchar(40) NOT NULL,
 	PRIMARY KEY (`name`),
