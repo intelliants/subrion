@@ -1483,7 +1483,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('manage','Manage','admin'),
 ('manage_entries','Manage entries','admin'),
 ('master','Master','admin'),
-('mark_at_least_one_page','Mark at least one page to display field.','admin'),
 ('max_files','Max number of files','admin'),
 ('max_num_images','Max Images','admin'),
 ('member_add','Add a Member','admin'),

@@ -429,11 +429,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			unset($entry['text_length'], $entry['text_default'], $entry['nodes'], $entry['multiple']);
 		}
 
-		if (!$entry['adminonly'] && empty($entry['pages']) && 'transactions' != $entry['item'])
-		{
-			$this->addMessage('mark_at_least_one_page');
-		}
-
 		$entry['required'] = (int)iaUtil::checkPostParam('required');
 		if ($entry['required'])
 		{
