@@ -112,7 +112,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		}
 		if (empty($entry['body']))
 		{
-			$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('body'))));
+			$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('body'))), false);
 		}
 
 		if (empty($entry['date_added']))
@@ -122,19 +122,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 
 		$entry['alias'] = $this->getHelper()->titleAlias(empty($entry['alias']) ? $entry['title'] : $entry['alias']);
 
-
-		if (!empty($data['owner']))
-		{
-			if ($memberId = $this->_iaCore->iaDb->one_bind('id', '`username` = :name OR `fullname` = :name', array('name' => iaSanitize::sql($_POST['owner'])), iaUsers::getTable()))
-			{
-				$entry['member_id'] = $memberId;
-			}
-			else
-			{
-				$this->addMessage('incorrect_owner_specified');
-			}
-		}
-		else
+		if (empty($data['owner']))
 		{
 			$entry['member_id'] = iaUsers::getIdentity()->id;
 		}
@@ -195,8 +183,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 
 		$this->_iaDb->setTable($this->_tableBlogEntriesTags);
 
-		$sql =
-			'DELETE ' .
+		$sql ='DELETE ' .
 			'FROM `:prefix:table_blog_tags` ' .
 			'WHERE `id` IN (' .
 			'SELECT DISTINCT `tag_id` ' .
@@ -227,7 +214,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 
 		$this->_iaDb->query($sql);
 
-		$allTagTitles = $this->_iaDb->keyvalue(array('title','id'), null,$this->_tableBlogTags);
+		$allTagTitles = $this->_iaDb->keyvalue(array('title','id'), null, $this->_tableBlogTags);
 
 		foreach ($tags as $tag)
 		{
@@ -275,18 +262,18 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		$iaUsers = $this->_iaCore->factory('users');
 		$owner = empty($entryData['member_id']) ? iaUsers::getIdentity(true) : $iaUsers->getInfo($entryData['member_id']);
 
-		$entryData['owner'] = $owner['fullname'];
-
-//		commented for cases when SET SESSION group_concat_max_len doesn't work
-//		$tagIds = $this->_iaDb->all('tag_id', "`blog_id` = {$this->getEntryId()}",0, null, $this->_tableBlogEntriesTags);
-//		$entryData['tags'] = '';
-//		foreach ($tagIds as $tagId)
-//		{
-//			$tags = $this->_iaDb->all('title', "`id` = {$tagId['tag_id']}",0, null, $this->_tableBlogTags);
-//			$entryData['tags'] .= $tags[0]['title'] . ',';
-//		}
-//		$entryData['tags'] = rtrim($entryData['tags'], ',');
-
+		$entryData['owner'] = $owner['fullname'] . " ({$owner['email']})";
+/*
+		commented for cases when SET SESSION group_concat_max_len doesn't work
+		$tagIds = $this->_iaDb->all('tag_id', "`blog_id` = {$this->getEntryId()}",0, null, $this->_tableBlogEntriesTags);
+		$entryData['tags'] = '';
+		foreach ($tagIds as $tagId)
+		{
+			$tags = $this->_iaDb->all('title', "`id` = {$tagId['tag_id']}",0, null, $this->_tableBlogTags);
+			$entryData['tags'] .= $tags[0]['title'] . ',';
+		}
+		$entryData['tags'] = rtrim($entryData['tags'], ',');
+ */
 		$this->_iaDb->query("SET SESSION group_concat_max_len = 2000");
 		if ($this->getEntryId())
 		{
