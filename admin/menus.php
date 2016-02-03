@@ -49,12 +49,12 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$output = array();
 
+		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
+
 		switch ($params['action'])
 		{
 			case 'pages':
-				$pageGroups = $this->_iaCore->factory('page', iaCore::ADMIN)->getGroups();
-
-				foreach ($pageGroups as $groupId => $group)
+				foreach ($iaPage->getGroups() as $groupId => $group)
 				{
 					$children = array();
 					foreach ($group['children'] as $pageId => $pageTitle)
@@ -76,7 +76,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				break;
 
 			case 'menus':
-				function recursiveRead($list, $pid = 0)
+				function recursiveRead($list, $pid, array $titles)
 				{
 					$result = array();
 
@@ -84,14 +84,13 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						foreach ($list[$pid] as $child)
 						{
-							$title = iaLanguage::get('page_title_' . $child['el_id'], 'none');
-							if ($title == 'none')
+							$title = isset($titles[$child['el_id']]) ? $titles[$child['el_id']] : 'none';
+
+							if ('none' == $title)
 							{
-								$title = iaLanguage::get('page_title_' . $child['page_name'], 'none');
-								if ($title == 'none' || $child['page_name'] == 'node')
-								{
-									$title = iaLanguage::get('_page_removed_');
-								}
+								$title = ('node' == $child['page_name'] || !isset($titles[$child['page_name']]))
+									? iaLanguage::get('_page_removed_')
+									: $titles[$child['page_name']];
 							}
 							else
 							{
@@ -100,14 +99,12 @@ class iaBackendController extends iaAbstractControllerBackend
 									: ' (no link)';
 							}
 
-							$item = array(
+							$result[] = array(
 								'text' => $title,
 								'id' => $child['el_id'],
 								'expanded' => true,
-								'children' => recursiveRead($list, $child['el_id'])
+								'children' => recursiveRead($list, $child['el_id'], $titles)
 							);
-
-							$result[] = $item;
 						}
 					}
 
@@ -116,14 +113,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$output = array();
 
-				if ($name = (int)$params['id'])
+				if ($id = (int)$params['id'])
 				{
-					$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '`menu_id` = ' . $name . ' ORDER BY `id`', null, null, 'menus');
+					$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '`menu_id` = ' . $id . ' ORDER BY `id`', null, null, 'menus');
 					foreach ($rows as $row)
 					{
 						$output[$row['parent_id']][] = $row;
 					}
-					$output = recursiveRead($output);
+
+					$output = recursiveRead($output, 0, $iaPage->getTitles());
 				}
 
 				break;
@@ -146,7 +144,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				elseif ($node && $entry)
 				{
 					$key = false;
-					$title = iaLanguage::get('page_title_' . $node, 'none');
+					$title = $iaPage->getPageTitle($node, 'none');
 					if ($title != 'none')
 					{
 						$key = 'page_title_' . $node;

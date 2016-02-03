@@ -158,9 +158,11 @@ class iaBackendController extends iaAbstractControllerBackend
 	private function _getPermissionsInfo($settings, $userPermissions, $custom)
 	{
 		$iaAcl = $this->getHelper();
+		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
 		$actions = $iaAcl->getActions();
 		$groups = array();
+		$titles = $iaPage->getTitles();
 
 		foreach (array(iaAcl::OBJECT_PAGE, iaAcl::OBJECT_ADMIN_PAGE) as $i => $pageType)
 		{
@@ -181,11 +183,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$key = $pageType . '-' . $page['name'];
 
 					$page['group'] || $page['group'] = 1;
-
-					if (!isset($page['title']))
-					{
-						$page['title'] = iaLanguage::get('page_title_' . $page['name'], ucfirst($page['name']));
-					}
+					$page['title'] = isset($titles[$page['name']]) ? $titles[$page['name']] : ucfirst($page['name']);
 
 					foreach (array(iaCore::ACTION_READ, iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE) as $action)
 					{

@@ -535,6 +535,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$iaItem = $this->_iaCore->factory('item');
+		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
 		$pages = $groups = array();
 
@@ -548,7 +549,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$pages[$entry['id']] = array(
 				'name' => $entry['page_name'],
-				'title' => iaLanguage::get('page_title_' . $entry['page_name'], $entry['page_name']),
+				'title' => $iaPage->getPageTitle($entry['page_name']),
 				'item' => $entry['item']
 			);
 		}
