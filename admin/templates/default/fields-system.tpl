@@ -36,24 +36,6 @@
 							<option value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} selected{/if} data-date="{$plan.defaultEndDate}">{lang key="plan_title_{$plan.id}"} - {$core.config.currency} {$plan.cost}</option>
 						{/foreach}
 					</select>
-					{ia_add_js}
-$(function()
-{
-	var $sponsoredEnd = $('input[name="sponsored_end"]'),
-		$inputPlan = $('#input-plan');
-
-	$inputPlan.on('change', function()
-	{
-		var date = $('option:selected', this).data('date');
-		$sponsoredEnd.datepicker('update', date);
-	});
-
-	if ('' == $sponsoredEnd.val())
-	{
-		$inputPlan.trigger('change');
-	}
-});
-					{/ia_add_js}
 				{else}
 					<span class="label label-info">{lang key='no_plans'}</span>
 				{/if}
@@ -150,6 +132,18 @@ $(function()
 	{ia_add_js}
 $(function()
 {
+	var $sponsoredEnd = $('input[name="sponsored_end"]'),
+		$inputPlan = $('#input-plan');
+
+	$inputPlan.on('change', function()
+	{
+		$sponsoredEnd.datepicker('update', $('option:selected', this).data('date'));
+	});
+
+	if ('' == $sponsoredEnd.val())
+	{
+		$inputPlan.trigger('change');
+	}
 	// sponsored switchers
 	$('input[name="sponsored"]').on('change', function()
 	{
@@ -162,7 +156,8 @@ $(function()
 		(1 == this.value) ? $('#tr_featured').show() : $('#tr_featured').hide();
 	});
 
-	var objects = items = [];
+	var objects = [];
+		var items = [];
 
 	$('#js-owner-autocomplete').typeahead(
 	{
