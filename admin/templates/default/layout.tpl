@@ -214,10 +214,10 @@
 								</ul>
 								<h3>{$core.page.title|escape:'html'}</h3>
 
-								{include file='breadcrumb.tpl'}
+								{include 'breadcrumb.tpl'}
 							</div>
 
-							{include file='notification.tpl'}
+							{include 'notification.tpl'}
 
 							<div class="block-content">{$_content_}</div>
 						</div>
