@@ -1,4 +1,4 @@
-<form method="post" class="sap-form form-horizontal">
+s<form method="post" class="sap-form form-horizontal">
 	{preventCsrf}
 
 	<div class="wrap-list">
@@ -96,7 +96,7 @@
 				</div>
 			</div>
 			<div class="row" id="js-pages-list-row"{if iaCore::ACTION_ADD == $pageAction && (!$smarty.post && !isset($smarty.get.item))} style="display: none;"{/if}>
-				<label class="col col-lg-2 control-label">{lang key='shown_on_pages'} <span class="required">*</span></label>
+				<label class="col col-lg-2 control-label">{lang key='shown_on_pages'}</label>
 
 				<div class="col col-lg-4">
 					<div class="box-simple fieldset">
