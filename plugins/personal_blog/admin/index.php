@@ -122,11 +122,6 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 
 		$entry['alias'] = $this->getHelper()->titleAlias(empty($entry['alias']) ? $entry['title'] : $entry['alias']);
 
-		if (empty($data['owner']))
-		{
-			$entry['member_id'] = iaUsers::getIdentity()->id;
-		}
-
 		if ($this->getMessages())
 		{
 			return false;
