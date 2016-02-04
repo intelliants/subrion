@@ -1,4 +1,4 @@
-s<form method="post" class="sap-form form-horizontal">
+<form method="post" class="sap-form form-horizontal">
 	{preventCsrf}
 
 	<div class="wrap-list">
