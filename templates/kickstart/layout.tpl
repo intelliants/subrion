@@ -102,8 +102,6 @@
 						</div>
 						<div class="{width section='content' position='center' tag='col-md-'}">
 							<div class="content__wrap">
-								{ia_hooker name='smartyFrontBeforeNotifications'}
-								{include file='notification.tpl'}
 
 								{ia_blocks block='top'}
 
@@ -123,6 +121,9 @@
 										{/foreach}
 									</ul>
 								</div>
+
+								{ia_hooker name='smartyFrontBeforeNotifications'}
+								{include file='notification.tpl'}
 
 								{ia_hooker name='smartyFrontBeforeMainContent'}
 
