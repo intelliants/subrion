@@ -54,7 +54,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					if ($itemClass->dashboardStatistics)
 					{
-						if ($data = $itemClass->{self::GETTER_METHOD_NAME}(false))
+						if ($data = call_user_func(array($itemClass, self::GETTER_METHOD_NAME), array(false)))
 						{
 							$statistics[$itemName] = $data;
 						}
