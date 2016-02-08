@@ -101,6 +101,7 @@ class iaPatchApplier
 				$this->_processQuery($entry);
 			}
 		}
+
 		if ($patch['info']['num_files'] > 0)
 		{
 			$this->_logInfo('Starting to process files in :mode mode...', self::LOG_INFO, array('mode' => $this->_forceMode ? 'forced' : 'regular'));

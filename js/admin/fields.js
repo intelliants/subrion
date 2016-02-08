@@ -514,13 +514,13 @@ $(function()
 
 	var nodes = $('input[name="nodes"]').val();
 
-	$tree.jstree({core: {check_callback: true, data: ('' != nodes) ? JSON.parse(nodes) : null}})
+	$tree.jstree({core: {check_callback: true, data: ('' != nodes) ? JSON.parse(nodes) : null}, plugins: ['dnd']})
 	.on('changed.jstree', function(e, data)
 	{
 		var actionButtons = $('.js-tree-action[data-action="update"], .js-tree-action[data-action="delete"]');
 		data.selected.length > 0 ? actionButtons.removeClass('disabled') : actionButtons.addClass('disabled');
 	})
-	.on('create_node.jstree rename_node.jstree delete_node.jstree', function(e, data)
+	.on('create_node.jstree rename_node.jstree delete_node.jstree move_node.jstree copy_node.jstree', function(e, data)
 	{
 		$('input[name="nodes"]').val(JSON.stringify(data.instance.get_json('#', {flat: true})));
 	});

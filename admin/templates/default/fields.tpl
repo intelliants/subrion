@@ -318,6 +318,7 @@
 						<button class="js-tree-action btn btn-xs btn-success" data-action="create"><i class="i-plus"></i> Add Node</button>
 						<button class="js-tree-action btn btn-xs btn-danger disabled" data-action="delete"><i class="i-minus"></i> Delete</button>
 						<button class="js-tree-action btn btn-xs btn-info disabled" data-action="update"><i class="i-edit"></i> Rename</button>
+						<span class="help-inline pull-right">{lang key='drag_to_reorder'}</span>
 
 						<input type="hidden" name="nodes"{if iaField::TREE == $item.type} value="{$item.values|escape}"{/if}>
 						<div class="categories-tree" id="input-nodes"></div>
