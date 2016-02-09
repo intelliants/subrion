@@ -2010,6 +2010,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('show_on_all_pages','Global visibility','common'),
 ('show_on_this_page','Show on this page','common'),
 ('sponsored','Sponsored','common'),
+('start_typing_to_filter','Start typing to filter items','common'),
 ('status','Status','common'),
 ('subject','Subject','common'),
 ('submit','Submit','common'),
