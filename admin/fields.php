@@ -522,7 +522,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			// get parents values
 			$entryData['parents'] = $this->_getParents($entryData['name']);
-
+			iaField::PICTURES != $entryData['type'] || $entryData['pic_max_images'] = $entryData['length'];
 		}
 		elseif (!empty($_GET['item']) || !empty($_POST['item']))
 		{
