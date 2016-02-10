@@ -95,23 +95,25 @@
 					<input type="text" name="empty_field" value="{if isset($item.empty_field)}{$item.empty_field|escape:'html'}{/if}">
 				</div>
 			</div>
-			<div class="row" id="js-pages-list-row"{if iaCore::ACTION_ADD == $pageAction && (!$smarty.post && !isset($smarty.get.item))} style="display: none;"{/if}>
-				<label class="col col-lg-2 control-label">{lang key='shown_on_pages'}</label>
+			{if $pages}
+				<div class="row" id="js-pages-list-row"{if iaCore::ACTION_ADD == $pageAction && (!$smarty.post && !isset($smarty.get.item))} style="display: none;"{/if}>
+					<label class="col col-lg-2 control-label">{lang key='shown_on_pages'}</label>
 
-				<div class="col col-lg-4">
-					<div class="box-simple fieldset">
-					{foreach $pages as $pageId => $entry}
-						<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
-							<label>
-								<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[{$pageId}]">
-								{$entry.title}
-							</label>
+					<div class="col col-lg-4">
+						<div class="box-simple fieldset">
+						{foreach $pages as $pageId => $entry}
+							<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
+								<label>
+									<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[{$pageId}]">
+									{$entry.title}
+								</label>
+							</div>
+						{/foreach}
 						</div>
-					{/foreach}
+						<a href="#" id="toggle-pages" class="label label-default pull-right"><i class="i-lightning"></i> {lang key='select_all'}</a>
 					</div>
-					<a href="#" id="toggle-pages" class="label label-default pull-right"><i class="i-lightning"></i> {lang key='select_all'}</a>
 				</div>
-			</div>
+			{/if}
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='visible_for_admin'} <a href="#" class="js-tooltip" title="{$tooltips.adminonly}"><i class="i-info"></i></a></label>
 
