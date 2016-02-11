@@ -343,6 +343,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			. 'LEFT JOIN `:prefix:table_phrases` l '
 				. "ON (`key` = CONCAT('page_title_', p.`name`) AND l.`code` = ':lang' AND l.`category` = ':category') "
 			. "WHERE p.`status` = ':status' AND p.`service` = 0 "
+			. 'GROUP BY p.`name` '
 			. 'ORDER BY l.`value`';
 
 		$sql = iaDb::printf($sql, array(
