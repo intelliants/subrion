@@ -65,7 +65,7 @@
 			</div>
 		</div>
 
-		<div class="row" id="tr_featured"{if !$item.featured} style="display:none;"{/if}>
+		<div class="row"{if !isset($noFeaturedEnd)} id="tr_featured"{/if}{if !$item.featured || isset($noFeaturedEnd)} style="display:none;"{/if}>
 			<label class="col col-lg-2 control-label">{lang key='featured_end'}</label>
 
 			<div class="col col-lg-4">
