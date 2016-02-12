@@ -19,6 +19,12 @@
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
 	<label class="col col-lg-2 control-label">{lang key=$name} {if $field.required}{lang key='field_required'}{/if}
+		{if iaField::PICTURES == $field.type || iaField::IMAGE == $field.type}
+			<span class="help-block">
+				{lang key='thumb_dimensions'}: {$field.thumb_width}x{$field.thumb_height}<br>
+				{lang key='image_dimensions'}: {$field.image_width}x{$field.image_height}
+			</span>
+		{/if}
 		{assign annotation {lang key="{$name}_annotation" default=''}}
 		{if $annotation}<br><span class="help-block">{$annotation}</span>{/if}
 	</label>

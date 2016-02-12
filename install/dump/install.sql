@@ -1409,6 +1409,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('id','ID','admin'),
 ('ie_update_warning','Warning! Your version of Internet Explorer is too old. It may cause malfunctions of the script. Please update the browser to the 8 or higher version.','admin'),
+('image_dimensions','Image dimensions','admin'),
 ('image_height','Image Height','admin'),
 ('import','Import','admin'),
 ('import_from_pc','Import the language file from PC','admin'),
@@ -1709,6 +1710,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('template_installed','":name" template installed.','admin'),
 ('text','Text','admin'),
 ('this_fields_displayed_only_for_plans','These fields are displayed for sponsored plans only.','admin'),
+('thumb_dimensions','Thumb dimensions','admin'),
 ('thumb_width','Thumbnail width','admin'),
 ('thumb_height','Thumbnail height','admin'),
 ('timepicker','Enable time selection','admin'),
