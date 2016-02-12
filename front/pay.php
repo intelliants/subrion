@@ -98,7 +98,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					if ($iaPlan->extractFunds($transaction))
 					{
-						empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']); /*-- MOD // jjangaraev --*/
+						empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
 						$iaPlan->setPaid($transaction);
 						iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('payment_done'), $transaction['return_url']);
 					}
