@@ -42,8 +42,8 @@
 			</div>
 		</div>
 
-		{if isset($plans) && $plans}
-			<div class="row" id="sponsored-end-tr"{if $item.sponsored != 1} style="display:none"{/if}>
+		{if isset($plans) && $plans && !isset($noSponsoredEnd)}
+			<div class="row" id="js-row-sponsored-end"{if $item.sponsored != 1} style="display:none"{/if}>
 				<label class="col col-lg-2 control-label">{lang key='sponsored_end'}</label>
 
 				<div class="col col-lg-4">
@@ -65,7 +65,7 @@
 			</div>
 		</div>
 
-		<div class="row"{if !isset($noFeaturedEnd)} id="tr_featured"{/if}{if !$item.featured || isset($noFeaturedEnd)} style="display:none;"{/if}>
+		<div class="row"{if !isset($noFeaturedEnd)} id="js-row-featured-end"{/if}{if !$item.featured || isset($noFeaturedEnd)} style="display:none;"{/if}>
 			<label class="col col-lg-2 control-label">{lang key='featured_end'}</label>
 
 			<div class="col col-lg-4">
@@ -147,13 +147,13 @@ $(function()
 	// sponsored switchers
 	$('input[name="sponsored"]').on('change', function()
 	{
-		(1 == this.value) ? $('#plans, #sponsored-end-tr').show() : $('#plans, #sponsored-end-tr').hide();
+		(1 == this.value) ? $('#plans, #js-row-sponsored-end').show() : $('#plans, #js-row-sponsored-end').hide();
 	});
 
 	// featured switchers
 	$('input[name="featured"]').on('change', function()
 	{
-		(1 == this.value) ? $('#tr_featured').show() : $('#tr_featured').hide();
+		(1 == this.value) ? $('#js-row-featured-end').show() : $('#js-row-featured-end').hide();
 	});
 
 	var objects = [];

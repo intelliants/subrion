@@ -517,7 +517,12 @@ class iaField extends abstractCore
 				{
 					$item['sponsored_start'] = null;
 				}
-				$item['sponsored_end'] = $item['sponsored'] ? $data['sponsored_end'] : null;
+
+				$item['sponsored_end'] = null;
+				if ($item['sponsored'] && !empty($data['sponsored_end']))
+				{
+					$item['sponsored_end'] = $data['sponsored_end'];
+				}
 			}
 
 			if (isset($data['featured']))

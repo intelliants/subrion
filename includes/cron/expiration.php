@@ -29,12 +29,11 @@ $iaItem = $iaCore->factory('item');
 
 $itemNames = $iaDb->onefield('item', "`status` = 'active' AND `duration` > 0 GROUP BY `item`", null, null, $iaPlan::getTable());
 
+$where = '`sponsored` = 1 AND `sponsored_plan_id` != 0 AND `sponsored_end` < NOW()';
+
 foreach ($itemNames as $itemName)
 {
-	$tableName = $iaItem->getItemTable($itemName);
-	$itemIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, '`sponsored` = 1 AND `sponsored_end` < NOW()', null, null, $tableName);
-
-	if ($itemIds)
+	if ($itemIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, $where, null, null, $iaItem->getItemTable($itemName)))
 	{
 		foreach ($itemIds as $itemId)
 		{
