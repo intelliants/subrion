@@ -132,7 +132,7 @@ intelli.search = (function()
 
 						if ($option.length)
 							$option.prop('selected', true).trigger('change');
-						else $ctl.data('id', value);
+						else $ctl.data('value', value);
 				}
 			}
 		}
