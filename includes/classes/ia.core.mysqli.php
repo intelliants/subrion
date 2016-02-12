@@ -813,9 +813,11 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return false;
 	}
 
-	public function getMaxOrder($table = null)
+	public function getMaxOrder($table = null, $condition = null)
 	{
-		return (int)$this->one('MAX(`order`)', null, $table);
+		!$condition || $condition = $this->convertIds($condition[1], $condition[0]);
+
+		return (int)$this->one('MAX(`order`)', $condition, $table);
 	}
 
 	public function orderByRand($max, $id_name = '`id`', $pieces = 12, $delimiter = 100)

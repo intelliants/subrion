@@ -930,7 +930,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			unset($fieldData['lang_values']);
 		}
 
-		$fieldData['order'] = $iaDb->getMaxOrder() + 1;
+		$fieldData['order'] = $iaDb->getMaxOrder(null, array('item', $fieldData['item'])) + 1;
 
 		$fieldId = $iaDb->insert($fieldData);
 

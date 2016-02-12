@@ -444,16 +444,17 @@ interface iaInterfaceDbAdapter
 	public function getEnumValues($table, $field);
 
 	/**
-	 *
+	 * Returns max value for `order` column
 	 *
 	 * @param string $table table name
+	 * @param array $condition column name, value
 	 *
 	 * @return bool|mixed
 	 */
-	public function getMaxOrder($table = null);
+	public function getMaxOrder($table = null, $condition = null);
 
 	/**
-	 * Returns max value for `order` column
+	 * Generates a faster way to select random records
 	 *
 	 * @param int|string $max max order or table name
 	 * @param string $id_name id column

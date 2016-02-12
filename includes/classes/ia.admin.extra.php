@@ -2225,7 +2225,6 @@ class iaExtra extends abstractCore
 
 		$this->iaDb->setTable(iaField::getTable());
 
-		$maxOrder = $this->iaDb->getMaxOrder();
 		foreach ($fields as $entry)
 		{
 			$stmt = '`item` = :item AND `name` = :name';
@@ -2244,7 +2243,7 @@ class iaExtra extends abstractCore
 				continue;
 			}
 
-			$entry['order'] || $entry['order'] = ++$maxOrder;
+			$entry['order'] || $entry['order'] = $this->iaDb->getMaxOrder(null, array('item', $entry['item'])) + 1;
 			$entry['fieldgroup_id'] = isset($fieldGroups[$entry['item'] . $entry['group']])
 				? $fieldGroups[$entry['item'] . $entry['group']]
 				: 0;
