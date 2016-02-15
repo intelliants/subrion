@@ -40,7 +40,7 @@
 	</head>
 
 	<body class="page-{$core.page.name}">
-		<header class="header"{if $core.config.website_bg} style="background-image: url('{$smarty.const.IA_URL}uploads/{$core.config.website_bg}');"{/if}>
+		<header class="header"{if $core.config.website_bg} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.website_bg}');"{/if}>
 			<div class="inventory">
 				<div class="container">
 					{ia_blocks block='inventory'}
