@@ -46,6 +46,16 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->setTable(iaPage::getTable());
 	}
 
+	protected function _indexPage(&$iaView)
+	{
+		if (isset($_POST['preview']))
+		{
+			$this->_previewPage($iaView->get('action'));
+		}
+
+		parent::_indexPage($iaView);
+	}
+
 	protected function _gridRead($params)
 	{
 		$action = (1 == count($this->_iaCore->requestPath)) ? $this->_iaCore->requestPath[0] : null;
@@ -58,14 +68,27 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 	}
 
-	protected function _indexPage(&$iaView)
+	protected function _modifyGridResult(array &$entries)
 	{
-		if (isset($_POST['preview']))
-		{
-			$this->_previewPage($iaView->get('action'));
-		}
+		$currentLanguage = $this->_iaCore->iaView->language;
 
-		parent::_indexPage($iaView);
+		$this->_iaDb->setTable(iaLanguage::getTable());
+		$pageTitles = $this->_iaDb->keyvalue(array('key', 'value'), "`key` LIKE('page_title_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
+		$pageContents = $this->_iaDb->keyvalue(array('key', 'value'), "`key` LIKE('page_content_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
+		$this->_iaDb->resetTable();
+
+		$defaultPage = $this->_iaCore->get('home_page');
+
+		foreach ($entries as &$entry)
+		{
+			$entry['title'] = isset($pageTitles["page_title_{$entry['name']}"]) ? $pageTitles["page_title_{$entry['name']}"] : 'No title';
+			$entry['content'] = isset($pageContents["page_content_{$entry['name']}"]) ? $pageContents["page_content_{$entry['name']}"] : 'No content';
+
+			if ($defaultPage == $entry['name'])
+			{
+				$entry['default'] = true;
+			}
+		}
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
@@ -178,29 +201,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$conditions[] = '`service` = 0';
 	}
 
-	protected function _modifyGridResult(array &$entries)
-	{
-		$currentLanguage = $this->_iaCore->iaView->language;
-
-		$this->_iaDb->setTable(iaLanguage::getTable());
-		$pageTitles = $this->_iaDb->keyvalue(array('key', 'value'), "`key` LIKE('page_title_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
-		$pageContents = $this->_iaDb->keyvalue(array('key', 'value'), "`key` LIKE('page_content_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
-		$this->_iaDb->resetTable();
-
-		$defaultPage = $this->_iaCore->get('home_page');
-
-		foreach ($entries as &$entry)
-		{
-			$entry['title'] = isset($pageTitles["page_title_{$entry['name']}"]) ? $pageTitles["page_title_{$entry['name']}"] : 'No title';
-			$entry['content'] = isset($pageContents["page_content_{$entry['name']}"]) ? $pageContents["page_content_{$entry['name']}"] : 'No content';
-
-			if ($defaultPage == $entry['name'])
-			{
-				$entry['default'] = true;
-			}
-		}
-	}
-
 	protected function _setDefaultValues(array &$entry)
 	{
 		$entry = array(
@@ -301,14 +301,15 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				$pageName = $row['name'];
 
+				$this->_iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'page',
+					'name' => $this->_iaCore->factory('page')->getPageTitle($pageName), 'id' => (int)$entryId));
+
 				// remove associated entries as well
 				$this->_iaDb->delete("`key` IN ('page_title_{$pageName}', 'page_content_{$pageName}')", iaLanguage::getTable());
 
 				$this->_iaCore->factory('block', iaCore::ADMIN);
 				$this->_iaDb->delete('`page_name` = :page', iaBlock::getMenusTable(), array('page' => $pageName));
 				//
-
-				$this->_iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'page', 'name' => iaLanguage::get('page_title_' . $pageName), 'id' => (int)$entryId));
 			}
 		}
 

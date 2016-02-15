@@ -14,28 +14,34 @@ function IntelliTree(params)
 	this.$label = params.label ? $(params.label) : $('#js-category-label');
 	this.$value = params.value ? $(params.value) : $('#input-tree');
 	this.$toggler = params.toggler ? $(params.toggler) : $('#js-tree-toggler');
+	this.$search = $('input', '#js-tree-search');
 
 	var self = this;
 
 	this.init = function()
 	{
-		self.$tree = $(self.selector).jstree({core:
+		self.$tree = $(self.selector).jstree(
 		{
-			data: {
-				data: function(n)
-				{
-					var params = {};
-					if(n.id != '#')
+			core:
+			{
+				data: {
+					data: function(n)
 					{
-						params.id = n.id;
-					}
+						var params = {};
+						if(n.id != '#')
+						{
+							params.id = n.id;
+						}
 
-					return params;
+						return params;
+					},
+					url: self.url
 				},
-				url: self.url
+				multiple: false
 			},
-			multiple: false
-		}});
+			plugins: ['search'],
+			search: {show_only_matches: true}
+		});
 
 		self.$tree.on('loaded.jstree', _openCascade);
 		self.$tree.on('changed.jstree', this.onchange);
@@ -47,8 +53,24 @@ function IntelliTree(params)
 		self.$toggler.on('click', function(e)
 		{
 			e.preventDefault();
+
 			self.$tree.toggle();
-		})
+			self.$search.parent().toggle();
+		});
+
+		if (params.search)
+		{
+			var timeout = false;
+
+			self.$search.keyup(function(e)
+			{
+				if (timeout) clearTimeout(timeout);
+				timeout = setTimeout(function()
+				{
+					self.$tree.jstree(true).search(self.$search.val());
+				}, 250);
+			});
+		}
 	};
 
 	this.onchange = function(e, data)

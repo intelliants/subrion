@@ -298,14 +298,15 @@ final class iaSystem
 				$patch = $iaPatchParser->patch;
 
 				$iaPatchApplier = new iaPatchApplier(IA_HOME, array(
-					'host' => INTELLI_DBHOST . ':' . INTELLI_DBPORT,
+					'host' => INTELLI_DBHOST,
+					'port' => INTELLI_DBPORT,
 					'database' => INTELLI_DBNAME,
 					'user' => INTELLI_DBUSER,
 					'password' => INTELLI_DBPASS,
 					'prefix' => INTELLI_DBPREFIX
 				), true);
 
-				$iaPatchApplier->process($patch, $version);
+				$result = $iaPatchApplier->process($patch, $version);
 
 				$logFile = 'upgrade-log-' . $patch['info']['version_to'] . '_' . date('d-m-y-Hi') . '.txt';
 				if ($fh = fopen(IA_UPLOADS . $logFile, 'wt'))
@@ -319,7 +320,7 @@ final class iaSystem
 				$iaLog = iaCore::instance()->factory('log');
 				$iaLog->write(iaLog::ACTION_UPGRADE, $logParams);
 
-				return true;
+				return $result;
 			}
 			catch (Exception $e)
 			{

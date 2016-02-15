@@ -506,8 +506,23 @@ class iaField extends abstractCore
 			{
 				$item['sponsored'] = (int)$data['sponsored'];
 				$item['sponsored_plan_id'] = $item['sponsored'] ? (int)$data['plan_id'] : 0;
-				$item['sponsored_start'] = $item['sponsored'] ? date(iaDb::DATETIME_SHORT_FORMAT) : null;
-				$item['sponsored_end'] = $item['sponsored'] ? $data['sponsored_end'] : null;
+				if ($item['sponsored'])
+				{
+					if (!(isset($previousValues['sponsored_start']) && $previousValues['sponsored_start']))
+					{
+						$item['sponsored_start'] = date(iaDb::DATETIME_SHORT_FORMAT);
+					}
+				}
+				else
+				{
+					$item['sponsored_start'] = null;
+				}
+
+				$item['sponsored_end'] = null;
+				if ($item['sponsored'] && !empty($data['sponsored_end']))
+				{
+					$item['sponsored_end'] = $data['sponsored_end'];
+				}
 			}
 
 			if (isset($data['featured']))

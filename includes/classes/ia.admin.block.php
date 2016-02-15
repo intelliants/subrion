@@ -20,7 +20,10 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
+ * @package Subrion\Admin
  * @link http://www.subrion.org/
+ * @author https://intelliants.com/ <support@subrion.org>
+ * @license http://www.subrion.org/license.html
  *
  ******************************************************************************/
 

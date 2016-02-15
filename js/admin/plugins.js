@@ -29,7 +29,7 @@ intelli.plugins = {
 
 var installClick = function(record, action)
 {
-	if ('remote' == Ext.getCmp('modeFilter').getValue() && (record.get('price') != '0.00'))
+	if ('reinstall' != action && 'remote' == Ext.getCmp('modeFilter').getValue() && (record.get('price') != '0.00'))
 	{
 		intelli.notifFloatBox({msg: _t('buy_before_install'), type: 'error', autohide: true});
 		return;

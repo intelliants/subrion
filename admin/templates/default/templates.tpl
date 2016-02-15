@@ -47,7 +47,7 @@
 								{else}
 									<button type="submit" name="reinstall" class="btn btn-warning btn-sm"><i class="i-loop"></i></button>
 									{if $template.config_groups}
-										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$template.config_groups[0].name}/" class="btn btn-sm btn-default" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$template.config_groups['Template'].name}/" class="btn btn-sm btn-default" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
 									{/if}
 								{/if}
 								<a href="#" rel="{$template.name}" class="btn btn-sm btn-default js-cmd-info" title="{lang key='details'}"><i class="i-info"></i></a>

@@ -82,15 +82,15 @@ class iaPatchApplier
 
 	public function process($patch, $version)
 	{
-		if ($patch['executables']['pre'])
-		{
-			$this->_runPhpCode($patch['executables']['pre']);
-		}
-
 		if (!$this->_dbConnect())
 		{
 			$this->_logInfo('Unable to connect to the database :database.', self::LOG_INFO, array('database' => $this->_dbConnectionParams['database']));
-			return;
+			return false;
+		}
+
+		if ($patch['executables']['pre'])
+		{
+			$this->_runPhpCode($patch['executables']['pre']);
 		}
 
 		if ($patch['info']['num_queries'] > 0)
@@ -101,6 +101,7 @@ class iaPatchApplier
 				$this->_processQuery($entry);
 			}
 		}
+
 		if ($patch['info']['num_files'] > 0)
 		{
 			$this->_logInfo('Starting to process files in :mode mode...', self::LOG_INFO, array('mode' => $this->_forceMode ? 'forced' : 'regular'));
@@ -136,6 +137,8 @@ class iaPatchApplier
 		{
 			$this->_runPhpCode($patch['executables']['post']);
 		}
+
+		return true;
 	}
 
 	protected function _logInfo($message, $type = self::LOG_ALERT, $params = array())

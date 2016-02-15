@@ -40,7 +40,7 @@
 	{ia_hooker name='smartyAdminSubmitItemBeforeFields'}
 
 	{capture 'systems' append='fieldset_after'}
-		{if iaUsers::STATUS_UNCONFIRMED == $item.status}
+		{if isset($item.status) && iaUsers::STATUS_UNCONFIRMED == $item.status}
 			<div class="row">
 				<div class="col col-lg-2"></div>
 				<div class="col col-lg-4">

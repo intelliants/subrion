@@ -175,7 +175,8 @@ $(function()
 				{
 					if ('boolean' == typeof data.error && !data.error)
 					{
-						self.closest('.thumbnail').parent().remove();
+						self.closest('.fieldzone').find('.js-file-name').val('');
+						self.closest('.thumbnail').remove();
 
 						var counter = $('#' + field);
 						if (counter.val() == 0)

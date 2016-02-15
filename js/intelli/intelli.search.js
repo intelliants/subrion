@@ -128,11 +128,13 @@ intelli.search = (function()
 						}
 						break;
 					case 'select':
-						$('option[value="' + value + '"]', $ctl).prop('selected', true).trigger('change');
+						var $option = $('option[value="' + value + '"]', $ctl);
+
+						if ($option.length)
+							$option.prop('selected', true).trigger('change');
+						else $ctl.data('value', value);
 				}
 			}
-
-			//this.run();
 		}
 	};
 })();

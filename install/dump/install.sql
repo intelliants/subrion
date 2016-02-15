@@ -1031,16 +1031,16 @@ INSERT INTO `{install:prefix}members` (`usergroup_id`,`username`,`email`,`date_r
 INSERT INTO `{install:prefix}menus` (`parent_id`,`menu_id`,`el_id`,`page_name`) VALUES
 ('0',2,'1_001','index'),
 ('0',3,'1_002','index'),
-('0',3,'10_003','members'),
+('0',3,'9_003','members'),
 ('0',3,'3_004','search'),
-('0',4,'14_005','profile'),
-('0',4,'9_006','favorites'),
-('0',4,'15_007','member_funds'),
-('0',5,'20_009','about'),
-('0',5,'21_010','policy'),
-('0',5,'22_011','terms'),
-('0',5,'24_012','advertise'),
-('0',5,'23_013','help');
+('0',4,'13_005','profile'),
+('0',4,'8_006','favorites'),
+('0',4,'14_007','member_funds'),
+('0',5,'19_008','about'),
+('0',5,'20_009','policy'),
+('0',5,'21_010','terms'),
+('0',5,'23_011','advertise'),
+('0',5,'22_012','help');
 
 INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`,`nofollow`,`filename`,`menus`,`parent`,`suburl`) VALUES
 (2,'index',0,0,'',0,'page','main,inventory','',''),
@@ -1283,6 +1283,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('do','Do','admin'),
 ('documentation','Documentation','admin'),
 ('doc_extra_not_available','Data for this package is not available.','admin'),
+('drag_to_reorder','Drag to re-order','admin'),
 ('dropdown','Dropdown','admin'),
 ('duration','Duration','admin'),
 
@@ -1408,6 +1409,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('id','ID','admin'),
 ('ie_update_warning','Warning! Your version of Internet Explorer is too old. It may cause malfunctions of the script. Please update the browser to the 8 or higher version.','admin'),
+('image_dimensions','Image dimensions','admin'),
 ('image_height','Image Height','admin'),
 ('import','Import','admin'),
 ('import_from_pc','Import the language file from PC','admin'),
@@ -1483,7 +1485,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('manage','Manage','admin'),
 ('manage_entries','Manage entries','admin'),
 ('master','Master','admin'),
-('mark_at_least_one_page','Mark at least one page to display field.','admin'),
 ('max_files','Max number of files','admin'),
 ('max_num_images','Max Images','admin'),
 ('member_add','Add a Member','admin'),
@@ -1709,6 +1710,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('template_installed','":name" template installed.','admin'),
 ('text','Text','admin'),
 ('this_fields_displayed_only_for_plans','These fields are displayed for sponsored plans only.','admin'),
+('thumb_dimensions','Thumb dimensions','admin'),
 ('thumb_width','Thumbnail width','admin'),
 ('thumb_height','Thumbnail height','admin'),
 ('timepicker','Enable time selection','admin'),
@@ -2010,6 +2012,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('show_on_all_pages','Global visibility','common'),
 ('show_on_this_page','Show on this page','common'),
 ('sponsored','Sponsored','common'),
+('start_typing_to_filter','Start typing to filter items','common'),
 ('status','Status','common'),
 ('subject','Subject','common'),
 ('submit','Submit','common'),

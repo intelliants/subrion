@@ -8,7 +8,7 @@
 			</div>
 
 			<div class="row">
-				<label class="col col-lg-2 control-label" for="input-title">{lang key='title'}</label>
+				<label class="col col-lg-2 control-label" for="input-title">{lang key='title'} {lang key='field_required'}</label>
 				<div class="col col-lg-4">
 					<input type="text" name="title" value="{$item.title|escape:'html'}" id="input-title">
 				</div>
@@ -23,7 +23,7 @@
 			</div>
 
 			<div class="row">
-				<label class="col col-lg-2 control-label" for="body">{lang key='body'}</label>
+				<label class="col col-lg-2 control-label" for="body">{lang key='body'} {lang key='field_required'}</label>
 				<div class="col col-lg-8">
 					{ia_wysiwyg name='body' value=$item.body}
 				</div>
@@ -72,6 +72,6 @@
 
 		{include file='fields-system.tpl' datetime=true}
 
-    </div>
+	</div>
 </form>
 {ia_add_media files='tagsinput, js:_IA_URL_plugins/personal_blog/js/manage'}

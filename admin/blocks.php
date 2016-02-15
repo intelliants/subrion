@@ -335,13 +335,25 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getPagesList($languageCode)
 	{
+		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
+
 		$sql =
-			'SELECT DISTINCTROW p.*, IF(t.`value` IS NULL, p.`name`, t.`value`) `title` '
-			. 'FROM `' . $this->_iaDb->prefix . 'pages` p '
-			. 'LEFT JOIN `' . $this->_iaDb->prefix . 'language` t '
-			. "ON (`key` = CONCAT('page_title_', p.`name`) AND t.`code` = '" . $languageCode . "') "
-			. "WHERE p.`status` = 'active' AND p.`service` = 0 "
-			. 'ORDER BY t.`value`';
+			'SELECT DISTINCTROW p.*, IF(l.`value` IS NULL, p.`name`, l.`value`) `title` '
+			. 'FROM `:prefix:table_pages` p '
+			. 'LEFT JOIN `:prefix:table_phrases` l '
+				. "ON (`key` = CONCAT('page_title_', p.`name`) AND l.`code` = ':lang' AND l.`category` = ':category') "
+			. "WHERE p.`status` = ':status' AND p.`service` = 0 "
+			. 'GROUP BY p.`name` '
+			. 'ORDER BY l.`value`';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_pages' => $iaPage::getTable(),
+			'table_phrases' => iaLanguage::getTable(),
+			'status' => iaCore::STATUS_ACTIVE,
+			'lang' => $languageCode,
+			'category' => iaLanguage::CATEGORY_PAGE
+		));
 
 		return $this->_iaDb->getAll($sql);
 	}

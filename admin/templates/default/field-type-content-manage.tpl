@@ -5,9 +5,9 @@
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
 {if isset($item.$fieldName) && $item.$fieldName}
-	{if 'checkbox' == $type}
+	{if iaField::CHECKBOX == $type}
 		{$value = ','|explode:$item.$fieldName}
-	{elseif in_array($type, array('image', 'pictures', 'storage'))}
+	{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
 		{$value = $item.$fieldName|unserialize}
 	{else}
 		{$value = $item.$fieldName}
@@ -19,6 +19,12 @@
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
 	<label class="col col-lg-2 control-label">{lang key=$name} {if $field.required}{lang key='field_required'}{/if}
+		{if iaField::PICTURES == $type || iaField::IMAGE == $type}
+			<span class="help-block">
+				{lang key='thumb_dimensions'}: {$field.thumb_width}x{$field.thumb_height}<br>
+				{lang key='image_dimensions'}: {$field.image_width}x{$field.image_height}
+			</span>
+		{/if}
 		{assign annotation {lang key="{$name}_annotation" default=''}}
 		{if $annotation}<br><span class="help-block">{$annotation}</span>{/if}
 	</label>
@@ -104,7 +110,7 @@ $(function($)
 			{/if}
 
 		{case iaField::PICTURES}
-		{case iaFIeld::STORAGE break}
+		{case iaField::STORAGE break}
 			{if $value}
 				<div class="uploads-list" id="{$fieldName}_upload_list">
 					{foreach $value as $i => $entry}

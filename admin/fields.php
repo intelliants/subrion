@@ -429,11 +429,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			unset($entry['text_length'], $entry['text_default'], $entry['nodes'], $entry['multiple']);
 		}
 
-		if (!$entry['adminonly'] && empty($entry['pages']) && 'transactions' != $entry['item'])
-		{
-			$this->addMessage('mark_at_least_one_page');
-		}
-
 		$entry['required'] = (int)iaUtil::checkPostParam('required');
 		if ($entry['required'])
 		{
@@ -527,7 +522,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			// get parents values
 			$entryData['parents'] = $this->_getParents($entryData['name']);
-
+			iaField::PICTURES != $entryData['type'] || $entryData['pic_max_images'] = $entryData['length'];
 		}
 		elseif (!empty($_GET['item']) || !empty($_POST['item']))
 		{
@@ -540,6 +535,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$iaItem = $this->_iaCore->factory('item');
+		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
 		$pages = $groups = array();
 
@@ -553,7 +549,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$pages[$entry['id']] = array(
 				'name' => $entry['page_name'],
-				'title' => iaLanguage::get('page_title_' . $entry['page_name'], $entry['page_name']),
+				'title' => $iaPage->getPageTitle($entry['page_name']),
 				'item' => $entry['item']
 			);
 		}
@@ -934,7 +930,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			unset($fieldData['lang_values']);
 		}
 
-		$fieldData['order'] = $iaDb->getMaxOrder() + 1;
+		$fieldData['order'] = $iaDb->getMaxOrder(null, array('item', $fieldData['item'])) + 1;
 
 		$fieldId = $iaDb->insert($fieldData);
 

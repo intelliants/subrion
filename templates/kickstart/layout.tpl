@@ -40,7 +40,7 @@
 	</head>
 
 	<body class="page-{$core.page.name}">
-		<header class="header"{if $core.config.website_bg} style="background-image: url('{$smarty.const.IA_URL}uploads/{$core.config.website_bg}');"{/if}>
+		<header class="header"{if $core.config.website_bg} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.website_bg}');"{/if}>
 			<div class="inventory">
 				<div class="container">
 					{ia_blocks block='inventory'}
@@ -71,7 +71,7 @@
 
 					<!-- Collect the nav links, forms, and other content for toggling -->
 					<div class="collapse navbar-collapse" id="navbar-collapse">
-						{include file='language-selector.tpl'}
+						{include 'language-selector.tpl'}
 						{ia_blocks block='account'}
 						{ia_blocks block='mainmenu'}
 					</div>
@@ -83,10 +83,10 @@
 
 		{ia_hooker name='smartyFrontBeforeBreadcrumb'}
 
-		{include file='breadcrumb.tpl'}
+		{include 'breadcrumb.tpl'}
 
 		{if $core.config.enable_landing && 'index' == $core.page.name}
-			{include file='page.index.tpl'}
+			{include 'page.index.tpl'}
 		{else}
 			{if isset($iaBlocks.verytop)}
 				<div class="verytop">
@@ -102,8 +102,6 @@
 						</div>
 						<div class="{width section='content' position='center' tag='col-md-'}">
 							<div class="content__wrap">
-								{ia_hooker name='smartyFrontBeforeNotifications'}
-								{include file='notification.tpl'}
 
 								{ia_blocks block='top'}
 
@@ -123,6 +121,9 @@
 										{/foreach}
 									</ul>
 								</div>
+
+								{ia_hooker name='smartyFrontBeforeNotifications'}
+								{include 'notification.tpl'}
 
 								{ia_hooker name='smartyFrontBeforeMainContent'}
 
@@ -198,7 +199,7 @@
 		{/if}
 
 		{if isset($manageMode)}
-			{include file='visual-mode.tpl'}
+			{include 'visual-mode.tpl'}
 		{/if}
 
 		{if isset($previewMode)}

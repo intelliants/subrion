@@ -290,8 +290,8 @@ class iaPlan extends abstractCore
 		$dateFinished = $dateStarted + ($base * $duration);
 
 		return array(
-			date(iaDb::DATETIME_SHORT_FORMAT, $dateStarted),
-			date(iaDb::DATETIME_SHORT_FORMAT, $dateFinished)
+			date(iaDb::DATETIME_FORMAT, $dateStarted),
+			date(iaDb::DATETIME_FORMAT, $dateFinished)
 		);
 	}
 

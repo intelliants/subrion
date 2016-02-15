@@ -702,3 +702,24 @@
 	+ Feature #2088: Allow to run external upgrade SQL file
 	+ Feature #2101: Add config that will allow to switch http to https and back
 	+ Feature #2107: Adding phrases to all existing languages during a script upgrade
+
+>> From 4.0.4 to 4.0.5 <<
+
+	- Bug #880: Template preview does not work correctly
+	- Bug #1029: Page preview does not work correctly
+	- Bug #1460: Admin Panel: page is scrolled down on "Edit Field" page
+	- Issue #82: Quick search: results bug bug
+	- Issue #85: Upgrade subsystem: invalid 'Host' parameter
+	- Issue #98: Sponsored start date is always set to current time when item is edited from admin panel bug
+	- Issue #105: Sponsored end datepicker doesn't updated on plan selection/edition bug
+	- Issue #114: Multiple images upload field's length issue bug
+	- Issue #117: Plugin reinstall does not work
+	* Issue #81: Package upgrade - items creation enhancement
+	* Issue #87: Package installation: add fieldgroups processing enhancement
+	* Issue #108: Better order for fields
+	* Issue #110: Show on page field improvements
+	* Issue #118: Improvements for image field
+	* Issue #119: Infinite Featured end enhancement
+	+ Issue #54: Implement new inclusion of tpl files for templates and hooks enhancement
+	+ Issue #86: Make possible to specify an execution phase for SQL queries in install.xml files enhancement
+	+ Issue #113: Tree field order

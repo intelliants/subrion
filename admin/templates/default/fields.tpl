@@ -95,23 +95,25 @@
 					<input type="text" name="empty_field" value="{if isset($item.empty_field)}{$item.empty_field|escape:'html'}{/if}">
 				</div>
 			</div>
-			<div class="row" id="js-pages-list-row"{if iaCore::ACTION_ADD == $pageAction && (!$smarty.post && !isset($smarty.get.item))} style="display: none;"{/if}>
-				<label class="col col-lg-2 control-label">{lang key='shown_on_pages'} <span class="required">*</span></label>
+			{if $pages}
+				<div class="row" id="js-pages-list-row"{if iaCore::ACTION_ADD == $pageAction && (!$smarty.post && !isset($smarty.get.item))} style="display: none;"{/if}>
+					<label class="col col-lg-2 control-label">{lang key='shown_on_pages'}</label>
 
-				<div class="col col-lg-4">
-					<div class="box-simple fieldset">
-					{foreach $pages as $pageId => $entry}
-						<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
-							<label>
-								<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[{$pageId}]">
-								{$entry.title}
-							</label>
+					<div class="col col-lg-4">
+						<div class="box-simple fieldset">
+						{foreach $pages as $pageId => $entry}
+							<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
+								<label>
+									<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[{$pageId}]">
+									{$entry.title}
+								</label>
+							</div>
+						{/foreach}
 						</div>
-					{/foreach}
+						<a href="#" id="toggle-pages" class="label label-default pull-right"><i class="i-lightning"></i> {lang key='select_all'}</a>
 					</div>
-					<a href="#" id="toggle-pages" class="label label-default pull-right"><i class="i-lightning"></i> {lang key='select_all'}</a>
 				</div>
-			</div>
+			{/if}
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='visible_for_admin'} <a href="#" class="js-tooltip" title="{$tooltips.adminonly}"><i class="i-info"></i></a></label>
 
@@ -318,6 +320,7 @@
 						<button class="js-tree-action btn btn-xs btn-success" data-action="create"><i class="i-plus"></i> Add Node</button>
 						<button class="js-tree-action btn btn-xs btn-danger disabled" data-action="delete"><i class="i-minus"></i> Delete</button>
 						<button class="js-tree-action btn btn-xs btn-info disabled" data-action="update"><i class="i-edit"></i> Rename</button>
+						<span class="help-inline pull-right">{lang key='drag_to_reorder'}</span>
 
 						<input type="hidden" name="nodes"{if iaField::TREE == $item.type} value="{$item.values|escape}"{/if}>
 						<div class="categories-tree" id="input-nodes"></div>

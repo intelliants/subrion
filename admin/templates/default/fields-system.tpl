@@ -36,32 +36,14 @@
 							<option value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} selected{/if} data-date="{$plan.defaultEndDate}">{lang key="plan_title_{$plan.id}"} - {$core.config.currency} {$plan.cost}</option>
 						{/foreach}
 					</select>
-					{ia_add_js}
-$(function()
-{
-	var $sponsoredEnd = $('input[name="sponsored_end"]'),
-		$inputPlan = $('#input-plan');
-
-	$inputPlan.on('change', function()
-	{
-		var date = $('option:selected', this).data('date');
-		$sponsoredEnd.datepicker('update', date);
-	});
-
-	if ('' == $sponsoredEnd.val())
-	{
-		$inputPlan.trigger('change');
-	}
-});
-					{/ia_add_js}
 				{else}
 					<span class="label label-info">{lang key='no_plans'}</span>
 				{/if}
 			</div>
 		</div>
 
-		{if isset($plans) && $plans}
-			<div class="row" id="sponsored-end-tr"{if $item.sponsored != 1} style="display:none"{/if}>
+		{if isset($plans) && $plans && !isset($noSponsoredEnd)}
+			<div class="row" id="js-row-sponsored-end"{if $item.sponsored != 1} style="display:none"{/if}>
 				<label class="col col-lg-2 control-label">{lang key='sponsored_end'}</label>
 
 				<div class="col col-lg-4">
@@ -83,7 +65,7 @@ $(function()
 			</div>
 		</div>
 
-		<div class="row" id="tr_featured"{if !$item.featured} style="display:none;"{/if}>
+		<div class="row"{if !isset($noFeaturedEnd)} id="js-row-featured-end"{/if}{if !$item.featured || isset($noFeaturedEnd)} style="display:none;"{/if}>
 			<label class="col col-lg-2 control-label">{lang key='featured_end'}</label>
 
 			<div class="col col-lg-4">
@@ -150,19 +132,32 @@ $(function()
 	{ia_add_js}
 $(function()
 {
+	var $sponsoredEnd = $('input[name="sponsored_end"]'),
+		$inputPlan = $('#input-plan');
+
+	$inputPlan.on('change', function()
+	{
+		$sponsoredEnd.datepicker('update', $('option:selected', this).data('date'));
+	});
+
+	if ('' == $sponsoredEnd.val())
+	{
+		$inputPlan.trigger('change');
+	}
 	// sponsored switchers
 	$('input[name="sponsored"]').on('change', function()
 	{
-		(1 == this.value) ? $('#plans, #sponsored-end-tr').show() : $('#plans, #sponsored-end-tr').hide();
+		(1 == this.value) ? $('#plans, #js-row-sponsored-end').show() : $('#plans, #js-row-sponsored-end').hide();
 	});
 
 	// featured switchers
 	$('input[name="featured"]').on('change', function()
 	{
-		(1 == this.value) ? $('#tr_featured').show() : $('#tr_featured').hide();
+		(1 == this.value) ? $('#js-row-featured-end').show() : $('#js-row-featured-end').hide();
 	});
 
-	var objects = items = [];
+	var objects = [];
+		var items = [];
 
 	$('#js-owner-autocomplete').typeahead(
 	{
