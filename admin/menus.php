@@ -274,7 +274,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['collapsible'] = (int)$data['collapsible'];
 		$entry['collapsed'] = (int)$data['collapsed'];
 
-		$menuExists = $this->_iaDb->exists('`name` = :name', $entry);
+		$menuExists = $this->_iaDb->exists(iaDb::convertIds($entry['name'], 'name'));
 
 		if (iaCore::ACTION_EDIT == $action)
 		{
