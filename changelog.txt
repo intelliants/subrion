@@ -719,7 +719,7 @@
 	* Issue #108: Better order for fields
 	* Issue #110: Show on page field improvements
 	* Issue #118: Improvements for image field
-	* Isseu #119: Infinite Featured end enhancement
+	* Issue #119: Infinite Featured end enhancement
 	+ Issue #54: Implement new inclusion of tpl files for templates and hooks enhancement
 	+ Issue #86: Make possible to specify an execution phase for SQL queries in install.xml files enhancement
 	+ Issue #113: Tree field order
