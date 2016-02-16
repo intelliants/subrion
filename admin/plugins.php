@@ -98,11 +98,11 @@ class iaBackendController extends iaAbstractControllerBackend
 				break;
 
 			case 'local':
-				$output = $this->_getLocalPlugins($start, $limit, $dir, $filter);
+				$output = $this->_getLocalPlugins($start, $limit, $sort, $dir, $filter);
 				break;
 
 			case 'remote':
-				$output = $this->_getRemotePlugins($start, $limit, $dir, $filter);
+				$output = $this->_getRemotePlugins($start, $limit, $sort, $dir, $filter);
 		}
 
 		return $output;
@@ -121,7 +121,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	}
 
 
-	private function _getRemotePlugins($start, $limit, $dir, $filter)
+	private function _getRemotePlugins($start, $limit, $sort, $dir, $filter)
 	{
 		$pluginsData = array();
 
@@ -188,10 +188,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		return $this->getMessages()
 			? array('result' => false, 'message' => $this->getMessages())
-			: $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter);
+			: $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter, $sort);
 	}
 
-	private function _getLocalPlugins($start, $limit, $dir, $filter)
+	private function _getLocalPlugins($start, $limit, $sort, $dir, $filter)
 	{
 		$total = 0;
 		$pluginsData = array();
@@ -261,7 +261,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		closedir($directory);
 
-		return $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter);
+		return $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter, $sort);
 	}
 
 	private function _getInstalledPlugins($start, $limit, $sort, $dir, $filter)
@@ -317,35 +317,63 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $result;
 	}
 
-	private function _sortPlugins(array $pluginsData, $start, $limit, $dir = iaDb::ORDER_DESC, $filter = '')
+	private function _sortPlugins(array $pluginsData, $start, $limit, $dir = iaDb::ORDER_DESC, $filter = '', $column = 'date')
 	{
-		$pluginsList = $pluginsData['pluginsList'];
-		$output = array('data' => array(), 'total' => count($pluginsList));
+		$plugins = $pluginsData['plugins'];
+		$output = array('data' => array(), 'total' => count($plugins));
 
-		if ($pluginsList)
+		if ($plugins)
 		{
-			natcasesort($pluginsList);
-			(iaDb::ORDER_DESC != $dir) || $pluginsList = array_reverse($pluginsList, true);
-
 			if ($filter)
 			{
-				foreach ($pluginsList as $pluginName => $pluginTitle)
+				foreach ($plugins as $plugin)
 				{
-					if (false === stripos($pluginName . $pluginTitle, $filter))
+					if (false === stripos($plugin['name'] . $plugin['title'], $filter))
 					{
-						unset($pluginsList[$pluginName]);
+						unset($plugins[$plugin['name']]);
 					}
 				}
 
-				$output['total'] = count($pluginsList);
+				$output['total'] = count($plugins);
 			}
-
-			$pluginsList = array_splice($pluginsList, $start, $limit);
-
-			foreach ($pluginsList as $pluginName => $pluginTitle)
+			if (iaDb::ORDER_ASC == $dir)
 			{
-				$output['data'][] = $pluginsData['plugins'][$pluginName];
+				if ('date' == $column)
+				{
+					usort($plugins, function ($a, $b) use ($column)
+					{
+						return strtotime($a[$column]) - strtotime($b[$column]);
+					});
+				}
+				else
+				{
+					usort($plugins, function ($a, $b) use ($column)
+					{
+						return strcasecmp($a[$column], $b[$column]);
+					});
+				}
 			}
+			else
+			{
+				if ('date' == $column)
+				{
+					usort($plugins, function ($a, $b) use ($column)
+					{
+						return strtotime($b[$column]) - strtotime($a[$column]);
+					});
+				}
+				else
+				{
+					usort($plugins, function ($a, $b) use ($column)
+					{
+						return strcasecmp($b[$column], $a[$column]);
+					});
+				}
+			}
+
+			$plugins = array_splice($plugins, $start, $limit);
+
+			$output['data'] = $plugins;
 		}
 
 		return $output;
