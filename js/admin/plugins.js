@@ -350,12 +350,7 @@ Ext.onReady(function()
 								intelli.available.grid.getView().getHeaderCt().gridDataColumns[0].setVisible(!isLocalMode);
 								intelli.available.grid.columns[6].setVisible(!isLocalMode);
 
-								intelli.available.grid.columns[1].sortable =
-								intelli.available.grid.columns[2].sortable =
-								intelli.available.grid.columns[3].sortable =
-								intelli.available.grid.columns[4].sortable =
-								intelli.available.grid.columns[5].sortable
-									= isLocalMode;
+								intelli.available.grid.columns[5].sortable = isLocalMode;
 
 								intelli.available.store.getProxy().extraParams.type = this.getValue();
 								intelli.available.store.loadPage(1);
