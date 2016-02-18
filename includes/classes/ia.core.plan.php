@@ -323,7 +323,8 @@ class iaPlan extends abstractCore
 			'email' => $member['email'],
 			'username' => $member['username'],
 			'fullname' => $member['fullname'],
-			'plan' => iaLanguage::get('plan_title_' . $plan['id'])
+			'plan' => iaLanguage::get('plan_title_' . $plan['id']),
+			'currency' => $this->iaCore->get('currency'),
 		));
 
 		return $iaMailer->send();
