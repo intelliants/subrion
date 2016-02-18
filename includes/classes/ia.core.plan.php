@@ -196,8 +196,11 @@ class iaPlan extends abstractCore
 		$tableName = $this->iaCore->factory('item')->getItemTable($itemName);
 		$stmt = iaDb::convertIds($itemId);
 
-		$entry = $this->iaDb->row(array(self::SPONSORED, self::SPONSORED_PLAN_ID), $stmt, $tableName);
-		if (empty($entry) || !$entry[self::SPONSORED] || !isset($entry['member_id']))
+		$fields = array(self::SPONSORED, self::SPONSORED_PLAN_ID);
+		'members' == $itemName || $fields[] = 'member_id';
+
+		$entry = $this->iaDb->row($fields, $stmt, $tableName);
+		if (empty($entry) || !$entry[self::SPONSORED])
 		{
 			return false;
 		}
@@ -218,7 +221,10 @@ class iaPlan extends abstractCore
 
 		$result = $this->iaDb->update($values, $stmt, null, $tableName);
 
-		$this->_sendEmailNotification('expired', $plan, $entry['member_id']);
+		if (isset($entry['member_id']) && $entry['member_id'])
+		{
+			$this->_sendEmailNotification('expired', $plan, $entry['member_id']);
+		}
 
 		// then, try to call class' helper
 		$this->_runClassMethod($itemName, self::METHOD_CANCEL_PLAN, array($itemId));
