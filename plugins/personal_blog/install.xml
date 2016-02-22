@@ -77,7 +77,7 @@
 	<hooks>
 		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="plugins/personal_blog/includes/hook.blocks-load.php"><![CDATA[]]></hook>
 		<hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['personal_blog:blogs'] = 'plugin';]]></hook>
-		<hook name="sitemapGeneration" page_type="admin" pages="index"><![CDATA[$items[] = 'personal_blog:blog';]]></hook>
+		<hook name="sitemapGeneration" page_type="admin" pages="index,sitemap"><![CDATA[$items[] = 'personal_blog:blog';]]></hook>
 	</hooks>
 
 	<install>
