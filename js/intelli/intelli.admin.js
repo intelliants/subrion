@@ -104,38 +104,6 @@ intelli.admin = function()
 			Ext.Msg.show({title: opt.title, msg: opt.msg, buttons: Ext.Msg.OK, icon: icon});
 		},
 
-		/**
-		 * Reload the admin menu tree
-		 *
-		 * @return void
-		 */
-		synchronizeAdminMenu: function(currentPage, extensionGroups)
-		{
-			currentPage = currentPage || 'plugins';
-
-			$.ajax({
-				data: {action: 'menu', page: currentPage},
-				success: function(response)
-				{
-					var $menuSection  = $('#panel-center'),
-						$menus        = $(response.menus);
-
-					if (typeof extensionGroups != 'undefined')
-					{
-						$.each(extensionGroups, function(i, val)
-						{
-							$('#menu-section-' + val + ' a').append('<span class="menu-updated animated bounceIn"></span>');
-						});
-					}
-
-					$('ul', $menuSection).remove();
-					$menus.appendTo($menuSection);
-				},
-				type: 'POST',
-				url: intelli.config.admin_url + '/index/read.json'
-			});
-		},
-
 		removeFile: function(path, link, item, field, itemid)
 		{
 			Ext.Msg.confirm(_t('confirm'), _t('sure_rm_file'), function(btn, text)

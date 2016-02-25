@@ -2355,12 +2355,12 @@ class iaExtra extends abstractCore
 
 		foreach ($entries as $title => $entry)
 		{
+			empty($entry['group']) || ($this->_menuGroups[] = $entry['group']);
+
 			$entry['group'] = $this->_lookupGroupId($entry['group']);
 			$entry['order'] = (int)(is_null($entry['order'])
 				? $this->iaDb->one_bind('MAX(`order`) + 5', '`group` = :group', $entry)
 				: $entry['order']);
-
-			empty($entry['group']) || ($this->_menuGroups[] = $entry['group']);
 			empty($entry['name']) && $entry['attr'] = iaUtil::generateToken(8);
 
 			$this->iaDb->insert($entry);
