@@ -1,3 +1,31 @@
+var synchronizeAdminMenu = function(currentPage, extensionGroups)
+{
+	currentPage = currentPage || 'plugins';
+
+	$.ajax(
+	{
+		data: {action: 'menu', page: currentPage},
+		success: function(response)
+		{
+			var $menuSection = $('#panel-center'),
+				$menus = $(response.menus);
+
+			if (typeof extensionGroups != 'undefined')
+			{
+				$.each(extensionGroups, function(i, val)
+				{
+					$('#menu-section-' + val + ' a').append('<span class="menu-updated animated bounceIn"></span>');
+				});
+			}
+
+			$('ul', $menuSection).remove();
+			$menus.appendTo($menuSection);
+		},
+		type: 'POST',
+		url: intelli.config.admin_url + '/index/read.json'
+	});
+};
+
 intelli.plugins = {
 	failure: function()
 	{
@@ -22,7 +50,7 @@ intelli.plugins = {
 					: intelli.plugins.markers.available = true;
 			}
 
-			intelli.admin.synchronizeAdminMenu('plugins', response.groups);
+			synchronizeAdminMenu('plugins', response.groups);
 		}
 	}
 };
