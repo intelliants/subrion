@@ -170,6 +170,11 @@ class iaInvoice extends abstractCore
 
 	protected function _sendEmailNotification(array $invoice, array $transaction)
 	{
+		if (!$this->iaCore->get('invoice_created'))
+		{
+			return true;
+		}
+
 		$iaUsers = $this->iaCore->factory('users');
 
 		$member = $iaUsers->getById($transaction['member_id']);
