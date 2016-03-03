@@ -11,6 +11,7 @@ CKEDITOR.editorConfig = function(config)
 	config.extraPlugins = 'mediaembed';
 	config.skin = 'bootstrapck';
 	config.extraAllowedContent = 'a[rel]';
+	CKEDITOR.dtd.$removeEmpty['span'] = false;
 
 	if (intelli.config.ckeditor_css)
 	{
