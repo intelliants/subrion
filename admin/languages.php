@@ -321,7 +321,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$entry['title'] = $data['title'];
-		$entry['code'] = $data['code'];
+		$entry['code'] = strtolower($data['code']);
 		$entry['locale'] = $data['locale'];
 		$entry['date_format'] = $data['date_format'];
 		$entry['direction'] = $data['direction'];

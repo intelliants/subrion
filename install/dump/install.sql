@@ -541,7 +541,29 @@ CREATE TABLE IF NOT EXISTS `{install:prefix}payment_plans` (
   `recurring` tinyint(1) unsigned NOT NULL comment 'Is this plan recurring?',
   `cycles` smallint(5) NOT NULL default 0 comment 'Number of recurring cycles',
   `expiration_status` varchar(15) NOT NULL comment 'Status which will be applied on plan expiration',
+  `type` enum('fee', 'subscription') NOT NULL default 'subscription',
+  `listings_limit` int(7) unsigned NOT NULL,
   PRIMARY KEY (`id`)
+) {install:db_options};
+
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_plans_options`;
+CREATE TABLE `{install:prefix}payment_plans_options` (
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `type` enum('bool','int','float','string') NOT NULL default 'string',
+  `chargeable` tinyint(1) unsigned NOT NULL default 0,
+  `name` varchar(32) NOT NULL,
+  `default_value` varchar(32) NOT NULL,
+  `item` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) {install:db_options};
+
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_plans_options_values`;
+CREATE TABLE `{install:prefix}payment_plans_options_values` (
+  `plan_id` smallint(5) unsigned NOT NULL,
+  `option_id` smallint(5) unsigned NOT NULL,
+  `price` decimal(8,2) unsigned default NULL,
+  `value` varchar(96) NOT NULL,
+  UNIQUE KEY `UNIQUE` (`plan_id`,`option_id`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_subscriptions`;
@@ -1068,6 +1090,16 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (2,'advertise',0,0,'advertise/',0,'page','','','');
 UPDATE `{install:prefix}pages` SET `status`='active',`last_updated`=NOW();
 
+INSERT INTO `{install:prefix}payment_plans_options` (`name`, `type`, `chargeable`, `default_value`) VALUES
+('num_images','int',0,'10'),
+('featured','bool',1,'1'),
+('highlighted','bool',1,'1'),
+('slide_show','bool',1,'1'),
+('sponsored','bool',1,'1'),
+('sponsored_days','int',0,'7'),
+('youtube_video','bool',1,'1');
+UPDATE `{install:prefix}payment_plans_options` SET `item`='members';
+
 INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`) VALUES
 (1,'administrators',1, 0),
 (2,'moderators',1, 0),
@@ -1221,6 +1253,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('checkboxes','Checkboxes','admin'),
 ('consistency','Consistency','admin'),
 ('choose_import_file','Please choose a file to be imported.','admin'),
+('choose_item','Choose item','admin'),
 ('clear','Clear','admin'),
 ('clear_confirm','Are you sure you want to clear your form?','admin'),
 ('clear_default','Clear default value','admin'),
@@ -1338,6 +1371,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('feature_request','New Feature Request','admin'),
 ('featured_end','Featured end','admin'),
+('fee_based','Fee based','admin'),
 ('feedback_terms','If you have any ideas how to improve our software, found a bug or want to request custom modification you are welcome to use this feedback form. We will log all your requests in our database.','admin'),
 ('field_added','Field added.','admin'),
 ('field_annotation','Field Annotation','admin'),
@@ -1476,6 +1510,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('launch_manually','Launch manually','admin'),
 ('legend','Legend','admin'),
 ('link_to','Display as a link to View Details','admin'),
+('listings_limit','Listings limit','admin'),
 ('loading_widgets','Loading widgets...','admin'),
 ('local','Local','admin'),
 ('login_to_text','Enter the login name into "Login" and password into the "Password" fields.\r\nThen click "Login".','admin'),
@@ -1982,6 +2017,13 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('pending','Pending','common'),
 ('phone','Phone','common'),
 ('plan_added','Plan added.','common'),
+('plan_option_members_num_images', 'Number of images allowed', 'common'),
+('plan_option_members_featured', 'Featured Ad', 'common'),
+('plan_option_members_highlighted', 'Highlighted', 'common'),
+('plan_option_members_slide_show', 'Slide Show', 'common'),
+('plan_option_members_sponsored', 'Sponsored Ad', 'common'),
+('plan_option_members_sponsored_days', 'Number of days for Sponsored Listing', 'common'),
+('plan_option_members_youtube_video', 'YouTube Video', 'common'),
 ('plans','Plans','common'),
 ('position','Position','common'),
 ('previous','Previous','common'),
@@ -2016,6 +2058,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('status','Status','common'),
 ('subject','Subject','common'),
 ('submit','Submit','common'),
+('subscription','Subscription','common'),
 ('summary','Summary','common'),
 ('sure_rm_file','Are you sure want to remove the file?','common'),
 ('suspended','Suspended','common'),
