@@ -12,7 +12,7 @@
 					<select name="item">
 						<option value="">{lang key='_select_'}</option>
 						{foreach $items as $i}
-							<option value="{$i}"{if (isset($item.item) && $item.item == $i) || (isset($smarty.post.item) && $smarty.post.item == $i)} selected{/if}>{lang key=$i default=$i}</option>
+							<option value="{$i}"{if $item.item == $i} selected{/if}>{lang key=$i default=$i}</option>
 						{/foreach}
 					</select>
 				</div>
@@ -47,6 +47,28 @@
 					</div>
 				</div>
 			</div>
+
+			<div class="row">
+				<label class="col col-lg-2 control-label">{lang key='type'} {lang key='field_required'}</label>
+
+				<div class="col col-lg-4">
+					<select name="type">
+						<option value="fee"{if iaPlan::TYPE_FEE} selected{/if}>{lang key='fee_based'}</option>
+						<option value="subscription"{if iaPlan::TYPE_SUBSCRIPTION} selected{/if}>{lang key='subscription'}</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="row">
+				<label class="col col-lg-2 control-label">{lang key='listings_limit'}</label>
+
+				<div class="col col-lg-4">
+					<input type="text" name="listings_limit" class="js-input-numeric" value="{$item.listings_limit|escape:'html'}">
+					<p class="help-block">Leave 0 for unlimited</p>
+				</div>
+			</div>
+
+			<hr>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='plans_fields'}</label>
@@ -189,7 +211,35 @@
 			</div>
 		</div>
 
-		{include file='fields-system.tpl'}
+		<div class="wrap-group" id="js-plan-options">
+			<div class="wrap-group-heading">{lang key='options'}</div>
+			<p class="help-block"{if $item.item} style="display: none;"{/if}>{lang key='choose_item'}</p>
+			{foreach $options as $itemName => $group}
+				{foreach $group as $option}
+				<div class="row" data-item="{$itemName}"{if $item.item != $itemName} style="display: none"{/if}>
+					<label class="col col-lg-2 control-label">{lang key="plan_option_{$itemName}_{$option.name}"}</label>
+
+					<div class="col col-lg-{if 'int' == $option.type || 'float' == $option.type}1{else}4{/if}">
+						{switch $option.type}
+						{case 'int' break}
+							<input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
+						{case 'float' break}
+							<input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
+						{case 'bool' break}
+							{html_radio_switcher value={$option.values.value} name="options[{$option.id}][value]"}
+						{default}
+							<input type="text" name="options[{$option.id}][value]" value="{$option.values.value|escape:'html'}">
+						{/switch}
+						{if $option.chargeable}
+							<span style="margin-left: 40px;{if !$option.values.value} display: none{/if}">{lang key='price'}:&nbsp; <input type="text" style="display: inline; width: 90px" name="options[{$option.id}][price]" class="js-filter-numeric" maxlength="8" value="{$option.values.price}"></span>
+						{/if}
+					</div>
+				</div>
+				{/foreach}
+			{/foreach}
+		</div>
+
+		{include 'fields-system.tpl'}
 	</div>
 </form>
 {ia_print_js files='ckeditor/ckeditor,jquery/plugins/jquery.numeric,admin/plans'}

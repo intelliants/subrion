@@ -5,9 +5,9 @@
 		<form method="post" action="{$smarty.const.IA_SELF}" enctype="multipart/form-data" class="ia-form ia-form--bordered">
 			{preventCsrf}
 
-			{include file='plans.tpl' item=$tmp}
+			{include 'plans.tpl' item=$tmp}
 
-			{include file='field-type-content-fieldset.tpl' item_sections=$sections item=$tmp}
+			{include 'field-type-content-fieldset.tpl' item_sections=$sections item=$tmp}
 
 			<div class="fieldset">
 				<div class="fieldset__header">{lang key='password'}</div>
@@ -31,7 +31,7 @@
 				</div>
 			</div>
 
-			{include file='captcha.tpl'}
+			{include 'captcha.tpl'}
 
 			<div class="fieldset__actions">
 				<button type="submit" name="register" class="btn btn-success">{lang key='registration'}</button>
@@ -49,5 +49,4 @@
 		</div>
 	{/if}
 </div>
-
 {ia_print_js files='frontend/registration'}

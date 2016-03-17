@@ -42,11 +42,81 @@ class iaPlan extends abstractCore
 	const UNIT_MONTH = 'month';
 	const UNIT_YEAR = 'year';
 
+	const TYPE_FEE = 'fee';
+	const TYPE_SUBSCRIPTION = 'subscription';
+
 	protected static $_table = 'payment_plans';
+
+	protected static $_tableOptions = 'payment_plans_options';
+	protected static $_tableOptionValues = 'payment_plans_options_values';
+
+	protected static $_options;
 
 	protected $_item;
 	protected $_plans = array();
 
+
+	public static function getTableOptions()
+	{
+		return self::$_tableOptions;
+	}
+
+	public static function getTableOptionValues()
+	{
+		return self::$_tableOptionValues;
+	}
+
+	public function getOptionsValues($itemName, $itemId)
+	{
+		$iaItem = $this->iaCore->factory('item');
+
+		$item = $this->iaDb->row(array('sponsored', 'sponsored_plan_id'),
+			iaDb::convertIds($itemId), $iaItem->getItemTable($itemName));
+
+		return (!empty($item['sponsored']) && !empty($item['sponsored_plan_id']))
+			? $this->_getOptionValuesByPlanId($item['sponsored_plan_id'])
+			: array();
+	}
+
+	protected function _getOptionValuesByPlanId($planId)
+	{
+		$sql = 'SELECT o.`name`, v.`value` '
+			. 'FROM `:prefix:table_option_values` v '
+			. 'LEFT JOIN `:prefix:table_options` o ON (v.`option_id` = o.`id`) '
+			. 'WHERE v.`plan_id` = :plan';
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->iaDb->prefix,
+			'table_option_values' => self::getTableOptionValues(),
+			'table_options' => self::getTableOptions(),
+			'plan' => (int)$planId
+		));
+
+		$rows = $this->iaDb->getKeyValue($sql);
+
+		return $rows ? $rows : array();
+	}
+
+	public function getPlanOptions($planId)
+	{
+		$result = array();
+
+		$values = $this->iaDb->assoc(array('option_id', 'price', 'value'), iaDb::convertIds($planId, 'plan_id'), self::getTableOptionValues());
+
+		if (is_null(self::$_options))
+		{
+			self::$_options = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::getTableOptions());
+		}
+
+		foreach (self::$_options as $option)
+		{
+			isset($values[$option['id']]) && $option['price'] = $values[$option['id']]['price'];
+			$option['value'] = isset($values[$option['id']]) ? $values[$option['id']]['value'] : $option['default_value'];
+
+			$result[] = $option;
+		}
+
+		return $result;
+	}
 
 	/**
 	 * Payment pre-processing actions
@@ -119,23 +189,22 @@ class iaPlan extends abstractCore
 	 *
 	 * @return array
 	 */
-	public function getPlans($itemName = null)
+	public function getPlans($itemName, $options = true)
 	{
-		if (is_null($itemName))
+		if (!$this->_item || $this->_item != $itemName)
 		{
-			return isset($this->_item) ? $this->_item : array();
-		}
+			$where = '`item` = :item AND `status` = :status ORDER BY `order` ASC';
+			$this->iaDb->bind($where, array('item' => $itemName, 'status' => iaCore::STATUS_ACTIVE));
 
-		if (!isset($this->_item) || ($this->_item != $itemName))
-		{
-			if ($plans = $this->iaDb->all(array('id', 'duration', 'unit', 'cost', 'data'), "`item` = '{$itemName}' AND `status` = 'active' ORDER BY `order` ASC", null, null, self::getTable()))
+			if ($rows = $this->iaDb->all(array('id', 'duration', 'unit', 'cost', 'data'), $where, null, null, self::getTable()))
 			{
-				foreach ($plans as $plan)
+				foreach ($rows as $row)
 				{
-					$plan['data'] = unserialize($plan['data']);
-					$plan['fields'] = isset($plan['data']['fields']) ? implode(',', $plan['data']['fields']) : '';
+					$row['data'] = unserialize($row['data']);
+					$row['fields'] = isset($row['data']['fields']) ? implode(',', $row['data']['fields']) : '';
+					$row['options'] = $this->getPlanOptions($row['id']);
 
-					$this->_plans[$plan['id']] = $plan;
+					$this->_plans[$row['id']] = $row;
 				}
 			}
 
