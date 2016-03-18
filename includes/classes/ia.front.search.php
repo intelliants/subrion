@@ -135,6 +135,7 @@ class iaSearch extends abstractCore
 				$result['pagination'] = iaSmarty::pagination(array('aTotal' => $search[0], 'aItemsPerPage' => $this->_limit, 'aTemplate' => '#'), $this->iaView->iaSmarty);
 				is_null($p) || $_GET['page'] = $p;
 
+				$result['total'] = $search[0];
 				$result['html'] = $this->_renderResults($search[1]);
 			}
 		}

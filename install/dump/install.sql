@@ -2186,6 +2186,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('no_members','No members found that match specified params.','frontend'),
 ('no_transaction','Sorry, no such transaction.','frontend'),
 ('no_transactions_records','You do not have any payment records in your history.','frontend'),
+('num_results_found','Results found: <strong id="js-search-results-num">0</strong>','frontend'),
 
 ('online','Online','frontend'),
 
