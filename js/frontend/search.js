@@ -24,7 +24,7 @@ $(function()
 		$('#js-search-results-pagination').on('click', '.pagination a', function(e)
 		{
 			e.preventDefault();
-			intelli.search.run($(this).text());
+			intelli.search.run($(this).data('page'));
 		});
 	}
 
