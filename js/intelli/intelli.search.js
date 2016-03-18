@@ -83,6 +83,7 @@ intelli.search = (function()
 					if (response.html !== undefined)
 					{
 						$('#js-search-results-container').html(response.html);
+						$('#js-search-results-num').html(response.total);
 						$('#js-search-results-pagination').html(response.pagination);
 					}
 
