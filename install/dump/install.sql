@@ -1066,6 +1066,7 @@ INSERT INTO `{install:prefix}menus` (`parent_id`,`menu_id`,`el_id`,`page_name`) 
 
 INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`,`nofollow`,`filename`,`menus`,`parent`,`suburl`) VALUES
 (2,'index',0,0,'',0,'page','main,inventory','',''),
+(1,'api',1,1,'api/',1,'api','','',''),
 (1,'redirect',1,1,'',0,'','','',''),
 (1,'search',0,1,'search/',1,'','main','',''),
 (1,'captcha',1,1,'captcha',1,'','','',''),
