@@ -25,7 +25,7 @@ Ext.onReady(function()
 				'delete'
 			],
 			fields: ['plan_id'],
-			sorters: [{property: 'date_updated', direction: 'DESC'}],
+			sorters: [{property: 'date_created', direction: 'DESC'}],
 			statuses: ['pending','passed','failed','refunded'],
 			texts:{
 				delete_single: _t('are_you_sure_to_delete_this_transaction'),
