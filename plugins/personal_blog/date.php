@@ -108,14 +108,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$page = ($page < 1) ? 1 : $page;
 
 		$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog_date');
+		$month = (int)$iaCore->requestPath[1];
+		$year = (int)$iaCore->requestPath[0];
 
 		$pagination = array(
 			'start' => ($page - 1) * $iaCore->get('blog_number'),
 			'limit' => (int)$iaCore->get('blog_number'),
-			'template' => $pageUrl . '?page={page}'
+			'template' => $pageUrl . $year . IA_URL_DELIMITER . $month . '?page={page}'
 		);
 
-		$stmt = "`status` = 'active' AND MONTH(b.`date_added`) = '" . $iaCore->requestPath[1] . "' AND YEAR(b.`date_added`) = '" . $iaCore->requestPath[0] . "' ";
+		$stmt = "`status` = 'active' AND MONTH(b.`date_added`) = '" . $month . "' AND YEAR(b.`date_added`) = '" . $year . "' ";
 		$order = ('date' == $iaCore->get('blog_order')) ? 'ORDER BY b.`date_added` DESC' : 'ORDER BY b.`title` ASC';
 
 		$sql =
@@ -135,13 +137,14 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		$blogs  = $iaDb->getAll($sql);
 
-		iaBreadcrumb::toEnd(date("F", mktime(0, 0, 0, $iaCore->requestPath[1], 10)));
+		iaBreadcrumb::toEnd($year, $pageUrl . $year);
+		iaBreadcrumb::toEnd(date("F", mktime(0, 0, 0, $month, 10)));
 		$pagination['total'] = $iaDb->foundRows();
 
 		$iaView->assign('blogs', $blogs);
 		$iaView->assign('pagination', $pagination);
 
-		$iaView->title(date("F", mktime(0, 0, 0, $iaCore->requestPath[1], 10)));
+		$iaView->title(date("F Y", mktime(0, 0, 0, $month, 10, $year)));
 	}
 
 	$iaView->display('date');
