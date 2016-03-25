@@ -38,7 +38,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$pagination = array(
 			'start' => ($page - 1) * $iaCore->get('blog_number'),
 			'limit' => (int)$iaCore->get('blog_number'),
-			'template' => $pageUrl . '?page={page}'
+			'template' => $pageUrl . $tag . '?page={page}'
 		);
 
 		$sql =
