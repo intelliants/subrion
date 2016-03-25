@@ -134,7 +134,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 					if (isset($gateways[$gate]))
 					{
-						$affected = $iaDb->update(array('id' => $transaction['id'], 'gateway' => $gate), null, array('date' => iaDb::FUNCTION_NOW), iaTransaction::getTable());
+						$iaDb->update(array('gateway' => $gate, 'date_updated' => date(iaDb::DATETIME_FORMAT)), iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
 						$iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
 
 						// include pre form send files

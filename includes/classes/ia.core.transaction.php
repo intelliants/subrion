@@ -101,7 +101,10 @@ class iaTransaction extends abstractCore
 
 		if ($transaction = $this->getById($id))
 		{
-			$result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), array('date' => iaDb::FUNCTION_NOW), self::getTable());
+				$transactionData['date_updated'] = date(iaDb::DATETIME_FORMAT);
+				!(self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
+					|| $transactionData['date_paid'] = date(iaDb::DATETIME_FORMAT);
+				$result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), null, self::getTable());
 
 			if ($result && isset($transactionData['status']))
 			{
@@ -173,9 +176,9 @@ class iaTransaction extends abstractCore
 
 	public function createIpn($transaction)
 	{
-		unset($transaction['id'], $transaction['date']);
+		unset($transaction['id'], $transaction['date_created']);
 
-		$this->iaDb->insert($transaction, array('date' => iaDb::FUNCTION_NOW), self::getTable());
+		$this->iaDb->insert($transaction, array('date_created' => iaDb::FUNCTION_NOW), self::getTable());
 
 		return $this->iaDb->getInsertId();
 	}
@@ -215,7 +218,7 @@ class iaTransaction extends abstractCore
 			'plan_id' => $planId,
 			'return_url' => $returnUrl,
 			'operation' => $title,
-			'date' => date(iaDb::DATETIME_FORMAT)
+			'date_created' => date(iaDb::DATETIME_FORMAT)
 		);
 
 		$result = $this->iaDb->insert($transaction, null, $this->getTable());
@@ -250,9 +253,9 @@ class iaTransaction extends abstractCore
 		$data = array();
 		$weekDay = getdate();
 		$weekDay = $weekDay['wday'];
-		$stmt = '`status` = :status AND DATE(`date`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date`)';
+		$stmt = '`status` = :status AND DATE(`date_paid`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date_paid`)';
 		$this->iaDb->bind($stmt, array('status' => self::PASSED));
-		$rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date`)), SUM(`amount`)', $stmt);
+		$rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date_paid`)), SUM(`amount`)', $stmt);
 		for ($i = 0; $i < 7; $i++)
 		{
 			$data[$i] = isset($rows[$i]) ? $rows[$i] : 0;

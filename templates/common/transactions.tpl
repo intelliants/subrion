@@ -18,7 +18,7 @@
 			<td>{$transaction.reference_id}</td>
 			<td>{$transaction.operation}</td>
 			<td class="{$transaction.status}">{$transaction.status}</td>
-			<td>{$transaction.date|date_format:$core.config.date_format}</td>
+			<td>{$transaction.date_created|date_format:$core.config.date_format}</td>
 			<td>{$transaction.gateway}</td>
 			<td>{$transaction.amount} {$transaction.currency}</td>
 			<td>
