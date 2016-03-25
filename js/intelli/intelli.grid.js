@@ -177,14 +177,14 @@ function IntelliGrid(params, autoInit)
 		}
 	}
 
-	var statuses = [['active', 'active'], ['inactive', 'inactive']]; // default statuses
+	var statuses = [['active', _t('active')], ['inactive', _t('inactive')]]; // default statuses
 	if ('object' == typeof this.params.statuses)
 	{
 		statuses = [];
 		for (var i in this.params.statuses)
 		{
 			var status = this.params.statuses[i];
-			statuses.push([status, status]);
+			statuses.push([status, _t(status)]);
 		}
 	}
 
@@ -671,7 +671,7 @@ function IntelliGrid(params, autoInit)
 						valueField: 'value'
 					}),
 					name: 'status',
-					renderer: function(value, metadata){metadata.css = 'grid-status-' + value; return value;},
+					renderer: function(value, metadata){metadata.css = 'grid-status-' + value; return _t(value);},
 					title: _t('status'),
 					width: 80
 				};
