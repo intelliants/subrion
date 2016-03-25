@@ -31,8 +31,11 @@ class iaApiResponse
 
 	const BAD_REQUEST = 400;
 	const UNAUTHORIZED = 401;
-	const NOW_FOUND = 404;
+	const NOT_FOUND = 404;
 	const NOT_ALLOWED = 405;
+	const CONFLICT = 409;
+
+	const INTERNAL_ERROR = 500;
 
 	protected $_code = self::OK;
 	protected $_body;

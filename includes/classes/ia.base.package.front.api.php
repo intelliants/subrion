@@ -24,30 +24,11 @@
  *
  ******************************************************************************/
 
-abstract class iaApiEntityAbstract
+abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 {
 	protected $_request;
 	protected $_response;
 
-	protected $_table;
-
-	protected $_iaCore;
-	protected $_iaDb;
-
-
-	public function init(){}
-	public function __construct()
-	{
-		$iaCore = iaCore::instance();
-
-		$this->_iaCore = $iaCore;
-		$this->_iaDb = &$iaCore->iaDb;
-	}
-
-	public function getTable()
-	{
-		return $this->_table;
-	}
 
 	public function setRequest(iaApiRequest $request)
 	{
@@ -71,12 +52,12 @@ abstract class iaApiEntityAbstract
 
 	public function listResources($start, $limit)
 	{
-		return $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, $start, $limit, $this->getTable());
+		return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, $start, $limit, self::getTable());
 	}
 
 	public function getResource($id)
 	{
-		$row = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), $this->getTable());
+		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
 
 		if (!$row)
 		{
@@ -90,7 +71,7 @@ abstract class iaApiEntityAbstract
 	{
 		$row = $this->getOne($id);
 
-		if (!$this->_iaDb->delete(iaDb::convertIds($row['id']), $this->getTable()))
+		if (!$this->iaDb->delete(iaDb::convertIds($row['id']), self::getTable()))
 		{
 			throw new Exception('Could not delete a resource', iaApiResponse::INTERNAL_ERROR);
 		}
@@ -98,7 +79,7 @@ abstract class iaApiEntityAbstract
 
 	public function updateResource(array $data, $id)
 	{
-		$this->_iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
+		$this->iaDb->update($data, iaDb::convertIds($id), null, self::getTable());
 
 		if (0 != $this->_iaDb->getErrorNumber())
 		{
@@ -108,7 +89,7 @@ abstract class iaApiEntityAbstract
 
 	public function addResource(array $data)
 	{
-		$id = $this->_iaDb->insert($data, null, $this->getTable());
+		$id = $this->iaDb->insert($data, null, self::getTable());
 
 		$this->getResponse()->setCode($id ? iaApiResponse::CREATED : iaApiResponse::INTERNAL_ERROR);
 

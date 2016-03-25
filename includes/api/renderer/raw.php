@@ -24,3 +24,12 @@
  *
  ******************************************************************************/
 
+class iaApiRendererRaw extends iaApiRendererAbstract implements iaApiRenderer
+{
+
+
+	public function render()
+	{
+		return http_build_query($this->_data);
+	}
+}

@@ -40,4 +40,9 @@ abstract class iaApiRendererAbstract
 	{
 		$this->_resultCode = $code;
 	}
+
+	public function sendHeaders()
+	{
+
+	}
 }
