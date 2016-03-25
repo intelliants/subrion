@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-if (!$iaCore->requestPath)
+if (count($iaCore->requestPath) < 2)
 {
 	return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 }

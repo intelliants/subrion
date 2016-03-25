@@ -26,6 +26,5 @@
 
 interface iaApiRenderer
 {
-	public function sendHeaders();
 	public function render();
 }

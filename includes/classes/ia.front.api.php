@@ -36,6 +36,8 @@ require_once $basePath . 'renderer/json.php';
 
 class iaApi
 {
+	const VERSION = '1';
+
 	const ENDPOINT_AUTH = 'auth';
 
 
@@ -45,9 +47,9 @@ class iaApi
 	{
 		$request = new iaApiRequest($requestPath);
 
-		$renderer = $this->_loadRenderer($request->getFormat());
-
 		$response = new iaApiResponse();
+
+		$renderer = $this->_loadRenderer($request->getFormat());
 		$response->setRenderer($renderer);
 
 		try
@@ -87,35 +89,63 @@ class iaApi
 
 	protected function _callMethod(iaApiEntityAbstract $entity, iaApiRequest $request)
 	{
+		$params = $request->getParams();
+
 		switch ($request->getMethod())
 		{
 			case iaApiRequest::METHOD_GET:
-				$params = $request->getParams();
-				if (1 == count($params))
+				if (!$params)
 				{
-					return $entity->getOne($params[0]);
+					list($start, $limit) = $this->_paginate($_GET);
+
+					return $entity->listResources($start, $limit);
+				}
+				elseif (1 == count($params))
+				{
+					return $entity->getResource($params[0]);
 				}
 				else
 				{
-					return $entity->get();
+					throw new Exception('Invalid request', iaApiResponse::BAD_REQUEST);
 				}
 
 			case iaApiRequest::METHOD_PUT:
-				return $entity->put();
+				if (1 != count($params))
+				{
+					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
+				}
+				if (!$_POST)
+				{
+					throw new Exception('Empty data', iaApiResponse::BAD_REQUEST);
+				}
+
+				return $entity->updateResource($_POST, $params[0]);
 
 			case iaApiRequest::METHOD_POST:
-				return $entity->post();
+				if (!$_POST)
+				{
+					throw new Exception('Empty data', iaApiResponse::BAD_REQUEST);
+				}
+
+				return $entity->addResource($_POST);
 
 			case iaApiRequest::METHOD_DELETE:
-				return $entity->delete();
+				if (1 != count($params))
+				{
+					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
+				}
+
+				return $entity->deleteResource($params[0]);
 
 			default:
-				throw new Exception(null, iaApiResponse::NOT_ALLOWED);
+				throw new Exception('Invalid request method', iaApiResponse::NOT_ALLOWED);
 		}
 	}
 
 	protected function _loadRenderer($name)
 	{
+		require_once IA_INCLUDES . 'api/entity/abstract' . iaSystem::EXECUTABLE_FILE_EXT;
+
 		$className = 'iaApiRenderer' . ucfirst($name);
 
 		return new $className();
@@ -123,8 +153,27 @@ class iaApi
 
 	protected function _loadEntity($name)
 	{
-		require_once IA_INCLUDES . 'api/entity/abstract' . iaSystem::EXECUTABLE_FILE_EXT;
+		$extras = iaCore::instance()->factory('item')->getPackageByItem($name);
 
+		if (!$extras)
+		{
+			throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
+		}
+
+		$entity = (iaCore::CORE == $extras)
+			? $this->_loadCoreEntity($name)
+			: $this->_loadPackageEntity($extras, $name);
+
+		if (!$entity)
+		{
+			throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
+		}
+
+		return $entity;
+	}
+
+	private function _loadCoreEntity($name)
+	{
 		$fileName = IA_INCLUDES . 'api/entity/' . $name . iaSystem::EXECUTABLE_FILE_EXT;
 
 		if (is_file($fileName))
@@ -139,7 +188,38 @@ class iaApi
 			}
 		}
 
-		throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
+		return false;
+	}
+
+	private function _loadPackageEntity($packageName, $name)
+	{
+		require_once IA_CLASSES . iaSystem::CLASSES_PREFIX . 'base.package.front.api' . iaSystem::EXECUTABLE_FILE_EXT;
+
+		return iaCore::instance()->factoryPackage('item', $packageName, iaCore::FRONT, $name);
+	}
+
+	protected function _paginate(array $params)
+	{
+		$start = null;
+		$limit = null;
+
+		if (isset($params['count']))
+		{
+			$limit = (int)$params['count'];
+		}
+
+		if (isset($params['cursor']))
+		{
+			$start = (int)$params['cursor'];
+		}
+
+		if (isset($params['page']))
+		{
+			$page = max(($params['page']), 1);
+			$start = ($page - 1) * ($limit ? $limit : 20);
+		}
+
+		return array($start, $limit);
 	}
 
 	protected function _auth()

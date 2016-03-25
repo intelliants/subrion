@@ -34,23 +34,27 @@ class iaApiRequest
 	const FORMAT_RAW = 'raw';
 	const FORMAT_JSON = 'json';
 
+	protected $_version;
 	protected $_method;
 	protected $_format = self::FORMAT_RAW;
 	protected $_endpoint;
+
 	protected $_params = array();
 
 
 	public function __construct(array $requestPath)
 	{
-		$this->_method = $this->_fetchMethod();
-
-		$this->_endpoint = array_shift($requestPath);
-		$this->_params = $requestPath;
-
 		if (iaView::REQUEST_JSON == iaCore::instance()->iaView->getRequestType())
 		{
 			$this->_format = self::FORMAT_JSON;
 		}
+
+		$this->_method = $this->_fetchMethod();
+
+		$this->_version = $this->_fetchVersion(array_shift($requestPath));
+
+		$this->_endpoint = array_shift($requestPath);
+		$this->_params = $requestPath;
 	}
 
 	private function _fetchMethod()
@@ -68,10 +72,26 @@ class iaApiRequest
 		return $method;
 	}
 
+	private function _fetchVersion($input)
+	{
+		$version = substr($input, 1);
+		if (is_numeric($version) && strlen($version) < 3 && 'v' == $input[0])
+		{
+			return $version;
+		}
+
+		return iaApi::VERSION;
+	}
+
 	// getters
 	public function getMethod()
 	{
 		return $this->_method;
+	}
+
+	public function getVersion()
+	{
+		return $this->_version;
 	}
 
 	public function getEndpoint()
