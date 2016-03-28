@@ -40,6 +40,10 @@ class iaApi
 
 	const ENDPOINT_AUTH = 'auth';
 
+	protected $_authEndpoints = array('auth', 'token');
+
+	protected $_authServer;
+
 
 	public function init() {}
 
@@ -54,14 +58,9 @@ class iaApi
 
 		try
 		{
-			if (self::ENDPOINT_AUTH == $request->getEndpoint())
+			if (in_array($request->getEndpoint(), $this->_authEndpoints))
 			{
-				if (iaApiRequest::METHOD_POST != $request->getMethod())
-				{
-					throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
-				}
-
-				$this->_auth();
+				$this->_auth($request);
 			}
 			else
 			{
@@ -71,7 +70,7 @@ class iaApi
 				$entity->setRequest($request);
 				$entity->setResponse($response);
 
-				$result = $this->_callMethod($entity, $request);
+				$result = $this->_action($entity, $request);
 
 				$response->setBody($result);
 			}
@@ -87,7 +86,7 @@ class iaApi
 		$response->emit();
 	}
 
-	protected function _callMethod(iaApiEntityAbstract $entity, iaApiRequest $request)
+	protected function _action(iaApiEntityAbstract $entity, iaApiRequest $request)
 	{
 		$params = $request->getParams();
 
@@ -222,23 +221,75 @@ class iaApi
 		return array($start, $limit);
 	}
 
-	protected function _auth()
+	// oauth2
+	protected function _getAuthServer()
 	{
+		if (is_null($this->_authServer))
+		{
+			require_once IA_INCLUDES . 'OAuth2/Autoloader.php';
+			require_once IA_INCLUDES . 'api/storage.php';
 
+			OAuth2\Autoloader::register();
+
+			$storage = new iaApiStorage();
+
+			$this->_authServer = new OAuth2\Server($storage);
+
+			$this->_authServer->addGrantType(new OAuth2\GrantType\ClientCredentials($storage));
+			$this->_authServer->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage));
+			$this->_authServer->addGrantType(new OAuth2\GrantType\UserCredentials($storage));
+			$this->_authServer->addGrantType(new OAuth2\GrantType\RefreshToken($storage));
+		}
+
+		return $this->_authServer;
+	}
+
+	protected function _auth(iaApiRequest $request)
+	{
+		require_once IA_INCLUDES . 'OAuth2/RequestInterface.php';
+		require_once IA_INCLUDES . 'OAuth2/Request.php';
+		require_once IA_INCLUDES . 'OAuth2/ResponseInterface.php';
+		require_once IA_INCLUDES . 'OAuth2/Response.php';
+
+		$authRequest = OAuth2\Request::createFromGlobals();
+		$authResponse = new OAuth2\Response();
+
+		switch ($request->getEndpoint())
+		{
+			case 'auth':
+				if (!$this->_getAuthServer()->validateAuthorizeRequest($authRequest, $authResponse))
+				{
+					$authResponse->send();
+					die;
+				}
+
+				if (empty($_POST)) {
+					exit('
+<form method="post">
+  <label>Do You Authorize TestClient?</label><br />
+  <input type="submit" name="authorized" value="yes">
+  <input type="submit" name="authorized" value="no">
+</form>');
+				}
+
+				$authorized = (isset($_POST['authorized']) && 'yes' === $_POST['authorized']);
+
+				$this->_getAuthServer()->handleAuthorizeRequest($authRequest, $authResponse, $authorized);
+var_dump($authResponse);die;
+				$authResponse->send();
+
+				break;
+
+			case 'token':
+				$this->_getAuthServer()->handleTokenRequest($authRequest)->send();
+		}
 	}
 
 	protected function _checkAccessToken()
 	{
-		// TODO: implement authorization
-		// pseusocode
-		if (!isset($_GET['token']))
+		if (!$this->_getAuthServer()->verifyResourceRequest(OAuth2\Request::createFromGlobals()))
 		{
-			throw new Exception('No access token provided', iaApiResponse::UNAUTHORIZED);
-		}
-
-		if ($_GET['token'] != 'test')
-		{
-			throw new Exception('Access token is invalid', iaApiResponse::UNAUTHORIZED);
+			throw new Exception('Invalid access token', iaApiResponse::FORBIDDEN);
 		}
 	}
 }

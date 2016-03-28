@@ -24,52 +24,7 @@
  *
  ******************************************************************************/
 
-class iaApiResponse
+class iaApiAuth
 {
-	const OK = 200;
-	const CREATED = 201;
 
-	const BAD_REQUEST = 400;
-	const UNAUTHORIZED = 401;
-	const FORBIDDEN = 403;
-	const NOT_FOUND = 404;
-	const NOT_ALLOWED = 405;
-	const CONFLICT = 409;
-
-	const INTERNAL_ERROR = 500;
-
-	protected $_code = self::OK;
-	protected $_body;
-
-	protected $_renderer;
-
-
-	public function setCode($code)
-	{
-		$this->_code = (int)$code;
-	}
-
-	public function setBody($body)
-	{
-		$this->_body = $body;
-	}
-
-	public function setRenderer(iaApiRenderer $renderer)
-	{
-		$this->_renderer = $renderer;
-	}
-
-	public function emit()
-	{
-		header('HTTP/1.1 ' . $this->_code);
-		header('Access-Control-Allow-Origin: *');
-		header('Access-Control-Allow-Methods: *');
-
-		$this->_renderer->setResultCode($this->_code);
-		$this->_renderer->setData($this->_body);
-
-		$this->_renderer->sendHeaders();
-
-		echo $this->_renderer->render();
-	}
 }
