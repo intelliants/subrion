@@ -679,6 +679,10 @@ class iaField extends abstractCore
 
 					default:
 						$item[$fieldName] = is_array($data[$fieldName]) ? implode(',', $data[$fieldName]) : $data[$fieldName];
+						if (in_array($field['type'], array(self::RADIO, self::COMBO)))
+						{
+							$item[$fieldName] = empty($data[$fieldName]) ? 'NULL' : $data[$fieldName];
+						}
 				}
 			}
 			elseif (self::DATE == $field['type'])
@@ -998,7 +1002,7 @@ class iaField extends abstractCore
 				$fieldName = $field['name'];
 				if (isset($data[$fieldName]) && $data[$fieldName])
 				{
-					$itemData[$fieldName] = in_array($field['type'], array(self::CHECKBOX))
+					$itemData[$fieldName] = self::CHECKBOX == $field['type']
 						? implode(',', $data[$fieldName])
 						: $data[$fieldName];
 				}

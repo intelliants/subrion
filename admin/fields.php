@@ -809,7 +809,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						}
 						break;
 				}
-				$sql .= 'NOT NULL';
+				$sql .= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
 				$iaDb->query($sql);
 			}
 		}
@@ -1126,7 +1126,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					}
 				}
 		}
-		$sql .= 'NOT null';
+		$sql .= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
 
 		$this->_iaDb->query($sql);
 
