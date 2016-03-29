@@ -79,15 +79,7 @@
 					</select>
 				</div>
 			</div>
-			{foreach $core.languages as $code => $language}
-				<div class="row">
-					<label class="col col-lg-2 control-label">{lang key='title'} <span class="required">*</span> <span class="label label-info">{$language.title}</span></label>
 
-					<div class="col col-lg-4">
-						<input type="text" name="title[{$code}]"{if isset($item.title.$code)} value="{$item.title.$code|escape:'html'}"{/if}>
-					</div>
-				</div>
-			{/foreach}
 			<div id="js-row-empty-text" class="row">
 				<label class="col col-lg-2 control-label">{lang key='empty_field'} <a href="#" class="js-tooltip" title="{$tooltips.empty_field}"><i class="i-info"></i></a></label>
 
@@ -550,6 +542,34 @@
 
 				<div class="col col-lg-8">
 					<textarea name="extra_actions" class="js-code-editor">{if isset($item.extra_actions)}{$item.extra_actions|escape:'html'}{/if}</textarea>
+				</div>
+			</div>
+
+			<div class="row">
+				<ul class="nav nav-tabs">
+					{foreach $core.languages as $code => $language}
+						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title}</a></li>
+					{/foreach}
+				</ul>
+
+				<div class="tab-content">
+					{foreach $core.languages as $code => $language}
+						<div class="tab-pane{if $language@first} active{/if}" id="tab-language-{$code}">
+							<div class="row">
+								<label class="col col-lg-2 control-label">{lang key='title'} <span class="required">*</span></label>
+								<div class="col col-lg-10">
+									<input type="text" name="title[{$code}]"{if isset($item.title.$code)} value="{$item.title.$code|escape:'html'}"{/if}>
+								</div>
+							</div>
+							<div class="row">
+								<label class="col col-lg-2 control-label">{lang key='tooltip'}</label>
+								<div class="col col-lg-10">
+									<input type="text" name="annotation[{$code}]"{if isset($item.annotation.$code)} value="{$item.annotation.$code|escape:'html'}"{/if}>
+								</div>
+							</div>
+
+						</div>
+					{/foreach}
 				</div>
 			</div>
 		</div>
