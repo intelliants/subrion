@@ -184,7 +184,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			if (!$error)
 			{
-				$lang = (isset($_POST['language']) && array_key_exists($_POST['language'], $this->_iaCore->languages))
+				$languages = array_merge($this->_iaCore->languages, array('all' => array('title' => iaLanguage::get('all'))));
+				$lang = (isset($_POST['language']) && array_key_exists($_POST['language'], $languages))
 					? $_POST['language']
 					: $iaView->language;
 				$key = iaSanitize::paranoid($_POST['key']);
@@ -203,7 +204,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$output['message'] = iaLanguage::get('incorrect_value');
 				}
 
-				if ($this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category', array('key' => $key, 'language' => $lang, 'category' => $category)))
+				if ('all' != $lang && $this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category', array('key' => $key, 'language' => $lang, 'category' => $category)))
 				{
 					$error = true;
 					$output['message'] = iaLanguage::get('key_exists');
@@ -212,7 +213,18 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			if (!$error)
 			{
-				$output['success'] = (bool)$this->_iaDb->insert(array('key' => $key, 'original' => $value, 'value' => $value, 'code' => $lang, 'category' => $category));
+				if ('all' == $lang)
+				{
+					foreach ($this->_iaCore->languages as $code => $language)
+					{
+						$this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category', array('key' => $key, 'language' => $code, 'category' => $category)) || iaLanguage::addPhrase($key, $value, $code, '', $category);
+					}
+					$output['success'] = true;
+				}
+				else
+				{
+					$output['success'] = (bool)$this->_iaDb->insert(array('key' => $key, 'original' => $value, 'value' => $value, 'code' => $lang, 'category' => $category));
+				}
 				$output['message'] = iaLanguage::get($output['success'] ? $this->_phraseAddSuccess : $this->_phraseSaveError);
 
 				if ($output['success'])
