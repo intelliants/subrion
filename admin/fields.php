@@ -459,10 +459,18 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
 			$entryData = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($this->getEntryId()));
-			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = 'field_" . $entryData['name'] . "' AND `category` = 'common'", null, null, iaLanguage::getTable());
+			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` IN ('field_" . $entryData['name'] . "', 'field_" . $entryData['name'] . "_annotation') AND `category` = 'common'", null, null, iaLanguage::getTable());
+
 			foreach ($rows as $row)
 			{
-				$titles[$row['code']] = $row['value'];
+				if ('field_' . $entryData['name'] == $row['key'])
+				{
+					$titles[$row['code']] = $row['value'];
+				}
+				else
+				{
+					$annotations[$row['code']] = $row['value'];
+				}
 			}
 
 			$entryData['values_titles'] = array();
@@ -514,6 +522,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			foreach ($this->_iaCore->languages as $code => $language)
 			{
 				$entryData['title'][$code] = (isset($titles[$code]) ? $titles[$code] : '');
+				$entryData['annotation'][$code] = (isset($annotations[$code]) ? $annotations[$code] : '');
 			}
 
 			$entryData['pages'] = $this->getEntryId()
