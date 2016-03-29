@@ -452,6 +452,17 @@ CREATE TABLE `{install:prefix}menus` (
 	KEY `MENU` (`menu_id`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}oauth`;
+CREATE TABLE `{install:prefix}oauth` (
+  `key` varchar(40) NOT NULL,
+  `type` enum('access_token','authorization_code','refresh_token','client') NOT NULL,
+  `client_id` varchar(50) default NULL,
+  `user_id` int(11) default NULL,
+  `expires` datetime NOT NULL,
+  `data` tinytext,
+  PRIMARY KEY (`key`,`type`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}objects_pages`;
 CREATE TABLE `{install:prefix}objects_pages` (
 	`object_type` varchar(50) NOT NULL,

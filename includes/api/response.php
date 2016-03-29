@@ -41,6 +41,8 @@ class iaApiResponse
 	protected $_code = self::OK;
 	protected $_body;
 
+	protected $_headers = array();
+
 	protected $_renderer;
 
 
@@ -49,9 +51,28 @@ class iaApiResponse
 		$this->_code = (int)$code;
 	}
 
+	public function isRedirect()
+	{
+		return (3 == floor($this->_code / 100));
+	}
+
 	public function setBody($body)
 	{
 		$this->_body = $body;
+	}
+
+	public function setHeader($headerName, $value, $replace = false)
+	{
+		if ($replace || !isset($this->_headers[$headerName]))
+		{
+			$this->_headers[$headerName] = $value;
+		}
+	}
+
+	public function setRedirect($url, $code = 301)
+	{
+		$this->setCode($code);
+		$this->setHeader('location', $url);
 	}
 
 	public function setRenderer(iaApiRenderer $renderer)
@@ -59,15 +80,29 @@ class iaApiResponse
 		$this->_renderer = $renderer;
 	}
 
-	public function emit()
+	protected function _sendHeaders()
 	{
+		if (headers_sent())
+		{
+			return;
+		}
+
 		header('HTTP/1.1 ' . $this->_code);
+
 		header('Access-Control-Allow-Origin: *');
 		header('Access-Control-Allow-Methods: *');
 
+		foreach($this->_headers as $name => $value){
+			header(ucfirst($name) . ': ' . $value);
+		}
+	}
+
+	public function emit()
+	{
 		$this->_renderer->setResultCode($this->_code);
 		$this->_renderer->setData($this->_body);
 
+		$this->_sendHeaders();
 		$this->_renderer->sendHeaders();
 
 		echo $this->_renderer->render();

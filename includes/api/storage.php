@@ -30,13 +30,18 @@ require_once $basePath . 'storage/AccessTokenInterface.php';
 require_once $basePath . 'storage/ClientInterface.php';
 require_once $basePath . 'storage/ClientCredentialsInterface.php';
 require_once $basePath . 'storage/AuthorizationCodeInterface.php';
-require_once $basePath . 'storage/UserCredentialsInterface.php';
 require_once $basePath . 'storage/RefreshTokenInterface.php';
 
-class iaApiStorage implements OAuth2\Storage\AccessTokenInterface,
-	OAuth2\Storage\ClientCredentialsInterface, OAuth2\Storage\AuthorizationCodeInterface,
-	OAuth2\Storage\UserCredentialsInterface, OAuth2\Storage\RefreshTokenInterface
+
+class iaApiStorage implements OAuth2\Storage\AccessTokenInterface, OAuth2\Storage\ClientCredentialsInterface,
+	OAuth2\Storage\AuthorizationCodeInterface, OAuth2\Storage\RefreshTokenInterface
 {
+	const ACCESS_TOKEN = 'access_token';
+	const AUTHORIZATION_CODE = 'authorization_code';
+	const REFRESH_TOKEN = 'refresh_token';
+
+	protected $_table = 'oauth';
+
 	protected $_iaCore;
 	protected $_iaDb;
 
@@ -47,73 +52,46 @@ class iaApiStorage implements OAuth2\Storage\AccessTokenInterface,
 		$this->_iaDb = &$this->_iaCore->iaDb;
 	}
 
-	/**
-	 * Look up the supplied oauth_token from storage.
-	 *
-	 * We need to retrieve access token data as we create and verify tokens.
-	 *
-	 * @param $oauth_token
-	 * oauth_token to be check with.
-	 *
-	 * @return
-	 * An associative array as below, and return NULL if the supplied oauth_token
-	 * is invalid:
-	 * - expires: Stored expiration in unix timestamp.
-	 * - client_id: (optional) Stored client identifier.
-	 * - user_id: (optional) Stored user identifier.
-	 * - scope: (optional) Stored scope values in space-separated string.
-	 * - id_token: (optional) Stored id_token (if "use_openid_connect" is true).
-	 *
-	 * @ingroup oauth2_section_7
-	 */
-	public function getAccessToken($oauth_token)
+	protected function _fetch($type, $key)
 	{
-		$row = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($oauth_token, 'access_token'), 'oauth_access_tokens');
-var_dump($oauth_token,$row);die;
+		$where = '`key` = :key AND `type` = :type';
+		$this->_iaDb->bind($where, array('key' => $key, 'type' => $type));
+
+		$row = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $where, $this->_table);
+		empty($row) || $row['expires'] = strtotime($row['expires']);
+
 		return $row ? $row : null;
 	}
 
-	/**
-	 * Store the supplied access token values to storage.
-	 *
-	 * We need to store access token data as we create and verify tokens.
-	 *
-	 * @param $oauth_token    oauth_token to be stored.
-	 * @param $client_id      client identifier to be stored.
-	 * @param $user_id        user identifier to be stored.
-	 * @param int    $expires expiration to be stored as a Unix timestamp.
-	 * @param string $scope   OPTIONAL Scopes to be stored in space-separated string.
-	 *
-	 * @ingroup oauth2_section_4
-	 */
-	public function setAccessToken($oauth_token, $client_id, $user_id, $expires, $scope = null)
+	protected function _save($type, $key, $clientId, $userId, $expires, $data = null)
 	{
 		$entry = array(
-			'access_token' => $oauth_token,
-			'client_id' => $client_id,
-			'user_id' => $user_id,
-			'expires' => date(iaDb::DATETIME_FORMAT, $expires)
+			'key' => $key,
+			'type' => $type,
+			'client_id' => $clientId,
+			'user_id' => $userId,
+			'expires' => date(iaDb::DATETIME_FORMAT, $expires),
+			'data' => $data
 		);
 
-		return (bool)$this->_iaDb->insert($entry, null, 'oauth_access_tokens');
+		return (bool)$this->_iaDb->insert($entry, null, $this->_table);
 	}
 
-	/**
-	 * Make sure that the client credentials is valid.
-	 *
-	 * @param $client_id
-	 * Client identifier to be check with.
-	 * @param $client_secret
-	 * (optional) If a secret is required, check that they've given the right one.
-	 *
-	 * @return
-	 * TRUE if the client credentials are valid, and MUST return FALSE if it isn't.
-	 * @endcode
-	 *
-	 * @see http://tools.ietf.org/html/rfc6749#section-3.1
-	 *
-	 * @ingroup oauth2_section_3
-	 */
+	protected function _delete($type, $key)
+	{
+		return (bool)$this->_iaDb->delete('`key` = :key AND `type` = :type', $this->_table, array('key' => $key, 'type' => $type));
+	}
+
+	public function getAccessToken($oauth_token)
+	{
+		return $this->_fetch(self::ACCESS_TOKEN, $oauth_token);
+	}
+
+	public function setAccessToken($oauth_token, $client_id, $user_id, $expires, $scope = null)
+	{
+		return $this->_save(self::ACCESS_TOKEN, $oauth_token, $client_id, $user_id, $expires);
+	}
+
 	public function checkClientCredentials($client_id, $client_secret = null)
 	{
 		$iaUsers = $this->_iaCore->factory('users');
@@ -175,8 +153,10 @@ var_dump($oauth_token,$row);die;
 
 		if ($member)
 		{
+			$redirectUrl = empty($_SESSION['oauth_referrer']) ? IA_URL : $_SESSION['oauth_referrer'];
+
 			return array(
-				'redirect_uri' => 'http://subrion-dev.my/api/v1/members.json',
+				'redirect_uri' => $redirectUrl,
 				'user_id' => $member['id']
 			);
 		}
@@ -217,216 +197,33 @@ var_dump($oauth_token,$row);die;
 		return true;
 	}
 
-	/**
-	 * Fetch authorization code data (probably the most common grant type).
-	 *
-	 * Retrieve the stored data for the given authorization code.
-	 *
-	 * Required for OAuth2::GRANT_TYPE_AUTH_CODE.
-	 *
-	 * @param $code
-	 * Authorization code to be check with.
-	 *
-	 * @return
-	 * An associative array as below, and NULL if the code is invalid
-	 * @code
-	 * return array(
-	 *     "client_id"    => CLIENT_ID,      // REQUIRED Stored client identifier
-	 *     "user_id"      => USER_ID,        // REQUIRED Stored user identifier
-	 *     "expires"      => EXPIRES,        // REQUIRED Stored expiration in unix timestamp
-	 *     "redirect_uri" => REDIRECT_URI,   // REQUIRED Stored redirect URI
-	 *     "scope"        => SCOPE,          // OPTIONAL Stored scope values in space-separated string
-	 * );
-	 * @endcode
-	 *
-	 * @see http://tools.ietf.org/html/rfc6749#section-4.1
-	 *
-	 * @ingroup oauth2_section_4
-	 */
 	public function getAuthorizationCode($code)
 	{
-		$row = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($code, 'authorization_code'), 'oauth_authorization_codes');
-$row['expires'] = strtotime($row['expires']);
-		return $row ? $row : null;
+		return $this->_fetch(self::AUTHORIZATION_CODE, $code);
 	}
 
-	/**
-	 * Take the provided authorization code values and store them somewhere.
-	 *
-	 * This function should be the storage counterpart to getAuthCode().
-	 *
-	 * If storage fails for some reason, we're not currently checking for
-	 * any sort of success/failure, so you should bail out of the script
-	 * and provide a descriptive fail message.
-	 *
-	 * Required for OAuth2::GRANT_TYPE_AUTH_CODE.
-	 *
-	 * @param string $code         Authorization code to be stored.
-	 * @param mixed  $client_id    Client identifier to be stored.
-	 * @param mixed  $user_id      User identifier to be stored.
-	 * @param string $redirect_uri Redirect URI(s) to be stored in a space-separated string.
-	 * @param int    $expires      Expiration to be stored as a Unix timestamp.
-	 * @param string $scope        OPTIONAL Scopes to be stored in space-separated string.
-	 *
-	 * @ingroup oauth2_section_4
-	 */
 	public function setAuthorizationCode($code, $client_id, $user_id, $redirect_uri, $expires, $scope = null)
 	{
-		$entry = array(
-			'authorization_code' => $code,
-			'client_id' => $client_id,
-			'user_id' => $user_id,
-			'redirect_uri' => $redirect_uri,
-			'expires' => date(iaDb::DATETIME_FORMAT, $expires + 6400)
-		);
-
-		return (bool)$this->_iaDb->insert($entry, null, 'oauth_authorization_codes');
+		return $this->_save(self::AUTHORIZATION_CODE, $code, $client_id, $user_id, $expires, $redirect_uri);
 	}
 
-	/**
-	 * once an Authorization Code is used, it must be exipired
-	 *
-	 * @see http://tools.ietf.org/html/rfc6749#section-4.1.2
-	 *
-	 *    The client MUST NOT use the authorization code
-	 *    more than once.  If an authorization code is used more than
-	 *    once, the authorization server MUST deny the request and SHOULD
-	 *    revoke (when possible) all tokens previously issued based on
-	 *    that authorization code
-	 *
-	 */
 	public function expireAuthorizationCode($code)
 	{
-		$this->_iaDb->delete(iaDb::convertIds($code, 'authorization_code'), 'oauth_authorization_codes');
+		return $this->_delete(self::AUTHORIZATION_CODE, $code);
 	}
 
-	/**
-	 * Grant access tokens for basic user credentials.
-	 *
-	 * Check the supplied username and password for validity.
-	 *
-	 * You can also use the $client_id param to do any checks required based
-	 * on a client, if you need that.
-	 *
-	 * Required for OAuth2::GRANT_TYPE_USER_CREDENTIALS.
-	 *
-	 * @param $username
-	 * Username to be check with.
-	 * @param $password
-	 * Password to be check with.
-	 *
-	 * @return
-	 * TRUE if the username and password are valid, and FALSE if it isn't.
-	 * Moreover, if the username and password are valid, and you want to
-	 *
-	 * @see http://tools.ietf.org/html/rfc6749#section-4.3
-	 *
-	 * @ingroup oauth2_section_4
-	 */
-	public function checkUserCredentials($username, $password)
-	{
-var_dump('checkUserCredentials', $username, $password);die;
-	}
-
-	/**
-	 * @return
-	 * ARRAY the associated "user_id" and optional "scope" values
-	 * This function MUST return FALSE if the requested user does not exist or is
-	 * invalid. "scope" is a space-separated list of restricted scopes.
-	 * @code
-	 * return array(
-	 *     "user_id"  => USER_ID,    // REQUIRED user_id to be stored with the authorization code or access token
-	 *     "scope"    => SCOPE       // OPTIONAL space-separated list of restricted scopes
-	 * );
-	 * @endcode
-	 */
-	public function getUserDetails($username)
-	{
-var_dump('getUserDetails', $username);die;
-	}
-
-	/**
-	 * Grant refresh access tokens.
-	 *
-	 * Retrieve the stored data for the given refresh token.
-	 *
-	 * Required for OAuth2::GRANT_TYPE_REFRESH_TOKEN.
-	 *
-	 * @param $refresh_token
-	 * Refresh token to be check with.
-	 *
-	 * @return
-	 * An associative array as below, and NULL if the refresh_token is
-	 * invalid:
-	 * - refresh_token: Refresh token identifier.
-	 * - client_id: Client identifier.
-	 * - user_id: User identifier.
-	 * - expires: Expiration unix timestamp, or 0 if the token doesn't expire.
-	 * - scope: (optional) Scope values in space-separated string.
-	 *
-	 * @see http://tools.ietf.org/html/rfc6749#section-6
-	 *
-	 * @ingroup oauth2_section_6
-	 */
 	public function getRefreshToken($refresh_token)
 	{
-		var_dump('getRefreshToken', $refresh_token);die;
+		return $this->_fetch(self::REFRESH_TOKEN, $refresh_token);
 	}
 
-	/**
-	 * Take the provided refresh token values and store them somewhere.
-	 *
-	 * This function should be the storage counterpart to getRefreshToken().
-	 *
-	 * If storage fails for some reason, we're not currently checking for
-	 * any sort of success/failure, so you should bail out of the script
-	 * and provide a descriptive fail message.
-	 *
-	 * Required for OAuth2::GRANT_TYPE_REFRESH_TOKEN.
-	 *
-	 * @param $refresh_token
-	 * Refresh token to be stored.
-	 * @param $client_id
-	 * Client identifier to be stored.
-	 * @param $user_id
-	 * User identifier to be stored.
-	 * @param $expires
-	 * Expiration timestamp to be stored. 0 if the token doesn't expire.
-	 * @param $scope
-	 * (optional) Scopes to be stored in space-separated string.
-	 *
-	 * @ingroup oauth2_section_6
-	 */
 	public function setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope = null)
 	{
-		$entry = array(
-			'refresh_token' => $refresh_token,
-			'client_id' => $client_id,
-			'user_id' => $user_id,
-			'expires' => date(iaDb::DATETIME_FORMAT, $expires + 6400)
-		);
-
-		return (bool)$this->_iaDb->insert($entry, null, 'oauth_refresh_tokens');
+		return $this->_save(self::REFRESH_TOKEN, $refresh_token, $client_id, $user_id, $expires);
 	}
 
-	/**
-	 * Expire a used refresh token.
-	 *
-	 * This is not explicitly required in the spec, but is almost implied.
-	 * After granting a new refresh token, the old one is no longer useful and
-	 * so should be forcibly expired in the data store so it can't be used again.
-	 *
-	 * If storage fails for some reason, we're not currently checking for
-	 * any sort of success/failure, so you should bail out of the script
-	 * and provide a descriptive fail message.
-	 *
-	 * @param $refresh_token
-	 * Refresh token to be expirse.
-	 *
-	 * @ingroup oauth2_section_6
-	 */
 	public function unsetRefreshToken($refresh_token)
 	{
-		var_dump('unsetRefreshToken', $refresh_token);die;
+		return $this->_delete(self::REFRESH_TOKEN, $refresh_token);
 	}
 }
