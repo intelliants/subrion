@@ -60,7 +60,10 @@ class iaApi
 		{
 			if (in_array($request->getEndpoint(), $this->_authEndpoints))
 			{
-				$this->_auth($request);
+				if ($url = $this->_auth($request))
+				{
+					$response->setRedirect($url);
+				}
 			}
 			else
 			{
@@ -226,8 +229,8 @@ class iaApi
 	{
 		if (is_null($this->_authServer))
 		{
-			require_once IA_INCLUDES . 'OAuth2/Autoloader.php';
-			require_once IA_INCLUDES . 'api/storage.php';
+			require IA_INCLUDES . 'OAuth2/Autoloader.php';
+			require IA_INCLUDES . 'api/storage.php';
 
 			OAuth2\Autoloader::register();
 
@@ -259,26 +262,31 @@ class iaApi
 			case 'auth':
 				if (!$this->_getAuthServer()->validateAuthorizeRequest($authRequest, $authResponse))
 				{
-					$authResponse->send();
-					die;
+					throw new Exception($authResponse->getParameter('error_description'), $authResponse->getStatusCode());
 				}
 
-				if (empty($_POST)) {
+				if (!$_POST)
+				{
+					$_SESSION['oauth_referrer'] = $_SERVER['HTTP_REFERER'];
+
 					exit('
 <form method="post">
-  <label>Do You Authorize TestClient?</label><br />
-  <input type="submit" name="authorized" value="yes">
-  <input type="submit" name="authorized" value="no">
+<label>Do You Authorize TestClient?</label><br />
+<input type="submit" name="authorized" value="yes">
+<input type="submit" name="authorized" value="no">
 </form>');
 				}
 
 				$authorized = (isset($_POST['authorized']) && 'yes' === $_POST['authorized']);
 
 				$this->_getAuthServer()->handleAuthorizeRequest($authRequest, $authResponse, $authorized);
-var_dump($authResponse);die;
-				$authResponse->send();
 
-				break;
+				if (!$authorized)
+				{
+					throw new Exception($authResponse->getParameter('error_description'), $authResponse->getStatusCode());
+				}
+
+				return $authResponse->getHttpHeader('Location');
 
 			case 'token':
 				$this->_getAuthServer()->handleTokenRequest($authRequest)->send();
