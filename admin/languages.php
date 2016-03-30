@@ -184,10 +184,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			if (!$error)
 			{
-				$languages = array_merge($this->_iaCore->languages, array('all' => array('title' => iaLanguage::get('all'))));
-				$lang = (isset($_POST['language']) && array_key_exists($_POST['language'], $languages))
-					? $_POST['language']
-					: $iaView->language;
 				$key = iaSanitize::paranoid($_POST['key']);
 				$value = $_POST['value'];
 				$category = iaSanitize::paranoid($_POST['category']);
@@ -203,34 +199,23 @@ class iaBackendController extends iaAbstractControllerBackend
 					$error = true;
 					$output['message'] = iaLanguage::get('incorrect_value');
 				}
-
-				if ('all' != $lang && $this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category', array('key' => $key, 'language' => $lang, 'category' => $category)))
-				{
-					$error = true;
-					$output['message'] = iaLanguage::get('key_exists');
-				}
 			}
 
 			if (!$error)
 			{
-				if ('all' == $lang)
+				foreach ($this->_iaCore->languages as $code => $language)
 				{
-					foreach ($this->_iaCore->languages as $code => $language)
+					$exist = $this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category',
+						array('key' => $key, 'language' => $code, 'category' => $category));
+					if (isset($_POST['force_replacement']) || !$exist)
 					{
-						$this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category', array('key' => $key, 'language' => $code, 'category' => $category)) || iaLanguage::addPhrase($key, $value, $code, '', $category);
+						iaLanguage::addPhrase($key, $value[$code], $code, '', $category);
 					}
-					$output['success'] = true;
 				}
-				else
-				{
-					$output['success'] = (bool)$this->_iaDb->insert(array('key' => $key, 'original' => $value, 'value' => $value, 'code' => $lang, 'category' => $category));
-				}
-				$output['message'] = iaLanguage::get($output['success'] ? $this->_phraseAddSuccess : $this->_phraseSaveError);
 
-				if ($output['success'])
-				{
-					$this->getHelper()->createJsCache(true);
-				}
+				$output['message'] = $output['success']= iaLanguage::get($this->_phraseAddSuccess);
+
+				$this->getHelper()->createJsCache(true);
 			}
 		}
 
