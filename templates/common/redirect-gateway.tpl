@@ -20,7 +20,7 @@
 				<h3>{$redir.caption}</h3>
 				<div class="alert alert-info">{$redir.msg}</div>
 
-				{include file=$redir.form}
+				{include $redir.form}
 			{/if}
 		</div>
 

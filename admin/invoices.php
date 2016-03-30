@@ -30,6 +30,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_gridFilters = array('fullname' => self::LIKE, 'status' => self::EQUAL);
 	protected $_gridQueryMainTableAlias = 'i';
+	protected $_gridSorting = array(
+		'amount' => array('amount', 't'),
+		'gateway' => array('gateway', 't'),
+		'status' => array('status', 't')
+	);
 
 
 	public function __construct()
@@ -54,15 +59,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridQuery($columns, $where, $order, $start, $limit)
 	{
-		foreach (array('amount', 'gateway', 'status') as $joinedColumnName) // joined columns
-		{
-			if (false !== stripos($order, $joinedColumnName))
-			{
-				$order = str_replace(' i.`', ' t.`', $order);
-				break;
-			}
-		}
-
 		$sql =
 			'SELECT SQL_CALC_FOUND_ROWS '
 				. 'i.`id`, i.`date_created`, i.`fullname`, '

@@ -368,9 +368,17 @@ abstract class iaAbstractControllerBackend
 			return '';
 		}
 
-		$direction = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $params['dir'] : iaDb::ORDER_ASC;
-		$column = isset($this->_gridSorting[$params['sort']]) ? (is_array($this->_gridSorting[$params['sort']]) ? $this->_gridSorting[$params['sort']][0] : $this->_gridSorting[$params['sort']]) : $params['sort'];
-		$tableAlias = isset($this->_gridSorting[$params['sort']][1]) && is_array($this->_gridSorting[$params['sort']]) ? $this->_gridSorting[$params['sort']][1] . '.' : $this->_gridQueryMainTableAlias;
+		$direction = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC))
+			? $params['dir']
+			: iaDb::ORDER_ASC;
+		$column = isset($this->_gridSorting[$params['sort']]) ? (is_array($this->_gridSorting[$params['sort']])
+			? $this->_gridSorting[$params['sort']][0]
+			: $this->_gridSorting[$params['sort']]) : $params['sort'];
+		$tableAlias = isset($this->_gridSorting[$params['sort']][1]) && is_array($this->_gridSorting[$params['sort']])
+			? $this->_gridSorting[$params['sort']][1] . '.'
+			: $this->_gridQueryMainTableAlias;
+
+
 
 		return sprintf(' ORDER BY %s`%s` %s', $tableAlias, $column, $direction);
 	}
