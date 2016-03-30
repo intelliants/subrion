@@ -2,8 +2,7 @@ Ext.onReady(function()
 {
 	var selectedLanguage = (intelli.urlVal('language') === null) ? intelli.config.language : intelli.urlVal('language');
 
-	var languages = [], j = 1;
-	languages[0] = ['all', _t('all')];
+	var languages = [], j = 0;
 	for (var i in intelli.languages)
 	{
 		languages[j++] = [i, intelli.languages[i].title];
