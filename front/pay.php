@@ -121,42 +121,35 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$iaView->assign('plan', $plan);
 				$iaView->assign('address', $iaCore->factory('invoice')->getAddress($transaction['id']));
 
-				foreach ($gateways as $key => $gateway)
-				{
-					$htmlFormTemplate = IA_PLUGINS . $key . IA_DS . 'templates' . IA_DS . 'front' . IA_DS . 'form.tpl';
-					$gateways[$key] = file_exists($htmlFormTemplate) ? $htmlFormTemplate : false;
-				}
-
 				// process payment button click
-				if (isset($_POST['payment_type']))
+				if (isset($_POST['payment_type']) && isset($gateways[$_POST['payment_type']]))
 				{
-					$gate = iaSanitize::sql($_POST['payment_type']);
+					$gate = $_POST['payment_type'];
 
-					if (isset($gateways[$gate]))
+					$iaDb->update(array('gateway' => $gate, 'date_updated' => date(iaDb::DATETIME_FORMAT)), iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
+					$iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
+
+					// include pre form send files
+					$paymentGatewayHandler = IA_PLUGINS . $gate . IA_DS . 'includes' . IA_DS . 'pre-processing' . iaSystem::EXECUTABLE_FILE_EXT;
+					if (is_file($paymentGatewayHandler))
 					{
-						$iaDb->update(array('gateway' => $gate, 'date_updated' => date(iaDb::DATETIME_FORMAT)), iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
-						$iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
+						include $paymentGatewayHandler;
+					}
 
-						// include pre form send files
-						$paymentGatewayHandler = IA_PLUGINS . $gate . IA_DS . 'includes' . IA_DS . 'pre-processing' . iaSystem::EXECUTABLE_FILE_EXT;
-						if (file_exists($paymentGatewayHandler))
-						{
-							include $paymentGatewayHandler;
-						}
+					$form = IA_PLUGINS . $gate . IA_DS . 'templates' . IA_DS . 'front' . IA_DS . 'form.tpl';
 
-						if (!empty($gateways[$gate]))
-						{
-							$data = array(
-								'caption' => 'Redirect to ' . $gate . '',
-								'msg' => 'You will be redirected to ' . $gate . '',
-								'form' => $gateways[$gate]
-							);
+					if (is_file($form))
+					{
+						$data = array(
+							'caption' => 'Redirect to ' . $gate . '',
+							'msg' => 'You will be redirected to ' . $gate . '',
+							'form' => $form
+						);
 
-							$iaView->assign('redir', $data);
+						$iaView->assign('redir', $data);
 
-							$tplFile = 'redirect-gateway';
-							$iaView->disableLayout();
-						}
+						$tplFile = 'redirect-gateway';
+						$iaView->disableLayout();
 					}
 				}
 
