@@ -1442,6 +1442,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('fit','Fit','admin'),
 ('fit_tip','This mode attempts to resize an image proportionally in case it does not fit inner frame dimensions set by the administrator. If it fits the dimensions, an image will not be resized at all.','admin'),
 ('for_plan_only','For plans only','admin'),
+('force_replacement', 'Force Replacement', 'admin'),
 ('free_plan_added','Free plan added.','admin'),
 ('future_date_specified_for_added_date','The date in future specified for &quot;Added Date&quot; field.','admin'),
 

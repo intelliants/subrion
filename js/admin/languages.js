@@ -16,6 +16,19 @@ Ext.onReady(function()
 		data: [['admin', 'Administration Board'],['frontend', 'User Frontend'],['common', 'Common'],['tooltip', 'Tooltip']]
 	});
 
+	var tabs = [];
+	$.each(intelli.languages, function(code, language) {
+		tabs.push({
+			title: language.title,
+			layout:'form',
+			defaults: {labelWidth: 135, fieldLabel: _t('value'), allowBlank: false},
+			defaultType: 'textarea',
+			items: [{
+				name: 'value[' + code + ']'
+			}]
+		});
+	});
+
 	var addPhrasePanel = new Ext.FormPanel(
 	{
 		frame: true,
@@ -24,30 +37,14 @@ Ext.onReady(function()
 		renderTo: 'js-add-phrase-dialog-placeholder',
 		id: 'add_phrase_panel',
 		hidden: true,
+		defaults: {labelWidth: 140},
 		items: [
 		{
 			fieldLabel: _t('key'),
 			name: 'key',
 			xtype: 'textfield',
 			allowBlank: false,
-			anchor: '40%'
-		},{
-			fieldLabel: _t('value'),
-			name: 'value',
-			xtype: 'textarea',
-			allowBlank: false,
-			anchor: '40%'
-		},{
-			fieldLabel: _t('language'),
-			name: 'language',
-			xtype: 'combo',
-			allowBlank: false,
-			editable: false,
-			lazyRender: true,
-			value: 'all',
-			store: languagesStore,
-			displayField: 'title',
-			valueField: 'value'
+			anchor: '50%'
 		},{
 			fieldLabel: _t('category'),
 			name: 'category',
@@ -59,7 +56,21 @@ Ext.onReady(function()
 			store: categoriesStore,
 			displayField: 'title',
 			valueField: 'value',
-			listWidth: 200
+			anchor: '50%'
+		},{
+			fieldLabel: _t('force_replacement'),
+			name: 'force_replacement',
+			xtype: 'checkbox',
+			value: false
+		},
+		{
+			xtype: 'tabpanel',
+			plain: true,
+			activeTab: 0,
+			height: 130,
+			deferredRender: false,
+			bodyStyle: 'padding: 5px 5px 0',
+			items: tabs
 		}],
 		tools: [
 		{
@@ -78,7 +89,8 @@ Ext.onReady(function()
 					params: {prevent_csrf: $('input[name="prevent_csrf"]', '#js-add-phrase-dialog-placeholder').val()},
 					failure: function(form, action)
 					{
-						intelli.notifBox({msg: action.result.message, type: 'error', autohide: true});
+						intelli.notifBox({msg: ('undefined' == typeof action.result)
+							? _t('error') : action.result.message, type: 'error', autohide: true});
 					},
 					success: function(form, action)
 					{
