@@ -155,7 +155,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				. "t.`gateway`, IF(t.`fullname` = '', m.`username`, t.`fullname`) `user`, IF(t.`status` != 'passed', 1, 0) `delete` " .
 			'FROM `:prefix:table_transactions` t ' .
 			'LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`) ' .
-			($where ? 'WHERE ' . $where . ' ' : '') . $order . ' ' .
+			($where ? 'WHERE ' . $where . ' ' : '') . str_replace('t.`user`', '`user`', $order) . ' ' .
 			'LIMIT :start, :limit';
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
