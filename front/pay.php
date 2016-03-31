@@ -40,7 +40,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		return iaView::errorPage(iaView::ERROR_NOT_FOUND, iaLanguage::get('no_transaction'));
 	}
 
-	if ($transaction['member_id'] != iaUsers::getIdentity()->id)
+	if (iaUsers::hasIdentity() && $transaction['member_id'] != iaUsers::getIdentity()->id)
 	{
 		return iaView::errorPage(iaView::ERROR_FORBIDDEN);
 	}
@@ -119,7 +119,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$plan['title'] = $transaction['item'] . ' - ' . $plan['title'];
 
 				$iaView->assign('plan', $plan);
-				$iaView->assign('address', $iaCore->factory('invoice')->getAddress($transaction['id']));
+				$iaView->assign('address', iaUsers::hasIdentity() ? $iaCore->factory('invoice')->getAddress($transaction['id']) : null);
 
 				// process payment button click
 				if (isset($_POST['payment_type']) && isset($gateways[$_POST['payment_type']]))

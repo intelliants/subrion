@@ -232,7 +232,7 @@ class iaTransaction extends abstractCore
 	{
 		$iaInvoice = $this->iaCore->factory('invoice');
 
-		return $iaInvoice->create($transaction);
+		return ($transaction['member_id']) ? $iaInvoice->create($transaction) : false;
 	}
 
 	/**
