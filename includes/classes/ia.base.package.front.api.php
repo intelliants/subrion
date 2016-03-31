@@ -26,76 +26,63 @@
 
 abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 {
-	protected $_request;
-	protected $_response;
 
 
-	public function setRequest(iaApiRequest $request)
+	public function apiList($start, $limit, $order)
 	{
-		$this->_request = $request;
+		return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::EMPTY_CONDITION . ' ' . $order, $start, $limit, self::getTable());
 	}
 
-	public function getRequest()
+	public function apiGet($id)
 	{
-		return $this->_request;
+		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
 	}
 
-	public function setResponse(iaApiResponse $response)
+	public function apiDelete($id)
 	{
-		$this->_response = $response;
-	}
+		$resource = $this->apiGet($id);
 
-	public function getResponse()
-	{
-		return $this->_response;
-	}
-
-	public function listResources($start, $limit)
-	{
-		return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, $start, $limit, self::getTable());
-	}
-
-	public function getResource($id)
-	{
-		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
-
-		if (!$row)
+		if (!$resource)
 		{
 			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
 		}
 
-		return $row;
-	}
-
-	public function deleteResource($id)
-	{
-		$row = $this->getOne($id);
-
-		if (!$this->iaDb->delete(iaDb::convertIds($row['id']), self::getTable()))
+		if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id)
 		{
-			throw new Exception('Could not delete a resource', iaApiResponse::INTERNAL_ERROR);
+			throw new Exception('Resource may be removed by owner only', iaApiResponse::FORBIDDEN);
 		}
+
+		return (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
 	}
 
-	public function updateResource(array $data, $id)
+	public function apiUpdate(array $data, $id)
 	{
+		$resource = $this->apiGet($id);
+
+		if (!$resource)
+		{
+			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+		}
+
+		if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id)
+		{
+			throw new Exception('Resource may be edited by owner only', iaApiResponse::FORBIDDEN);
+		}
+
 		$this->iaDb->update($data, iaDb::convertIds($id), null, self::getTable());
 
-		if (0 != $this->_iaDb->getErrorNumber())
-		{
-			throw new Exception('Could not update a resource', iaApiResponse::INTERNAL_ERROR);
-		}
+		return (0 == $this->iaDb->getErrorNumber());
 	}
 
-	public function addResource(array $data)
+	public function apiInsert(array $data)
 	{
-		$id = $this->iaDb->insert($data, null, self::getTable());
-
-		$this->getResponse()->setCode($id ? iaApiResponse::CREATED : iaApiResponse::INTERNAL_ERROR);
-
-		if ($id)
+		if (!iaUsers::hasIdentity())
 		{
-			$this->getResponse()->setBody(array('id' => $id));
+			throw new Exception('Guests not allowed to post data', iaApiResponse::UNAUTHORIZED);
 		}
+
+		$data['member_id'] = iaUsers::getIdentity()->id;
+
+		return $this->iaDb->insert($data, null, self::getTable());
 	}
 }

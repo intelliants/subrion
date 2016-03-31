@@ -44,65 +44,61 @@ class iaApi
 
 	protected $_authServer;
 
+	protected $_request;
+	protected $_response;
+
 
 	public function init() {}
 
 	public function process(array $requestPath)
 	{
-		$request = new iaApiRequest($requestPath);
+		$this->_request = new iaApiRequest($requestPath);
+		$this->_response = new iaApiResponse();
 
-		$response = new iaApiResponse();
-
-		$renderer = $this->_loadRenderer($request->getFormat());
-		$response->setRenderer($renderer);
+		$renderer = $this->_loadRenderer($this->_getRequest()->getFormat());
+		$this->_getResponse()->setRenderer($renderer);
 
 		try
 		{
-			if (in_array($request->getEndpoint(), $this->_authEndpoints))
+			if (in_array($this->_getRequest()->getEndpoint(), $this->_authEndpoints))
 			{
-				if ($url = $this->_auth($request))
+				if ($url = $this->_auth())
 				{
-					$response->setRedirect($url);
+					$this->_getResponse()->setRedirect($url);
 				}
 			}
 			else
 			{
-				$entity = $this->_loadEntity($request->getEndpoint());
-				$entity->setRequest($request);
-				$entity->setResponse($response);
+				$result = $this->_action($this->_loadEntity($this->_getRequest()->getEndpoint()));
 
-				$result = $this->_action($entity, $request);
-
-				$response->setBody($result);
+				$this->_getResponse()->setBody($result);
 			}
 		}
 		catch (Exception $e)
 		{
-			$response->setCode($e->getCode());
-			$response->setBody(array(
-				'error' => $e->getMessage()
-			));
+			$this->_getResponse()->setCode($e->getCode());
+			$this->_getResponse()->setBody(array('error' => $e->getMessage()));
 		}
 
-		$response->emit();
+		$this->_getResponse()->emit();
 	}
 
-	protected function _action(iaApiEntityAbstract $entity, iaApiRequest $request)
+	protected function _action(iaApiEntityAbstract $entity)
 	{
-		$params = $request->getParams();
+		$params = $this->_getRequest()->getParams();
 
-		switch ($request->getMethod())
+		switch ($this->_getRequest()->getMethod())
 		{
 			case iaApiRequest::METHOD_GET:
 				if (!$params)
 				{
 					list($start, $limit, $order) = $this->_paginate($_GET);
 
-					return $entity->listResources($start, $limit, $order);
+					return $this->listResources($entity, $start, $limit, $order);
 				}
 				elseif (1 == count($params))
 				{
-					return $entity->getResource($params[0]);
+					return $this->getResource($entity, $params[0]);
 				}
 				else
 				{
@@ -110,42 +106,52 @@ class iaApi
 				}
 
 			case iaApiRequest::METHOD_PUT:
-				$this->_checkAccessToken();
+				$this->_checkPrivileges();
 
 				if (1 != count($params))
 				{
 					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
 				}
-				if (!$_POST)
+				if (!$this->_getRequest()->getContent())
 				{
 					throw new Exception('Empty data', iaApiResponse::BAD_REQUEST);
 				}
 
-				return $entity->updateResource($_POST, $params[0]);
+				return $this->updateResource($entity, $params[0]);
 
 			case iaApiRequest::METHOD_POST:
-				$this->_checkAccessToken();
+				$this->_checkPrivileges();
 
-				if (!$_POST)
+				if (!$this->_getRequest()->getContent())
 				{
 					throw new Exception('Empty data', iaApiResponse::BAD_REQUEST);
 				}
 
-				return $entity->addResource($_POST);
+				return $this->addResource($entity);
 
 			case iaApiRequest::METHOD_DELETE:
-				$this->_checkAccessToken();
+				$this->_checkPrivileges();
 
 				if (1 != count($params))
 				{
 					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
 				}
 
-				return $entity->deleteResource($params[0]);
+				return $this->deleteResource($entity, $params[0]);
 
 			default:
 				throw new Exception('Invalid request method', iaApiResponse::NOT_ALLOWED);
 		}
+	}
+
+	protected function _getRequest()
+	{
+		return $this->_request;
+	}
+
+	protected function _getResponse()
+	{
+		return $this->_response;
 	}
 
 	protected function _loadRenderer($name)
@@ -208,7 +214,7 @@ class iaApi
 	{
 		$start = null;
 		$limit = null;
-		$order = array();
+		$order = '';
 
 		if (isset($params['count']))
 		{
@@ -252,7 +258,7 @@ class iaApi
 		return $this->_authServer;
 	}
 
-	protected function _auth(iaApiRequest $request)
+	protected function _auth()
 	{
 		require_once IA_INCLUDES . 'OAuth2/RequestInterface.php';
 		require_once IA_INCLUDES . 'OAuth2/Request.php';
@@ -262,7 +268,7 @@ class iaApi
 		$authRequest = OAuth2\Request::createFromGlobals();
 		$authResponse = new OAuth2\Response();
 
-		switch ($request->getEndpoint())
+		switch ($this->_getRequest()->getEndpoint())
 		{
 			case 'auth':
 				if (!$this->_getAuthServer()->validateAuthorizeRequest($authRequest, $authResponse))
@@ -298,11 +304,76 @@ class iaApi
 		}
 	}
 
-	protected function _checkAccessToken()
+	protected function _checkPrivileges()
 	{
 		if (!$this->_getAuthServer()->verifyResourceRequest(OAuth2\Request::createFromGlobals()))
 		{
 			throw new Exception('Invalid access token', iaApiResponse::FORBIDDEN);
 		}
+
+		$tokenInfo = $this->_getAuthServer()->getAccessTokenData(OAuth2\Request::createFromGlobals());
+
+		$iaUsers = iaCore::instance()->factory('users');
+
+		if ($member = $iaUsers->getInfo($tokenInfo['client_id'], 'username'))
+		{
+			$iaUsers->getAuth($member['id']);
+		}
+		else
+		{
+			throw new Exception('Invalid user', iaApiResponse::FORBIDDEN);
+		}
+	}
+
+	// action methods
+	protected function listResources($entity, $start, $limit, $order)
+	{
+		return $entity->apiList($start, $limit, $order);
+	}
+
+	public function getResource($entity, $id)
+	{
+		$resource = $entity->apiGet($id);
+
+		if (!$resource)
+		{
+			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+		}
+
+		return $resource;
+	}
+
+	public function deleteResource($entity, $id)
+	{
+		if (!$entity->apiDelete($id))
+		{
+			throw new Exception('Could not delete a resource', iaApiResponse::INTERNAL_ERROR);
+		}
+
+		return null;
+	}
+
+	public function updateResource($entity, $id)
+	{
+		if (!$entity->apiUpdate($this->_getRequest()->getContent(), $id))
+		{
+			throw new Exception('Could not update a resource', iaApiResponse::INTERNAL_ERROR);
+		}
+
+		return null;
+	}
+
+	public function addResource($entity)
+	{
+		$id = $entity->apiInsert($this->_getRequest()->getContent());
+
+		$this->_getResponse()->setCode($id ? iaApiResponse::CREATED : iaApiResponse::CONFLICT);
+
+		if ($id)
+		{
+			$this->_getResponse()->setBody(array('id' => $id));
+		}
+
+		return null;
 	}
 }

@@ -39,6 +39,8 @@ class iaApiRequest
 	protected $_format = self::FORMAT_RAW;
 	protected $_endpoint;
 
+	protected $_content;
+
 	protected $_params = array();
 
 
@@ -55,6 +57,8 @@ class iaApiRequest
 
 		$this->_endpoint = array_shift($requestPath);
 		$this->_params = $requestPath;
+
+		$this->_content = $this->_fetchContent();
 	}
 
 	private function _fetchMethod()
@@ -83,6 +87,26 @@ class iaApiRequest
 		return iaApi::VERSION;
 	}
 
+	private function _fetchContent()
+	{
+		$content = file_get_contents('php://input');
+
+		switch ($this->getFormat())
+		{
+			case self::FORMAT_RAW:
+				$array = array();
+				parse_str($content, $array);
+				$content = $array;
+
+				break;
+
+			case self::FORMAT_JSON:
+				$content = json_decode($content, true);
+		}
+
+		return $content;
+	}
+
 	// getters
 	public function getMethod()
 	{
@@ -102,6 +126,11 @@ class iaApiRequest
 	public function getFormat()
 	{
 		return $this->_format;
+	}
+
+	public function getContent()
+	{
+		return $this->_content;
 	}
 
 	public function getParams()
