@@ -67,8 +67,6 @@ class iaApi
 			}
 			else
 			{
-				$this->_checkAccessToken();
-
 				$entity = $this->_loadEntity($request->getEndpoint());
 				$entity->setRequest($request);
 				$entity->setResponse($response);
@@ -98,9 +96,9 @@ class iaApi
 			case iaApiRequest::METHOD_GET:
 				if (!$params)
 				{
-					list($start, $limit) = $this->_paginate($_GET);
+					list($start, $limit, $order) = $this->_paginate($_GET);
 
-					return $entity->listResources($start, $limit);
+					return $entity->listResources($start, $limit, $order);
 				}
 				elseif (1 == count($params))
 				{
@@ -112,6 +110,8 @@ class iaApi
 				}
 
 			case iaApiRequest::METHOD_PUT:
+				$this->_checkAccessToken();
+
 				if (1 != count($params))
 				{
 					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
@@ -124,6 +124,8 @@ class iaApi
 				return $entity->updateResource($_POST, $params[0]);
 
 			case iaApiRequest::METHOD_POST:
+				$this->_checkAccessToken();
+
 				if (!$_POST)
 				{
 					throw new Exception('Empty data', iaApiResponse::BAD_REQUEST);
@@ -132,6 +134,8 @@ class iaApi
 				return $entity->addResource($_POST);
 
 			case iaApiRequest::METHOD_DELETE:
+				$this->_checkAccessToken();
+
 				if (1 != count($params))
 				{
 					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
@@ -204,6 +208,7 @@ class iaApi
 	{
 		$start = null;
 		$limit = null;
+		$order = array();
 
 		if (isset($params['count']))
 		{
@@ -217,11 +222,11 @@ class iaApi
 
 		if (isset($params['page']))
 		{
-			$page = max(($params['page']), 1);
+			$page = max($params['page'], 1);
 			$start = ($page - 1) * ($limit ? $limit : 20);
 		}
 
-		return array($start, $limit);
+		return array($start, $limit, $order);
 	}
 
 	// oauth2
