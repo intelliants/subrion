@@ -24,13 +24,13 @@
  *
  ******************************************************************************/
 
-$basePath = IA_INCLUDES . 'oauth2' . IA_DS;
+$basePath = IA_INCLUDES . 'OAuth2' . IA_DS;
 
-require_once $basePath . 'storage/AccessTokenInterface.php';
-require_once $basePath . 'storage/ClientInterface.php';
-require_once $basePath . 'storage/ClientCredentialsInterface.php';
-require_once $basePath . 'storage/AuthorizationCodeInterface.php';
-require_once $basePath . 'storage/RefreshTokenInterface.php';
+require_once $basePath . 'Storage/AccessTokenInterface.php';
+require_once $basePath . 'Storage/ClientInterface.php';
+require_once $basePath . 'Storage/ClientCredentialsInterface.php';
+require_once $basePath . 'Storage/AuthorizationCodeInterface.php';
+require_once $basePath . 'Storage/RefreshTokenInterface.php';
 
 
 class iaApiStorage implements OAuth2\Storage\AccessTokenInterface, OAuth2\Storage\ClientCredentialsInterface,
