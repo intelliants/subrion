@@ -130,7 +130,7 @@ class iaTransaction extends abstractCore
 					$transaction = $this->getById($id);
 
 					$this->_sendEmailNotification($transaction);
-					$this->_createInvoice($transaction);
+					!$transaction['member_id'] || $this->_createInvoice($transaction);
 				}
 			}
 		}
@@ -232,7 +232,7 @@ class iaTransaction extends abstractCore
 	{
 		$iaInvoice = $this->iaCore->factory('invoice');
 
-		return ($transaction['member_id']) ? $iaInvoice->create($transaction) : false;
+		return $iaInvoice->create($transaction);
 	}
 
 	/**
