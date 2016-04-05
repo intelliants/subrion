@@ -30,12 +30,22 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 
 	public function apiList($start, $limit, $order)
 	{
-		return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::EMPTY_CONDITION . ' ' . $order, $start, $limit, self::getTable());
+		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::EMPTY_CONDITION . ' ' . $order, $start, $limit, self::getTable());
+
+		return $this->_unpackImageFields($rows);
 	}
 
 	public function apiGet($id)
 	{
-		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+
+		if ($row)
+		{
+			$row = $this->_unpackImageFields(array($row));
+			$row = array_shift($row);
+		}
+
+		return $row;
 	}
 
 	public function apiDelete($id)
@@ -84,5 +94,42 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 		$data['member_id'] = iaUsers::getIdentity()->id;
 
 		return $this->iaDb->insert($data, null, self::getTable());
+	}
+
+	// utility
+	protected function _unpackImageFields($rows)
+	{
+		if (!$rows || !is_array($rows))
+		{
+			return array();
+		}
+
+		$fields = $this->iaCore->factory('field')->getImageFields($this->getItemName());
+
+		if (!$fields)
+		{
+			return $rows;
+		}
+
+		foreach ($rows as &$row)
+		{
+			foreach ($fields as $fieldName)
+			{
+				if (empty($row[$fieldName])) continue;
+
+				$array = unserialize($row[$fieldName]);
+				if ($array && is_array($array))
+				{
+					foreach ($array as &$entry)
+					{
+						$entry['path'] = IA_CLEAR_URL . 'uploads/' . $entry['path'];
+					}
+				}
+
+				$row[$fieldName] = $array;
+			}
+		}
+
+		return $rows;
 	}
 }
