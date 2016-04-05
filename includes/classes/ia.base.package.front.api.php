@@ -26,11 +26,12 @@
 
 abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 {
+	public $apiFilters = array();
 
 
-	public function apiList($start, $limit, $order)
+	public function apiList($start, $limit, $where, $order)
 	{
-		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::EMPTY_CONDITION . ' ' . $order, $start, $limit, self::getTable());
+		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . ' ' . $order, $start, $limit, self::getTable());
 
 		return $this->_unpackImageFields($rows);
 	}
@@ -124,7 +125,7 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 					{
 						$array['path'] = self::_pathToUploads($array['path']);
 					}
-					else
+					else // multiple image upload
 					{
 						foreach ($array as &$entry)
 						{

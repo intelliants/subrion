@@ -48,9 +48,9 @@ abstract class iaApiEntityAbstract
 	}
 
 	// actions
-	public function apiList($start, $limit, $order)
+	public function apiList($start, $limit, $where, $order)
 	{
-		return $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::EMPTY_CONDITION . ' ' . $order, $start, $limit, $this->getTable());
+		return $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . ' ' . $order, $start, $limit, $this->getTable());
 	}
 
 	public function apiGet($id)

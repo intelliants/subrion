@@ -92,9 +92,10 @@ class iaApi
 			case iaApiRequest::METHOD_GET:
 				if (!$params)
 				{
-					list($start, $limit, $order) = $this->_paginate($_GET);
+					list($start, $limit) = $this->_paginate($_GET);
+					list($where, $order) = $this->_filter($_GET, $entity);
 
-					return $this->listResources($entity, $start, $limit, $order);
+					return $this->listResources($entity, $start, $limit, $where, $order);
 				}
 				elseif (1 == count($params))
 				{
@@ -214,7 +215,6 @@ class iaApi
 	{
 		$start = null;
 		$limit = null;
-		$order = '';
 
 		if (isset($params['count']))
 		{
@@ -232,7 +232,23 @@ class iaApi
 			$start = ($page - 1) * ($limit ? $limit : 20);
 		}
 
-		return array($start, $limit, $order);
+		return array($start, $limit);
+	}
+
+	protected function _filter(array $params, $entity)
+	{
+		$where = iaDb::EMPTY_CONDITION;
+		$order = '';
+
+		foreach ($entity->apiFilters as $filterName)
+		{
+			if (!empty($params[$filterName]))
+			{
+				$where.= sprintf(" AND `%s` = '%s'", $filterName, iaSanitize::sql($params[$filterName]));
+			}
+		}
+
+		return array($where, $order);
 	}
 
 	// oauth2
@@ -326,9 +342,9 @@ class iaApi
 	}
 
 	// action methods
-	protected function listResources($entity, $start, $limit, $order)
+	protected function listResources($entity, $start, $limit, $where, $order)
 	{
-		return $entity->apiList($start, $limit, $order);
+		return $entity->apiList($start, $limit, $where, $order);
 	}
 
 	public function getResource($entity, $id)
