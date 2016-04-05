@@ -120,9 +120,16 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 				$array = unserialize($row[$fieldName]);
 				if ($array && is_array($array))
 				{
-					foreach ($array as &$entry)
+					if (isset($array['path'])) // single image field
 					{
-						$entry['path'] = IA_CLEAR_URL . 'uploads/' . $entry['path'];
+						$array['path'] = self::_pathToUploads($array['path']);
+					}
+					else
+					{
+						foreach ($array as &$entry)
+						{
+							$entry['path'] = self::_pathToUploads($entry['path']);
+						}
 					}
 				}
 
@@ -131,5 +138,10 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 		}
 
 		return $rows;
+	}
+
+	protected static function _pathToUploads($filePath)
+	{
+		return IA_CLEAR_URL . 'uploads/' . $filePath;
 	}
 }
