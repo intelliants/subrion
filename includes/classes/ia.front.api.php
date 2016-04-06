@@ -237,8 +237,8 @@ class iaApi
 
 	protected function _filter(array $params, $entity)
 	{
+		// where
 		$where = iaDb::EMPTY_CONDITION;
-		$order = '';
 
 		foreach ($entity->apiFilters as $filterName)
 		{
@@ -247,6 +247,22 @@ class iaApi
 				$where.= sprintf(" AND `%s` = '%s'", $filterName, iaSanitize::sql($params[$filterName]));
 			}
 		}
+
+		// order
+		$sorting = 'id';
+		$order = 'desc';
+
+		if (isset($params['sorting']) && in_array($params['sorting'], $entity->apiSorters))
+		{
+			$sorting = iaSanitize::paranoid($params['sorting']);
+		}
+
+		if (isset($params['order']) && in_array($params['order'], array('asc', 'desc')))
+		{
+			$order = strtoupper($params['order']);
+		}
+
+		$order = sprintf(' ORDER BY `%s` %s', $sorting, $order);
 
 		return array($where, $order);
 	}

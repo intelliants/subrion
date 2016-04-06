@@ -27,11 +27,12 @@
 abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 {
 	public $apiFilters = array();
+	public $apiSorters = array();
 
 
 	public function apiList($start, $limit, $where, $order)
 	{
-		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . ' ' . $order, $start, $limit, self::getTable());
+		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . $order, $start, $limit, self::getTable());
 
 		return $this->_unpackImageFields($rows);
 	}
