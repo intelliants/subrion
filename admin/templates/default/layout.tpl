@@ -84,7 +84,7 @@
 							</li>
 						</ul>
 					{/if}
-					{include file='menu.tpl'}
+					{include 'menu.tpl'}
 				</section>
 
 				<section id="panel-content">
