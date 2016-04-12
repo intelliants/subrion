@@ -1,1 +1,27 @@
-<p>Installation is easy. No specific instructions required.</p>
+<h3>Automatic remote installation</h3>
+<ul>
+	<li>Navigate to <i>Extensions / Templates</i> in your Subrion admin dashboard</li>
+	<li>Here you will see a list of templates: faded out templates are available for download</li>
+	<li>Choose desired template and click Download button</li>
+	<li>Click Activate on downloaded template</li>
+</ul>
+
+<h3>Manual uploading</h3>
+<p>Sometimes your script does not have writable permissions. In this case you'd need to upload template folder to Subrion installation manually. Here are the steps to follow:</p>
+<ul>
+	<li>Download template from <a href="http://www.subrion.org/templates/" target="_blank">templates marketplace</a></li>
+	<li>Unpack the downloaded zip archive, get rid of version in folder name (Ex: "agency_1.0.0" should be "agency")</li>
+	<li>Upload template folder in your Subrion core <i>templates/</i> folder using FTP client (Filezilla, etc.) or hosting file manager</li>
+	<li>Navigate to <i>Extensions / Templates</i> in your Subrion admin dashboard</li>
+	<li>Click Activate button on uploaded template</li>
+</ul>
+
+<h3>Git installation (for tech nerds)</h3>
+<p>Our free templates can be also found at <a href="https://github.com/intelliants/" target="_blank">Subrion Github</a>. You can install any template, using basic Git commands.</p>
+<ul>
+	<li>Connect to your server using SSH</li>
+	<li>Change your directory (cd) to your Subrion core / <i>templates/</i></li>
+	<li>Run this command: <i>git clone https://github.com/intelliants/subrion-template-NAME ./NAME</i> where name is the name of template you wish to install</li>
+	<li>Navigate to <i>Extensions / Templates</i> in your Subrion admin dashboard</li>
+	<li>Click Activate button on cloned template</li>
+</ul>
