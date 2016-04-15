@@ -61,7 +61,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($this->_downloadTemplate())
 			{
-				$this->_iaCore->iaCache->remove('subrion_templates.inc');
+				$this->_iaCore->iaCache->remove('subrion_templates');
 			}
 		}
 

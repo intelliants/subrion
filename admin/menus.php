@@ -216,7 +216,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$output['message'] = iaLanguage::get('saved');
 					$output['success'] = true;
 
-					$this->_iaCore->iaCache->remove('menu_' . $menu . '.inc');
+					$this->_iaCore->iaCache->remove('menu_' . $menu);
 				}
 
 				break;
@@ -320,7 +320,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (iaCore::ACTION_EDIT == $action)
 		{
-			$this->_iaCore->iaCache->remove('menu_' . $this->getEntryId() . '.inc');
+			$this->_iaCore->iaCache->remove('menu_' . $this->getEntryId());
 		}
 	}
 

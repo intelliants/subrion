@@ -494,7 +494,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$iaDb->insert($items);
 				}
 
-				$this->_iaCore->iaCache->remove('menu_' . $item['id'] . '.inc');
+				$this->_iaCore->iaCache->remove('menu_' . $item['id']);
 			}
 
 			$iaDb->resetTable();

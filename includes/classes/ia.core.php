@@ -569,7 +569,7 @@ final class iaCore
 			$result = (bool)$this->iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'), null, self::getConfigTable());
 
 			$this->iaCache->createJsCache(array('config'));
-			$this->iaCache->remove('config.inc');
+			$this->iaCache->remove('config');
 		}
 
 		return $result;
