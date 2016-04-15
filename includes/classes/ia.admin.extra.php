@@ -1181,7 +1181,7 @@ class iaExtra extends abstractCore
 								);
 								$db = true;
 
-								$this->iaCore->iaCache->remove('menu_' . $id . '.inc');
+								$this->iaCore->iaCache->remove('menu_' . $id);
 							}
 						}
 

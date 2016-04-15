@@ -473,7 +473,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$pclZip = new PclZip($fileName);
 					$pclZip->extract(PCLZIP_OPT_PATH, IA_PLUGINS . $pluginName);
 
-					$this->_iaCore->iaCache->remove('subrion_plugins.inc');
+					$this->_iaCore->iaCache->remove('subrion_plugins');
 				}
 				else
 				{
