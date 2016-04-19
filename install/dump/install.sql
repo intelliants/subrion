@@ -263,7 +263,7 @@ CREATE TABLE `{install:prefix}fields_relations` (
 	`element` varchar(50) NOT NULL,
 	`child` varchar(50) NOT NULL,
 	`item` varchar(30) NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`extras` varchar(40) NOT NULL default '',
 	PRIMARY KEY (`id`),
 	KEY `ITEMNAME` (`item`)
 ) {install:db_options};

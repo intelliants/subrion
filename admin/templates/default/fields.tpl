@@ -130,6 +130,8 @@
 				<label class="col col-lg-2 control-label">{lang key='host_fields'}</label>
 
 				<div class="col col-lg-4">
+					{ia_hooker name='adminHostFieldSelectorBefore' item=$item}
+
 					{foreach $parents as $field_item => $item_list}
 						<div class="js-dependent-fields-list" data-item="{$field_item}"{if $item.item != $field_item} style="display: none;"{/if}>
 							<div class="list-group list-group-accordion">

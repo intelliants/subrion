@@ -20,7 +20,7 @@
 
 				{foreach $section.fields as $field}
 					{if !isset($exceptions) || !in_array($field.name, $exceptions)}
-						{include file='field-type-content-manage.tpl'}
+						{include 'field-type-content-manage.tpl'}
 					{/if}
 				{/foreach}
 
@@ -30,7 +30,7 @@
 	{/foreach}
 
 	{if isset($isSystem) && $isSystem}
-		{include file='fields-system.tpl'}
+		{include 'fields-system.tpl'}
 	{/if}
 </div>
 {ia_print_js files='jquery/plugins/jquery.numeric'}

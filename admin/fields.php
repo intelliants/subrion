@@ -454,6 +454,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		return !$this->getMessages();
 	}
 
+	protected function _postSaveEntry(array &$entry, array $data, $action)
+	{
+		$this->_iaCore->startHook('phpAdminFieldsSaved', array('field' => &$entry, '_this' => $this));
+	}
+
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
 		if (iaCore::ACTION_EDIT == $iaView->get('action'))
@@ -590,6 +595,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$entryData['pages'] || $entryData['pages'] = array();
 
+		$this->_iaCore->startHook('phpAdminFieldsAssignValues', array('entry' => &$entryData));
+
 		$iaView->assign('parents', $parents);
 		$iaView->assign('fieldTypes', $fieldTypes['values']);
 		$iaView->assign('groups', $groups);
@@ -637,7 +644,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($fieldData['parents'])
 			{
-				$this->_setParents($field['name'], $fieldData['parents']);
+				$this->setParents($field['name'], $fieldData['parents']);
 			}
 
 			if ($fieldData['children'])
@@ -832,7 +839,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($fieldData['parents'])
 		{
-			$this->_setParents($fieldData['name'], $fieldData['parents']);
+			$this->setParents($fieldData['name'], $fieldData['parents']);
 		}
 		if (isset($fieldData['children']) && iaField::TREE != $fieldData['type'])
 		{
@@ -978,24 +985,25 @@ class iaBackendController extends iaAbstractControllerBackend
 	}
 
 
-	private function _setParents($name, $parents = array())
+	public function setParents($fieldName, array $parents)
 	{
 		$iaDb = &$this->_iaDb;
 
 		$iaDb->setTable(iaField::getTableRelations());
-		foreach ($parents as $item => $item_list)
+
+		foreach ($parents as $itemName => $list)
 		{
-			$iaDb->delete('`child` = :name AND `item` = :item', null, array('name' => $name, 'item' => $item));
-			foreach ($item_list as $field => $field_list)
+			$iaDb->delete('`child` = :name AND `item` = :item', null, array('name' => $fieldName, 'item' => $itemName));
+
+			foreach ($list as $parentFieldName => $values)
 			{
-				foreach ($field_list as $element => $value)
+				foreach ($values as $value => $flag)
 				{
 					$iaDb->insert(array(
-						'field' => $field,
-						'element' => $element,
-						'child' => $name,
-						'extras' => '',
-						'item' => $item
+						'field' => $parentFieldName,
+						'element' => $value,
+						'child' => $fieldName,
+						'item' => $itemName
 					));
 				}
 			}
