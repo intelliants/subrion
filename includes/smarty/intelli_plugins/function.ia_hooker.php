@@ -36,6 +36,7 @@ function smarty_function_ia_hooker($params, &$smarty)
 						}
 						break;
 					case 'smarty':
+						__assign($params, $smarty);
 						echo $smarty->fetch($hook['filename']);
 				}
 			}
@@ -47,6 +48,7 @@ function smarty_function_ia_hooker($params, &$smarty)
 						eval($hook['code']);
 						break;
 					case 'smarty':
+						__assign($params, $smarty);
 						echo $smarty->fetch('eval:' . $hook['code']);
 						break;
 					case 'html':
@@ -58,4 +60,10 @@ function smarty_function_ia_hooker($params, &$smarty)
 			}
 		}
 	}
+}
+
+function __assign(array $params, &$smarty)
+{
+	foreach ($params as $key => $value)
+		if ('name' != $key) $smarty->assign($key, $value);
 }
