@@ -67,7 +67,7 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 		return (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
 	}
 
-	public function apiUpdate(array $data, $id)
+	public function apiUpdate(array $data, $id, array $params)
 	{
 		$resource = $this->apiGet($id);
 

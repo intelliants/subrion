@@ -65,11 +65,11 @@ class iaApiRequest
 	{
 		$method = $_SERVER['REQUEST_METHOD'];
 
-		if (isset($_SERVER['HTTP_X_HTTP_METHOD']) && self::METHOD_POST == $method)
+		if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) && self::METHOD_POST == $method)
 		{
-			if (self::METHOD_DELETE == $_SERVER['HTTP_X_HTTP_METHOD'] || self::METHOD_PUT == $_SERVER['HTTP_X_HTTP_METHOD'])
+			if (self::METHOD_DELETE == $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] || self::METHOD_PUT == $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])
 			{
-				$method = $_SERVER['HTTP_X_HTTP_METHOD'];
+				$method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
 			}
 		}
 
