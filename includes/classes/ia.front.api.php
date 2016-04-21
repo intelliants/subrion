@@ -107,18 +107,21 @@ class iaApi
 				}
 
 			case iaApiRequest::METHOD_PUT:
-				$this->_checkPrivileges();
-
-				if (1 != count($params))
+				if (!$params)
 				{
 					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
 				}
-				if (!$this->_getRequest()->getContent())
+
+				//$this->_checkPrivileges();
+
+				$resourceId = array_shift($params);
+
+				if (!$this->_getRequest()->getContent() && !$params)
 				{
 					throw new Exception('Empty data', iaApiResponse::BAD_REQUEST);
 				}
 
-				return $this->updateResource($entity, $params[0]);
+				return $this->updateResource($entity, $resourceId, $params);
 
 			case iaApiRequest::METHOD_POST:
 				$this->_checkPrivileges();
@@ -385,9 +388,9 @@ class iaApi
 		return null;
 	}
 
-	public function updateResource($entity, $id)
+	public function updateResource($entity, $id, array $params)
 	{
-		if (!$entity->apiUpdate($this->_getRequest()->getContent(), $id))
+		if (!$entity->apiUpdate($this->_getRequest()->getContent(), $id, $params))
 		{
 			throw new Exception('Could not update a resource', iaApiResponse::INTERNAL_ERROR);
 		}

@@ -75,7 +75,7 @@ abstract class iaApiEntityAbstract
 		return (bool)$this->_iaDb->delete(iaDb::convertIds($id), $this->getTable());
 	}
 
-	public function apiUpdate(array $data, $id)
+	public function apiUpdate(array $data, $id, array $params)
 	{
 		$resource = $this->apiGet($id);
 
