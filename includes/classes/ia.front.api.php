@@ -245,7 +245,7 @@ class iaApi
 
 		foreach ($entity->apiFilters as $filterName)
 		{
-			if (!empty($params[$filterName]))
+			if (isset($params[$filterName][0]) && is_string($params[$filterName]))
 			{
 				$where.= sprintf(" AND `%s` = '%s'", $filterName, iaSanitize::sql($params[$filterName]));
 			}
