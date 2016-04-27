@@ -317,7 +317,7 @@
 						<span class="help-inline pull-right">{lang key='drag_to_reorder'}</span>
 
 						<input type="hidden" name="nodes"{if iaField::TREE == $item.type} value="{$item.values|escape}"{/if}>
-						<div class="categories-tree" id="input-nodes"></div>
+						<div class="categories-tree" id="input-nodes" data-action="{$core.page.info.action}"></div>
 					</div>
 				</div>
 				<div class="row">

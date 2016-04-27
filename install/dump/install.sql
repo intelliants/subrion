@@ -1773,6 +1773,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('transaction_added','Transaction added.','admin'),
 ('transaction_deleted','Transaction deleted.','admin'),
 ('transaction_id','Transaction ID','admin'),
+('translate','Translate','admin'),
 ('twitter_news','Twitter News','admin'),
 ('type','Type','admin'),
 ('type_here_to_search','Type here to search','admin'),
