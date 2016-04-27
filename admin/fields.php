@@ -26,6 +26,8 @@
 
 class iaBackendController extends iaAbstractControllerBackend
 {
+	const TREE_NODE_TITLE = 'field_%s_%s_%s';
+
 	protected $_name = 'fields';
 
 	protected $_gridColumns = array('name', 'item', 'group', 'fieldgroup_id', 'type', 'relation', 'length', 'order', 'status', 'delete' => 'editable');
@@ -70,6 +72,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (isset($params['get']) && 'groups' == $params['get'])
 		{
 			return $this->_iaDb->all(array('id', 'name'), iaDb::convertIds($_GET['item'], 'item'), null, null, iaField::getTableGroups());
+		}
+
+		if (1 == count($this->_iaCore->requestPath) && 'tree' == $this->_iaCore->requestPath[0])
+		{
+			return $this->_treeActions($params);
 		}
 
 		if ($this->getName() != $this->_iaCore->iaView->name())
@@ -507,6 +514,10 @@ class iaBackendController extends iaAbstractControllerBackend
 					}
 				}
 			}
+			else
+			{
+				$entryData['values'] = $this->_getTree($entryData['item'], $entryData['name'], $entryData['values']);
+			}
 
 			if (is_array($entryData['default']))
 			{
@@ -541,11 +552,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		elseif (!empty($_GET['item']) || !empty($_POST['item']))
 		{
 			$entryData['item'] = isset($_POST['item']) ? $_POST['item'] : $_GET['item'];
-		}
-
-		if (iaField::TREE == $entryData['type'])
-		{
-			$entryData['values'] = is_array($entryData['values']) ? '' : $entryData['values'];
 		}
 
 		$iaItem = $this->_iaCore->factory('item');
@@ -825,7 +831,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						}
 						break;
 				}
-				$sql .= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
+				$sql.= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
 				$iaDb->query($sql);
 			}
 		}
@@ -1227,5 +1233,52 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return $result;
+	}
+
+	private function _treeActions(array $params)
+	{
+		$output = array();
+
+		$key = sprintf(self::TREE_NODE_TITLE, $params['item'], $params['field'], $params['id']);
+
+		if ($_POST)
+		{
+			$this->_iaDb->delete(iaDb::convertIds($key, 'key'), iaLanguage::getTable());
+
+			foreach ($_POST as $langCode => $title)
+			{
+				iaLanguage::addPhrase($key, $title, $langCode);
+			}
+
+			$output['message'] = iaLanguage::get('saved');
+			$output['success'] = true;
+		}
+		else
+		{
+			$phrases = $this->_iaDb->keyvalue(array('code', 'value'), iaDb::convertIds($key, 'key'), iaLanguage::getTable());
+
+			foreach ($this->_iaCore->languages as $code => $language)
+			{
+				$output[] = array(
+					'fieldLabel' => $language['title'],
+					'name' => $code,
+					'value' => isset($phrases[$code]) ? $phrases[$code] : null
+				);
+			}
+		}
+
+		return $output;
+	}
+
+	private function _getTree($itemName, $fieldName, $nodes)
+	{
+		$unpackedNodes = is_string($nodes) ? iaUtil::jsonDecode($nodes) : array();
+
+		foreach ($unpackedNodes as &$node)
+		{
+			$node['text'] = iaLanguage::get(sprintf(self::TREE_NODE_TITLE, $itemName, $fieldName, $node['id']));
+		}
+
+		return iaUtil::jsonEncode($unpackedNodes);
 	}
 }
