@@ -704,7 +704,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				foreach ($fieldData['tree_nodes'] as $node)
 				{
 					// insert default language
-					iaLanguage::addPhrase('field_' . $field['item'] . '_' . $field['name'] .  '_' . $node['node_id'], $node['text'], $this->_iaCore->iaView->language, $field['extras']);
+					$this->_addPhrase('field_' . $field['item'] . '_' . $field['name'] .  '_' . $node['node_id'], $node['text'], $field['extras']);
 					unset($node['text']);
 
 					$node['field'] = $field['name'];
@@ -1280,5 +1280,13 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return iaUtil::jsonEncode($unpackedNodes);
+	}
+
+	private function _addPhrase($key, $value, $plugin)
+	{
+		foreach ($this->_iaCore->languages as $code => $language)
+		{
+			iaLanguage::addPhrase($key, $value, $code, $plugin);
+		}
 	}
 }
