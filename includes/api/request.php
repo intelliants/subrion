@@ -30,6 +30,7 @@ class iaApiRequest
 	const METHOD_POST = 'POST';
 	const METHOD_PUT = 'PUT';
 	const METHOD_DELETE = 'DELETE';
+	const METHOD_OPTIONS = 'OPTIONS';
 
 	const FORMAT_RAW = 'raw';
 	const FORMAT_JSON = 'json';
