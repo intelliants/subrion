@@ -143,6 +143,11 @@ class iaApi
 
 				return $this->deleteResource($entity, $params[0]);
 
+			case iaApiRequest::METHOD_OPTIONS:
+				$this->_getResponse()->setHeader('Allow', 'GET,POST,PUT,DELETE,OPTIONS');
+
+				return null;
+
 			default:
 				throw new Exception('Invalid request method', iaApiResponse::NOT_ALLOWED);
 		}
