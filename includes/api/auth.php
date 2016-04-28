@@ -24,7 +24,64 @@
  *
  ******************************************************************************/
 
-class iaApiAuth
+class iaApiAuth extends abstractCore
 {
+	const QUERY_KEY = 'token';
 
+	protected static $_table = 'api_tokens';
+
+
+	public function __construct()
+	{
+		$this->init();
+	}
+
+	public function handleTokenRequest(iaApiRequest $request, iaApiResponse $response)
+	{
+		session_regenerate_id(true);
+
+		$entry = array(
+			'key' =>  $this->_generateToken(),
+			'ip' => iaUtil::getIp(),
+			'session' => session_id()
+		);
+
+		$this->iaDb->insert($entry, null, self::getTable());
+
+		if ($this->iaDb->getErrorNumber() > 0)
+		{
+			throw new Exception('Unable to issue a token', iaApiResponse::INTERNAL_ERROR);
+		}
+
+		$response->setBody($entry['key']);
+	}
+
+	public function verifyResourceRequest(iaApiRequest $request)
+	{
+		return (null !== $request->getQuery(self::QUERY_KEY));
+	}
+
+	public function getAccessTokenData(iaApiRequest $request)
+	{
+		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION,
+			iaDb::convertIds($request->getQuery(self::QUERY_KEY), 'key'),
+			self::getTable());
+	}
+
+	public function setSession(array $token)
+	{
+		session_write_close();
+		session_id($token['session']);
+		session_start();
+	}
+
+	private function _generateToken()
+	{
+		$ipAddress = iaUtil::getIp();
+		$userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+
+		$token = md5(microtime() . $ipAddress . $userAgent);
+
+		return $token;
+	}
 }

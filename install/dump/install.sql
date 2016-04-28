@@ -73,6 +73,15 @@ CREATE TABLE `{install:prefix}admin_pages_groups` (
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}api_tokens`;
+CREATE TABLE `{install:prefix}api_tokens` (
+  `key` char(32) NOT NULL,
+  `member_id` int(11) unsigned default NULL,
+  `expires` datetime NOT NULL,
+  `ip` bigint(12) NOT NULL,
+  PRIMARY KEY (`key`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}blocks`;
 CREATE TABLE `{install:prefix}blocks` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
@@ -452,16 +461,16 @@ CREATE TABLE `{install:prefix}menus` (
 	KEY `MENU` (`menu_id`)
 ) {install:db_options};
 
-{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}oauth`;
-CREATE TABLE `{install:prefix}oauth` (
-  `key` varchar(40) NOT NULL,
-  `type` enum('access_token','authorization_code','refresh_token','client') NOT NULL,
-  `client_id` varchar(50) default NULL,
-  `user_id` int(11) default NULL,
-  `expires` datetime NOT NULL,
-  `data` tinytext,
-  PRIMARY KEY (`key`,`type`)
-) {install:db_options};
+#{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}oauth`;
+#CREATE TABLE `{install:prefix}oauth` (
+#  `key` varchar(40) NOT NULL,
+#  `type` enum('access_token','authorization_code','refresh_token','client') NOT NULL,
+#  `client_id` varchar(50) default NULL,
+#  `user_id` int(11) default NULL,
+#  `expires` datetime NOT NULL,
+# `data` tinytext,
+#  PRIMARY KEY (`key`,`type`)
+#) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}objects_pages`;
 CREATE TABLE `{install:prefix}objects_pages` (
