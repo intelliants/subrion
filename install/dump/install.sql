@@ -79,6 +79,7 @@ CREATE TABLE `{install:prefix}api_tokens` (
   `member_id` int(11) unsigned default NULL,
   `expires` datetime NOT NULL,
   `ip` bigint(12) NOT NULL,
+  `session` char(32) NOT NULL,
   PRIMARY KEY (`key`)
 ) {install:db_options};
 
