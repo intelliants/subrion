@@ -60,7 +60,12 @@ class iaApi
 
 		try
 		{
-			if (in_array($this->_getRequest()->getEndpoint(), $this->_authEndpoints))
+			if (iaApiRequest::METHOD_OPTIONS == $this->_getRequest()->getMethod())
+			{
+				$this->_getResponse()->setHeader('Allow', 'GET,POST,PUT,DELETE,OPTIONS');
+				$this->_getResponse()->setHeader('Access-Control-Allow-Headers', 'X-Auth-Token');
+			}
+			elseif (in_array($this->_getRequest()->getEndpoint(), $this->_authEndpoints))
 			{
 				$this->_auth();
 			}
@@ -135,12 +140,6 @@ class iaApi
 				}
 
 				return $this->deleteResource($entity, $params[0]);
-
-			case iaApiRequest::METHOD_OPTIONS:
-				$this->_getResponse()->setHeader('Allow', 'GET,POST,PUT,DELETE,OPTIONS');
-				$this->_getResponse()->setHeader('Access-Control-Allow-Headers', 'X-Auth-Token');
-
-				return null;
 
 			default:
 				throw new Exception('Invalid request method', iaApiResponse::NOT_ALLOWED);

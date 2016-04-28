@@ -58,13 +58,13 @@ class iaApiAuth extends abstractCore
 
 	public function verifyResourceRequest(iaApiRequest $request)
 	{
-		return (null !== $request->getQuery(self::QUERY_KEY));
+		return !empty($request->getServer('HTTP_X_AUTH_TOKEN'));
 	}
 
 	public function getAccessTokenData(iaApiRequest $request)
 	{
 		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION,
-			iaDb::convertIds($request->getQuery(self::QUERY_KEY), 'key'),
+			iaDb::convertIds($request->getServer('HTTP_X_AUTH_TOKEN'), 'key'),
 			self::getTable());
 	}
 
