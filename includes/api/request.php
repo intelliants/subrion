@@ -138,4 +138,9 @@ class iaApiRequest
 	{
 		return $this->_params;
 	}
+
+	public function getQuery($name)
+	{
+		return isset($_GET[$name]) ? $_GET[$name] : null;
+	}
 }

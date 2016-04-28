@@ -40,7 +40,7 @@ class iaApi
 
 	const ENDPOINT_AUTH = 'auth';
 
-	protected $_authEndpoints = array('auth', 'token');
+	protected $_authEndpoints = array('token');
 
 	protected $_authServer;
 
@@ -62,13 +62,12 @@ class iaApi
 		{
 			if (in_array($this->_getRequest()->getEndpoint(), $this->_authEndpoints))
 			{
-				if ($url = $this->_auth())
-				{
-					$this->_getResponse()->setRedirect($url);
-				}
+				$this->_auth();
 			}
 			else
 			{
+				$this->_checkPrivileges();
+
 				$result = $this->_action($this->_loadEntity($this->_getRequest()->getEndpoint()));
 
 				$this->_getResponse()->setBody($result);
@@ -112,8 +111,6 @@ class iaApi
 					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
 				}
 
-				//$this->_checkPrivileges();
-
 				$resourceId = array_shift($params);
 
 				if (!$this->_getRequest()->getContent() && !$params)
@@ -124,8 +121,6 @@ class iaApi
 				return $this->updateResource($entity, $resourceId, $params);
 
 			case iaApiRequest::METHOD_POST:
-				$this->_checkPrivileges();
-
 				if (!$this->_getRequest()->getContent())
 				{
 					throw new Exception('Empty data', iaApiResponse::BAD_REQUEST);
@@ -134,8 +129,6 @@ class iaApi
 				return $this->addResource($entity);
 
 			case iaApiRequest::METHOD_DELETE:
-				$this->_checkPrivileges();
-
 				if (1 != count($params))
 				{
 					throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
@@ -145,6 +138,7 @@ class iaApi
 
 			case iaApiRequest::METHOD_OPTIONS:
 				$this->_getResponse()->setHeader('Allow', 'GET,POST,PUT,DELETE,OPTIONS');
+				$this->_getResponse()->setHeader('Access-Control-Allow-Headers', 'X-Auth-Token');
 
 				return null;
 
@@ -280,7 +274,7 @@ class iaApi
 	{
 		if (is_null($this->_authServer))
 		{
-			require IA_INCLUDES . 'OAuth2/Autoloader.php';
+/*			require IA_INCLUDES . 'OAuth2/Autoloader.php';
 			require IA_INCLUDES . 'api/storage.php';
 
 			OAuth2\Autoloader::register();
@@ -292,7 +286,11 @@ class iaApi
 			$this->_authServer->addGrantType(new OAuth2\GrantType\ClientCredentials($storage));
 			$this->_authServer->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage));
 			$this->_authServer->addGrantType(new OAuth2\GrantType\UserCredentials($storage));
-			$this->_authServer->addGrantType(new OAuth2\GrantType\RefreshToken($storage));
+			$this->_authServer->addGrantType(new OAuth2\GrantType\RefreshToken($storage));*/
+
+			require  IA_INCLUDES . 'api/auth.php';
+
+			$this->_authServer = new iaApiAuth();
 		}
 
 		return $this->_authServer;
@@ -300,17 +298,17 @@ class iaApi
 
 	protected function _auth()
 	{
-		require_once IA_INCLUDES . 'OAuth2/RequestInterface.php';
+/*		require_once IA_INCLUDES . 'OAuth2/RequestInterface.php';
 		require_once IA_INCLUDES . 'OAuth2/Request.php';
 		require_once IA_INCLUDES . 'OAuth2/ResponseInterface.php';
 		require_once IA_INCLUDES . 'OAuth2/Response.php';
 
 		$authRequest = OAuth2\Request::createFromGlobals();
-		$authResponse = new OAuth2\Response();
+		$authResponse = new OAuth2\Response();*/
 
 		switch ($this->_getRequest()->getEndpoint())
 		{
-			case 'auth':
+/*			case 'auth':
 				if (!$this->_getAuthServer()->validateAuthorizeRequest($authRequest, $authResponse))
 				{
 					throw new Exception($authResponse->getParameter('error_description'), $authResponse->getStatusCode());
@@ -338,31 +336,32 @@ class iaApi
 				}
 
 				return $authResponse->getHttpHeader('Location');
-
+*/
 			case 'token':
-				$this->_getAuthServer()->handleTokenRequest($authRequest)->send();
+				//$this->_getAuthServer()->handleTokenRequest($authRequest)->send();
+				$this->_getAuthServer()->handleTokenRequest($this->_getRequest(), $this->_getResponse());
 		}
 	}
 
 	protected function _checkPrivileges()
 	{
-		if (!$this->_getAuthServer()->verifyResourceRequest(OAuth2\Request::createFromGlobals()))
+		if (!$this->_getAuthServer()->verifyResourceRequest($this->_getRequest()))
 		{
 			throw new Exception('Invalid access token', iaApiResponse::FORBIDDEN);
 		}
 
-		$tokenInfo = $this->_getAuthServer()->getAccessTokenData(OAuth2\Request::createFromGlobals());
+		$tokenInfo = $this->_getAuthServer()->getAccessTokenData($this->_getRequest());
 
-		$iaUsers = iaCore::instance()->factory('users');
+		if ($tokenInfo['member_id'])
+		{
+			$iaUsers = iaCore::instance()->factory('users');
 
-		if ($member = $iaUsers->getInfo($tokenInfo['client_id'], 'username'))
-		{
-			$iaUsers->getAuth($member['id']);
+			$member = $iaUsers->getInfo($tokenInfo['client_id'], 'username');
+
+			empty($member) || $iaUsers->getAuth($member['id']);
 		}
-		else
-		{
-			throw new Exception('Invalid user', iaApiResponse::FORBIDDEN);
-		}
+
+		$this->_getAuthServer()->setSession($tokenInfo);
 	}
 
 	// action methods
