@@ -110,7 +110,7 @@ intelli.search = (function()
 				var $ctl = $('[name="' + name + '"]', $form),
 					value = values[name];
 
-				if (!$ctl.length)
+				if (!$ctl.length || !value)
 				{
 					continue;
 				}
@@ -127,6 +127,7 @@ intelli.search = (function()
 							default:
 								$ctl.val(value);
 						}
+
 						break;
 					case 'select':
 						var $option = $('option[value="' + value + '"]', $ctl);
@@ -136,6 +137,8 @@ intelli.search = (function()
 						else $ctl.data('value', value);
 				}
 			}
+
+			this.run();
 		}
 	};
 })();
