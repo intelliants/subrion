@@ -61,9 +61,9 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 			$pageUri = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('search_' . $itemName, false);
 			$pageUri || $pageUri = 'search/' . $itemName . '/';
-			$pageUri = IA_URL_DELIMITER . $lang . $pageUri;
+			$pageUri = $lang . $pageUri;
 
-			if ($pageUri != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH)
+			if (IA_URL_DELIMITER . $pageUri != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH)
 				|| false !== stripos($_SERVER['HTTP_REFERER'], '?q='))
 			{
 				$pageUri = IA_CLEAR_URL . $pageUri . '#' . $iaSearch->httpBuildQuery($_GET);
