@@ -58,7 +58,7 @@ class iaApiAuth extends abstractCore
 
 	public function verifyResourceRequest(iaApiRequest $request)
 	{
-		return !empty($request->getServer('HTTP_X_AUTH_TOKEN'));
+		return (bool)$request->getServer('HTTP_X_AUTH_TOKEN');
 	}
 
 	public function getAccessTokenData(iaApiRequest $request)
