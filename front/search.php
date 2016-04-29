@@ -66,7 +66,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			if ($pageUri != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH)
 				|| false !== stripos($_SERVER['HTTP_REFERER'], '?q='))
 			{
-				$pageUri.= '#' . $iaSearch->httpBuildQuery($_GET);
+				$pageUri = IA_CLEAR_URL . $pageUri . '#' . $iaSearch->httpBuildQuery($_GET);
 
 				$iaView->assign('url', $pageUri);
 				return;
