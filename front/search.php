@@ -54,7 +54,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			$lang = '';
 			if (IA_URL_LANG) // we should keep user's current language
 			{
-				$l = explode(IA_URL_DELIMITER, trim(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH), IA_URL_DELIMITER));
+				$l = str_replace(IA_CLEAR_URL, '', $_SERVER['HTTP_REFERER']);
+				$l = explode(IA_URL_DELIMITER, trim($l, IA_URL_DELIMITER));
 				$l = array_shift($l);
 				$lang = (isset($iaCore->languages[$l]) ? $l : $iaView->language) . IA_URL_DELIMITER;
 			}
