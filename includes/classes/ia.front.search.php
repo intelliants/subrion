@@ -226,6 +226,7 @@ class iaSearch extends abstractCore
 			);
 
 			$iaSmarty->assign('core', $core);
+			$iaSmarty->assign('img', IA_TPL_URL . 'img/');
 			$iaSmarty->assign('member', iaUsers::getIdentity(true));
 
 			$this->_smartyVarsAssigned = true;
