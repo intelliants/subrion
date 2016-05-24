@@ -583,6 +583,7 @@ class iaSearch extends abstractCore
 
 					continue 2;
 
+				case iaField::RADIO:
 				case iaField::COMBO:
 				case iaField::TREE:
 					$array = array();
