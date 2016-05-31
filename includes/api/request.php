@@ -144,6 +144,11 @@ class iaApiRequest
 		return isset($_GET[$name]) ? $_GET[$name] : null;
 	}
 
+	public function getPost($name)
+	{
+		return isset($this->_content[$name]) ? $this->_content[$name] : null;
+	}
+
 	public function getServer($name)
 	{
 		return isset($_SERVER[$name]) ? $_SERVER[$name] : null;

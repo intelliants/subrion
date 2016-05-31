@@ -35,6 +35,7 @@ class iaApiResponse
 	const NOT_FOUND = 404;
 	const NOT_ALLOWED = 405;
 	const CONFLICT = 409;
+	const TOO_MANY_REQUESTS = 429;
 
 	const INTERNAL_ERROR = 500;
 

@@ -36,12 +36,37 @@ class iaApiAuth extends abstractCore
 		$this->init();
 	}
 
+	public function authorize(iaApiRequest $request, iaApiResponse $response)
+	{
+		if (!$this->_checkRateLimiting())
+		{
+			throw new Exception(null, iaApiResponse::TOO_MANY_REQUESTS);
+		}
+
+		$login = $request->getPost('login');
+		$password = $request->getPost('password');
+
+		if (!$login || !$password)
+		{
+			throw new Exception('Empty credentials', iaApiResponse::BAD_REQUEST);
+		}
+
+		$remember = (bool)$request->getPost('remember');
+
+		$iaUsers = $this->iaCore->factory('users');
+
+		if (!$iaUsers->getAuth(null, $login, $password, $remember))
+		{
+			throw new Exception('Invalid credentials', iaApiResponse::FORBIDDEN);
+		}
+	}
+
 	public function handleTokenRequest(iaApiRequest $request, iaApiResponse $response)
 	{
 		session_regenerate_id(true);
 
 		$entry = array(
-			'key' =>  $this->_generateToken(),
+			'key' =>  $this->_generateToken($request),
 			'ip' => iaUtil::getIp(),
 			'session' => session_id()
 		);
@@ -75,10 +100,17 @@ class iaApiAuth extends abstractCore
 		session_start();
 	}
 
-	private function _generateToken()
+	private function _checkRateLimiting()
+	{
+		// TODO: implement
+
+		return true;
+	}
+
+	private function _generateToken(iaApiRequest $request)
 	{
 		$ipAddress = iaUtil::getIp();
-		$userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		$userAgent = $request->getServer('HTTP_USER_AGENT');
 
 		$token = md5(microtime() . $ipAddress . $userAgent);
 

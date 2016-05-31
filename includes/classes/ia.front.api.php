@@ -40,7 +40,7 @@ class iaApi
 
 	const ENDPOINT_AUTH = 'auth';
 
-	protected $_authEndpoints = array('token');
+	protected $_authEndpoints = array('token', 'auth');
 
 	protected $_authServer;
 
@@ -297,7 +297,7 @@ class iaApi
 
 	protected function _auth()
 	{
-/*		require_once IA_INCLUDES . 'OAuth2/RequestInterface.php';
+		/*require_once IA_INCLUDES . 'OAuth2/RequestInterface.php';
 		require_once IA_INCLUDES . 'OAuth2/Request.php';
 		require_once IA_INCLUDES . 'OAuth2/ResponseInterface.php';
 		require_once IA_INCLUDES . 'OAuth2/Response.php';
@@ -307,8 +307,13 @@ class iaApi
 
 		switch ($this->_getRequest()->getEndpoint())
 		{
-/*			case 'auth':
-				if (!$this->_getAuthServer()->validateAuthorizeRequest($authRequest, $authResponse))
+			case 'auth':
+				$this->_checkPrivileges();
+				$this->_getAuthServer()->authorize($this->_getRequest(), $this->_getResponse());
+
+				break;
+
+				/*if (!$this->_getAuthServer()->validateAuthorizeRequest($authRequest, $authResponse))
 				{
 					throw new Exception($authResponse->getParameter('error_description'), $authResponse->getStatusCode());
 				}
@@ -334,8 +339,8 @@ class iaApi
 					throw new Exception($authResponse->getParameter('error_description'), $authResponse->getStatusCode());
 				}
 
-				return $authResponse->getHttpHeader('Location');
-*/
+				return $authResponse->getHttpHeader('Location');*/
+
 			case 'token':
 				//$this->_getAuthServer()->handleTokenRequest($authRequest)->send();
 				$this->_getAuthServer()->handleTokenRequest($this->_getRequest(), $this->_getResponse());
@@ -344,23 +349,26 @@ class iaApi
 
 	protected function _checkPrivileges()
 	{
-		if (!$this->_getAuthServer()->verifyResourceRequest($this->_getRequest()))
+		if ($this->_getAuthServer()->verifyResourceRequest($this->_getRequest()))
 		{
-			throw new Exception('Invalid access token', iaApiResponse::FORBIDDEN);
+			if ($tokenInfo = $this->_getAuthServer()->getAccessTokenData($this->_getRequest()))
+			{
+				if ($tokenInfo['member_id'])
+				{
+					$iaUsers = iaCore::instance()->factory('users');
+
+					$member = $iaUsers->getInfo($tokenInfo['member_id'], 'username');
+
+					empty($member) || $iaUsers->getAuth($member['id']);
+				}
+
+				empty($tokenInfo['session']) || $this->_getAuthServer()->setSession($tokenInfo);
+
+				return;
+			}
 		}
 
-		$tokenInfo = $this->_getAuthServer()->getAccessTokenData($this->_getRequest());
-
-		if ($tokenInfo['member_id'])
-		{
-			$iaUsers = iaCore::instance()->factory('users');
-
-			$member = $iaUsers->getInfo($tokenInfo['client_id'], 'username');
-
-			empty($member) || $iaUsers->getAuth($member['id']);
-		}
-
-		$this->_getAuthServer()->setSession($tokenInfo);
+		throw new Exception('Invalid access token', iaApiResponse::FORBIDDEN);
 	}
 
 	// action methods
