@@ -26,13 +26,38 @@
 
 class iaApiEntityMembers extends iaApiEntityAbstract
 {
+	const KEYWORD_SELF = 'self';
+
 	protected $_table = 'members';
 
 
 	public function apiGet($id)
 	{
-		return ('self' == $id)
-			? iaUsers::getIdentity(true)
-			: parent::apiGet($id);
+		if (self::KEYWORD_SELF == $id)
+		{
+			if (!iaUsers::hasIdentity())
+			{
+				throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
+			}
+
+			return iaUsers::getIdentity(true);
+		}
+
+		return parent::apiGet($id);
+	}
+
+	public function apiUpdate(array $data, $id, array $params)
+	{
+		if (self::KEYWORD_SELF == $id)
+		{
+			if (!iaUsers::hasIdentity())
+			{
+				throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
+			}
+
+			$id = iaUsers::getIdentity()->id;
+		}
+
+		return parent::apiUpdate($data, $id, $params);
 	}
 }
