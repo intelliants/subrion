@@ -29,4 +29,10 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 	protected $_table = 'members';
 
 
+	public function apiGet($id)
+	{
+		return ('self' == $id)
+			? iaUsers::getIdentity(true)
+			: parent::apiGet($id);
+	}
 }
