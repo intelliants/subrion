@@ -415,11 +415,6 @@ class iaApi
 
 		$this->_getResponse()->setCode($id ? iaApiResponse::CREATED : iaApiResponse::CONFLICT);
 
-		if ($id)
-		{
-			$this->_getResponse()->setBody(array('id' => $id));
-		}
-
-		return null;
+		return empty($id) ? '' : $id;
 	}
 }

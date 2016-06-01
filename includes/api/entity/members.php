@@ -60,4 +60,41 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 
 		return parent::apiUpdate($data, $id, $params);
 	}
+
+	public function apiInsert(array $data)
+	{ return 19;
+		if (iaUsers::hasIdentity())
+		{
+			throw new Exception('Unable to register member being logged in', iaApiResponse::FORBIDDEN);
+		}
+
+		$iaUsers = $this->_iaCore->factory('users');
+
+		if (empty($data['username']))
+		{
+			throw new Exception('No username specified', iaApiResponse::BAD_REQUEST);
+		}
+		elseif ($this->_iaDb->exists(iaDb::convertIds($data['username'], 'username'), null, iaUsers::getTable()))
+		{
+			throw new Exception('Username already taken', iaApiResponse::CONFLICT);
+		}
+
+		if (empty($data['email']))
+		{
+			throw new Exception('No email specified', iaApiResponse::BAD_REQUEST);
+		}
+		elseif ($this->_iaDb->exists(iaDb::convertIds($data['email'], 'email'), null, iaUsers::getTable()))
+		{
+			throw new Exception('Email exists', iaApiResponse::CONFLICT);
+		}
+
+		if (empty($data['password']))
+		{
+			$data['password'] = $iaUsers->createPassword();
+		}
+
+		unset($data['disable_fields']);
+
+		return $iaUsers->register($data);
+	}
 }

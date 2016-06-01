@@ -93,7 +93,8 @@ class iaApiResponse
 		header('Access-Control-Allow-Origin: *');
 		header('Access-Control-Allow-Methods: *');
 
-		foreach($this->_headers as $name => $value){
+		foreach ($this->_headers as $name => $value)
+		{
 			header(ucfirst($name) . ': ' . $value);
 		}
 	}
