@@ -891,4 +891,81 @@ class iaUsers extends abstractCore
 
 		return array($count, $rows);
 	}
+
+	public function hybridAuth($providerName)
+	{
+		if (!$this->iaCore->get('hybrid_enabled'))
+		{
+			throw new Exception('HybridAuth is not enabled.');
+		}
+
+		$providerName = strtolower($providerName);
+		$configFile = IA_INCLUDES . 'hybridauth.inc.php';
+
+		require_once IA_INCLUDES . 'hybrid/Auth.php';
+
+		if (!file_exists($configFile))
+		{
+			throw new Exception('No HybridAuth config file. Please configure provider adapters.');
+		}
+
+		$hybridauth = new Hybrid_Auth($configFile);
+
+		if (empty(Hybrid_Auth::$config['providers']))
+		{
+			throw new Exception('No auth adapters configured.');
+		}
+
+		$provider = $hybridauth->authenticate(ucfirst($providerName));
+
+		if ($user_profile = $provider->getUserProfile())
+		{
+			// identify by Hybrid identifier
+			$memberId = $this->iaDb->one('member_id', iaDb::convertIds($user_profile->identifier, 'value'), self::getProvidersTable());
+
+			// identify by email address
+			if (!$memberId)
+			{
+				if ($memberInfo = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, "`email` = :email_address", array('email_address' => $user_profile->email), self::getTable()))
+				{
+					$this->iaDb->insert(array(
+						'member_id' => $memberInfo['id'],
+						'name' => $providerName,
+						'value' => $user_profile->identifier
+					), null, self::getProvidersTable());
+
+					$memberId = $memberInfo['id'];
+				}
+			}
+
+			// register new member if no matches
+			if (!$memberId)
+			{
+				$memberRegInfo['username'] = '';
+				$memberRegInfo['email'] = $user_profile->email;
+				$memberRegInfo['fullname'] = $user_profile->displayName;
+				// $memberRegInfo['avatar'] = $user_profile->photoURL;
+				$memberRegInfo['disable_fields'] = true;
+
+				$memberId = $this->register($memberRegInfo);
+
+				// add providers match
+				$this->iaDb->insert(array(
+					'member_id' => $memberId,
+					'name' => $providerName,
+					'value' => $user_profile->identifier
+				), null, iaUsers::getProvidersTable());
+
+				// no need to validate address
+				$this->update(array('id' => $memberId, 'sec_key' => '', 'status' => iaCore::STATUS_ACTIVE));
+			}
+
+			// authorize
+			$this->getAuth($memberId);
+		}
+		else
+		{
+			throw new Exception('User is not logged in.');
+		}
+	}
 }
