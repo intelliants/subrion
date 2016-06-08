@@ -514,8 +514,8 @@
 
 						<div class="col col-lg-4">
 							<select name="pic_resize_mode">
-								<option value="crop"{if isset($item.pic_resize_mode) && iaPicture::CROP == $item.pic_resize_mode} selected{/if} data-annotation="{lang key='crop_tip'}">{lang key='crop'}</option>
-								<option value="fit"{if isset($item.pic_resize_mode) && iaPicture::FIT == $item.pic_resize_mode} selected{/if} data-annotation="{lang key='fit_tip'}">{lang key='fit'}</option>
+								<option value="crop"{if isset($item.resize_mode) && iaPicture::CROP == $item.resize_mode} selected{/if} data-annotation="{lang key='crop_tip'}">{lang key='crop'}</option>
+								<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-annotation="{lang key='fit_tip'}">{lang key='fit'}</option>
 							</select>
 							<p class="help-block"></p>
 						</div>
