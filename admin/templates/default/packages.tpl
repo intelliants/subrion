@@ -86,7 +86,7 @@
 									{/if}
 									{if $package.items.uninstall}
 										{access object='admin_pages' id='packages' action='uninstall'}
-										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/uninstall/" class="btn btn-danger btn-small" title="{lang key='uninstall'}"><i class="i-remove-sign"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/uninstall/" class="btn btn-danger btn-small js-uninstall" title="{lang key='uninstall'}"><i class="i-remove-sign"></i></a>
 										{/access}
 									{/if}
 								{elseif $package.remote}

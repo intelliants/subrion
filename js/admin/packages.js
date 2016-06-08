@@ -162,3 +162,22 @@ function readme(packageName)
 		}
 	});
 }
+
+Ext.onReady(function() {
+	$('.js-uninstall').click(function(e) {
+		e.preventDefault();
+
+		var $this = $(this);
+		Ext.Msg.show({
+			title: _t('confirm'),
+			msg: _t('are_you_sure_to_uninstall_selected_package'),
+			buttons: Ext.Msg.YESNO,
+			icon: Ext.Msg.QUESTION,
+			fn: function (btn) {
+				if ('yes' == btn) {
+					document.location = $this.attr('href');
+				}
+			}
+		});
+	});
+});
