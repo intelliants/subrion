@@ -704,8 +704,16 @@ class iaBackendController extends iaAbstractControllerBackend
 				foreach ($fieldData['tree_nodes'] as $node)
 				{
 					// insert default language
-					$this->_addPhrase('field_' . $field['item'] . '_' . $field['name'] .  '_' . $node['node_id'], $node['text'], $field['extras']);
+					$key = sprintf(self::TREE_NODE_TITLE, $field['item'], $field['name'], $node['node_id']);
+
+					foreach ($this->_iaCore->languages as $code => $language)
+					{
+						$this->_iaDb->exists('`key` = :key AND `code` = :code', array('key' => $key, 'code' => $code), iaLanguage::getTable())
+							|| iaLanguage::addPhrase($key, $node['text'], $code, $field['extras']);
+					}
+
 					unset($node['text']);
+					//
 
 					$node['field'] = $field['name'];
 					$node['item'] = $field['item'];
@@ -1243,11 +1251,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($_POST)
 		{
+			$packageName = $this->_iaCore->factory('item')->getPackageByItem($params['item']);
+
 			$this->_iaDb->delete(iaDb::convertIds($key, 'key'), iaLanguage::getTable());
 
 			foreach ($_POST as $langCode => $title)
 			{
-				iaLanguage::addPhrase($key, $title, $langCode);
+				iaLanguage::addPhrase($key, $title, $langCode, $packageName);
 			}
 
 			$output['message'] = iaLanguage::get('saved');
@@ -1280,13 +1290,5 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return iaUtil::jsonEncode($unpackedNodes);
-	}
-
-	private function _addPhrase($key, $value, $plugin)
-	{
-		foreach ($this->_iaCore->languages as $code => $language)
-		{
-			iaLanguage::addPhrase($key, $value, $code, $plugin);
-		}
 	}
 }
