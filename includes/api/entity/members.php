@@ -40,10 +40,19 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 				throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
 			}
 
-			return iaUsers::getIdentity(true);
+			$entry = iaUsers::getIdentity(true);
+		}
+		else
+		{
+			$entry = parent::apiGet($id);
 		}
 
-		return parent::apiGet($id);
+		if ($entry)
+		{
+			unset($entry['password'], $entry['sec_key']);
+		}
+
+		return $entry;
 	}
 
 	public function apiUpdate(array $data, $id, array $params)
@@ -55,29 +64,49 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 				throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
 			}
 
+			// restrict update of sensitive data
+			unset($data['email'], $data['status'], $data['date_reg'], $data['views_num'],
+				$data['sponsored'], $data['sponsored_plan_id'], $data['sponsored_start'], $data['sponsored_end'],
+				$data['featured'], $data['featured_start'], $data['featured_end'],
+				$data['usergroup_id'], $data['sec_key'], $data['date_update'], $data['date_logged']);
+
 			$id = iaUsers::getIdentity()->id;
 		}
+		elseif (!$this->_iaCore->factory('acl')->checkAccess('admin_page:edit', 'members'))
+		{
+			throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
+		}
 
-		return parent::apiUpdate($data, $id, $params);
+		if (!empty($data['password']))
+		{
+			$data['password'] = $this->_iaCore->factory('users')->encodePassword($data['password']);
+		}
+
+		return $this->_update($data, $id, $params);
+	}
+
+	protected function _update(array $data, $id, array $params)
+	{
+		$resource = $this->apiGet($id);
+
+		if (!$resource)
+		{
+			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+		}
+
+		$this->_iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
+
+		return (0 == $this->_iaDb->getErrorNumber());
 	}
 
 	public function apiInsert(array $data)
-	{ return 19;
+	{
 		if (iaUsers::hasIdentity())
 		{
 			throw new Exception('Unable to register member being logged in', iaApiResponse::FORBIDDEN);
 		}
 
 		$iaUsers = $this->_iaCore->factory('users');
-
-		if (empty($data['username']))
-		{
-			throw new Exception('No username specified', iaApiResponse::BAD_REQUEST);
-		}
-		elseif ($this->_iaDb->exists(iaDb::convertIds($data['username'], 'username'), null, iaUsers::getTable()))
-		{
-			throw new Exception('Username already taken', iaApiResponse::CONFLICT);
-		}
 
 		if (empty($data['email']))
 		{
@@ -96,5 +125,27 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 		unset($data['disable_fields']);
 
 		return $iaUsers->register($data);
+	}
+
+	public function apiDelete($id)
+	{
+		if (!is_numeric($id))
+		{
+			throw new Exception('Numeric ID expected', iaApiResponse::NOT_FOUND);
+		}
+
+		$resource = $this->apiGet($id);
+
+		if (!$resource)
+		{
+			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+		}
+
+		if (!$this->_iaCore->factory('acl')->checkAccess('admin_page:delete', 'members'))
+		{
+			throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
+		}
+
+		return (bool)$this->_iaDb->delete(iaDb::convertIds($id), $this->getTable());
 	}
 }

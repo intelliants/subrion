@@ -308,7 +308,7 @@ class iaApi
 		switch ($this->_getRequest()->getEndpoint())
 		{
 			case 'auth':
-				$this->_checkPrivileges();
+				$this->_getRequest()->getParams() || $this->_checkPrivileges();
 				$this->_getAuthServer()->authorize($this->_getRequest(), $this->_getResponse());
 
 				break;
