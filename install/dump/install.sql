@@ -2284,6 +2284,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('your_name','Your Full Name','frontend'),
 ('your_email','Your email','frontend'),
+('your_membership_is_inactive','Your membership is inactive. You may not use this feature.','frontend'),
 ('your_password','Your password','frontend'),
 ('your_password_confirm','Confirm your password','frontend'),
 ('your_title_for_this_search','Your title for this search (optional)','frontend'),

@@ -147,6 +147,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					$error = true;
 					$messages[] = iaLanguage::get('error_no_member_email');
 				}
+				elseif (in_array($member['status'], array(iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED)))
+				{
+					$error = true;
+					$messages[] = iaLanguage::get('your_membership_is_inactive');
+				}
+
 				if (false !== $code && $member['sec_key'] != $code)
 				{
 					$error = true;
