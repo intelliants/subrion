@@ -53,6 +53,7 @@ class iaApiRequest
 		}
 
 		$this->_method = $this->_fetchMethod();
+		$this->_contentType = $this->_fetchContentType();
 
 		$this->_version = $this->_fetchVersion(array_shift($requestPath));
 
@@ -77,6 +78,18 @@ class iaApiRequest
 		return $method;
 	}
 
+	private function _fetchContentType()
+	{
+		$contentType = $_SERVER['CONTENT_TYPE'];
+
+		if (false !== ($pos = stripos($contentType, ';')))
+		{
+			$contentType = substr($contentType, 0, $pos);
+		}
+
+		return $contentType;
+	}
+
 	private function _fetchVersion($input)
 	{
 		$version = substr($input, 1);
@@ -95,9 +108,16 @@ class iaApiRequest
 		switch ($this->getFormat())
 		{
 			case self::FORMAT_RAW:
-				$array = array();
-				parse_str($content, $array);
-				$content = $array;
+				switch ($this->getContentType())
+				{
+					case 'multipart/form-data':
+					case 'application/x-www-form-urlencoded':
+						$array = array();
+						parse_str($content, $array);
+						$content = $array;
+
+						break;
+				}
 
 				break;
 
@@ -127,6 +147,11 @@ class iaApiRequest
 	public function getFormat()
 	{
 		return $this->_format;
+	}
+
+	public function getContentType()
+	{
+		return $this->_contentType;
 	}
 
 	public function getContent()
