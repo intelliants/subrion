@@ -285,33 +285,14 @@ class iaUtil extends abstractUtil
 	 */
 	public static function getAccountDir($userName = '')
 	{
-		if (empty($userName))
-		{
-			$userName = iaUsers::hasIdentity() ? iaUsers::getIdentity()->username : false;
-		}
+		$userName || $userName = iaUsers::hasIdentity() ? iaUsers::getIdentity()->username : false;
 
-		$serverDirectory = '';
+		$serverDirectory = empty($userName)
+			? '_notregistered' . IA_DS
+			: strtolower(substr($userName, 0, 1)) . IA_DS . $userName . IA_DS;
+
 		umask(0);
-
-		if (empty($userName))
-		{
-			$serverDirectory .= '_notregistered' . IA_DS;
-			if (!is_dir(IA_UPLOADS . $serverDirectory))
-			{
-				mkdir(IA_UPLOADS . $serverDirectory);
-			}
-		}
-		else
-		{
-			$subFolders = array();
-			$subFolders[] = strtolower(substr($userName, 0, 1)) . IA_DS;
-			$subFolders[] = $userName . IA_DS;
-			foreach ($subFolders as $folderName)
-			{
-				$serverDirectory .= $folderName;
-				is_dir(IA_UPLOADS . $serverDirectory) || mkdir(IA_UPLOADS . $serverDirectory);
-			}
-		}
+		is_dir(IA_UPLOADS . $serverDirectory) || mkdir(IA_UPLOADS . $serverDirectory, 0777, true);
 
 		return $serverDirectory;
 	}

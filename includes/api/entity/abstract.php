@@ -105,4 +105,106 @@ abstract class iaApiEntityAbstract
 
 		return $this->_iaDb->insert($data, null, $this->getTable());
 	}
+
+	protected function _apiUpdateField($fieldName, $entryId, $content)
+	{
+		$iaField = $this->_iaCore->factory('field');
+
+		$fieldParams = $this->_iaDb->row(array('type', 'required', 'image_width', 'image_height', 'thumb_width',
+			'thumb_height', 'resize_mode'), iaDb::convertIds($fieldName, 'name'), $iaField::getTable());
+
+		if (!$fieldParams)
+		{
+			throw new Exception('No field to update', iaApiResponse::NOT_FOUND);
+		}
+
+		if ($fieldParams['required'] && !$content)
+		{
+			throw new Exception('Empty value is not accepted', iaApiResponse::UNPROCESSABLE_ENTITY);
+		}
+
+		switch ($fieldParams['type'])
+		{
+			case iaField::IMAGE:
+				$content = $this->_processImageField($content, $fieldParams);
+				break;
+			case iaField::PICTURES:
+				$content = $this->_processImageField($content, $fieldParams);
+				break;
+			case iaField::STORAGE:
+				$content = $this->_processStorageField($content, $fieldParams);
+		}
+
+		$this->_iaDb->update(array($fieldName => $content), iaDb::convertIds($entryId), null, $this->getTable());
+
+		return 0 === $this->_iaDb->getErrorNumber();
+	}
+
+	protected function _processImageField($content, array $field)
+	{
+		$tempFile = self::_getTempFileName();
+		file_put_contents($tempFile, $content);
+
+		// processing image
+		$iaPicture = $this->_iaCore->factory('picture');
+
+		$file = array(
+			'type' => $_SERVER['CONTENT_TYPE'],
+			'tmp_name' => $tempFile
+		);
+
+		$path = iaUtil::getAccountDir();
+		$name = self::_generateFileName();
+
+		$imagePath = $iaPicture->processImage($file, $path, $name, $field);
+
+		if (!$imagePath)
+		{
+			throw new Exception('Error processing image: ' . $iaPicture->getMessage(), iaApiResponse::INTERNAL_ERROR);
+		}
+
+		$result = array('path' => $imagePath, 'title' => '');
+		$result = serialize($result);
+
+		return $result;
+	}
+
+	protected function _processPicturesField($content, array $field)
+	{
+		return $content; // TODO: implement
+	}
+
+	protected function _processStorageField($content, array $field)
+	{
+		return $content; // TODO: implement
+	}
+
+	protected static function _generateFileName()
+	{
+		if (empty($filename))
+		{
+			return iaUtil::generateToken();
+		}
+
+		$extension = '';
+		if (false !== strpos($filename, '.'))
+		{
+			$extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+			$filename = pathinfo($filename, PATHINFO_FILENAME);
+
+			if (false !== strpos($filename, '.'))
+			{
+				$filename = str_replace(array('.', '~'), '-', $filename);
+			}
+		}
+
+		$filename = iaSanitize::alias($filename) . '_'. iaUtil::generateToken(5);
+
+		return $filename . '.' . $extension;
+	}
+
+	protected static function _getTempFileName()
+	{
+		return tempnam(sys_get_temp_dir(), 'api');
+	}
 }

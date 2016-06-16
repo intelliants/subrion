@@ -64,13 +64,18 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 				throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
 			}
 
+			$id = iaUsers::getIdentity()->id;
+
+			if (1 == count($params))
+			{
+				return $this->_apiUpdateField($params[0], $id, $data);
+			}
+
 			// restrict update of sensitive data
 			unset($data['email'], $data['status'], $data['date_reg'], $data['views_num'],
 				$data['sponsored'], $data['sponsored_plan_id'], $data['sponsored_start'], $data['sponsored_end'],
 				$data['featured'], $data['featured_start'], $data['featured_end'],
 				$data['usergroup_id'], $data['sec_key'], $data['date_update'], $data['date_logged']);
-
-			$id = iaUsers::getIdentity()->id;
 		}
 		elseif (!$this->_iaCore->factory('acl')->checkAccess('admin_page:edit', 'members'))
 		{
