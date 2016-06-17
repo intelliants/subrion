@@ -28,6 +28,8 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 {
 	const KEYWORD_SELF = 'self';
 
+	protected $_name = 'members';
+
 	protected $_table = 'members';
 
 
@@ -81,6 +83,8 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 		{
 			throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
 		}
+
+		$this->_processFields($data);
 
 		if (!empty($data['password']))
 		{
