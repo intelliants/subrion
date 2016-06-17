@@ -26,6 +26,8 @@
 
 abstract class iaApiEntityAbstract
 {
+	protected $_name;
+
 	protected $_table;
 
 	protected $_iaCore;
@@ -45,6 +47,11 @@ abstract class iaApiEntityAbstract
 	public function getTable()
 	{
 		return $this->_table;
+	}
+
+	public function getName()
+	{
+		return $this->_name;
 	}
 
 	// actions
@@ -106,12 +113,39 @@ abstract class iaApiEntityAbstract
 		return $this->_iaDb->insert($data, null, $this->getTable());
 	}
 
+	protected function _processFields(array &$data)
+	{
+		$iaField = $this->_iaCore->factory('field');
+
+		$fields = $iaField->getByItemName($this->getName());
+
+		foreach ($fields as $field)
+		{
+			$fieldName = $field['name'];
+
+			if (empty($data[$fieldName])) continue;
+
+			switch ($field['type'])
+			{
+				case iaField::IMAGE:
+					$image = base64_decode($data[$fieldName]);
+					$data[$fieldName] = $this->_processImageField($image, $field);
+					break;
+				case iaField::PICTURES:
+					// TODO: define the format
+					break;
+				case iaField::STORAGE:
+					// TODO: define the format
+			}
+		}
+	}
+
 	protected function _apiUpdateField($fieldName, $entryId, $content)
 	{
 		$iaField = $this->_iaCore->factory('field');
 
-		$fieldParams = $this->_iaDb->row(array('type', 'required', 'image_width', 'image_height', 'thumb_width',
-			'thumb_height', 'resize_mode'), iaDb::convertIds($fieldName, 'name'), $iaField::getTable());
+		$fieldParams = $this->_iaDb->row_bind(array('type', 'required', 'image_width', 'image_height', 'thumb_width', 'thumb_height', 'resize_mode'),
+			'`name` = :field AND `item` = :item', array('field' => $fieldName, 'item' => $this->getName()), $iaField::getTable());
 
 		if (!$fieldParams)
 		{
@@ -129,7 +163,7 @@ abstract class iaApiEntityAbstract
 				$content = $this->_processImageField($content, $fieldParams);
 				break;
 			case iaField::PICTURES:
-				$content = $this->_processImageField($content, $fieldParams);
+				$content = $this->_processPicturesField($content, $fieldParams);
 				break;
 			case iaField::STORAGE:
 				$content = $this->_processStorageField($content, $fieldParams);
@@ -145,7 +179,7 @@ abstract class iaApiEntityAbstract
 		$tempFile = self::_getTempFileName();
 		file_put_contents($tempFile, $content);
 
-		// processing image
+		// image processing
 		$iaPicture = $this->_iaCore->factory('picture');
 
 		$file = array(
@@ -165,6 +199,8 @@ abstract class iaApiEntityAbstract
 
 		$result = array('path' => $imagePath, 'title' => '');
 		$result = serialize($result);
+
+		// TODO: implement previous image removal
 
 		return $result;
 	}

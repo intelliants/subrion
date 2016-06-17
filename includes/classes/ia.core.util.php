@@ -285,7 +285,10 @@ class iaUtil extends abstractUtil
 	 */
 	public static function getAccountDir($userName = '')
 	{
-		$userName || $userName = iaUsers::hasIdentity() ? iaUsers::getIdentity()->username : false;
+		if (empty($userName))
+		{
+			$userName = iaUsers::hasIdentity() ? iaUsers::getIdentity()->username : false;
+		}
 
 		$serverDirectory = empty($userName)
 			? '_notregistered' . IA_DS
