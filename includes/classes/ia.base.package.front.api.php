@@ -26,9 +26,22 @@
 
 abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 {
+	protected $_request;
+	protected $_response;
+
 	public $apiFilters = array();
 	public $apiSorters = array();
 
+
+	public function setRequest(iaApiRequest $request)
+	{
+		$this->_request = $request;
+	}
+
+	public function setResponse(iaApiResponse $response)
+	{
+		$this->_response = $response;
+	}
 
 	public function apiList($start, $limit, $where, $order)
 	{
