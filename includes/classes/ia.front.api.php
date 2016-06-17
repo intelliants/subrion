@@ -178,6 +178,9 @@ class iaApi
 			? $this->_loadCoreEntity($name)
 			: $this->_loadPackageEntity($extras, $name);
 
+		$entity->setRequest($this->_getRequest());
+		$entity->setResponse($this->_getResponse());
+
 		if (!$entity)
 		{
 			throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
@@ -401,12 +404,21 @@ class iaApi
 
 	public function updateResource($entity, $id, array $params)
 	{
-		if (!$entity->apiUpdate($this->_getRequest()->getContent(), $id, $params))
+		$result = $entity->apiUpdate($this->_getRequest()->getContent(), $id, $params);
+
+		if (is_bool($result))
 		{
-			throw new Exception('Could not update a resource', iaApiResponse::INTERNAL_ERROR);
+			if (!$result)
+			{
+				throw new Exception('Could not update a resource', iaApiResponse::INTERNAL_ERROR);
+			}
+
+			$this->_getResponse()->setCode(iaApiResponse::OK);
+
+			return null;
 		}
 
-		return null;
+		return $result;
 	}
 
 	public function addResource($entity)

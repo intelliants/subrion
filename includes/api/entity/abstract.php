@@ -30,6 +30,9 @@ abstract class iaApiEntityAbstract
 
 	protected $_table;
 
+	protected $_request;
+	protected $_response;
+
 	protected $_iaCore;
 	protected $_iaDb;
 
@@ -52,6 +55,16 @@ abstract class iaApiEntityAbstract
 	public function getName()
 	{
 		return $this->_name;
+	}
+
+	public function setRequest(iaApiRequest $request)
+	{
+		$this->_request = $request;
+	}
+
+	public function setResponse(iaApiResponse $response)
+	{
+		$this->_response = $response;
 	}
 
 	// actions
@@ -129,7 +142,7 @@ abstract class iaApiEntityAbstract
 			{
 				case iaField::IMAGE:
 					$image = base64_decode($data[$fieldName]);
-					$data[$fieldName] = $this->_processImageField($image, $field);
+					list(, $data[$fieldName]) = $this->_processImageField($image, $field);
 					break;
 				case iaField::PICTURES:
 					// TODO: define the format
@@ -160,18 +173,27 @@ abstract class iaApiEntityAbstract
 		switch ($fieldParams['type'])
 		{
 			case iaField::IMAGE:
-				$content = $this->_processImageField($content, $fieldParams);
+				list($output, $value) = $this->_processImageField($content, $fieldParams);
 				break;
 			case iaField::PICTURES:
-				$content = $this->_processPicturesField($content, $fieldParams);
+				//$content = $this->_processPicturesField($content, $fieldParams);
 				break;
 			case iaField::STORAGE:
-				$content = $this->_processStorageField($content, $fieldParams);
+				//$content = $this->_processStorageField($content, $fieldParams);
+				break;
+			default:
+				$output = '';
+				$value = $content;
 		}
 
-		$this->_iaDb->update(array($fieldName => $content), iaDb::convertIds($entryId), null, $this->getTable());
+		$this->_iaDb->update(array($fieldName => $value), iaDb::convertIds($entryId), null, $this->getTable());
 
-		return 0 === $this->_iaDb->getErrorNumber();
+		if (0 !== $this->_iaDb->getErrorNumber())
+		{
+			throw new Exception('DB error', iaApiResponse::INTERNAL_ERROR);
+		}
+
+		return $output;
 	}
 
 	protected function _processImageField($content, array $field)
@@ -202,7 +224,7 @@ abstract class iaApiEntityAbstract
 
 		// TODO: implement previous image removal
 
-		return $result;
+		return array(IA_CLEAR_URL . 'uploads/' . $imagePath, $result);
 	}
 
 	protected function _processPicturesField($content, array $field)
