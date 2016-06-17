@@ -86,9 +86,16 @@ class iaApiEntityMembers extends iaApiEntityAbstract
 
 		$this->_processFields($data);
 
-		if (!empty($data['password']))
+		if (isset($data['password']))
 		{
-			$data['password'] = $this->_iaCore->factory('users')->encodePassword($data['password']);
+			if ($data['password'])
+			{
+				$data['password'] = $this->_iaCore->factory('users')->encodePassword($data['password']);
+			}
+			else
+			{
+				unset($data['password']);
+			}
 		}
 
 		return $this->_update($data, $id, $params);
