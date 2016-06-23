@@ -47,6 +47,8 @@ class iaApi
 	protected $_request;
 	protected $_response;
 
+	protected $_mobilePush;
+
 
 	public function init() {}
 
@@ -428,5 +430,34 @@ class iaApi
 		$this->_getResponse()->setCode($id ? iaApiResponse::CREATED : iaApiResponse::CONFLICT);
 
 		return empty($id) ? '' : $id;
+	}
+
+	// Mobile Push
+	public function getMobilePush()
+	{
+		if (is_null($this->_mobilePush))
+		{
+			require_once IA_INCLUDES . 'api/push' . iaSystem::EXECUTABLE_FILE_EXT;
+
+			$this->_mobilePush = new iaApiPush();
+		}
+
+		return $this->_mobilePush;
+	}
+
+	// Just interface methods to iaApiPush
+	public function pushSendMembers($title, $message = '', array $params = array())
+	{
+		$this->getMobilePush()->sendMembers($title, $message, $params);
+	}
+
+	public function pushSendUsergroup($usergroupId, $title, $message = '', array $params = array())
+	{
+		$this->getMobilePush()->sendUsergroup($usergroupId, $title, $message, $params);
+	}
+
+	public function pushSendAdministrators($title, $message = '', array $params = array())
+	{
+		$this->getMobilePush()->sendAdministrators($title, $message, $params);
 	}
 }
