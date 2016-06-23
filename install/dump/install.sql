@@ -435,6 +435,8 @@ CREATE TABLE `{install:prefix}members` (
 	`sponsored_start` datetime null,
 	`sponsored_end` datetime null,
 	`sponsored_plan_id` smallint(5) unsigned NOT NULL,
+  `api_push_token` tinytext NOT NULL,
+  `api_push_receive` enum('yes','no') NOT NULL default 'yes',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `USERNAME` (`username`),
 	UNIQUE KEY `EMAIL` (`email`),
@@ -846,19 +848,6 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('general','admin_page','admin',null,'text',0,'Admin Dashboard URL',63,'',1,0,''),
 ('general','bc_home','Home',null,'text',0,'Breadcrumb first element',66,'',1,1,''),
 
-('pictures','thumb_w','150','','hidden',0,'Thumbnails default width',9,'',1,0,''),
-('pictures','thumb_h','150','','hidden',0,'Thumbnails default height',12,'',1,0,''),
-('pictures','','Watermark','1','divider',0,'',13,'',1,0,''),
-('pictures','watermark','0','''1'',''0''','radio',0,'Enable',14,'',1,0,''),
-('pictures','watermark_position','bottom_right','''top_left'',''top_center'',''top_right'',''middle_left'',''middle_center'',''middle_right'',''bottom_left'',''bottom_center'',''bottom_right''','select',0,'Position',15,'',1,0,'watermark|1'),
-('pictures','watermark_type','text','''text'',''image''','select',0,'Type',16,'',1,0,''),
-('pictures','watermark_text','@ Your Website','','text',0,'Text',17,'',1,0,'watermark_type|text'),
-('pictures','watermark_text_color','#FFFFFF','','text',0,'Text color',18,'',1,0,'watermark_type|text'),
-('pictures','watermark_text_size','11','','text',0,'Text size',19,'',1,0,'watermark_type|text'),
-('pictures','watermark_image','','','image',0,'Image',20,'',1,0,'watermark_type|image'),
-('pictures','','Lightbox','','divider',0,'Lightbox',21,'',1,1,''),
-('pictures','lightbox_name','','','select',0,'Lightbox name',24,'',0,0,''),
-
 ('members','','General','1','divider',0,'',1,'',1,0,''),
 ('members','members_enabled','1','''1'',''0''','radio',0,'Members functionality',2,'',1,0,''),
 ('members','members_autoapproval','1','''1'',''0''','radio',0,'Members auto-approval',3,'',0,0,'members_enabled|1'),
@@ -872,25 +861,6 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('members','gravatar_rating','g','''g'',''pg'',''r'',''x''','select',0,'Rating',14,'',1,0,'gravatar_enabled|1'),
 ('members','gravatar_secure','0','''1'',''0''','radio',0,'SSL secure requests',15,'',0,0,'gravatar_enabled|1'),
 ('members','gravatar_default_image','','','image',0,'Default image',16,'',0,0,'gravatar_enabled|1'),
-
-('financial','','General','1','divider',0,'',1,'',1,0,''),
-('financial','currency','USD','','text',0,'Currency',1,'',1,0,''),
-('financial','funds_min_deposit','20','','text',0,'Minimum deposit',2,'',0,1,''),
-('financial','funds_max_deposit','300','','text',0,'Maximum deposit',3,'',0,1,''),
-('financial','funds_max','1000','','text',0,'Maximum balance',4,'',0,1,''),
-
-('miscellaneous','','Open Graph','','divider',0,'Open Graph',1,'',1,1,''),
-('miscellaneous','opengraph_description','','','textarea',0,'OG default description',2,'',0,1,''),
-('miscellaneous','opengraph_image','','','image',0,'OG default image',3,'',0,0,''),
-
-('miscellaneous','','CKeditor','','divider',0,'CKeditor',4,'',1,1,''),
-('miscellaneous','ckeditor_color','#B0E0E6','','text',0,'Color',5,'',0,1,''),
-('miscellaneous','ckeditor_code_highlighting','0','''1'',''0''','radio',0,'Code highlighting',6,'',0,1,''),
-('miscellaneous','ckeditor_mobile','0','''1'',''0''','radio',0,'Enable on mobile devices',7,'',0,1,''),
-('miscellaneous','','Captcha','','divider',0,'Captcha',8,'',1,1,''),
-('miscellaneous','captcha','1','''1'',''0''','radio',0,'Captcha',9,'',0,1,''),
-('miscellaneous','captcha_name','','','select',0,'Captcha name',10,'',0,0,'captcha|1'),
-('miscellaneous','captcha_preview','','','text',0,'Captcha preview',11,'',0,0,'captcha|1'),
 
 ('mail','','General','1','divider',0,'',1,'',1,0,''),
 ('mail','site_from_name','Subrion CMS','1','text',0,'Default mail name',1,'',1,0,''),
@@ -926,6 +896,40 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('system','caching','0','''1'',''0''','hidden',0,'Caching',24,'',1,0,''),
 ('system','smarty_cache','0','''1'',''0''','radio',0,'Smarty force compile',25,'',0,0,''),
 ('system','compress_js','0','''1'',''0''','radio',0,'Compress Javascript',26,'',0,0,''),
+
+('pictures','thumb_w','150','','hidden',0,'Thumbnails default width',9,'',1,0,''),
+('pictures','thumb_h','150','','hidden',0,'Thumbnails default height',12,'',1,0,''),
+('pictures','','Watermark','1','divider',0,'',13,'',1,0,''),
+('pictures','watermark','0','''1'',''0''','radio',0,'Enable',14,'',1,0,''),
+('pictures','watermark_position','bottom_right','''top_left'',''top_center'',''top_right'',''middle_left'',''middle_center'',''middle_right'',''bottom_left'',''bottom_center'',''bottom_right''','select',0,'Position',15,'',1,0,'watermark|1'),
+('pictures','watermark_type','text','''text'',''image''','select',0,'Type',16,'',1,0,''),
+('pictures','watermark_text','@ Your Website','','text',0,'Text',17,'',1,0,'watermark_type|text'),
+('pictures','watermark_text_color','#FFFFFF','','text',0,'Text color',18,'',1,0,'watermark_type|text'),
+('pictures','watermark_text_size','11','','text',0,'Text size',19,'',1,0,'watermark_type|text'),
+('pictures','watermark_image','','','image',0,'Image',20,'',1,0,'watermark_type|image'),
+('pictures','','Lightbox','','divider',0,'Lightbox',21,'',1,1,''),
+('pictures','lightbox_name','','','select',0,'Lightbox name',24,'',0,0,''),
+
+('miscellaneous','','Open Graph','','divider',0,'Open Graph',1,'',1,1,''),
+('miscellaneous','opengraph_description','','','textarea',0,'OG default description',2,'',0,1,''),
+('miscellaneous','opengraph_image','','','image',0,'OG default image',3,'',0,0,''),
+('miscellaneous','','CKeditor','','divider',0,'CKeditor',4,'',1,1,''),
+('miscellaneous','ckeditor_color','#B0E0E6','','text',0,'Color',5,'',0,1,''),
+('miscellaneous','ckeditor_code_highlighting','0','''1'',''0''','radio',0,'Code highlighting',6,'',0,1,''),
+('miscellaneous','ckeditor_mobile','0','''1'',''0''','radio',0,'Enable on mobile devices',7,'',0,1,''),
+('miscellaneous','','Captcha','','divider',0,'Captcha',8,'',1,1,''),
+('miscellaneous','captcha','1','''1'',''0''','radio',0,'Captcha',9,'',0,1,''),
+('miscellaneous','captcha_name','','','select',0,'Captcha name',10,'',0,0,'captcha|1'),
+('miscellaneous','captcha_preview','','','text',0,'Captcha preview',11,'',0,0,'captcha|1'),
+
+('financial','','General','1','divider',0,'',1,'',1,0,''),
+('financial','currency','USD','','text',0,'Currency',1,'',1,0,''),
+('financial','funds_min_deposit','20','','text',0,'Minimum deposit',2,'',0,1,''),
+('financial','funds_max_deposit','300','','text',0,'Maximum deposit',3,'',0,1,''),
+('financial','funds_max','1000','','text',0,'Maximum balance',4,'',0,1,''),
+
+('api','','General','1','divider',0,'',1,'',1,0,''),
+('api','api_push_access_key','','','text',0,'GCM access key',1,'',1,0,''),
 
 ('email_templates','','','','divider',0,'Members',0,'',1,1,''),
 ('email_templates','member_approved','1','''1'',''0''','radio',0,'Member approval',1,'',1,1,''),
@@ -977,7 +981,8 @@ INSERT INTO `{install:prefix}config_groups` (`name`,`order`) VALUES
 ('system',5),
 ('pictures',6),
 ('miscellaneous',7),
-('financial',8);
+('financial',8),
+('api',9);
 
 INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('1 1,12 * * * includes/cron/sitemap.php', 'Sitemap creation and update','Updates (or generates) the sitemap.xml file'),
@@ -996,6 +1001,8 @@ INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`leng
 ('twitter','members',2,'text',150,8,1,0,'',0),
 ('gplus','members',2,'text',150,9,1,0,'',0),
 ('linkedin','members',2,'text',150,10,1,0,'',0),
+('api_push_token','members',3,'textarea',255,0,1,0,'',0),
+('api_push_receive','members',3,'radio',0,0,1,0,'',0),
 ('member_id','transactions',0,'text',100,5,1,0,'',0),
 ('reference_id','transactions',0,'text',100,6,1,0,'',0),
 ('date','transactions',0,'date',0,7,1,0,'',0),
@@ -1006,10 +1013,13 @@ INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`leng
 ('sec_key','transactions',0,'text',250,12,1,0,'',0);
 UPDATE `{install:prefix}fields` SET `relation`='regular';
 UPDATE `{install:prefix}fields` SET `use_editor`=1,`link_to`=1,`thumb_height`=200,`file_prefix`='avat_',`image_width`=300,`image_height`=300,`thumb_width`=200 WHERE `name`='avatar';
+UPDATE `{install:prefix}fields` SET `adminonly`=1 WHERE `name`='api_push_token';
+UPDATE `{install:prefix}fields` SET `adminonly`=1,`values`='yes,no',`default`='yes' WHERE `name`='api_push_receive';
 
 INSERT INTO `{install:prefix}fields_groups` (`name`,`item`,`order`,`collapsed`,`tabview`) VALUES
 ('general','members',1,0,0),
-('social','members',2,0,0);
+('social','members',2,0,0),
+('api','members',3,0,0);
 
 INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`,`extras`) VALUES
 ('members',2,'core'),
@@ -1287,6 +1297,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_empty_password','-empty password-','admin'),
 ('config_empty_value','-empty value-','admin'),
 ('config_groups','Configuration Groups','admin'),
+('config_group_api','API','admin'),
 ('config_group_financial','Financial','admin'),
 ('config_group_general','General','admin'),
 ('config_group_mail','Mail','admin'),
@@ -1929,6 +1940,10 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('field__annotation','please upload only image files','common'),
 ('field_amount','Amount','common'),
+('field_api_push_token','Push Token of your phone','common'),
+('field_api_push_receive','Are you agree to receive push notifications to your phone?','common'),
+('field_api_push_receive_yes','Yes','common'),
+('field_api_push_receive_no','No','common'),
 ('field_member_id','Member username','common'),
 ('field_avatar','Avatar','common'),
 ('field_avatar_annotation','Please upload image files only','common'),
@@ -1957,6 +1972,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_twitter','Twitter','common'),
 ('field_username','Username','common'),
 ('field_website','Website','common'),
+('fieldgroup_api','API','common'),
+('fieldgroup_description_members_api','Subrion API related data','common'),
 ('fieldgroup_general','General','common'),
 ('fieldgroup_description_members_general','','common'),
 ('fieldgroup_social','Social','common'),
