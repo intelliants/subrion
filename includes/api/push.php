@@ -94,6 +94,6 @@ class iaApiPush
 		$where = "`api_push_token` != '' AND `api_push_receive` = 'yes'";
 		empty($condition) || $where.= ' AND ' . $condition;
 
-		return iaCore::instance()->iaDb->onefield('push_token', $where, null, null, iaUsers::getTable());
+		return iaCore::instance()->iaDb->onefield('api_push_token', $where, null, null, iaUsers::getTable());
 	}
 }
