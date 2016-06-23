@@ -445,7 +445,6 @@ class iaApi
 		return $this->_mobilePush;
 	}
 
-	// Just interface methods to iaApiPush
 	public function pushSendMembers($title, $message = '', array $params = array())
 	{
 		$this->getMobilePush()->sendMembers($title, $message, $params);
