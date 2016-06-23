@@ -66,10 +66,10 @@ class iaApiPush
 			'Content-Type: application/json'
 		);
 
-		return $this->_httpConnect(self::PUSH_ENDPOINT_URL, $postData, $headers);
+		return $this->_httpRequest(self::PUSH_ENDPOINT_URL, $postData, $headers);
 	}
 
-	private function _httpConnect($url, $postData, array $headers = array())
+	private function _httpRequest($url, $postData, array $headers = array())
 	{
 		$ch = curl_init();
 
