@@ -361,7 +361,7 @@ class iaSmarty extends Smarty
 		// TODO: check if a call of this resource was already printed out
 		if ($iaView->get(self::FLAG_CSS_RENDERED))
 		{
-			$array = $iaView->resources->css->toArray();
+			$array = $iaView->resources->css;
 			end($array);
 			$resource = key($array);
 
@@ -378,7 +378,7 @@ class iaSmarty extends Smarty
 				self::ia_add_media(array('files' => 'manage_mode'), $iaView->iaSmarty);
 			}
 
-			foreach (self::_arrayCopyKeysSorted($iaView->resources->css->toArray()) as $resource)
+			foreach (self::_arrayCopyKeysSorted($iaView->resources->css) as $resource)
 			{
 				$output = sprintf(self::LINK_STYLESHEET_PATTERN, $resource);
 				echo PHP_EOL . "\t" . $output;
@@ -847,7 +847,7 @@ class iaSmarty extends Smarty
 		}
 
 		$iaCore = iaCore::instance();
-		$resources = self::_arrayCopyKeysSorted($iaCore->iaView->resources->js->toArray());
+		$resources = self::_arrayCopyKeysSorted($iaCore->iaView->resources->js);
 
 		$output = '';
 		foreach ($resources as $resource)
@@ -1098,7 +1098,7 @@ class iaSmarty extends Smarty
 	}
 
 
-	private static function _arrayCopyKeysSorted(array $array)
+	private static function _arrayCopyKeysSorted(ArrayObject $array)
 	{
 		$a = array();
 		foreach ($array as $key => $value)
