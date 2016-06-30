@@ -86,7 +86,7 @@ class iaView extends abstractUtil
 	{
 		parent::init();
 
-		$this->resources = new iaStore(array('css' => new iaStore(), 'js' => new iaStore()));
+		$this->resources = $this->_arrayAsObject(array('css' => $this->_arrayAsObject(), 'js' => $this->_arrayAsObject()));
 	}
 
 	public function set($key, $value)
@@ -1571,5 +1571,10 @@ SQL;
 		is_file($resourceName) || $resourceName = IA_TEMPLATES . 'common' . IA_DS . $default;
 
 		return $resourceName;
+	}
+
+	private function _arrayAsObject(array $params = array())
+	{
+		return new ArrayObject($params, ArrayObject::ARRAY_AS_PROPS);
 	}
 }

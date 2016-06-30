@@ -39,7 +39,6 @@ final class iaSystem
 		$systemClasses = array(
 			'abstractCore' => 'ia.interfaces',
 			'abstractUtil' => 'ia.interfaces',
-			'iaStore' => 'ia.interfaces',
 			// interfaces
 			'iaInterfaceDbAdapter' => 'ia.base.db',
 			// core
