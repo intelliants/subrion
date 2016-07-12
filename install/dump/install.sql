@@ -987,7 +987,8 @@ INSERT INTO `{install:prefix}config_groups` (`name`,`order`) VALUES
 INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('1 1,12 * * * includes/cron/sitemap.php', 'Sitemap creation and update','Updates (or generates) the sitemap.xml file'),
 ('5 0 * * * includes/cron/cleanup.php','System cleanup','Cleans up temporary DB entries'),
-('20 * * * * includes/cron/expiration.php','Check for expiration of sponsored items','Marks expired sponsored items');
+('20 * * * * includes/cron/sponsored-expiration.php','Check for expiration of sponsored items','Marks expired sponsored items'),
+('0 0 * * * includes/cron/featured-expiration.php','Check for expiration of featured items','Marks expired featured items');
 
 INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`length`,`order`,`editable`,`required`,`extra_actions`,`searchable`) VALUES
 ('email','members',1,'text',250,4,0,1,'if ($_POST[$fieldName])\r\n{\r\n	if (!iaValidate::isEmail($_POST[$fieldName]))\r\n	{\r\n		$error = true;\r\n		$messages[] = iaLanguage::get(''error_email_incorrect'');\r\n		$invalidFields[] = $fieldName;\r\n	}\r\n	else\r\n	{\r\n		$_POST[$fieldName] = strtolower($_POST[$fieldName]);\r\n	}\r\n}',0),
