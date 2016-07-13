@@ -131,6 +131,8 @@ class iaTransaction extends abstractCore
 
 					$this->_sendEmailNotification($transaction);
 					empty($transaction['member_id']) || $this->_createInvoice($transaction);
+
+					$this->iaCore->factory('plan')->setPaid($transaction);
 				}
 			}
 		}

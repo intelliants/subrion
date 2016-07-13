@@ -197,12 +197,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 								// update transaction record
 								$iaTransaction->update($transaction, $transaction['id']);
 
-								// process item specific post-processing actions
-								if (iaTransaction::PASSED == $transaction['status'])
-								{
-									$iaPlan->setPaid($transaction);
-								}
-
 								// disable debug display
 								$iaView->set('nodebug', true);
 
