@@ -294,10 +294,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					$plan = $iaPlan->getById($_POST['plan_id']);
 
-					$usergroup = $plan['usergroup'] ? $plan['usergroup'] : iaUsers::MEMBERSHIP_REGULAR;
-
-					$iaDb->update(array('id' => $memberId, 'usergroup_id' => $usergroup), 0, 0, iaUsers::getTable());
-
 					if ($plan['cost'] > 0)
 					{
 						$itemData['id'] = $memberId;
