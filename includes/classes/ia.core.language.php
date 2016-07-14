@@ -70,17 +70,15 @@ class iaLanguage
 		{
 			if (INTELLI_DEBUG && is_null($default))
 			{
-				$iaCore = iaCore::instance();
-				$cache = $iaCore->iaCache->get('nonexistent_phrases', 0, true);
+				$iaCache = iaCore::instance()->iaCache;
 
-				if (empty($cache))
-				{
-					$cache = array();
-				}
+				$cache = $iaCache->get('nonexistent_phrases', 0, true);
+				$cache || $cache = array();
+
 				if (!in_array($key, $cache))
 				{
 					$cache[] = $key;
-					$iaCore->iaCache->write('nonexistent_phrases', serialize($cache));
+					$iaCache->write('nonexistent_phrases', serialize($cache));
 				}
 
 				iaDebug::debug($key, 'Phrases do not exist', 'error');

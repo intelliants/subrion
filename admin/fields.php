@@ -425,10 +425,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					break;
 
 				case iaField::TREE:
-
-					$parsedTree = $this->_parseTreeNodes(iaUtil::checkPostParam('nodes'));
-					$entry['values'] = $parsedTree[0];
-					$entry['tree_nodes'] = $parsedTree[1];
+					list($entry['values'], $entry['tree_nodes']) = $this->_parseTreeNodes(iaUtil::checkPostParam('nodes'));
 
 					$entry['timepicker'] = (int)iaUtil::checkPostParam('multiple');
 			}
@@ -696,34 +693,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		elseif (iaField::TREE == $fieldData['type'])
 		{
-			$iaDb->setTable('fields_tree_nodes');
-
-			$iaDb->delete('`field` = :name && `item` = :item', null, array('name' => $field['name'], 'item' => $field['item']));
-			if ($fieldData['tree_nodes'])
-			{
-				foreach ($fieldData['tree_nodes'] as $node)
-				{
-					// insert default language
-					$key = sprintf(self::TREE_NODE_TITLE, $field['item'], $field['name'], $node['node_id']);
-
-					foreach ($this->_iaCore->languages as $code => $language)
-					{
-						$this->_iaDb->exists('`key` = :key AND `code` = :code', array('key' => $key, 'code' => $code), iaLanguage::getTable())
-							|| iaLanguage::addPhrase($key, $node['text'], $code, $field['extras']);
-					}
-
-					unset($node['text']);
-					//
-
-					$node['field'] = $field['name'];
-					$node['item'] = $field['item'];
-					$node['extras'] = $field['extras'];
-
-					$iaDb->insert($node);
-				}
-			}
-			$iaDb->resetTable();
-
+			$this->_saveTreeNodes($fieldData['tree_nodes'], $field);
 			unset($fieldData['tree_nodes']);
 		}
 		unset($fieldData['keys']);
@@ -815,8 +785,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if (in_array($fieldData['type'], array(iaField::TEXT, iaField::COMBO, iaField::RADIO, iaField::CHECKBOX)))
 			{
-				$sql = "ALTER TABLE `{$this->_iaDb->prefix}{$tableName}` ";
-				$sql .= "CHANGE `{$field['name']}` `{$field['name']}` ";
+				$sql = sprintf('ALTER TABLE `%s%s` CHANGE `%s` `%s`', $this->_iaDb->prefix, $tableName,
+					$field['name'], $field['name']);
 
 				switch ($fieldData['type'])
 				{
@@ -831,15 +801,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 							$sql .= $fieldData['type'] == iaField::CHECKBOX ? 'SET' : 'ENUM';
 							$sql .= "('" . implode("','", $values) . "')";
-
-							if (!empty($fieldData['default']))
-							{
-								$sql .= " DEFAULT '{$fieldData['default']}' ";
-							}
+							$fieldData['default'] && $sql.= " DEFAULT '{$fieldData['default']}' ";
 						}
-						break;
 				}
+
 				$sql.= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
+
 				$iaDb->query($sql);
 			}
 		}
@@ -997,7 +964,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			$iaView->title($title);
 		}
 	}
-
 
 	public function setParents($fieldName, array $parents)
 	{
@@ -1286,9 +1252,46 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		foreach ($unpackedNodes as &$node)
 		{
-			$node['text'] = iaLanguage::get(sprintf(self::TREE_NODE_TITLE, $itemName, $fieldName, $node['id']));
+			$node['text'] = iaLanguage::get(sprintf(self::TREE_NODE_TITLE, $itemName, $fieldName, $node['id']), $node['text']);
 		}
 
 		return iaUtil::jsonEncode($unpackedNodes);
+	}
+
+	protected function _saveTreeNodes($nodes, array $field)
+	{
+		$this->_iaDb->setTable('fields_tree_nodes');
+
+		$this->_iaDb->delete('`field` = :name && `item` = :item', null, array('name' => $field['name'], 'item' => $field['item']));
+		$this->_iaDb->delete('`key` LIKE :key', iaLanguage::getTable(), array('key' => 'field_' . $field['item'] . '_' . $field['name'] . '_%'));
+
+		if ($nodes)
+		{
+			foreach ($nodes as $node)
+			{
+				$caption = $node['text'];
+				unset($node['text']);
+
+				$node['field'] = $field['name'];
+				$node['item'] = $field['item'];
+				$node['extras'] = $field['extras'];
+
+				if ($this->_iaDb->insert($node))
+				{
+					$key = sprintf(self::TREE_NODE_TITLE, $field['item'], $field['name'], $node['node_id']);
+					$this->_addPhrase($key, $caption, $field['extras']);
+				}
+			}
+		}
+
+		$this->_iaDb->resetTable();
+	}
+
+	protected function _addPhrase($key, $value, $extras = '')
+	{
+		foreach ($this->_iaCore->languages as $code => $language)
+		{
+			iaLanguage::addPhrase($key, $value, $code, $extras);
+		}
 	}
 }
