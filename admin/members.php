@@ -52,6 +52,21 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_userGroups = $iaUsers->getUsergroups();
 	}
 
+	protected function _indexPage(&$iaView)
+	{
+		if (2 == count($this->_iaCore->requestPath) && 'login' == $this->_iaCore->requestPath[0])
+		{
+			$this->getHelper()->clearIdentity();
+			$this->getHelper()->getAuth($this->_iaCore->requestPath[1]);
+			$this->_iaCore->factory('utils');
+			iaUtil::go_to(IA_URL);
+
+			return;
+		}
+
+		parent::_indexPage($iaView);
+	}
+
 	protected function _gridRead($params)
 	{
 		if (1 == count($this->_iaCore->requestPath) && 'registration-email' == $this->_iaCore->requestPath[0])
@@ -87,6 +102,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entry['usergroup'] = isset($this->_userGroups[$entry['usergroup_id']]) ? iaLanguage::get('usergroup_' . $this->_userGroups[$entry['usergroup_id']]) : '';
 			$entry['permissions'] = $entry['config'] = $entry['update'] = true;
 			$entry['delete'] = ($entry['id'] != $userId);
+			$entry['login'] = (iaCore::STATUS_ACTIVE == $entry['status']);
 		}
 	}
 
