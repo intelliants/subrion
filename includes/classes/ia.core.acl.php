@@ -238,7 +238,7 @@ class iaAcl extends abstractUtil
 
 			if (!isset($parentPagesMap[$object]))
 			{
-				$parentPagesMap[$object] = $this->iaCore->iaDb->keyvalue(array('name', 'parent'), null, $object . 's');
+				$parentPagesMap[$object] = $this->_getPagesParents($object);
 			}
 			if (!empty($parentPagesMap[$object][$objectId]))
 			{
@@ -249,8 +249,30 @@ class iaAcl extends abstractUtil
 		return $this->checkAccess($object . self::SEPARATOR . $action, $objectId);
 	}
 
+	private function _getPagesParents($side)
+	{
+		$rows = $this->iaCore->iaDb->keyvalue(array('name', 'parent'), null, $side . 's');
+
+		function recursiveFindFirstParent($rows, $page)
+		{
+			while(true)
+			{
+				if (!$rows[$page]) return $page;
+				$page = $rows[$page];
+			}
+		}
+
+		// here we do shift the parents to the very first parent
+		foreach ($rows as $name => &$parent)
+		{
+			empty($parent) || $parent = recursiveFindFirstParent($rows, $parent);
+		}
+
+		return $rows;
+	}
+
 	/**
-	 * Return last step, when access granted, for debug
+	 * Return latest step when access has been granted
 	 * @return string
 	 */
 	public function getLastStep()
