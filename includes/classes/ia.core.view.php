@@ -348,6 +348,8 @@ class iaView extends abstractUtil
 				$menuEntry['items'] = $configGroups['common'];
 			}
 
+			$duplicates = array();
+
 			foreach ($group['items'] as $item)
 			{
 				if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE . iaAcl::SEPARATOR . iaCore::ACTION_READ, $item['name']))
@@ -366,10 +368,11 @@ class iaView extends abstractUtil
 					{
 						$data['attr'] = $item['attr'];
 					}
-					if ($item['type'] != iaItem::TYPE_PACKAGE
-						&& isset($item['config']) && $item['config'])
+					if ($item['type'] != iaItem::TYPE_PACKAGE && !empty($item['config'])
+						&& !in_array($item['config'], $duplicates))
 					{
 						$data['config'] = $item['config'];
+						$duplicates[] = $item['config'];
 					}
 					if ('templates' == $item['name'] && isset($configGroups['template'])) // custom processing for template configuration
 					{
