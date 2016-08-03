@@ -256,6 +256,14 @@ CREATE TABLE `{install:prefix}fields_groups` (
 	UNIQUE KEY `UNIQUE` (`name`,`item`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}fields_image_types`;
+CREATE TABLE `{install:prefix}fields_image_types` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `field_id` int(11) NOT NULL,
+  `image_type_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}fields_pages`;
 CREATE TABLE `{install:prefix}fields_pages` (
 	`id` mediumint(7) unsigned NOT NULL auto_increment,
@@ -292,6 +300,16 @@ CREATE TABLE `{install:prefix}fields_tree_nodes` (
 	KEY `ITEMNAME` (`item`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}file_types`;
+CREATE TABLE `{install:prefix}file_types` (
+	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`extension` varchar(10) NOT NULL DEFAULT '',
+	`maxsize` int(11) NOT NULL DEFAULT '0',
+	`image` tinyint(4) DEFAULT '0',
+	PRIMARY KEY (`id`),
+	KEY `extension` (`extension`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}hooks`;
 CREATE TABLE `{install:prefix}hooks` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
@@ -307,6 +325,18 @@ CREATE TABLE `{install:prefix}hooks` (
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `UNIQUE` (`name`,`extras`),
 	KEY `STATUS` (`status`)
+) {install:db_options};
+
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}image_types`;
+CREATE TABLE `{install:prefix}image_types` (
+	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`name` varchar(50) NOT NULL,
+	`width` int(11) NOT NULL,
+	`height` int(11) NOT NULL,
+	`resize_mode` enum('crop','fit') NOT NULL DEFAULT 'crop',
+	`cropper` tinyint(1) NOT NULL DEFAULT '0',
+	`filetypes` text NOT NULL,
+	UNIQUE KEY `id` (`id`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}invoices`;
@@ -729,6 +759,8 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('field_add','fields/add/','plus-alt','','fields,members_fields','add_field','regular',2),
 ('field_groups_list','fieldgroups/','list-2','','fieldgroups,members_fields','Field Groups','regular',3),
 ('field_groups_add','fieldgroups/add/','folder-plus','','fieldgroups,members_fields','Add Field Group','regular',4),
+('image_types_list','image-types/','list','','imagetypes:edit','image_types','regular',1),
+('image_types_add','image-types/add/','plus-alt','','imagetypes','add_image_field','regular',2),
 ('invoice_add','invoices/add/','plus-alt','','invoices,invoices:edit','Add Invoice','regular',1),
 ('languages_list','languages/','list','','languages','view','regular',1),
 ('language_add','languages/add/','copy','','languages','new_language','regular',2),
@@ -776,10 +808,12 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`fil
 (2,'menus','read','','menus','menus/','menu',null,10),
 (2,'blocks','read','','blocks','blocks/','menu',null,15),
 (2,'phrases','read','','languages','languages/phrases/','menu',null,20),
+(2,'uploads','read','','uploads','uploads/','menu',null,25),
 (2,'','','','','','menu','ctnt_ext',25),
 (2,'fieldgroups','read','','fieldgroups','fieldgroups/','menu',null,30),
 (2,'fields','read','','fields','fields/','menu',null,35),
-(2,'','','','','','menu','ctnt_xtns',40),
+(2,'imagetypes','read','','image-types','image-types/','menu',null,40),
+(2,'','','','','','menu','ctnt_xtns',45),
 
 -- MEMBERS
 (3,'members','read','','members','members/','menu',null,5),
@@ -914,8 +948,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('miscellaneous','opengraph_description','','','textarea',0,'OG default description',2,'',0,1,''),
 ('miscellaneous','opengraph_image','','','image',0,'OG default image',3,'',0,0,''),
 ('miscellaneous','','CKeditor','','divider',0,'CKeditor',4,'',1,1,''),
-('miscellaneous','ckeditor_color','#B0E0E6','','text',0,'Color',5,'',0,1,''),
-('miscellaneous','ckeditor_code_highlighting','0','''1'',''0''','radio',0,'Code highlighting',6,'',0,1,''),
+('miscellaneous','ckeditor_skin','bootstrapck','''bootstrapck'',''icy_orange'',''moono''','select',0,'Skin',5,'',0,1,''),
 ('miscellaneous','ckeditor_mobile','0','''1'',''0''','radio',0,'Enable on mobile devices',7,'',0,1,''),
 ('miscellaneous','','Captcha','','divider',0,'Captcha',8,'',1,1,''),
 ('miscellaneous','captcha','1','''1'',''0''','radio',0,'Captcha',9,'',0,1,''),
@@ -1065,9 +1098,38 @@ INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`,`extras`) VAL
 ('view_member',10,'core'),
 ('view_member',11,'core');
 
+INSERT INTO `{install:prefix}file_types` (`id`, `extension`, `maxsize`, `image`) VALUES
+(1, 'swf', 0, 0),
+(2, 'wav', 0, 0),
+(3, 'mov', 0, 0),
+(5, 'mpeg', 0, 0),
+(6, 'mpg', 0, 0),
+(7, 'mp3', 0, 0),
+(8, 'png', 0, 1),
+(9, 'jpg', 0, 1),
+(10, 'gif', 0, 1),
+(11, 'jpeg', 0, 1),
+(12, 'ico', 0, 0),
+(13, 'htm', 0, 0),
+(14, 'html', 0, 0),
+(15, 'txt', 0, 0),
+(16, 'pdf', 0, 0),
+(17, 'rtf', 0, 0),
+(18, 'zip', 0, 0),
+(19, 'gz', 0, 0),
+(20, 'tar', 0, 0),
+(21, 'rar', 0, 0),
+(22, 'bz', 0, 0),
+(23, 'bz2', 0, 0),
+(24, 'doc', 0, 0),
+(25, 'docx', 0, 0),
+(26, 'xls', 0, 0),
+(27, 'xlsx', 0, 0),
+(28, 'ppt', 0, 0),
+(29, 'pptx', 0, 0);
+
 INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`) VALUES
 ('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/opengraph.tpl'),
-('smartyAdminAfterHeadSection','{if $core.config.ckeditor_code_highlighting}\r\n	{ia_print_js files=''utils/syntaxhighlighter/js/core-min''}\r\n	{ia_print_css files=''_IA_URL_js/utils/syntaxhighlighter/css/shCore-min,_IA_URL_js/utils/syntaxhighlighter/css/shCoreDefault-min,_IA_URL_js/utils/syntaxhighlighter/css/shThemeDefault-min''}\r\n\r\n	{ia_add_js}\r\n		SyntaxHighlighter.autoloader(\r\n			[''applescript'',''js/utils/syntaxhighlighter/js/shBrushAppleScript-min.js''],\r\n			[''actionscript3 as3'',''js/utils/syntaxhighlighter/js/shBrushAS3-min.js''],\r\n			[''bash shell'',''js/utils/syntaxhighlighter/js/shBrushBash-min.js''],\r\n			[''coldfusion cf'',''js/utils/syntaxhighlighter/js/shBrushColdFusion-min.js''],\r\n			[''c# c-sharp csharp'',''js/utils/syntaxhighlighter/js/shBrushCSharp-min.js''],\r\n			[''cpp c'',''js/utils/syntaxhighlighter/js/shBrushCpp-min.js''],\r\n			[''css'',''js/utils/syntaxhighlighter/js/shBrushCss-min.js''],\r\n			[''java'',''js/utils/syntaxhighlighter/js/shBrushJava-min.js''],\r\n			[''js jscript javascript'',''js/utils/syntaxhighlighter/js/shBrushJScript-min.js''],\r\n			[''objective-c objc cocoa'',''js/utils/syntaxhighlighter/js/shBrushObjC-min.js''],\r\n			[''perl pl'',''js/utils/syntaxhighlighter/js/shBrushPerl-min.js''],\r\n			[''php'',''js/utils/syntaxhighlighter/js/shBrushPhp-min.js''],\r\n			[''text plain'',''js/utils/syntaxhighlighter/js/shBrushPlain-min.js''],\r\n			[''py python'',''js/utils/syntaxhighlighter/js/shBrushPython-min.js''],\r\n			[''rails ror ruby'',''js/utils/syntaxhighlighter/js/shBrushRuby-min.js''],\r\n			[''sql'',''js/utils/syntaxhighlighter/js/shBrushSql-min.js''],\r\n			[''vb vbnet'',''js/utils/syntaxhighlighter/js/shBrushVb-min.js''],\r\n			[''xml xhtml xslt html'',''js/utils/syntaxhighlighter/js/shBrushXml-min.js'']\r\n		);\r\n\r\n		SyntaxHighlighter.defaults[''auto-links''] = false;\r\n		SyntaxHighlighter.defaults[''toolbar''] = false;\r\n\r\n		SyntaxHighlighter.all();\r\n	{/ia_add_js}\r\n{/if}','active',2,'smarty','admin',''),
 ('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''] . '' ('' . $ownerInfo[''email''] . '')'';\r\n		}\r\n	}\r\n}','active',5,'php','admin',''),
 ('smartyFrontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl');
 
@@ -2319,6 +2381,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_email_templates','E-mail Templates','admin'),
 ('page_title_fields','Fields','admin'),
 ('page_title_fieldgroups','Field Groups','admin'),
+('page_title_imagetypes','Image Types','admin'),
 ('page_title_hooks','Hooks','admin'),
 ('page_title_index','Dashboard','admin'),
 ('page_title_invoices','Invoices','admin'),
@@ -2337,6 +2400,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_subscriptions','Subscriptions','admin'),
 ('page_title_templates','Templates','admin'),
 ('page_title_transactions','Transactions','admin'),
+('page_title_uploads','Uploads','admin'),
 ('page_title_usergroups','Usergroups','admin'),
 ('page_title_permissions','Permissions','admin'),
 
