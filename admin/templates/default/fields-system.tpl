@@ -165,10 +165,10 @@ $(function()
 		{
 			$.ajax(
 			{
-				url: intelli.config.ia_url + 'members.json',
+				url: intelli.config.ia_url + 'actions.json',
 				type: 'get',
 				dataType: 'json',
-				data: { q: query },
+				data: { q: query, action: 'assign-owner' },
 				success: function(response) {
 					objects = items = [];
 					$.each(response, function(i, object) {
@@ -183,6 +183,9 @@ $(function()
 		updater: function(item) {
 			$('#member-id').val(items[item].id);
 				return item;
+		},
+		matcher: function(item) {
+			return true;
 		}
 	});
 });
