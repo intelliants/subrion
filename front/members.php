@@ -29,27 +29,6 @@ if (!$iaCore->get('members_enabled'))
 	return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 }
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
-{
-	if (isset($_GET['q']) && $_GET['q'])
-	{
-		$stmt = '(`username` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
-		$iaDb->bind($stmt, array('name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE));
-
-		$sql = 'SELECT `id`, CONCAT (`fullname`, \' (\',`email`, \')\') `fullname` ' .
-			'FROM :table_members ' .
-			'WHERE :conditions ' .
-			'LIMIT 0, 20';
-		$sql = iaDb::printf($sql, array(
-			'table_members' => iaUsers::getTable(true),
-			'conditions' => $stmt,
-		));
-		$output = $iaDb->getAll($sql);
-
-		$iaView->assign($output);
-	}
-}
-
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	$iaUsers = $iaCore->factory('users');

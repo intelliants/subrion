@@ -332,5 +332,31 @@ if (isset($_GET) && isset($_GET['action']))
 
 				die($output);
 			}
+			break;
+
+		case 'assign-owner':
+
+			if (iaView::REQUEST_JSON == $iaView->getRequestType())
+			{
+				if (isset($_GET['q']) && $_GET['q'])
+				{
+					$stmt = '(`username` LIKE :name OR `email` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
+					$iaDb->bind($stmt, array('name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE));
+
+					$sql = 'SELECT `id`, CONCAT (`fullname`, \' (\',`email`, \')\') `fullname` ' .
+						'FROM :table_members ' .
+						'WHERE :conditions ' .
+						'LIMIT 0, 20';
+					$sql = iaDb::printf($sql, array(
+						'table_members' => iaUsers::getTable(true),
+						'conditions' => $stmt,
+					));
+					$output = $iaDb->getAll($sql);
+
+					$iaView->assign($output);
+				}
+			}
+
+			break;
 	}
 }
