@@ -5,11 +5,11 @@
 
 CKEDITOR.editorConfig = function(config)
 {
-	config.allowedContent = true;
 	config.language = 'en';
+	config.skin = intelli.config.ckeditor_skin || 'bootstrapck';
 	config.filebrowserImageUploadUrl = intelli.config.ia_url + 'actions/?action=ckeditor_upload&Type=Image';
-	config.extraPlugins = 'mediaembed';
-	config.skin = 'bootstrapck';
+	config.allowedContent = true;
+	config.extraPlugins = 'embed,autoembed';
 	config.extraAllowedContent = 'a[rel]';
 	CKEDITOR.dtd.$removeEmpty['span'] = false;
 
@@ -18,16 +18,11 @@ CKEDITOR.editorConfig = function(config)
 		config.contentsCss = intelli.config.baseurl + 'templates/' + intelli.config.tmpl + '/css/' + intelli.config.ckeditor_css;
 	}
 
-	if (1 == intelli.config.ckeditor_code_highlighting)
-	{
-		config.extraPlugins += ',syntaxhighlight';
-	}
-
 	config.toolbar_extended = [
 		['Source', '-', 'Maximize'],
 		['Cut', 'Copy', 'Paste','PasteText','PasteFromWord','-','Undo','Redo'],
 		['Link','Unlink'],
-		['Image','MediaEmbed','Table','HorizontalRule','SpecialChar'],
+		['Image','MediaEmbed','CodeSnippet','Table','HorizontalRule','SpecialChar'],
 		['Form','Checkbox','Radio','TextField','Textarea','Select','Button','ImageButton','HiddenField'],
 		'/',
 		['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
@@ -46,15 +41,16 @@ CKEDITOR.editorConfig = function(config)
 		['Link','Unlink'],
 		['Styles','Format','Font','FontSize'],
 		['TextColor','BGColor'],
-		['Image','MediaEmbed','Table','HorizontalRule','SpecialChar']
+		['Image','MediaEmbed','CodeSnippet', 'Table','HorizontalRule','SpecialChar']
 	];
 
 	config.toolbar_simple = [
+		['Maximize'],
 		['Cut', 'Copy', 'Paste','PasteText','PasteFromWord'],
 		['Bold','Italic','Underline','Strike'],
 		['TextColor','BGColor'],
 		['Link','Unlink'],
-		['Image','MediaEmbed','Code']
+		['Image','MediaEmbed']
 	];
 
 	if (typeof intelli.admin == 'undefined')
@@ -64,14 +60,10 @@ CKEDITOR.editorConfig = function(config)
 	else
 	{
 		config.toolbar = 'dashboard';
-		config.extraPlugins += ',codemirror';
 		config.protectedSource.push(/<ins[\s|\S]+?<\/ins>/g); // Protects <INS> tags
 
-		if (typeof intelli.config['elfinder_ckeditor_integration'] !== 'undefined' && 1 == intelli.config.elfinder_ckeditor_integration)
-		{
-			config.filebrowserBrowseUrl = intelli.config.admin_url + '/elfinder/?mode=file';
-			config.filebrowserImageBrowseUrl = intelli.config.admin_url + '/elfinder/?mode=image';
-			config.filebrowserFlashBrowseUrl = intelli.config.admin_url + '/elfinder/?mode=flash';
-		}
+		config.filebrowserBrowseUrl = intelli.config.admin_url + '/uploads/?mode=file';
+		config.filebrowserImageBrowseUrl = intelli.config.admin_url + '/uploads/?mode=image';
+		config.filebrowserFlashBrowseUrl = intelli.config.admin_url + '/uploads/?mode=flash';
 	}
 };

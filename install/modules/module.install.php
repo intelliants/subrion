@@ -40,7 +40,7 @@ $iaOutput->steps = array(
 $error = false;
 $message = '';
 
-$builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog', 'elfinder');
+$builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog');
 
 switch ($step)
 {
