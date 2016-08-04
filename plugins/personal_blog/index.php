@@ -275,7 +275,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			$pageActions[] = array(
 				'icon' => 'rss',
-				'title' => null,
+				'title' => iaLanguage::get('rss'),
 				'url' => IA_URL . 'blog.xml',
 				'classes' => 'btn-warning'
 			);
