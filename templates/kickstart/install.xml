@@ -19,6 +19,7 @@
 		<position>bottom</position>
 		<position>verybottom</position>
 		<position>copyright</position>
+		<position>landing</position>
 
 		<section name="content">
 			<position fixed="1">left</position>
@@ -45,13 +46,6 @@
 		    description="Max number of items in Main Menu"
 		    order="3002">6</config>
 
-	<config group="template_kickstart"
-		    name="enable_landing" 
-		    type="radio"
-		    order="3003" 
-		    values="1,0" 
-		    description="Enable landing page">0</config>
-
 	<config group="template_kickstart" 
 		    name="website_bg" 
 		    type="image" 
@@ -73,36 +67,68 @@
 
 	<config group="template_kickstart" 
 		    type="divider"
-		    order="3030">Social links</config>
+		    order="3100">Layout</config>
+
+	<config group="template_kickstart"
+			name="search_inventory"
+		    type="radio" 
+		    order="3101"
+		    values="1,0" 
+		    description="Show search in inventory">0</config>
+
+	<config group="template_kickstart"
+			name="navbar_sticky"
+		    type="radio" 
+		    order="3102"
+		    values="1,0" 
+		    description="Sticky navbar">1</config>
+
+	<config group="template_kickstart"
+			name="search_navbar"
+		    type="radio" 
+		    order="3103"
+		    values="1,0" 
+		    description="Show search in navbar">1</config>
+
+	<config group="template_kickstart"
+		    name="enable_landing" 
+		    type="radio"
+		    order="3104" 
+		    values="1,0" 
+		    description="Enable landing page">1</config>
+
+	<config group="template_kickstart" 
+		    type="divider"
+		    order="3200">Social links</config>
 	
 	<config group="template_kickstart"
 			name="website_social"
 		    type="radio" 
-		    order="3031"
+		    order="3201"
 		    values="1,0" 
 		    description="Show links">1</config>
 	<config group="template_kickstart"
 			name="website_social_t"
 		    type="text"
-		    order="3032"
+		    order="3202"
 		    show="website_social|1" 
 		    description="Twitter Link">https://twitter.com/IntelliantsLLC</config>
 	<config group="template_kickstart"
 			name="website_social_f"
 		    type="text" 
-		    order="3033" 
+		    order="3203" 
 		    show="website_social|1" 
 		    description="Facebook Link">https://www.facebook.com/Intelliants</config>
 	<config group="template_kickstart"
 			name="website_social_g"
 		    type="text" 
-		    order="3034" 
+		    order="3204" 
 		    show="website_social|1" 
 		    description="Google+ Link">https://plus.google.com/102500660503219569194/posts</config>
 	<config group="template_kickstart"
 			name="website_social_i"
 		    type="text" 
-		    order="3035" 
+		    order="3205" 
 		    show="website_social|1" 
 		    description="LinkedIn Link">#</config>
 
@@ -110,10 +136,12 @@
 		    name="ckeditor_css" 
 		    type="hidden" 
 		    description="CKEditor CSS"
-		    order="3099">ckeditor.css</config>
+		    order="3500">ckeditor.css</config>
 
 	<changeset>
 		<menu position="account" status="active">account</menu>
+
+		<block status="active" classname="section section-blog" position="landing" order="202">blogroll</block>
 
 		<block status="active" classname="box--border">common_statistics</block>
 		<block status="active" classname="box--border">filters</block>
@@ -136,23 +164,107 @@
 </div>
 			]]>
 		</block>
-		
-		<block name="verytop" 
-			   title="Call to action" 
-			   position="verytop" 
+		<block name="landing_who_we_are" 
+			   title="Who we are" 
+			   position="landing" 
 			   header="1"
 			   collapsible="0" 
 			   sticky="0" 
 			   pages="index"
 			   status="active"
-			   type="html">
+			   type="html"
+			   classname="section section-who"
+			   order="200">
+			<![CDATA[
+<div class="text-center">
+	<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur ea magnam dignissimos suscipit ut ad, dolorum animi, illum facere, odio sint! Quae aspernatur expedita atque alias vitae. Soluta doloribus, quidem.</p>
+	<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+	<a class="btn btn-primary text-uppercase m-t" href="#">Learn more</a>
+</div>
+			]]>
+		</block>
+		<block name="landing_features" 
+			   title="Features" 
+			   position="landing" 
+			   header="1"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active"
+			   type="html"
+			   classname="section section-features"
+			   order="201">
 			<![CDATA[
 <div class="row">
-	<div class="col-md-8">
-		<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block. You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
+	<div class="col-sm-6">
+		<div class="b-feature b-feature--right">
+			<div class="b-feature__img">
+				<span class="fa fa-hand-peace-o"></span>
+			</div>
+			<div class="b-feature__body">
+				<h3>Free & open source</h3>
+				<p>You don't need to pay a single penny to start using Subrion CMS. It's not encrypted in any way so you can customize it per your needs.</p>
+			</div>
+		</div>
 	</div>
-	<div class="col-md-4">
-		<p class="text-right"><a class="btn btn-lg btn-warning-outline" href="#">Learn more</a></p>
+	<div class="col-sm-6">
+		<div class="b-feature">
+			<div class="b-feature__img">
+				<span class="fa fa-rocket"></span>
+			</div>
+			<div class="b-feature__body">
+				<h3>Extremely easy to extend</h3>
+				<p>Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-6">
+		<div class="b-feature b-feature--right">
+			<div class="b-feature__img">
+				<span class="fa fa-cloud-download"></span>
+			</div>
+			<div class="b-feature__body">
+				<h3>Templates and plugins</h3>
+				<p>No need to search. Plugins and templates are available straight from your admin dashboard with one click installation process.</p>
+			</div>
+		</div>
+	</div>
+	<div class="col-sm-6">
+		<div class="b-feature">
+			<div class="b-feature__img">
+				<span class="fa fa-cogs"></span>
+			</div>
+			<div class="b-feature__body">
+				<h3>Powerful admin dashboard</h3>
+				<p>It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-6">
+		<div class="b-feature b-feature--right">
+			<div class="b-feature__img">
+				<span class="fa fa-edit"></span>
+			</div>
+			<div class="b-feature__body">
+				<h3>Blog in the box</h3>
+				<p>Bring your online presence to a whole new level with the extensive blog functionality that comes in the version by default.</p>
+			</div>
+		</div>
+	</div>
+	<div class="col-sm-6">
+		<div class="b-feature">
+			<div class="b-feature__img">
+				<span class="fa fa-flag"></span>
+			</div>
+			<div class="b-feature__body">
+				<h3>Multilingual CMS</h3>
+				<p>Use ready translation or translate the system into your language. It provides all the functionality to become a multilingual solution.</p>
+			</div>
+		</div>
 	</div>
 </div>
 			]]>
@@ -212,6 +324,11 @@
 			<![CDATA[
 <p>Subrion is a free open source content management system
 that allows you to build websites for any purpose. Yes, from blog to corporate mega portal.</p>
+<ul class="list-unstyled hidden">
+	<li><span class="fa fa-phone"></span> 1-677-124-44227</li>
+	<li><span class="fa fa-map-pin"></span> 437 S Olive St, Los Angeles</li>
+	<li><span class="fa fa-clock-o"></span> Mon - Sat 8.00 - 18.00h</li>
+</ul>
 			]]>
 		</block>
 		<block name="footer2" 
@@ -256,6 +373,5 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 		<phrase category="frontend" key="login">Log in</phrase>
 		<phrase category="frontend" key="register">Sign up</phrase>
 		<phrase category="frontend" key="back_to_top">Back to top</phrase>
-		<phrase category="frontend" key="share_your_love">Share your love</phrase>
 	</phrases>
 </template>
