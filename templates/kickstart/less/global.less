@@ -41,11 +41,15 @@ body {
 
 
 //
-// Content
+// Breadcrumbs
 // --------------------------------------------------
 
 .breadcrumbs {
-  background: #f2f2f2;
+  background: #f6f6f6;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding-top: 15px;
+  padding-bottom: 15px;
 
   .breadcrumb {
     float: left;
@@ -54,8 +58,30 @@ body {
   .action-buttons {
     float: right;
     margin-top: 7px;
+    position: relative;
+  }
+
+  @media (max-width: @grid-float-breakpoint) {
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    .breadcrumb {
+      float: none;
+      padding-top: 0;
+    }
+
+    .action-buttons {
+      float: none;
+      margin-top: 0;
+    }
   }
 }
+
+
+
+//
+// Content
+// --------------------------------------------------
 
 .page-header {
   margin-top: 0;
@@ -63,7 +89,7 @@ body {
 
 .verytop {
   background: #f2f2f2;
-  padding: @vertical-rhythm*2 0;
+  padding: @vertical-rhythm 0;
 }
 
 .content {
@@ -110,6 +136,10 @@ body {
     + .box {
       margin-top: @vertical-rhythm*2;
     }
+  }
+
+  @media (max-width: @grid-float-breakpoint) {
+    padding: @vertical-rhythm 0;
   }
 }
 

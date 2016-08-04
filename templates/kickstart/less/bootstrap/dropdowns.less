@@ -42,10 +42,10 @@
   font-size: @font-size-base;
   text-align: left; // Ensures proper alignment if parent has it changed (e.g., modal footer)
   background-color: @dropdown-bg;
-  border: 1px solid @dropdown-fallback-border; // IE8 fallback
-  border: 1px solid @dropdown-border;
-  border-radius: @border-radius-base;
-  .box-shadow(0 6px 12px rgba(0,0,0,.175));
+  // border: 1px solid @dropdown-fallback-border; // IE8 fallback
+  // border: 1px solid @dropdown-border;
+  border-radius: @dropdown-border-radius;
+  .box-shadow(0 5px 50px rgba(0,0,0,.175));
   background-clip: padding-box;
 
   // Aligns the dropdown menu to right
@@ -64,7 +64,7 @@
   // Links within the dropdown menu
   > li > a {
     display: block;
-    padding: 3px 20px;
+    padding: 6px 20px;
     clear: both;
     font-weight: normal;
     line-height: @line-height-base;
@@ -223,6 +223,10 @@
 
 .dropdown-submenu {
     position: relative;
+
+    @media (max-width: @grid-float-breakpoint) {
+      padding-left: 15px;
+    }
 }
 
 .dropdown-submenu>.dropdown-menu {
@@ -230,9 +234,14 @@
     left: 100%;
     margin-top: -6px;
     margin-left: -1px;
-    -webkit-border-radius: 0 6px 6px 6px;
-    -moz-border-radius: 0 6px 6px;
-    border-radius: 0 6px 6px 6px;
+    // -webkit-border-radius: 0 6px 6px 6px;
+    // -moz-border-radius: 0 6px 6px;
+    // border-radius: 0 6px 6px 6px;
+
+    @media (max-width: @grid-float-breakpoint) {
+      display: block;
+      position: static;
+    }
 }
 
 .dropdown-submenu:hover>.dropdown-menu {
@@ -251,10 +260,14 @@
     border-left-color: #ccc;
     margin-top: 5px;
     margin-right: -10px;
+
+    @media (max-width: @grid-float-breakpoint) {
+      display: none;
+    }
 }
 
 .dropdown-submenu:hover>a:after {
-    border-left-color: #fff;
+    border-left-color: #aaa;
 }
 
 .dropdown-submenu.pull-left {
@@ -264,7 +277,7 @@
 .dropdown-submenu.pull-left>.dropdown-menu {
     left: -100%;
     margin-left: 10px;
-    -webkit-border-radius: 6px 0 6px 6px;
-    -moz-border-radius: 6px 0 6px 6px;
-    border-radius: 6px 0 6px 6px;
+    // -webkit-border-radius: 6px 0 6px 6px;
+    // -moz-border-radius: 6px 0 6px 6px;
+    // border-radius: 6px 0 6px 6px;
 }

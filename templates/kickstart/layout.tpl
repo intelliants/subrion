@@ -40,44 +40,68 @@
 	</head>
 
 	<body class="page-{$core.page.name}">
-		<header class="header"{if $core.config.website_bg} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.website_bg}');"{/if}>
-			<div class="inventory">
-				<div class="container">
-					{ia_blocks block='inventory'}
+		<div class="inventory">
+			<div class="container">
+				{if $core.config.website_social}
+					<ul class="nav-inventory nav-inventory-social pull-left hidden-xs">
+						{if $core.config.website_social_t}<li><a href="{$core.config.website_social_t}" class="twitter"><span class="fa fa-twitter"></span></a></li>{/if}
+						{if $core.config.website_social_f}<li><a href="{$core.config.website_social_f}" class="facebook"><span class="fa fa-facebook"></span></a></li>{/if}
+						{if $core.config.website_social_g}<li><a href="{$core.config.website_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a></li>{/if}
+						{if $core.config.website_social_i}<li><a href="{$core.config.website_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a></li>{/if}
+					</ul>
+				{/if}
+				{if $core.config.search_inventory}
+					<form method="post" action="{$smarty.const.IA_URL}search/" class="search-inventory pull-right">
+						<input type="text" name="q" placeholder="{lang key='search'}">
+						<button type="submit"><span class="fa fa-search"></span></button>
+					</form>
+				{/if}
+				{include 'language-selector.tpl'}
+				{ia_blocks block='inventory'}
+			</div>
+		</div>
+
+		<nav class="navbar navbar-default {if $core.config.navbar_sticky}navbar-sticky{/if}">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand{if !$core.config.enable_text_logo} navbar-brand--img{/if}" href="{$smarty.const.IA_URL}">
+						{if $core.config.enable_text_logo}
+							{$core.config.logo_text}
+						{else}
+							{if !empty($core.config.site_logo)}
+								<img src="{$core.page.nonProtocolUrl}uploads/{$core.config.site_logo}" alt="{$core.config.site}">
+							{else}
+								<img src="{$img}logo.png" alt="{$core.config.site}">
+							{/if}
+						{/if}
+					</a>
+				</div>
+
+				<div class="collapse navbar-collapse" id="navbar-collapse">
+					{if $core.config.search_navbar}
+						<form method="post" action="{$smarty.const.IA_URL}search/" class="search-navbar pull-right">
+							<button class="search-navbar__toggle js-search-navbar-toggle" type="button"><span class="fa fa-search"></span></button>
+							<div class="input-group">
+								<input type="text" name="q" class="form-control" placeholder="{lang key='search'}">
+								<div class="input-group-btn">
+									<button class="btn btn-primary" type="button">{lang key='search'}</span></button>
+								</div>
+							</div>
+						</form>
+					{/if}
+					{ia_blocks block='account'}
+					{ia_blocks block='mainmenu'}
 				</div>
 			</div>
-			<nav class="navbar navbar-default">
-				<div class="container">
-					<!-- Brand and toggle get grouped for better mobile display -->
-					<div class="navbar-header">
-						<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
-							<span class="sr-only">Toggle navigation</span>
-							<span class="icon-bar"></span>
-							<span class="icon-bar"></span>
-							<span class="icon-bar"></span>
-						</button>
-						<a class="navbar-brand{if !$core.config.enable_text_logo} navbar-brand--img{/if}" href="{$smarty.const.IA_URL}">
-							{if $core.config.enable_text_logo}
-								{$core.config.logo_text}
-							{else}
-								{if !empty($core.config.site_logo)}
-									<img src="{$core.page.nonProtocolUrl}uploads/{$core.config.site_logo}" alt="{$core.config.site}">
-								{else}
-									<img src="{$img}logo.png" alt="{$core.config.site}">
-								{/if}
-							{/if}
-						</a>
-					</div>
+		</nav>
 
-					<!-- Collect the nav links, forms, and other content for toggling -->
-					<div class="collapse navbar-collapse" id="navbar-collapse">
-						{include 'language-selector.tpl'}
-						{ia_blocks block='account'}
-						{ia_blocks block='mainmenu'}
-					</div>
-				</div>
-			</nav>
-
+		<header class="header"{if $core.config.website_bg} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.website_bg}');"{/if}>
 			{ia_blocks block='teaser'}
 		</header>
 
@@ -86,7 +110,9 @@
 		{include 'breadcrumb.tpl'}
 
 		{if $core.config.enable_landing && 'index' == $core.page.name}
-			{include 'page.index.tpl'}
+			<div class="landing">
+				{ia_blocks block='landing'}
+			</div>
 		{else}
 			{if isset($iaBlocks.verytop)}
 				<div class="verytop">
@@ -167,28 +193,24 @@
 			<div class="container">
 				{ia_hooker name='smartyFrontBeforeFooterLinks'}
 
-				<div class="row">
-					<div class="col-md-6">
-						{ia_blocks block='copyright'}
-						<p class="copyright">&copy; {$smarty.server.REQUEST_TIME|date_format:'%Y'} {lang key='powered_by_subrion'}</p>
-					</div>
-					<div class="col-md-6">
-						<a href="#" class="back-to-top js-back-to-top"><span class="fa fa-angle-up"></span> {lang key='back_to_top'}</a>
-						{if $core.config.website_social}
-							<div class="social">
-								<h4>{lang key='share_your_love'}</h4>
-								{if $core.config.website_social_t}<a href="{$core.config.website_social_t}" class="twitter"><span class="fa fa-twitter"></span></a>{/if}
-								{if $core.config.website_social_f}<a href="{$core.config.website_social_f}" class="facebook"><span class="fa fa-facebook"></span></a>{/if}
-								{if $core.config.website_social_g}<a href="{$core.config.website_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a>{/if}
-								{if $core.config.website_social_i}<a href="{$core.config.website_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a>{/if}
-							</div>
-						{/if}
-					</div>
-				</div>
+				{if $core.config.website_social}
+					<ul class="nav-footer nav-footer-social pull-left">
+						{if $core.config.website_social_t}<li><a href="{$core.config.website_social_t}" class="twitter"><span class="fa fa-twitter"></span></a></li>{/if}
+						{if $core.config.website_social_f}<li><a href="{$core.config.website_social_f}" class="facebook"><span class="fa fa-facebook"></span></a></li>{/if}
+						{if $core.config.website_social_g}<li><a href="{$core.config.website_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a></li>{/if}
+						{if $core.config.website_social_i}<li><a href="{$core.config.website_social_i}" class="linkedin"><span class="fa fa-linkedin"></span></a></li>{/if}
+					</ul>
+				{/if}
+
+				{ia_blocks block='copyright'}
+
+				<p class="text-footer pull-right">&copy; {$smarty.server.REQUEST_TIME|date_format:'%Y'} {lang key='powered_by_subrion'}</p>
 
 				{ia_hooker name='smartyFrontAfterFooterLinks'}
 			</div>
 		</footer>
+
+		<button class="back-to-top js-back-to-top"><span class="fa fa-angle-double-up"></span></button>
 
 		<!-- SYSTEM STUFF -->
 

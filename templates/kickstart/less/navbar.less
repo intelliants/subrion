@@ -1,198 +1,383 @@
-
 //
-// Navbar
+// Default navbar
 // --------------------------------------------------
 
-// Default navbar
-
 .navbar-default {
-  margin-bottom: 0;
+  margin: 0;
+  border-radius: 0;
   border: 0 none;
+  background-color: #fff;
+}
 
-  // toggle on mobile devices
+.navbar-sticky {
+  .transition(all .15s ease-in-out);
 
-  .navbar-toggle {
-    border-color: @navbar-default-color;
+  &.is-sticky {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    .box-shadow(0 1px 6px rgba(0,0,0,.18));
+  }
 
-    .icon-bar {
-      background-color: @navbar-default-color;
-    }
+  .navbar-collapse {
+    max-height: 320px;
 
-    &:hover,
-    &:focus {
-      border-color: fade(@navbar-default-color, 70%);
-      background-color: fade(@navbar-default-color, 30%);
-    }
   }
 }
 
-// brand/logo
+
+
+//
+// Brand
+// --------------------------------------------------
 
 .navbar-brand {
   text-shadow: none;
+  padding-top: 0;
+  padding-bottom: 0;
+  height: @navbar-height;
+  line-height: @navbar-height;
+  font-weight: bold;
+  color: @brand-dark !important;
 
-  &--img {
-    padding-top: 0;
-    padding-bottom: 0;
-    height: @navbar-height;
-    line-height: @navbar-height;
-
-    > img {
-      display: inline-block;
-      max-height: @navbar-height;
-    }
+  > img {
+    display: inline-block;
+    max-height: @navbar-height;
   }
 }
 
-// Actual nav menu
+
+
+//
+// Main navigation links
+// --------------------------------------------------
 
 .navbar-nav {
-
-  > li {
-
-    > a {
-      text-shadow: none;
-    }
-
-    &.dropdown {
-      position: relative;
-
-      @media (min-width: @grid-float-breakpoint) {
-        .clearfix();
-
-        > a {
-          float: left;
-          white-space: nowrap;
-        }
-      }
-    }
-  }
-
-  > .open > a,
-  > .active > a {
-    background-color: darken(@navbar-default-link-active-bg, 5%);
-  }
-
-  // special caret for dropdowns
-
-  &__drop {
-    color: #fff;
-    padding: 10px 20px;
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-
-    @media (min-width: @grid-float-breakpoint) {
-      float: right;
-      position: relative;
-      z-index: 20;
-      cursor: pointer;
-      color: @navbar-default-link-color;
-      line-height: @navbar-height;
-      margin-left: -@navbar-padding-horizontal;
-      padding: 0;
-
-      &:hover {
-        color: @navbar-default-link-hover-color;
-      }
-    }
-  }
-
-  @media (max-width: @grid-float-breakpoint) {
-    margin-top: 0;
-    margin-bottom: 0;
-
+  
+  // Uncollapsed state
+  @media (min-width: @grid-float-breakpoint) {
     > li {
-      
+
       > a {
-        border-bottom: 1px solid fade(#fff, 20%);
+        text-transform: uppercase;
+        font-weight: bold;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: @navbar-padding-vertical;
+        margin-bottom: @navbar-padding-vertical;
       }
-    }
-  }
-
-  @media (min-width: @grid-float-breakpoint) {
-    > li {
-
-      > .dropdown-menu {
-        margin-top: -15px;
-        .transition(all .15s ease-in-out);
-        .opacity(0);
-        display: block;
-        visibility: hidden;
-        left: 50%;
-        width: 200px;
-        margin-left: -100px;
-        border-color: #fff;
-        border-radius: 0;
-        .box-shadow(0 0 22px rgba(0,0,0,0.5));
-
-        &:before {
-          content: '';
-          display: inline-block;
-          border-left:   7px solid transparent;
-          border-right:  7px solid transparent;
-          border-bottom: 8px solid #fff;
-          border-bottom-color: #fff;
-          position: absolute;
-          top: -7px;
-          left: 50%;
-          margin-left: -4px;
-        }
-      }
-
-      &.open > .dropdown-menu {
-        .opacity(100);
-        margin-top: 0;
-        visibility: visible;
-      }
-    }
-  }
-}
-
-// Account nav
-
-@avatar-height: 30px;
-
-.nav-account {
-
-  img {
-    width: @avatar-height;
-    margin-right: 5px;
-  }
-
-  @media (min-width: @grid-float-breakpoint) {
-    > li > a {
-      line-height: @avatar-height;
-      padding-top: ((@navbar-height - @avatar-height) / 2);
-      padding-bottom: ((@navbar-height - @avatar-height) / 2);  
     }
   }
 
   @media (max-width: @grid-float-breakpoint) {
-    .navbar-nav__drop {
-      line-height: @avatar-height;
+    margin: 0 -15px;
+
+    li {
+
+      > a {
+        border-bottom: 1px solid #eee;
+      }
     }
   }
 }
 
-// Undo rounded corners in static and fixed navbars
 
-.navbar-static-top,
-.navbar-fixed-top,
-.navbar-fixed-bottom {
-  border-radius: 0;
-}
 
-// Fix active state of dropdown items in collapsed mode
+//
+// Search
+// --------------------------------------------------
 
-@media (max-width: @grid-float-breakpoint-max) {
-  .navbar .navbar-nav .open .dropdown-menu > .active > a {
-    &,
-    &:hover,
+.search-navbar {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  height: @navbar-height;
+
+  &.pull-right {
+    margin-left: 20px;
+    margin-right: -15px;
+  }
+
+  &__toggle {
+    line-height: @line-height-computed;
+    height: @line-height-computed;
+    width: @line-height-computed;
+    border: 0 none;
+    background: none;
+    padding: 0;
+    margin-top: @navbar-padding-vertical;
+    margin-bottom: @navbar-padding-vertical;
+    color: @navbar-default-link-color;
+    font-size: 20px;
+
     &:focus {
-      color: #fff;
-      #gradient > .vertical(@start-color: @dropdown-link-active-bg; @end-color: darken(@dropdown-link-active-bg, 5%));
+      outline: 0 none;
+    }
+
+    &:hover {
+      color: @navbar-default-link-hover-color;
     }
   }
+
+  .input-group {
+    position: absolute;
+    z-index: 1002;
+    width: 320px;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    padding: 10px;
+    margin-top: 1px;
+    opacity: 0;
+    visibility: hidden;
+    .transition(all .15s ease-in-out);
+
+    &.is-visible {
+      opacity: 1;
+      visibility: visible;
+      .box-shadow(0 1px 6px rgba(0,0,0,.18));
+    }
+  }
+
+  @media (max-width: @grid-float-breakpoint) {
+    height: auto;
+    
+    &.pull-right {
+      float: none !important;
+      margin-left: -15px;
+      margin-right: -15px;
+    }
+
+    &__toggle {
+      display: none;
+    }
+
+    .input-group {
+      position: static;
+      opacity: 1;
+      visibility: visible;
+      width: auto;
+      padding: 10px;
+      margin-top: 0;
+      background: #f6f6f6;
+    }
+
+  }
 }
+
+.search-navbar-backdrop {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+
+  .navbar & {
+    z-index: 999;
+  }
+}
+
+
+// //
+// // Navbar
+// // --------------------------------------------------
+
+// // Default navbar
+
+// .navbar-default {
+//   margin-bottom: 0;
+//   border: 0 none;
+
+//   // toggle on mobile devices
+
+//   .navbar-toggle {
+//     border-color: @navbar-default-color;
+
+//     .icon-bar {
+//       background-color: @navbar-default-color;
+//     }
+
+//     &:hover,
+//     &:focus {
+//       border-color: fade(@navbar-default-color, 70%);
+//       background-color: fade(@navbar-default-color, 30%);
+//     }
+//   }
+// }
+
+// // brand/logo
+
+// .navbar-brand {
+//   text-shadow: none;
+
+//   &--img {
+//     padding-top: 0;
+//     padding-bottom: 0;
+//     height: @navbar-height;
+//     line-height: @navbar-height;
+
+//     > img {
+//       display: inline-block;
+//       max-height: @navbar-height;
+//     }
+//   }
+// }
+
+// // Actual nav menu
+
+// .navbar-nav {
+
+//   > li {
+
+//     > a {
+//       text-shadow: none;
+//     }
+
+//     &.dropdown {
+//       position: relative;
+
+//       @media (min-width: @grid-float-breakpoint) {
+//         .clearfix();
+
+//         > a {
+//           float: left;
+//           white-space: nowrap;
+//         }
+//       }
+//     }
+//   }
+
+//   > .open > a,
+//   > .active > a {
+//     background-color: darken(@navbar-default-link-active-bg, 5%);
+//   }
+
+//   // special caret for dropdowns
+
+//   &__drop {
+//     color: #fff;
+//     padding: 10px 20px;
+//     position: absolute;
+//     right: 0;
+//     top: 0;
+//     bottom: 0;
+
+//     @media (min-width: @grid-float-breakpoint) {
+//       float: right;
+//       position: relative;
+//       z-index: 20;
+//       cursor: pointer;
+//       color: @navbar-default-link-color;
+//       line-height: @navbar-height;
+//       margin-left: -@navbar-padding-horizontal;
+//       padding: 0;
+
+//       &:hover {
+//         color: @navbar-default-link-hover-color;
+//       }
+//     }
+//   }
+
+//   @media (max-width: @grid-float-breakpoint) {
+//     margin-top: 0;
+//     margin-bottom: 0;
+
+//     > li {
+      
+//       > a {
+//         border-bottom: 1px solid fade(#fff, 20%);
+//       }
+//     }
+//   }
+
+//   @media (min-width: @grid-float-breakpoint) {
+//     > li {
+
+//       > .dropdown-menu {
+//         margin-top: -15px;
+//         .transition(all .15s ease-in-out);
+//         .opacity(0);
+//         display: block;
+//         visibility: hidden;
+//         left: 50%;
+//         width: 200px;
+//         margin-left: -100px;
+//         border-color: #fff;
+//         border-radius: 0;
+//         .box-shadow(0 0 22px rgba(0,0,0,0.5));
+
+//         &:before {
+//           content: '';
+//           display: inline-block;
+//           border-left:   7px solid transparent;
+//           border-right:  7px solid transparent;
+//           border-bottom: 8px solid #fff;
+//           border-bottom-color: #fff;
+//           position: absolute;
+//           top: -7px;
+//           left: 50%;
+//           margin-left: -4px;
+//         }
+//       }
+
+//       &.open > .dropdown-menu {
+//         .opacity(100);
+//         margin-top: 0;
+//         visibility: visible;
+//       }
+//     }
+//   }
+// }
+
+// // Account nav
+
+// @avatar-height: 30px;
+
+// .nav-account {
+
+//   img {
+//     width: @avatar-height;
+//     margin-right: 5px;
+//   }
+
+//   @media (min-width: @grid-float-breakpoint) {
+//     > li > a {
+//       line-height: @avatar-height;
+//       padding-top: ((@navbar-height - @avatar-height) / 2);
+//       padding-bottom: ((@navbar-height - @avatar-height) / 2);  
+//     }
+//   }
+
+//   @media (max-width: @grid-float-breakpoint) {
+//     .navbar-nav__drop {
+//       line-height: @avatar-height;
+//     }
+//   }
+// }
+
+// // Undo rounded corners in static and fixed navbars
+
+// .navbar-static-top,
+// .navbar-fixed-top,
+// .navbar-fixed-bottom {
+//   border-radius: 0;
+// }
+
+// // Fix active state of dropdown items in collapsed mode
+
+// @media (max-width: @grid-float-breakpoint-max) {
+//   .navbar .navbar-nav .open .dropdown-menu > .active > a {
+//     &,
+//     &:hover,
+//     &:focus {
+//       color: #fff;
+//       #gradient > .vertical(@start-color: @dropdown-link-active-bg; @end-color: darken(@dropdown-link-active-bg, 5%));
+//     }
+//   }
+// }
