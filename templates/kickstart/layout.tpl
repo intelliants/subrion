@@ -101,7 +101,7 @@
 			</div>
 		</nav>
 
-		<header class="header"{if $core.config.website_bg} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.website_bg}');"{/if}>
+		<header class="header"{if $core.config.bg_header} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.bg_header}');"{/if}>
 			{ia_blocks block='teaser'}
 		</header>
 

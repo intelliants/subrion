@@ -47,21 +47,27 @@
 		    order="3002">6</config>
 
 	<config group="template_kickstart" 
-		    name="website_bg" 
+		    name="bg_header" 
 		    type="image" 
-		    description="Header background"
+		    description="Background: Header"
 		    order="3004"><![CDATA[]]></config>
+
+	<config group="template_kickstart" 
+		    name="bg_landing_features" 
+		    type="image" 
+		    description="Background: Features section"
+		    order="3005"><![CDATA[]]></config>
 
 	<config group="template_kickstart"
 		    name="enable_text_logo" 
 		    type="radio"
-		    order="3005" 
+		    order="3006" 
 		    values="1,0" 
 		    description="Enable Logo text">0</config>
 	<config group="template_kickstart"
 			name="logo_text"
 		    type="text" 
-		    order="3006" 
+		    order="3007" 
 		    show="enable_text_logo|1" 
 		    description="Logo text">Kickstart</config>
 
@@ -159,8 +165,10 @@
 			   type="html">
 			<![CDATA[
 <div class="teaser">
-	<h1>The greatest place<br>to kickstart anything</h1>
-	<h2>You will love how easy<br>it is to manage your content</h2>
+	<div class="container">
+		<h1>The greatest place<br>to <span class="text-warning">kickstart anything</span></h1>
+		<h2>You will love how easy<br>it is to manage your content</h2>
+	</div>
 </div>
 			]]>
 		</block>
