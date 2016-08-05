@@ -76,7 +76,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->assign('tmpl', $this->_iaCore->get('tmpl'));
 	}
 
-	protected function _gridRead()
+	protected function _gridRead($params)
 	{
 		$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
 

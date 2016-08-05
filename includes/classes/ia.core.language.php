@@ -137,7 +137,7 @@ class iaLanguage
 
 	public static function getTooltips()
 	{
-		$iaCore = &iaCore::instance();
+		$iaCore = iaCore::instance();
 
 		$stmt = '`category` = :category AND `code` = :language';
 		$iaCore->iaDb->bind($stmt, array('category' => self::CATEGORY_TOOLTIP, 'language' => $iaCore->iaView->language),1);

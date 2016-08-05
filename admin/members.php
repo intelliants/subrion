@@ -85,7 +85,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->getHelper()->delete($stmt);
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
 		if (!empty($_GET['name']))
 		{

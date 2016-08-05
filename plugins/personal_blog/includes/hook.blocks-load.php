@@ -55,7 +55,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$data = array();
 		if ($array = $iaDb->all('DISTINCT(MONTH(`date_added`)) `month`, YEAR(`date_added`) `year`', "`status` = 'active' GROUP BY `date_added` ORDER BY `date_added` DESC", 0, 6, 'blog_entries'))
 		{
-
 			foreach ($array as $date)
 			{
 				$data[] = array(
