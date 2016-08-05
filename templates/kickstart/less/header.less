@@ -4,13 +4,30 @@
 // --------------------------------------------------
 
 .header {
-  background: #2d2d30 url('../img/bg2.jpg') 50% 50% no-repeat;
-  // background-size: 100% auto;
+  background: #2d2d30 url('../img/bg-header.jpg') 50% 50% no-repeat;
+  background-size: cover;
 }
 
 .teaser {
-  text-align: center;
   padding: 100px 0;
+  position: relative;
+
+  &::after {
+    display: block;
+    content: '';
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: fade(#000, 35%);
+  }
+
+  > .container {
+    position: relative;
+    z-index: 15;
+  }
 
   h1,
   h2 {
@@ -29,7 +46,7 @@
 
     h1 {
       .font-normalize(48px);
-      text-transform: uppercase;
+      // text-transform: uppercase;
     }
 
     h2 {
