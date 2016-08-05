@@ -42,7 +42,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		switch ($this->_iaCore->requestPath[0])
 		{
 			case 'get':
-				$output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_GET['id']));
+				$output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_GET['id']), array());
 				break;
 
 			case 'set':
@@ -59,7 +59,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $output;
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
 		if (isset($_GET['item']) && $_GET['item'])
 		{

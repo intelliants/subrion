@@ -116,13 +116,12 @@ class SAXY_Parser extends SAXY_Parser_Base {
 	/** @var array A track used to track the uri of the current default namespace */
 	var $defaultNamespaceStack = array();
 	/** @var array A stack containing tag names of unclosed elements */
-	var $elementNameStack = array();	
+	var $elementNameStack = array();
 
 	/**
 	* Constructor for SAX parser
 	*/
-	function SAXY_Parser() {
-		$this->SAXY_Parser_Base();
+	function __construct() {
 		$this->state = SAXY_STATE_PROLOG_NONE;
 	} //SAXY_Parser
 	

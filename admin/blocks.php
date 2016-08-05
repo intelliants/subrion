@@ -70,7 +70,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->getHelper()->update($entryData, $entryId);
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
 		if (isset($_GET['pos']) && $_GET['pos'])
 		{
@@ -249,7 +249,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return !$this->getMessages();
 	}
 
-	protected function _postSaveEntry(array $entry, array $data, $action)
+	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 		if (iaCore::ACTION_ADD == $action)
 		{

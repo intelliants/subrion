@@ -182,7 +182,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 	}
 
-	protected function _jsonAction() // ADD action is handled here
+	protected function _jsonAction(&$iaView) // ADD action is handled here
 	{
 		$output = array('error' => false, 'message' => array());
 

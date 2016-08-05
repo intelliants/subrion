@@ -72,7 +72,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		}
 	}
 
-	protected function _setPageTitle(&$iaView)
+	protected function _setPageTitle(&$iaView, array $entryData, $action)
 	{
 		if (in_array($iaView->get('action'), array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT)))
 		{

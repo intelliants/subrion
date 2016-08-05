@@ -56,7 +56,8 @@ $(function()
 {
 	$('#elfinder').elfinder(
 	{
-		url : intelli.config.admin_url + '/uploads/read.json'
+		url : intelli.config.admin_url + '/uploads/read.json',
+		height: 450
 	});
 });
 {/ia_add_js}
