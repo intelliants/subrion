@@ -1,0 +1,31 @@
+---
+subject: Transaction passed
+---
+
+<h4>Hi <b>{%FULLNAME%}</b>,</h4> 
+<p>Your payment has been successfully received. Order Number is <b>{%REFERENCE_ID%}</b>. Payment details are below:</p>
+
+<spacer size="30"></spacer>
+
+<callout class="success special">
+  <row>
+    <columns small="3">Operation:</columns>
+    <columns small="9"><b>{%OPERATION%}</b></columns>
+  </row>
+  <row>
+    <columns small="3">Amount:</columns>
+    <columns small="9"><b>{%CURRENCY%} {%AMOUNT%}</b></columns>
+  </row>
+  <row>
+    <columns small="3">Item:</columns>
+    <columns small="9"><b>{%ITEM%} #{%ITEM_ID%}</b></columns>
+  </row>
+  <row>
+    <columns small="3">Date:</columns>
+    <columns small="9"><b>{%DATE%}</b></columns>
+  </row>
+</callout>
+
+<spacer size="20"></spacer>
+
+<p>All your transactions could always be seen on the Funds page.</p>

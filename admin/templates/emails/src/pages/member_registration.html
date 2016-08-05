@@ -1,0 +1,30 @@
+---
+subject: Registration
+---
+<h4>Hey there {%FULLNAME%}!</h4> 
+<p>Thanks for your registration at <a href="{%SITE_URL%}" target="_blank">{%SITE_URL%}</a>. Here is information you should use in order to login:</p>
+
+<spacer size="30"></spacer>
+
+<callout class="success special">
+  <row>
+    <columns small="3">Username:</columns>
+    <columns small="9"><b>{%USERNAME%}</b></columns>
+  </row>
+  <row>
+    <columns small="3">Password:</columns>
+    <columns small="9"><b>{%PASSWORD%}</b></columns>
+  </row>
+</callout>
+
+<spacer size="30"></spacer>
+
+<p class="text-center">To activate your account click on a link below.</p>
+
+<row>
+  <columns small="3">&nbsp;</columns>
+  <columns small="6"><button href="{%LINK%}" class="expand">Activate account</button></columns>
+  <columns small="3">&nbsp;</columns>
+</row>
+
+<p>You may change your password later by editing your personal attributes in your member area.</p>

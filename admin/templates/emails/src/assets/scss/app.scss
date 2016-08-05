@@ -1,0 +1,98 @@
+@import 'settings';
+@import 'foundation-emails';
+
+
+
+//
+// Header
+// --------------------------------------------------
+
+.header {
+  background: #4a4d54;
+}
+.header .columns {
+  padding-bottom: 0;
+}
+.header p {
+  color: #fff;
+  padding-top: 0;
+  margin-bottom: 0;
+  line-height: 33px;
+}
+.header .wrapper-inner {
+  padding: 10px;
+}
+.header .container {
+  background: transparent;
+}
+
+
+
+//
+// Body
+// --------------------------------------------------
+
+.body {
+  
+  .wrapper-inner {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+}
+
+// special callout 
+th.callout-inner.special {
+  border: 0 none;
+  border-left: 2px solid darken($success-color, 10%);
+
+  th.columns {
+    padding-top: 4px;
+    padding-bottom: 4px;
+
+  }
+}
+
+
+
+//
+// Footer
+// --------------------------------------------------
+
+.footer {
+  border-top: 1px solid $medium-gray;
+
+  .wrapper-inner {
+    padding: 20px;
+  }
+
+  p {
+    color: #aaa;
+    font-size: 12px;
+  }
+
+  .menu {
+
+    .menu-item {
+      padding-top: 0;
+      padding-bottom: 0;
+      padding-left: 0;
+      // text-align: right;
+      font-size: 12px;
+    }
+  }
+}
+
+.copyright {
+  a {
+    color: $dark-gray;
+  }
+}
+
+
+
+//
+// Utils
+// --------------------------------------------------
+
+.text-right { text-align: right !important; }
+.text-small { font-size: 12px !important; }
