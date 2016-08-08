@@ -51,7 +51,7 @@
 					</ul>
 				{/if}
 				{if $core.config.search_inventory}
-					<form method="post" action="{$smarty.const.IA_URL}search/" class="search-inventory pull-right">
+					<form method="get" action="{$smarty.const.IA_URL}search/" class="search-inventory pull-right">
 						<input type="text" name="q" placeholder="{lang key='search'}">
 						<button type="submit"><span class="fa fa-search"></span></button>
 					</form>
@@ -85,7 +85,7 @@
 
 				<div class="collapse navbar-collapse" id="navbar-collapse">
 					{if $core.config.search_navbar}
-						<form method="post" action="{$smarty.const.IA_URL}search/" class="search-navbar pull-right">
+						<form method="get" action="{$smarty.const.IA_URL}search/" class="search-navbar pull-right">
 							<button class="search-navbar__toggle js-search-navbar-toggle" type="button"><span class="fa fa-search"></span></button>
 							<div class="input-group">
 								<input type="text" name="q" class="form-control" placeholder="{lang key='search'}">
