@@ -147,7 +147,7 @@
 	<changeset>
 		<menu position="account" status="active">account</menu>
 
-		<block status="active" classname="section section-blog" position="landing" order="202">blogroll</block>
+		<block status="active" classname="section section-blog" position="landing" order="203">blogroll</block>
 
 		<block status="active" classname="box--border">common_statistics</block>
 		<block status="active" classname="box--border">filters</block>
@@ -272,6 +272,36 @@
 				<h3>Multilingual CMS</h3>
 				<p>Use ready translation or translate the system into your language. It provides all the functionality to become a multilingual solution.</p>
 			</div>
+		</div>
+	</div>
+</div>
+			]]>
+		</block>
+		<block name="landing_mobile" 
+			   title="Ready for mobile devices" 
+			   position="landing" 
+			   header="0"
+			   collapsible="0" 
+			   sticky="0" 
+			   pages="index"
+			   status="active"
+			   type="smarty"
+			   classname="section section-mobile"
+			   order="202">
+			<![CDATA[
+<div class="row">
+	<div class="col-md-4 col-md-offset-2">
+		<div class="section-mobile__text">
+			<h2>{$block.title}</h2>
+			<p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ipsa distinctio vel aspernatur, reiciendis excepturi.</p>
+			<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. At animi corporis laboriosam. Maiores voluptatibus dicta ea, quo repellendus eum officiis enim non? Porro aut harum pariatur sit adipisci accusantium rem!
+			</p>
+			<p><a href="#" class="btn btn-warning">Learn more</a> <a href="#" class="btn btn-default">Contact us</a></p>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="section-mobile__image">
+			<img class="img-responsive center-block" src="{$img}section-mobile.png" alt=""/>
 		</div>
 	</div>
 </div>
