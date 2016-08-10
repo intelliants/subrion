@@ -28,7 +28,7 @@
 		{/ia_block}
 	{/if}
 {elseif 'copyright' == $position}
-	{ia_menu menus=$menu.contents class="nav-footer pull-left {$menu.classname}"}
+	{ia_menu menus=$menu.contents class="nav-footer {$menu.classname}"}
 {else}
 	<!--__ms_{$menu.id}-->
 	{if $menu.header || isset($manageMode)}

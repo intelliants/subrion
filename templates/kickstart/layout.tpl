@@ -194,7 +194,7 @@
 				{ia_hooker name='smartyFrontBeforeFooterLinks'}
 
 				{if $core.config.website_social}
-					<ul class="nav-footer nav-footer-social pull-left">
+					<ul class="nav-footer nav-footer-social">
 						{if $core.config.website_social_t}<li><a href="{$core.config.website_social_t}" class="twitter"><span class="fa fa-twitter"></span></a></li>{/if}
 						{if $core.config.website_social_f}<li><a href="{$core.config.website_social_f}" class="facebook"><span class="fa fa-facebook"></span></a></li>{/if}
 						{if $core.config.website_social_g}<li><a href="{$core.config.website_social_g}" class="google-plus"><span class="fa fa-google-plus"></span></a></li>{/if}
@@ -204,7 +204,7 @@
 
 				{ia_blocks block='copyright'}
 
-				<p class="text-footer pull-right">&copy; {$smarty.server.REQUEST_TIME|date_format:'%Y'} {lang key='powered_by_subrion'}</p>
+				<p class="copyright">&copy; {$smarty.server.REQUEST_TIME|date_format:'%Y'} {lang key='powered_by_subrion'}</p>
 
 				{ia_hooker name='smartyFrontAfterFooterLinks'}
 			</div>
