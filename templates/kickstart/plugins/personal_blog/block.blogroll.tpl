@@ -21,7 +21,7 @@
 			{/foreach}
 		</div>
 	</div>
-	<p class="m-t-lg text-center"><a href="{$smarty.const.IA_URL}blog/" class="btn btn-primary">{lang key='view_all_blog_entries'}</a></p>
+	<p class="m-t text-center"><a href="{$smarty.const.IA_URL}blog/" class="btn btn-primary text-uppercase">{lang key='view_all_blog_entries'}</a></p>
 {else}
 	<div class="alert alert-info">{lang key='no_blog_entries'}</div>
 {/if}

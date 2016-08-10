@@ -34,7 +34,8 @@
 .btn-styles(@btn-color: #555) {
   background-color: @btn-color;
   background-repeat: repeat-x;
-  border-color: darken(@btn-color, 14%);
+  // border-color: darken(@btn-color, 14%);
+  border-color: @btn-color;
 
   &:hover,
   &:focus  {
@@ -107,7 +108,7 @@
 }
 
 // Apply the mixin to the buttons
-.btn-default { .btn-styles(@btn-default-bg); text-shadow: 0 1px 0 #fff; border-color: #ccc; }
+.btn-default { .btn-styles(@btn-default-bg); border-color: #ccc; }
 .btn-primary { .btn-styles(@btn-primary-bg); }
 .btn-success { .btn-styles(@btn-success-bg); }
 .btn-info    { .btn-styles(@btn-info-bg); }

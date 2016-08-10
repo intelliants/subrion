@@ -3,7 +3,7 @@
 	<div id="block_{$name}" 
 		 class="box {$classname}{if isset($collapsible) && $collapsible} collapsible{if isset($collapsed) && $collapsed} collapsed{/if}{/if}"
 		 {if isset($manageMode)} vm-hidden="{$hidden}"{/if}
-		 {if $core.config["bg_{$name}"]} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config["bg_{$name}"]}');"{/if}
+		 {if isset($core.config["bg_{$name}"]) && $core.config["bg_{$name}"]} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config["bg_{$name}"]}');"{/if}
 		 >
 		{if 'landing' == $position}
 			<div class="container">
