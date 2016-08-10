@@ -119,7 +119,7 @@ CREATE TABLE `{install:prefix}config` (
 	`name` varchar(64) NOT NULL,
 	`value` text,
 	`multiple_values` text,
-	`type` enum('text','textarea','checkbox','radio','select','combo','divider','hidden','password','image','itemscheckbox','tpl') NOT NULL default 'text',
+	`type` enum('text','textarea','checkbox','radio','select','combo','divider','hidden','password','image','itemscheckbox','tpl','colorpicker') NOT NULL default 'text',
 	`wysiwyg` tinyint(1) unsigned NOT NULL,
 	`code_editor` tinyint(1) unsigned NOT NULL,
 	`description` text,

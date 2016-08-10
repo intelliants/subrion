@@ -63,6 +63,20 @@
 								<input type="text" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:'html'}" />
 							</div>
 						{/if}
+					{elseif 'colorpicker' == $entry.type}
+						<div class="item-input">
+							<div id="cp_{$entry.name}" class="input-group colorpicker-component">
+								<input type="text" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:'html'}" />
+								<span class="input-group-addon"><i></i></span>
+							</div>
+						</div>
+
+						{ia_add_media files='css:_IA_URL_js/bootstrap/css/bootstrap-colorpicker.min, js:bootstrap/js/bootstrap-colorpicker.min'}
+						{ia_add_js}
+$(function() {
+	$('#cp_{$entry.name}').colorpicker();
+});
+						{/ia_add_js}
 					{elseif 'textarea' == $entry.type}
 						{if $custom}
 							<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default}{/if}</div>
