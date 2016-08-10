@@ -172,22 +172,38 @@
 </div>
 			]]>
 		</block>
-		<block name="landing_who_we_are" 
-			   title="Who we are" 
+		<block name="landing_what_is_this" 
+			   title="What this all about?" 
 			   position="landing" 
 			   header="1"
 			   collapsible="0" 
 			   sticky="0" 
 			   pages="index"
 			   status="active"
-			   type="html"
-			   classname="section section-who"
+			   type="smarty"
+			   classname="section section-what"
 			   order="200">
 			<![CDATA[
-<div class="text-center">
-	<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur ea magnam dignissimos suscipit ut ad, dolorum animi, illum facere, odio sint! Quae aspernatur expedita atque alias vitae. Soluta doloribus, quidem.</p>
-	<p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
-	<a class="btn btn-primary text-uppercase m-t" href="#">Learn more</a>
+<p class="lead text-center">This is your Subrion CMS. Start editing your content right away!</p>
+<div class="row text-center m-t-md">
+	<div class="col-md-4">
+		<img src="{$img}icon-monitor.png" width="100" alt=""/>
+		<h3>Landing page</h3>
+		<p class="text-fade-50">This is a starting page for your website. You can change it (switch off) to display content and blocks. This can be done on Template configuration page in Admin Dashboard.</p>
+	</div>
+	<div class="col-md-4">
+		<img src="{$img}icon-sliders.png" width="100" alt=""/>
+		<h3>Configuration options</h3>
+		<p class="text-fade-50"><b>Kickstart</b> template has many configuration options to play with. Go to admin panel and try to change, for example, background of header block.</p>
+	</div>
+	<div class="col-md-4">
+		<img src="{$img}icon-browser.png" width="100" alt=""/>
+		<h3>Blocks management</h3>
+		<p class="text-fade-50">Each section on this page can be changed in Admin Dashboard in Blocks section, as well as all other blocks on all pages. Go give it a try!</p>
+	</div>
+</div>
+<div class="text-center m-t">
+	<a class="btn btn-primary text-uppercase" href="{$smarty.const.IA_URL}admin/">Go to admin dashboard</a>
 </div>
 			]]>
 		</block>
