@@ -92,6 +92,10 @@ a:focus {
 				&:hover {
 					background: @main-nav-link-hover-color;
 				}
+
+				&:focus {
+					text-decoration: none;
+				}
 			}
 
 			&.active {
@@ -138,7 +142,8 @@ a:focus {
 		a {
 			font-size: 20px;
 
-			&:hover {
+			&:hover,
+			&:focus {
 				text-decoration: none;
 			}
 
@@ -207,6 +212,10 @@ a:focus {
 					background: @sub-nav-link-hover-color;
 					text-decoration: none;
 				}
+
+				&:focus {
+					text-decoration: none;
+				}
 			}
 
 			> span {
@@ -233,6 +242,10 @@ a:focus {
 				&.active {
 					background: @sub-nav-link-active-bg-color;
 					color: @sub-nav-link-active-color;
+				}
+
+				&:focus {
+					text-decoration: none;
 				}
 			}
 
