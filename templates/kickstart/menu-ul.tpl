@@ -5,7 +5,7 @@
 			{foreach $data.$pid as $menu}
 
 				{if 'mainmenu' == $position && $menu@iteration > $core.config.max_top_menu_items|default:5 && $menu.level < 1}{capture append=dropdown name=$menu.page_name}{/if}
-				
+
 				{if in_array($position, array('left', 'right', 'user1', 'user2', 'top'))}
 					<a class="list-group-item{if $menu.active} active{/if}" href="{if $menu.url}{$menu.url}{else}{$smarty.const.IA_SELF}#{/if}"{if $menu.nofollow} rel="nofollow"{/if}{if $menu.new_window} target="_blank"{/if}>{$menu.text}</a>
 				{else}
@@ -41,9 +41,8 @@
 			<!-- MORE menu dropdown -->
 			{if isset($dropdown) && $menu.level < 1}
 				<li class="dropdown dropdown-more">
-					<a class="dropdown-toggle" data-toggle="dropdown" href="#">{lang key='more'}</a>
-					<span class="navbar-nav__drop dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="fa fa-angle-down"></span></span>
-					
+					<a class="dropdown-toggle" data-toggle="dropdown" href="#">{lang key='more'} <span class="caret"></span></a>
+
 					<ul class="dropdown-menu">
 						{foreach $dropdown as $menu}
 							{$menu}

@@ -23,7 +23,7 @@
       font-size: 30px;
       font-weight: 800;
       letter-spacing: 2px;
-      margin-bottom: @sections-v-pad;
+      margin-bottom: @sections-v-pad/2;
 
       &::after {
         display: block;
@@ -73,7 +73,7 @@
 
 .section-features {
   background: #232323 url('../img/bg-section-features.jpg') 50% 50% no-repeat;
-  background-attachment: fixed;
+  background-size: cover;
 
   > .container > .box {
 
@@ -91,7 +91,7 @@
   }
 
   .row + .row {
-    margin-top: @sections-v-pad;
+    margin-top: @sections-v-pad/2;
 
     @media (max-width: @grid-float-breakpoint) {
       margin-top: 0;
@@ -181,6 +181,10 @@
   
   &__text {
     margin-top: 85px;
+
+    @media (max-width: @grid-float-breakpoint) {
+      margin-top: 0;
+    }
   }
 }
 
