@@ -40,6 +40,13 @@
 
 		{if $core.config.custom_colors}
 			<style type="text/css">
+				body { background-color: {$core.config.custom_color_body_bg}; color: {$core.config.custom_color_text}; }
+				h1, h2, h3, h4, h5, h6,
+				.box__caption { color: {$core.config.custom_color_headings}; }
+				a,
+				a:focus { color: {$core.config.custom_color_link}; }
+				a:hover { color: {$core.config.custom_color_link_hover}; }
+
 				.inventory { background-color: {$core.config.custom_color_inventory_bg}; }
 				.nav-inventory > li > a,
 				.nav-inventory > li > a:focus { color: {$core.config.custom_color_inventory_link}; }

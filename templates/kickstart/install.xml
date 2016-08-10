@@ -51,6 +51,31 @@
 		    order="3002" 
 		    values="1,0" 
 		    description="Enable custom colors">0</config>
+	<config group="template_kickstart"
+			name="custom_color_body_bg"
+		    type="colorpicker" 
+		    order="3003" 
+		    description="Body background">#fff</config>
+	<config group="template_kickstart"
+			name="custom_color_text"
+		    type="colorpicker" 
+		    order="3004" 
+		    description="Text color">#333333</config>
+	<config group="template_kickstart"
+			name="custom_color_headings"
+		    type="colorpicker" 
+		    order="3005" 
+		    description="Headings color">#333333</config>
+	<config group="template_kickstart"
+			name="custom_color_link"
+		    type="colorpicker" 
+		    order="3006" 
+		    description="Link color">#38b7ea</config>
+	<config group="template_kickstart"
+			name="custom_color_link_hover"
+		    type="colorpicker" 
+		    order="3007" 
+		    description="Link hover color">#1490c1</config>
 
 
 
