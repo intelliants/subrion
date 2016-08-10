@@ -39,110 +39,165 @@
 	<config group="template_kickstart" 
 		    type="divider"
 		    order="3000">General</config>
-
-	<config group="template_kickstart" 
-		    name="max_top_menu_items" 
-		    type="text" 
-		    description="Max number of items in Main Menu"
-		    order="3002">6</config>
-
-	<config group="template_kickstart" 
-		    name="bg_header" 
-		    type="image" 
-		    description="Background: Header"
-		    order="3004"><![CDATA[]]></config>
-
-	<config group="template_kickstart" 
-		    name="bg_landing_features" 
-		    type="image" 
-		    description="Background: Features section"
-		    order="3005"><![CDATA[]]></config>
-
 	<config group="template_kickstart"
-		    name="enable_text_logo" 
+		    name="enable_landing" 
 		    type="radio"
-		    order="3006" 
+		    order="3001" 
 		    values="1,0" 
-		    description="Enable Logo text">0</config>
+		    description="Enable landing page">1</config>
 	<config group="template_kickstart"
-			name="logo_text"
-		    type="text" 
-		    order="3007" 
-		    show="enable_text_logo|1" 
-		    description="Logo text">Kickstart</config>
+		    name="custom_colors" 
+		    type="radio"
+		    order="3002" 
+		    values="1,0" 
+		    description="Enable custom colors">0</config>
+
+
 
 	<config group="template_kickstart" 
 		    type="divider"
-		    order="3100">Layout</config>
-
+		    order="3100">Inventory bar</config>
 	<config group="template_kickstart"
 			name="search_inventory"
 		    type="radio" 
 		    order="3101"
 		    values="1,0" 
 		    description="Show search in inventory">0</config>
-
 	<config group="template_kickstart"
-			name="navbar_sticky"
-		    type="radio" 
-		    order="3102"
-		    values="1,0" 
-		    description="Sticky navbar">1</config>
-
+			name="custom_color_inventory_bg"
+		    type="colorpicker" 
+		    order="3102" 
+		    description="Background">#323232</config>
 	<config group="template_kickstart"
-			name="search_navbar"
-		    type="radio" 
-		    order="3103"
-		    values="1,0" 
-		    description="Show search in navbar">1</config>
-
+			name="custom_color_inventory_link"
+		    type="colorpicker" 
+		    order="3103" 
+		    description="Link color">rgba(255,255,255,0.45)</config>
 	<config group="template_kickstart"
-		    name="enable_landing" 
-		    type="radio"
+			name="custom_color_inventory_link_hover"
+		    type="colorpicker" 
 		    order="3104" 
-		    values="1,0" 
-		    description="Enable landing page">1</config>
+		    description="Link hover color">rgba(255,255,255,0.5)</config>
+	<config group="template_kickstart"
+			name="custom_color_inventory_link_active"
+		    type="colorpicker" 
+		    order="3105" 
+		    description="Link active color">rgba(255,255,255,0.7)</config>
+
+
 
 	<config group="template_kickstart" 
 		    type="divider"
-		    order="3200">Social links</config>
-	
+		    order="3200">Navbar / Mainmenu</config>
+	<config group="template_kickstart" 
+		    name="max_top_menu_items" 
+		    type="text" 
+		    description="Max number of items in Main Menu"
+		    order="3201">6</config>
+	<config group="template_kickstart"
+		    name="enable_text_logo" 
+		    type="radio"
+		    order="3202" 
+		    values="1,0" 
+		    description="Enable Logo text">0</config>
+	<config group="template_kickstart"
+			name="logo_text"
+		    type="text" 
+		    order="3203" 
+		    show="enable_text_logo|1" 
+		    description="Logo text">Kickstart</config>
+	<config group="template_kickstart"
+			name="navbar_sticky"
+		    type="radio" 
+		    order="3204"
+		    values="1,0" 
+		    description="Sticky navbar">1</config>
+	<config group="template_kickstart"
+			name="search_navbar"
+		    type="radio" 
+		    order="3205"
+		    values="1,0" 
+		    description="Show search in navbar">1</config>
+	<config group="template_kickstart"
+			name="custom_color_navbar_bg"
+		    type="colorpicker" 
+		    order="3206" 
+		    description="Background">#ffffff</config>
+	<config group="template_kickstart"
+			name="custom_color_navbar_link"
+		    type="colorpicker" 
+		    order="3207" 
+		    description="Link color">rgba(50,50,50,0.6)</config>
+	<config group="template_kickstart"
+			name="custom_color_navbar_link_hover"
+		    type="colorpicker" 
+		    order="3208" 
+		    description="Link hover color">rgba(50,50,50,0.8)</config>
+	<config group="template_kickstart"
+			name="custom_color_navbar_link_active"
+		    type="colorpicker" 
+		    order="3209" 
+		    description="Link active color">#38b7ea</config>
+
+
+
+	<config group="template_kickstart" 
+		    type="divider"
+		    order="3300">Header / Teaser</config>
+	<config group="template_kickstart" 
+		    name="bg_header" 
+		    type="image" 
+		    description="Background: Header"
+		    order="3301"><![CDATA[]]></config>
+	<config group="template_kickstart" 
+		    name="bg_landing_features" 
+		    type="image" 
+		    description="Background: Features section"
+		    order="3302"><![CDATA[]]></config>
+
+
+
+	<config group="template_kickstart" 
+		    type="divider"
+		    order="4000">Social links</config>
 	<config group="template_kickstart"
 			name="website_social"
 		    type="radio" 
-		    order="3201"
+		    order="4001"
 		    values="1,0" 
 		    description="Show links">1</config>
 	<config group="template_kickstart"
 			name="website_social_t"
 		    type="text"
-		    order="3202"
+		    order="4002"
 		    show="website_social|1" 
 		    description="Twitter Link">https://twitter.com/IntelliantsLLC</config>
 	<config group="template_kickstart"
 			name="website_social_f"
 		    type="text" 
-		    order="3203" 
+		    order="4003" 
 		    show="website_social|1" 
 		    description="Facebook Link">https://www.facebook.com/Intelliants</config>
 	<config group="template_kickstart"
 			name="website_social_g"
 		    type="text" 
-		    order="3204" 
+		    order="4004" 
 		    show="website_social|1" 
 		    description="Google+ Link">https://plus.google.com/102500660503219569194/posts</config>
 	<config group="template_kickstart"
 			name="website_social_i"
 		    type="text" 
-		    order="3205" 
+		    order="4005" 
 		    show="website_social|1" 
 		    description="LinkedIn Link">#</config>
+
+
 
 	<config group="template_kickstart" 
 		    name="ckeditor_css" 
 		    type="hidden" 
 		    description="CKEditor CSS"
-		    order="3500">ckeditor.css</config>
+		    order="5000">ckeditor.css</config>
 
 	<changeset>
 		<menu position="account" status="active">account</menu>
