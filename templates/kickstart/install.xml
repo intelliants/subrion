@@ -147,8 +147,9 @@
 	<changeset>
 		<menu position="account" status="active">account</menu>
 
-		<block status="active" classname="section section-blog" position="landing" order="203">blogroll</block>
-
+		<block status="active" classname="section section-portfolio" position="landing" order="203">new_portfolio_entries</block>
+		<block status="active" classname="section section-testimonials" position="landing" order="204">testimonials</block>
+		<block status="active" classname="section section-blog" position="landing" order="205">blogroll</block>
 		<block status="active" classname="box--border">common_statistics</block>
 		<block status="active" classname="box--border">filters</block>
 	</changeset>
@@ -312,7 +313,7 @@
 			<p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ipsa distinctio vel aspernatur, reiciendis excepturi.</p>
 			<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. At animi corporis laboriosam. Maiores voluptatibus dicta ea, quo repellendus eum officiis enim non? Porro aut harum pariatur sit adipisci accusantium rem!
 			</p>
-			<p><a href="#" class="btn btn-warning">Learn more</a> <a href="#" class="btn btn-default">Contact us</a></p>
+			<p class="m-t"><a href="#" class="btn btn-warning text-uppercase">Learn more</a> <a href="#" class="btn btn-link">Contact us</a></p>
 		</div>
 	</div>
 	<div class="col-md-4">
