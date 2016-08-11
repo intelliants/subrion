@@ -62,6 +62,22 @@
 				.navbar-default .navbar-nav > li.active > a,
 				.navbar-default .navbar-nav > li.active > a:focus,
 				.navbar-default .navbar-nav > li.active > a:hover { color: {$core.config.custom_color_navbar_link_active}; }
+
+				.header {
+					{if $core.config.bg_header_use_color}
+						background: {$core.config.bg_header_color};
+					{elseif $core.config.bg_header}
+						background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.bg_header}');
+					{/if}
+				}
+
+				.section-features {
+					{if $core.config.bg_features_use_color}
+						background: {$core.config.bg_features_color};
+					{elseif $core.config.bg_features}
+						background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.bg_features}');
+					{/if}
+				}
 			</style>
 		{/if}
 	</head>
@@ -128,7 +144,7 @@
 			</div>
 		</nav>
 
-		<header class="header"{if $core.config.bg_header} style="background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.bg_header}');"{/if}>
+		<header class="header">
 			{ia_blocks block='teaser'}
 		</header>
 

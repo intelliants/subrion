@@ -50,7 +50,7 @@
 		    type="radio"
 		    order="3002" 
 		    values="1,0" 
-		    description="Enable custom colors">0</config>
+		    description="Enable custom colors and backgrounds">0</config>
 	<config group="template_kickstart"
 			name="custom_color_body_bg"
 		    type="colorpicker" 
@@ -76,8 +76,6 @@
 		    type="colorpicker" 
 		    order="3007" 
 		    description="Link hover color">#1490c1</config>
-
-
 
 	<config group="template_kickstart" 
 		    type="divider"
@@ -108,8 +106,6 @@
 		    type="colorpicker" 
 		    order="3105" 
 		    description="Link active color">rgba(255,255,255,0.7)</config>
-
-
 
 	<config group="template_kickstart" 
 		    type="divider"
@@ -164,23 +160,71 @@
 		    order="3209" 
 		    description="Link active color">#38b7ea</config>
 
-
-
 	<config group="template_kickstart" 
 		    type="divider"
 		    order="3300">Header / Teaser</config>
 	<config group="template_kickstart" 
 		    name="bg_header" 
 		    type="image" 
-		    description="Background: Header"
+		    description="Background image"
 		    order="3301"><![CDATA[]]></config>
 	<config group="template_kickstart" 
-		    name="bg_landing_features" 
+		    name="bg_header_use_color" 
+		    type="radio" 
+		    values="1,0" 
+		    description="Use color instead image"
+		    order="3302">0</config>
+	<config group="template_kickstart"
+			name="bg_header_color"
+		    type="colorpicker" 
+		    order="3303" 
+		    show="bg_header_use_color|1" 
+		    description="Background color">#6b3561</config>
+
+	<config group="template_kickstart" 
+		    type="divider"
+		    order="3350">Features section</config>
+	<config group="template_kickstart" 
+		    name="bg_features" 
 		    type="image" 
-		    description="Background: Features section"
-		    order="3302"><![CDATA[]]></config>
+		    description="Background image"
+		    order="3351"><![CDATA[]]></config>
+	<config group="template_kickstart" 
+		    name="bg_features_use_color" 
+		    type="radio" 
+		    values="1,0" 
+		    description="Use color instead image"
+		    order="3352">0</config>
+	<config group="template_kickstart"
+			name="bg_features_color"
+		    type="colorpicker" 
+		    order="3353" 
+		    show="bg_features_use_color|1" 
+		    description="Background color">#6b3561</config>
 
-
+	<config group="template_kickstart" 
+		    type="divider"
+		    order="3400">Footer</config>
+	<config group="template_kickstart"
+			name="custom_color_footer_bg"
+		    type="colorpicker" 
+		    order="3401" 
+		    description="Background">#323232</config>
+	<config group="template_kickstart"
+			name="custom_color_footer_link"
+		    type="colorpicker" 
+		    order="3402" 
+		    description="Link color">rgba(255,255,255,0.45)</config>
+	<config group="template_kickstart"
+			name="custom_color_footer_link_hover"
+		    type="colorpicker" 
+		    order="3403" 
+		    description="Link hover color">rgba(255,255,255,0.5)</config>
+	<config group="template_kickstart"
+			name="custom_color_footer_link_active"
+		    type="colorpicker" 
+		    order="3404" 
+		    description="Link active color">rgba(255,255,255,0.7)</config>
 
 	<config group="template_kickstart" 
 		    type="divider"
@@ -215,8 +259,6 @@
 		    order="4005" 
 		    show="website_social|1" 
 		    description="LinkedIn Link">#</config>
-
-
 
 	<config group="template_kickstart" 
 		    name="ckeditor_css" 
