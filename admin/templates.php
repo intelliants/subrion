@@ -191,8 +191,13 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 		}
+		$_templates = array_merge($templates, $remoteTemplates);
 
-		return array_merge($templates, $remoteTemplates);
+		$templateName = $this->_iaCore->get('tmpl');
+		$activeTemplate = $_templates[$templateName];
+		unset($_templates[$templateName]);
+
+		return array($templateName => $activeTemplate) + $_templates;
 	}
 
 	private function _installTemplate()
