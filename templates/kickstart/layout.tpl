@@ -78,6 +78,15 @@
 						background-image: url('{$core.page.nonProtocolUrl}uploads/{$core.config.bg_features}');
 					{/if}
 				}
+
+				.footer-blocks { background: {$core.config.footer_blocks_bg}; }
+				.footer { background: {$core.config.footer_bg}; }
+				.nav-footer > li > a,
+				.nav-footer > li > a:focus { color: {$core.config.footer_link}; }
+				.nav-footer > li > a:hover { color: {$core.config.footer_link_hover}; }
+				.nav-footer > li.active > a,
+				.nav-footer > li.active > a:focus,
+				.nav-footer > li.active > a:hover { color: {$core.config.footer_link_active}; }
 			</style>
 		{/if}
 	</head>
