@@ -14,6 +14,9 @@
 				{ia_hooker name='smartyFrontInsideAccountBox'}
 				{ia_menu menus=$menu.contents class='dropdown-menu' loginout=true}
 			</li>
+			{access object='admin_access'}
+				<li><a rel="nofollow" href="{$smarty.const.IA_ADMIN_URL}" target="_blank" title="{lang key='admin_dashboard'}"><span class="fa fa-cog"></span></a></li>
+			{/access}
 		</ul>
 	{else}
 		<ul class="nav navbar-nav navbar-right">

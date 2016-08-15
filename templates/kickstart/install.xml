@@ -555,5 +555,6 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 		<phrase category="frontend" key="login">Log in</phrase>
 		<phrase category="frontend" key="register">Sign up</phrase>
 		<phrase category="frontend" key="back_to_top">Back to top</phrase>
+		<phrase category="frontend" key="admin_dashboard">Admin Dashboard</phrase>
 	</phrases>
 </template>
