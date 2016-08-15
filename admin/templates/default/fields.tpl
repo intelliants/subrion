@@ -361,7 +361,7 @@
 									<div class="row">
 										<label class="col col-lg-4 control-label">{lang key='key'} <i>({lang key='not_required'})</i></label>
 										<div class="col col-lg-8">
-											<input type="text" name="keys[]" value="{if isset($item.keys.$key)}{$item.keys.$key}{else}{$value}{/if}">
+											<input type="text" name="keys[]" value="{if isset($item.keys.$key)}{$item.keys.$key|escape:'html'}{else}{$value|escape:'html'}{/if}">
 										</div>
 									</div>
 									{foreach $core.languages as $code => $language}
@@ -369,9 +369,9 @@
 											<label class="col col-lg-4 control-label">{lang key='item_value'} <span class="label label-info">{$language.title}</span></label>
 											<div class="col col-lg-8">
 												{if $smarty.const.IA_LANGUAGE == $code}
-													<input type="text" class="fvalue" name="values[]" value="{if !isset($item.values_titles.$value.$code)}{$value}{else}{$item.values_titles.$value.$code}{/if}">
+													<input type="text" class="fvalue" name="values[]" value="{if !isset($item.values_titles.$value.$code)}{$value|escape:'html'}{else}{$item.values_titles.$value.$code|escape:'html'}{/if}">
 												{else}
-													<input type="text" name="lang_values[{$code}][]" value="{if isset($item.lang_values.$code.$key)}{$item.lang_values.$code.$key}{elseif isset($item.values_titles.$value.$code)}{$item.values_titles.$value.$code}{/if}">
+													<input type="text" name="lang_values[{$code}][]" value="{if isset($item.lang_values.$code.$key)}{$item.lang_values.$code.$key|escape:'html'}{elseif isset($item.values_titles.$value.$code)}{$item.values_titles.$value.$code|escape:'html'}{/if}">
 												{/if}
 											</div>
 										</div>
