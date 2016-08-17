@@ -153,6 +153,9 @@
 			</div>
 		</nav>
 
+		{if isset($smarty.get.elements)}
+			{include file='page.elements.tpl'}
+		{else}
 		<header class="header">
 			{ia_blocks block='teaser'}
 		</header>
@@ -174,50 +177,82 @@
 
 			<div class="content">
 				<div class="container">
-					<div class="row">
-						<div class="{width section='content' position='left' tag='col-md-'} aside">
-							{ia_blocks block='left'}
+					{if in_array($core.page.name, array('login', 'member_registration'))}
+						<div class="page-system">
+							<div class="content__header">
+								<h1>{$core.page.title}</h1>
+								<ul class="content__actions">
+									{foreach $core.actions as $name => $action}
+										<li>
+											{if 'action-favorites' == $name}
+												{printFavorites item=$item itemtype=$item.item guests=true}
+											{else}
+												<a data-toggle="tooltip" title="{$action.title}" {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
+													<span class="fa fa-{$name}"></span>
+												</a>
+											{/if}
+										</li>
+									{/foreach}
+								</ul>
+							</div>
+
+							{ia_hooker name='smartyFrontBeforeNotifications'}
+							{include 'notification.tpl'}
+
+							{ia_hooker name='smartyFrontBeforeMainContent'}
+
+							<div class="content__body">
+								{$_content_}
+							</div>
+
+							{ia_hooker name='smartyFrontAfterMainContent'}
 						</div>
-						<div class="{width section='content' position='center' tag='col-md-'}">
-							<div class="content__wrap">
+					{else}
+						<div class="row">
+							<div class="{width section='content' position='left' tag='col-md-'} aside">
+								{ia_blocks block='left'}
+							</div>
+							<div class="{width section='content' position='center' tag='col-md-'}">
+								<div class="content__wrap">
 
-								{ia_blocks block='top'}
+									{ia_blocks block='top'}
 
-								<div class="content__header">
-									<h1>{$core.page.title}</h1>
-									<ul class="content__actions">
-										{foreach $core.actions as $name => $action}
-											<li>
-												{if 'action-favorites' == $name}
-													{printFavorites item=$item itemtype=$item.item guests=true}
-												{else}
-													<a data-toggle="tooltip" title="{$action.title}" {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
-														<span class="fa fa-{$name}"></span>
-													</a>
-												{/if}
-											</li>
-										{/foreach}
-									</ul>
+									<div class="content__header">
+										<h1>{$core.page.title}</h1>
+										<ul class="content__actions">
+											{foreach $core.actions as $name => $action}
+												<li>
+													{if 'action-favorites' == $name}
+														{printFavorites item=$item itemtype=$item.item guests=true}
+													{else}
+														<a data-toggle="tooltip" title="{$action.title}" {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
+															<span class="fa fa-{$name}"></span>
+														</a>
+													{/if}
+												</li>
+											{/foreach}
+										</ul>
+									</div>
+
+									{ia_hooker name='smartyFrontBeforeNotifications'}
+									{include 'notification.tpl'}
+
+									{ia_hooker name='smartyFrontBeforeMainContent'}
+
+									<div class="content__body">
+										{$_content_}
+									</div>
+
+									{ia_hooker name='smartyFrontAfterMainContent'}
+
+									{ia_blocks block='bottom'}
 								</div>
-
-								{ia_hooker name='smartyFrontBeforeNotifications'}
-								{include 'notification.tpl'}
-
-								{ia_hooker name='smartyFrontBeforeMainContent'}
-
-								<div class="content__body">
-									{$_content_}
-								</div>
-
-								{ia_hooker name='smartyFrontAfterMainContent'}
-
-								{ia_blocks block='bottom'}
+							</div>
+							<div class="{width section='content' position='right' tag='col-md-'} aside">
+								{ia_blocks block='right'}
 							</div>
 						</div>
-						<div class="{width section='content' position='right' tag='col-md-'} aside">
-							{ia_blocks block='right'}
-						</div>
-					</div>
+					{/if}
 				</div>
 			</div>
 
@@ -239,6 +274,7 @@
 					</div>
 				</div>
 			</div>
+		{/if}
 		{/if}
 
 		<footer class="footer">
