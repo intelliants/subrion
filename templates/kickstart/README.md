@@ -7,9 +7,15 @@ Default template for Subrion CMS 4.x
 3. Rename `subrion-template-kickstart-master` to `kickstart`
 4. Activate template in admin dashboard.
 
-#### Or you can
+Or you can
 ```
 cd [root]/templates # where root is the location of subrion core
 git clone https://github.com/intelliants/subrion-template-kickstart.git ./kickstart
 ```
 Voila! Just activate it in your Dashboard / Extensions / Templates
+
+### For template developers
+There is a hidden page with all supported elements. You can access it like this:
+```
+http://yourdomain.com/?elements
+```
