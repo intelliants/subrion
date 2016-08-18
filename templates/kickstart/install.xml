@@ -277,8 +277,8 @@
 		<block status="active" classname="section section-portfolio" position="landing" order="203">new_portfolio_entries</block>
 		<block status="active" classname="section section-testimonials" position="landing" order="204">testimonials</block>
 		<block status="active" classname="section section-blog" position="landing" order="205">blogroll</block>
-		<block status="active" classname="box--border">common_statistics</block>
-		<block status="active" classname="box--border">filters</block>
+		<block status="active" classname="box--border" position="right">common_statistics</block>
+		<block status="active" classname="box--border" position="left">filters</block>
 	</changeset>
 
 	<blocks>
