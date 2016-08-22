@@ -127,6 +127,15 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 
 			if ($itemId && $item && $field && $path)
 			{
+				$iaCore->factory('field');
+
+				$fieldData = $iaDb->row(array('type'), iaDb::convertIds($field, 'name'), iaField::getTable());
+
+				if (!$fieldData || !in_array($fieldData['type'], array(iaField::IMAGE, iaField::PICTURES)))
+				{
+					break;
+				}
+
 				$tableName = $iaCore->factory('item')->getItemTable($item);
 
 				if (iaUsers::getItemName() == $item)
@@ -200,19 +209,27 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 
 					if ($key !== false)
 					{
-						$iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName);
+						$fileExt = pathinfo($path, PATHINFO_EXTENSION);
 
-						$iaPicture = $iaCore->factory('picture');
-						$iaPicture->delete($path);
-
-						$output = array('error' => false, 'message' => iaLanguage::get('deleted'));
-
-						if (iaUsers::getItemName() == $item)
+						if (in_array($fileExt, array('php', 'tpl', 'xml')))
 						{
-							// update current profile data
-							if ($itemId == iaUsers::getIdentity()->id)
+							break;
+						}
+
+						if ($iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName))
+						{
+							$iaPicture = $iaCore->factory('picture');
+							$iaPicture->delete($path);
+
+							$output = array('error' => false, 'message' => iaLanguage::get('deleted'));
+
+							if (iaUsers::getItemName() == $item)
 							{
-								iaUsers::reloadIdentity();
+								// update current profile data
+								if ($itemId == iaUsers::getIdentity()->id)
+								{
+									iaUsers::reloadIdentity();
+								}
 							}
 						}
 					}
