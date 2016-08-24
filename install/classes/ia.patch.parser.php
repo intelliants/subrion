@@ -209,6 +209,7 @@ class iaPatchParser
 
 		$index = (int)0;
 		$items = array();
+		$versionFileExists = false;
 
 		while ($index < $this->patch['info']['num_files'])
 		{
@@ -220,6 +221,11 @@ class iaPatchParser
 				$entry['path'] = $this->_read(self::FORMAT_RAW, $entry['length_fp']);
 				$entry['name'] = $this->_read(self::FORMAT_RAW, $entry['length_fn']);
 				$entry['contents'] = $this->_read(self::FORMAT_RAW, $entry['size']);
+
+				if ('index.php' == $entry['name'] && '.' == $entry['path'])
+				{
+					$versionFileExists = true;
+				}
 
 				if ($entry['flags'] & self::FILE_FLAG_COMPRESSED)
 				{
@@ -240,6 +246,11 @@ class iaPatchParser
 				$this->_error('Error parsing file entry.');
 			}
 			$index++;
+		}
+
+		if (!$versionFileExists)
+		{
+			$this->_error('Inconsistent patch file.');
 		}
 
 		return $items;
