@@ -26,6 +26,8 @@
 
 class iaCache extends abstractUtil
 {
+	const FILE_EXTENSION = '.inc';
+
 	protected $_cachingEnabled;
 
 	protected $_savePath = IA_CACHEDIR;
@@ -58,7 +60,7 @@ class iaCache extends abstractUtil
 	 */
 	public function get($fileName, $seconds = 0, $isObject = false)
 	{
-		$this->_filePath = $this->_savePath . str_replace('.', '', $fileName) . '.inc';
+		$this->_setFileName($fileName);
 
 		if (!$this->_cachingEnabled || !is_file($this->_filePath))
 		{
@@ -93,12 +95,12 @@ class iaCache extends abstractUtil
 	/**
 	 * Write data to cache files
 	 *
-	 * @param string $file file name to write data to (may be encrypted)
+	 * @param string $fileName file name to write data to (may be encrypted)
 	 * @param string $Data data to be written
 	 *
 	 * @return bool
 	 */
-	public function write($file, $Data)
+	public function write($fileName, $Data)
 	{
 		if (!$this->_cachingEnabled)
 		{
@@ -108,7 +110,8 @@ class iaCache extends abstractUtil
 		{
 			$Data = serialize($Data);
 		}
-		$this->_filePath = $this->_savePath . str_replace('.', '', $file) . '.inc';
+
+		$this->_setFileName($fileName);
 
 		if (!$file = fopen($this->_filePath, 'wb'))
 		{
@@ -143,7 +146,7 @@ class iaCache extends abstractUtil
 	 */
 	public function remove($fileName)
 	{
-		$this->_filePath = $this->_savePath . $fileName;
+		$this->_setFileName($fileName);
 
 		$iaView = &$this->iaCore->iaView;
 		$iaView->loadSmarty(true);
@@ -188,6 +191,11 @@ class iaCache extends abstractUtil
 		}
 
 		return $return_data;
+	}
+
+	protected function _setFileName($fileName)
+	{
+		$this->_filePath = $this->_savePath . str_replace('.', '', $fileName) . self::FILE_EXTENSION;
 	}
 
 	public function clearAll()
