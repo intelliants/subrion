@@ -123,7 +123,7 @@ class iaSearch extends abstractCore
 
 		if ($this->_loadItemInstance($itemName))
 		{
-			$this->_limit = 10;
+			$this->_limit = $this->_getLimitByItemName($itemName);
 			$this->_start = ($page - 1) * $this->_limit;
 
 			$this->_processSorting($sorting);
@@ -931,5 +931,25 @@ class iaSearch extends abstractCore
 		}
 
 		return $result;
+	}
+
+	protected function _getLimitByItemName($itemName)
+	{
+		$defaultLimit = 10;
+
+		$itemsMap = array(
+			'autos' => 'autos_number_perpage',
+			'boats' => 'boats_number_perpage',
+			'products' => 'commerce_products_per_page',
+			'coupons' => 'coupons_per_page',
+			'listings' => 'directory_listings_perpage',
+			'articles' > 'art_perpage',
+			'estates' => 'realestate_num_per_page',
+			'venues' => 'yp_listings_perpage'
+		);
+
+		return isset($itemsMap[$itemName])
+			? (int)$this->iaCore->get($itemsMap[$itemName], $defaultLimit)
+			: $defaultLimit;
 	}
 }
