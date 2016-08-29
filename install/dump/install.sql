@@ -2246,6 +2246,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('edit_listing','Edit Listing','frontend'),
 ('edit_subject','Edit subject','frontend'),
 ('edited_by','<i>Last edited by <a href=\"{%URL%}\">{%USER%}</a></i>','frontend'),
+('empty_image_title','Empty','frontend'),
 ('enter_confirmation_code','Please enter confirmation code below','frontend'),
 ('error_no_member_email','No members registered with this email.','frontend'),
 

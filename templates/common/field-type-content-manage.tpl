@@ -136,7 +136,7 @@ $(function()
 									</a>
 
 									<div class="caption">
-										<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
+										<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" data-emptytext="{lang key='empty_image_title'}" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
 									</div>
 
 									<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
