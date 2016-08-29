@@ -346,6 +346,7 @@ CREATE TABLE `{install:prefix}invoices`(
   `date_created` datetime NOT NULL,
   `date_due` datetime default NULL,
   `fullname` varchar(200) NOT NULL,
+  `member_id` int(11) unsigned NOT NULL,
   `address1` tinytext NOT NULL,
   `address2` tinytext NOT NULL,
   `zip` varchar(12) NOT NULL,

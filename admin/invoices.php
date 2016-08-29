@@ -141,13 +141,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		$entry['date_due'] = $data['date_due'];
+		$entry['member_id'] = $data['member_id'];
 		$entry['fullname'] = $data['fullname'];
+		$entry['date_due'] = $data['date_due'];
 		$entry['address1'] = $data['address1'];
 		$entry['address2'] = $data['address2'];
-		$entry['zip'] = $data['zip'];
 		$entry['country'] = $data['country'];
 		$entry['notes'] = $data['notes'];
+		$entry['zip'] = $data['zip'];
 
 		if (iaCore::ACTION_ADD == $action)
 		{

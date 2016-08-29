@@ -184,7 +184,7 @@ $(function()
 			$('#member-id').val(items[item].id);
 				return item;
 		},
-		matcher: function(item) {
+		matcher: function() {
 			return true;
 		}
 	});

@@ -44,7 +44,8 @@ class iaInvoice extends abstractCore
 			'transaction_id' => $transaction['id'],
 			'date_created' => date(iaDb::DATETIME_FORMAT),
 			'date_due' => null,
-			'fullname' => empty($transaction['fullname']) ? iaUsers::getIdentity()->fullname : $transaction['fullname']
+			'fullname' => empty($transaction['fullname']) ? iaUsers::getIdentity()->fullname : $transaction['fullname'],
+			'member_id' => empty($transaction['fullname']) ? iaUsers::getIdentity()->id : 0,
 		);
 
 		$this->iaDb->insert($invoice, null, self::getTable());
