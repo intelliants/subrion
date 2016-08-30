@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-abstract class abstractPlugin extends iaGrid
+abstract class abstractPlugin extends abstractCore
 {
 
 
