@@ -69,7 +69,7 @@ class iaBlock extends abstractPlugin
 	{
 		if (is_null($this->_positions))
 		{
-			$this->_positions = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::$_positionsTable);
+			$this->_positions = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::$_positionsTable);
 		}
 
 		return $this->_positions;
