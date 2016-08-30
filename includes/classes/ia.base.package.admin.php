@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-abstract class abstractPackageAdmin extends iaGrid
+abstract class abstractPackageAdmin extends abstractCore
 {
 	protected $_activityLog;
 
