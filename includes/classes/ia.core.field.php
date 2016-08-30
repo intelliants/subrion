@@ -806,9 +806,15 @@ class iaField extends abstractCore
 					}
 					elseif ($field['required'] && !in_array(UPLOAD_ERR_OK, $_FILES[$fieldName]['error']))
 					{
-						$error = true;
-						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
-						$invalidFields[] = $fieldName;
+						$existImages = empty($previousValues[$fieldName]) ? null : $previousValues[$fieldName];
+						$existImages = is_string($existImages) ? unserialize($existImages) : $existImages;
+
+						if (!$existImages)
+						{
+							$error = true;
+							$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
+							$invalidFields[] = $fieldName;
+						}
 					}
 
 					// custom folder for uploaded images
