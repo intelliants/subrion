@@ -468,30 +468,24 @@ class iaBackendController extends iaAbstractControllerBackend
 			$menusList = $iaDb->all(array('id'), iaDb::convertIds('menu', 'type'), null, null, $iaBlock::getTable());
 			foreach ($menusList as $item)
 			{
-				$items = array();
-				$add = false;
 				if (in_array($item['id'], $menus))
 				{
 					if (!$iaDb->exists('`menu_id` = :menu AND `page_name` = :page', array('menu' => $item['id'], 'page' => $entryName)))
 					{
-						$items[] = array(
+						$entry = array(
 							'parent_id' => 0,
 							'menu_id' => $item['id'],
 							'el_id' => $this->getEntryId() . '_' . iaUtil::generateToken(5),
 							'level' => 0,
 							'page_name' => $entryName
 						);
-						$add = true;
+
+						$iaDb->insert($entry);
 					}
 				}
 				else
 				{
 					$iaDb->delete('`menu_id` = :menu AND `page_name` = :page', null, array('menu' => $item['id'], 'page' => $entryName));
-				}
-
-				if ($add)
-				{
-					$iaDb->insert($items);
 				}
 
 				$this->_iaCore->iaCache->remove('menu_' . $item['id']);
