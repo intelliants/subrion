@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VER', '40510');
+define('IA_VER', '410');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
@@ -431,7 +431,7 @@ HTML;
 						'{debug}' => iaHelper::getPost('debug', 0, false),
 						'{username}' => iaHelper::_sql(iaHelper::getPost('admin_username'), $link),
 						'{password}' => iaHelper::_sql(iaHelper::getPost('admin_password'), $link),
-						'{url}' => URL_HOME . 'admin/'
+						'{url}' => URL_ADMIN_PANEL
 					);
 					$body = str_replace(array_keys($params), array_values($params), $body);
 					$params['{dbpass}'] = str_replace("'", "\\'", $params['{dbpass}']);

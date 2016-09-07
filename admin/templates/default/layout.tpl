@@ -63,7 +63,7 @@
 					<div class="social-links">
 						<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><i class="i-twitter-2"></i></a>
 						<a href="https://www.facebook.com/Intelliants" target="_blank" class="social-links__facebook"><i class="i-facebook-2"></i></a> 
-						<a href="https://plus.google.com/102005294232479547608/posts" target="_blank" class="social-links__googleplus"><i class="i-googleplus"></i></a>
+						<a href="https://github.com/intelliants/subrion" target="_blank" class="social-links__github"><i class="i-github-2"></i></a>
 					</div>
 				</section>
 
@@ -141,6 +141,7 @@
 									{/if}
 									<li><a href="http://www.subrion.com/desk/" target="_blank">Helpdesk</a></li>
 									<li><a href="http://www.subrion.org/forums/" target="_blank">User forums</a></li>
+									<li><a href="https://github.com/intelliants/subrion" target="_blank">Github</a></li>
 									<li><a href="http://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
 								</ul>
 							</li>

@@ -60,6 +60,6 @@
 <div class="form-actions">
 	<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/configuration/" class="btn btn-lg btn-default"><i class="i-chevron-left"></i> Back</a>
 	<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/plugins/" class="btn btn-lg btn-info"><i class="i-lab"></i> Install Plugins</a>
-	<a href="<?php echo URL_HOME ?>admin/" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>
+	<a href="<?php echo URL_ADMIN_PANEL ?>" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>
 	<a href="<?php echo URL_HOME ?>" class="btn btn-lg btn-primary"><i class="i-screen"></i> to Home page</a>
 </div>
