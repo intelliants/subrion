@@ -2444,6 +2444,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('alias_urlencode','Non-Latin (non-utf8) characters are encoded into special entities instead of being romanized.','tooltip'),
 ('adminonly','The field will only be displayed in Admin Dashboard.','tooltip'),
+('api_push_access_key','Google Cloud Messaging (GCM) is a free service that enables developers to send messages between servers and client apps. This includes downstream messages from servers to client apps, and upstream messages from client apps to servers.','tooltip'),
 
 ('backup','Folder name where your DB backups are saved.','tooltip'),
 
