@@ -59,6 +59,7 @@ $scriptPort = (80 == $_SERVER['SERVER_PORT']) ? '' : ':' . $_SERVER['SERVER_PORT
 $url = '//' . $_SERVER['SERVER_NAME'] . $scriptPort . IA_URL_DELIMITER . $scriptFolder;
 
 define('URL_HOME', 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $url);
+define('URL_ADMIN_PANEL', URL_HOME . 'panel/');
 define('URL_INSTALL', URL_HOME . INSTALL . IA_URL_DELIMITER);
 define('URL_ASSETS', $url . INSTALL . IA_URL_DELIMITER);
 

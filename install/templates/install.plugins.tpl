@@ -48,7 +48,7 @@
 	<?php endif ?>
 
 	<div class="form-actions">
-		<a href="<?php echo URL_HOME ?>admin/" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>
+		<a href="<?php echo URL_ADMIN_PANEL ?>" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>
 		<a href="<?php echo URL_HOME ?>" class="btn btn-lg btn-primary"><i class="i-screen"></i> to Home page</a>
 	</div>
 </div>
@@ -78,7 +78,7 @@
 	</div>
 	
 	<div class="form-actions">
-		<a href="<?php echo URL_HOME ?>admin/" class="btn btn-lg btn-primary">to Admin panel <i class="i-gauge"></i></a>
+		<a href="<?php echo URL_ADMIN_PANEL ?>" class="btn btn-lg btn-primary">to Admin panel <i class="i-gauge"></i></a>
 		<a href="<?php echo URL_HOME ?>" class="btn btn-lg btn-primary">to Home page <i class="i-screen"></i></a>
 	</div>
 </div>

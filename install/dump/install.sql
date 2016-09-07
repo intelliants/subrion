@@ -880,7 +880,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('general','language_switch','1','''1'',''0''','radio',0,'Language switching',36,'',0,1,''),
 ('general','timezone','America/New_York','','select',0,'Default timezone',45,'',0,0,''),
 ('general','','Pages','1','divider',0,'',60,'',1,1,''),
-('general','admin_page','admin',null,'text',0,'Admin Dashboard URL',63,'',1,0,''),
+('general','admin_page','panel',null,'text',0,'Admin Dashboard URL',63,'',1,0,''),
 ('general','bc_home','Home',null,'text',0,'Breadcrumb first element',66,'',1,1,''),
 
 ('members','','General','1','divider',0,'',1,'',1,0,''),
