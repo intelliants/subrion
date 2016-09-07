@@ -63,7 +63,7 @@
 					<div class="social-links">
 						<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><i class="i-twitter-2"></i></a>
 						<a href="https://www.facebook.com/Intelliants" target="_blank" class="social-links__facebook"><i class="i-facebook-2"></i></a> 
-						<a href="https://github.com/intelliants/subrion" target="_blank" class="social-links__github"><i class="i-github-2"></i></a>
+						<a href="https://github.com/intelliants/subrion" target="_blank" class="social-links__github"><i class="i-github"></i></a>
 					</div>
 				</section>
 
