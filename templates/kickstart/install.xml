@@ -331,7 +331,7 @@
 	</div>
 </div>
 <div class="text-center m-t">
-	<a class="btn btn-primary text-uppercase" href="{$smarty.const.IA_URL}admin/">Go to admin dashboard</a>
+	<a class="btn btn-primary text-uppercase" href="{$smarty.const.IA_ADMIN_URL}">Go to admin dashboard</a>
 </div>
 			]]>
 		</block>
