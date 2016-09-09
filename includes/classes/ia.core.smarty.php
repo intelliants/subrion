@@ -611,17 +611,6 @@ class iaSmarty extends Smarty
 
 		$imageName = isset($params['gravatar']) ? 'no-avatar.png' : 'no-preview.png';
 
-		$gravatarUrl = '';
-		if ($iaCore->get('gravatar_enabled') && isset($params['gravatar']) && isset($params['email']))
-		{
-			$d = $iaCore->get('gravatar_default_image') ? IA_CLEAR_URL . $iaCore->get('gravatar_default_image') : $iaCore->get('gravatar_type');
-			$s = isset($params['gravatar_width']) ? (int)$params['gravatar_width'] : $iaCore->get('gravatar_size');
-			$r = $iaCore->get('gravatar_rating');
-
-			$protocol = $iaCore->get('gravatar_secure') ? 'https' : 'http';
-			$gravatarUrl = $protocol . '://www.gravatar.com/avatar/' . md5(strtolower(trim($params['email']))) . "?s=$s&d=$d&r=$r";
-		}
-
 		// temporary solution
 		// TODO: remove
 		if ('a:' == substr($params['imgfile'], 0, 2))
@@ -630,6 +619,8 @@ class iaSmarty extends Smarty
 
 			$params['imgfile'] = $array['path'];
 			$params['title'] = isset($array['title']) ? $array['title'] : '';
+
+			iaDebug::debug($params['imgfile'], 'Serialized parameter passed to iaSmarty::printImage()', 'error');
 		}
 		//
 
@@ -648,16 +639,18 @@ class iaSmarty extends Smarty
 				$thumbUrl .= $params['imgfile'];
 			}
 		}
+		elseif (isset($params['gravatar']) && $iaCore->get('gravatar_enabled') && isset($params['email']))
+		{
+			$d = $iaCore->get('gravatar_default_image') ? IA_CLEAR_URL . $iaCore->get('gravatar_default_image') : $iaCore->get('gravatar_type');
+			$s = isset($params['gravatar_width']) ? (int)$params['gravatar_width'] : $iaCore->get('gravatar_size');
+			$r = $iaCore->get('gravatar_rating');
+			$p = $iaCore->get('gravatar_secure') ? 'https' : 'http';
+
+			$thumbUrl = $p . '://www.gravatar.com/avatar/' . md5(strtolower(trim($params['email']))) . "?s=$s&d=$d&r=$r";
+		}
 		else
 		{
-			if ($gravatarUrl)
-			{
-				$thumbUrl = $gravatarUrl;
-			}
-			else
-			{
-				$thumbUrl = IA_TPL_URL . 'img/' . $imageName;
-			}
+			$thumbUrl = IA_TPL_URL . 'img/' . $imageName;
 		}
 
 		if (!empty($params['url']))
