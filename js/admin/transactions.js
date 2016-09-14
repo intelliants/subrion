@@ -84,6 +84,12 @@ Ext.onReady(function()
 		}, {
 			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
+		}, {
+			handler: function(){
+				intelli.gridHelper.search(grid, false, true);
+				intelli.gridHelper.search(grid, true);
+			},
+			text: '<i class="i-box-remove"></i> ' + _t('export_to_excel')
 		}]});
 
 		if (searchParam)

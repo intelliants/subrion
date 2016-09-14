@@ -75,7 +75,7 @@ intelli.gridHelper = {
 		}
 	},
 
-	search: function(caller, isReset)
+	search: function(caller, isReset, isExcelExport)
 	{
 		var i;
 		var data = {};
@@ -101,7 +101,10 @@ intelli.gridHelper = {
 		}
 
 		$.extend(data, (undefined === caller.params.storeParams) ? {} : caller.params.storeParams);
-
+		if (isExcelExport)
+		{
+			data['export_excel'] = 1;
+		}
 		caller.store.getProxy().extraParams = data;
 		caller.store.loadPage(1);
 	},
@@ -260,7 +263,17 @@ function IntelliGrid(params, autoInit)
 						action: operation.action,
 						records: operation.records,
 						operation: operation,
-						url: operation.url
+						url: operation.url,
+						success: function (response) {
+							try {
+								var respObj = JSON.parse(response.responseText);
+							} catch (e) {
+								return false;
+							}
+							if ('boolean' == typeof respObj.result && respObj.result) {
+								window.location.href = respObj.redirect_url;
+							}
+						}
 					});
 					request.url = this.buildUrl(request);
 					operation.request = request;
