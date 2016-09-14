@@ -1461,6 +1461,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('export_language','Export Language','admin'),
 ('export_not_checked','You have not chosen what to export.','admin'),
 ('export_tables_incorrect','Incorrect export tables.','admin'),
+('export_to_excel','Export to Excel','admin'),
 ('extra_actions','Extra actions','admin'),
 ('extra_changelog','Changelog','admin'),
 ('extra_description','Description','admin'),
