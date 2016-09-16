@@ -125,18 +125,18 @@ $(function() {
 						{/if}
 
 						<div class="item-input">
-							<select name="v[{$entry.name}]" {if count($entry.values) == 1} disabled="disabled"{/if} id="{$entry.name}">
-								{foreach $entry.values as $key => $value2}
+							<select name="v[{$entry.name}]" id="{$entry.name}"{if 1 == count($entry.values)} disabled{/if}>
+								{foreach $entry.values as $k => $v}
 									{if 'lang' == $entry.name}
-										<option value="{$key}"{if $key == $entry.value || $value2 == $entry.value} selected{/if}>{$value2.title}</option>
-									{elseif is_array($value2)}
-										<optgroup label="{$key}">
-											{foreach $value2 as $subkey => $subvalue}
+										<option value="{$k}"{if $k == $entry.value || $v == $entry.value} selected{/if}>{$v.title|escape:'html'}</option>
+									{elseif is_array($v)}
+										<optgroup label="{$k}">
+											{foreach $v as $subkey => $subvalue}
 												<option value="{$subkey}"{if $subkey == $entry.value} selected{/if}>{$subvalue}</option>
 											{/foreach}
 										</optgroup>
 									{else}
-										<option value="{$value2|trim:"'"}"{if $value2|trim:"'" == $entry.value} selected{/if}>{$value2|trim:"'"}</option>
+										<option value="{$k}"{if $k == $entry.value} selected{/if}>{$v|escape:'html'}</option>
 									{/if}
 								{/foreach}
 							</select>
