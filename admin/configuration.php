@@ -535,7 +535,24 @@ class iaBackendController extends iaAbstractControllerBackend
 						$entry['values'] = $this->_iaCore->languages;
 						break;
 					default:
-						$entry['values'] = explode(',', $entry['multiple_values']);
+						$array = explode(',', trim($entry['multiple_values'], ','));
+						$values = array();
+
+						foreach ($array as $a)
+						{
+							$a = explode('||', $a);
+							if (count($a) > 1)
+							{
+								$values[$a[0]] = $a[1];
+							}
+							else
+							{
+								$v = trim($a[0], "'");
+								$values[$v] = $v;
+							}
+						}
+
+						$entry['values'] = $values;
 				}
 			}
 
