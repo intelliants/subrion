@@ -134,9 +134,7 @@ abstract class iaAbstractControllerBackend
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 						}
 
-						$this->_entryId = isset($this->_iaCore->requestPath[0])
-							? $this->_iaCore->requestPath[0]
-							: null;
+						$this->_fetchEntryId();
 
 						if (!$this->getEntryId())
 						{
@@ -247,6 +245,13 @@ abstract class iaAbstractControllerBackend
 	protected function _indexPage(&$iaView)
 	{
 		$iaView->grid('admin/' . $this->getName());
+	}
+
+	protected function _fetchEntryId()
+	{
+		$this->_entryId = isset($this->_iaCore->requestPath[0])
+			? $this->_iaCore->requestPath[0]
+			: null;
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
