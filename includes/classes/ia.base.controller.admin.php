@@ -134,14 +134,14 @@ abstract class iaAbstractControllerBackend
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 						}
 
-						$this->_fetchEntryId();
+						$this->_retrieveEntryId();
 
-						if (!$this->getEntryId())
+						if (is_null($this->getEntryId()))
 						{
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 						}
 
-						$entry = $this->getById($this->_entryId);
+						$entry = $this->getById($this->getEntryId());
 						if (empty($entry))
 						{
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
@@ -247,7 +247,14 @@ abstract class iaAbstractControllerBackend
 		$iaView->grid('admin/' . $this->getName());
 	}
 
-	protected function _fetchEntryId()
+	/**
+	 * Retrieves ID of entry currently being managed
+	 *
+	 * Should return NULL if no ID
+	 *
+	 * @return string or NULL
+	 */
+	protected function _retrieveEntryId()
 	{
 		$this->_entryId = isset($this->_iaCore->requestPath[0])
 			? $this->_iaCore->requestPath[0]
