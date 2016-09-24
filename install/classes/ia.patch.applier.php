@@ -60,12 +60,12 @@ class iaPatchApplier
 		765 => array(
 			'COMPANY: Intelliants LLC',
 			'PROJECT: Subrion Content Management System',
-			'LICENSE: http://www.subrion.com/license.html',
-			'http://www.subrion.com/',
+			'LICENSE: https://subrion.pro/license.html',
+			'https://subrion.pro/',
 			'This program is an open source php content management system.',
 			'Link to Subrion.com may not be removed from the software pages',
 			'PHP code copyright notice may not be removed from source code',
-			'http://www.intelliants.com/'
+			'https://intelliants.com/'
 		),
 		22 => array('//##copyright##')
 	);
