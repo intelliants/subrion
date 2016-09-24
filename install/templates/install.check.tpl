@@ -1,5 +1,5 @@
 <?php if (!file_exists(IA_HOME . '.htaccess')): ?>
-	<div class="alert alert-error">No .htaccess found in your Subrion core folder. More details <a href="http://www.subrion.com/desk/index.php?/Knowledgebase/Article/View/28/3/no-htaccess-in-subrion-folder" target="_blank">here</a>.</div>
+	<div class="alert alert-error">No .htaccess found in your Subrion core folder. More details <a href="https://subrion.pro/desk/index.php?/Knowledgebase/Article/View/28/3/no-htaccess-in-subrion-folder" target="_blank">here</a>.</div>
 <?php endif ?>
 
 <?php foreach ($this->sections as $name => $item): ?>

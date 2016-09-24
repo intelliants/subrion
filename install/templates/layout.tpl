@@ -89,7 +89,7 @@
 								</a>
 							</li>
 							<li>
-								<a href="http://www.subrion.com/desk/" title="Submit a ticket and get a fast reply." target="_blank">
+								<a href="https://subrion.pro/desk/" title="Submit a ticket and get a fast reply." target="_blank">
 									<i class="i-support"></i>
 									<span> Helpdesk</span>
 								</a>

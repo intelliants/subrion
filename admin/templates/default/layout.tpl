@@ -139,7 +139,7 @@
 											<a data-toggle="modal" href="#feedback-modal">Submit feedback</a>
 										</li>
 									{/if}
-									<li><a href="http://www.subrion.com/desk/" target="_blank">Helpdesk</a></li>
+									<li><a href="https://subrion.pro/desk/" target="_blank">Helpdesk</a></li>
 									<li><a href="http://www.subrion.org/forums/" target="_blank">User forums</a></li>
 									<li><a href="https://github.com/intelliants/subrion" target="_blank">Github</a></li>
 									<li><a href="http://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
