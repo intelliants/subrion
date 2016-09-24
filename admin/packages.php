@@ -88,7 +88,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						$contents = file_get_contents($documentationPath . $doc);
 						$result['tabs'][] = array(
 							'title' => iaLanguage::get('extra_' . $tab, ucfirst($tab)),
-							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
+							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 							'cls' => 'extension-docs'
 						);
 					}

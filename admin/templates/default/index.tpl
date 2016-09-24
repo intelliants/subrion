@@ -235,14 +235,14 @@
 
 									{if $index@iteration == 10}
 										<li class="divider"></li>
-										<li><a href="http://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i> {lang key='view_roadmap'}</a></li>
+										<li><a href="https://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i> {lang key='view_roadmap'}</a></li>
 
 										{break}
 									{/if}
 								{/foreach}
 							</ul>
 						</li>
-						<li><a href="http://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i></a></li>
+						<li><a href="https://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i></a></li>
 						<li><a href="#" class="widget-toggle"><i class="i-chevron-up"></i></a></li>
 					</ul>
 				</div>

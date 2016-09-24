@@ -1661,7 +1661,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('no_follow_url','No Follow URL','admin'),
 ('no_implemented_packages','No implemented packages.','admin'),
 ('no_members','- no members -','admin'),
-('no_packages','No packages. You can check our <a href="https://subrion.pro/order/" target="_blank">Order page</a> at subrion.com to get some premium extensions for your website.','admin'),
+('no_packages','No packages. You can check our <a href="https://subrion.pro/order/" target="_blank">Order page</a> at subrion.pro to get some premium extensions for your website.','admin'),
 ('no_parent_fields','No main fields for this item','admin'),
 ('no_plans','No Plans','admin'),
 ('no_plugins','No plugins.','admin'),
