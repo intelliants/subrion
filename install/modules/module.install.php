@@ -437,7 +437,7 @@ HTML;
 					$params['{dbpass}'] = str_replace("'", "\\'", $params['{dbpass}']);
 					$config = str_replace(array_keys($params), array_values($params), $config);
 
-					@mail(iaHelper::_sql(iaHelper::getPost('admin_email')), 'Subrion CMS Installed', $body, 'From: tech@subrion.com');
+					@mail(iaHelper::_sql(iaHelper::getPost('admin_email')), 'Subrion CMS Installed', $body, 'From: support@subrion.org');
 					$filename = IA_HOME . 'includes' . IA_DS . 'config.inc.php';
 					$configMsg = '';
 

@@ -173,7 +173,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								$class = 'other';
 						}
 
-						$issue = preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', ltrim($line, '+-* '));
+						$issue = preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', ltrim($line, '+-* '));
 						$log[$index][$class] .= '<li>' . $issue . '</li>';
 					}
 				}
@@ -254,7 +254,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$footer .= 'Email: ' . $email . '<br />' . PHP_EOL;
 				$footer .= 'Script version: ' . $this->_iaCore->get('version') . '<br />' . PHP_EOL;
 
-				$result = (bool)mail('tech@subrion.com', $this->_iaCore->get('site') . ' - ' . $_POST['feedback_subject'], $_POST['feedback_body'] . $footer, 'From: ' . $email);
+				$result = (bool)mail('support@subrion.org', $this->_iaCore->get('site') . ' - ' . $_POST['feedback_subject'], $_POST['feedback_body'] . $footer, 'From: ' . $email);
 
 				return array(
 					'result' => $result,

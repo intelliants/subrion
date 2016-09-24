@@ -12,7 +12,7 @@ What is Subrion?
 
 Development Roadmap
 ---------------------
-We migrated our development to GitHub with the release of Subrion 4.x version. Please check our previous issue tracker [here](http://dev.subrion.org/projects/subrion-cms/roadmap).
+We migrated our development to GitHub with the release of Subrion 4.x version. Please check our previous issue tracker [here](https://dev.subrion.org/projects/subrion-cms/roadmap).
 
 Updates are free!
 ---------------------
