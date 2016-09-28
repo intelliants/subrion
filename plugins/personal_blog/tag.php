@@ -117,7 +117,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$tags = $iaDb->getAll($sql);
 		$pagination['total'] = $iaDb->foundRows();
 
-		$iaView->assign('tags', $tags);
+		$iaView->assign('blog_tags', $tags);
 		$iaView->assign('pagination', $pagination);
 		$iaView->display('tag');
 	}

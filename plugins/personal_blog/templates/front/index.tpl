@@ -9,9 +9,9 @@
 
 	<div class="tags">
 		<span class="fa fa-tags"></span>
-		{if $tags}
+		{if $blog_tags}
 			{lang key='tags'}:
-			{foreach $tags as $tag}
+			{foreach $blog_tags as $tag}
 				<a href="{$smarty.const.IA_URL}tag/{$tag.alias}">{$tag.title|escape:'html'}</a>{if !$tag@last}, {/if}
 			{/foreach}
 		{else}
@@ -44,15 +44,15 @@
 						</h4>
 						<div class="ia-item__additional">
 							<p><span class="fa fa-tags"></span>
-							{if $tags}
+							{if $blog_tags}
 								{$tagsExist=0}
-								{foreach $tags as $tag}
+								{foreach $blog_tags as $tag}
 									{if $blog_entry.id == $tag.blog_id}
 										{$tagsExist = $tagsExist + 1}
 									{/if}
 								{/foreach}
 								{if $tagsExist != 0}
-									{foreach $tags as $tag}
+									{foreach $blog_tags as $tag}
 										{if $blog_entry.id == $tag.blog_id}
 											<a href="{$smarty.const.IA_URL}tag/{$tag.alias}">{$tag.title|escape: 'html'}</a>
 										{/if}
