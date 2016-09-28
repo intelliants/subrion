@@ -163,7 +163,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$tags = (iaCore::ACTION_ADD == $pageAction) ? '' : $iaBlog->getTagsString($id);
 
 			$iaView->assign('item', $entry);
-			$iaView->assign('tags', $tags);
+			$iaView->assign('blog_entry_tags', $tags);
 
 			break;
 
@@ -224,7 +224,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				$iaView->set('og', $openGraph);
 
-				$iaView->assign('tags', $iaBlog->getTags($id));
+				$iaView->assign('blog_tags', $iaBlog->getTags($id));
 				$iaView->assign('blog_entry', $entry);
 
 				if ($iaAcl->isAccessible(iaBlog::PAGE_NAME, iaCore::ACTION_EDIT) && iaUsers::hasIdentity()
@@ -258,7 +258,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$entries = $iaBlog->get($pagination['start'], $pagination['limit']);
 				$pagination['total'] = $iaDb->foundRows();
 
-				$iaView->assign('tags', $iaBlog->getAllTags());
+				$iaView->assign('blog_tags', $iaBlog->getAllTags());
 				$iaView->assign('blog_entries', $entries);
 				$iaView->assign('pagination', $pagination);
 			}

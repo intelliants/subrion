@@ -28,7 +28,7 @@
 
 						<div class="form-group">
 							<label for="input-tag">{lang key='tags'}</label>
-							<input class="form-control" type="text" name="tags" value="{$tags|escape:'html'}" id="input-tag">
+							<input class="form-control" type="text" name="tags" value="{$blog_entry_tags|escape:'html'}" id="input-tag">
 							<p class="help-block text-break-word" id="title_box">{lang key='separate_with_comma_or_enter'}</p>
 						</div>
 

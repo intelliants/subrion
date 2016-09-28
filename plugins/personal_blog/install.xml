@@ -4,9 +4,9 @@
 	<summary>Allows to create a personal admin blog</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>4.0.2</version>
-	<date>2016-02-15</date>
-	<compatibility>4.0</compatibility>
+	<version>4.1.0</version>
+	<date>2016-09-26</date>
+	<compatibility>4.1</compatibility>
 
 	<actions>
 		<action name="blogs" url="blog/" icon="list" pages="personal_blog:add,personal_blog:edit">List</action>

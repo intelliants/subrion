@@ -17,8 +17,8 @@
 	{/foreach}
 	{navigation aTotal=$pagination.total aTemplate=$pagination.template aItemsPerPage=$core.config.blog_number aNumPageItems=5}
 {else}
-	{if $tags}
-		{foreach $tags as $tag}
+	{if $blog_tags}
+		{foreach $blog_tags as $tag}
 			{if $tag != ''}
 				<div class="media ia-item">
 					<div class="media-body">
