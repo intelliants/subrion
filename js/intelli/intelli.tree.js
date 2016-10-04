@@ -43,7 +43,7 @@ function IntelliTree(params)
 			search: {show_only_matches: true}
 		});
 
-		self.$tree.on('loaded.jstree', _openCascade);
+		self.$tree.on('load_node.jstree', _cascadeOpen);
 		self.$tree.on('changed.jstree', this.onchange);
 		if (typeof params.onchange == 'function')
 		{
@@ -83,17 +83,29 @@ function IntelliTree(params)
 			self.$label.val(path.join(' / '));
 	};
 
-	var _openCascade = function()
+	var _cascadeOpen = function(e, o)
 	{
-		if (params.nodeOpened)
+		if (!params.nodeOpened) return;
+
+		var nodes = o.node.children,
+			tree = self.$tree.jstree(true);
+
+		for (var i = 0; i < nodes.length; i++)
 		{
-			var tree = self.$tree.jstree(true);
-			tree.open_node(params.nodeOpened, function()
+			if (nodes[i] == params.nodeSelected)
 			{
-				tree.select_node(params.nodeSelected);
-			});
+				tree.select_node(nodes[i]);
+				return;
+			}
+			else if ($.inArray(parseInt(nodes[i]), params.nodeOpened) != -1)
+			{
+				tree.load_node(nodes[i], function(n)
+				{
+					tree.open_node(n.id);
+				})
+			}
 		}
-	};
+	}
 
 	this.init();
 }
