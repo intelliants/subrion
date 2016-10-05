@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<title>{ia_print_title}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="generator" content="Subrion CMS &middot; {$core.config.version}">
+		<meta name="generator" content="Subrion CMS - Open Source Content Management System">
 		<base href="{$smarty.const.IA_ADMIN_URL}">
 
 		<!--[if lt IE 9]>
