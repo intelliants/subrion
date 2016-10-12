@@ -125,6 +125,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$results = $iaSearch->doItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
 
 			$pagination['total'] = $results[0];
+
+			$params = $_GET;
+			unset($params['page']);
+			$pagination['url'] = IA_SELF . '?' . http_build_query($params) . ($params ? '&' : '') . 'page={page}';
 		}
 
 		$iaView->set('filtersItemName', $itemName);
