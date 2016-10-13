@@ -217,7 +217,7 @@
 			</div>
 		</div>
 
-		{include file='fields-system.tpl'}
+		{include 'fields-system.tpl'}
 	</div>
 </form>
 {ia_print_js files='ckeditor/ckeditor, admin/pages'}

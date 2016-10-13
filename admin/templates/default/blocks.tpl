@@ -281,7 +281,7 @@
 			</div>
 		</div>
 
-		{include file='fields-system.tpl'}
+		{include 'fields-system.tpl'}
 	</div>
 </form>
 {ia_print_js files='utils/edit_area/edit_area, ckeditor/ckeditor, admin/blocks'}

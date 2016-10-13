@@ -91,7 +91,7 @@
 			{/foreach}
 		</div>
 
-		{include file='fields-system.tpl'}
+		{include 'fields-system.tpl'}
 	</div>
 </form>
 
