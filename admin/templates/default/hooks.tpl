@@ -1,4 +1,4 @@
-{include file='grid.tpl'}
+{include 'grid.tpl'}
 <hr>
 <div class="wrap-list" style="display: none;">
 	<div class="wrap-group">

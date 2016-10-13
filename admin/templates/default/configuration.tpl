@@ -27,6 +27,13 @@
 						<a href="#" class="js-tooltip" data-placement="right" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
 					{/if}
 				</div>
+			{elseif 'tpl' == $entry.type}
+				{$customTpl = "{$smarty.const.IA_HOME}{$entry.multiple_values}"}
+				{if file_exists($customTpl)}
+					{include $entry.multiple_values}
+				{else}
+					{lang key='template_file_error' file=$entry.multiple_values}
+				{/if}
 			{elseif 'hidden' != $entry.type}
 				<div class="row {$entry.class}" {$dependent_fields}>
 					<label class="col col-lg-2 control-label" for="{$entry.name}">
@@ -36,7 +43,7 @@
 						{/if}
 					</label>
 
-					{if in_array($entry.type, array('textarea', 'tpl'))}
+					{if 'textarea' == $entry.type}
 						<div class="col col-lg-8">
 					{else}
 						<div class="col col-lg-5">
@@ -154,12 +161,6 @@ $(function() {
 							</div>
 						{else}
 							<div class="alert alert-info">{lang key='no_implemented_packages'}</div>
-						{/if}
-					{elseif 'tpl' == $entry.type}
-						{if file_exists($entry.multiple_values)}
-							{include $entry.multiple_values}
-						{else}
-							{lang key='template_file_error' file=$entry.multiple_values}
 						{/if}
 					{/if}
 					</div> <!-- /.col -->

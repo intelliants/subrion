@@ -143,7 +143,7 @@
 			</div>
 		</div>
 
-		{include file='fields-system.tpl' noSystemFields=true}
+		{include 'fields-system.tpl' noSystemFields=true}
 	</div>
 </form>
 {ia_add_media files='datepicker'}

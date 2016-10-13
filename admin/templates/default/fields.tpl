@@ -576,7 +576,7 @@
 			</div>
 		</div>
 
-		{include file='fields-system.tpl'}
+		{include 'fields-system.tpl'}
 	</div>
 </form>
 {ia_add_media files='tree'}

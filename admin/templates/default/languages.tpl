@@ -61,7 +61,7 @@
 				</div>
 			</div>
 
-			{include file='fields-system.tpl'}
+			{include 'fields-system.tpl'}
 		</div>
 	</form>
 {else}
@@ -127,7 +127,7 @@
 			</div>
 		</div>
 	{elseif 'phrases' == $action}
-		{include file='grid.tpl'}
+		{include 'grid.tpl'}
 	{elseif 'download' == $action}
 		<form method="post" class="sap-form form-horizontal">
 			{preventCsrf}
