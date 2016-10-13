@@ -28,7 +28,7 @@
 					{if (!isset($exceptions) || !in_array($field.name, $exceptions))
 						&& (!isset($relations[$field.name])
 							|| (isset($relations[$field.name]) && $relations[$field.name][1] == $item[$relations[$field.name][0]]))}
-						{include file="field-type-content-{(isset($isView)) ? 'view' : 'manage'}.tpl" wrappedValues=true}
+						{include "field-type-content-{(isset($isView)) ? 'view' : 'manage'}.tpl" wrappedValues=true}
 					{/if}
 				{/foreach}
 			{else}
@@ -38,7 +38,7 @@
 					</div>
 				{/foreach}
 
-				{include file='gateways.tpl'}
+				{include 'gateways.tpl'}
 			{/if}
 		{/capture}
 

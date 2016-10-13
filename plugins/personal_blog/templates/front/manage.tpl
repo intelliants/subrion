@@ -61,7 +61,7 @@
 					</div>
 				</div>
 
-				{include file='captcha.tpl'}
+				{include 'captcha.tpl'}
 
 				<div class="fieldset__actions">
 					<button type="submit" name="data-blog-entry" class="btn btn-primary">{lang key='save'}</button>

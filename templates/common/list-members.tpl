@@ -40,7 +40,7 @@
 
 		{foreach $fields as $field}
 			{if !in_array($field.name, array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')) && 'plan_id' != $field.name}
-				{include file='field-type-content-view.tpl' wrappedValues=true item=$listing}
+				{include 'field-type-content-view.tpl' wrappedValues=true item=$listing}
 			{/if}
 		{/foreach}
 	</div>

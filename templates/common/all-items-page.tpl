@@ -7,7 +7,7 @@
 
 			{foreach $all_item_fields as $field}
 				{if 'plan_id' != $field.name}
-					{include file='field-type-content-view.tpl' wrappedValues=true}
+					{include 'field-type-content-view.tpl' wrappedValues=true}
 				{/if}
 			{/foreach}
 

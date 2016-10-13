@@ -33,7 +33,7 @@
 			</div>
 		</div>
 
-		{include file='captcha.tpl'}
+		{include 'captcha.tpl'}
 
 		<div class="fieldset__actions">
 			<button type="submit" name="restore" class="btn btn-primary">{lang key='restore_password'}</button>

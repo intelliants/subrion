@@ -154,7 +154,7 @@
 		</nav>
 
 		{if isset($smarty.get.elements)}
-			{include file='page.elements.tpl'}
+			{include 'page.elements.tpl'}
 		{else}
 		<header class="header">
 			{ia_blocks block='teaser'}

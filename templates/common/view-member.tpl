@@ -69,10 +69,10 @@
 	{/if}
 {/foreach}
 
-{include file='item-view-tabs.tpl' isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
+{include 'item-view-tabs.tpl' isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
 
 {if isset($groups['___empty___'])}
-	{include file='field-type-content-fieldset.tpl' item_sections=$groups isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
+	{include 'field-type-content-fieldset.tpl' item_sections=$groups isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
 {/if}
 
 {ia_hooker name='smartyViewListingBeforeFooter'}
