@@ -4,7 +4,7 @@
 </div>
 <div class="modal-body">
 	{if $searches}
-		<table class="table table-condensed">
+		<table class="table table-condensed table-bordered">
 			{foreach $searches as $entry}
 				<tr>
 					<td width="100"><small>{$entry.date|date_format:$core.config.date_format}</small></td>

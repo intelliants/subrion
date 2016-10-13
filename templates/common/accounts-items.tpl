@@ -15,7 +15,7 @@
 			<div class="media-body">
 				{foreach $all_item_fields as $onefield}
 					{if 'plan_id' != $onefield.name && 'avatar' != $onefield.name}
-						{include file='field-type-content-view.tpl' variable=$onefield wrappedValues=true}
+						{include 'field-type-content-view.tpl' variable=$onefield wrappedValues=true}
 					{/if}
 				{/foreach}
 			</div>

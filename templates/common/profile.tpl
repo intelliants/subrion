@@ -59,7 +59,7 @@
 
 	{if $plans}
 		{capture append='tabs_content' name='plans'}
-			{include file='plans.tpl' item=$member}
+			{include 'plans.tpl' item=$member}
 			<div class="fieldset__actions">
 				<button class="btn btn-primary" type="submit">{lang key='save'}</button>
 			</div>
@@ -77,5 +77,5 @@
 
 	{ia_hooker name='frontEditProfile'}
 
-	{include file='item-view-tabs.tpl'}
+	{include 'item-view-tabs.tpl'}
 </form>

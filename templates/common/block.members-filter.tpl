@@ -1,6 +1,6 @@
 {if isset($letters) && $letters}
 	<div class="members-filter">
-		{include file='ia-alpha-sorting.tpl' letters=$letters url="{$smarty.const.IA_URL}members/"}
+		{include 'ia-alpha-sorting.tpl' letters=$letters url="{$smarty.const.IA_URL}members/"}
 	</div>
 {/if}
 

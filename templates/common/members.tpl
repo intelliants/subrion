@@ -46,7 +46,7 @@
 <div id="js-search-results-container">
 	<div class="ia-items">
 		{foreach $members as $listing}
-			{include file='list-members.tpl'}
+			{include 'list-members.tpl'}
 		{foreachelse}
 			<div class="alert alert-info">{lang key='no_members'}</div>
 		{/foreach}

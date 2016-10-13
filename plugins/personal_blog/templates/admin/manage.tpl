@@ -70,7 +70,7 @@
 			</div>
 		{/capture}
 
-		{include file='fields-system.tpl' datetime=true}
+		{include 'fields-system.tpl' datetime=true}
 
 	</div>
 </form>

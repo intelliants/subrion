@@ -36,7 +36,7 @@
 
 	<configgroup name="template_kickstart">Template</configgroup>
 
-	<config group="template_kickstart" 
+	<config group="template_kickstart"
 			type="divider"
 			order="3000">General</config>
 	<config group="template_kickstart"
