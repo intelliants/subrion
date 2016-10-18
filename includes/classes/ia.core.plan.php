@@ -370,7 +370,7 @@ class iaPlan extends abstractCore
 		);
 	}
 
-	protected function _sendEmailNotification($type, array $plan, $memberId)
+	protected function _sendEmailNotification($type, $plan, $memberId)
 	{
 		$notificationType = 'plan_' . $type;
 

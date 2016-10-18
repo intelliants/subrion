@@ -628,6 +628,8 @@ CREATE TABLE `{install:prefix}payment_subscriptions` (
   `reference_id` varchar(64) default NULL,
   `member_id` int(11) unsigned NOT NULL,
   `plan_id` smallint(5) unsigned NOT NULL,
+  `item` varchar(30) default NULL,
+  `item_id` int(11) unsigned default NULL,
   `status` enum('active','pending','suspended','canceled','failed','completed') NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `REFERENCE` (`reference_id`)

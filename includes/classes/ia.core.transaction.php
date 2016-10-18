@@ -178,11 +178,17 @@ class iaTransaction extends abstractCore
 
 	public function createIpn($transaction)
 	{
-		unset($transaction['id'], $transaction['date_created']);
+		empty($transaction['status']) || $status = $transaction['status'];
+		unset($transaction['id'], $transaction['date_created'], $transaction['status']);
 
-		$this->iaDb->insert($transaction, array('date_created' => iaDb::FUNCTION_NOW), self::getTable());
+		$id = $this->iaDb->insert($transaction, array('date_created' => iaDb::FUNCTION_NOW), self::getTable());
 
-		return $this->iaDb->getInsertId();
+		if ($id && isset($status))
+		{
+			$this->update(array('status' => $status), $id);
+		}
+
+		return $id;
 	}
 
 	/**

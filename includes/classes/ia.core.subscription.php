@@ -36,11 +36,13 @@ class iaSubscription extends abstractCore
 	protected static $_table = 'payment_subscriptions';
 
 
-	public function create($planId)
+	public function create($planId, $item = null, $itemId = null)
 	{
 		$entry = array(
-			'plan_id' => (int)$planId,
 			'member_id' => iaUsers::hasIdentity() ? iaUsers::getIdentity()->id : 0,
+			'plan_id' => (int)$planId,
+			'item' => $item,
+			'item_id' => $itemId,
 			'status' => self::PENDING
 		);
 
