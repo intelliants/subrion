@@ -211,13 +211,14 @@ function IntelliGrid(params, autoInit)
 			{
 				return localStorage.getItem(k);
 			}
-			else if (null === typeof value)
+			else if (null === value)
 			{
 				localStorage.removeItem(k);
+				console.log('VALUE', localStorage.getItem(k))
 			}
 			else
 			{
-				localStorage.setItem(k, value);
+				localStorage.setItem(key, value);
 			}
 		}
 	}
@@ -263,7 +264,7 @@ function IntelliGrid(params, autoInit)
 		{
 			autoDestroy: true,
 			autoLoad: autoLoad,
-			currentPage: __localStorage('p') || 1,
+			currentPage: 1 || __localStorage('p'),
 			fields: self.fields,
 			pageSize: __localStorage('n') || self.config.pageSize,
 			proxy:
