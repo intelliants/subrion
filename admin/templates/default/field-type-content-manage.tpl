@@ -43,7 +43,7 @@
 			{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
 
 			<div class="input-group date" id="field_date_{$fieldName}">
-				<input type="text" class="js-datepicker" name="{$fieldName}" id="{$name}" value="{$default_date}" {if $field.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if}>
+				<input type="text" class="js-datepicker" name="{$fieldName}" id="{$name}" value="{$default_date}" {if $field.timepicker}data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if}>
 				<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 			</div>
 
