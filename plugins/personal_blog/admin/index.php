@@ -48,8 +48,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 	{
 		parent::__construct();
 
-		$iaBlog = $this->_iaCore->factoryPlugin($this->getPluginName(), iaCore::ADMIN, $this->getName());
-		$this->setHelper($iaBlog);
+		$this->setHelper($this->_iaCore->factoryPlugin($this->getPluginName(), iaCore::ADMIN));
 	}
 
 	protected function _indexPage(&$iaView)
