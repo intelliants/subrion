@@ -845,22 +845,29 @@ final class iaCore
 		return $this->_classInstances[$class];
 	}
 
-	public function factoryPlugin($plugin, $type = self::FRONT, $name = null)
+	protected static function _fileNameToClassName($fileName)
 	{
-		if (empty($name))
-		{
-			$name = $plugin;
-		}
-		$class = self::CLASSNAME_PREFIX . ucfirst(strtolower($name));
+		return ucwords(str_replace('_', '', $fileName));
+	}
+
+	public function factoryPlugin($pluginName, $type = self::FRONT, $className = null)
+	{
+		empty($className) && $className = $pluginName;
+
+		//$class = self::CLASSNAME_PREFIX . ucfirst(strtolower($className));
+		$class = self::CLASSNAME_PREFIX . self::_fileNameToClassName($className);
 
 		if (!isset($this->_classInstances[$class]))
 		{
-			$fileSize = $this->loadClass($type, $name, $plugin);
+			$fileSize = $this->loadClass($type, $className, $pluginName);
+
 			if (false === $fileSize)
 			{
 				return false;
 			}
-			iaDebug::debug('<b>plugin:</b> ia.' . $type . '.' . $name . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
+
+			iaDebug::debug('<b>plugin:</b> ia.' . $type . '.' . $className . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
+
 			$this->_classInstances[$class] = new $class();
 			$this->_classInstances[$class]->init();
 		}

@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-class iaBlog extends abstractPlugin
+class iaPersonalBlog extends abstractPlugin
 {
 	const ALIAS_SUFFIX = '.html';
 
@@ -33,6 +33,8 @@ class iaBlog extends abstractPlugin
 	protected static $_table = 'blog_entries';
 	protected $_tableBlogTags = 'blog_tags';
 	protected $_tableBlogEntriesTags = 'blog_entries_tags';
+
+	public $coreSearchEnabled = true;
 
 
 	public function titleAlias($title)
@@ -52,24 +54,41 @@ class iaBlog extends abstractPlugin
 		return $result;
 	}
 
-	public function get($start, $limit)
+	public function coreSearch($query, $start, $limit)
 	{
-		$order = ('date' == $this->iaCore->get('blog_order')) ? 'ORDER BY `date_added` DESC' : 'ORDER BY `title` ASC';
+		$where = '(b.`title` LIKE :query OR b.`body` LIKE :query)';
+		$this->iaDb->bind($where, array('query' => '%' . iaSanitize::sql($query) . '%'));
 
-		$stmt = '`status` = :status AND `lang` = :language';
-		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'language' => $this->iaView->language));
+		$rows = $this->get($start, $limit, $where);
+
+		return array($this->iaDb->foundRows(), $rows);
+	}
+
+	public function get($start, $limit, $conditions = null)
+	{
+		$order = 'date' == $this->iaCore->get('blog_order') ? '`date_added` DESC' : '`title` ASC';
+
+		$where = 'b.`status` = :status AND b.`lang` = :language';
+		empty($conditions) || $where.= ' AND ' . $conditions;
+		$this->iaDb->bind($where, array('status' => iaCore::STATUS_ACTIVE, 'language' => $this->iaView->language));
 
 		$sql =
-			'SELECT SQL_CALC_FOUND_ROWS ' .
-			'b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname` ' .
-			'FROM `:prefix:table_blog_entries` b ' .
-			'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) ' .
-			'WHERE b.' . $stmt . $order . ' LIMIT :start, :limit';
+			'SELECT SQL_CALC_FOUND_ROWS '
+				. 'b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, '
+				. 'm.`fullname` '
+			. 'FROM `:prefix:table_blog_entries` b '
+			. 'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) '
+			. 'WHERE :where '
+			. 'GROUP BY b.`id` '
+			. 'ORDER BY :order '
+			. 'LIMIT :start, :limit';
 
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries' => self::getTable(),
 			'table_members' => iaUsers::getTable(),
+			'where' => $where,
+			'order' => $order,
 			'start' => (int)$start,
 			'limit' => (int)$limit
 		));
@@ -164,9 +183,9 @@ class iaBlog extends abstractPlugin
 			'SELECT GROUP_CONCAT(`title`) ' .
 			'FROM `:prefix:table_blog_tags` bt ' .
 			'WHERE `id` IN (' .
-			'SELECT `tag_id` ' .
-			'FROM `:prefix:table_blog_entries_tags` ' .
-			'WHERE `blog_id` = :id)';
+				'SELECT `tag_id` ' .
+				'FROM `:prefix:table_blog_entries_tags` ' .
+				'WHERE `blog_id` = :id)';
 
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
@@ -205,13 +224,13 @@ class iaBlog extends abstractPlugin
 			'DELETE ' .
 			'FROM `:prefix:table_blog_tags` ' .
 			'WHERE `id` IN (' .
-			'SELECT DISTINCT `tag_id` ' .
-			'FROM `:prefix:table_blog_entries_tags` ' .
-			'WHERE `tag_id` IN (' .
-			'SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` ' .
-			'WHERE `blog_id` = :id) ' .
-			'GROUP BY 1 ' .
-			'HAVING COUNT(*) = 1)';
+				'SELECT DISTINCT `tag_id` ' .
+				'FROM `:prefix:table_blog_entries_tags` ' .
+				'WHERE `tag_id` IN (' .
+					'SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` ' .
+					'WHERE `blog_id` = :id) ' .
+				'GROUP BY 1 ' .
+				'HAVING COUNT(*) = 1)';
 
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,

@@ -214,7 +214,6 @@ function IntelliGrid(params, autoInit)
 			else if (null === value)
 			{
 				localStorage.removeItem(k);
-				console.log('VALUE', localStorage.getItem(k))
 			}
 			else
 			{

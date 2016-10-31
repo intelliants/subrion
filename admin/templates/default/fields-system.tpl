@@ -11,8 +11,8 @@
 			<label class="col col-lg-2 control-label">{lang key='owner'}</label>
 
 			<div class="col col-lg-4">
-				<input type="text" class="common text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner}" maxlength="50" size="50">
-				<input type="hidden" name="member_id" id="member-id" {if isset($item.member_id) && $item.member_id}value="{$item.member_id}"{/if}>
+				<input type="text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner}" maxlength="255">
+				<input type="hidden" name="member_id" id="member-id"{if isset($item.member_id) && $item.member_id} value="{$item.member_id}"{/if}>
 			</div>
 		</div>
 	{/if}

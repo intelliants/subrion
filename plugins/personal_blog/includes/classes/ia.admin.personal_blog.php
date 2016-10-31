@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-class iaBlog extends abstractPlugin
+class iaPersonalBlog extends abstractPlugin
 {
 	const ALIAS_SUFFIX = '.html';
 
