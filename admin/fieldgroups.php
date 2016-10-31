@@ -30,6 +30,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_gridColumns = array('name', 'extras', 'item', 'collapsible', 'order', 'tabview');
 	protected $_gridFilters = array('id' => 'equal', 'item' => 'equal');
+	protected $_gridSorting = array('title' => array('value', 'pt'), 'item' => array('value', 'pi'));
+	protected $_gridQueryMainTableAlias = 'fg';
 
 	protected $_phraseAddSuccess = 'fieldgroup_added';
 	protected $_phraseGridEntryDeleted = 'fieldgroup_deleted';
@@ -59,12 +61,38 @@ class iaBackendController extends iaAbstractControllerBackend
 			: parent::_gridRead($params);
 	}
 
+	protected function _gridQuery($columns, $where, $order, $start, $limit)
+	{
+		$sql = 'SELECT :columns, pt.`value` `title`, pi.`value` `item` '
+			. 'FROM `:prefix:table_groups` fg '
+			. 'LEFT JOIN `:prefix:table_phrases` pt ON (pt.`key` = CONCAT("fieldgroup_", fg.`name`) AND pt.`code` = ":lang") '
+			. 'LEFT JOIN `:prefix:table_phrases` pi ON (pi.`key` = fg.`item` AND pi.`code` = ":lang") '
+			. 'WHERE :conditions '
+			. 'GROUP BY fg.`id` :order '
+			. 'LIMIT :start, :limit';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_groups' => self::getTable(),
+			'table_phrases' => iaLanguage::getTable(),
+			'lang' => $this->_iaCore->iaView->language,
+			'columns' => $columns,
+			'conditions' => $where,
+			'order' => $order,
+			'start' => $start,
+			'limit' => $limit
+		));
+
+		return $this->_iaDb->getAll($sql);
+	}
+
 	protected function _modifyGridResult(array &$entries)
 	{
 		foreach ($entries as &$entry)
 		{
-			$entry['title'] = iaLanguage::get('fieldgroup_' . $entry['name'], $entry['name']);
-			$entry['item'] = iaLanguage::get($entry['item']);
+			// processing in case if there are no appropriate phrases
+			$entry['title'] || $entry['title'] = iaLanguage::get('fieldgroup_' . $entry['name']);
+			$entry['item'] || $entry['item'] = iaLanguage::get($entry['item']);
 		}
 	}
 
