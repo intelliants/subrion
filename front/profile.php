@@ -117,8 +117,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		{
 			if ($plan = $iaPlan->getById((int)$_POST['plan_id']))
 			{
-				$url = $iaPlan->prePayment($itemName, iaUsers::getIdentity(true), $plan['id'], IA_SELF);
-				iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('plan_added'), $url);
+				if ((float)$plan['cost'])
+				{
+					$url = $iaPlan->prePayment($itemName, iaUsers::getIdentity(true), $plan['id'], IA_SELF);
+					iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('plan_added'), $url);
+				}
 			}
 			else
 			{
