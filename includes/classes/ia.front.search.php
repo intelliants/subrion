@@ -468,6 +468,7 @@ class iaSearch extends abstractCore
 
 				$result[$pluginName] = array($search[0], $this->_renderResults($search[1]));
 			}
+
 		}
 
 		return $result;
@@ -879,14 +880,14 @@ class iaSearch extends abstractCore
 
 	protected function _loadPluginInstance($pluginName)
 	{
-		$instance = $this->iaCore->factoryPlugin($pluginName, iaCore::FRONT, $pluginName);
+		$instance = $this->iaCore->factoryPlugin($pluginName);
 
-		if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED})
+		if (method_exists($instance, self::ITEM_SEARCH_METHOD))
 		{
 			$this->_type = self::SEARCH_PLUGIN;
 			$this->_itemInstance = &$instance;
 			$this->_extrasName = $pluginName;
-			$this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : array();
+			$this->_options = array();
 
 			return true;
 		}

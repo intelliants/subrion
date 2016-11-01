@@ -845,9 +845,19 @@ final class iaCore
 		return $this->_classInstances[$class];
 	}
 
-	protected static function _fileNameToClassName($fileName)
+	protected static function _toClassName($name)
 	{
-		return ucwords(str_replace('_', '', $fileName));
+		$result = $name;
+
+		// from plural to singular
+		$result = 's' == $result[strlen($result) - 1] && !in_array($result, array('news'))
+			? substr($result, 0, -1)
+			: $result;
+
+		// camelize
+		$result = ucwords(str_replace('_', '', $result));
+
+		return $result;
 	}
 
 	public function factoryPlugin($pluginName, $type = self::FRONT, $className = null)
@@ -855,7 +865,7 @@ final class iaCore
 		empty($className) && $className = $pluginName;
 
 		//$class = self::CLASSNAME_PREFIX . ucfirst(strtolower($className));
-		$class = self::CLASSNAME_PREFIX . self::_fileNameToClassName($className);
+		$class = self::CLASSNAME_PREFIX . self::_toClassName($className);
 
 		if (!isset($this->_classInstances[$class]))
 		{
