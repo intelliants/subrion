@@ -63,15 +63,15 @@ $(function() {
 			<table class="table table-condensed">
 				<tbody>
 					<tr>
-						<td>Minimum deposit</td>
+						<td>{lang key='min_deposit'}</td>
 						<td>{$core.config.currency} {$core.config.funds_min_deposit}</td>
 					</tr>
 					<tr>
-						<td>Maximum deposit</td>
+						<td>{lang key='max_deposit'}</td>
 						<td>{$core.config.currency} {$core.config.funds_max_deposit}</td>
 					</tr>
 					<tr>
-						<td>Maximum balance</td>
+						<td>{lang key='max_balance'}</td>
 						<td>{$core.config.currency} {$core.config.funds_max}</td>
 					</tr>
 				</tbody>
