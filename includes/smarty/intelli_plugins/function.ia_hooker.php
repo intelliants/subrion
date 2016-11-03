@@ -22,7 +22,8 @@ function smarty_function_ia_hooker($params, &$smarty)
 
 	foreach ($hooks[$name] as $hook)
 	{
-		$hook['type'] = (in_array($hook['type'], array('php', 'html', 'plain', 'smarty'))) ? $hook['type'] : 'php';
+		$hook['type'] = in_array($hook['type'], array('php', 'html', 'plain', 'smarty')) ? $hook['type'] : 'php';
+
 		if (empty($hook['pages']) || in_array($iaCore->iaView->name(), $hook['pages']))
 		{
 			if ($hook['filename'])
