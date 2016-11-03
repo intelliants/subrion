@@ -4,18 +4,6 @@
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
-{if isset($item.$fieldName) && $item.$fieldName}
-	{if iaField::CHECKBOX == $type}
-		{$value = ','|explode:$item.$fieldName}
-	{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
-		{$value = $item.$fieldName|unserialize}
-	{else}
-		{$value = $item.$fieldName}
-	{/if}
-{else}
-	{$value = $field.default}
-{/if}
-
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
 	<label class="col col-lg-2 control-label">{lang key=$name} {if $field.required}{lang key='field_required'}{/if}
@@ -33,6 +21,22 @@
 		<div class="col col-lg-4">
 	{else}
 		<div class="col col-lg-8">
+	{/if}
+
+	{if isset($field_inner[$fieldName])}
+		{$field_inner[$fieldName]}
+	{else}
+
+	{if isset($item.$fieldName) && $item.$fieldName}
+		{if iaField::CHECKBOX == $type}
+			{$value = ','|explode:$item.$fieldName}
+		{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
+			{$value = $item.$fieldName|unserialize}
+		{else}
+			{$value = $item.$fieldName}
+		{/if}
+	{else}
+		{$value = $field.default}
 	{/if}
 
 	{switch $type}
@@ -300,6 +304,7 @@ $(function()
 });
 			{/ia_add_js}
 	{/switch}
+	{/if}
 	</div>
 </div>
 
