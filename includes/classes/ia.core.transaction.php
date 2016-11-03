@@ -378,4 +378,29 @@ class iaTransaction extends abstractCore
 
 		return false;
 	}
+
+	public function refund($transactionId)
+	{
+		$transaction = $this->getById($transactionId);
+
+		if (!$transaction)
+		{
+			return false;
+		}
+
+		$gatewayName = $transaction['gateway'];
+
+		$gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common', $gatewayName);
+
+		if ($gatewayInstance && method_exists($gatewayInstance, 'refund'))
+		{
+			try
+			{
+				return call_user_func(array($gatewayInstance, 'refund'), $transaction);
+			}
+			catch (Exception $e) {}
+		}
+
+		return false;
+	}
 }
