@@ -847,24 +847,26 @@ final class iaCore
 
 	protected static function _toClassName($name)
 	{
-		$result = $name;
-
 		// from plural to singular
-		$result = 's' == $result[strlen($result) - 1] && !in_array($result, array('news'))
-			? substr($result, 0, -1)
-			: $result;
+		$result = self::_toSingular($name);
 
 		// camelize
-		$result = ucwords(str_replace('_', '', $result));
+		$result = str_replace(' ', '', ucwords(str_replace('_', ' ', $result)));
 
 		return $result;
 	}
 
+	protected static function _toSingular($name)
+	{
+		return 's' == $name[strlen($name) - 1] && !in_array($name, array('news'))
+			? substr($name, 0, -1)
+			: $name;
+	}
+
 	public function factoryPlugin($pluginName, $type = self::FRONT, $className = null)
 	{
-		empty($className) && $className = $pluginName;
+		empty($className) && $className = self::_toSingular($pluginName);
 
-		//$class = self::CLASSNAME_PREFIX . ucfirst(strtolower($className));
 		$class = self::CLASSNAME_PREFIX . self::_toClassName($className);
 
 		if (!isset($this->_classInstances[$class]))
