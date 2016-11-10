@@ -58,14 +58,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
-		$action = (1 == count($this->_iaCore->requestPath)) ? $this->_iaCore->requestPath[0] : null;
-
-		switch ($action)
+		if (1 == count($this->_iaCore->requestPath) && 'url' == $this->_iaCore->requestPath[0])
 		{
-			case 'url': return $this->_getJsonUrl($params);
-			case 'plugins': return $this->_getJsonPlugins();
-			default: return parent::_gridRead($params);
+			return $this->_getJsonUrl($params);
 		}
+
+		return parent::_gridRead($params);
 	}
 
 	protected function _modifyGridResult(array &$entries)
@@ -436,23 +434,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$this->_iaDb->update(null, $cond, $stmt);
 	}
-
-	private function _getJsonPlugins()
-	{
-		$sql = 'SELECT '
-				. "IF(p.`extras` = '', 'core', p.`extras`) `value`, "
-				. "IF(p.`extras` = '', 'Core', g.`title`) `title` "
-			. 'FROM `:prefix:pages` p '
-			. 'LEFT JOIN `:prefixextras` g ON (g.`name` = p.`extras`) '
-			. 'GROUP BY p.`extras`';
-		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->_iaDb->prefix,
-			'pages' => iaPage::getTable()
-		));
-
-		return array('data' => $this->_iaDb->getAll($sql));
-	}
-
 
 	private function _saveMenus($entryName, $menus)
 	{

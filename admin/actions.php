@@ -31,6 +31,32 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
+		if (2 == count($this->_iaCore->requestPath) && 'options' == $this->_iaCore->requestPath[0])
+		{
+			switch ($this->_iaCore->requestPath[1])
+			{
+				case 'extras':
+					$this->_iaCore->factory('item');
+					$this->_iaCore->factory('page', iaCore::ADMIN);
+
+					$sql = 'SELECT '
+							. "IF(p.`extras` = '', 'core', p.`extras`) `value`, "
+							. "IF(p.`extras` = '', 'Core', g.`title`) `title` "
+						. 'FROM `:prefix:table_pages` p '
+						. 'LEFT JOIN `:prefix:table_extras` g ON (g.`name` = p.`extras`) '
+						. 'GROUP BY p.`extras`';
+					$sql = iaDb::printf($sql, array(
+						'prefix' => $this->_iaDb->prefix,
+						'table_pages' => iaPage::getTable(),
+						'table_extras' => iaItem::getExtrasTable()
+					));
+
+					return array('data' => $this->_iaDb->getAll($sql));
+			}
+
+			return array();
+		}
+
 		switch ($_POST['action'])
 		{
 			case 'delete-file':

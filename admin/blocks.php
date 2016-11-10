@@ -29,7 +29,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_name = 'blocks';
 
 	protected $_gridColumns = array('title', 'contents', 'position', 'extras', 'type', 'status', 'order', 'multilingual', 'delete' => 'removable');
-	protected $_gridFilters = array('status' => 'equal', 'title' => 'like', 'type' => 'equal', 'position' => 'equal');
+	protected $_gridFilters = array('status' => self::EQUAL, 'title' => self::LIKE, 'type' => self::EQUAL, 'position' => self::EQUAL, 'extras' => self::EQUAL);
 
 	protected $_phraseAddSuccess = 'block_created';
 
