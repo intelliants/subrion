@@ -486,7 +486,7 @@ class iaUsers extends abstractCore
 				'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
 			));
 
-			$iaMailer->send(true);
+			$iaMailer->send();
 		}
 
 		$action = 'member_registration_admin';
