@@ -606,7 +606,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$error = true;
 			$messages[] = iaLanguage::get('choose_import_file');
 		}
-		elseif (!($f = fopen($filename, 'r')))
+		elseif (!$fh = fopen($filename, 'r'))
 		{
 			$error = true;
 			$messages[] = iaLanguage::getf('cant_open_sql', array('filename' => $filename));
@@ -623,35 +623,52 @@ class iaBackendController extends iaAbstractControllerBackend
 			$error = true;
 			$languageCode = '';
 
-			if ('sql' == $format)
+			switch ($format)
 			{
-				$sql = '';
+				case 'sql':
+					$sql = '';
 
-				while ($s = fgets($f, 10240))
-				{
-					$s = trim ($s);
-					if ($s[0] == '#' || $s[0] == '') continue;
-					$sql .= $s;
-					if ($s[strlen($s) - 1] != ';') continue;
-					$sql = str_replace('{prefix}', $iaDb->prefix, $sql);
-					$iaDb->query($sql);
-					if (empty($languageCode))
+					while ($s = fgets($fh, 10240))
 					{
-						$matches = array();
-						if (preg_match('#, \'([a-z]{2})\', \'#', $sql, $matches) || preg_match('#,\'([a-z]{2})\',\'#', $sql, $matches))
+						$s = trim($s);
+						if ($s[0] == '#' || $s[0] == '') continue;
+						$sql .= $s;
+						if ($s[strlen($s) - 1] != ';') continue;
+						$sql = str_replace('{prefix}', $iaDb->prefix, $sql);
+						$iaDb->query($sql);
+						if (empty($languageCode))
 						{
-							$languageCode = $matches[1];
+							$matches = array();
+							if (preg_match('#, \'([a-z]{2})\', \'#', $sql, $matches) || preg_match('#,\'([a-z]{2})\',\'#', $sql, $matches))
+							{
+								$languageCode = $matches[1];
+							}
+						}
+						$sql = '';
+					}
+
+					$error = false;
+
+					break;
+
+				case 'csv':
+					while ($line = fgetcsv($fh, null, '|'))
+					{
+						if (6 == count($line))
+						{
+							list($key, , $value, $category, $iso, $extras) = $line;
+							if (empty($key) || 2 != strlen($iso)) continue;
+							iaLanguage::addPhrase($key, $value, $iso, $extras, $category);
 						}
 					}
-					$sql = '';
-				}
 
-				fclose($f);
-
-				$error = false;
+					$error = false;
+					isset($iso) && $languageCode = $iso;
 			}
 
-			if ('csv' == $format)
+			fclose($fh);
+
+			/*if ('csv' == $format)
 			{
 				if ($csvContent = file($filename))
 				{
@@ -682,7 +699,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						$iaDb->query($sql);
 					}
 				}
-			}
+			}*/
 
 			$messages[] = iaLanguage::get($error ? 'incorrect_file_format' : 'saved');
 		}
