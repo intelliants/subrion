@@ -32,6 +32,8 @@ class iaMailer extends PHPMailer
 
 	protected $_iaCore;
 
+	protected $_bccEmails;
+
 
 	/*
 	 * Set replacements for email body
@@ -137,7 +139,7 @@ class iaMailer extends PHPMailer
 		$this->Body = $this->_iaCore->get($name . '_body');
 	}
 
-	public function sendToAdministrators($clearAddresses = true)
+	public function sendToAdministrators()
 	{
 		$where = '`usergroup_id` = :group AND `status` = :status';
 		$this->_iaCore->iaDb->bind($where, array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
@@ -149,25 +151,44 @@ class iaMailer extends PHPMailer
 			$this->addAddress($entry['email'], $entry['fullname']);
 		}
 
-		return $this->send($clearAddresses);
+		return $this->send();
 	}
 
-	public function send($clearAddresses = true)
+	protected function _setBcc()
+	{
+		if (is_null($this->_bccEmails))
+		{
+			$bccEmail = $this->_iaCore->get('bcc_email');
+			$array = explode(',', $bccEmail);
+
+			$this->_bccEmails = array_map('trim', $array);
+		}
+
+		foreach ($this->_bccEmails as $email)
+		{
+			$this->addBCC($email);
+		}
+	}
+
+	public function send()
 	{
 		$this->_applyReplacements();
+		$this->_setBcc();
 
 		$result = (bool)parent::send();
-
-		if ($clearAddresses)
-		{
-			parent::clearAllRecipients();
-		}
 
 		if (!$result)
 		{
 			iaDebug::debug($this->ErrorInfo, 'Email submission');
 		}
 
+		parent::clearAllRecipients();
+
 		return $result;
+	}
+
+	public function getError()
+	{
+		return $this->ErrorInfo;
 	}
 }
