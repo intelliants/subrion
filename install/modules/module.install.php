@@ -110,6 +110,16 @@ switch ($step)
 				: '<td class="danger">Unavailable (not required) </td>'
 		);
 
+		if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) || isset($_SERVER['HTTP_CF_VISITOR']))
+		{
+			$checks['server']['flexiblessl'] = array(
+				'name' => 'Cloudflare\'s Flexible SSL',
+				'value' => '<td class="warning">Cloudflare is in use. In case you want to push your site behind <em>Flexible SSL</em>, there might be issues with URLs</td>'
+			);
+		}
+
+
+
 		$recommendedSettings = array(
 			array ('File Uploads', 'file_uploads', 'ON'),
 			array ('Magic Quotes GPC', 'magic_quotes_gpc', 'OFF'),

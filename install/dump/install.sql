@@ -258,7 +258,7 @@ CREATE TABLE `{install:prefix}fields_groups` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}fields_image_types`;
 CREATE TABLE `{install:prefix}fields_image_types` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL auto_increment,
   `field_id` int(11) NOT NULL,
   `image_type_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
@@ -302,10 +302,10 @@ CREATE TABLE `{install:prefix}fields_tree_nodes` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}file_types`;
 CREATE TABLE `{install:prefix}file_types` (
-	`id` int(11) NOT NULL AUTO_INCREMENT,
-	`extension` varchar(10) NOT NULL DEFAULT '',
-	`maxsize` int(11) NOT NULL DEFAULT '0',
-	`image` tinyint(4) DEFAULT '0',
+	`id` int(11) NOT NULL auto_increment,
+	`extension` varchar(10) NOT NULL default '',
+	`maxsize` int(11) NOT NULL default '0',
+	`image` tinyint(4) default '0',
 	PRIMARY KEY (`id`),
 	KEY `extension` (`extension`)
 ) {install:db_options};
@@ -329,12 +329,12 @@ CREATE TABLE `{install:prefix}hooks` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}image_types`;
 CREATE TABLE `{install:prefix}image_types` (
-	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`id` int(11) NOT NULL auto_increment,
 	`name` varchar(50) NOT NULL,
 	`width` int(11) NOT NULL,
 	`height` int(11) NOT NULL,
-	`resize_mode` enum('crop','fit') NOT NULL DEFAULT 'crop',
-	`cropper` tinyint(1) NOT NULL DEFAULT '0',
+	`resize_mode` enum('crop','fit') NOT NULL default 'crop',
+	`cropper` tinyint(1) NOT NULL default '0',
 	`filetypes` text NOT NULL,
 	UNIQUE KEY `id` (`id`)
 ) {install:db_options};
@@ -476,7 +476,7 @@ CREATE TABLE `{install:prefix}members` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}members_auth_providers`;
 CREATE TABLE `{install:prefix}members_auth_providers` (
-	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`id` int(11) NOT NULL auto_increment,
 	`member_id` int(11) NOT NULL,
 	`name` varchar(50) NOT NULL,
 	`value` varchar(100) NOT NULL,
@@ -602,7 +602,7 @@ CREATE TABLE IF NOT EXISTS `{install:prefix}payment_plans` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}payment_plans_options`;
 CREATE TABLE `{install:prefix}payment_plans_options` (
-  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `id` smallint(5) unsigned NOT NULL auto_increment,
   `type` enum('bool','int','float','string') NOT NULL default 'string',
   `chargeable` tinyint(1) unsigned NOT NULL default 0,
   `name` varchar(32) NOT NULL,
@@ -2461,7 +2461,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('api_push_access_key','Google Cloud Messaging (GCM) is a free service that enables developers to send messages between servers and client apps. This includes downstream messages from servers to client apps, and upstream messages from client apps to servers.','tooltip'),
 
 ('backup','Folder name where your DB backups are saved.','tooltip'),
-('bcc_email','Email addresses to BCC all the outgoing messaging. TO setup multiple emails, separate them by comma','tooltip'),
+('bcc_email','Email addresses to BCC all the outgoing messaging. To setup multiple emails, separate them by comma.','tooltip'),
 
 ('caching','If you use a slow shared hosting, this will cache your pages for faster loading.','tooltip'),
 
