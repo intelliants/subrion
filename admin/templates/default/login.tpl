@@ -62,18 +62,18 @@
 						<input type="password" id="dummy_password" name="password" tabindex="2" placeholder="{lang key='password'}">
 					</p>
 					<div class="checkbox">
-						<label><input type="checkbox" name="remember"{if isset($smarty.post.remember)} checked{/if}> {lang key='remember_me'}</label>
+						<label><input type="checkbox" name="remember"{if isset($smarty.post.remember)} checked{/if} tabindex="3"> {lang key='remember_me'}</label>
 					</div>
 					{if count($core.languages) > 1}
 					<p>
-						<select name="_lang" id="_lang">
+						<select name="_lang" id="_lang" tabindex="4">
 							{foreach $core.languages as $code => $language}
 								<option value="{$code}"{if $code == $smarty.const.IA_LANGUAGE} selected{/if}>{$language.title}</option>
 							{/foreach}
 						</select>
 					</p>
 					{/if}
-					<input type="submit" class="btn btn-primary" tabindex="3" value="{lang key='login'}">
+					<input type="submit" class="btn btn-primary" tabindex="5" value="{lang key='login'}">
 					<a href="#" class="btn btn-link" id="js-forgot-dialog">{lang key='forgot_password'}</a>
 				</form>
 			</div>
