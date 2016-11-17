@@ -90,6 +90,7 @@ class iaPicture extends abstractCore
 			'bottom_right' => 'RB'
 		);
 
+		$opacity = $iaCore->get('watermark_opacity', 75);
 		$position = $iaCore->get('watermark_position');
 		$position = $position && array_key_exists($position, $watermark_positions) ? $watermark_positions[$position] : $watermark_positions['bottom_right'];
 
@@ -101,6 +102,7 @@ class iaPicture extends abstractCore
 				$iaCore->get('watermark_text_size', 11),
 				$iaCore->get('watermark_text_color', '#FFFFFF')
 			);
+			$watermark->opacity($opacity);
 
 			$image->addLayerOnTop($watermark, 10, 10, $position);
 		}
@@ -112,7 +114,7 @@ class iaPicture extends abstractCore
 			if (file_exists($watermarkFile) && !is_dir($watermarkFile))
 			{
 				$watermark = ImageWorkshop::initFromPath($watermarkFile);
-				$watermark->opacity(70);
+				$watermark->opacity($opacity);
 
 				$image->addLayerOnTop($watermark, 10, 10, $position);
 			}
