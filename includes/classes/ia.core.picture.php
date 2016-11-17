@@ -105,6 +105,9 @@ class iaPicture extends abstractCore
 			$watermark->opacity($opacity);
 
 			$image->addLayerOnTop($watermark, 10, 10, $position);
+
+			// delete layer otherwise it's applied several times
+			$watermark->delete();
 		}
 		else
 		{
@@ -117,6 +120,9 @@ class iaPicture extends abstractCore
 				$watermark->opacity($opacity);
 
 				$image->addLayerOnTop($watermark, 10, 10, $position);
+
+				// delete layer otherwise it's applied several times
+				$watermark->delete();
 			}
 		}
 
