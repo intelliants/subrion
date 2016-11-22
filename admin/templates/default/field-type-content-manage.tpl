@@ -1,12 +1,12 @@
 {$type = $field.type}
 {$fieldName = $field.name}
-{$name = "field_{$fieldName}"}
+{$name = "field_{$field.item}_{$field.name}"}
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
-	<label class="col col-lg-2 control-label">{lang key=$name} {if $field.required}{lang key='field_required'}{/if}
+	<label class="col col-lg-2 control-label">{$field.title|escape:'html'} {if $field.required}{lang key='field_required'}{/if}
 		{if iaField::PICTURES == $type || iaField::IMAGE == $type}
 			<span class="help-block">
 				{lang key='thumb_dimensions'}: {$field.thumb_width}x{$field.thumb_height}<br>

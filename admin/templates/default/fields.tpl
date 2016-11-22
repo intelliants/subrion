@@ -93,10 +93,10 @@
 
 					<div class="col col-lg-4">
 						<div class="box-simple fieldset">
-						{foreach $pages as $pageId => $entry}
+						{foreach $pages as $entry}
 							<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
 								<label>
-									<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[{$pageId}]">
+									<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[]">
 									{$entry.title}
 								</label>
 							</div>

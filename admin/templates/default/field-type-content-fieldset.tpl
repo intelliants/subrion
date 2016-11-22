@@ -1,17 +1,11 @@
 <div class="wrap-list">
 	{foreach $item_sections as $key => $section}
 		{if !empty($section.fields) && isset($section.name)}
-			{if '___empty___' != $key}
-				{assign grouptitle "fieldgroup_{$section.name}"}
-			{else}
-				{assign grouptitle 'other'}
-			{/if}
-
 			<div class="wrap-group" id="{$section.name}">
 				<div class="wrap-group-heading">
-					<h4>{lang key=$grouptitle}
-						{if isset($section.description) && $section.description}
-							<a href="#" class="js-tooltip" data-placement="right" title="{$section.description}"><i class="i-info"></i></a>
+					<h4>{$section.title|escape:'html'}
+						{if $section.description}
+							<a href="#" class="js-tooltip" data-placement="right" title="{$section.description|escape:'html'}"><i class="i-info"></i></a>
 						{/if}
 					</h4>
 				</div>

@@ -139,11 +139,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$item = iaUsers::getIdentity(true);
 
-	// get fieldgroups
-	list($tabs, $fieldgroups) = $iaField->generateTabs($iaField->filterByGroup($item, $itemName));
-
-	// compose tabs
-	$sections = array_merge(array('common' => $fieldgroups), $tabs);
+	$sections = $iaField->getTabs($itemName, $item);
 
 	$extraTabs = array();
 	$iaCore->startHook('phpFrontEditProfileExtraTabs', array('tabs' => &$extraTabs, 'item' => &$item));

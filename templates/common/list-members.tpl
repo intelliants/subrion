@@ -18,19 +18,19 @@
 				<p><span class="fa fa-phone"></span> {$listing.phone}</p>
 			{/if}
 			{if isset($listing.website) && $listing.website}
-				<p><span class="fa fa-globe"></span> <a href="{$listing.website}">{lang key='field_website'}</a></p>
+				<p><span class="fa fa-globe"></span> <a href="{$listing.website}">{lang key='field_members_website'}</a></p>
 			{/if}
 			{if isset($listing.facebook) && $listing.facebook}
-				<p><span class="fa fa-facebook"></span> <a href="{$listing.facebook}">{lang key='field_facebook'}</a></p>
+				<p><span class="fa fa-facebook"></span> <a href="{$listing.facebook}">{lang key='field_members_facebook'}</a></p>
 			{/if}
 			{if isset($listing.twitter) && $listing.twitter}
-				<p><span class="fa fa-twitter"></span> <a href="{$listing.twitter}">{lang key='field_twitter'}</a></p>
+				<p><span class="fa fa-twitter"></span> <a href="{$listing.twitter}">{lang key='field_members_twitter'}</a></p>
 			{/if}
 			{if isset($listing.gplus) && $listing.gplus}
-				<p><span class="fa fa-google-plus"></span> <a href="{$listing.gplus}">{lang key='field_gplus'}</a></p>
+				<p><span class="fa fa-google-plus"></span> <a href="{$listing.gplus}">{lang key='field_members_gplus'}</a></p>
 			{/if}
 			{if isset($listing.linkedin) && $listing.linkedin}
-				<p><span class="fa fa-linkedin"></span> <a href="{$listing.linkedin}">{lang key='field_linkedin'}</a></p>
+				<p><span class="fa fa-linkedin"></span> <a href="{$listing.linkedin}">{lang key='field_members_linkedin'}</a></p>
 			{/if}
 		</div>
 

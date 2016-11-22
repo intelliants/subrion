@@ -1,6 +1,6 @@
 {$type = $field.type}
 {$fieldName = $field.name}
-{$name = "field_{$fieldName}"}
+{$name = "field_{$field.item}_{$field.name}"}
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
@@ -28,7 +28,7 @@
 
 <div class="form-group{if iaField::TEXTAREA == $type} form-group--textarea{/if} {$field.class} {$field.relation}{if $field.for_plan && !$field.required} form-group--plan" style="display:none;{/if}" id="{$fieldName}_fieldzone">
 	<label for="{$name}">
-		{lang key=$name}:
+		{$field.title|escape:'html'}:
 		{if $field.required}<span class="is-required">*</span>{/if}
 	</label>
 

@@ -141,10 +141,15 @@ class iaMailer extends PHPMailer
 
 	public function sendToAdministrators()
 	{
-		$where = '`usergroup_id` = :group AND `status` = :status';
+		$where = '`usergroup_id` = :group AND `status` = :status AND `receive_email_notifications` = "yes"';
 		$this->_iaCore->iaDb->bind($where, array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
 
 		$administrators = $this->_iaCore->iaDb->all(array('email', 'fullname'), $where, null, null, iaUsers::getTable());
+
+		if (!$administrators)
+		{
+			return false;
+		}
 
 		foreach ($administrators as $entry)
 		{
