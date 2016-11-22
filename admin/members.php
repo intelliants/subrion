@@ -129,7 +129,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$iaField = $this->_iaCore->factory('field');
-		$sections = $iaField->filterByGroup($entryData, $this->_itemName, array('page' => iaCore::ADMIN, 'selection' => "f.*, IF(f.`name` = 'avatar', 4, `order`) `order`", 'order' => '`order`'));
+		$sections = $iaField->getGroups($this->_itemName);
 
 		unset($this->_userGroups[iaUsers::MEMBERSHIP_GUEST]);
 
@@ -165,7 +165,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaAcl = $this->_iaCore->factory('acl');
 		$iaField = $this->_iaCore->factory('field');
 
-		$fields = iaField::getAcoFieldsList(iaCore::ADMIN, $this->_itemName);
+		$fields = $iaField->get($this->_itemName);
 
 		// below is the hacky way to force the script to upload files to the appropriate user's folder
 		// FIXME

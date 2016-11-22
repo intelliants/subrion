@@ -32,19 +32,19 @@
 			<tbody>
 				{if isset($item.phone) && $item.phone}
 					<tr>
-						<td>{lang key='field_phone'}</td>
+						<td>{lang key='field_members_phone'}</td>
 						<td>{$item.phone}</td>
 					</tr>
 				{/if}
 				{if isset($item.website) && $item.website}
 					<tr>
-						<td>{lang key='field_website'}</td>
+						<td>{lang key='field_members_website'}</td>
 						<td>{$item.website|linkify}</td>
 					</tr>
 				{/if}
 				{if isset($item.biography) && $item.biography}
 					<tr>
-						<td>{lang key='field_biography'}</td>
+						<td>{lang key='field_members_biography'}</td>
 						<td>{$item.biography|escape}</td>
 					</tr>
 				{/if}

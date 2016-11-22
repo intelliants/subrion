@@ -130,7 +130,7 @@ abstract class iaApiEntityAbstract
 	{
 		$iaField = $this->_iaCore->factory('field');
 
-		$fields = $iaField->getByItemName($this->getName());
+		$fields = $iaField->get($this->getName());
 
 		foreach ($fields as $field)
 		{

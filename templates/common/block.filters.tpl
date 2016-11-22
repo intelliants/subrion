@@ -21,7 +21,7 @@
 				{$selected = null}
 			{/if}
 			<div class="form-group">
-				<label>{lang key="field_{$field.name}"}</label>
+				<label>{lang key="field_{$field.item}_{$field.name}"}</label>
 				{switch $field.type}
 					{case iaField::CHECKBOX break}
 						<div class="radios-list">

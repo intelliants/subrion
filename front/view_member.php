@@ -71,7 +71,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		'desc' => $member['fullname']
 	));
 
+	$iaField = $iaCore->factory('field');
 	$iaItem = $iaCore->factory('item');
+
 	$iaCore->set('num_items_perpage', 20);
 
 	$page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -83,21 +85,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$iaItem->setItemTools(array(
 			'id' => 'action-edit',
 			'title' => iaLanguage::get('edit'),
-			'attributes' => array(
-				'href' => $iaPage->getUrlByName('profile'),
-			)
+			'attributes' => array('href' => $iaPage->getUrlByName('profile'))
 		));
 	}
 
 	$member = array_shift($iaItem->updateItemsFavorites(array($member), $member['item']));
 	$member['items'] = array();
-
-	// get fieldgroups
-	$iaField = $iaCore->factory('field');
-	list($tabs, $fieldgroups) = $iaField->generateTabs($iaField->filterByGroup($member, $iaUsers->getItemName()));
-
-	// compose tabs
-	$sections = array_merge(array('common' => $fieldgroups), $tabs);
 
 	// get all items added by this account
 	$itemsList = $iaItem->getPackageItems();
@@ -134,7 +127,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 					$member['items'][$itemName] = $result;
 					$member['items'][$itemName]['package'] = isset($itemsList[$itemName]) ? $itemsList[$itemName] : '';
-					$member['items'][$itemName]['fields'] = $iaField->filter($member['items'][$itemName]['items'], $itemName);
+					$member['items'][$itemName]['fields'] = $iaField->filter2($itemName, $member['items'][$itemName]['items']);
 				}
 			}
 		}
@@ -156,11 +149,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$member['website'] = 'http://' . $member['website'];
 	}
 
+	$sections = $iaField->getTabs($iaUsers->getItemName(), $member);
+
 	$iaView->assign('item', $member);
 	$iaView->assign('sections', $sections);
 
 	$title = empty($member['fullname']) ? $member['username'] : $member['fullname'];
 	$iaView->title($title);
+
+	$iaView->display('view-member');
+
 
 	// add open graph data
 	$avatar = $member['avatar'] ? unserialize($member['avatar']) : '';
@@ -170,6 +168,4 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		'image' => $avatar ? IA_CLEAR_URL . 'uploads/' . $avatar['path'] : ''
 	);
 	$iaView->set('og', $openGraph);
-
-	$iaView->display('view-member');
 }

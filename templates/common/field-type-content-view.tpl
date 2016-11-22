@@ -1,6 +1,6 @@
 {$type = $field.type}
 {$name = $field.name}
-{$fieldName = "field_{$name}"}
+{$fieldName = "field_{$field.item}_{$field.name}"}
 
 {if isset($field_before[$name])}{$field_before.$name}{/if}
 

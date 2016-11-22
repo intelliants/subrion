@@ -212,11 +212,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$iaPlan = $iaCore->factory('plan');
 
 		$iaView->assign('plans', $iaPlan->getPlans($iaUsers->getItemName()));
-		$iaView->assign('sections', $iaField->filterByGroup($itemData, $iaUsers->getItemName()));
+		$iaView->assign('sections', $iaField->getGroupsFiltered($iaUsers->getItemName(), $itemData));
 
 		if (isset($_POST['register']))
 		{
-			$fields = $iaField->filter($itemData, $iaUsers->getItemName());
+			$fields = $iaField->filter2($iaUsers->getItemName(), $itemData);
 			list($itemData, $error, $messages, ) = $iaField->parsePost($fields);
 
 			if (!iaValidate::isCaptchaValid())

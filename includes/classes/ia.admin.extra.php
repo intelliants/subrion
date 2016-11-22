@@ -347,7 +347,7 @@ class iaExtra extends abstractCore
 		{
 			if (isset($this->_attributes[$key]))
 			{
-				$result = $this->_attributes[$key];
+				$result = trim($this->_attributes[$key]);
 			}
 		}
 
@@ -736,8 +736,11 @@ class iaExtra extends abstractCore
 
 				if ($result)
 				{
-					$this->_addPhrase('fieldgroup_' . $entry['name'], $title);
-					$this->_addPhrase('fieldgroup_description_' . $entry['item'] . '_' . $entry['name'], $description);
+					$key = sprintf(iaField::FIELDGROUP_TITLE_PHRASE_KEY, $entry['item'], $entry['name']);
+					$this->_addPhrase($key, $title);
+
+					$key = sprintf(iaField::FIELDGROUP_DESCRIPTION_PHRASE_KEY, $entry['item'], $entry['name']);
+					$this->_addPhrase($key, $description);
 				}
 			}
 
@@ -829,8 +832,6 @@ class iaExtra extends abstractCore
 			'hooks',
 			'acl_objects',
 			'fields_groups',
-			'fields_pages',
-			'fields_relations',
 			'fields_tree_nodes',
 			'cron'
 		);
@@ -849,6 +850,8 @@ class iaExtra extends abstractCore
 
 		if ($fields = $iaDb->all(array('id', 'extras'), $stmt))
 		{
+			$fieldIds = array();
+
 			foreach ($fields as $field)
 			{
 				$pluginsList = explode(',', $field['extras']);
@@ -861,7 +864,14 @@ class iaExtra extends abstractCore
 				{
 					$iaDb->delete(iaDb::convertIds($field['id']));
 				}
+
+				$fieldIds[] = $field['id'];
 			}
+
+			$where = '`field_id` IN (' . implode(',', $fieldIds) . ')';
+
+			$this->iaDb->delete($where, iaField::getTablePages());
+			$this->iaDb->delete($where, iaField::getTableRelations());
 		}
 
 		$iaDb->resetTable();
@@ -869,10 +879,7 @@ class iaExtra extends abstractCore
 		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
 		if ($blockIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, "`extras` = '{$extraName}'", null, null, iaBlock::getTable()))
 		{
-			foreach ($blockIds as $blockId)
-			{
-				$iaBlock->delete($blockId, false);
-			}
+			foreach ($blockIds as $blockId) $iaBlock->delete($blockId, false);
 		}
 
 		if ($code['uninstall_sql'])
@@ -1386,8 +1393,11 @@ class iaExtra extends abstractCore
 
 				if ($iaDb->insert($entry))
 				{
-					$this->_addPhrase('fieldgroup_' . $entry['name'], $title);
-					$this->_addPhrase('fieldgroup_description_' . $entry['item'] . '_' . $entry['name'], $description);
+					$key = sprintf(iaField::FIELDGROUP_TITLE_PHRASE_KEY, $entry['item'], $entry['name']);
+					$this->_addPhrase($key, $title);
+
+					$key = sprintf(iaField::FIELDGROUP_DESCRIPTION_PHRASE_KEY, $entry['item'], $entry['name']);
+					$this->_addPhrase($key, $description);
 				}
 			}
 
@@ -1848,7 +1858,7 @@ class iaExtra extends abstractCore
 						'adminonly' => $this->_attr('adminonly', false),
 						'allow_null' => $this->_attr('allow_null', false),
 						'searchable' => $this->_attr('searchable', false),
-						'sort_order' => $this->_attr(array('sort', 'sort_order'), 'asc', array('asc', 'desc')), // @TODO remove 'sort_order'
+						'sort_order' => $this->_attr('sort', 'asc', array('asc', 'desc')),
 						'show_as' => $this->_attr('show_as', 'combo'),
 						'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)),
 						'image_width' => $this->_attr('width', 0),
@@ -2225,6 +2235,8 @@ class iaExtra extends abstractCore
 
 		$this->iaDb->setTable(iaField::getTable());
 
+		$dependencies = array();
+
 		foreach ($fields as $entry)
 		{
 			$stmt = '`item` = :item AND `name` = :name';
@@ -2248,56 +2260,21 @@ class iaExtra extends abstractCore
 				? $fieldGroups[$entry['item'] . $entry['group']]
 				: 0;
 
-			$this->_addPhrase('field_' . $entry['name'], $entry['title']);
+			$this->_addPhrase(sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $entry['item'], $entry['name']), $entry['title']);
 
-			unset($entry['group'], $entry['title']);
-
-			if (is_array($entry['numberRangeForSearch']))
+			/*if (is_array($entry['numberRangeForSearch']))
 			{
 				foreach ($entry['numberRangeForSearch'] as $num)
 				{
 					$this->_addPhrase('field_' . $entry['name'] . '_range_' . $num, $num, iaLanguage::CATEGORY_FRONTEND);
 				}
-			}
+			}*/
 			unset($entry['numberRangeForSearch']);
-
-			if (iaField::RELATION_DEPENDENT == $entry['relation'])
-			{
-				$this->iaDb->setTable(iaField::getTableRelations());
-
-				foreach (explode(';', $entry['parent']) as $parent)
-				{
-					$list = explode(':', $parent);
-					if (2 == count($list))
-					{
-						list($fieldName, $fieldValues) = $list;
-
-						foreach (explode(',', $fieldValues) as $fieldValue)
-						{
-							$entryData = array(
-								'field' => $fieldName,
-								'element' => $fieldValue,
-								'child' => $entry['name'],
-								'item' => $entry['item'],
-								'extras' => $this->itemData['name']
-							);
-
-							$this->iaDb->insert($entryData);
-						}
-					}
-				}
-
-				$this->iaDb->resetTable();
-			}
-			unset($entry['parent']);
 
 			if (is_array($entry['values']))
 			{
 				foreach ($entry['values'] as $key => $value)
-				{
-					$key = sprintf('field_%s_%s', $entry['name'], $key);
-					$this->_addPhrase($key, $value);
-				}
+					$this->_addPhrase(sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $entry['item'], $entry['name'], $key), $value);
 
 				if ($entry['default'])
 				{
@@ -2314,8 +2291,9 @@ class iaExtra extends abstractCore
 			$fieldPages = $entry['item_pages'] ? $entry['item_pages'] : array();
 			$tableName = $entry['table_name'];
 			$className = $entry['class_name'];
+			$parents = $entry['parent'];
 
-			unset($entry['item_pages'], $entry['table_name'], $entry['class_name']);
+			unset($entry['item_pages'], $entry['table_name'], $entry['class_name'], $entry['parent'], $entry['group'], $entry['title']);
 
 			$fieldId = $this->iaDb->insert($entry);
 
@@ -2323,12 +2301,11 @@ class iaExtra extends abstractCore
 			$entry['class_name'] = $className;
 
 			foreach ($fieldPages as $pageName)
+				$this->iaDb->insert(array('page_name' => $pageName, 'field_id' => $fieldId), null, iaField::getTablePages());
+
+			if (iaField::RELATION_DEPENDENT == $entry['relation'] && $parents)
 			{
-				if (trim($pageName))
-				{
-					$row = array('page_name' => $pageName, 'field_id' => $fieldId, 'extras' => $this->itemData['name']);
-					$this->iaDb->insert($row, null, iaField::getTablePages());
-				}
+				$dependencies[$entry['name']] = $parents;
 			}
 
 			$columnExists = false;
@@ -2342,6 +2319,37 @@ class iaExtra extends abstractCore
 			}
 
 			$columnExists || $this->_alterTable($entry);
+		}
+
+		// setup fields dependencies
+		if ($dependencies)
+		{
+			$fieldIds = $this->iaDb->keyvalue(array('name', 'id'), iaDb::convertIds($this->itemData['name'], 'extras'));
+
+			$this->iaDb->setTable(iaField::getTableRelations());
+
+			foreach ($dependencies as $fieldName => $parents)
+			{
+				foreach (explode(';', $parents) as $parent)
+				{
+					$list = explode(':', $parent);
+					if (2 == count($list) && isset($fieldIds[$list[0]]))
+					{
+						foreach (explode(',', $list[1]) as $fieldValue)
+						{
+							$entryData = array(
+								'field_id' => $fieldIds[$list[0]],
+								'element' => $fieldValue,
+								'child' => $fieldName
+							);
+
+							$this->iaDb->insert($entryData);
+						}
+					}
+				}
+			}
+
+			$this->iaDb->resetTable();
 		}
 
 		$this->iaDb->resetTable();

@@ -119,7 +119,6 @@ switch ($step)
 		}
 
 
-
 		$recommendedSettings = array(
 			array ('File Uploads', 'file_uploads', 'ON'),
 			array ('Magic Quotes GPC', 'magic_quotes_gpc', 'OFF'),

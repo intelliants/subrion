@@ -3,6 +3,8 @@
 
 	{capture 'email' append='field_after'}
 		{access object='admin_pages' id='members' action='password'}
+			<hr>
+
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-password">{lang key='password'}</label>
 				<div class="col col-lg-4">
@@ -16,6 +18,8 @@
 					<input type="password" name="_password2" id="input-password-confirmation" value="{if isset($smarty.post._password2)}{$smarty.post._password2|escape:'html'}{/if}">
 				</div>
 			</div>
+
+			<hr>
 		{/access}
 
 		{access object='admin_pages' id='members' action='usergroup'}

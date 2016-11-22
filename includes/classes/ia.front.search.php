@@ -292,7 +292,7 @@ class iaSearch extends abstractCore
 						$row['values'] = array();
 						foreach ($array as $value)
 						{
-							$row['values'][$value] = iaLanguage::get('field_' . $row['name'] . '_' . $value);
+							$row['values'][$value] = iaField::getLanguageValue($row['item'], $row['name'], $value);
 						}
 
 						break;
