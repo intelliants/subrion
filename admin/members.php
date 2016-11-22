@@ -165,8 +165,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaAcl = $this->_iaCore->factory('acl');
 		$iaField = $this->_iaCore->factory('field');
 
-		$fields = $iaField->get($this->_itemName);
-
 		// below is the hacky way to force the script to upload files to the appropriate user's folder
 		// FIXME
 		$activeUser = iaUsers::getIdentity(true);
@@ -174,7 +172,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'id' => $this->getEntryId(),
 			'username' => $data['username']
 		);
-		list($entry, $error, $this->_messages, ) = $iaField->parsePost($fields, $entry);
+		list($entry, $error, $this->_messages, ) = $iaField->parsePost($this->_itemName, $entry);
 		$_SESSION[iaUsers::SESSION_KEY] = $activeUser;
 		//
 

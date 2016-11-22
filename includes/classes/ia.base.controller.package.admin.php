@@ -255,8 +255,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		$fields = $this->_iaField->get($this->getItemName());
-		list($entry, , $this->_messages, ) = $this->_iaField->parsePost($fields, $entry);
+		list($entry, , $this->_messages, ) = $this->_iaField->parsePost($this->getItemName(), $entry);
 
 		return empty($this->_messages);
 	}

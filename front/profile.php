@@ -79,12 +79,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 	elseif ($_POST && (isset($_POST['change_info']) || isset($_POST['plan_id'])))
 	{
+		$item = iaUsers::getIdentity(true);
+
 		if (isset($_POST['change_info']))
 		{
-			$item = array();
-			$fields = iaField::getAcoFieldsList(null, $itemName, null, true, iaUsers::getIdentity(true));
-
-			list($item, $error, $messages, $error_fields) = $iaField->parsePost($fields, iaUsers::getIdentity(true));
+			list($item, $error, $messages, $error_fields) = $iaField->parsePost($iaUsers->getItemName(), $item);
 
 			if (!$error)
 			{
