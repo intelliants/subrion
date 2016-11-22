@@ -2,6 +2,78 @@
 	{preventCsrf}
 
 	{capture 'email' append='field_after'}
+		<div class="row">
+			<label class="col col-lg-2 control-label" for="translatable">Translatable field</label>
+			<div class="col col-lg-4">
+				<div class="translate-group">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							<input type="text" name="translatable[en]" id="translatable" value="">
+							<div class="translate-group__item__code">English</div>
+						</div>
+					</div>
+					<div class="translate-group__langs">
+						<div class="translate-group__item">
+							<input type="text" name="translatable[ru]" id="translatable[ru]" value="">
+							<span class="translate-group__item__code">Russian</span>
+						</div>
+						<div class="translate-group__item">
+							<input type="text" name="translatable[es]" id="translatable[es]" value="">
+							<span class="translate-group__item__code">Espaniol</span>
+						</div>
+					</div>
+					<div class="translate-group__edit js-edit-lang-group"><span class="i-earth"></span></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<label class="col col-lg-2 control-label" for="translatable_textarea">Translatable textarea</label>
+			<div class="col col-lg-4">
+				<div class="translate-group">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							<textarea name="translatable_textarea[en]" id="translatable_textarea[en]" rows="5"></textarea>
+							<div class="translate-group__item__code">English</div>
+						</div>
+					</div>
+					<div class="translate-group__langs">
+						<div class="translate-group__item">
+							<textarea name="translatable_textarea[ru]" id="translatable_textarea[ru]" rows="5"></textarea>
+							<span class="translate-group__item__code">Russian</span>
+						</div>
+						<div class="translate-group__item">
+							<textarea name="translatable_textarea[es]" id="translatable_textarea[es]" rows="5"></textarea>
+							<span class="translate-group__item__code">Espaniol</span>
+						</div>
+					</div>
+					<div class="translate-group__edit js-edit-lang-group"><span class="i-earth"></span></div>
+				</div>
+			</div>
+		</div>
+
+		{ia_add_js}
+$(function()
+{
+	$('.js-edit-lang-group').click(function() {
+		var $this = $(this),
+			$parent = $this.closest('.translate-group'),
+			$group = $parent.find('.translate-group__langs');
+
+		if (!$parent.hasClass('is-opened'))
+		{
+			$group.slideDown('fast');
+			$parent.addClass('is-opened');
+		}
+		else
+		{
+			$group.slideUp('fast');
+			$parent.removeClass('is-opened');
+		}
+	});
+});
+		{/ia_add_js}
+
 		{access object='admin_pages' id='members' action='password'}
 			<hr>
 
