@@ -127,7 +127,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 					$member['items'][$itemName] = $result;
 					$member['items'][$itemName]['package'] = isset($itemsList[$itemName]) ? $itemsList[$itemName] : '';
-					$member['items'][$itemName]['fields'] = $iaField->filter2($itemName, $member['items'][$itemName]['items']);
+					$member['items'][$itemName]['fields'] = $iaField->filter($itemName, $member['items'][$itemName]['items']);
 				}
 			}
 		}

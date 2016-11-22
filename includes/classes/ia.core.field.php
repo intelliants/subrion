@@ -106,7 +106,7 @@ class iaField extends abstractCore
 		return $fields;
 	}
 
-	public function filter2($itemName, array &$itemData, $pageName = null, $where = null)
+	public function filter($itemName, array &$itemData, $pageName = null, $where = null)
 	{
 		$result = array();
 
@@ -288,10 +288,10 @@ class iaField extends abstractCore
 
 	public function getGroupsFiltered($itemName, array &$itemData)
 	{
-		return $this->_getGroups($itemName, $this->filter2($itemName, $itemData));
+		return $this->_getGroups($itemName, $this->filter($itemName, $itemData));
 	}
 
-	public function getTabs($itemName, array &$itemData)
+	public function getTabs($itemName, array &$itemData, $defaultTab = 'common')
 	{
 		$fieldGroups = $this->getGroupsFiltered($itemName, $itemData);
 
@@ -308,14 +308,14 @@ class iaField extends abstractCore
 			}
 			else
 			{
-				$tabs['common'][$key] = $group;
+				$tabs[$defaultTab][$key] = $group;
 			}
 		}
 
 		return $tabs;
 	}
 
-	public function parsePost(array $fields, $previousValues = null)
+	public function parsePost($itemName, array &$itemData)
 	{
 		$iaCore = &$this->iaCore;
 
@@ -421,6 +421,10 @@ class iaField extends abstractCore
 		// the code block below filters fields based on parent/dependent structure
 		$activeFields = array();
 		$parentFields = array();
+
+		$fields = (iaCore::ACCESS_FRONT == $iaCore->getAccessType())
+			? $this->filter($itemName, $itemData)
+			: $this->get($itemName);
 
 		foreach ($fields as $field)
 		{

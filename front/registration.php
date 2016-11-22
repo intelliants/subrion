@@ -216,8 +216,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		if (isset($_POST['register']))
 		{
-			$fields = $iaField->filter2($iaUsers->getItemName(), $itemData);
-			list($itemData, $error, $messages, ) = $iaField->parsePost($fields);
+			list($itemData, $error, $messages, ) = $iaField->parsePost($iaUsers->getItemName(), $itemData);
 
 			if (!iaValidate::isCaptchaValid())
 			{

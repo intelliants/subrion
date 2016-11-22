@@ -103,7 +103,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$start = (max($page, 1) - 1) * $pagination['limit'];
 
 	$membersList = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $cause . "`status` = 'active' ORDER BY `date_reg`", $start, $pagination['limit']);
-	$fields = $iaCore->factory('field')->filter2($iaUsers->getItemName(), $membersList);
+	$fields = $iaCore->factory('field')->filter($iaUsers->getItemName(), $membersList);
 
 	$iaDb->resetTable();
 
