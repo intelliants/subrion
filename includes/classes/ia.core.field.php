@@ -83,6 +83,11 @@ class iaField extends abstractCore
 		return iaLanguage::get(sprintf(self::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName));
 	}
 
+	public static function getFieldgroupTitle($itemName, $fieldName)
+	{
+		return iaLanguage::get(sprintf(self::FIELDGROUP_TITLE_PHRASE_KEY, $itemName, $fieldName));
+	}
+
 	/**
 	 * Returns fields by item name
 	 *
@@ -144,6 +149,7 @@ class iaField extends abstractCore
 		$forPlans = array();
 		$fields = array();
 		$empty = array();
+		$multilingual = array();
 
 		$iaAcl = $this->iaCore->factory('acl');
 
@@ -154,6 +160,7 @@ class iaField extends abstractCore
 				$result[$row['id']] = $row;
 
 				$empty[$row['name']] = $row['empty_field'];
+				$row['multilingual'] && $multilingual[] = $row['name'];
 				($row['required'] || !$row['for_plan'])
 					? ($fields[] = $row['name'])
 					: ($forPlans[] = $row['name']);
@@ -187,6 +194,12 @@ class iaField extends abstractCore
 						$itemData[$fieldName] = $empty[$fieldName];
 					}
 				}
+			}
+
+			foreach ($multilingual as $fieldName)
+			{
+				$key = $fieldName . '_' . $this->iaCore->language['iso'];
+				isset($itemData[$key]) && $itemData[$fieldName] = $itemData[$key];
 			}
 		}
 
@@ -239,7 +252,7 @@ class iaField extends abstractCore
 				}
 			}
 
-			$field['title'] = iaLanguage::get(sprintf(self::FIELD_TITLE_PHRASE_KEY, $field['item'], $field['name']));
+			$field['title'] = self::getFieldTitle($field['item'], $field['name']);
 			$field['children'] = isset($relationsMap[$id]) ? $relationsMap[$id] : null;
 		}
 	}
@@ -500,11 +513,27 @@ class iaField extends abstractCore
 						break;
 
 					case self::TEXT:
-						$item[$fieldName] = iaSanitize::tags($data[$fieldName]);
+						if ($field['multilingual'] && is_array($data[$fieldName]))
+						{
+							foreach ($data[$fieldName] as $langCode => $value)
+								$item[$fieldName . '_' . $langCode] = iaSanitize::tags($value);
+						}
+						else
+						{
+							$item[$fieldName] = iaSanitize::tags($data[$fieldName]);
+						}
 						break;
 
 					case self::TEXTAREA:
-						$item[$fieldName] = $field['use_editor'] ? iaUtil::safeHTML($data[$fieldName]) : iaSanitize::tags($data[$fieldName]);
+						if ($field['multilingual'] && is_array($data[$fieldName]))
+						{
+							foreach ($data[$fieldName] as $langCode => $value)
+								$item[$fieldName . '_' . $langCode] = $field['use_editor'] ? iaUtil::safeHTML($value) : iaSanitize::tags($value);
+						}
+						else
+						{
+							$item[$fieldName] = $field['use_editor'] ? iaUtil::safeHTML($data[$fieldName]) : iaSanitize::tags($data[$fieldName]);
+						}
 						break;
 
 					default:
@@ -524,7 +553,7 @@ class iaField extends abstractCore
 				elseif ($field['required'] && empty($data[$fieldName]))
 				{
 					$error = true;
-					$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
+					$messages[] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
 					$invalidFields[] = $fieldName;
 				}
 
@@ -590,7 +619,7 @@ class iaField extends abstractCore
 					elseif (empty($data[$fieldName]['url']) || in_array($data[$fieldName]['url'], $validProtocols))
 					{
 						$error = $req_error = true;
-						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
+						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaField::getFieldTitle($field['item'], $fieldName)));
 						$invalidFields[] = $fieldName;
 					}
 				}
@@ -615,7 +644,7 @@ class iaField extends abstractCore
 					else
 					{
 						$error = true;
-						$messages[] = iaLanguage::get('field_' . $fieldName) . ': ' . iaLanguage::get('error_url');
+						$messages[] = self::getFieldTitle($field['item'], $fieldName) . ': ' . iaLanguage::get('error_url');
 						$invalidFields[] = $fieldName;
 					}
 				}
@@ -642,7 +671,7 @@ class iaField extends abstractCore
 						if (!$existImages)
 						{
 							$error = true;
-							$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
+							$messages[] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
 							$invalidFields[] = $fieldName;
 						}
 					}

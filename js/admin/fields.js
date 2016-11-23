@@ -521,9 +521,9 @@ $(function()
 			{
 				if (response.length > 0)
 				{
-					$.each(response, function(i, entry)
+					$.each(response, function(i, r)
 					{
-						$fieldGroup.append($('<option>').val(entry.id).text(_t('fieldgroup_' + entry.name)));
+						$fieldGroup.append($('<option>').val(r.id).text(r.title));
 					});
 
 					$fieldGroup.prop('disabled', false);

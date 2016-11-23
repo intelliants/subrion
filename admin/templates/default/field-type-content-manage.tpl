@@ -17,7 +17,7 @@
 		{if $annotation}<br><span class="help-block">{$annotation}</span>{/if}
 	</label>
 
-	{if iaField::TEXTAREA != $type}
+	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual)}
 		<div class="col col-lg-4">
 	{else}
 		<div class="col col-lg-8">
@@ -41,7 +41,31 @@
 
 	{switch $type}
 		{case iaField::TEXT break}
-			<input type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+			{if $field.multilingual}
+				<div class="translate-group">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							<input type="text" name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" value="{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}">
+							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+						</div>
+					</div>
+					{if count($core.languages) > 1}
+					<div class="translate-group__langs">
+						{foreach $core.languages as $language}
+							{if $language.iso != $core.language.iso}
+							<div class="translate-group__item">
+								<input type="text" name="{$fieldName}[{$language.iso}]" id="{$name}-{$language.iso}" value="{if empty($item["{$fieldName}_{$language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$language.iso}"]|escape:'html'}{/if}">
+								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+							</div>
+							{/if}
+						{/foreach}
+					</div>
+					{/if}
+					<div class="translate-group__edit js-edit-lang-group"><span class="i-earth"></span></div>
+				</div>
+			{else}
+				<input type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+			{/if}
 
 		{case iaField::DATE break}
 			{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
@@ -73,6 +97,29 @@
 
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
+				{if $field.multilingual}
+				<div class="translate-group">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							<textarea name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" rows="5">{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}</textarea>
+							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+						</div>
+					</div>
+					{if count($core.languages) > 1}
+					<div class="translate-group__langs">
+						{foreach $core.languages as $language}
+							{if $language.iso != $core.language.iso}
+							<div class="translate-group__item">
+								<textarea name="{$fieldName}[{$language.iso}]" id="{$name}-{$language.iso}" rows="5">{if empty($item["{$fieldName}_{$language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$language.iso}"]|escape:'html'}{/if}</textarea>
+								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+							</div>
+							{/if}
+						{/foreach}
+					</div>
+					{/if}
+					<div class="translate-group__edit js-edit-lang-group"><span class="i-earth"></span></div>
+				</div>
+				{else}
 				<textarea name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
 				{if $field.length > 0}
 					{ia_add_js}
@@ -89,6 +136,7 @@ $(function($)
 });
 					{/ia_add_js}
 					{ia_print_js files='jquery/plugins/jquery.textcounter'}
+				{/if}
 				{/if}
 			{else}
 				{ia_wysiwyg value=$value name=$field.name}
