@@ -123,18 +123,21 @@ Ext.onReady(function()
 			}
 
 			var $multiLangRow = $('#js-multi-language-row');
+			var $jsExternalRow = $('#js-external-row');
 
 			if ('php' == type || 'smarty' == type)
 			{
 				last_multi = $multiLanguage.val();
 				$multiLangRow.hide().bootstrapSwitch('setState', 1);
+				$jsExternalRow.show();
 				initEditArea();
 			}
 			else
 			{
 				$multiLangRow.show();
 				$('#external_filename').hide();
-				$('#js-external-row').bootstrapSwitch('setState', 0);
+				$jsExternalRow.bootstrapSwitch('setState', 0);
+				$jsExternalRow.hide();
 
 				eAL.toggle_off('multi_contents');
 				$('#EditAreaArroundInfos_multi_contents').hide();
