@@ -140,6 +140,16 @@ $(function()
 		intelli.ckeditor($(this).attr('id'), {height: '200px'});
 	});
 
+	$('.js-edit-lang-group').on('click', function()
+	{
+		var $this = $(this),
+			$parent = $this.closest('.translate-group'),
+			$group = $parent.find('.translate-group__langs');
+
+		$parent.hasClass('is-opened') ? $group.slideUp('fast') : $group.slideDown('fast');
+		$parent.toggleClass('is-opened');
+	});
+
 	// quick search
 	$('.dropdown-menu a', '#quick-search').on('click', function(e)
 	{

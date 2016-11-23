@@ -73,8 +73,8 @@
 				<div class="col col-lg-4">
 					<select name="fieldgroup_id" id="input-fieldgroup"{if !$groups} disabled{/if}>
 						<option value="">{lang key='_select_'}</option>
-						{foreach $groups as $code => $value}
-							<option value="{$code}"{if $code == $item.fieldgroup_id} selected{/if}>{$value.name|escape:'html'}</option>
+						{foreach $groups as $group}
+							<option value="{$group.id}"{if $group.id == $item.fieldgroup_id} selected{/if}>{$group.title|escape:'html'}</option>
 						{/foreach}
 					</select>
 				</div>
@@ -155,6 +155,14 @@
 							</div>
 						</div>
 					{/foreach}
+				</div>
+			</div>
+
+			<div class="row">
+				<label class="col col-lg-2 control-label">{lang key='multilingual'}</label>
+
+				<div class="col col-lg-4">
+					{html_radio_switcher value=$item.multilingual|default:0 name='multilingual'}
 				</div>
 			</div>
 

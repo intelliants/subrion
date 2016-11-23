@@ -38,6 +38,8 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_phraseAddSuccess = 'field_added';
 	protected $_phraseGridEntryDeleted = 'field_deleted';
 
+	private $_data;
+
 
 	public function __construct()
 	{
@@ -71,7 +73,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		if (isset($params['get']) && 'groups' == $params['get'])
 		{
-			return $this->_iaDb->all(array('id', 'name'), iaDb::convertIds($_GET['item'], 'item'), null, null, iaField::getTableGroups());
+			return $this->_fetchFieldGroups($params['item']);
 		}
 
 		if (1 == count($this->_iaCore->requestPath) && 'tree' == $this->_iaCore->requestPath[0])
@@ -94,7 +96,9 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach ($entries as &$entry)
 		{
 			$entry['title'] = iaField::getFieldTitle($entry['item'], $entry['name']);
-			$entry['group'] = isset($groups[$entry['fieldgroup_id']]) ? iaLanguage::get('fieldgroup_' . $groups[$entry['fieldgroup_id']], $entry['fieldgroup_id']) : iaLanguage::get('other');
+			$entry['group'] = isset($groups[$entry['fieldgroup_id']])
+				? iaField::getFieldgroupTitle($entry['item'], $groups[$entry['fieldgroup_id']])
+				: iaLanguage::get('other');
 		}
 	}
 
@@ -107,6 +111,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'item' => null,
 			'type' => null,
 			'relation' => iaField::RELATION_REGULAR,
+			'multilingual' => false,
 			'required' => false,
 			'length' => iaField::DEFAULT_LENGTH,
 			'searchable' => false,
@@ -133,6 +138,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->_iaDb->delete("`key` LIKE 'field_{$field['item']}_{$field['name']}%' ", iaLanguage::getTable());
 
 			$itemTable = $this->_iaCore->factory('item')->getItemTable($field['item']);
+
 			// just an additional check
 			$fields = $this->_iaDb->describe($itemTable);
 
@@ -176,6 +182,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'length' => iaUtil::checkPostParam('length', false),
 			'title' => iaUtil::checkPostParam('title'),
 			'pages' => iaUtil::checkPostParam('pages', array()),
+			'multilingual' => iaUtil::checkPostParam('multilingual'),
 			'required' => iaUtil::checkPostParam('required'),
 			'use_editor' => (int)iaUtil::checkPostParam('use_editor'),
 			'empty_field' => iaSanitize::html(iaUtil::checkPostParam('empty_field')),
@@ -210,6 +217,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['annotation'][$code] = utf8_bad_replace($entry['annotation'][$code]);
 				}
 			}
+
 			if (!empty($entry['title'][$code]))
 			{
 				if (!utf8_is_valid($entry['title'][$code]))
@@ -220,7 +228,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			else
 			{
 				$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => $language['title'] . ' ' . iaLanguage::get('title'))), false);
-
 				break;
 			}
 		}
@@ -455,6 +462,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
+		$this->_alterDbTable($entry, $action);
+
 		$this->_iaCore->startHook('phpAdminFieldsSaved', array('field' => &$entry, '_this' => $this));
 	}
 
@@ -565,14 +574,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		// get field groups
 		if (!empty($entryData['item']))
 		{
-			$array = $this->_iaDb->all(array('id', 'name', 'item'), $stmt . ' ORDER BY `item`, `name`', null, null, iaField::getTableGroups());
-			foreach ($array as $entry)
-			{
-				$groups[$entry['id']] = array(
-					'name' => iaLanguage::get('fieldgroup_' . $entry['name'], $entry['name']),
-					'item' => $entry['item']
-				);
-			}
+			$groups = $this->_fetchFieldGroups($entryData['item']);
 		}
 
 		$fieldTypes = $this->_iaDb->getEnumValues(iaField::getTable(), 'type');
@@ -691,19 +693,20 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		unset($fieldData['keys']);
 
-		if (isset($fieldData['lang_values']) && is_array($fieldData['lang_values']))
-		{
-			foreach ($fieldData['lang_values'] as $languageCode => $phrases)
-			{
-				foreach ($phrases as $phraseKey => $phraseValue)
-				{
-					$key = sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $field['item'], $field['name'], $phraseKey);
-					iaLanguage::addPhrase($key, $phraseValue, $languageCode, $field['extras']);
-				}
-			}
-		}
 		if (isset($fieldData['lang_values']))
 		{
+			if (is_array($fieldData['lang_values']))
+			{
+				foreach ($fieldData['lang_values'] as $languageCode => $phrases)
+				{
+					foreach ($phrases as $phraseKey => $phraseValue)
+					{
+						$key = sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $field['item'], $field['name'], $phraseKey);
+						iaLanguage::addPhrase($key, $phraseValue, $languageCode, $field['extras']);
+					}
+				}
+			}
+
 			unset($fieldData['lang_values']);
 		}
 
@@ -745,6 +748,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$iaDb->query("ALTER TABLE `{$iaDb->prefix}{$tableName}` ADD FULLTEXT (`{$field['name']}`)");
 			}
 		}
+
 		if ($field['searchable'] && !$fieldData['searchable'] && in_array($fieldData['type'], array(iaField::TEXT, iaField::TEXTAREA)))
 		{
 			$indexes = $iaDb->getAll("SHOW INDEX FROM `{$iaDb->prefix}{$tableName}`");
@@ -768,6 +772,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		unset($fieldData['pages'], $fieldData['groups'], $fieldData['item']);
 
+		$this->_data = $this->getById($id);
 		$result = parent::_entryUpdate($fieldData, $id);
 
 		if ($pagesList)
@@ -777,17 +782,17 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($result)
 		{
-			if (in_array($fieldData['type'], array(iaField::TEXT, iaField::COMBO, iaField::RADIO, iaField::CHECKBOX)))
+			if (in_array($fieldData['type'], array(/*iaField::TEXT, */iaField::COMBO, iaField::RADIO, iaField::CHECKBOX)))
 			{
 				$sql = sprintf('ALTER TABLE `%s%s` CHANGE `%s` `%s`', $this->_iaDb->prefix, $tableName,
 					$field['name'], $field['name']);
 
 				switch ($fieldData['type'])
 				{
-					case iaField::TEXT:
+					/*case iaField::TEXT:
 						$sql .= "VARCHAR ({$fieldData['length']}) ";
 						$sql .= $fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '';
-						break;
+						break;*/
 					default:
 						if (isset($fieldData['values']))
 						{
@@ -844,7 +849,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		unset($fieldData['title'], $fieldData['annotation']);
 
-		if (isset($fieldData['group']) && !isset($fieldData['fieldgroup_id']))
+		// TODO: check the code below
+		/*if (isset($fieldData['group']) && !isset($fieldData['fieldgroup_id']))
 		{
 			$fieldData['fieldgroup_id'] = 0;
 
@@ -857,7 +863,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 			unset($fieldData['group']);
-		}
+		}*/
 
 		//add language number field search ranges
 		if (isset($fieldData['_numberRangeForSearch']) && is_array($fieldData['_numberRangeForSearch']))
@@ -902,13 +908,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (isset($fieldData['lang_values']) && is_array($fieldData['lang_values']))
 		{
-			foreach ($fieldData['lang_values'] as $lng_code => $lng_phrases)
-			{
-				foreach ($lng_phrases as $ph_key => $ph_value)
-				{
-					iaLanguage::addPhrase('field_' . $fieldData['name'] . '_' . $ph_key, $ph_value, $lng_code);
-				}
-			}
+			$values = $fieldData['lang_values'];
 			unset($fieldData['lang_values']);
 		}
 
@@ -927,25 +927,24 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$fieldId = $iaDb->insert($fieldData);
 
-		if ($fieldId && $pagesList)
+		if (!$fieldId)
 		{
-			$this->_setPagesList($fieldId, $pagesList);
+			return false;
 		}
 
-		$fieldData['table_name'] = $this->_iaCore->factory('item')->getItemTable($fieldData['item']);
-
-		$fields = $iaDb->describe($fieldData['table_name']);
-		$exists = false;
-		foreach ($fields as $f)
+		if (isset($values) && is_array($values))
 		{
-			if ($f['Field'] == $fieldData['name'])
+			foreach ($values as $lng_code => $lng_phrases)
 			{
-				$exists = true;
-				break;
+				foreach ($lng_phrases as $ph_key => $ph_value)
+				{
+					$key = sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $fieldData['item'], $fieldData['name'], $ph_key);
+					iaLanguage::addPhrase($key, $ph_value, $lng_code);
+				}
 			}
 		}
 
-		$exists || $this->_alterDbTable($fieldData);
+		empty($pagesList) || $this->_setPagesList($fieldId, $pagesList);
 
 		return $fieldId;
 	}
@@ -1020,8 +1019,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _resetRelations($name, $item)
 	{
+		$where = '`item` = :item AND `field` = :field';
+		$this->_iaDb->bind($where, array('item' => $item, 'field' => $name));
+
 		// set dependent fields to regular
-		if ($children = $this->_iaDb->onefield('child', iaDb::printf("`item` = ':item' && `field` = ':field' ", array('item' => $item, 'field' => $name)), 0, null, iaField::getTableRelations()))
+		if ($children = $this->_iaDb->onefield('child', $where, null, null, iaField::getTableRelations()))
 		{
 			foreach ($children as $child)
 			{
@@ -1041,18 +1043,17 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _setRelations()
 	{
-		$sql =
-			'UPDATE `:prefix:table` f ' .
-			"SET f.relation = ':dependent' " .
-			'WHERE (' .
-			'SELECT COUNT(*) FROM `:prefix:table_relations` fr WHERE fr.`child` = f.`name`' .
-			') > 0';
+		$sql = 'UPDATE `:prefix:table_fields` f '
+			. "SET f.relation = ':dependent' "
+			. 'WHERE ('
+				. 'SELECT COUNT(*) FROM `:prefix:table_relations` fr WHERE fr.`child` = f.`name`'
+			. ') > 0';
 
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
-			'table' => iaField::getTable(),
-			'dependent' => iaField::RELATION_DEPENDENT,
-			'table_relations' => iaField::getTableRelations()
+			'table_fields' => iaField::getTable(),
+			'table_relations' => iaField::getTableRelations(),
+			'dependent' => iaField::RELATION_DEPENDENT
 		));
 
 		$this->_iaDb->query($sql);
@@ -1075,80 +1076,184 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->resetTable();
 	}
 
-
-	protected function _alterDbTable(array $fieldData)
+	protected function _alterDbTable(array $fieldData, $action)
 	{
-		$prefix = $this->_iaDb->prefix;
+		$dbTable = $this->_iaCore->factory('item')->getItemTable($fieldData['item']);
 
-		$sql = sprintf('ALTER TABLE `%s%s` ', $prefix, $fieldData['table_name']);
-		$sql .= 'ADD `' . $fieldData['name'] . '` ';
+		if (iaCore::ACTION_ADD == $action)
+		{
+			$fieldData['multilingual']
+				? $this->_alterMultilingualColumns($dbTable, $fieldData['name'], $fieldData)
+				: $this->_alterColumnScheme($dbTable, $fieldData);
+		}
+		elseif (iaCore::ACTION_EDIT == $action && $this->_data)
+		{
+			if ($fieldData['multilingual'] != $this->_data['multilingual'])
+			{
+				$this->_alterMultilingualColumns($dbTable, $this->_data['name'], $fieldData);
+			}
+			elseif ($fieldData['length'] != $this->_data['length']
+				|| $fieldData['default'] != $this->_data['default'])
+			{
+				$fieldData['name'] = $this->_data['name'];
+				$this->_alterColumnScheme($dbTable, $fieldData);
+			}
+
+			if ($fieldData['searchable'] != $this->_data['searchable'])
+			{
+				$this->_alterColumnIndex($dbTable, $this->_data['name']);
+			}
+		}
+	}
+
+	private function _alterMultilingualColumns($dbTable, $fieldName, array $fieldData)
+	{
+		$defaultLanguage = null;
+
+		foreach ($this->_iaCore->languages as $language)
+		{
+			if ($language['default'])
+			{
+				$defaultLanguage = $language;
+				break;
+			}
+		}
+
+		if ($fieldData['multilingual'])
+		{
+			$fieldData['name'] = $fieldName;
+			$this->_alterColumnScheme($dbTable, $fieldData, $fieldName . '_' . $defaultLanguage['iso']);
+
+			foreach ($this->_iaCore->languages as $language)
+			{
+				if ($language['iso'] != $defaultLanguage['iso'])
+				{
+					$fieldData['name'] = $fieldName . '_' . $language['iso'];
+					$this->_alterColumnScheme($dbTable, $fieldData);
+				}
+			}
+		}
+		else
+		{
+			$fieldData['name'] = $fieldName . '_' . $defaultLanguage['iso'];
+			$this->_alterColumnScheme($dbTable, $fieldData, $fieldName);
+
+			foreach ($this->_iaCore->languages as $language)
+			{
+				if ($language['iso'] != $defaultLanguage['iso'])
+				{
+					$this->_alterDropColumn($dbTable, $fieldName . '_' . $language['iso']);
+				}
+			}
+		}
+	}
+
+	private function _alterColumnScheme($dbTable, array $fieldData, $newName = null)
+	{
+		is_null($newName) && $newName = $fieldData['name'];
+
+		$sql = $this->_isDbColumnExist($dbTable, $fieldData['name'])
+			? 'ALTER TABLE `:prefix:table` CHANGE `:column1` `:column2` :scheme'
+			: 'ALTER TABLE `:prefix:table` ADD `:column2` :scheme';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table' => $dbTable,
+			'column1' => $fieldData['name'],
+			'column2' => $newName,
+			'scheme' => $this->_alterCmdBody($fieldData)
+		));
+
+		$this->_iaDb->query($sql);
+	}
+
+	private function _isDbColumnExist($dbTable, $columnName)
+	{
+		$sql = sprintf("SHOW COLUMNS FROM `%s%s` WHERE `Field` LIKE '%s'", $this->_iaDb->prefix, $dbTable, $columnName);
+
+		return (bool)$this->_iaDb->getRow($sql);
+	}
+
+	private function _alterDropColumn($dbTable, $columnName)
+	{
+		$sql = sprintf('ALTER TABLE `%s%s` DROP `%s`', $this->_iaDb->prefix, $dbTable, $columnName);
+
+		$this->_iaDb->query($sql);
+	}
+
+	private function _alterColumnIndex($dbTable, $fieldName)
+	{
+		$sql = sprintf('SHOW INDEX FROM `%s%s`', $this->_iaDb->prefix, $dbTable);
+
+		$exists = false;
+		if ($indexes = $this->_iaDb->getAll($sql))
+		{
+			foreach ($indexes as $i)
+			{
+				if ($i['Key_name'] == $fieldName && $i['Index_type'] == 'FULLTEXT')
+				{
+					$exists = true;
+					break;
+				}
+			}
+		}
+
+		if (!$exists)
+		{
+			$this->_iaDb->query("ALTER TABLE `" . $this->_iaDb->prefix . $dbTable . "` ADD FULLTEXT (`" . $fieldName . "`)");
+		}
+	}
+
+	private function _alterCmdBody(array $fieldData)
+	{
+		$result = '';
 
 		switch ($fieldData['type'])
 		{
 			case iaField::DATE:
-				$sql .= $fieldData['timepicker'] ? 'DATETIME ' : 'DATE ';
+				$result.= $fieldData['timepicker'] ? 'DATETIME ' : 'DATE ';
 				break;
 			case iaField::NUMBER:
-				$sql .= 'DOUBLE ';
+				$result.= 'DOUBLE ';
 				break;
 			case iaField::TEXT:
-				$sql .= 'VARCHAR(' . $fieldData['length'] . ') '
+				$result.= 'VARCHAR(' . $fieldData['length'] . ') '
 					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
 				break;
 			case iaField::URL:
 			case iaField::TREE:
-				$sql .= 'TINYTEXT ';
+				$result.= 'TINYTEXT ';
 				break;
 			case iaField::IMAGE:
 			case iaField::STORAGE:
 			case iaField::PICTURES:
 			case iaField::TEXTAREA:
-				$sql .= 'TEXT ';
+				$result.= 'TEXT ';
 				break;
 			default:
 				if (isset($fieldData['values']))
 				{
 					$values = explode(',', $fieldData['values']);
 
-					$sql .= ($fieldData['type'] == iaField::CHECKBOX) ? 'SET' : 'ENUM';
-					$sql .= "('" . implode("','", $values) . "')";
+					$result.= ($fieldData['type'] == iaField::CHECKBOX) ? 'SET' : 'ENUM';
+					$result.= "('" . implode("','", $values) . "')";
 
 					if (!empty($fieldData['default']))
 					{
-						$sql .= " DEFAULT '{$fieldData['default']}' ";
+						$result.= " DEFAULT '{$fieldData['default']}' ";
 					}
 				}
 		}
-		$sql .= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
 
-		$this->_iaDb->query($sql);
+		$result.= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
 
-		if ($fieldData['searchable'] && in_array($fieldData['type'], array(iaField::TEXT, iaField::TEXTAREA)))
-		{
-			$indexes = $this->_iaDb->getAll("SHOW INDEX FROM `" . $prefix . $fieldData['table_name'] . "`");
-			$keyExists = false;
-			if ($indexes)
-			{
-				foreach ($indexes as $i)
-				{
-					if ($i['Key_name'] == $fieldData['name'] && $i['Index_type'] == 'FULLTEXT')
-					{
-						$keyExists = true;
-						break;
-					}
-				}
-			}
-
-			if (!$keyExists)
-			{
-				$this->_iaDb->query("ALTER TABLE `" . $prefix . $fieldData['table_name'] . "` ADD FULLTEXT (`{$fieldData['name']}`)");
-			}
-		}
+		return $result;
 	}
 
 	private function _getParents($name)
 	{
 		$result = array();
+
 		if ($parents = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`child` = '{$name}'", 0, null, iaField::getTableRelations()))
 		{
 			foreach ($parents as $parent)
@@ -1289,5 +1394,19 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			iaLanguage::addPhrase($key, $value, $code, $extras);
 		}
+	}
+
+	private function _fetchFieldGroups($itemName)
+	{
+		$result = array();
+
+		$where = '`item` = :item ORDER BY `item`, `name`';
+		$this->_iaDb->bind($where, array('item' => $itemName));
+
+		$rows = $this->_iaDb->all(array('id', 'name', 'item'), $where, null, null, iaField::getTableGroups());
+		foreach ($rows as $row)
+			$result[] = array('id' => $row['id'], 'title' => iaField::getFieldgroupTitle($row['item'], $row['name']));
+
+		return $result;
 	}
 }
