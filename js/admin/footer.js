@@ -143,11 +143,20 @@ $(function()
 	$('.js-edit-lang-group').on('click', function()
 	{
 		var $this = $(this),
-			$parent = $this.closest('.translate-group'),
+			$parent = $($this.data('group')),
 			$group = $parent.find('.translate-group__langs');
 
 		$parent.hasClass('is-opened') ? $group.slideUp('fast') : $group.slideDown('fast');
 		$parent.toggleClass('is-opened');
+	});
+
+	$('.js-copy-lang-group').on('click', function()
+	{
+		var $this = $(this),
+			$parent = $($this.data('group')),
+			defaultVal = $parent.find('input:first, textarea:first').val();
+
+		$parent.find('.translate-group__langs input, .translate-group__langs textarea').val(defaultVal);
 	});
 
 	// quick search
