@@ -265,8 +265,11 @@ $(function()
 		$('div.field_type').css('display', 'none');
 		$('#js-row-use-editor').css('display', ('textarea' != type ? 'none' : 'block') );
 
-		var object = $('#js-row-empty-text');
-		($.inArray(type, ['text', 'textarea', 'number']) !== -1) ? object.show() : object.hide();
+		var $o = $('#js-row-empty-text');
+		($.inArray(type, ['text', 'textarea', 'number']) !== -1) ? $o.show() : $o.hide();
+
+		$o = $('#js-row-multilingual');
+		('text' == type || 'textarea' == type) ? $o.show() : $o.hide();
 
 		if (type && $.inArray(type, ['textarea', 'text', 'number', 'storage', 'image', 'url', 'date', 'pictures', 'tree']) !== -1)
 		{
@@ -328,7 +331,7 @@ $(function()
 
 		var action = $(this).data('action');
 		var type = $('#input-type').val();
-		var val = $(this).parent().parent().find('input[name="values[]"]:first').val();
+		var val = $(this).parent().parent().find('input[name*="values["]:first').val();
 		var defaultVal = $('#multiple_default').val();
 		var allDefault = defaultVal.split('|');
 
@@ -462,12 +465,12 @@ $(function()
 			if (checked)
 			{
 				$(this).html('<i class="i-lightning"></i> ' + _t('select_none'));
-				$('input[type="checkbox"]:visible', '#js-pages-list-row').prop('checked', true);
+				$('input[type="checkbox"]:visible', '#js-row-pages-list').prop('checked', true);
 			}
 			else
 			{
 				$(this).html('<i class="i-lightning"></i> ' + _t('select_all'));
-				$('input[type="checkbox"]:visible', '#js-pages-list-row').prop('checked', false);
+				$('input[type="checkbox"]:visible', '#js-row-pages-list').prop('checked', false);
 			}
 			$(this).data('checked', !checked);
 		});
@@ -482,13 +485,13 @@ $(function()
 	{
 		if (this.value == 1)
 		{
-			$('#tr_required').show();
-			$('#for_plan_only').hide();
+			$('#js-row-validation-code').show();
+			$('#js-row-plan-only').hide();
 		}
 		else
 		{
-			$('#tr_required').hide();
-			$('#for_plan_only').show();
+			$('#js-row-validation-code').hide();
+			$('#js-row-plan-only').show();
 		}
 	});
 
@@ -498,7 +501,7 @@ $(function()
 		var $fieldGroup = $('#input-fieldgroup');
 		$fieldGroup.empty().append('<option value="" selected>' + _t('_select_') + '</option>').prop('disabled', true);
 
-		var $pagesList = $('#js-pages-list-row');
+		var $pagesList = $('#js-row-pages-list');
 		var itemName = $(this).val();
 
 		if (itemName)
