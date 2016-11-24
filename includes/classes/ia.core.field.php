@@ -83,6 +83,11 @@ class iaField extends abstractCore
 		return iaLanguage::get(sprintf(self::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName));
 	}
 
+	public static function getFieldValue($itemName, $fieldName, $key)
+	{
+		return iaLanguage::get(sprintf(self::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $key), $key);
+	}
+
 	public static function getFieldgroupTitle($itemName, $fieldName)
 	{
 		return iaLanguage::get(sprintf(self::FIELDGROUP_TITLE_PHRASE_KEY, $itemName, $fieldName));
@@ -125,8 +130,7 @@ class iaField extends abstractCore
 		$sql = 'SELECT f.* '
 			. 'FROM `:prefix:table_fields` f '
 			. 'LEFT JOIN `:prefix:table_pages` fp ON (fp.`field_id` = f.`id`) '
-			. 'WHERE '
-				. "fp.`page_name` = ':page' "
+			. "WHERE fp.`page_name` = ':page' "
 				. "AND f.`status` = ':status' "
 				. "AND f.`item` = ':item' "
 				. 'AND f.`adminonly` = 0 '

@@ -87,25 +87,25 @@
 					<input type="text" name="empty_field" value="{if isset($item.empty_field)}{$item.empty_field|escape:'html'}{/if}">
 				</div>
 			</div>
-			{if $pages}
-				<div class="row" id="js-pages-list-row"{if iaCore::ACTION_ADD == $pageAction && (!$smarty.post && !isset($smarty.get.item))} style="display: none;"{/if}>
-					<label class="col col-lg-2 control-label">{lang key='shown_on_pages'}</label>
 
-					<div class="col col-lg-4">
-						<div class="box-simple fieldset">
-						{foreach $pages as $entry}
-							<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
-								<label>
-									<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[]">
-									{$entry.title}
-								</label>
-							</div>
-						{/foreach}
+			<div class="row" id="js-row-pages-list"{if iaCore::ACTION_ADD == $pageAction && (!$smarty.post && !isset($smarty.get.item))} style="display: none;"{/if}>
+				<label class="col col-lg-2 control-label">{lang key='shown_on_pages'}</label>
+
+				<div class="col col-lg-4">
+					<div class="box-simple fieldset">
+					{foreach $pages as $entry}
+						<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
+							<label>
+								<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[]">
+								{$entry.title}
+							</label>
 						</div>
-						<a href="#" id="toggle-pages" class="label label-default pull-right"><i class="i-lightning"></i> {lang key='select_all'}</a>
+					{/foreach}
 					</div>
+					<a href="#" id="toggle-pages" class="label label-default pull-right"><i class="i-lightning"></i> {lang key='select_all'}</a>
 				</div>
-			{/if}
+			</div>
+
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='visible_for_admin'} <a href="#" class="js-tooltip" title="{$tooltips.adminonly}"><i class="i-info"></i></a></label>
 
@@ -158,27 +158,11 @@
 				</div>
 			</div>
 
-			<div class="row">
+			<div class="row" id="js-row-multilingual">
 				<label class="col col-lg-2 control-label">{lang key='multilingual'}</label>
 
 				<div class="col col-lg-4">
 					{html_radio_switcher value=$item.multilingual|default:0 name='multilingual'}
-				</div>
-			</div>
-
-			<div class="row" id="for_plan_only" {if $item.required} style="display: none"{/if}>
-				<label class="col col-lg-2 control-label">{lang key='for_plan_only'} <a href="#" class="js-tooltip" title="{$tooltips.for_plan_only}"><i class="i-info"></i></a></label>
-
-				<div class="col col-lg-4">
-					{html_radio_switcher value=$item.for_plan|default:0 name='for_plan'}
-				</div>
-			</div>
-
-			<div class="row"{if $item.required} style="display: none"{/if}>
-				<label class="col col-lg-2 control-label">{lang key='searchable'} <a href="#" class="js-tooltip" title="{$tooltips.searchable}"><i class="i-info"></i></a></label>
-
-				<div class="col col-lg-4">
-					{html_radio_switcher value=$item.searchable name='searchable'}
 				</div>
 			</div>
 
@@ -363,24 +347,20 @@
 					<label class="col col-lg-2 control-label">{lang key='field_values'}</label>
 
 					<div class="col col-lg-4">
-						{if isset($item.values) && $item.values}
-							{foreach $item.values as $key => $value}
+						{if $values}
+							{foreach $values as $key => $value}
 								<div id="item-value-{$value}" class="wrap-row wrap-block" data-value-id="{$value}">
 									<div class="row">
 										<label class="col col-lg-4 control-label">{lang key='key'} <i>({lang key='not_required'})</i></label>
 										<div class="col col-lg-8">
-											<input type="text" name="keys[]" value="{if isset($item.keys.$key)}{$item.keys.$key|escape:'html'}{else}{$value|escape:'html'}{/if}">
+											<input type="text" name="keys[]" value="{$value|escape:'html'}">
 										</div>
 									</div>
 									{foreach $core.languages as $code => $language}
 										<div class="row">
-											<label class="col col-lg-4 control-label">{lang key='item_value'} <span class="label label-info">{$language.title}</span></label>
+											<label class="col col-lg-4 control-label">{lang key='item_value'} <span class="label label-info">{$language.title|escape:'html'}</span></label>
 											<div class="col col-lg-8">
-												{if $smarty.const.IA_LANGUAGE == $code}
-													<input type="text" class="fvalue" name="values[]" value="{if !isset($item.values_titles.$value.$code)}{$value|escape:'html'}{else}{$item.values_titles.$value.$code|escape:'html'}{/if}">
-												{else}
-													<input type="text" name="lang_values[{$code}][]" value="{if isset($item.lang_values.$code.$key)}{$item.lang_values.$code.$key|escape:'html'}{elseif isset($item.values_titles.$value.$code)}{$item.values_titles.$value.$code|escape:'html'}{/if}">
-												{/if}
+												<input type="text" name="values[{$code}][]" value="{$titles.$value.$code|escape:'html'}">
 											</div>
 										</div>
 									{/foreach}
@@ -410,11 +390,7 @@
 									<div class="row">
 										<label class="col col-lg-4 control-label">{lang key='item_value'} <span class="label label-info">{$language.title}</span></label>
 										<div class="col col-lg-8">
-											{if $code == $smarty.const.IA_LANGUAGE}
-												<input type="text" class="fvalue" name="values[]">
-											{else}
-												<input type="text" name="lang_values[{$code}][]">
-											{/if}
+											<input type="text" name="values[{$code}][]">
 										</div>
 									</div>
 								{/foreach}
@@ -539,7 +515,23 @@
 				</div>
 			</div>
 
-			<div class="row" id="tr_required"{if !$item.required} style="display: none;"{/if}>
+			<div class="row" id="js-row-plan-only" {if $item.required} style="display: none"{/if}>
+				<label class="col col-lg-2 control-label">{lang key='for_plan_only'} <a href="#" class="js-tooltip" title="{$tooltips.for_plan_only}"><i class="i-info"></i></a></label>
+
+				<div class="col col-lg-4">
+					{html_radio_switcher value=$item.for_plan|default:0 name='for_plan'}
+				</div>
+			</div>
+
+			<div class="row"{if $item.required} style="display: none"{/if}>
+				<label class="col col-lg-2 control-label">{lang key='searchable'} <a href="#" class="js-tooltip" title="{$tooltips.searchable}"><i class="i-info"></i></a></label>
+
+				<div class="col col-lg-4">
+					{html_radio_switcher value=$item.searchable name='searchable'}
+				</div>
+			</div>
+
+			<div class="row" id="js-row-validation-code"{if !$item.required} style="display: none;"{/if}>
 				<label class="col col-lg-2 control-label">{lang key='required_checks'} <a href="#" class="js-tooltip" title="{$tooltips.required_checks}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-8">
@@ -554,6 +546,8 @@
 					<textarea name="extra_actions" class="js-code-editor">{if isset($item.extra_actions)}{$item.extra_actions|escape:'html'}{/if}</textarea>
 				</div>
 			</div>
+
+			<hr>
 
 			<div class="row">
 				<ul class="nav nav-tabs">
