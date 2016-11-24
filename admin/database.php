@@ -470,14 +470,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					$s = trim($s);
 
-					if ($s)
-					{
-						if ($s[0] == '#' || $s[0] == '')
-						{
-							continue;
-						}
-					}
-					else
+					if (!$s || in_array($s[0], array('#', '-', '')))
 					{
 						continue;
 					}
