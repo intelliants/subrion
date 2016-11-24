@@ -104,8 +104,8 @@ class iaField extends abstractCore
 	{
 		$fields = array();
 
-		$where = '`status` = :status AND `item` = :item ORDER BY `order`';
-		$this->iaDb->bind($where, array('status' => iaCore::STATUS_ACTIVE, 'item' => $itemName));
+		$where = '`status` = :status && `item` = :item' . (!$this->iaCore->get('api_enabled') ? " && `fieldgroup_id` != 3 " : '');
+		$this->iaDb->bind($where . ' ORDER BY `order`', array('status' => iaCore::STATUS_ACTIVE, 'item' => $itemName));
 
 		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTable()))
 		{
