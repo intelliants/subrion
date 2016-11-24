@@ -24,6 +24,11 @@
  *
  ******************************************************************************/
 
+if (!$iaCore->get('api_enabled'))
+{
+	return iaView::errorPage(iaView::ERROR_FORBIDDEN);
+}
+
 if (count($iaCore->requestPath) < 2)
 {
 	return iaView::errorPage(iaView::ERROR_NOT_FOUND);

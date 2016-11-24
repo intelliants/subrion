@@ -462,8 +462,8 @@ CREATE TABLE `{install:prefix}members` (
 	`sponsored_start` datetime null,
 	`sponsored_end` datetime null,
 	`sponsored_plan_id` smallint(5) unsigned NOT NULL,
-  `api_push_token` tinytext NOT NULL,
-  `api_push_receive` enum('yes','no') NOT NULL default 'yes',
+	`api_push_token` tinytext NOT NULL,
+	`api_push_receive` enum('yes','no') NOT NULL default 'yes',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `USERNAME` (`username`),
 	UNIQUE KEY `EMAIL` (`email`),
@@ -966,7 +966,8 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('financial','funds_max','1000','','text',0,'Maximum balance',4,'',0,1,''),
 
 ('api','','General','1','divider',0,'',1,'',1,0,''),
-('api','api_push_access_key','','','text',0,'GCM access key',1,'',1,0,''),
+('api','api_enabled','0','''1'',''0''','radio',0,'API enabled',1,'',1,1,''),
+('api','api_push_access_key','','','text',0,'GCM access key',2,'',1,0,'api_enabled|1'),
 
 ('email_templates','','','','divider',0,'Members',0,'',1,1,''),
 ('email_templates','member_approved','1','''1'',''0''','radio',0,'Member approval',1,'',1,1,''),
