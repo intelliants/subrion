@@ -6,16 +6,23 @@
 
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
-	<label class="col col-lg-2 control-label">{$field.title|escape:'html'} {if $field.required}{lang key='field_required'}{/if}
+	<div class="col col-lg-2 ">
+		{if $field.multilingual}
+			<div class="btn-group btn-group-xs translate-group-actions">
+				<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"><span class="i-earth"></span></button>
+				<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"><span class="i-copy"></span></button>
+			</div>
+		{/if}
+		<label class="control-label">{$field.title|escape:'html'} {if $field.required}{lang key='field_required'}{/if}</label>
 		{if iaField::PICTURES == $type || iaField::IMAGE == $type}
-			<span class="help-block">
+			<div class="help-block">
 				{lang key='thumb_dimensions'}: {$field.thumb_width}x{$field.thumb_height}<br>
 				{lang key='image_dimensions'}: {$field.image_width}x{$field.image_height}
-			</span>
+			</div>
 		{/if}
 		{assign annotation {lang key="{$name}_annotation" default=''}}
-		{if $annotation}<br><span class="help-block">{$annotation}</span>{/if}
-	</label>
+		{if $annotation}<div class="help-block">{$annotation}</div>{/if}
+	</div>
 
 	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual)}
 		<div class="col col-lg-4">
@@ -42,7 +49,7 @@
 	{switch $type}
 		{case iaField::TEXT break}
 			{if $field.multilingual}
-				<div class="translate-group">
+				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
 							<input type="text" name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" value="{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}">
@@ -61,7 +68,6 @@
 						{/foreach}
 					</div>
 					{/if}
-					<div class="translate-group__edit js-edit-lang-group"><span class="i-earth"></span></div>
 				</div>
 			{else}
 				<input type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
@@ -98,7 +104,7 @@
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
 				{if $field.multilingual}
-				<div class="translate-group">
+				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
 							<textarea name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" rows="5">{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}</textarea>
@@ -117,7 +123,6 @@
 						{/foreach}
 					</div>
 					{/if}
-					<div class="translate-group__edit js-edit-lang-group"><span class="i-earth"></span></div>
 				</div>
 				{else}
 				<textarea name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>

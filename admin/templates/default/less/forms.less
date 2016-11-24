@@ -203,6 +203,7 @@ input[type="number"] {
   // Reset height for `textarea`s
   textarea {
     height: auto;
+    resize: vertical;
   }
 
   .form-actions {
@@ -554,25 +555,19 @@ input[type="checkbox"],
 // Translatable
 // --------------------------------------------------
 
-.translate-group {
-  position: relative;
+.translate-group-actions {
+  float: right;
+  margin-top: 6px;
 
+  + .control-label {
+    overflow: hidden;
+    display: block;
+  }
+}
+
+.translate-group {
   &__default {
     position: relative;
-  }
-
-  &__edit {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    width: 34px;
-    height: 34px;
-    line-height: 34px;
-    background: #f5f5f5;
-    color: @link-color;
-    text-align: center;
-    cursor: pointer;
-    .transition(all .15s ease-in-out);
   }
 
   &__langs {
@@ -605,9 +600,6 @@ input[type="checkbox"],
   }
 
   &.is-opened {
-    .translate-group__edit {
-      margin-left: 76px;
-    }
     .translate-group__item__code {
       display: block;
       .opacity(100);
