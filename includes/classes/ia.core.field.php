@@ -317,7 +317,7 @@ class iaField extends abstractCore
 		{
 			if ($group['tabview'])
 			{
-				$tabs['fieldgroup_' . $group['name']][$key] = $group;
+				$tabs['fieldgroup_' . $group['item'] . '_' . $group['name']][$key] = $group;
 			}
 			elseif ($group['tabcontainer'])
 			{
@@ -841,69 +841,6 @@ class iaField extends abstractCore
 		}
 
 		return array($imageName, $error, $message);
-	}
-
-	/**
-	 * Sets elements of array according to provided fields structure
-	 *
-	 * @param array $itemData resulting array
-	 * @param array $fields standard fields structure returned by methods of this class
-	 * @param array $extraValues values that will be merged to $itemData
-	 * @param array $data source data (POST values are used if nothing specified)
-	 *
-	 * @return void
-	 */
-	public static function keepValues(array &$itemData, array $fields, array $extraValues = array(), $data = null)
-	{
-		if (is_null($data))
-		{
-			$data = $_POST;
-		}
-		if (empty($data))
-		{
-			return;
-		}
-
-		foreach ($fields as $field)
-		{
-			if ($field['type'] != self::PICTURES && $field['type'] != self::IMAGE)
-			{
-				$fieldName = $field['name'];
-				if (isset($data[$fieldName]) && $data[$fieldName])
-				{
-					$itemData[$fieldName] = self::CHECKBOX == $field['type']
-						? implode(',', $data[$fieldName])
-						: $data[$fieldName];
-				}
-			}
-		}
-
-		if (iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType())
-		{
-			if (isset($data['featured']))
-			{
-				$itemData['featured'] = $data['featured'];
-				$itemData['featured_end'] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($data['featured_end']));
-			}
-
-			if (isset($data['sponsored']))
-			{
-				$itemData['sponsored'] = $data['sponsored'];
-				if (isset($data['sponsored_end']))
-				{
-					$itemData['sponsored_end'] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($data['sponsored_end']));
-				}
-			}
-
-			empty($data['date_added']) || $itemData['date_added'] = iaSanitize::html($data['date_added']);
-			empty($data['status']) || $itemData['status'] = iaSanitize::html($data['status']);
-			empty($data['owner']) || $itemData['owner'] = iaSanitize::html($data['owner']);
-		}
-
-		if ($extraValues)
-		{
-			$itemData = array_merge($itemData, $extraValues);
-		}
 	}
 
 	public function getValues($fieldName, $itemName)

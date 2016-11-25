@@ -275,7 +275,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			}
 			else
 			{
-				iaField::keepValues($itemData, $fields);
 				$iaView->setMessages($messages);
 			}
 
