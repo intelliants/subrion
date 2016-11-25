@@ -36,6 +36,14 @@ if (isset($_GET['file']))
 			header('Content-Type: text/javascript; charset=utf-8');
 			echo file_get_contents(IA_INCLUDES . 'adminer' . IA_DS . 'adminer.js');
 			break;
+		case 'plus.gif':
+		case 'cross.gif':
+		case 'up.gif':
+		case 'down.gif':
+		case 'arrow.gif':
+			header("Content-Type: image/gif");
+			echo file_get_contents(IA_INCLUDES . 'adminer' . IA_DS . $_GET['file']);
+			break;
 	}
 }
 

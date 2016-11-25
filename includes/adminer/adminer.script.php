@@ -7,7 +7,7 @@
 * @license http://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 * @version 4.2.1
 */error_reporting(6135);$oc=!preg_match('~^(unsafe_raw)?$~',ini_get("filter.default"));if($oc||ini_get("filter.default_flags")){foreach(array('_GET','_POST','_COOKIE','_SERVER')as$X){$yg=filter_input_array(constant("INPUT$X"),FILTER_UNSAFE_RAW);if($yg)$$X=$yg;}}if(function_exists("mb_internal_encoding"))mb_internal_encoding("8bit");if(isset($_GET["file"])){if($_SERVER["HTTP_IF_MODIFIED_SINCE"]){header("HTTP/1.1 304 Not Modified");exit;}header("Expires: ".gmdate("D, d M Y H:i:s",time()+365*24*60*60)." GMT");header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
-if ($_GET['file'] && !in_array($_GET['file'], array('default.css', 'functions.js'))){header("Content-Type: image/gif");switch($_GET["file"]){case"plus.gif":echo"GIF89a\0\0�\0001���\0\0����\0\0\0!�\0\0\0,\0\0\0\0\0\0!�����M��*)�o�) q��e���#��L�\0;";break;case"cross.gif":echo"GIF89a\0\0�\0001���\0\0����\0\0\0!�\0\0\0,\0\0\0\0\0\0#�����#\na�Fo~y�.�_wa��1�J�G�L�6]\0\0;";break;case"up.gif":echo"GIF89a\0\0�\0001���\0\0����\0\0\0!�\0\0\0,\0\0\0\0\0\0 �����MQN\n�}��a8�y�aŶ�\0��\0;";break;case"down.gif":echo"GIF89a\0\0�\0001���\0\0����\0\0\0!�\0\0\0,\0\0\0\0\0\0 �����M��*)�[W�\\��L&ٜƶ�\0��\0;";break;case"arrow.gif":echo"GIF89a\0\n\0�\0\0������!�\0\0\0,\0\0\0\0\0\n\0\0�i������Ӳ޻\0\0;";break;}}exit;}function
+exit;}function
 connection(){global$e;return$e;}function
 adminer(){global$b;return$b;}function
 idf_unescape($Kc){$gd=substr($Kc,-1);return
@@ -443,9 +443,7 @@ dumpHeaders($Jc,$Gd=false){$oe=$_POST["output"];$gc=(preg_match('~sql~',$_POST["
 homepage(){echo'<p class="links">'.($_GET["ns"]==""&&support("database")?'<a href="'.h(ME).'database=">'.'Alter database'."</a>\n":""),(support("scheme")?"<a href='".h(ME)."scheme='>".($_GET["ns"]!=""?'Alter schema':'Create schema')."</a>\n":""),($_GET["ns"]!==""?'<a href="'.h(ME).'schema=">'.'Database schema'."</a>\n":""),(support("privileges")?"<a href='".h(ME)."privileges='>".'Privileges'."</a>\n":"");return
 true;}function
 navigation($Fd){global$ga,$x,$Eb,$e;echo'<h1>
-',$this->name(),' <span class="version">',$ga,'</span>
-<a href="http://www.adminer.org/#download" target="_blank" id="version">',(version_compare($ga,$_COOKIE["adminer_version"])<0?h($_COOKIE["adminer_version"]):""),'</a>
-</h1>
+',$this->name(),' <span class="version">',$ga,'</span></h1>
 ';if($Fd=="auth"){$pc=true;foreach((array)$_SESSION["pwds"]as$Jg=>$wf){foreach($wf
 as$O=>$Fg){foreach($Fg
 as$V=>$G){if($G!==null){if($pc){echo"<p id='logins' onmouseover='menuOver(this, event);' onmouseout='menuOut(this);'>\n";$pc=false;}$tb=$_SESSION["db"][$Jg][$O][$V];foreach(($tb?array_keys($tb):array(""))as$i)echo"<a href='".h(auth_url($Jg,$O,$V,$i))."'>($Eb[$Jg]) ".h($V.($O!=""?"@$O":"").($i!=""?" - $i":""))."</a><br>\n";}}}}}else{if($_GET["ns"]!==""&&!$Fd&&DB!=""){$e->select_db(DB);$S=table_status('',true);}if(support("sql")){echo '<script type="text/javascript">
@@ -489,7 +487,6 @@ page_footer($Fd=""){global$b,$T;echo'</div>
 
 ';if($Fd!="auth"){echo'<form action="" method="post">
 <p class="logout">
-<input type="submit" name="logout" value="Logout" id="logout">
 <input type="hidden" name="token" value="',$T,'">
 </p>
 </form>
