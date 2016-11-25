@@ -132,19 +132,21 @@
 				<div class="col col-lg-4">
 					{ia_hooker name='adminHostFieldSelectorBefore' item=$item}
 
-					{foreach $parents as $field_item => $item_list}
-						<div class="js-dependent-fields-list" data-item="{$field_item}"{if $item.item != $field_item} style="display: none;"{/if}>
+					{foreach $parents as $fieldItem => $itemsList}
+						<div class="js-dependent-fields-list" data-item="{$fieldItem}"{if $item.item != $fieldItem} style="display: none;"{/if}>
 							<div class="list-group list-group-accordion">
-								{foreach $item_list as $field_name => $elements}
+								{foreach $itemsList as $fieldName => $elements}
+									{$fieldId = $elements[0]}
+									{$options = $elements[1]}
 									<a href="#" class="list-group-item{if $elements@first} active{/if}">
-										<p class="list-group-item-heading"><b>{lang key="field_{$field_name}"} {lang key='field_values'}</b></p>
+										<p class="list-group-item-heading"><b>{lang key="field_{$fieldItem}_{$fieldName}"} {lang key='field_values'}</b></p>
 									</a>
 									<div class="list-group-item fields-list"{if !$elements@first} style="display:none;"{/if}>
-										{foreach $elements as $element}
+										{foreach $options as $option}
 											<div class="checkbox">
 												<label>
-													<input type="checkbox" value="1"{if isset($item.parents[$field_item][$field_name][$element])} checked{/if} name="parents[{$field_item}][{$field_name}][{$element}]">
-													{lang key="field_{$field_name}_{$element}"}
+													<input type="checkbox" value="1"{if isset($item.parents[$fieldId][$option])} checked{/if} name="parents[{$fieldItem}][{$fieldName}][{$option}]">
+													{{lang key="field_{$fieldItem}_{$fieldName}+{$option}"}|escape:'html'}
 												</label>
 											</div>
 										{/foreach}

@@ -108,7 +108,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry = array(
 			'fieldgroup_id' => 0,
 			'name' => '',
-			'title' => '',
 			'item' => null,
 			'type' => null,
 			'relation' => iaField::RELATION_REGULAR,
@@ -116,10 +115,8 @@ class iaBackendController extends iaAbstractControllerBackend
 			'required' => false,
 			'length' => iaField::DEFAULT_LENGTH,
 			'searchable' => false,
-			'default' => null,
-			'status' => iaCore::STATUS_ACTIVE,
-			'values' => array(),
-			'pages' => array()
+			'default' => '',
+			'status' => iaCore::STATUS_ACTIVE
 		);
 	}
 
@@ -136,7 +133,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->_iaDb->delete(iaDb::convertIds($entryId, 'field_id'), iaField::getTablePages());
 			$this->_iaDb->delete(iaDb::convertIds($entryId, 'field_id'), iaField::getTableRelations());
 
-			$this->_iaDb->delete("`key` LIKE 'field_{$field['item']}_{$field['name']}%' ", iaLanguage::getTable());
+			$key = sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $field['item'], $field['name']);
+
+			$this->_iaDb->delete('`key` LIKE :key1 OR `key` LIKE :key2', iaLanguage::getTable(),
+				array('key1' => $key . '_%', 'key2' => $key . '+%'));
 
 			$itemTable = $this->_iaCore->factory('item')->getItemTable($field['item']);
 
@@ -366,8 +366,9 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 		$this->_savePhrases($entry, $data);
-		$this->_savePages($data['pages']);
+		$this->_savePages($data);
 		$this->_alterDbTable($entry, $action);
+		$this->_saveRelations($entry, $data);
 
 		if (iaField::TREE == $entry['type'])
 		{
@@ -379,8 +380,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$titles = array();
-		$values = array();
+		$titles = $values = array();
 
 		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
@@ -418,7 +418,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				$values = $this->_getTree($entryData['item'], $entryData['name'], $entryData['values']);
 			}
-			else
+			elseif ($entryData['values'])
 			{
 				$values = explode(',', $entryData['values']);
 				foreach ($values as $key)
@@ -447,12 +447,9 @@ class iaBackendController extends iaAbstractControllerBackend
 				$entryData['annotation'][$code] = (isset($annotation[$code]) ? $annotation[$code] : '');
 			}
 
-			$entryData['pages'] = $this->getEntryId()
-				? $this->_iaDb->onefield('page_name', iaDb::convertIds($this->getEntryId(), 'field_id'), null, null, iaField::getTablePages())
-				: array();
-
-			// get parents values
+			$entryData['pages'] = $this->_iaDb->onefield('page_name', iaDb::convertIds($this->getEntryId(), 'field_id'), null, null, iaField::getTablePages());
 			$entryData['parents'] = $this->_getParents($entryData['name']);
+
 			iaField::PICTURES != $entryData['type'] || $entryData['pic_max_images'] = $entryData['length'];
 		}
 		elseif (!empty($_GET['item']) || !empty($_POST['item']))
@@ -484,12 +481,12 @@ class iaBackendController extends iaAbstractControllerBackend
 		$items = $iaItem->getItems();
 		$parents = array();
 
-		$fieldsList = $this->_iaDb->all(array('item', 'name'), (empty($entryData['name']) ? '' : "`name` != '{$entryData['name']}' AND ") . " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox') AND " . $stmt);
+		$fieldsList = $this->_iaDb->all(array('id', 'item', 'name'), (empty($entryData['name']) ? '' : "`name` != '{$entryData['name']}' AND ") . " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox') AND " . $stmt);
 		foreach ($fieldsList as $row)
 		{
 			isset($parents[$row['item']]) || $parents[$row['item']] = array();
 			$array = $this->_iaDb->getEnumValues($iaItem->getItemTable($row['item']), $row['name']);
-			$parents[$row['item']][$row['name']] = $array['values'];
+			$parents[$row['item']][$row['name']] = array($row['id'], $array['values']);
 		}
 
 		$entryData['pages'] || $entryData['pages'] = array();
@@ -551,114 +548,15 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 	}
 
-	public function setParents($fieldName, array $parents)
-	{
-		$iaDb = &$this->_iaDb;
-
-		$iaDb->setTable(iaField::getTableRelations());
-
-		foreach ($parents as $itemName => $list)
-		{
-			$iaDb->delete('`child` = :name AND `item` = :item', null, array('name' => $fieldName, 'item' => $itemName));
-
-			foreach ($list as $parentFieldName => $values)
-			{
-				foreach ($values as $value => $flag)
-				{
-					$iaDb->insert(array(
-						'field' => $parentFieldName,
-						'element' => $value,
-						'child' => $fieldName,
-						'item' => $itemName
-					));
-				}
-			}
-		}
-
-		$iaDb->resetTable();
-	}
-
-	protected function _setChildren($name, $item, $values, $children = array())
-	{
-		$iaDb = &$this->_iaDb;
-
-		$values = array_keys($values);
-
-		$iaDb->setTable(iaField::getTableRelations());
-		$iaDb->delete('`field` = :field AND `item` = :item', null, array('field' => $name, 'item' => $item));
-
-		foreach ($children as $index => $fieldsList)
-		{
-			$fieldsList = explode(',', $fieldsList);
-
-			foreach ($fieldsList as $field)
-			{
-				if (trim($field))
-				{
-					$iaDb->insert(array(
-						'field' => $name,
-						'element' => $values[$index],
-						'child' => $field,
-						'item' => $item
-					));
-				}
-			}
-		}
-
-		$iaDb->resetTable();
-	}
-
-	protected function _resetRelations($name, $item)
-	{
-		$where = '`item` = :item AND `field` = :field';
-		$this->_iaDb->bind($where, array('item' => $item, 'field' => $name));
-
-		// set dependent fields to regular
-		if ($children = $this->_iaDb->onefield('child', $where, null, null, iaField::getTableRelations()))
-		{
-			foreach ($children as $child)
-			{
-				$this->_iaDb->update(array('relation' => iaField::RELATION_REGULAR),
-					iaDb::printf("`item` = ':item' && `name` = ':name' ", array('item' => $item, 'name' => $child)),
-					null, iaField::getTable()
-				);
-			}
-		}
-
-		// delete dependent relations
-		$this->_iaDb->delete(
-			iaDb::printf("`item` = ':item' && (`field` = ':field' || `child` = ':field')",
-			array('item' => $item, 'field' => $name)
-		), iaField::getTableRelations());
-	}
-
-	protected function _setRelations()
-	{
-		$sql = 'UPDATE `:prefix:table_fields` f '
-			. "SET f.relation = ':dependent' "
-			. 'WHERE ('
-				. 'SELECT COUNT(*) FROM `:prefix:table_relations` fr WHERE fr.`child` = f.`name`'
-			. ') > 0';
-
-		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->_iaDb->prefix,
-			'table_fields' => iaField::getTable(),
-			'table_relations' => iaField::getTableRelations(),
-			'dependent' => iaField::RELATION_DEPENDENT
-		));
-
-		$this->_iaDb->query($sql);
-	}
-
-	protected function _savePages($pages)
+	protected function _savePages(array $data)
 	{
 		$this->_iaDb->setTable(iaField::getTablePages());
 
 		$this->_iaDb->delete(iaDb::convertIds($this->getEntryId(), 'field_id'));
 
-		if (is_array($pages))
+		if (isset($data['pages']))
 		{
-			foreach ($pages as $pageName)
+			foreach ($data['pages'] as $pageName)
 			{
 				if ($pageName = trim($pageName))
 				{
@@ -851,15 +749,15 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $result;
 	}
 
-	private function _getParents($name)
+	private function _getParents($fieldName)
 	{
 		$result = array();
 
-		if ($parents = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`child` = '{$name}'", 0, null, iaField::getTableRelations()))
+		if ($parents = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($fieldName, 'child'), null, null, iaField::getTableRelations()))
 		{
 			foreach ($parents as $parent)
 			{
-				$result[$parent['item']][$parent['field']][$parent['element']] = true;
+				$result[$parent['field_id']][$parent['element']] = true;
 			}
 		}
 
@@ -1033,6 +931,121 @@ class iaBackendController extends iaAbstractControllerBackend
 					iaLanguage::addPhrase(sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $key), $phrase, $iso, $extras);
 			}
 		}
+	}
+
+	protected function _saveRelations(array $fieldData, array $data)
+	{
+		$fieldName = empty($fieldData['name']) ? $this->_data['name'] : $fieldData['name'];
+
+		// set correct relations
+		if (iaField::RELATION_REGULAR == $fieldData['relation'])
+		{
+			$this->_relationsReset($fieldName, $fieldData['item']);
+			return;
+		}
+
+		empty($data['parents']) ||  $this->setParents($fieldName, $data['parents']);
+		empty($data['children']) || $this->_relationsSetChildren($this->_data, $data['children']);
+
+		$this->_relationsSetup();
+	}
+
+	public function setParents($fieldName, array $parents)
+	{
+		$fieldIds = $this->_iaDb->keyvalue(array('name', 'id'));
+
+		$this->_iaDb->setTable(iaField::getTableRelations());
+
+		foreach ($parents as $itemName => $list)
+		{
+			//$this->_iaDb->delete('`child` = :name AND `item` = :item', null,
+			//	array('name' => $fieldName, 'item' => $itemName));
+			$this->_iaDb->delete(iaDb::convertIds($fieldName, 'child'));
+
+			foreach ($list as $parentFieldName => $values)
+			{
+				foreach ($values as $value => $flag)
+					$this->_iaDb->insert(array(
+						'field_id' => $fieldIds[$parentFieldName],
+						'element' => $value,
+						'child' => $fieldName
+					));
+			}
+		}
+
+		$this->_iaDb->resetTable();
+	}
+
+	private function _relationsSetChildren($values, $children)
+	{
+		$values = array_keys($values);
+
+		$this->_iaDb->setTable(iaField::getTableRelations());
+
+		$this->_iaDb->delete(iaDb::convertIds($this->getEntryId(), 'field_id'));
+
+		if ($children)
+		{
+			foreach ($children as $index => $fieldsList)
+			{
+				$fieldsList = explode(',', $fieldsList);
+
+				foreach ($fieldsList as $field)
+				{
+					if ($field = trim($field))
+					{
+						$this->_iaDb->insert(array(
+							'field_id' => $this->getEntryId(),
+							'element' => $values[$index],
+							'child' => $field
+						));
+					}
+				}
+			}
+		}
+
+		$this->_iaDb->resetTable();
+	}
+
+	private function _relationsReset($fieldName, $itemName)
+	{
+		// mark dependent fields as regular
+		$children = $this->_iaDb->onefield('child', iaDb::convertIds($this->getEntryId(), 'field_id'), null, null, iaField::getTableRelations());
+
+		if ($children)
+		{
+			foreach ($children as $child)
+			{
+				$where = '`item` = :item AND `name` = :name';
+				$this->_iaDb->bind($where, array('item' => $itemName, 'name' => $child));
+
+				$this->_iaDb->update(array('relation' => iaField::RELATION_REGULAR), $where, null, iaField::getTable());
+			}
+		}
+
+		// delete dependent relations
+		$where = '`field_id` = :id OR `child` = :child';
+		$this->_iaDb->bind($where, array('id' => $this->getEntryId(), 'child' => $fieldName));
+
+		$this->_iaDb->delete($where, iaField::getTableRelations());
+	}
+
+	private function _relationsSetup()
+	{
+		$sql = 'UPDATE `:prefix:table_fields` f '
+			. "SET f.relation = ':dependent' "
+			. 'WHERE ('
+				. 'SELECT COUNT(*) FROM `:prefix:table_relations` fr WHERE fr.`child` = f.`name`'
+			. ') > 0';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_fields' => iaField::getTable(),
+			'table_relations' => iaField::getTableRelations(),
+			'dependent' => iaField::RELATION_DEPENDENT
+		));
+
+		$this->_iaDb->query($sql);
 	}
 
 	private static function _obtainKey(array $keys)
