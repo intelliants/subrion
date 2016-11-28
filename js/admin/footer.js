@@ -313,19 +313,30 @@ $(function()
 		$('.x-tab-panel > div').removeClass('x-tab-panel-header');
 	}
 
-	if ($().datepicker)
+	if ($().datetimepicker)
 	{
-		$('.js-datepicker').datepicker(
+		$('.js-datepicker').datetimepicker(
 		{
-			format: 'yyyy-mm-dd H:i:s',
-			language: intelli.config.lang
+			format: 'YYYY-MM-DD HH:mm:ss',
+			locale: intelli.config.lang,
+			icons: {
+				time: 'i-clock',
+				date: 'i-calendar',
+				up: 'i-chevron-up',
+				down: 'i-chevron-down',
+				previous: 'i-chevron-left',
+				next: 'i-chevron-right',
+				today: 'i-checkmark',
+				clear: 'i-remove',
+				close: 'i-remove-sign'
+			}
 		});
 
 		$('.js-datepicker-toggle').on('click', function(e)
 		{
 			e.preventDefault();
 
-			$(this).prev().datepicker('show');
+			$(this).prev().datetimepicker('show');
 		});
 	}
 

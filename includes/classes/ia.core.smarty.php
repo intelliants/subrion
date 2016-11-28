@@ -119,8 +119,8 @@ class iaSmarty extends Smarty
 				: 'js:intelli/intelli.minmax, js:frontend/footer')
 			. ',js:_IA_URL_tmp/cache/intelli' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? '.admin' : '') . '.lang.' . $this->iaCore->iaView->language;
 		$this->resources['extjs'] = 'text:Loading ExtJS..., css:_IA_URL_js/extjs/resources/ext-theme-neptune/ext-theme-neptune-all' . ($this->iaCore->get('sap_style') ? '-' . $this->iaCore->get('sap_style') : '') . ', js:extjs/ext-all';
-		$this->resources['datepicker'] = 'js:bootstrap/js/datepicker/bootstrap-datepicker, js:bootstrap/js/datepicker/locales/bootstrap-datepicker.' . $this->iaCore->get('lang') . ', css:_IA_URL_js/bootstrap/css/datepicker3';
-
+		$this->resources['moment'] = 'js:utils/moment-with-locales.min';
+		$this->resources['datepicker'] = 'js:bootstrap/js/bootstrap-datetimepicker.min, css:_IA_URL_js/bootstrap/css/bootstrap-datetimepicker';
 
 		$this->iaCore->startHook('phpSmartyAfterMediaInit', array('iaSmarty' => &$this));
 	}

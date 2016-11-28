@@ -101,18 +101,30 @@ $(function()
 		$('.js-filter-numeric').numeric();
 	}
 
-	if ($().datepicker)
+	if ($().datetimepicker)
 	{
-		$('.js-datepicker').datepicker(
+		$('.js-datepicker').datetimepicker(
 		{
-			language: intelli.config.lang
+			format: 'YYYY-MM-DD HH:mm:ss',
+			locale: intelli.config.lang,
+			icons: {
+				time: 'fa fa-clock-o',
+				date: 'fa fa-calendar',
+				up: 'fa fa-chevron-up',
+				down: 'fa fa-chevron-down',
+				previous: 'fa fa-chevron-left',
+				next: 'fa fa-chevron-right',
+				today: 'fa fa-checkmark',
+				clear: 'fa fa-remove',
+				close: 'fa fa-remove-sign'
+			}
 		});
 
 		$('.js-datepicker-toggle').on('click', function(e)
 		{
 			e.preventDefault();
 
-			$(this).prev().datepicker('show');
+			$(this).prev().datetimepicker('show');
 		});
 	}
 
