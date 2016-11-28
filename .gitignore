@@ -7,3 +7,11 @@ backup/*
 !backup/.htaccess
 includes/config.inc.php
 includes/custom.inc.php
+packages/*
+plugins/*
+!plugins/fancybox
+!plugins/kcaptcha
+!plugins/personal_blog
+templates/*
+!templates/common
+!templates/kickstart
