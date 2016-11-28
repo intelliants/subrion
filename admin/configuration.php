@@ -476,6 +476,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		foreach ($params as &$entry)
 		{
+			$entry['options'] = $entry['options'] ? json_decode($entry['options'], true) : array();
+
 			$className = 'default';
 
 			if ($this->_type)

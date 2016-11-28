@@ -4,8 +4,8 @@
 	<div class="wrap-list">
 		<div class="wrap-group">
 		{foreach $params as $entry}
-			{if !empty($entry.show)}
-				{assign field_show explode('|', $entry.show)}
+			{if !empty($entry.options.show)}
+				{assign field_show explode('|', $entry.options.show)}
 
 				{capture assign='dependent_fields'}
 					data-id="js-{$field_show[0]}-{$field_show[1]}" {if (!empty($field_show[0]) && $core.config.{$field_show[0]} != $field_show[1])} style="display: none;"{/if}
@@ -90,7 +90,7 @@ $(function() {
 						{/if}
 
 						<div class="item-input">
-							<textarea name="v[{$entry.name}]" id="{$entry.name}" class="{if $entry.wysiwyg == 1}js-wysiwyg {elseif $entry.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value|escape:'html'}</textarea>
+							<textarea name="v[{$entry.name}]" id="{$entry.name}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value|escape:'html'}</textarea>
 						</div>
 					{elseif 'image' == $entry.type}
 						{if !is_writeable($smarty.const.IA_UPLOADS)}

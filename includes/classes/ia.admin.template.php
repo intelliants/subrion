@@ -747,15 +747,19 @@ class iaTemplate extends abstractCore
 					'name' => $this->attr('name'),
 					'value' => $text,
 					'config_group' => $this->attr(array('group','configgroup')),
-					'multiple_values' => $this->attr(array('values', 'multiplevalues')),
+					'multiple_values' => $this->attr('values'),
 					'type' => $this->attr('type'),
 					'description' => $this->attr('description'),
-					'wysiwyg' => $this->attr('wysiwyg', false),
-					'code_editor' => $this->attr('code_editor', false),
 					'private' => $this->attr('private', false),
 					'order' => $this->attr('order', false),
-					'show' => $this->attr('show'),
-					'extras' => $this->name
+					'extras' => $this->name,
+					'options' => json_encode(array(
+							'wysiwyg' => $this->attr('wysiwyg', false),
+							'code_editor' => $this->attr('code_editor', false),
+							'show' => $this->attr('show'),
+							'multilingual' => $this->attr('multilingual', false)
+						)
+					)
 				);
 				break;
 

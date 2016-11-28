@@ -1728,15 +1728,19 @@ class iaExtra extends abstractCore
 						'config_group' => $this->_attr(array('group', 'configgroup')),
 						'name' => $this->_attr('name'),
 						'value' => $text,
-						'multiple_values' => $this->_attr(array('values', 'multiplevalues')), // @TODO remove 'multiplevalues'
+						'multiple_values' => $this->_attr('values'),
 						'type' => $this->_attr('type'),
 						'description' => $this->_attr('description'),
-						'wysiwyg' => $this->_attr('wysiwyg', false),
-						'code_editor' => $this->_attr('code_editor', false),
 						'private' => $this->_attr('private', true),
 						'custom' => $this->_attr('custom', true),
 						'extras' => $this->itemData['name'],
-						'show' => $this->_attr('show')
+						'options' => json_encode(array(
+								'wysiwyg' => $this->_attr('wysiwyg', false),
+								'code_editor' => $this->_attr('code_editor', false),
+								'show' => $this->_attr('show'),
+								'multilingual' => $this->_attr('multilingual', false)
+							)
+						)
 					);
 				}
 				break;
