@@ -108,6 +108,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
+		$entryData['item'] = $this->_itemName;
+
 		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
 			$adminsCount = $this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status', array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
@@ -248,6 +250,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
+		$this->_iaCore->startHook('phpItemSaved', array(
+			'action' => $action,
+			'itemId' => $this->getEntryId(),
+			'itemData' => $entry,
+			'itemName' => $this->_itemName
+		));
+
 		if (iaCore::ACTION_ADD == $action)
 		{
 			$action = 'member_registration';

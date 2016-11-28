@@ -66,6 +66,16 @@ class iaBackendController extends iaAbstractControllerBackend
 		return parent::_gridRead($params);
 	}
 
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
+	{
+		if (isset($values['extras']) && iaCore::CORE == strtolower($values['extras']))
+		{
+			$values['extras'] = '';
+		}
+
+		$conditions[] = '`service` = 0';
+	}
+
 	protected function _modifyGridResult(array &$entries)
 	{
 		$currentLanguage = $this->_iaCore->iaView->language;
@@ -187,16 +197,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return !$this->getMessages();
-	}
-
-	protected function _modifyGridParams(&$conditions, &$values, array $params)
-	{
-		if (isset($values['extras']) && iaCore::CORE == strtolower($values['extras']))
-		{
-			$values['extras'] = '';
-		}
-
-		$conditions[] = '`service` = 0';
 	}
 
 	protected function _setDefaultValues(array &$entry)

@@ -299,6 +299,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'<!DOCTYPE', '<body>',
 			'</body></html>',
 			'<table border="0" cellpadding="3" width="600">',
+			'<table>',
 		);
 
 		$replace = array(
@@ -307,6 +308,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'<th colspan="2" style="text-align: center; font-weight: bold;">',
 			'<!-- <!DOCTYPE', '<body> -->',
 			'<!-- </body></html> -->',
+			'<table class="table table-bordered table-condensed table-striped">',
 			'<table class="table table-bordered table-condensed table-striped">',
 		);
 

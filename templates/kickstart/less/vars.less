@@ -11,8 +11,8 @@
 // template colors
 
 @brand-dark:       #323232;
-@brand-primary:    #38b7ea;
-@link-color:       #38b7ea;
+@brand-primary:    #00bff3;
+@link-color:       @brand-primary;
 @link-hover-color: darken(@link-color, 15%);
 @body-bg:          #fff;
 @headings-color:   inherit;
@@ -92,7 +92,10 @@
 @fieldest-padding-vertical:   20px;
 @fieldest-padding-horizontal: 20px;
 
-@form-label-color: fade(@text-color, 80%);
+@form-label-color:            fade(@text-color, 80%);
+
+@input-border:                #ccc;
+@input-border-focus:          darken(@input-border, 35%);
 
 
 
@@ -111,6 +114,8 @@
 // --------------------------------------------------
 
 @list-group-border-radius:         0;
+@list-group-border:                @border-color;
+
 
 
 

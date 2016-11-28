@@ -142,11 +142,11 @@ class iaPage extends abstractPlugin
 		$result = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $pageName),
 			$lookupThroughBackend ? self::getAdminTable() : self::getTable());
 
-		if (!$lookupThroughBackend && $result)
+		if ($result)
 		{
 			$result['title'] = $this->iaDb->one_bind(array('value'), '`key` = :key AND `category` = :category AND `code` = :lang',
-				array('key' => 'page_title_' . $pageName, 'category' => iaLanguage::CATEGORY_PAGE, 'lang' => $this->iaView->language),
-				iaLanguage::getTable());
+				array('key' => 'page_title_' . $pageName, 'category' => $lookupThroughBackend ? iaLanguage::CATEGORY_ADMIN : iaLanguage::CATEGORY_PAGE,
+					'lang' => $this->iaView->language), iaLanguage::getTable());
 		}
 
 		return $result;
