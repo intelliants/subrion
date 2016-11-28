@@ -904,6 +904,7 @@ INSERT INTO `{install:prefix}config` (`config_group`,`name`,`value`,`multiple_va
 ('mail','mail_function','php mail','''php mail'',''sendmail'',''smtp''','select',0,'Mail method',18,'',1,0,''),
 ('mail','mail_test','','admin/templates/default/configuration-test-email-btn.tpl','tpl',0,'Send test email',21,'',1,0,''),
 ('mail','','SMTP Settings','','divider',0,'',24,'',9,0,'mail_function|smtp'),
+('mail','smtp_debug','0','''1'',''0''','radio',0,'SMTP Debug',26,'',1,0,'mail_function|smtp'),
 ('mail','smtp_auth','1','''1'',''0''','radio',0,'SMTP Authentication',27,'',1,0,'mail_function|smtp'),
 ('mail','smtp_server','smtp.example.org','','text',0,'SMTP Server',30,'',1,0,'mail_function|smtp'),
 ('mail','smtp_port','','','text',0,'SMTP Port',33,'',1,0,'mail_function|smtp'),

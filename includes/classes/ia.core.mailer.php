@@ -101,6 +101,7 @@ class iaMailer extends PHPMailer
 				$this->Username = $this->_iaCore->get('smtp_user');
 				$this->Password = $this->_iaCore->get('smtp_password');
 				$this->SMTPSecure = strtolower($this->_iaCore->get('smtp_secure'));
+				$this->SMTPDebug = (bool)$this->_iaCore->get('smtp_debug') ? 3 : 0;
 
 				if ($port = $this->_iaCore->get('smtp_port'))
 				{
