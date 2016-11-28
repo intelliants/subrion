@@ -82,13 +82,13 @@ $(function()
 			<div class="row">
 				<div class="col-md-6">
 					<div class="input-group date" id="field_date_{$fieldName}">
-						<input class="form-control js-datepicker" type="text" name="{$fieldName}" {if $field.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if} id="{$name}" value="{$default_date}">
+						<input class="form-control js-datepicker" type="text" name="{$fieldName}" {if $field.timepicker} data-date-format="YYYY-MM-DD HH:mm:ss"{else}data-date-format="YYYY-MM-DD"{/if} id="{$name}" value="{$default_date}">
 						<span class="input-group-addon js-datepicker-toggle"><span class="fa fa-calendar"></span></span>
 					</div>
 				</div>
 			</div>
 
-			{ia_add_media files='datepicker'}
+			{ia_add_media files='moment,datepicker'}
 
 		{case iaField::IMAGE break}
 			{if $value}

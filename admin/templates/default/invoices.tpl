@@ -33,7 +33,7 @@
 					{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
 
 					<div class="input-group date">
-						<input type="text" class="js-datepicker" name="date_due" id="field_date_due" value="{$default_date}" data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s">
+						<input type="text" class="js-datepicker" name="date_due" id="field_date_due" value="{$default_date}" data-date-format="YYYY-MM-DD HH:mm:ss">
 						<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 					</div>
 				</div>
@@ -146,5 +146,5 @@
 		{include 'fields-system.tpl' noSystemFields=true}
 	</div>
 </form>
-{ia_add_media files='datepicker'}
+{ia_add_media files='moment, datepicker'}
 {ia_print_js files='ckeditor/ckeditor,jquery/plugins/jquery.numeric,admin/invoices'}
