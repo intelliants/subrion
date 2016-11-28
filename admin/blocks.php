@@ -72,10 +72,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
-		if (isset($_GET['pos']) && $_GET['pos'])
+		if (!empty($params['pos']))
 		{
 			$conditions[] = '`position` = :position';
-			$values['position'] = $_GET['pos'];
+			$values['position'] = $params['pos'];
+		}
+
+		if (isset($values['extras']) && iaCore::CORE == strtolower($values['extras']))
+		{
+			$values['extras'] = '';
 		}
 
 		$conditions[] = "`type` != 'menu'";
