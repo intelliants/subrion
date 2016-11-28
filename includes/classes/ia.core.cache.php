@@ -284,6 +284,7 @@ class iaCache extends abstractUtil
 				$config['packages'] = $this->iaCore->setPackagesData();
 				$config['items'] = array();
 				$config['extras'] = array(array('core', iaLanguage::get('core', 'Core')));
+				$config['lang'] = $this->iaCore->iaView->language;
 
 				$array = $iaDb->all(array('name', 'title'), "`status` = 'active' ORDER BY `type`", null, null, 'extras');
 				foreach ($array as $item)
