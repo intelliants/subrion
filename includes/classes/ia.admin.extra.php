@@ -1858,7 +1858,6 @@ class iaExtra extends abstractCore
 						'relation' => $this->_attr('relation', 'regular', array('regular', 'dependent', 'parent')),
 						'parent' => $this->_attr('parent', ''),
 						'empty_field' => $this->_attr('empty_field'),
-						'link_to' => $this->_attr('link_to', false),
 						'adminonly' => $this->_attr('adminonly', false),
 						'allow_null' => $this->_attr('allow_null', false),
 						'searchable' => $this->_attr('searchable', false),

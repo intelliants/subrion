@@ -168,14 +168,6 @@
 				</div>
 			</div>
 
-			<div class="row" id="link-to-details" style="display: none">
-				<label class="col col-lg-2 control-label">{lang key='link_to'} <a href="#" class="js-tooltip" title="{$tooltips.link_to_details}"><i class="i-info"></i></a></label>
-
-				<div class="col col-lg-4">
-					{html_radio_switcher value=$item.link_to|default:0 name='link_to'}
-				</div>
-			</div>
-
 			{ia_hooker name='smartyAdminFieldsEdit'}
 
 			<div id="text" class="field_type" style="display: none;">
