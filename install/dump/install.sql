@@ -232,7 +232,6 @@ CREATE TABLE `{install:prefix}fields` (
 	`timepicker` tinyint(1) unsigned NOT NULL,
 	`url_nofollow` tinyint(1) unsigned NOT NULL default 1,
 	`empty_field` tinytext NOT NULL,
-	`link_to` tinyint(1) unsigned NOT NULL,
 	`relation` enum('regular','parent','dependent') NOT NULL default 'regular',
 	`allow_null` tinyint(1) unsigned NOT NULL,
 	`folder_name` varchar(150) NOT NULL,
@@ -1051,7 +1050,7 @@ INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`leng
 ('currency','transactions',0,'text',10,35,1,0,'',0),
 ('sec_key','transactions',0,'text',250,40,1,0,'',0);
 UPDATE `{install:prefix}fields` SET `relation`='regular';
-UPDATE `{install:prefix}fields` SET `use_editor`=1,`link_to`=1,`thumb_height`=200,`file_prefix`='avat_',`image_width`=300,`image_height`=300,`thumb_width`=200 WHERE `name`='avatar';
+UPDATE `{install:prefix}fields` SET `use_editor`=1,`thumb_height`=200,`file_prefix`='avat_',`image_width`=300,`image_height`=300,`thumb_width`=200 WHERE `name`='avatar';
 UPDATE `{install:prefix}fields` SET `adminonly`=1 WHERE `name`='api_push_token';
 UPDATE `{install:prefix}fields` SET `adminonly`=1,`values`='yes,no',`default`='yes' WHERE `name`='api_push_receive';
 UPDATE `{install:prefix}fields` SET `timepicker`=1 WHERE `name`IN('date_created','date_paid') AND `item`='transactions';
@@ -1615,7 +1614,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('last_updated','Last updated','admin'),
 ('launch_manually','Launch manually','admin'),
 ('legend','Legend','admin'),
-('link_to','Display as a link to View Details','admin'),
 ('listings_limit','Listings limit','admin'),
 ('loading_widgets','Loading widgets...','admin'),
 ('local','Local','admin'),
@@ -2473,7 +2471,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('lang','Select the preferred language of your site.','tooltip'),
 ('language_switch','Allows users to choose a language on the frontend of your site.','tooltip'),
-('link_to_details','If specified, the field will be a link to the item details page.','tooltip'),
 
 ('members_enabled','Enables members functionality for your Subrion CMS based website.','tooltip'),
 ('members_autoapproval','Members are activated automatically without any confirmation.','tooltip'),

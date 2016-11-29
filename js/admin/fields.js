@@ -284,10 +284,6 @@ $(function()
 			$('#js-multiple').css('display', 'block');
 		}
 
-		(type && $.inArray(type, ['text', 'number', 'image', 'date', 'combo', 'radio']) !== -1)
-			? $('#link-to-details').show()
-			: $('#link-to-details').hide();
-
 		var annotation = $('option:selected', this).data('annotation');
 		var $helpBlock = $(this).next();
 		annotation ? $helpBlock.text(annotation).show() : $helpBlock.hide();

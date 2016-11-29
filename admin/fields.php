@@ -116,7 +116,8 @@ class iaBackendController extends iaAbstractControllerBackend
 			'length' => iaField::DEFAULT_LENGTH,
 			'searchable' => false,
 			'default' => '',
-			'status' => iaCore::STATUS_ACTIVE
+			'status' => iaCore::STATUS_ACTIVE,
+			'pages' => array()
 		);
 	}
 
@@ -177,7 +178,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['searchable'] = (int)$data['searchable'];
 		$entry['adminonly'] = (int)$data['adminonly'];
 		$entry['for_plan'] = (int)$data['for_plan'];
-		$entry['link_to'] = (int)$data['link_to'];
 		$entry['use_editor'] = (int)$data['use_editor'];
 
 		$entry['extra_actions'] = $data['extra_actions'];
@@ -317,7 +317,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				case iaField::NUMBER:
 					$entry['length'] = (int)iaUtil::checkPostParam('number_length', 8);
-					$entry['default'] = $data['number_default'];
+					$entry['default'] = '';
 
 					break;
 
@@ -455,6 +455,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		elseif (!empty($_GET['item']) || !empty($_POST['item']))
 		{
 			$entryData['item'] = isset($_POST['item']) ? $_POST['item'] : $_GET['item'];
+			$entryData['pages'] = isset($_POST['pages']) ? $_POST['pages'] : array();
 		}
 
 		$iaItem = $this->_iaCore->factory('item');
@@ -513,6 +514,8 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		if (!$this->_iaDb->exists('`name` = :name AND `item` = :item', $entryData))
 		{
+			unset($entryData['pages']);
+
 			return $this->_insert($entryData);
 		}
 		else
