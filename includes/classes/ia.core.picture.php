@@ -212,13 +212,8 @@ class iaPicture extends abstractCore
 				}
 			}
 
-			// save full image
-			$largestSide = ($imageInfo['image_width'] > $imageInfo['image_height']) ? $imageInfo['image_width'] : $imageInfo['image_height'];
-
-			if ($largestSide)
-			{
-				$image->resizeByLargestSideInPixel($largestSide, true);
-			}
+			$image->cropToAspectRatioInPixel($imageInfo['image_width'], $imageInfo['image_height'], 0, 0, 'MM');
+			$image->resizeInPixel($imageInfo['image_width'], $imageInfo['image_height']);
 
 			$image = self::_applyWaterMark($image);
 			$image->save($path, self::_createFilename($aName, $ext));
@@ -238,11 +233,8 @@ class iaPicture extends abstractCore
 						break;
 
 					case self::CROP:
-						$largestSide = $thumbWidth > $thumbHeight ? $thumbWidth : $thumbHeight;
-
-						$thumb->cropMaximumInPixel(0, 0, 'MM');
-						$thumb->resizeInPixel($largestSide, $largestSide);
-						$thumb->cropInPixel($thumbWidth, $thumbHeight, 0, 0, 'MM');
+						$thumb->cropToAspectRatioInPixel($thumbWidth, $thumbHeight, 0, 0, 'MM');
+						$thumb->resizeInPixel($thumbWidth, $thumbHeight);
 				}
 
 				$thumb->save($path, self::_createFilename($aName, $ext, true));
