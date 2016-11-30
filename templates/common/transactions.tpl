@@ -80,8 +80,8 @@ $(function() {
 			{preventCsrf}
 
 			<div class="form-group">
+				<label>{lang key='amount_to_add'}</label>
 				<div class="input-group">
-					<span class="input-group-addon">{lang key='amount_to_add'}</span>
 					<input class="form-control" type="text" name="amount" id="amount" placeholder="{$core.config.funds_min_deposit}">
 					<span class="input-group-btn">
 						<button class="btn btn-primary" type="submit">{lang key='add_funds'}</button>
