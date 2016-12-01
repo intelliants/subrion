@@ -325,7 +325,7 @@ class iaSearch extends abstractCore
 				}
 				$stmt = substr($stmt, 0, -1);
 
-				$ranges = $this->iaDb->row($stmt, null, $this->iaCore->factory('item')->getItemTable($itemName));
+				$ranges = $this->iaDb->row($stmt, iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), $this->iaCore->factory('item')->getItemTable($itemName));
 
 				foreach ($numberFields as $fieldName)
 				{
