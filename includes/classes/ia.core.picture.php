@@ -212,9 +212,11 @@ class iaPicture extends abstractCore
 				}
 			}
 
+			// resize main image
 			$image->cropToAspectRatioInPixel($imageInfo['image_width'], $imageInfo['image_height'], 0, 0, 'MM');
 			$image->resizeInPixel($imageInfo['image_width'], $imageInfo['image_height']);
 
+			// apply watermark
 			$image = self::_applyWaterMark($image);
 			$image->save($path, self::_createFilename($aName, $ext));
 
@@ -222,6 +224,7 @@ class iaPicture extends abstractCore
 			$thumbWidth = $imageInfo['thumb_width'] ? $imageInfo['thumb_width'] : $this->iaCore->get('thumb_w');
 			$thumbHeight = $imageInfo['thumb_height'] ? $imageInfo['thumb_height'] : $this->iaCore->get('thumb_h');
 
+			// resize thumbnails
 			if ($thumbWidth || $thumbHeight)
 			{
 				$thumb = ImageWorkshop::initFromPath($aFile['tmp_name']);
