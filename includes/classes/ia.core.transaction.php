@@ -277,7 +277,7 @@ class iaTransaction extends abstractCore
 			isset($rows[$status]) || $rows[$status] = 0;
 		}
 
-		$total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', '`status` = :status', array('status' => self::PASSED));
+		$total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', "`status` = :status && (`item` = 'funds' || (`item` != 'funds' && `gateway` != 'funds'))", array('status' => self::PASSED));
 		$total || $total = 0;
 
 		$this->iaDb->resetTable();
