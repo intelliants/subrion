@@ -375,7 +375,7 @@ class iaExtra extends abstractCore
 		switch ($fieldData['type'])
 		{
 			case iaField::DATE:
-				$sql .= 'DATE ';
+				$sql .= 'DATETIME ';
 				break;
 			case iaField::NUMBER:
 				$sql .= 'DOUBLE ';
