@@ -33,8 +33,8 @@ class iaSmarty extends Smarty
 	const DIRECT_CALL_MARKER = 'direct_call_marker';
 	const FLAG_CSS_RENDERED = 'css_rendered';
 
-	const LINK_STYLESHEET_PATTERN = '<link rel="stylesheet" type="text/css" href="%s">';
-	const LINK_SCRIPT_PATTERN = '<script type="text/javascript" src="%s"></script>';
+	const LINK_STYLESHEET_PATTERN = '<link rel="stylesheet" href="%s">';
+	const LINK_SCRIPT_PATTERN = '<script src="%s"></script>';
 
 	const EXTENSION_CSS = '.css';
 	const EXTENSION_JS = '.js';
@@ -871,14 +871,14 @@ class iaSmarty extends Smarty
 				case (strpos($resource, 'code:') === 0):
 					if ($code = trim(substr($resource, 5)))
 					{
-						$output .= PHP_EOL . "\t" . '<script type="text/javascript"><!-- ' . PHP_EOL . $code . PHP_EOL . ' --></script>';
+						$output .= PHP_EOL . "\t" . '<script>' . PHP_EOL . $code . PHP_EOL . '</script>';
 					}
 					continue;
 				case (strpos($resource, 'text:') === 0):
 					if (iaUsers::hasIdentity() && iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType())
 					{
 						$text = trim(substr($resource, 5));
-						$output .= "<script type=\"text/javascript\">if(document.getElementById('js-ajax-loader-status'))document.getElementById('js-ajax-loader-status').innerHTML = '" . $text . "';</script>" . PHP_EOL;
+						$output .= "<script>if(document.getElementById('js-ajax-loader-status'))document.getElementById('js-ajax-loader-status').innerHTML = '" . $text . "';</script>" . PHP_EOL;
 					}
 					continue;
 				default:
