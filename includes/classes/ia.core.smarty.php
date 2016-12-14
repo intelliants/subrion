@@ -627,16 +627,37 @@ class iaSmarty extends Smarty
 		if (!empty($params['imgfile']))
 		{
 			$thumbUrl = $iaCore->iaView->assetsUrl . 'uploads/';
+
+			// TODO: remove fullimage option
 			if (isset($params['fullimage']) && $params['fullimage'])
 			{
-				$imgfile = explode('/', $params['imgfile']);
-				$imgfile[count($imgfile) - 1] = str_replace('.', '~.', $imgfile[count($imgfile) - 1]);
-
-				$thumbUrl .= implode('/', $imgfile);
+				$params['type'] = 'full';
 			}
-			else
+
+			(isset($params['type']) && $params['type']) || $params['type'] = 'thumb';
+			switch ($params['type'])
 			{
-				$thumbUrl .= $params['imgfile'];
+				case 'full':
+
+					$imgfile = explode('/', $params['imgfile']);
+					$imgfile[count($imgfile) - 1] = str_replace('.', '~.', $imgfile[count($imgfile) - 1]);
+
+					$thumbUrl .= implode('/', $imgfile);
+
+					break;
+				case 'source':
+
+					$imgfile = explode('/', $params['imgfile']);
+					$imgfile[count($imgfile) - 1] = 'source_' . $imgfile[count($imgfile) - 1];
+
+					$thumbUrl .= implode('/', $imgfile);
+
+					break;
+				default:
+
+					$thumbUrl .= $params['imgfile'];
+
+					break;
 			}
 		}
 		elseif (isset($params['gravatar']) && $iaCore->get('gravatar_enabled') && isset($params['email']))
