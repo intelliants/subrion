@@ -948,9 +948,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		empty($data['parents']) ||  $this->setParents($fieldName, $data['parents']);
-		empty($data['children']) || $this->_relationsSetChildren($this->_data, $data['children']);
-
-		$this->_relationsSetup();
+		empty($data['children']) || $this->_relationsSetChildren($this->_data, $data['children'], $fieldData['item']);
 	}
 
 	public function setParents($fieldName, array $parents)
@@ -979,7 +977,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->resetTable();
 	}
 
-	private function _relationsSetChildren($values, $children)
+	private function _relationsSetChildren($values, $children, $itemName)
 	{
 		$values = array_keys($values);
 
@@ -1002,6 +1000,11 @@ class iaBackendController extends iaAbstractControllerBackend
 							'element' => $values[$index],
 							'child' => $field
 						));
+
+						$where = '`name` = :name AND `item` = :item';
+						$this->_iaDb->bind($where, array('name' => $field, 'item' => $itemName));
+
+						$this->_iaDb->update(array('relation' => iaField::RELATION_DEPENDENT), $where, null, iaField::getTable());
 					}
 				}
 			}
@@ -1031,24 +1034,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->bind($where, array('id' => $this->getEntryId(), 'child' => $fieldName));
 
 		$this->_iaDb->delete($where, iaField::getTableRelations());
-	}
-
-	private function _relationsSetup()
-	{
-		$sql = 'UPDATE `:prefix:table_fields` f '
-			. "SET f.relation = ':dependent' "
-			. 'WHERE ('
-				. 'SELECT COUNT(*) FROM `:prefix:table_relations` fr WHERE fr.`child` = f.`name`'
-			. ') > 0';
-
-		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->_iaDb->prefix,
-			'table_fields' => iaField::getTable(),
-			'table_relations' => iaField::getTableRelations(),
-			'dependent' => iaField::RELATION_DEPENDENT
-		));
-
-		$this->_iaDb->query($sql);
 	}
 
 	private static function _obtainKey(array $keys)
