@@ -1843,6 +1843,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('submit_feedback','Submit Feedback to the Subrion Team','admin'),
 ('subtotal','Subtotal','admin'),
 ('sure_uninstall_package','Are you sure you want to uninstall this package? Please be informed that all your package data will be lost.','admin'),
+('sync_multilingual_fields','Sync multilingual fields','admin'),
 ('system_fields','System Fields','admin'),
 ('system_notifications','System Notifications','admin'),
 

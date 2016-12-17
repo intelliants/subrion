@@ -333,11 +333,15 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		if (iaCore::ACTION_ADD == $action)
 		{
+			$this->_iaCore->factory('field')->syncMultilingualFields();
+
 			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, array(
 				'item' => 'language',
 				'name' => $entry['title'],
 				'id' => $this->getEntryId()
 			));
+
+			$this->_phraseAddSuccess = null;
 		}
 	}
 
@@ -358,7 +362,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		// create language
 		$entryData['order'] = $this->_iaDb->getMaxOrder('languages') + 1;
 
-		$this->_iaDb->insert($entryData, null, iaLanguage::getLanguagesTable());
+		$result = $this->_iaDb->insert($entryData, null, iaLanguage::getLanguagesTable());
 
 		// copy phrases
 		$counter = 0;
@@ -386,7 +390,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		// clear language cache
 		$this->getHelper()->clearAll();
 
-		iaUtil::go_to($this->getPath());
+		return $result;
 	}
 
 	protected function _entryUpdate(array $entryData, $entryId)

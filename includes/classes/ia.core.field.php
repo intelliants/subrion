@@ -1071,4 +1071,24 @@ class iaField extends abstractCore
 
 		return $result;
 	}
+
+	public function syncMultilingualFields()
+	{
+		$iaItem = $this->iaCore->factory('item');
+
+		$multilingualFields = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds(1, 'multilingual'),
+			null, null, self::getTable());
+
+		$this->iaCore->languages = $this->iaDb->assoc(
+			array('code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'),
+			iaDb::EMPTY_CONDITION . ' ORDER BY `order` ASC',
+			iaLanguage::getLanguagesTable()
+		);
+
+		foreach ($multilingualFields as $field)
+		{
+			$dbTable = $iaItem->getItemTable($field['item']);
+			$this->alterMultilingualColumns($dbTable, $field['name'], $field);
+		}
+	}
 }
