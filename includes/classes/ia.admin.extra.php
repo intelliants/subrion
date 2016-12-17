@@ -366,82 +366,6 @@ class iaExtra extends abstractCore
 		return $result;
 	}
 
-	protected function _alterTable($fieldData)
-	{
-		$iaDb = $this->iaDb;
-		$this->iaCore->factory('field');
-
-		$sql = 'ALTER TABLE `' . $iaDb->prefix . $fieldData['table_name'] . '` ADD `' . $fieldData['name'] . '` ';
-		switch ($fieldData['type'])
-		{
-			case iaField::DATE:
-				$sql .= 'DATETIME ';
-				break;
-			case iaField::NUMBER:
-				$sql .= 'DOUBLE ';
-				break;
-			case iaField::TEXT:
-				$sql .= 'VARCHAR (' . $fieldData['length'] . ') '
-					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
-				break;
-			case iaField::URL:
-			case iaField::TREE:
-				$sql .= 'TINYTEXT ';
-				break;
-			case iaField::IMAGE:
-			case iaField::STORAGE:
-			case iaField::PICTURES:
-			case iaField::TEXTAREA:
-				$sql .= 'TEXT ';
-				break;
-			default:
-				if (isset($fieldData['values']) && $fieldData['values'] != '')
-				{
-					$values = explode(',', $fieldData['values']);
-
-					$sql .= ($fieldData['type'] == 'checkbox') ? 'SET' : 'ENUM';
-					$sql .= "('" . implode("','", $values) . "')";
-
-					if ($fieldData['default'])
-					{
-						$sql .= " DEFAULT '{$fieldData['default']}' ";
-					}
-				}
-		}
-
-		if (!isset($fieldData['allow_null']) || !$fieldData['allow_null'])
-		{
-			$sql .= 'NOT NULL';
-		}
-
-		$iaDb->query($sql);
-
-		if ($fieldData['searchable'] && in_array($fieldData['type'], array('text','textarea')))
-		{
-			$indexes = $iaDb->getAll('SHOW INDEX FROM `' . $iaDb->prefix . $fieldData['table_name'] . '`');
-			$keyExists = false;
-			if ($indexes)
-			{
-				foreach ($indexes as $i)
-				{
-					if ($i['Key_name'] == $fieldData['name'] && $i['Index_type'] == 'FULLTEXT')
-					{
-						$keyExists = true;
-						break;
-					}
-				}
-			}
-
-			if (!$keyExists)
-			{
-				$sql = sprintf('ALTER TABLE `%s%s` ADD FULLTEXT(`%s`)', $iaDb->prefix, $fieldData['table_name'], $fieldData['name']);
-				$iaDb->query($sql);
-			}
-		}
-
-		return true;
-	}
-
 	public function upgrade()
 	{
 		$this->isUpgrade = true;
@@ -1852,6 +1776,7 @@ class iaExtra extends abstractCore
 						'length' => (int)$this->_attr('length'),
 						'default' => $this->_attr('default'),
 						'editable' => $this->_attr('editable', true),
+						'multilingual' => $this->_attr('multilingual', false),
 						'required' => $this->_attr('required', false),
 						'required_checks' => $this->_attr('required_checks'),
 						'extra_actions' => $this->_attr('actions'),
@@ -2232,11 +2157,11 @@ class iaExtra extends abstractCore
 			return;
 		}
 
-		$this->iaCore->factory('field');
+		$iaField = $this->iaCore->factory('field');
 
-		$fieldGroups = $this->iaDb->keyvalue('CONCAT(`item`, `name`) `key`, `id`', null, iaField::getTableGroups());
+		$fieldGroups = $this->iaDb->keyvalue('CONCAT(`item`, `name`) `key`, `id`', null, $iaField::getTableGroups());
 
-		$this->iaDb->setTable(iaField::getTable());
+		$this->iaDb->setTable($iaField::getTable());
 
 		$dependencies = array();
 
@@ -2300,6 +2225,8 @@ class iaExtra extends abstractCore
 
 			$fieldId = $this->iaDb->insert($entry);
 
+			$iaField->alterTable($entry);
+
 			$entry['table_name'] = $tableName;
 			$entry['class_name'] = $className;
 
@@ -2310,18 +2237,6 @@ class iaExtra extends abstractCore
 			{
 				$dependencies[$entry['name']] = $parents;
 			}
-
-			$columnExists = false;
-			foreach ($this->iaDb->describe($tableName) as $f)
-			{
-				if ($f['Field'] == $entry['name'])
-				{
-					$columnExists = true;
-					break;
-				}
-			}
-
-			$columnExists || $this->_alterTable($entry);
 		}
 
 		// setup fields dependencies

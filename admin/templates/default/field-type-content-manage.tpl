@@ -144,7 +144,32 @@ $(function($)
 				{/if}
 				{/if}
 			{else}
+				{if $field.multilingual}
+				<div class="translate-group" id="language-group-{$fieldName}">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							{$value = {(empty($item["{$fieldName}_{$core.language.iso}"])) ? $field.default : $item["{$fieldName}_{$core.language.iso}"]}}
+							{ia_wysiwyg value=$value name="{$fieldName}[{$core.language.iso}]"}
+							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+						</div>
+					</div>
+					{if count($core.languages) > 1}
+					<div class="translate-group__langs">
+						{foreach $core.languages as $language}
+							{if $language.iso != $core.language.iso}
+							<div class="translate-group__item">
+								{$value = {(empty($item["{$fieldName}_{$language.iso}"])) ? $field.default : $item["{$fieldName}_{$language.iso}"]}}
+								{ia_wysiwyg value=$value name="{$fieldName}[{$language.iso}]"}
+								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+							</div>
+							{/if}
+						{/foreach}
+					</div>
+					{/if}
+				</div>
+				{else}
 				{ia_wysiwyg value=$value name=$field.name}
+				{/if}
 			{/if}
 
 		{case iaField::IMAGE break}

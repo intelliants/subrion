@@ -34,14 +34,14 @@
 
 	{switch $type}
 		{case iaField::TEXT break}
-			<input class="form-control" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+			<input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::NUMBER break}
 			<input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
-				<textarea class="form-control" name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
+				<textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
 				{if $field.length > 0}
 					{ia_add_js}
 $(function()
@@ -57,7 +57,7 @@ $(function()
 					{ia_print_js files='jquery/plugins/jquery.textcounter'}
 				{/if}
 			{else}
-				{ia_wysiwyg value=$value name=$field.name}
+				{ia_wysiwyg value=$value name="{$field.name}{if $field.multilingual}[{$core.language.iso}]{/if}"}
 			{/if}
 
 		{case iaField::URL break}
