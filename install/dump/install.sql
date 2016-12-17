@@ -488,6 +488,15 @@ CREATE TABLE `{install:prefix}menus` (
 	KEY `MENU` (`menu_id`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}migrations`;
+CREATE TABLE `{install:prefix}migrations` (
+	`id` smallint(5) unsigned NOT NULL auto_increment,
+	`name` varchar(100) NOT NULL default '',
+	`status` enum('incomplete','skipped','complete') NOT NULL default 'complete',
+	`data` text,
+	PRIMARY KEY (`id`)
+) {install:db_options};
+
 #{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}oauth`;
 #CREATE TABLE `{install:prefix}oauth` (
 #  `key` varchar(40) NOT NULL,
@@ -756,7 +765,7 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('field_groups_list','fieldgroups/','list-2','','fieldgroups,members_fields','Field Groups','regular',3),
 ('field_groups_add','fieldgroups/add/','folder-plus','','fieldgroups,members_fields','Add Field Group','regular',4),
 ('image_types_list','image-types/','list','','imagetypes:edit','image_types','regular',1),
-('image_types_add','image-types/add/','plus-alt','','imagetypes','add_image_field','regular',2),
+('image_types_add','image-types/add/','plus-alt','','imagetypes','add_image_type','regular',2),
 ('invoice_add','invoices/add/','plus-alt','','invoices,invoices:edit','Add Invoice','regular',1),
 ('languages_list','languages/','list','','languages','view','regular',1),
 ('language_add','languages/add/','copy','','languages','new_language','regular',2),
