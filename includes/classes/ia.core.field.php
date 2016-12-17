@@ -1033,7 +1033,7 @@ class iaField extends abstractCore
 		switch ($fieldData['type'])
 		{
 			case iaField::DATE:
-				$result.= $fieldData['timepicker'] ? 'DATETIME ' : 'DATE ';
+				$result.= 'DATETIME ';
 				break;
 			case iaField::NUMBER:
 				$result.= 'DOUBLE ';
