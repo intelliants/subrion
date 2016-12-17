@@ -315,7 +315,12 @@ $(function()
 						<button type="submit" class="btn btn-success btn-small" name="type" value="optimize">{lang key='start'}</button>
 					</div>
 				</div>
-
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='sync_multilingual_fields'}</label>
+					<div class="col col-lg-4">
+						<button type="submit" class="btn btn-success btn-small" name="type" value="syncmlfields"{if 1 == count($core.languages)} disabled{/if}>{lang key='start'}</button>
+					</div>
+				</div>
 				{ia_hooker name='adminDatabaseConsistency'}
 			</div>
 		</div>
