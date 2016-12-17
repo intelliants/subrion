@@ -71,7 +71,7 @@
 	{/if}
 
 	{case 'import' break}
-	<form method="post" class="sap-form form-horizontal">
+	<form method="post" class="sap-form form-horizontal" id="importFile">
 		{preventCsrf}
 		{if $dumpFiles}
 			<div class="wrap-list">
@@ -93,10 +93,11 @@
 							</select>
 						</div>
 					</div>
+
+					<div class="form-actions">
+						<input type="submit" name="import" value="{lang key='go'}" class="btn btn-success">
+					</div>
 				</div>
-			</div>
-			<div class="form-actions">
-				<input type="submit" name="import" value="{lang key='go'}" class="btn btn-success">
 			</div>
 		{else}
 			<div class="alert alert-info">{lang key='no_upgrades'}</div>
@@ -115,20 +116,101 @@
 						<p class="help-block">{lang key='location_sql_file'} <i>(Max: 2,048KB)</i></p>
 					</div>
 				</div>
+
+				<div class="form-actions">
+					<input type="button" id="js-cmd-import" value="{lang key='go'}" class="btn btn-success">
+				</div>
 			</div>
 		</div>
-		<div class="form-actions">
-			<input type="button" id="js-cmd-import" value="{lang key='go'}" class="btn btn-success">
-		</div>
 	</form>
+
+	<div class="row">
+		<div class="col col-lg-6">
+			<div class="widget widget-large" id="widget-usergroups">
+				<div class="widget-header"><i class="i-database"></i> Migrations</div>
+				<div class="widget-content">
+					<table class="table table-light table-hover">
+						<thead>
+						<tr>
+							<th>#</th>
+							<th>{lang key='name'}</th>
+							<th>{lang key='date'}</th>
+							<th>{lang key='status'}</th>
+							<th width="100">&nbsp;</th>
+						</tr>
+						</thead>
+						<tbody>
+						{foreach $migrations as $migration}
+							<tr>
+								<td>{$migration@iteration}</td>
+								<td>{$migration.name}</td>
+								<td>{$migration.date}</td>
+								<td>
+									<span>{$migration.status}</span>
+								</td>
+								<td class="text-right">
+									{if 'complete' != $migration.status}
+										<button class="btn btn-xs btn-primary js-import-migration" data-filename="{$migration.filename}"><i class="i-chevron-right"></i> Run</button>
+									{/if}
+								</td>
+							</tr>
+						{/foreach}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="col col-lg-6">
+			<div class="widget widget-large" id="widget-members">
+				<div class="widget-header"><i class="i-lightning"></i> Non-applied migrations</div>
+				<div class="widget-content">
+					<table class="table table-light table-hover">
+						<thead>
+						<tr>
+							<th>{lang key='title'}</th>
+							<th>&nbsp;</th>
+						</tr>
+						</thead>
+						<tbody>
+						{foreach $dumpFiles.Migrations as $migration}
+							{if $migration.applied}{continue}{/if}
+							<tr>
+								<td>{$migration.title}</td>
+								<td class="text-right">
+									<button class="btn btn-xs btn-primary js-import-migration" data-filename="{$migration.filename}"><i class="i-chevron-right"></i> Run</button>
+								</td>
+							</tr>
+						{/foreach}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{ia_add_media files='css: _IA_URL_js/jquery/plugins/scrollbars/jquery.mCustomScrollbar'}
+	{ia_print_js files='jquery/plugins/scrollbars/jquery.mCustomScrollbar.concat.min'}
+
+	{ia_add_js}
+$(function()
+{
+	$('.widget-content').mCustomScrollbar({ theme: 'dark-thin' });
+
+	$('.js-import-migration').on('click', function(){
+
+		$('select[name="sqlfile"]').val($(this).data('filename'));
+		$('input[name="import"]').click();
+	});
+});
+	{/ia_add_js}
 
 	{case 'export' break}
 
 	{if isset($outerSql)}
-	<div class="box-simple box-simple-large">
-		<pre>{$outerSql}</pre>
-	</div>
-	<hr>
+		<div class="box-simple box-simple-large">
+			<pre>{$outerSql}</pre>
+		</div>
+		<hr>
 	{/if}
 
 	<form method="post" class="sap-form form-horizontal" id="form-dump">
