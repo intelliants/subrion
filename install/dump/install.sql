@@ -1318,7 +1318,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('are_you_sure_to_delete_this_usergroup','Are you sure you want to delete this usergroup? All the users of this usergroup will be assigned to the Registered usergroup.','admin'),
 ('are_you_sure_to_delete_transactions','Are you sure you want to delete transactions?','admin'),
 ('are_you_sure_to_uninstall_selected_plugin','Are you sure you wish to uninstall this plugin? Please take a note that all plugin data will be lost. This action cannot be reverted.','admin'),
-('are_you_sure_to_uninstall_selected_package','Are you sure you wish to uninstall this packages? Please take a note that all package data will be lost. This action cannot be reverted.','admin'),
+('are_you_sure_to_uninstall_selected_package','Are you sure you wish to uninstall this package? Please take a note that all package data will be lost. This action cannot be reverted.','admin'),
 ('ascii_required','Only alphanumeric characters are allowed','admin'),
 ('assignable','Assignable','admin'),
 ('at_least_one_item_should_be_checked','At least one item should be selected.','admin'),
