@@ -21,13 +21,6 @@
 			</div>
 
 			<div class="row">
-				<label class="col col-lg-2 control-label" for="input-title">{lang key='title'}</label>
-				<div class="col col-lg-4">
-					<input type="text" name="title" id="input-title">
-				</div>
-			</div>
-
-			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='image_width'} / {lang key='image_height'}</label>
 
 				<div class="col col-lg-4">
