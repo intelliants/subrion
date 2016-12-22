@@ -2244,6 +2244,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('auto_generate_password','Auto generate password','frontend'),
 
 ('back_to_gateway_list','{current_gateway} payment gateway, click <a href=\"javaScript:void(0);\" onclick=\"backToPaymentGatewayList()\">here</a> to choose another one','frontend'),
+('back_to_profile','Back to profile','frontend'),
 ('billing_address','Billing Address','frontend'),
 ('bots','Bots','frontend'),
 ('bots_visits','Visits last 24h (bots)','frontend'),
