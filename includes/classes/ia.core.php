@@ -677,7 +677,7 @@ final class iaCore
 		$packages = array();
 		foreach ($rows as $entry)
 		{
-			$entry['url'] = (empty(parse_url($entry['url'], PHP_URL_SCHEME)) ? IA_URL : '')
+			$entry['url'] = (parse_url($entry['url'], PHP_URL_SCHEME) ? '' : IA_URL)
 				. ($entry['url'] == IA_URL_DELIMITER ? '' : $entry['url']);
 			$entry['tpl_url'] = IA_CLEAR_URL . 'packages' . IA_URL_DELIMITER . $entry['name'] . IA_URL_DELIMITER . 'templates' . IA_URL_DELIMITER;
 			$entry['tpl_common'] = IA_HOME . 'packages' . IA_URL_DELIMITER . $entry['name'] . IA_URL_DELIMITER . 'templates' . IA_URL_DELIMITER . 'common' . IA_URL_DELIMITER;
