@@ -109,22 +109,29 @@
 // --------------------------------------------------
 
 .ia-item-author {
-  background: #f2f2f2;
+  background: #f5f5f5;
+  padding: 30px;
+  position: relative;
+
+  &__edit {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+  }
 
   &__image {
-    padding: 30px 30px 0;
     display: block;
     text-decoration: none;
 
     > img {
       display: block;
-      margin: 0 auto;
+      margin: 0 auto 30px;
       border-radius: 50%;
     }
   }
 
   &__content {
-    padding: 30px 15px;
+    margin-bottom: 30px;
 
     > h4 {
       text-align: center;
@@ -147,5 +154,9 @@
         margin-bottom: 0;
       }
     }
+  }
+
+  + .box {
+    margin-top: @vertical-rhythm;
   }
 }
