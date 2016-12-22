@@ -172,18 +172,29 @@
 			</div>
 
 			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='meta_description'}</label>
+				<ul class="nav nav-tabs">
+					{foreach $core.languages as $iso => $language}
+						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-meta-{$iso}" data-toggle="tab">{$language.title}</a></li>
+					{/foreach}
+				</ul>
 
-				<div class="col col-lg-4">
-					<textarea name="meta_description" rows="2">{$item.meta_description|escape:'html'}</textarea>
-				</div>
-			</div>
-
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='meta_keywords'}</label>
-
-				<div class="col col-lg-4">
-					<input type="text" name="meta_keywords" value="{$item.meta_keywords|escape:'html'}">
+				<div class="tab-content">
+					{foreach $core.languages as $iso => $language}
+						<div class="tab-pane{if $language@first} active{/if}" id="tab-meta-{$iso}">
+							<div class="row">
+								<label class="col col-lg-2 control-label">{lang key='meta_description'}</label>
+								<div class="col col-lg-4">
+									<textarea name="meta_description[{$iso}]" rows="2">{if isset($metaDescription.$iso)}{$metaDescription.$iso|escape:'html'}{/if}</textarea>
+								</div>
+							</div>
+							<div class="row">
+								<label class="col col-lg-2 control-label">{lang key='meta_keywords'}</label>
+								<div class="col col-lg-4">
+									<input type="text" name="meta_keywords[{$iso}]"{if isset($metaKeywords.$iso)} value="{$metaKeywords.$iso|escape:'html'}"{/if}>
+								</div>
+							</div>
+						</div>
+					{/foreach}
 				</div>
 			</div>
 		</div>
@@ -191,24 +202,24 @@
 		<div class="wrap-group" id="js-content-fields">
 			<div class="row">
 				<ul class="nav nav-tabs">
-					{foreach $core.languages as $code => $language}
-						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title}</a></li>
+					{foreach $core.languages as $iso => $language}
+						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-content-{$iso}" data-toggle="tab" data-language="{$iso}">{$language.title}</a></li>
 					{/foreach}
 				</ul>
 
 				<div class="tab-content">
-					{foreach $core.languages as $code => $language}
-					<div class="tab-pane{if $language@first} active{/if}" id="tab-language-{$code}">
+					{foreach $core.languages as $iso => $language}
+					<div class="tab-pane{if $language@first} active{/if}" id="tab-content-{$iso}">
 						<div class="row">
 							<label class="col col-lg-2 control-label">{lang key='title'}</label>
 							<div class="col col-lg-10">
-								<input type="text" name="titles[{$code}]" value="{if isset($item.titles)}{$item.titles.$code|escape:'html'}{/if}">
+								<input type="text" name="title[{$iso}]"{if isset($title.$iso)} value="{$title.$iso|escape:'html'}"{/if}>
 							</div>
 						</div>
 						<div class="row js-local-url-field">
 							<label class="col col-lg-2 control-label">{lang key='page_content'}</label>
 							<div class="col col-lg-10">
-								<textarea rows="30" name="contents[{$code}]">{if isset($item.contents.$code)}{$item.contents.$code|escape:'html'}{/if}</textarea>
+								<textarea rows="30" name="content[{$iso}]">{if isset($content.$iso)}{$content.$iso|escape:'html'}{/if}</textarea>
 							</div>
 						</div>
 					</div>

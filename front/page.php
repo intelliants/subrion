@@ -96,8 +96,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 
 	// check read permissions
-	$page['passw'] = trim($page['passw']);
-
 	if (isset($_POST['password']) && $page['passw'] && $passw != $page['passw'])
 	{
 		$iaView->setMessages(iaLanguage::get('password_incorrect'), iaView::ERROR_NOT_FOUND);

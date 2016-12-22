@@ -182,8 +182,8 @@ $(function()
 	$('a[data-toggle="tab"]', '#js-content-fields').on('shown.bs.tab', function()
 	{
 		var lngCode = $(this).data('language');
-		CKEDITOR.instances['contents[' + lngCode + ']']
-			|| intelli.ckeditor('contents[' + lngCode + ']', {toolbar: 'Extended'});
+		CKEDITOR.instances['content[' + lngCode + ']']
+			|| intelli.ckeditor('content[' + lngCode + ']', {toolbar: 'Extended'});
 
 		$('#js-active-language').val(lngCode);
 	});

@@ -45,12 +45,20 @@ class iaPage extends abstractCore
 
 	public function getByName($name, $status = iaCore::STATUS_ACTIVE)
 	{
-		return $this->iaDb->row_bind(
+		$row = $this->iaDb->row_bind(
 			iaDb::ALL_COLUMNS_SELECTION,
 			'`name` = :name AND `status` = :status AND `service` != 1',
 			array('name' => $name, 'status' => $status),
 			self::getTable()
 		);
+
+		if ($row)
+		{
+			foreach (array('meta_description', 'meta_keywords') as $key)
+				$row[$key] = iaLanguage::get(sprintf('page_%s_%s', $key, $row['name']));
+		}
+
+		return $row;
 	}
 
 	protected function _getInfoByName($name)

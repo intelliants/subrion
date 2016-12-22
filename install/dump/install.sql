@@ -552,8 +552,6 @@ CREATE TABLE `{install:prefix}pages` (
 	`template_filename` varchar(64) NOT NULL,
 	`custom_url` tinytext NOT NULL,
 	`menus` set('main','bottom','account','inventory') NOT NULL default '',
-	`meta_description` text,
-	`meta_keywords` tinytext,
 	`action` varchar(10) NOT NULL default 'read',
 	`parent` varchar(50) NOT NULL,
 	`suburl` varchar(150) NOT NULL,
