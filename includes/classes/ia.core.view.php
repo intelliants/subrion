@@ -783,8 +783,7 @@ SQL;
 		}
 
 		$fields = 'p.`id`, e.`type`, e.`url`, p.`name`, '
-			. 'p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`'
-			. (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? ' ' : ', p.`meta_description` `description`, p.`meta_keywords` `keywords` ');
+			. 'p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`';
 		$sql = 'SELECT :fields'
 			. 'FROM `:prefix' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages` p '
 			. 'LEFT JOIN `:prefixextras` e ON (e.`name` = p.`extras`) '
@@ -864,7 +863,9 @@ SQL;
 			return self::errorPage(self::ERROR_NOT_FOUND);
 		}
 
-		$pageParams['title'] = iaLanguage::get(sprintf('page_title_%s', $pageParams['name']));
+		$pageParams['title'] = iaLanguage::get('page_title_' . $pageParams['name']);
+		$pageParams['description'] = iaLanguage::get('page_meta_description_' . $pageParams['name']);
+		$pageParams['keywords'] = iaLanguage::get('page_meta_keywords_' . $pageParams['name']);
 
 		if (!isset($pageParams['body']))
 		{
@@ -1038,19 +1039,8 @@ SQL;
 
 				if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 				{
-					// get meta-description
-					$value = $this->get('description');
-					$metaDescription = (empty($value) && iaLanguage::exists('page_metadescr_' . $pageName))
-						? iaLanguage::get('page_metadescr_' . $pageName)
-						: $value;
-					$core['page']['meta-description'] = iaSanitize::html($metaDescription);
-
-					// get meta-keywords
-					$value = $this->get('keywords');
-					$metaKeywords = (empty($value) && iaLanguage::exists('page_metakeyword_' . $pageName))
-						? iaLanguage::get('page_metakeyword_' . $pageName)
-						: $value;
-					$core['page']['meta-keywords'] = iaSanitize::html($metaKeywords);
+					$core['page']['meta-description'] = iaSanitize::html($this->get('description'));
+					$core['page']['meta-keywords'] = iaSanitize::html($this->get('keywords'));
 
 					$this->_logStatistics();
 
