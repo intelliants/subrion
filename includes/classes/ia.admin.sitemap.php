@@ -60,7 +60,7 @@ class iaSitemap extends abstractCore
 	public function generate()
 	{
 		set_time_limit(600);
-		
+
 		$fh = fopen(IA_TMP . self::FILENAME, 'w');
 
 		if (!$fh)
@@ -74,8 +74,6 @@ class iaSitemap extends abstractCore
 		$content = substr($this->_xmlContent, 0, $offset);
 
 		fwrite($fh, $content);
-		//
-		
 
 		$sets = array(self::LINKS_SET_CORE, self::LINKS_SET_PACKAGES, self::LINKS_SET_PLUGINS); // priority
 		foreach ($sets as $set)
@@ -153,7 +151,7 @@ class iaSitemap extends abstractCore
 
 						if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME))
 						{
-							$entries = $itemClassInstance->{self::GETTER_METHOD_NAME}();
+							$entries = call_user_func(array($itemClassInstance, self::GETTER_METHOD_NAME));
 							if (is_array($entries) && $entries)
 							{
 								$result = $entries;
@@ -178,7 +176,7 @@ class iaSitemap extends abstractCore
 
 						if (method_exists($pluginInstance, self::GETTER_METHOD_NAME))
 						{
-							$entries = $pluginInstance->{self::GETTER_METHOD_NAME}();
+							$entries = call_user_func(array($pluginInstance, self::GETTER_METHOD_NAME));
 							if (is_array($entries) && $entries)
 							{
 								$result = $entries;
