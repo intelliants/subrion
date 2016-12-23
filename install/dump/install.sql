@@ -2116,7 +2116,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('online_members','Online Members','common'),
 ('operation','Operation','common'),
 ('open_close','Show / Hide the tree','common'),
-('open_in_new_tab','Open in new tab','admin'),
+('open_in_new_tab','Open in new tab','common'),
 ('order','Order','common'),
 ('other','Other','common'),
 

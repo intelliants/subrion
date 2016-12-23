@@ -179,7 +179,7 @@ class iaSearch extends abstractCore
 
 	public function get()
 	{
-		if(iaUsers::hasIdentity())
+		if (iaUsers::hasIdentity())
 		{
 			$stmt = '`member_id` = :member ORDER BY `date` DESC';
 			$this->iaDb->bind($stmt, array('member' => (int)iaUsers::getIdentity()->id));
@@ -188,6 +188,11 @@ class iaSearch extends abstractCore
 		}
 
 		return false;
+	}
+
+	public function delete($id)
+	{
+		return $this->iaDb->delete(iaDb::convertIds($id), self::getTable());
 	}
 
 	// getters
