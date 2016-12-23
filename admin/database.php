@@ -412,26 +412,38 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		if (!empty($_GET['type']))
 		{
-			if (in_array($_GET['type'], array('optimize', 'repair')))
+			switch ($_GET['type'])
 			{
-				$tables = $this->getHelper()->getTables();
-				$type = $_GET['type'];
-				$query = strtoupper($type) . ' TABLE ';
+				case 'optimize':
+				case 'repair':
+					$tables = $this->getHelper()->getTables();
+					$type = $_GET['type'];
+					$query = strtoupper($type) . ' TABLE ';
 
-				foreach ($tables as $tableName)
-				{
-					$query .= '`' . $tableName . '`,';
-				}
-				$query = rtrim($query, ',');
-				$this->_iaDb->query($query);
+					foreach ($tables as $tableName)
+					{
+						$query .= '`' . $tableName . '`,';
+					}
+					$query = rtrim($query, ',');
+					$this->_iaDb->query($query);
 
-				$iaView->setMessages(iaLanguage::get($type . '_complete'), iaView::SUCCESS);
+					$iaView->setMessages(iaLanguage::get($type . '_complete'), iaView::SUCCESS);
 
-				iaUtil::reload();
-			}
-			else
-			{
-				$this->_iaCore->startHook('phpAdminDatabaseConsistencyType', array('type' => $_GET['type']));
+					iaUtil::reload();
+
+					break;
+
+				case 'syncmlfields':
+					$this->_iaCore->factory('field')->syncMultilingualFields();
+
+					$iaView->setMessages(iaLanguage::get('done'), iaView::SUCCESS);
+
+					iaUtil::reload();
+
+					break;
+
+				default:
+					$this->_iaCore->startHook('phpAdminDatabaseConsistencyType', array('type' => $_GET['type']));
 			}
 		}
 	}

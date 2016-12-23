@@ -145,7 +145,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$favorites[$itemName]['package'] = (iaCore::CORE == $itemsList[$itemName]) ? '' : $itemsList[$itemName];
 
 				// filter values
-				$favorites[$itemName]['fields'] = $iaField->filter($favorites[$itemName]['items'], $itemName);
+				$favorites[$itemName]['fields'] = $iaField->filter($itemName, $favorites[$itemName]['items']);
 			}
 		}
 	}
@@ -159,7 +159,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			if (isset($items['items']) && $items['items'])
 			{
 				// generate correct fields array
-				$favorites[$itemName]['fields'] = $iaField->filter($items['items'], $itemName);
+				$favorites[$itemName]['fields'] = $iaField->filter($itemName, $items['items']);
 
 				// generate correct template filename
 				$favorites[$itemName]['package'] = iaCore::CORE == $itemsList[$itemName] ? '' : $itemsList[$itemName];

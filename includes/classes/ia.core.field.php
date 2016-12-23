@@ -903,4 +903,192 @@ class iaField extends abstractCore
 
 		return $result;
 	}
+
+
+	public function alterTable(array $fieldData)
+	{
+		$dbTable = $this->iaCore->factory('item')->getItemTable($fieldData['item']);
+
+		if ($fieldData['multilingual'])
+		{
+			$this->alterMultilingualColumns($dbTable, $fieldData['name'], $fieldData);
+		}
+		else
+		{
+			$this->alterColumnScheme($dbTable, $fieldData);
+			$this->_alterColumnIndex($dbTable, $fieldData['name'], $fieldData['searchable']);
+		}
+	}
+
+	// DB mgmt utility methods
+	public function alterMultilingualColumns($dbTable, $fieldName, array $fieldData)
+	{
+		$defaultLanguage = null;
+
+		foreach ($this->iaCore->languages as $language)
+		{
+			if ($language['default'])
+			{
+				$defaultLanguage = $language;
+				break;
+			}
+		}
+
+		if ($fieldData['multilingual'])
+		{
+			$fieldData['name'] = $fieldName;
+			$this->alterColumnScheme($dbTable, $fieldData, $fieldName . '_' . $defaultLanguage['iso']);
+
+			foreach ($this->iaCore->languages as $language)
+			{
+				if ($language['iso'] != $defaultLanguage['iso'])
+				{
+					$fieldData['name'] = $fieldName . '_' . $language['iso'];
+					$this->alterColumnScheme($dbTable, $fieldData);
+				}
+			}
+		}
+		else
+		{
+			$fieldData['name'] = $fieldName . '_' . $defaultLanguage['iso'];
+			$this->alterColumnScheme($dbTable, $fieldData, $fieldName);
+
+			foreach ($this->iaCore->languages as $language)
+			{
+				if ($language['iso'] != $defaultLanguage['iso'])
+				{
+					$this->alterDropColumn($dbTable, $fieldName . '_' . $language['iso']);
+				}
+			}
+		}
+	}
+
+	public function alterColumnScheme($dbTable, array $fieldData, $newName = null)
+	{
+		is_null($newName) && $newName = $fieldData['name'];
+
+		$sql = $this->isDbColumnExist($dbTable, $fieldData['name'])
+			? 'ALTER TABLE `:prefix:table` CHANGE `:column1` `:column2` :scheme'
+			: 'ALTER TABLE `:prefix:table` ADD `:column2` :scheme';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->iaDb->prefix,
+			'table' => $dbTable,
+			'column1' => $fieldData['name'],
+			'column2' => $newName,
+			'scheme' => $this->_alterCmdBody($fieldData)
+		));
+
+		$this->iaDb->query($sql);
+	}
+
+	private function _alterColumnIndex($dbTable, $fieldName, $enabled)
+	{
+		$sql = sprintf('SHOW INDEX FROM `%s%s`', $this->iaDb->prefix, $dbTable);
+
+		$exists = false;
+		if ($indexes = $this->iaDb->getAll($sql))
+		{
+			foreach ($indexes as $i)
+			{
+				if ($i['Key_name'] == $fieldName && $i['Index_type'] == 'FULLTEXT')
+				{
+					$exists = true;
+					break;
+				}
+			}
+		}
+
+		if ($enabled && !$exists)
+		{
+			$sql = sprintf('ALTER TABLE `%s%s` ADD FULLTEXT(`%s`)', $this->iaDb->prefix, $dbTable, $fieldName);
+		}
+		elseif (!$enabled && $exists)
+		{
+			$sql = sprintf('ALTER TABLE `%s%s` DROP INDEX `%s`', $this->iaDb->prefix, $dbTable, $fieldName);
+		}
+
+		isset($sql) && $this->iaDb->query($sql);
+	}
+
+	public function alterDropColumn($dbTable, $columnName)
+	{
+		$sql = sprintf('ALTER TABLE `%s%s` DROP `%s`', $this->iaDb->prefix, $dbTable, $columnName);
+
+		$this->iaDb->query($sql);
+	}
+
+	public function isDbColumnExist($dbTable, $columnName)
+	{
+		$sql = sprintf("SHOW COLUMNS FROM `%s%s` WHERE `Field` LIKE '%s'",
+			$this->iaDb->prefix, $dbTable, $columnName);
+
+		return (bool)$this->iaDb->getRow($sql);
+	}
+
+	private function _alterCmdBody(array $fieldData)
+	{
+		$result = '';
+
+		switch ($fieldData['type'])
+		{
+			case iaField::DATE:
+				$result.= 'DATETIME ';
+				break;
+			case iaField::NUMBER:
+				$result.= 'DOUBLE ';
+				break;
+			case iaField::TEXT:
+				$result.= 'VARCHAR(' . $fieldData['length'] . ') '
+					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
+				break;
+			case iaField::URL:
+			case iaField::TREE:
+				$result.= 'TINYTEXT ';
+				break;
+			case iaField::IMAGE:
+			case iaField::STORAGE:
+			case iaField::PICTURES:
+			case iaField::TEXTAREA:
+				$result.= 'TEXT ';
+				break;
+			default:
+				if (isset($fieldData['values']))
+				{
+					$values = explode(',', $fieldData['values']);
+
+					$result.= ($fieldData['type'] == iaField::CHECKBOX) ? 'SET' : 'ENUM';
+					$result.= "('" . implode("','", $values) . "')";
+
+					if (!empty($fieldData['default']))
+					{
+						$result.= " DEFAULT '{$fieldData['default']}' ";
+					}
+				}
+		}
+
+		$result.= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
+
+		return $result;
+	}
+
+	public function syncMultilingualFields()
+	{
+		$iaItem = $this->iaCore->factory('item');
+
+		$multilingualFields = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds(1, 'multilingual'),
+			null, null, self::getTable());
+
+		$this->iaCore->languages = $this->iaDb->assoc(
+			array('code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'),
+			iaDb::EMPTY_CONDITION . ' ORDER BY `order` ASC',
+			iaLanguage::getLanguagesTable()
+		);
+
+		foreach ($multilingualFields as $field)
+		{
+			$dbTable = $iaItem->getItemTable($field['item']);
+			$this->alterMultilingualColumns($dbTable, $field['name'], $field);
+		}
+	}
 }

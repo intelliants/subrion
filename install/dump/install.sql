@@ -488,6 +488,15 @@ CREATE TABLE `{install:prefix}menus` (
 	KEY `MENU` (`menu_id`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}migrations`;
+CREATE TABLE `{install:prefix}migrations` (
+	`id` smallint(5) unsigned NOT NULL auto_increment,
+	`name` varchar(100) NOT NULL default '',
+	`status` enum('incomplete','skipped','complete') NOT NULL default 'complete',
+	`data` text,
+	PRIMARY KEY (`id`)
+) {install:db_options};
+
 #{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}oauth`;
 #CREATE TABLE `{install:prefix}oauth` (
 #  `key` varchar(40) NOT NULL,
@@ -543,8 +552,6 @@ CREATE TABLE `{install:prefix}pages` (
 	`template_filename` varchar(64) NOT NULL,
 	`custom_url` tinytext NOT NULL,
 	`menus` set('main','bottom','account','inventory') NOT NULL default '',
-	`meta_description` text,
-	`meta_keywords` tinytext,
 	`action` varchar(10) NOT NULL default 'read',
 	`parent` varchar(50) NOT NULL,
 	`suburl` varchar(150) NOT NULL,
@@ -756,7 +763,7 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('field_groups_list','fieldgroups/','list-2','','fieldgroups,members_fields','Field Groups','regular',3),
 ('field_groups_add','fieldgroups/add/','folder-plus','','fieldgroups,members_fields','Add Field Group','regular',4),
 ('image_types_list','image-types/','list','','imagetypes:edit','image_types','regular',1),
-('image_types_add','image-types/add/','plus-alt','','imagetypes','add_image_field','regular',2),
+('image_types_add','image-types/add/','plus-alt','','imagetypes','add_image_type','regular',2),
 ('invoice_add','invoices/add/','plus-alt','','invoices,invoices:edit','Add Invoice','regular',1),
 ('languages_list','languages/','list','','languages','view','regular',1),
 ('language_add','languages/add/','copy','','languages','new_language','regular',2),
@@ -1286,6 +1293,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('add_plugin','Add plugin','admin'),
 ('all_members','All Members','admin'),
 ('allowed','Allowed','admin'),
+('allowed_file_types','Allowed file types','admin'),
 ('already_home_page','This page has been set as your homepage. You may not turn it off.','admin'),
 ('and_then','And then','admin'),
 ('are_you_sure_install_plugin','Are you sure you wish to install this plugin?','admin'),
@@ -1309,7 +1317,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('are_you_sure_to_delete_this_usergroup','Are you sure you want to delete this usergroup? All the users of this usergroup will be assigned to the Registered usergroup.','admin'),
 ('are_you_sure_to_delete_transactions','Are you sure you want to delete transactions?','admin'),
 ('are_you_sure_to_uninstall_selected_plugin','Are you sure you wish to uninstall this plugin? Please take a note that all plugin data will be lost. This action cannot be reverted.','admin'),
-('are_you_sure_to_uninstall_selected_package','Are you sure you wish to uninstall this packages? Please take a note that all package data will be lost. This action cannot be reverted.','admin'),
+('are_you_sure_to_uninstall_selected_package','Are you sure you wish to uninstall this package? Please take a note that all package data will be lost. This action cannot be reverted.','admin'),
 ('ascii_required','Only alphanumeric characters are allowed','admin'),
 ('assignable','Assignable','admin'),
 ('at_least_one_item_should_be_checked','At least one item should be selected.','admin'),
@@ -1446,6 +1454,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_compare_same_languages','No way to compare same languages.','admin'),
 ('error_contents','Content field is empty.','admin'),
 ('error_filename','Filename field is empty.','admin'),
+('error_incorrect_dimensions','Set correct image dimensions.','admin'),
 ('error_incorrect_format_from_subrion','The plugins are in the incorrect format. Please contact the Subrion team.','admin'),
 ('error_file_type','You need to set allowed file extensions.','admin'),
 ('error_incorrect_response_from_subrion','No response from subrion.org website. Please try again later or contact the Subrion team.','admin'),
@@ -1834,6 +1843,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('submit_feedback','Submit Feedback to the Subrion Team','admin'),
 ('subtotal','Subtotal','admin'),
 ('sure_uninstall_package','Are you sure you want to uninstall this package? Please be informed that all your package data will be lost.','admin'),
+('sync_multilingual_fields','Sync multilingual fields','admin'),
 ('system_fields','System Fields','admin'),
 ('system_notifications','System Notifications','admin'),
 
@@ -2232,6 +2242,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('auto_generate_password','Auto generate password','frontend'),
 
 ('back_to_gateway_list','{current_gateway} payment gateway, click <a href=\"javaScript:void(0);\" onclick=\"backToPaymentGatewayList()\">here</a> to choose another one','frontend'),
+('back_to_profile','Back to profile','frontend'),
 ('billing_address','Billing Address','frontend'),
 ('bots','Bots','frontend'),
 ('bots_visits','Visits last 24h (bots)','frontend'),

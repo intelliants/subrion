@@ -58,10 +58,10 @@
 					</div>
 					{if count($core.languages) > 1}
 					<div class="translate-group__langs">
-						{foreach $core.languages as $language}
-							{if $language.iso != $core.language.iso}
+						{foreach $core.languages as $iso => $language}
+							{if $iso != $core.language.iso}
 							<div class="translate-group__item">
-								<input type="text" name="{$fieldName}[{$language.iso}]" id="{$name}-{$language.iso}" value="{if empty($item["{$fieldName}_{$language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$language.iso}"]|escape:'html'}{/if}">
+								<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}">
 								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
 							</div>
 							{/if}
@@ -113,10 +113,10 @@
 					</div>
 					{if count($core.languages) > 1}
 					<div class="translate-group__langs">
-						{foreach $core.languages as $language}
-							{if $language.iso != $core.language.iso}
+						{foreach $core.languages as $iso => $language}
+							{if $iso != $core.language.iso}
 							<div class="translate-group__item">
-								<textarea name="{$fieldName}[{$language.iso}]" id="{$name}-{$language.iso}" rows="5">{if empty($item["{$fieldName}_{$language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$language.iso}"]|escape:'html'}{/if}</textarea>
+								<textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" rows="5">{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}</textarea>
 								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
 							</div>
 							{/if}
@@ -144,7 +144,32 @@ $(function($)
 				{/if}
 				{/if}
 			{else}
+				{if $field.multilingual}
+				<div class="translate-group" id="language-group-{$fieldName}">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							{$value = {(empty($item["{$fieldName}_{$core.language.iso}"])) ? $field.default : $item["{$fieldName}_{$core.language.iso}"]}}
+							{ia_wysiwyg value=$value name="{$fieldName}[{$core.language.iso}]"}
+							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+						</div>
+					</div>
+					{if count($core.languages) > 1}
+					<div class="translate-group__langs">
+						{foreach $core.languages as $iso => $language}
+							{if $iso != $core.language.iso}
+							<div class="translate-group__item">
+								{$value = {(empty($item["{$fieldName}_{$iso}"])) ? $field.default : $item["{$fieldName}_{$iso}"]}}
+								{ia_wysiwyg value=$value name="{$fieldName}[{$iso}]"}
+								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+							</div>
+							{/if}
+						{/foreach}
+					</div>
+					{/if}
+				</div>
+				{else}
 				{ia_wysiwyg value=$value name=$field.name}
+				{/if}
 			{/if}
 
 		{case iaField::IMAGE break}

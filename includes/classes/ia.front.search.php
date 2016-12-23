@@ -257,7 +257,7 @@ class iaSearch extends abstractCore
 		elseif (iaUsers::getItemName() == $this->_itemName)
 		{
 			$array = array();
-			$fields = $this->iaCore->factory('field')->filter($array, $this->_itemName, array('page' => 'members'));
+			$fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, array('page' => 'members'));
 
 			$result = $this->_render('search.members' . iaView::TEMPLATE_FILENAME_EXT,
 				array('fields' => $fields, 'listings' => $rows));

@@ -136,12 +136,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			$key = sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $field['item'], $field['name']);
 
-			$this->_iaDb->delete('`key` LIKE :key1 OR `key` LIKE :key2', iaLanguage::getTable(),
-				array('key1' => $key . '_%', 'key2' => $key . '+%'));
+			$this->_iaDb->delete("`key` = '{$key}' OR `key` LIKE '{$key}_%' OR `key` LIKE '{$key}+%'", iaLanguage::getTable());
 
 			$itemTable = $this->_iaCore->factory('item')->getItemTable($field['item']);
 
-			$this->_isDbColumnExist($itemTable, $field['name']) && $this->_alterDropColumn($itemTable, $field['name']);
+			$this->getHelper()->isDbColumnExist($itemTable, $field['name'])
+				&& $this->getHelper()->alterDropColumn($itemTable, $field['name']);
 
 			// delete tree stuff
 			if (iaField::TREE == $field['type'])
@@ -198,7 +198,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				$this->addMessage('field_name_invalid');
 			}
-			elseif ($this->_isDbColumnExist($this->_iaCore->factory('item')->getItemTable($entry['item']), $entry['name']))
+			elseif ($this->getHelper()->isDbColumnExist($this->_iaCore->factory('item')->getItemTable($entry['item']), $entry['name']))
 			{
 				$this->addMessage('field_name_exists');
 			}
@@ -573,183 +573,31 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _alterDbTable(array $fieldData, $action)
 	{
-		$dbTable = $this->_iaCore->factory('item')->getItemTable($fieldData['item']);
-
 		if (iaCore::ACTION_ADD == $action)
 		{
-			$fieldData['multilingual']
-				? $this->_alterMultilingualColumns($dbTable, $fieldData['name'], $fieldData)
-				: $this->_alterColumnScheme($dbTable, $fieldData);
+			$this->getHelper()->alterTable($fieldData);
 		}
 		elseif (iaCore::ACTION_EDIT == $action && $this->_data)
 		{
+			$dbTable = $this->_iaCore->factory('item')->getItemTable($fieldData['item']);
+
 			if ($fieldData['multilingual'] != $this->_data['multilingual'])
 			{
-				$this->_alterMultilingualColumns($dbTable, $this->_data['name'], $fieldData);
+				$this->getHelper()->alterMultilingualColumns($dbTable, $this->_data['name'], $fieldData);
 			}
 			elseif ($fieldData['length'] != $this->_data['length']
 				|| $fieldData['default'] != $this->_data['default']
 				|| ($fieldData['values'] != $this->_data['values']))
 			{
 				$fieldData['name'] = $this->_data['name'];
-				$this->_alterColumnScheme($dbTable, $fieldData);
+				$this->getHelper()->alterColumnScheme($dbTable, $fieldData);
 			}
 
 			if ($fieldData['searchable'] != $this->_data['searchable'])
 			{
-				$this->_alterColumnIndex($dbTable, $this->_data['name'], $fieldData['searchable']);
+				$this->getHelper()->alterColumnIndex($dbTable, $this->_data['name'], $fieldData['searchable']);
 			}
 		}
-	}
-
-	private function _alterMultilingualColumns($dbTable, $fieldName, array $fieldData)
-	{
-		$defaultLanguage = null;
-
-		foreach ($this->_iaCore->languages as $language)
-		{
-			if ($language['default'])
-			{
-				$defaultLanguage = $language;
-				break;
-			}
-		}
-
-		if ($fieldData['multilingual'])
-		{
-			$fieldData['name'] = $fieldName;
-			$this->_alterColumnScheme($dbTable, $fieldData, $fieldName . '_' . $defaultLanguage['iso']);
-
-			foreach ($this->_iaCore->languages as $language)
-			{
-				if ($language['iso'] != $defaultLanguage['iso'])
-				{
-					$fieldData['name'] = $fieldName . '_' . $language['iso'];
-					$this->_alterColumnScheme($dbTable, $fieldData);
-				}
-			}
-		}
-		else
-		{
-			$fieldData['name'] = $fieldName . '_' . $defaultLanguage['iso'];
-			$this->_alterColumnScheme($dbTable, $fieldData, $fieldName);
-
-			foreach ($this->_iaCore->languages as $language)
-			{
-				if ($language['iso'] != $defaultLanguage['iso'])
-				{
-					$this->_alterDropColumn($dbTable, $fieldName . '_' . $language['iso']);
-				}
-			}
-		}
-	}
-
-	private function _alterColumnScheme($dbTable, array $fieldData, $newName = null)
-	{
-		is_null($newName) && $newName = $fieldData['name'];
-
-		$sql = $this->_isDbColumnExist($dbTable, $fieldData['name'])
-			? 'ALTER TABLE `:prefix:table` CHANGE `:column1` `:column2` :scheme'
-			: 'ALTER TABLE `:prefix:table` ADD `:column2` :scheme';
-
-		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->_iaDb->prefix,
-			'table' => $dbTable,
-			'column1' => $fieldData['name'],
-			'column2' => $newName,
-			'scheme' => $this->_alterCmdBody($fieldData)
-		));
-
-		$this->_iaDb->query($sql);
-	}
-
-	private function _isDbColumnExist($dbTable, $columnName)
-	{
-		$sql = sprintf("SHOW COLUMNS FROM `%s%s` WHERE `Field` LIKE '%s'", $this->_iaDb->prefix, $dbTable, $columnName);
-
-		return (bool)$this->_iaDb->getRow($sql);
-	}
-
-	private function _alterDropColumn($dbTable, $columnName)
-	{
-		$sql = sprintf('ALTER TABLE `%s%s` DROP `%s`', $this->_iaDb->prefix, $dbTable, $columnName);
-
-		$this->_iaDb->query($sql);
-	}
-
-	private function _alterColumnIndex($dbTable, $fieldName, $enabled)
-	{
-		$sql = sprintf('SHOW INDEX FROM `%s%s`', $this->_iaDb->prefix, $dbTable);
-
-		$exists = false;
-		if ($indexes = $this->_iaDb->getAll($sql))
-		{
-			foreach ($indexes as $i)
-			{
-				if ($i['Key_name'] == $fieldName && $i['Index_type'] == 'FULLTEXT')
-				{
-					$exists = true;
-					break;
-				}
-			}
-		}
-
-		if ($enabled && !$exists)
-		{
-			$sql = sprintf('ALTER TABLE `%s%s` ADD FULLTEXT(`%s`)', $this->_iaDb->prefix, $dbTable, $fieldName);
-		}
-		elseif (!$enabled && $exists)
-		{
-			$sql = sprintf('ALTER TABLE `%s%s` DROP INDEX `%s`', $this->_iaDb->prefix, $dbTable, $fieldName);
-		}
-
-		isset($sql) && $this->_iaDb->query($sql);
-	}
-
-	private function _alterCmdBody(array $fieldData)
-	{
-		$result = '';
-
-		switch ($fieldData['type'])
-		{
-			case iaField::DATE:
-				$result.= $fieldData['timepicker'] ? 'DATETIME ' : 'DATE ';
-				break;
-			case iaField::NUMBER:
-				$result.= 'DOUBLE ';
-				break;
-			case iaField::TEXT:
-				$result.= 'VARCHAR(' . $fieldData['length'] . ') '
-					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
-				break;
-			case iaField::URL:
-			case iaField::TREE:
-				$result.= 'TINYTEXT ';
-				break;
-			case iaField::IMAGE:
-			case iaField::STORAGE:
-			case iaField::PICTURES:
-			case iaField::TEXTAREA:
-				$result.= 'TEXT ';
-				break;
-			default:
-				if (isset($fieldData['values']))
-				{
-					$values = explode(',', $fieldData['values']);
-
-					$result.= ($fieldData['type'] == iaField::CHECKBOX) ? 'SET' : 'ENUM';
-					$result.= "('" . implode("','", $values) . "')";
-
-					if (!empty($fieldData['default']))
-					{
-						$result.= " DEFAULT '{$fieldData['default']}' ";
-					}
-				}
-		}
-
-		$result.= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
-
-		return $result;
 	}
 
 	private function _getParents($fieldName)
@@ -948,9 +796,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		empty($data['parents']) ||  $this->setParents($fieldName, $data['parents']);
-		empty($data['children']) || $this->_relationsSetChildren($this->_data, $data['children']);
-
-		$this->_relationsSetup();
+		empty($data['children']) || $this->_relationsSetChildren($this->_data, $data['children'], $fieldData['item']);
 	}
 
 	public function setParents($fieldName, array $parents)
@@ -979,7 +825,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->resetTable();
 	}
 
-	private function _relationsSetChildren($values, $children)
+	private function _relationsSetChildren($values, $children, $itemName)
 	{
 		$values = array_keys($values);
 
@@ -1002,6 +848,11 @@ class iaBackendController extends iaAbstractControllerBackend
 							'element' => $values[$index],
 							'child' => $field
 						));
+
+						$where = '`name` = :name AND `item` = :item';
+						$this->_iaDb->bind($where, array('name' => $field, 'item' => $itemName));
+
+						$this->_iaDb->update(array('relation' => iaField::RELATION_DEPENDENT), $where, null, iaField::getTable());
 					}
 				}
 			}
@@ -1031,24 +882,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->bind($where, array('id' => $this->getEntryId(), 'child' => $fieldName));
 
 		$this->_iaDb->delete($where, iaField::getTableRelations());
-	}
-
-	private function _relationsSetup()
-	{
-		$sql = 'UPDATE `:prefix:table_fields` f '
-			. "SET f.relation = ':dependent' "
-			. 'WHERE ('
-				. 'SELECT COUNT(*) FROM `:prefix:table_relations` fr WHERE fr.`child` = f.`name`'
-			. ') > 0';
-
-		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->_iaDb->prefix,
-			'table_fields' => iaField::getTable(),
-			'table_relations' => iaField::getTableRelations(),
-			'dependent' => iaField::RELATION_DEPENDENT
-		));
-
-		$this->_iaDb->query($sql);
 	}
 
 	private static function _obtainKey(array $keys)

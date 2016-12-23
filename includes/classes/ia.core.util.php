@@ -276,12 +276,12 @@ class iaUtil extends abstractUtil
 		self::go_to($url);
 	}
 
-	/*
-	 * Check that personal folder exists and return path
+	/**
+	 * Checks that personal folder exists and return path
 	 *
-	 * @param string $userName
+	 * @param string $userName member username
 	 *
-	 * @return str path from UPLOADS directory (you can completely insert it into DB)
+	 * @return string
 	 */
 	public static function getAccountDir($userName = '')
 	{

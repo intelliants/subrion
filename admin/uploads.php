@@ -32,6 +32,8 @@ if (!$iaAcl->isAdmin())
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
+	define('IA_ENABLE_FULL_ACCESS', false);
+
 	error_reporting(0); // Set E_ALL for debugging
 
 	$pluginPath = IA_INCLUDES . 'elfinder' . IA_DS . 'php' . IA_DS;
@@ -59,6 +61,16 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			:  null;                                    // else elFinder decide it itself
 	}
 
+	$path = IA_UPLOADS;
+	$url = IA_CLEAR_URL . 'uploads/';
+	if (!IA_ENABLE_FULL_ACCESS)
+	{
+		iaCore::factory('util');
+
+		$path .= iaUtil::getAccountDir();
+		$url .= strtolower(substr(iaUsers::getIdentity()->username, 0, 1)) . IA_URL_DELIMITER . iaUsers::getIdentity()->username . IA_URL_DELIMITER;
+	}
+
 	// Documentation for connector options:
 	// https://github.com/Studio-42/elFinder/wiki/Connector-configuration-options
 	$opts = array(
@@ -66,8 +78,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 		'roots' => array(
 			array(
 				'driver'        => 'LocalFileSystem',   // driver for accessing file system (REQUIRED)
-				'path'          => IA_UPLOADS,         // path to files (REQUIRED)
-				'URL'           => IA_CLEAR_URL . 'uploads/', // URL to files (REQUIRED)
+				'path'          => $path,         // path to files (REQUIRED)
+				'URL'           => $url, // URL to files (REQUIRED)
 				'accessControl' => 'access'             // disable and hide dot starting files (OPTIONAL)
 			)
 		)

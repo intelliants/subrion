@@ -1,0 +1,173 @@
+.page-login {
+	background: @base-dark-color url('../img/bg-login.jpg') 50% bottom no-repeat;
+	background-size: cover;
+	overflow: hidden;
+	height: 100%;
+	width: 100%;
+	display: table;
+	border-collapse: collapse;
+
+	&__content {
+		display: table-cell;
+		height: 100%;
+		vertical-align: middle;
+	}
+}
+
+.b-login {
+	background: #fff;
+	border-radius: 6px;
+	display: table;
+	width: 768px;
+	height: 480px;
+	border-collapse: collapse;
+	margin: 0 auto;
+	.box-shadow(0 0 150px rgba(0,0,0,.7));
+	font-family: 'Roboto', sans-serif;
+
+	&__img,
+	&__form {
+		display: table-cell;
+		vertical-align: middle;
+		width: 50%;
+		padding: 50px;
+	}
+
+	&__img {
+		background: #5ec0e3 url('../img/bg-login-card.jpg') 50% 50% no-repeat;
+		background-size: cover;
+		border-radius: 6px 0 0 6px;
+
+		h1 {
+			text-align: center;
+			font-size: 24px;
+			line-height: 28px;
+			color: #fff;
+			margin: 0;
+			font-family: 'Roboto', sans-serif;
+		}
+
+		> a {
+			display: block;
+			text-decoration: none;
+			width: 137px;
+			height: 126px;
+			margin: 0 auto 30px;
+
+			img {
+				width: 137px;
+				height: 126px;
+			}
+		}
+	}
+}
+
+.copyright {
+	margin-top: 50px;
+	font-size: 12px;
+	color: fade(#000, 30%);
+
+	p:last-child {
+		margin: 0;
+	}
+}
+
+// .login-block {
+// 	.opacity(0);
+// 	width: 430px;
+// 	height: 400px;
+// 	position: absolute;
+// 	top: 50%;
+// 	left: 50%;
+// 	margin-top: -230px; // -260px original
+// 	margin-left: -215px;
+
+// 	.login-header {
+// 		margin-bottom: 30px;
+
+// 		h3 {
+// 			color: fade(@base-dark-color, 70%);
+// 			font-size: 20px;
+// 			font-weight: bold;
+// 			text-align: center;
+// 		}
+// 	}
+
+// 	.logo { 
+// 		display: block;
+// 		width: 84px;
+// 		margin: 0 auto;
+// 		// float: left;
+
+// 		img {
+// 			width: 100%;
+// 		}
+// 	}
+
+// 	.login-block-content {
+// 		background: #fff;
+// 		padding: 30px;
+// 		position: relative;
+// 	}
+
+// 	.copyright {
+// 		font-size: 12px;
+// 		border-top: 1px solid #eee;
+// 		color: #999;
+// 		margin: 30px -30px -30px;
+// 		padding: 30px;
+// 		background: #f5f5f5;
+// 	}
+
+// 	.js-login-body-forgot-password {
+// 		display: none;
+// 	}
+// }
+
+// .back-to-home {
+// 	position: absolute;
+// 	top: 100%;
+// 	left: 30px;
+// 	margin-top: 10px;
+
+// 	color: lighten(@base-dark-color, 15%);
+// 	font-size: 12px;
+
+// 	span {
+// 		font-size: 14px;
+// 	}
+// }
+
+// @media (max-width: @screen-tablet) {
+
+// 	#page-login {
+// 		padding: 20px;
+// 	}
+
+// 	.login-block {
+// 		.opacity(1);
+// 		width: auto;
+// 		height: auto;
+// 		position: static;
+// 		margin: 0 !important;
+
+// 		.logo {
+// 			float: none;
+// 			display: inline-block;
+// 			margin-bottom: 10px;
+// 		}
+
+// 		.login-header {
+// 			text-align: center;
+// 			h3 {
+// 				margin: 0;
+// 			}	
+// 		}
+// 	}
+// }
+
+// @media (max-width: @screen-phone) {
+// 	#page-login {
+// 		padding: 10px;
+// 	}
+// }

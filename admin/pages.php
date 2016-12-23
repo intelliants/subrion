@@ -106,8 +106,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		iaUtil::loadUTF8Functions('ascii', 'bad', 'utf8_to_ascii', 'validation');
 
 		$entry['name'] = preg_replace('#[^a-z0-9-_]#iu', '', strtolower($data['name'] =! utf8_is_ascii($data['name']) ? utf8_to_ascii($data['name']): $data['name']));
-		$entry['meta_description'] = utf8_is_valid($data['meta_description']) ? $data['meta_description'] : utf8_bad_replace($data['meta_description']);
-		$entry['meta_keywords'] = utf8_is_valid($data['meta_keywords']) ? $data['meta_keywords'] : utf8_bad_replace($data['meta_keywords']);
 		$entry['status'] = isset($data['preview']) ? iaCore::STATUS_DRAFT : $data['status'];
 
 		if (iaCore::ACTION_ADD == $action)
@@ -116,7 +114,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entry['filename'] = 'page';
 		}
 
-		foreach ($data['titles'] as $key => $title)
+		foreach ($data['title'] as $key => $title)
 		{
 			if (empty($title))
 			{
@@ -129,7 +127,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$entry['alias'] = empty($data['alias']) ? $data['name'] : $data['alias'];
 			$entry['custom_url'] = empty($data['custom_url']) ? '' : $data['custom_url'];
-			$entry['passw'] = empty($data['passw']) ? '' : $data['passw'];
+			$entry['passw'] = empty($data['passw']) ? '' : trim($data['passw']);
 
 			$entry['alias'] = utf8_is_ascii($entry['alias']) ? $entry['alias'] : utf8_to_ascii($entry['alias']);
 			$entry['alias'] = empty($entry['alias']) ? '' : iaSanitize::alias($entry['alias']);
@@ -213,8 +211,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			'service' => false,
 			'nofollow' => false,
 			'new_window' => false,
-			'meta_description' => '',
-			'meta_keywords' => '',
 			'status' => iaCore::STATUS_ACTIVE
 		);
 	}
@@ -264,27 +260,14 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		// saving multilingual content
-		$currentLanguage = $this->_iaCore->iaView->language;
-		$extras = $data['extras'];
-
-		foreach (array('title', 'content') as $type)
-		{
-			if (isset($data[$type . 's']) && is_array($data[$type . 's']))
-			{
-				foreach ($data[$type . 's'] as $languageCode => $value)
-				{
-					utf8_is_valid($value) || $value = utf8_bad_replace($value);
-					iaLanguage::addPhrase('page_' . $type . '_' . $entry['name'], $value, $languageCode, $extras, iaLanguage::CATEGORY_PAGE);
-				}
-				isset($title) || $title = $data[$type . 's'][$currentLanguage];
-			}
-		}
+		$this->_saveMultilingualData($entry['name'], $data['extras']);
 
 		// writing to log
+		$pageTitle = $data['title'][$this->_iaCore->iaView->language];
+
 		$iaLog = $this->_iaCore->factory('log');
 		$actionCode = (iaCore::ACTION_ADD == $action) ? iaLog::ACTION_CREATE : iaLog::ACTION_UPDATE;
-		$iaLog->write($actionCode, array('item' => 'page', 'name' => $title, 'id' => $this->getEntryId()));
+		$iaLog->write($actionCode, array('item' => 'page', 'name' => $pageTitle, 'id' => $this->getEntryId()));
 	}
 
 	protected function _entryDelete($entryId)
@@ -316,26 +299,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		if (isset($_POST['titles']) && isset($_POST['contents']))
-		{
-			$entryData['titles'] = $_POST['titles'];
-			$entryData['contents'] = $_POST['contents'];
-		}
-		elseif (iaCore::ACTION_EDIT == $iaView->get('action'))
-		{
-			$this->_iaDb->setTable(iaLanguage::getTable());
-			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'page_title_{$entryData['name']}' AND `category` = 'page'");
-			$entryData['contents'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'page_content_{$entryData['name']}' AND `category` = 'page'");
-			$this->_iaDb->resetTable();
-		}
-
 		$menus = array(
 			array('title' => iaLanguage::get('core_menus', 'Core menus'), 'list' => array()),
 			array('title' => iaLanguage::get('custom_menus', 'Custom menus'), 'list' => array())
 		);
 
-		$iaAcl = $this->_iaCore->factory('acl');
-		if ($iaAcl->checkAccess('admin_page:add', 0, 0, 'menus'))
+		if ($this->_iaCore->factory('acl')->checkAccess('admin_page:add', 0, 0, 'menus'))
 		{
 			$this->_iaCore->factory('block', iaCore::ADMIN);
 
@@ -373,6 +342,13 @@ class iaBackendController extends iaAbstractControllerBackend
 		$groups = $this->getHelper()->getGroups(array($this->_iaCore->get('home_page'), $entryData['name']));
 		$isHomepage = ($this->_iaCore->get('home_page', iaView::DEFAULT_HOMEPAGE) == $entryData['name']);
 
+		list($title, $content, $metaDescription, $metaKeywords) = $this->_loadMultilingualData($entryData['name']);
+
+		$iaView->assign('title', $title);
+		$iaView->assign('content', $content);
+		$iaView->assign('metaDescription', $metaDescription);
+		$iaView->assign('metaKeywords', $metaKeywords);
+
 		$iaView->assign('isHomePage', $isHomepage);
 		$iaView->assign('extensions', $this->getHelper()->extendedExtensions);
 		$iaView->assign('menus', $menus);
@@ -394,21 +370,22 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			$newPage = array();
 			$name = strtolower($_POST['name'] = !utf8_is_ascii($_POST['name']) ? utf8_to_ascii($_POST['name']) : $_POST['name']);
-			if (isset($_POST['contents']) && is_array($_POST['contents']))
+			if (isset($_POST['content']) && is_array($_POST['content']))
 			{
 				function utf8_validation(&$item)
 				{
 					$item = !utf8_is_valid($item) ? utf8_bad_replace($item) : $item;
 				}
 
-				foreach ($_POST['contents'] as $key => $content)
+				foreach ($_POST['content'] as $key => $content)
 				{
-					utf8_validation($_POST['contents'][$key]);
+					utf8_validation($_POST['content'][$key]);
 				}
-				$newPage['contents'] = $_POST['contents'];
+
+				$newPage['content'] = $_POST['content'];
 			}
 
-			$newPage['titles'] = $_POST['titles'];
+			$newPage['title'] = $_POST['title'];
 			$newPage['passw'] = iaSanitize::sql($_POST['passw']);
 
 			isset($_SESSION['preview_pages']) || $_SESSION['preview_pages'] = array();
@@ -473,6 +450,53 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 
 			$iaDb->resetTable();
+		}
+	}
+
+	private function _loadMultilingualData($pageName)
+	{
+		$title = $content = $metaDescription = $metaKeywords = [];
+
+		if (isset($_POST['save']))
+		{
+			list($title, $content, $metaDescription, $metaKeywords) = array($_POST['title'],
+				$_POST['content'], $_POST['meta_description'], $_POST['meta_keywords']);
+		}
+		elseif (iaCore::ACTION_EDIT == $this->_iaCore->iaView->get('action'))
+		{
+			$this->_iaDb->setTable(iaLanguage::getTable());
+
+			$title = $this->_iaDb->keyvalue(array('code', 'value'),
+				"`key` = 'page_title_{$pageName}' AND `category` = 'page'");
+			$content = $this->_iaDb->keyvalue(array('code', 'value'),
+				"`key` = 'page_content_{$pageName}' AND `category` = 'page'");
+			$metaDescription = $this->_iaDb->keyvalue(array('code', 'value'),
+				"`key` = 'page_meta_description_{$pageName}' AND `category` = 'page'");
+			$metaKeywords = $this->_iaDb->keyvalue(array('code', 'value'),
+				"`key` = 'page_meta_keywords_{$pageName}' AND `category` = 'page'");
+
+			$this->_iaDb->resetTable();
+		}
+
+		return array($title, $content, $metaDescription, $metaKeywords);
+	}
+
+	private function _saveMultilingualData($pageName, $extras)
+	{
+		foreach ($this->_iaCore->languages as $iso => $language)
+		{
+			foreach (array('title', 'content', 'meta_description', 'meta_keywords') as $key)
+			{
+				if (isset($_POST[$key][$iso]))
+				{
+					$phraseKey = sprintf('page_%s_%s', $key, $pageName);
+
+					$value = $_POST[$key][$iso];
+					utf8_is_valid($value) || $value = utf8_bad_replace($value);
+
+					iaLanguage::addPhrase($phraseKey, $value, $iso, $extras, iaLanguage::CATEGORY_PAGE, true);
+				}
+			}
 		}
 	}
 
