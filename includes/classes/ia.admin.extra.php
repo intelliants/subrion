@@ -738,8 +738,8 @@ class iaExtra extends abstractCore
 			$iaDb->setTable(iaLanguage::getTable());
 			$iaDb->delete("`key` IN ('page_title_" . implode("','page_title_", $pagesList) . "')");
 			$iaDb->delete("`key` IN ('page_content_" . implode("','page_content_", $pagesList) . "')");
-			$iaDb->delete("`key` IN ('page_metakeyword_" . implode("','page_metakeyword_", $pagesList) . "')");
-			$iaDb->delete("`key` IN ('page_metadescr_" . implode("','page_metadescr_", $pagesList) . "')");
+			$iaDb->delete("`key` IN ('page_meta_keywords_" . implode("','page_meta_keywords_", $pagesList) . "')");
+			$iaDb->delete("`key` IN ('page_meta_description_" . implode("','page_meta_description_", $pagesList) . "')");
 			$iaDb->resetTable();
 		}
 
