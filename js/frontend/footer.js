@@ -1,5 +1,34 @@
 $(function()
 {
+	$('#js-modal-searches').on('click', '.js-delete-search', function(e) {
+		e.preventDefault();
+
+		var $this = $(this),
+		data = $this.data(),
+		id = data.id;
+
+		$.post(intelli.config.ia_url + 'search.json', {action: 'delete', id: id}, function(data)
+		{
+			if (Boolean(data.result))
+			{
+				var $wrap = $this.closest('.modal-body'),
+				itemsCount = $('tr', $wrap).length;
+				$this.closest('tr').remove();
+				if (itemsCount <= 1)
+				{
+					$('table', $wrap).remove();
+					$wrap.append('<p>' + _t('no_items') + '</p>');
+				}
+
+				intelli.notifFloatBox({msg: data.message, type: 'success', autohide: true});
+			}
+			else
+			{
+				intelli.notifFloatBox({msg: data.message, type: 'error', autohide: true});
+			}
+		});
+	});
+
 	if ($('#error').length > 0)
 	{
 		$('html, body').animate({scrollTop: $('.page-header').offset().top});

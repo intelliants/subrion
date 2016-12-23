@@ -29,20 +29,38 @@ $iaItem = $iaCore->factory('item');
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
-	if (isset($_POST['action']) && 'save' == $_POST['action']
-		&& isset($_POST['item']) && isset($_POST['params']) && isset($_POST['name']))
+	if (isset($_POST['action']))
 	{
-		if (!iaUsers::hasIdentity())
+		if ('save' == $_POST['action'] && isset($_POST['item']) && isset($_POST['params']) && isset($_POST['name']))
 		{
-			return iaView::errorPage(iaView::ERROR_UNAUTHORIZED, iaLanguage::get('do_authorize_to_save_search'));
+			if (!iaUsers::hasIdentity())
+			{
+				return iaView::errorPage(iaView::ERROR_UNAUTHORIZED, iaLanguage::get('do_authorize_to_save_search'));
+			}
+
+			$result = $iaSearch->save($_POST['item'], $_POST['params'], $_POST['name']);
+
+			$iaView->assign('result', $result);
+			$iaView->assign('message', iaLanguage::get($result ? 'saved' : 'db_error'));
+
+			return;
 		}
+		elseif ('delete' == $_POST['action'] && !empty($_POST['id']))
+		{
+			if (!iaUsers::hasIdentity())
+			{
+				return iaView::errorPage(iaView::ERROR_FORBIDDEN);
+			}
 
-		$result = $iaSearch->save($_POST['item'], $_POST['params'], $_POST['name']);
+			$result = false;
+			if (iaUsers::getIdentity()->id == $iaDb->one('member_id', iaDb::convertIds($_POST['id']), iaSearch::getTable()))
+			{
+				$result = $iaSearch->delete($_POST['id'], $_POST['member_id']);
+			}
 
-		$iaView->assign('result', $result);
-		$iaView->assign('message', iaLanguage::get($result ? 'saved' : 'db_error'));
-
-		return;
+			$iaView->assign('result', $result);
+			$iaView->assign('message', iaLanguage::get($result ? 'deleted' : 'error'));
+		}
 	}
 
 	$itemName = (1 == count($iaCore->requestPath)) ? $iaCore->requestPath[0] : str_replace('search_', '', $iaView->name());
