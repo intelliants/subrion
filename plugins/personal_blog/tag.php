@@ -88,8 +88,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('tag');
 
 		$pagination = array(
-			'start' => ($page - 1) * $iaCore->get('tag_number'),
-			'limit' => (int)$iaCore->get('tag_number'),
+			'start' => ($page - 1) * $iaCore->get('blog_tag_number'),
+			'limit' => (int)$iaCore->get('blog_tag_number'),
 			'template' => $pageUrl . '?page={page}'
 		);
 
