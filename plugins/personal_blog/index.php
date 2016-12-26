@@ -118,15 +118,15 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					{
 						$iaPicture = $iaCore->factory('picture');
 
-						$info = array(
-							'image_width' => 1000,
-							'image_height' => 750,
-							'thumb_width' => 250,
-							'thumb_height' => 250,
-							'resize_mode' => iaPicture::CROP
+						$imageInfo = array(
+							'image_width' => $iaCore->get('blog_image_width'),
+							'image_height' => $iaCore->get('blog_image_height'),
+							'thumb_width' => $iaCore->get('blog_thumb_width'),
+							'thumb_height' => $iaCore->get('blog_thumb_height'),
+							'resize_mode' => $iaCore->get('blog_image_resize'),
 						);
 
-						if ($image = $iaPicture->processImage($_FILES['image'], iaUtil::getAccountDir(), iaUtil::generateToken(), $info))
+						if ($image = $iaPicture->processImage($_FILES['image'], iaUtil::getAccountDir(), iaUtil::generateToken(), $imageInfo))
 						{
 							if ($entry['image']) // it has an already assigned image
 							{

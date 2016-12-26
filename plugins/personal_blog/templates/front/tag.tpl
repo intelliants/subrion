@@ -30,7 +30,7 @@
 			{/if}
 		{/foreach}
 
-		{navigation aTotal=$pagination.total aTemplate=$pagination.template aItemsPerPage=$core.config.tag_number aNumPageItems=5}
+		{navigation aTotal=$pagination.total aTemplate=$pagination.template aItemsPerPage=$core.config.blog_tag_number aNumPageItems=5}
 	{else}
 		<div class="alert alert-info">{lang key='no_tags'}</div>
 	{/if}

@@ -135,15 +135,15 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		{
 			$iaPicture = $this->_iaCore->factory('picture');
 
-			$info = array(
-				'image_width' => 1000,
-				'image_height' => 750,
-				'thumb_width' => 250,
-				'thumb_height' => 250,
-				'resize_mode' => iaPicture::CROP
+			$imageInfo = array(
+				'image_width' => $this->_iaCore->get('blog_image_width'),
+				'image_height' => $this->_iaCore->get('blog_image_height'),
+				'thumb_width' => $this->_iaCore->get('blog_thumb_width'),
+				'thumb_height' => $this->_iaCore->get('blog_thumb_height'),
+				'resize_mode' => $this->_iaCore->get('blog_image_resize'),
 			);
 
-			if ($image = $iaPicture->processImage($_FILES['image'], iaUtil::getAccountDir(), iaUtil::generateToken(), $info))
+			if ($image = $iaPicture->processImage($_FILES['image'], iaUtil::getAccountDir(), iaUtil::generateToken(), $imageInfo))
 			{
 				empty($entry['image']) || $iaPicture->delete($entry['image']); // already has an assigned image
 				$entry['image'] = $image;

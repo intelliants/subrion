@@ -62,7 +62,12 @@
 	<config group="blog" name="blog_number" type="text" description="Number of displayed entries">5</config>
 	<config group="blog" name="blog_max" type="text" description="Number of chars in short description">500</config>
 	<config group="blog" name="blog_order" type="select" values="alphabetic,date" description="Entries order by">date</config>
-	<config group="blog" name="tag_number" type="text" description="Number of displayed tags">10</config>
+	<config group="blog" name="blog_tag_number" type="text" description="Number of displayed tags">10</config>
+	<config group="blog" name="blog_image_resize" type="select" values="crop,fit" description="Image/Thumbnail resize mod">crop</config>
+	<config group="blog" name="blog_image_width" type="text" description="Image width">1280</config>
+	<config group="blog" name="blog_image_height" type="text" description="Image height">720</config>
+	<config group="blog" name="blog_thumb_width" type="text" description="Thumbnail width">250</config>
+	<config group="blog" name="blog_thumb_height" type="text" description="Thumbnail height">250</config>
 
 	<tooltips>
 		<tooltip key="blog_display_grid">This option allows you to display only images in Blogroll section. This display type suits best for portfolios.</tooltip>
