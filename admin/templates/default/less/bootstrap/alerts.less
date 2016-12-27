@@ -33,6 +33,12 @@
   > p + p {
     margin-top: 5px;
   }
+
+  > ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
 }
 
 // Dismissible alerts
@@ -68,6 +74,25 @@
   .alert-variant(@alert-warning-bg; @alert-warning-border; @alert-warning-text);
 }
 
-.alert-danger {
+.alert-danger,
+.alert-error {
   .alert-variant(@alert-danger-bg; @alert-danger-border; @alert-danger-text);
 }
+
+.alert {
+  border: none;
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+
+// Mixin for generating new styles
+.alert-styles(@color) {
+  border-color: darken(@color, 15%);
+}
+
+// Apply the mixin to the alerts
+.alert-success    { .alert-styles(@alert-success-bg); }
+.alert-info       { .alert-styles(@alert-info-bg); }
+.alert-warning    { .alert-styles(@alert-warning-bg); }
+.alert-danger,
+.alert-error      { .alert-styles(@alert-danger-bg); }
