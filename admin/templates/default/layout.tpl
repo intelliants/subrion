@@ -163,6 +163,7 @@
 							</li>
 						</ul>
 
+						{* TEMPORARILY DISABLED
 						<form id="quick-search" class="navbar-form navbar-right" action="{$smarty.const.IA_ADMIN_URL}members/">
 							<input type="text" name="q" style="width: 200px;" class="form-control" placeholder="{lang key='type_here_to_search'}"{if isset($smarty.get.q)} value="{$smarty.get.q|escape:'html'}"{/if}>
 							<div class="btn-group">
@@ -181,6 +182,7 @@
 							</div>
 							<button type="submit" class="btn btn-primary"><i class="i-search"></i></button>
 						</form>
+						*}
 					</div>
 
 					<div class="content-wrapper">
@@ -189,11 +191,11 @@
 								<ul class="nav nav-pills pull-right">
 									{if 'index' == $core.page.name}
 										{if isset($customization_mode)}
-											<li><a href="?reset"><i class="i-loop"></i> {lang key='reset'}</a></li>
-											<li><a href="?save" id="js-cmd-save"><i class="i-checkmark"></i> {lang key='save'}</a></li>
-											<li><a href=""><i class="i-close"></i> {lang key='discard'}</a></li>
+											<li><a href="?reset"><span class="fa fa-refresh"></span> {lang key='reset'}</a></li>
+											<li><a href="?save" id="js-cmd-save"><span class="fa fa-check-circle"></span> {lang key='save'}</a></li>
+											<li><a href=""><span class="fa fa-times-circle"></span> {lang key='discard'}</a></li>
 										{else}
-											<li><a href="?customize"><i class="i-equalizer"></i> {lang key='customize'}</a></li>
+											<li><a href="?customize"><span class="fa fa-magic"></span> {lang key='customize'}</a></li>
 										{/if}
 									{/if}
 

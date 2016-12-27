@@ -81,30 +81,6 @@
 
 
 //
-// Alerts
-// --------------------------------------------------
-
-// Common styles
-.alert {
-  border: none;
-  border-left-width: 3px;
-  border-left-style: solid;
-}
-
-// Mixin for generating new styles
-.alert-styles(@color) {
-  border-color: darken(@color, 15%);
-}
-
-// Apply the mixin to the alerts
-.alert-success    { .alert-styles(@alert-success-bg); }
-.alert-info       { .alert-styles(@alert-info-bg); }
-.alert-warning    { .alert-styles(@alert-warning-bg); }
-.alert-danger,
-.alert-error      { .alert-styles(@alert-danger-bg); }
-
-
-//
 // Progress bars
 // --------------------------------------------------
 
