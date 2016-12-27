@@ -1,0 +1,209 @@
+.sap-form {
+  textarea {
+    height: auto;
+    resize: vertical;
+  }
+
+  .form-actions {
+
+    .goto-actions {
+      width: 200px;
+    }
+  }
+
+  select[multiple="multiple"] {
+    height: auto;
+  }
+
+  label {
+    color: @input-color;
+  }
+
+  .input-group + .input-group {
+    margin-top: 5px;
+  }
+}
+
+
+.file-upload {
+  position: relative;
+  overflow: hidden;
+
+  input[type="file"] {
+    position: absolute;
+    left: -999px;
+  }
+}
+
+.thumbnail + .file-upload,
+.thumbnail + .upload-group {
+  margin-top: 20px;
+}
+
+.sap-form + .sap-form {
+  margin-top: 30px;
+}
+
+.upload-group {
+  clear: left;
+}
+
+.uploads-list-item {
+  .clearfix();
+  margin-bottom: 10px;
+  padding: 5px;
+  background: #f0f0f0;
+
+  &__thumb {
+    float: left;
+    width: 34px;
+    margin-right: 5px;
+
+    img {
+      .img-responsive();
+    }
+
+    &--file {
+      height: 34px;
+      // background: #ccc;
+      color: #999;
+      text-align: center;
+      line-height: 34px;
+      font-size: 22px;
+    }
+  }
+
+  &__body {
+    overflow: hidden;
+  }
+
+  &__drag-handle {
+    cursor: move !important;
+    color: #aaa !important;
+    background: none !important;
+    border-color: transparent !important;
+
+    &:hover {
+      color: #444 !important;
+    }
+
+    &:active,
+    &:focus {
+      box-shadow: none !important;
+    }
+  }
+}
+
+.sortable-ghost {
+  background: @brand-primary;
+}
+
+
+//
+// Fields
+// --------------------------------------------------
+
+.row.dependent {
+  display: none;
+}
+
+
+// custom config
+
+.form-control.disabled {
+  .box-shadow(none);
+
+  background: #eee;
+}
+
+.row.custom {
+  .set-default,
+  .item-input {
+    display: none;
+  }
+}
+
+.row.common {
+  .set-custom,
+  .item-val {
+    display: none;
+  }
+}
+
+
+
+//
+// Translatable
+// --------------------------------------------------
+
+.translate-group-actions {
+  float: right;
+  margin-top: 6px;
+
+  + .control-label {
+    overflow: hidden;
+    display: block;
+  }
+}
+
+.translate-group {
+  &__default {
+    position: relative;
+  }
+
+  &__langs {
+    margin-top: 5px;
+    display: none;
+  }
+
+  &__item {
+    position: relative;
+
+    & + & {
+      margin-top: 5px;
+    }
+
+    &__code {
+      font-size: 10px;
+      background: #f5f5f5;
+      position: absolute;
+      top: 0;
+      left: 100%;
+      color: #aaa;
+      padding: 10px 6px;
+      width: 76px;
+      text-align: center;
+      overflow: hidden;
+      // display: none;
+      .opacity(0);
+      .transition(all .15s ease-in-out);
+    }
+  }
+
+  &.is-opened {
+    .translate-group__item__code {
+      display: block;
+      .opacity(100);
+    }
+  }
+}
+
+
+.help-block {
+  display: block; // account for any element using help-block
+  margin-top: 5px;
+  margin-bottom: 10px;
+  color: lighten(@text-color, 25%); // lighten the text some for contrast
+}
+
+.has-support-text {
+  .make-switch {
+    float: left;
+
+    + .help-block {
+      float: left;
+      margin: 10px 0 0 10px;
+    }
+  }
+
+}

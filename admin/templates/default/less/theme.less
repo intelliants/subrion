@@ -1,13 +1,3 @@
-
-//
-// Load core variables and mixins
-// --------------------------------------------------
-
-@import "variables.less";
-@import "mixins.less";
-
-
-
 //
 // Buttons
 // --------------------------------------------------
@@ -19,26 +9,55 @@
 .btn-info,
 .btn-warning,
 .btn-danger {
-  text-shadow: 0 -1px 0 rgba(0,0,0,.2);
-  @shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075);
-  .box-shadow(@shadow);
+  // text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+  // @shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075);
+  // .box-shadow(@shadow);
 
   // Reset the shadow
   &:active,
   &.active {
     .box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
   }
+
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    .box-shadow(none);
+  }
+
+  .badge {
+    text-shadow: none;
+  }
 }
 
 // Mixin for generating new styles
-.btn-styles(@btn-color: #555;) {
-  #gradient > .vertical(@start-color: @btn-color; @end-color: darken(@btn-color, 10%));
-  border-color: darken(@btn-color, 12%);
+.btn-styles(@btn-color: #555) {
+  background-color: @btn-color;
+  border-color: @btn-color;
+
+  &:hover,
+  &:focus  {
+    background-color: darken(@btn-color, 12%);
+  }
 
   &:active,
   &.active {
-    background-color: darken(@btn-color, 10%);
-    border-color: darken(@btn-color, 12%);
+    background-color: darken(@btn-color, 12%);
+    border-color: darken(@btn-color, 14%);
+  }
+
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &,
+    &:hover,
+    &:focus,
+    &.focus,
+    &:active,
+    &.active {
+      background-color: darken(@btn-color, 12%);
+      background-image: none;
+    }
   }
 }
 
@@ -52,81 +71,12 @@
 }
 
 // Apply the mixin to the buttons
-.btn-default { .btn-styles(@btn-default-bg;); text-shadow: 0 1px 0 #fff; border-color: #ccc; }
+.btn-default { .btn-styles(@btn-default-bg); border-color: #ccc; }
 .btn-primary { .btn-styles(@btn-primary-bg); }
 .btn-success { .btn-styles(@btn-success-bg); }
+.btn-info    { .btn-styles(@btn-info-bg); }
 .btn-warning { .btn-styles(@btn-warning-bg); }
 .btn-danger  { .btn-styles(@btn-danger-bg); }
-.btn-info    { .btn-styles(@btn-info-bg); }
-
-
-
-//
-// Images
-// --------------------------------------------------
-
-.thumbnail,
-.img-thumbnail {
-  .box-shadow(0 1px 2px rgba(0,0,0,.075));
-}
-
-
-
-//
-// Dropdowns
-// --------------------------------------------------
-
-.dropdown-menu > li > a:hover,
-.dropdown-menu > li > a:focus,
-.dropdown-menu > .active > a,
-.dropdown-menu > .active > a:hover,
-.dropdown-menu > .active > a:focus {
-  #gradient > .vertical(@start-color: @dropdown-link-hover-bg; @end-color: darken(@dropdown-link-hover-bg, 5%));
-  background-color: darken(@dropdown-link-hover-bg, 5%);
-}
-
-
-
-//
-// Navbar
-// --------------------------------------------------
-
-// Basic navbar
-.navbar {
-  #gradient > .vertical(@start-color: lighten(@navbar-default-bg, 10%); @end-color: @navbar-default-bg;);
-  border-radius: @navbar-border-radius;
-  @shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 5px rgba(0,0,0,.075);
-  .box-shadow(@shadow);
-
-  .navbar-nav > .active > a {
-    background-color: @navbar-default-bg;
-  }
-}
-.navbar-brand,
-.navbar-nav > li > a {
-  text-shadow: 0 1px 0 rgba(255,255,255,.25);
-}
-
-// Inverted navbar
-.navbar-inverse {
-  #gradient > .vertical(@start-color: lighten(@navbar-inverse-bg, 10%); @end-color: @navbar-inverse-bg;);
-
-  .navbar-nav > .active > a {
-    background-color: @navbar-inverse-bg;
-  }
-
-  .navbar-brand,
-  .navbar-nav > li > a {
-    text-shadow: 0 -1px 0 rgba(0,0,0,.25);
-  }
-}
-
-// Undo rounded corners in static and fixed navbars
-.navbar-static-top,
-.navbar-fixed-top,
-.navbar-fixed-bottom {
-  border-radius: 0;
-}
 
 
 
@@ -136,14 +86,13 @@
 
 // Common styles
 .alert {
-  text-shadow: 0 1px 0 rgba(255,255,255,.2);
-  @shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 1px 2px rgba(0,0,0,.05);
-  .box-shadow(@shadow);
+  border: none;
+  border-left-width: 3px;
+  border-left-style: solid;
 }
 
 // Mixin for generating new styles
 .alert-styles(@color) {
-  #gradient > .vertical(@start-color: @color; @end-color: darken(@color, 7.5%));
   border-color: darken(@color, 15%);
 }
 
@@ -151,8 +100,8 @@
 .alert-success    { .alert-styles(@alert-success-bg); }
 .alert-info       { .alert-styles(@alert-info-bg); }
 .alert-warning    { .alert-styles(@alert-warning-bg); }
-.alert-danger     { .alert-styles(@alert-danger-bg); }
-
+.alert-danger,
+.alert-error      { .alert-styles(@alert-danger-bg); }
 
 
 //
@@ -161,7 +110,7 @@
 
 // Give the progress background some depth
 .progress {
-  #gradient > .vertical(@start-color: darken(@progress-bg, 4%); @end-color: @progress-bg;)
+  #gradient > .vertical(@start-color: darken(@progress-bg, 4%); @end-color: @progress-bg)
 }
 
 // Mixin for generating new styles
@@ -176,6 +125,11 @@
 .progress-bar-warning    { .progress-bar-styles(@progress-bar-warning-bg); }
 .progress-bar-danger     { .progress-bar-styles(@progress-bar-danger-bg); }
 
+// Reset the striped class because our mixins don't do multiple gradients and
+// the above custom styles override the new `.progress-bar-striped` in v3.2.0.
+.progress-bar-striped {
+  #gradient > .striped();
+}
 
 
 //
@@ -192,8 +146,11 @@
   text-shadow: 0 -1px 0 darken(@list-group-active-bg, 10%);
   #gradient > .vertical(@start-color: @list-group-active-bg; @end-color: darken(@list-group-active-bg, 7.5%));
   border-color: darken(@list-group-active-border, 7.5%);
-}
 
+  .badge {
+    text-shadow: none;
+  }
+}
 
 
 //
@@ -219,14 +176,581 @@
 .panel-danger > .panel-heading    { .panel-heading-styles(@panel-danger-heading-bg); }
 
 
-
 //
 // Wells
 // --------------------------------------------------
 
 .well {
-  #gradient > .vertical(@start-color: darken(@well-bg, 5%); @end-color: @well-bg;);
+  #gradient > .vertical(@start-color: darken(@well-bg, 5%); @end-color: @well-bg);
   border-color: darken(@well-bg, 10%);
   @shadow: inset 0 1px 3px rgba(0,0,0,.05), 0 1px 0 rgba(255,255,255,.1);
   .box-shadow(@shadow);
+}
+
+// IA-UTILS
+//---------------------------
+
+.text-overflow {
+  .text-overflow();
+}
+
+.text-break-word {
+  word-wrap: break-word;
+}
+
+// bottom margin if neccecary
+.gap {
+  margin-bottom: 10px;
+}
+.js-iad + .js-iad {
+  margin-top: 10px;
+}
+
+// 
+.js-actions {
+  margin-top: 5px;
+}
+
+// 
+.required {
+  color: #f2395b;
+}
+
+// 
+.template-tags {
+  padding: 10px;
+}
+
+// Style chooser in admin panel
+#sap_style {
+  display: none;
+}
+
+.sap-style-color {
+  cursor: pointer;
+  position: relative;
+
+  &.active { cursor: default; }
+  &.active:hover {
+    outline: 0 none;
+  }
+  &.active:after {
+    content: '\e045';
+    font-family: 'Subrion';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    color: @base-dark-color;
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -7px;
+    margin-left: -7px;
+  }
+
+  &:hover {
+    outline: 5px solid #eee;
+  }
+}
+
+.sap-style-transition *:not(.tooltip) {
+  .transition(all .6s ease);
+}
+
+
+// AJAX LOADER on front page after login
+//---------------------------
+
+#js-ajax-loader {
+  position: fixed;
+  z-index: 30000;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: @base-dark-color;
+
+  .spinner {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     width: 60px;
+     height: 60px;
+     line-height: 60px;
+     margin-top: -30px;
+     margin-left: -30px;
+     font-size: 60px;
+     color: @navbar-inverse-bg;
+     -webkit-animation: spin 1.5s infinite linear;
+     -moz-animation: spin 1.5s infinite linear;
+     -ms-animation: spin 1.5s infinite linear;
+     -o-animation: spin 1.5s infinite linear;
+     animation: spin 1.5s infinite linear;
+
+     i {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-left: -30px;
+      margin-top: -30px;
+     }
+  }
+}
+
+#js-ajax-loader-status {
+  position: absolute; top: 50%; left: 50%;
+  margin-top: 70px;
+  margin-left: -150px;
+  text-align: center;
+  width: 300px;
+  height: 14px;
+  font-size: 14px;
+  color: @link-color;
+
+}
+
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+
+@-moz-keyframes spin {
+    to { -moz-transform: rotate(360deg); }
+}
+
+@-ms-keyframes spin {
+    to { -ms-transform: rotate(360deg); }
+}
+
+@-o-keyframes spin {
+    to { -o-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+// widgets preloader
+#widget-preloader {
+  .spinner {
+    float: left;
+    margin-right: 10px;
+    -webkit-animation: spin 1s infinite linear;
+    -moz-animation: spin 1s infinite linear;
+    -ms-animation: spin 1s infinite linear;
+    -o-animation: spin 1s infinite linear;
+    animation: spin 1s infinite linear;
+  }
+}
+
+
+// EDIT AREA STYLES
+//---------------------------
+
+#editor {
+  border: 1px solid #ccc;
+}
+
+.area_toolbar {
+  padding: 10px;
+  background-color: #f5f5f5;
+  text-align: left;
+}
+
+#EditAreaArroundInfos_codeContainer {
+
+  > div {
+    padding: 10px 0 0;
+    margin-bottom: 0;
+  }
+  
+  input {
+    cursor: pointer;
+    margin-right: 4px;
+  }
+
+  label {
+    cursor: pointer;
+  }
+}
+
+
+// CKEDITOR FIXES
+//---------------------------
+
+.cke_maximized {
+  z-index: 10001 !important;
+}
+
+
+// PACKAGES INSTALLATION and stuff
+//---------------------------
+
+#package_form {
+  .url_type {
+    margin-bottom: 10px;
+  }
+
+  .url_type label {
+    display: block;
+    background: #f5f5f5;
+    padding: 7px;
+    border: 1px solid #f5f5f5;
+    cursor: pointer;
+    font-weight: bold;
+
+    &.selected {
+      border: 1px solid @brand-primary;
+      background: fadeout(@brand-primary, 90%);
+      color: @brand-primary;
+    }
+  }
+
+  .url_type_info {
+    padding: 10px;
+    color: #777;
+    font-size: 12px;
+  }
+}
+
+
+// SPARKLINE TOOLTIP STYLES
+//---------------------------
+
+.jqstooltip,
+.jqsfield {
+  .box-sizing(content-box);
+}
+
+.jqstooltip {
+  border-radius: 3px;
+  border: 0 none !important;
+}
+
+
+// CHECK ALL boxes
+//---------------------------
+
+.checkbox-all {
+  .pull-right();
+  padding-top: 13px !important;
+  font-size: 12px;
+
+  input[type="checkbox"] {
+    margin-top: 2px;
+  }
+}
+
+.tab-content .checkbox-all {
+  padding-top: 9px !important;
+}
+
+
+// NOTIFICATION BOX 
+// intelli.js - notifFloatBox
+//---------------------------
+
+.notifFloatBox {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  z-index: 15000;
+  display: none;
+  max-width: 300px;
+  padding: 20px;
+  background: #00b6de;
+  color: #fff;
+  border-radius: 4px;
+
+  &--info {
+    background: #00b6de;
+  }
+
+  &--success {
+    background: #95ba12;
+  }
+
+  &--error {
+    background: #f9644e;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0; 
+    margin: 0 30px 0 0;
+  }
+}
+
+
+// DATETIMEPICKER toggler
+// http://www.malot.fr/bootstrap-datetimepicker/
+//---------------------------
+
+.js-datepicker-toggle {
+  cursor: pointer;
+}
+
+
+// TREEVIEW FOR CATEGORIES
+//---------------------------
+
+.categories-toggle {
+  display: inline-block;
+  font-size: 12px;
+  color: @link-color;
+  cursor: pointer;
+  border-bottom: 1px dashed @link-color;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.categories-tree {
+  .box-simple();
+  margin-top: 15px;
+  margin-bottom: 0;
+  padding: 6px;
+}
+
+.tree-filter {
+  margin-top: 15px;
+  margin-bottom: -16px;
+}
+
+
+// RESOLVE ISSUES
+//---------------------------
+
+.b-resolve {
+  position: relative;
+
+  &__wrapper {
+    position: relative;
+    overflow: hidden;
+
+    a {
+
+      &.disabled,
+      &.disabled:hover {
+        border: 2px solid @brand-info;
+        background: @brand-info;
+        color: #fff;
+      }
+    }
+  }
+
+  &__btn {
+    position: relative;
+    color: @link-color;
+
+    i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+    }
+
+    &--progress {
+      display: none;
+      color: #999;
+
+      i {
+        -webkit-animation: spin 0.7s infinite linear;
+        -moz-animation: spin 0.7s infinite linear;
+        -ms-animation: spin 0.7s infinite linear;
+        -o-animation: spin 0.7s infinite linear;
+        animation: spin 0.7s infinite linear;
+      }
+    }
+
+    &--result {
+      display: none;
+      color: @brand-info;
+    }
+  }
+}
+
+
+//
+// Animations
+// Using Animate.css https://github.com/daneden/animate.css
+// --------------------------------------------------
+
+.animated {
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+@-webkit-keyframes bounceInDown {
+  0%, 60%, 75%, 90%, 100% {
+    -webkit-transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+    transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  }
+
+  0% {
+    opacity: 0;
+    -webkit-transform: translate3d(0, -3000px, 0);
+    transform: translate3d(0, -3000px, 0);
+  }
+
+  60% {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 25px, 0);
+    transform: translate3d(0, 25px, 0);
+  }
+
+  75% {
+    -webkit-transform: translate3d(0, -10px, 0);
+    transform: translate3d(0, -10px, 0);
+  }
+
+  90% {
+    -webkit-transform: translate3d(0, 5px, 0);
+    transform: translate3d(0, 5px, 0);
+  }
+
+  100% {
+    -webkit-transform: none;
+    transform: none;
+  }
+}
+
+@keyframes bounceInDown {
+  0%, 60%, 75%, 90%, 100% {
+    -webkit-transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+    transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  }
+
+  0% {
+    opacity: 0;
+    -webkit-transform: translate3d(0, -3000px, 0);
+    -ms-transform: translate3d(0, -3000px, 0);
+    transform: translate3d(0, -3000px, 0);
+  }
+
+  60% {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 25px, 0);
+    -ms-transform: translate3d(0, 25px, 0);
+    transform: translate3d(0, 25px, 0);
+  }
+
+  75% {
+    -webkit-transform: translate3d(0, -10px, 0);
+    -ms-transform: translate3d(0, -10px, 0);
+    transform: translate3d(0, -10px, 0);
+  }
+
+  90% {
+    -webkit-transform: translate3d(0, 5px, 0);
+    -ms-transform: translate3d(0, 5px, 0);
+    transform: translate3d(0, 5px, 0);
+  }
+
+  100% {
+    -webkit-transform: none;
+    -ms-transform: none;
+    transform: none;
+  }
+}
+
+.bounceInDown {
+  -webkit-animation-name: bounceInDown;
+  animation-name: bounceInDown;
+}
+
+@-webkit-keyframes bounceIn {
+  0%, 20%, 40%, 60%, 80%, 100% {
+    -webkit-transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  }
+
+  0% {
+    opacity: 0;
+    -webkit-transform: scale3d(.3, .3, .3);
+            transform: scale3d(.3, .3, .3);
+  }
+
+  20% {
+    -webkit-transform: scale3d(1.1, 1.1, 1.1);
+            transform: scale3d(1.1, 1.1, 1.1);
+  }
+
+  40% {
+    -webkit-transform: scale3d(.9, .9, .9);
+            transform: scale3d(.9, .9, .9);
+  }
+
+  60% {
+    opacity: 1;
+    -webkit-transform: scale3d(1.63, 1.63, 1.63);
+            transform: scale3d(1.63, 1.63, 1.63);
+  }
+
+  80% {
+    -webkit-transform: scale3d(.97, .97, .97);
+            transform: scale3d(.97, .97, .97);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: scale3d(1, 1, 1);
+            transform: scale3d(1, 1, 1);
+  }
+}
+
+@keyframes bounceIn {
+  0%, 20%, 40%, 60%, 80%, 100% {
+    -webkit-transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  }
+
+  0% {
+    opacity: 0;
+    -webkit-transform: scale3d(.3, .3, .3);
+            transform: scale3d(.3, .3, .3);
+  }
+
+  20% {
+    -webkit-transform: scale3d(1.1, 1.1, 1.1);
+            transform: scale3d(1.1, 1.1, 1.1);
+  }
+
+  40% {
+    -webkit-transform: scale3d(.9, .9, .9);
+            transform: scale3d(.9, .9, .9);
+  }
+
+  60% {
+    opacity: 1;
+    -webkit-transform: scale3d(1.63, 1.63, 1.63);
+            transform: scale3d(1.63, 1.63, 1.63);
+  }
+
+  80% {
+    -webkit-transform: scale3d(.97, .97, .97);
+            transform: scale3d(.97, .97, .97);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: scale3d(1, 1, 1);
+            transform: scale3d(1, 1, 1);
+  }
+}
+
+.bounceIn {
+  -webkit-animation-name: bounceIn;
+          animation-name: bounceIn;
+  -webkit-animation-duration: .75s;
+          animation-duration: .75s;
 }
