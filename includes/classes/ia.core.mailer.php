@@ -34,6 +34,8 @@ class iaMailer extends PHPMailer
 
 	protected $_bccEmails;
 
+	protected $_defaultSignature;
+
 
 	/*
 	 * Set replacements for email body
@@ -138,11 +140,13 @@ class iaMailer extends PHPMailer
 	{
 		$this->Subject = $this->_iaCore->get($name . '_subject');
 		$this->Body = $this->_iaCore->get($name . '_body');
+		$options = json_decode($this->_iaCore->iaDb->one('options', iaDb::convertIds($name, 'name'), iaCore::getConfigTable()));
+		!empty($options->signature) || $this->_defaultSignature = true;
 	}
 
 	public function sendToAdministrators()
 	{
-		$where = '`usergroup_id` = :group AND `status` = :status AND `receive_email_notifications` = "yes"';
+		$where = '`usergroup_id` = :group AND `status` = :status';
 		$this->_iaCore->iaDb->bind($where, array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
 
 		$administrators = $this->_iaCore->iaDb->all(array('email', 'fullname'), $where, null, null, iaUsers::getTable());
@@ -157,7 +161,7 @@ class iaMailer extends PHPMailer
 			$this->addAddress($entry['email'], $entry['fullname']);
 		}
 
-		return $this->send();
+		return $this->send(true);
 	}
 
 	protected function _setBcc()
@@ -176,10 +180,14 @@ class iaMailer extends PHPMailer
 		}
 	}
 
-	public function send()
+	public function send($toAdmins = false)
 	{
 		$this->_applyReplacements();
 		$this->_setBcc();
+		if ($this->Body && $this->_defaultSignature && !$toAdmins)
+		{
+			$this->Body .= $this->_iaCore->get('default_email_signature');
+		}
 
 		$result = (bool)parent::send();
 
