@@ -873,8 +873,8 @@ INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`priva
 
 INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple_values`, `type`, `description`, `order`, `extras`, `private`, `custom`, `options`) VALUES
 ('general', '', 'General', '1', 'divider', '', 0, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('general', 'site', 'Subrion CMS', '1', 'text', 'Site title', 3, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
-('general', 'suffix', ':: Powered by Subrion 4.0', '1', 'text', 'Suffix for page titles', 9, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
+('general', 'site', '{:en:}Subrion CMS', '1', 'text', 'Site title', 3, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
+('general', 'suffix', '{:en:}:: Powered by Subrion 4.0', '1', 'text', 'Suffix for page titles', 9, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
 ('general', 'site_logo', '', '', 'image', 'Website logo', 12, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('general', 'site_favicon', '', '', 'image', 'Website favicon', 13, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('general', '', 'Regional', '1', 'divider', '', 20, '', 1, 1, '{"wysiwyg":"30","code_editor":"0","show":"","multilingual":false}'),
@@ -883,7 +883,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('general', 'timezone', 'America/New_York', '', 'select', 'Default timezone', 45, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('general', '', 'Pages', '1', 'divider', '', 60, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('general', 'admin_page', 'panel', NULL, 'text', 'Admin Dashboard URL', 63, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('general', 'bc_home', 'Home', NULL, 'text', 'Breadcrumb first element', 66, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
+('general', 'bc_home', '{:en:}Home', NULL, 'text', 'Breadcrumb first element', 66, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
 
 ('members', '', 'General', '1', 'divider', '', 1, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('members', 'members_enabled', '1', '''1'',''0''', 'radio', 'Members functionality', 2, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
@@ -903,8 +903,8 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('mail', 'site_email', 'info@test.com', '1', 'text', 'Default site email', 3, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('mail', 'bcc_email', '', '1', 'text', 'BCC auto emails to', 6, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('mail', '', 'General', '1', 'divider', '', 9, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('mail', 'site_from_name', 'Subrion CMS', '1', 'text', 'Default mail name', 12, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
-('mail', 'default_email_signature', '\r\n<p>______________________________</p>\r\n<p>Thank you,<br>\r\n{%SITE_NAME%} Team<br>\r\n{%SITE_URL%}</p>', '1', 'textarea', 'Default mail signature', 15, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
+('mail', 'site_from_name', '{:en:}Subrion CMS', '1', 'text', 'Default mail name', 12, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
+('mail', 'default_email_signature', '{:en:}<p>______________________________</p>\r\n<p>Thank you,<br>\r\n{%SITE_NAME%} Team<br>\r\n{%SITE_URL%}</p>', '1', 'textarea', 'Default mail signature', 15, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
 ('mail', 'mail_function', 'php mail', '''php mail'',''sendmail'',''smtp''', 'select', 'Mail method', 18, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('mail', 'mail_test', '', 'admin/templates/default/configuration-test-email-btn.tpl', 'tpl', 'Send test email', 21, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('mail', '', 'SMTP Settings', '', 'divider', '', 24, '', 9, 0, '{"wysiwyg":"0","code_editor":"0","show":"mail_function|smtp","multilingual":false}'),
@@ -954,7 +954,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('pictures', 'lightbox_name', 'fancybox', 'fancybox', 'select', 'Lightbox name', 24, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 
 ('miscellaneous', '', 'Open Graph', '', 'divider', 'Open Graph', 1, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('miscellaneous', 'opengraph_description', '', '', 'textarea', 'OG default description', 2, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
+('miscellaneous', 'opengraph_description', '{:en:}', '', 'textarea', 'OG default description', 2, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
 ('miscellaneous', 'opengraph_image', '', '', 'image', 'OG default image', 3, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('miscellaneous', '', 'CKeditor', '', 'divider', 'CKeditor', 4, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('miscellaneous', 'ckeditor_skin', 'bootstrapck', '''bootstrapck'',''icy_orange'',''moono''', 'select', 'Skin', 5, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),

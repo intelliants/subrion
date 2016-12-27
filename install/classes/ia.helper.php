@@ -170,8 +170,10 @@ class iaHelper
 			$config = array('baseurl', 'timezone', 'lang');
 			$config = $iaCore->iaDb->keyvalue(array('name', 'value'), "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
 
-			empty($iaCore->languages) && $iaCore->languages = array('en' => array('title' => 'English', 'locale' => 'en_US', 'iso' => 'en'));
+			empty($iaCore->languages) && $iaCore->languages = array(
+				'en' => array('title' => 'English', 'locale' => 'en_US', 'iso' => 'en', 'date_format' => '%b %e, %Y'));
 			$iaCore->iaView->language = empty($config['lang']) ? 'en' : $config['lang'];
+			$iaCore->language = $iaCore->languages[$iaCore->iaView->language];
 
 			date_default_timezone_set(empty($config['timezone']) ? 'UTC' : $config['timezone']);
 
