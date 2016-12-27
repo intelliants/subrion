@@ -61,9 +61,9 @@
 						<span class="version">v {$core.config.version}</span>
 					</div>
 					<div class="social-links">
-						<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><i class="i-twitter-2"></i></a>
-						<a href="https://www.facebook.com/Intelliants" target="_blank" class="social-links__facebook"><i class="i-facebook-2"></i></a> 
-						<a href="https://github.com/intelliants/subrion" target="_blank" class="social-links__github"><i class="i-github"></i></a>
+						<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><span class="fa fa-twitter"></span></a>
+						<a href="https://www.facebook.com/Intelliants" target="_blank" class="social-links__facebook"><span class="fa fa-facebook"></span></a> 
+						<a href="https://github.com/intelliants/subrion" target="_blank" class="social-links__github"><span class="fa fa-github"></span></a>
 					</div>
 				</section>
 
@@ -88,17 +88,17 @@
 				</section>
 
 				<section id="panel-content">
-					<div class="navbar navbar-static-top navbar-inverse">
+					<div class="navbar">
 						<ul class="nav navbar-nav navbar-right">
 							<li>
-								<a href="{$smarty.const.IA_URL}" title="{lang key='site_home'}" target="_blank"><i class="i-screen"></i><span> {lang key='site_home'}</span></a>
+								<a href="{$smarty.const.IA_URL}" title="{lang key='site_home'}" target="_blank"><i class="fa fa-desktop"></i><span> {lang key='site_home'}</span></a>
 							</li>
 							<li>
-								<a href="{$smarty.const.IA_ADMIN_URL}visual-mode/" title="{lang key='visual_manage'}" target="_blank"><i class="i-equalizer"></i><span> {lang key='visual_manage'}</span></a>
+								<a href="{$smarty.const.IA_ADMIN_URL}visual-mode/" title="{lang key='visual_manage'}" target="_blank"><i class="fa fa-sliders"></i><span> {lang key='visual_manage'}</span></a>
 							</li>
 							<li class="dropdown">
 								<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='quick_access'}">
-									<i class="i-fire"></i><span> {lang key='quick_access'}</span>
+									<i class="fa fa-bolt"></i><span> {lang key='quick_access'}</span>
 								</a>
 								<ul class="dropdown-menu">
 									{foreach $core.page.info.headerMenu as $entry}
@@ -112,14 +112,14 @@
 							</li>
 
 							{if isset($core.notifications.system)}
-								<li class="dropdown notifications alerts">
+								<li class="dropdown navbar-nav__notifications">
 									<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='system_notifications'}">
-										<i class="i-flag"></i>
+										<i class="fa fa-bell"></i>
 										<span class="label label-info">{$core.notifications.system|count}</span>
 										<span> {lang key='system_notifications'}</span>
 									</a>
 									<ul class="dropdown-menu pull-right">
-										<li class="dropdown-block">
+										<li class="navbar-nav__notifications__alerts">
 											{foreach $core.notifications.system as $message}
 												<div class="alert alert-danger">{$message}</div>
 											{/foreach}
@@ -130,7 +130,7 @@
 
 							<li class="dropdown">
 								<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="Help and Support">
-									<i class="i-support"></i>
+									<i class="fa fa-support"></i>
 									<span> Help and Support</span>
 								</a>
 								<ul class="dropdown-menu pull-right">
@@ -145,34 +145,22 @@
 									<li><a href="https://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
 								</ul>
 							</li>
-							<li>
-								<a href="{$smarty.const.IA_ADMIN_URL}logout/" title="{lang key='logout'}" id="user-logout">
-									<i class="i-switch"></i>
-									<span> {lang key='logout'}</span>
+							<li class="dropdown navbar-nav__user">
+								<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+									{printImage imgfile=$member.avatar title=$member.fullname|default:$member.username gravatar=true email=$member.email}
+									<i class="fa fa-angle-down"></i>
 								</a>
+								<ul class="dropdown-menu pull-right">
+									<li><a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/">{lang key='edit'}</a></li>
+									<li><a href="{$smarty.const.IA_ADMIN_URL}logout/" title="{lang key='logout'}" id="user-logout"><span>{lang key='logout'}</span>
+								</a></li>
+								</ul>
 							</li>
 						</ul>
 						<ul class="nav navbar-nav navbar-left">
 							<li class="panel-toggle">
-								<a href="#"><i class="{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden}i-chevron-right{else}i-chevron-left{/if}"></i></a>
+								<a href="#"><i class="fa{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden} fa-chevron-right{else} fa-chevron-left{/if}"></i></a>
 							</li>
-							<li id="user-info">
-								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/">
-									{printImage imgfile=$member.avatar title=$member.fullname|default:$member.username gravatar=true email=$member.email}
-									{$member.fullname|escape:'html'}
-								</a>
-							</li>
-
-							{*
-							KEEP THIS FOR FUTURE IMPLEMENTATION
-
-							<li class="dropdown">
-								<a class="dropdown-toggle" data-toggle="dropdown" href="#">{$member.fullname}</a>
-								<ul class="dropdown-menu pull-right">
-									<li><a href="{$url}members/edit/{$member.id}/">{lang key='edit'}</a></li>
-								</ul>
-							</li> 
-							*}
 						</ul>
 
 						<form id="quick-search" class="navbar-form navbar-right" action="{$smarty.const.IA_ADMIN_URL}members/">
