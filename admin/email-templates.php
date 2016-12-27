@@ -51,10 +51,12 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _gridRead($params)
 	{
 		$template = $params['id'];
+		$options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
+		$signature = empty($options->signature) ? false : true;
 
 		$result = array(
 			'config' => (bool)$this->_iaCore->get($template, null, false, true),
-			'signature' => (bool)$this->_iaDb->one_bind('`show`', '`name` = :template', array('template' => $template)),
+			'signature' => $signature,
 			'subject' => $this->_iaCore->get($template . '_subject', null, false, true),
 			'body' => $this->_iaCore->get($template . '_body', null, false, true)
 		);
@@ -85,11 +87,10 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaCore->set($template . '_body', $params['body'], true);
 		$this->_iaCore->set($template, (int)$params['enable_template'], true);
 
-		$signature = $params['enable_signature'] ? '1' : '';
-		$this->_iaDb->update(array('show' => $signature), iaDb::convertIds($template, 'name'));
+		$options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
+		$options->signature = $params['enable_signature'] ? true : false;
+		$this->_iaDb->update(array('options' => json_encode($options)), iaDb::convertIds($template, 'name'));
 
-		$result = (0 == $this->_iaDb->getErrorNumber());
-
-		return array('result' => $result);
+		return array('result' => (0 == $this->_iaDb->getErrorNumber()));
 	}
 }
