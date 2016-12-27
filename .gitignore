@@ -15,3 +15,4 @@ plugins/*
 templates/*
 !templates/common
 !templates/kickstart
+*node_modules
