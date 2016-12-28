@@ -80,9 +80,7 @@ class iaSmarty extends Smarty
 		$this->registerPlugin(self::PLUGIN_BLOCK, 'access', array(__CLASS__, 'access'));
 		$this->registerPlugin(self::PLUGIN_BLOCK, 'ia_add_js', array(__CLASS__, 'ia_add_js'));
 
-		$iaCore = iaCore::instance();
-
-		if (iaCore::ACCESS_FRONT == $iaCore->getAccessType())
+		if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 		{
 			$this->registerPlugin(self::PLUGIN_FUNCTION, 'accountActions', array(__CLASS__, 'accountActions'));
 			$this->registerPlugin(self::PLUGIN_FUNCTION, 'arrayToLang', array(__CLASS__, 'arrayToLang'));
@@ -100,7 +98,7 @@ class iaSmarty extends Smarty
 		// uncomment this to get rid of useless whitespaces in html
 		// $this->loadFilter('output', 'trimwhitespace');
 
-		$iaCore->startHook('phpSmartyAfterFuncInit', array('iaSmarty' => &$this));
+		$this->iaCore->startHook('phpSmartyAfterFuncInit', array('iaSmarty' => &$this));
 
 		iaSystem::renderTime('main', 'afterSmartyFuncInit');
 
@@ -113,7 +111,7 @@ class iaSmarty extends Smarty
 		$this->assign('field_before', array());
 		$this->assign('field_after', array());
 
-		$this->resources['subrion'] = 'text:Loading Subrion Awesome Stuff..., js:intelli/intelli, js:_IA_URL_tmp/cache/intelli.config, '
+		$this->resources['subrion'] = 'text:Loading Subrion Awesome Stuff..., js:intelli/intelli, js:_IA_URL_tmp/cache/intelli.config.' . $this->iaCore->iaView->language . ', '
 			. (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType()
 				? 'js:_IA_TPL_bootstrap.min, js:bootstrap/js/bootstrap-switch.min, js:bootstrap/js/passfield.min, js:intelli/intelli.admin, js:admin/footer, css:_IA_URL_js/bootstrap/css/passfield'
 				: 'js:intelli/intelli.minmax, js:frontend/footer')

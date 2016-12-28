@@ -731,7 +731,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				if (false === strpos($row['value'], $id))
 				{
 					preg_match('#\{\:' . $defaultLanguage['code'] . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $row['value'], $matches)
-						&& $row['value'].= $id . $matches[1];
+						&& $row['value'].= $id . $matches[1]; // copying value of the 'default' language
 
 					$this->_iaDb->update(array('value' => $row['value']), iaDb::convertIds($row['name'], 'name'));
 				}

@@ -140,6 +140,7 @@ class iaMailer extends PHPMailer
 	{
 		$this->Subject = $this->_iaCore->get($name . '_subject');
 		$this->Body = $this->_iaCore->get($name . '_body');
+
 		$options = json_decode($this->_iaCore->iaDb->one('options', iaDb::convertIds($name, 'name'), iaCore::getConfigTable()));
 		!empty($options->signature) || $this->_defaultSignature = true;
 	}
