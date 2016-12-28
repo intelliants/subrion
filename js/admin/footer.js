@@ -562,7 +562,7 @@ $(function()
 	 * Resolving issues
 	 */
 
-	if ($('.notifications.alerts').length > 0)
+	if ($('.navbar-nav__notifications__alerts').length > 0)
 	{
 		// remove installer
 		var $installerAlert = $('.alert-danger:contains("module.install.php")');

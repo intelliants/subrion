@@ -185,32 +185,34 @@
 						*}
 					</div>
 
-					<div class="content-wrapper">
-						<div class="block">
-							<div class="block-heading">
-								<ul class="nav nav-pills pull-right">
-									{if 'index' == $core.page.name}
-										{if isset($customization_mode)}
-											<li><a href="?reset"><span class="fa fa-refresh"></span> {lang key='reset'}</a></li>
-											<li><a href="?save" id="js-cmd-save"><span class="fa fa-check-circle"></span> {lang key='save'}</a></li>
-											<li><a href=""><span class="fa fa-times-circle"></span> {lang key='discard'}</a></li>
-										{else}
-											<li><a href="?customize"><span class="fa fa-magic"></span> {lang key='customize'}</a></li>
-										{/if}
-									{/if}
-
-									{foreach $core.page.info.toolbarActions as $action}
-										<li><a href="{$action.url}" {$action.attributes}>{if $action.icon}<i class="{$action.icon}"></i> {/if}{$action.title}</a></li>
-									{/foreach}
-								</ul>
-								<h3>{$core.page.title|escape:'html'}</h3>
-
+					<div class="page">
+						<div class="page__heading">
+							<div class="page__heading__title">
+								<h1>{$core.page.title|escape:'html'}</h1>
 								{include 'breadcrumb.tpl'}
 							</div>
 
-							{include 'notification.tpl'}
+							<ul class="page__heading__actions">
+								{if 'index' == $core.page.name}
+									{if isset($customization_mode)}
+										<li><a href="?reset"><span class="fa fa-refresh"></span> {lang key='reset'}</a></li>
+										<li><a href="?save" id="js-cmd-save"><span class="fa fa-check-circle"></span> {lang key='save'}</a></li>
+										<li><a href=""><span class="fa fa-times-circle"></span> {lang key='discard'}</a></li>
+									{else}
+										<li><a href="?customize"><span class="fa fa-magic"></span> {lang key='customize'}</a></li>
+									{/if}
+								{/if}
 
-							<div class="block-content">{$_content_}</div>
+								{foreach $core.page.info.toolbarActions as $action}
+									<li><a href="{$action.url}" {$action.attributes}>{if $action.icon}<i class="{$action.icon}"></i> {/if}{$action.title}</a></li>
+								{/foreach}
+							</ul>
+						</div>
+
+						{include 'notification.tpl'}
+
+						<div class="page__content">
+							{$_content_}
 						</div>
 					</div>
 				</section>
