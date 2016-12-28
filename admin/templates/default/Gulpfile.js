@@ -16,14 +16,14 @@ var config = {
         less: {
             path: "less/**/*.less",
             src:  [
-                //"less/base.less",
-                //"less/base-alizarin.less",
-                //"less/base-calmy.less",
+                "less/base.less",
+                "less/base-alizarin.less",
+                "less/base-calmy.less",
                 "less/base-darkness.less",
                 "less/base-emerald.less",
-                //"less/base-gebeus-waterfall.less",
-                //"less/base-radiant-orchid.less",
-                //"less/base-roseus.less"
+                "less/base-gebeus-waterfall.less",
+                "less/base-radiant-orchid.less",
+                "less/base-roseus.less"
             ],
             dest: "css"
         }
