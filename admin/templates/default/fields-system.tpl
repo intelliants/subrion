@@ -1,8 +1,6 @@
 {if !isset($noSystemFields)}
 <div class="wrap-group">
-	<div class="wrap-group-heading">
-		<h4>{lang key='system_fields'}</h4>
-	</div>
+	<div class="wrap-group-heading">{lang key='system_fields'}</div>
 
 	{if isset($fieldset_before.systems)}{$fieldset_before.systems}{/if}
 

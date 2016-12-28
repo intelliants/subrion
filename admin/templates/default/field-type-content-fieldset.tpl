@@ -3,11 +3,10 @@
 		{if !empty($section.fields) && isset($section.name)}
 			<div class="wrap-group" id="{$section.name}">
 				<div class="wrap-group-heading">
-					<h4>{$section.title|escape:'html'}
-						{if $section.description}
-							<a href="#" class="js-tooltip" data-placement="right" title="{$section.description|escape:'html'}"><i class="i-info"></i></a>
-						{/if}
-					</h4>
+					{$section.title|escape:'html'}
+					{if $section.description}
+						<a href="#" class="js-tooltip" data-placement="right" title="{$section.description|escape:'html'}"><span class="fa fa-info-circle"></span></a>
+					{/if}
 				</div>
 
 				{if isset($fieldset_before[$section.name])}{$fieldset_before[$section.name]}{/if}

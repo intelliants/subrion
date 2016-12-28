@@ -76,9 +76,7 @@
 		{if $dumpFiles}
 			<div class="wrap-list">
 				<div class="wrap-group">
-					<div class="wrap-group-heading">
-						<h4>{lang key='available_dump_files'}</h4>
-					</div>
+					<div class="wrap-group-heading">{lang key='available_dump_files'}</div>
 					<div class="row">
 						<label class="col col-lg-2 control-label">{lang key='choose_import_file'}</label>
 						<div class="col col-lg-4">
