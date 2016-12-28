@@ -142,7 +142,7 @@ class iaMailer extends PHPMailer
 		$this->Body = $this->_iaCore->get($name . '_body');
 
 		$options = json_decode($this->_iaCore->iaDb->one('options', iaDb::convertIds($name, 'name'), iaCore::getConfigTable()));
-		!empty($options->signature) || $this->_defaultSignature = true;
+		$this->_defaultSignature = empty($options->signature);
 	}
 
 	public function sendToAdministrators()
