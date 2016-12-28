@@ -389,10 +389,7 @@ class iaTemplate extends abstractCore
 
 		$iaDb->update(array('value' => $this->name), "`name` = 'tmpl'", null, iaCore::getConfigTable());
 
-		if ($this->_phrases)
-		{
-			$this->_processPhrases();
-		}
+		$this->_phrases && $this->_processPhrases();
 
 		if ($this->_config)
 		{
@@ -488,11 +485,9 @@ class iaTemplate extends abstractCore
 
 				if ($position['pages'])
 				{
-					$pages = explode(',', $position['pages']);
-					foreach ($pages as $page)
-					{
-						$positionPages[] = array('object_type' => 'positions', 'page_name' => $page, 'object' => $position['name'], 'access' => (int)$position['access']);
-					}
+					foreach (explode(',', $position['pages']) as $pageName)
+						$positionPages[] = array('object_type' => 'positions', 'page_name' => $pageName,
+							'object' => $position['name'], 'access' => (int)$position['access']);
 				}
 			}
 			$iaDb->resetTable();
@@ -501,9 +496,7 @@ class iaTemplate extends abstractCore
 			{
 				$iaDb->delete("`object_type` = 'positions'", 'objects_pages');
 				foreach ($positionPages as $positionPage)
-				{
 					$iaDb->insert($positionPage, null, 'objects_pages');
-				}
 			}
 		}
 

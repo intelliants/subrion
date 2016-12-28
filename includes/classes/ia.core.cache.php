@@ -208,8 +208,13 @@ class iaCache extends abstractUtil
 
 	public function clearConfigCache()
 	{
+		$this->iaCore->factory('util');
+
 		foreach ($this->iaCore->languages as $iso => $language)
+		{
 			$this->remove('config_' . $iso);
+			iaUtil::deleteFile($this->_savePath . 'intelli.config.' . $iso . '.js');
+		}
 	}
 
 	public function clearGlobalCache()
@@ -225,7 +230,7 @@ class iaCache extends abstractUtil
 		$fileList = array(
 			'lang' => "intelli.lang.{$currentLanguage}.js",
 			'admin_lang' => "intelli.admin.lang.{$currentLanguage}.js",
-			'config' => 'intelli.config.js',
+			'config' => "intelli.config.{$currentLanguage}.js",
 		);
 
 		foreach ($fileList as $type => $file)
@@ -279,14 +284,7 @@ class iaCache extends abstractUtil
 				break;
 
 			case 'config':
-				$stmt = "`private` = 0 && `type` != 'divider' && `config_group` != 'email_templates'";
-				$config = $iaDb->keyvalue(array('name', 'value'), $stmt, iaCore::getConfigTable());
-
-				if (file_exists(IA_INCLUDES . 'custom.inc.php'))
-				{
-					include IA_INCLUDES . 'custom.inc.php';
-				}
-
+				$config = $this->iaCore->fetchConfig("`private` = 0 AND `config_group` != 'email_templates'");
 				$config['ia_url'] = IA_CLEAR_URL;
 				$config['packages'] = $this->iaCore->setPackagesData();
 				$config['items'] = array();
@@ -295,15 +293,11 @@ class iaCache extends abstractUtil
 
 				$array = $iaDb->all(array('name', 'title'), "`status` = 'active' ORDER BY `type`", null, null, 'extras');
 				foreach ($array as $item)
-				{
 					$config['extras'][] = array($item['name'], $item['title']);
-				}
 
 				$array = $iaDb->onefield('`item`', "`item` != 'transactions'", null, null, 'items');
 				foreach ($array as $item)
-				{
 					$config['items'][] = array($item, iaLanguage::get($item, $item));
-				}
 
 				$fileContent = 'intelli.config = ' . iaUtil::jsonEncode($config) . ';';
 		}

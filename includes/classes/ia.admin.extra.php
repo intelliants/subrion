@@ -1658,12 +1658,11 @@ class iaExtra extends abstractCore
 						'private' => $this->_attr('private', true),
 						'custom' => $this->_attr('custom', true),
 						'extras' => $this->itemData['name'],
-						'options' => json_encode(array(
-								'wysiwyg' => $this->_attr('wysiwyg', false),
-								'code_editor' => $this->_attr('code_editor', false),
-								'show' => $this->_attr('show'),
-								'multilingual' => $this->_attr('multilingual', false)
-							)
+						'options' => array(
+							'wysiwyg' => $this->_attr('wysiwyg', false),
+							'code_editor' => $this->_attr('code_editor', false),
+							'show' => $this->_attr('show'),
+							'multilingual' => $this->_attr('multilingual', false)
 						)
 					);
 				}
@@ -2304,7 +2303,9 @@ class iaExtra extends abstractCore
 		foreach ($entries as $entry)
 		{
 			$id = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($entry['name'], 'name'));
+
 			$entry['order'] = isset($entry['order']) ? $entry['order'] : ++$maxOrder;
+			$entry['options'] = json_encode($entry['options']);
 
 			if (!$id || empty($entry['name']))
 			{

@@ -416,7 +416,7 @@ final class iaCore
 
 			if (empty($this->_config) || $reloadRequired)
 			{
-				$this->_config = $this->_fetchConfig($this->iaView->language);
+				$this->_config = $this->fetchConfig();
 				iaSystem::renderTime('config', 'Configuration loaded from DB');
 
 				$extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'extras');
@@ -438,33 +438,6 @@ final class iaCore
 		}
 
 		return $this->_config;
-	}
-
-	protected function _fetchConfig($langIsoCode)
-	{
-		$result = array();
-		$rows = $this->iaDb->all(array('name', 'type', 'value', 'options'), "`type` != 'divider'", null, null, self::getConfigTable());
-
-		foreach ($rows as $row)
-		{
-			$value = $row['value'];
-
-			if ('text' == $row['type'] || 'textarea' == $row['type'])
-			{
-				$options = empty($row['options']) ? array() : json_decode($row['options'], true);
-
-				if (isset($options['multilingual']) && $options['multilingual'])
-				{
-					$value = preg_match('#\{\:' . $langIsoCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
-						? $matches[1]
-						: '';
-				}
-			}
-
-			$result[$row['name']] = $value;
-		}
-
-		return $result;
 	}
 
 	/**
@@ -558,9 +531,9 @@ final class iaCore
 
 		if ($db)
 		{
-			if ($value = $this->iaDb->one('`value`', iaDb::convertIds($key, 'name'), self::getConfigTable()))
+			if ($result = $this->fetchConfig(iaDb::convertIds($key, 'name')))
 			{
-				$result = $value;
+				$result = array_shift($result);
 			}
 		}
 		else
@@ -599,8 +572,7 @@ final class iaCore
 		{
 			$result = (bool)$this->iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'), null, self::getConfigTable());
 
-			$this->iaCache->createJsCache(array('config'));
-			$this->iaCache->remove('config');
+			$this->iaCache->clearConfigCache();
 		}
 
 		return $result;
@@ -1021,5 +993,41 @@ final class iaCore
 	public function getSecurityToken()
 	{
 		return isset($_SESSION[self::SECURITY_TOKEN_MEMORY_KEY]) ? $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] : null;
+	}
+
+	public function fetchConfig($where = null)
+	{
+		$result = array();
+
+		is_null($where) && $where = iaDb::EMPTY_CONDITION;
+		$where.= " AND `type` != ':divider'";
+
+		$rows = $this->iaDb->all(array('name', 'type', 'value', 'options'), $where, null, null, self::getConfigTable());
+
+		if ($rows)
+		{
+			$currentLangCode = $this->iaView->language;
+
+			foreach ($rows as $row)
+			{
+				$value = $row['value'];
+
+				if ('text' == $row['type'] || 'textarea' == $row['type'])
+				{
+					$options = empty($row['options']) ? array() : json_decode($row['options'], true);
+
+					if (isset($options['multilingual']) && $options['multilingual'])
+					{
+						$value = preg_match('#\{\:' . $currentLangCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
+							? $matches[1]
+							: '';
+					}
+				}
+
+				$result[$row['name']] = $value;
+			}
+		}
+
+		return $result;
 	}
 }
