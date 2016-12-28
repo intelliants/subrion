@@ -2,9 +2,7 @@
 	{preventCsrf}
 	<div class="wrap-list">
 		<div class="wrap-group">
-			<div class="wrap-group-heading">
-				<h4>{lang key='options'}</h4>
-			</div>
+			<div class="wrap-group-heading">{lang key='options'}</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='name'}</label>

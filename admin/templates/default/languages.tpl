@@ -7,13 +7,11 @@
 		<div class="wrap-list">
 			<div class="wrap-group">
 				<div class="wrap-group-heading">
-					<h4>
-						{if iaCore::ACTION_EDIT == $pageAction}
-							{lang key='edit_language'}
-						{else}
-							{lang key='copy_master_language_to' lang=$core.languages[$core.config.lang].title}
-						{/if}
-					</h4>
+					{if iaCore::ACTION_EDIT == $pageAction}
+						{lang key='edit_language'}
+					{else}
+						{lang key='copy_master_language_to' lang=$core.languages[$core.config.lang].title}
+					{/if}
 				</div>
 
 				<div class="row">
@@ -133,7 +131,7 @@
 			{preventCsrf}
 			<div class="wrap-list">
 				<div class="wrap-group">
-					<div class="wrap-group-heading"><h4>{lang key='download'}</h4></div>
+					<div class="wrap-group-heading">{lang key='download'}</div>
 					<div class="row">
 						<label class="col col-lg-2 control-label">{lang key='language'}</label>
 						<div class="col col-lg-4">
@@ -170,7 +168,7 @@
 			{preventCsrf}
 			<div class="wrap-list">
 				<div class="wrap-group">
-					<div class="wrap-group-heading"><h4>{lang key='import'}</h4></div>
+					<div class="wrap-group-heading">{lang key='import'}</div>
 					<div class="row">
 						<label class="col col-lg-2 control-label">{lang key='file_format'}</label>
 						<div class="col col-lg-4">

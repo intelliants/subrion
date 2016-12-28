@@ -3,9 +3,7 @@
 
 	<div class="wrap-list">
 		<div class="wrap-group">
-			<div class="wrap-group-heading">
-				<h4>{lang key='options'}</h4>
-			</div>
+			<div class="wrap-group-heading">{lang key='options'}</div>
 
 			{if iaCore::ACTION_EDIT == $pageAction}
 			<div class="row">
@@ -81,7 +79,7 @@
 			</div>
 
 			<div id="js-row-empty-text" class="row">
-				<label class="col col-lg-2 control-label">{lang key='empty_field'} <a href="#" class="js-tooltip" title="{$tooltips.empty_field}"><i class="i-info"></i></a></label>
+				<label class="col col-lg-2 control-label">{lang key='empty_field'} <a href="#" class="js-tooltip" title="{$tooltips.empty_field}"><span class="fa fa-info-circle"></span></a></label>
 
 				<div class="col col-lg-4">
 					<input type="text" name="empty_field" value="{if isset($item.empty_field)}{$item.empty_field|escape:'html'}{/if}">

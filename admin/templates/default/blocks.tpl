@@ -3,9 +3,7 @@
 
 	<div class="wrap-list">
 		<div class="wrap-group">
-			<div class="wrap-group-heading">
-				<h4>{lang key='options'}</h4>
-			</div>
+			<div class="wrap-group-heading">{lang key='options'}</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='name'}</label>
@@ -217,9 +215,7 @@
 
 	<div class="wrap-list">
 		<div class="wrap-group">
-			<div class="wrap-group-heading">
-				<h4>{lang key='block_contents'}</h4>
-			</div>
+			<div class="wrap-group-heading">{lang key='block_contents'}</div>
 
 			<div class="wrap-row" id="blocks_contents" style="display: none;">
 				<div class="row" id="js-external-row">
