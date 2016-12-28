@@ -66,9 +66,22 @@
 								<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default|escape:'html'}{/if}</div>
 							{/if}
 
+							{$isMultilingual = isset($entry.options.multilingual) && $entry.options.multilingual}
+
 							<div class="item-input">
-								<input type="text" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:'html'}" />
+								{if $isMultilingual && count($core.languages) > 1}{$core.language.title|escape:'html'}{/if}
+								<input type="text" name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}-{$core.language.iso}" value="{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}" />
 							</div>
+
+							{if $isMultilingual && count($core.languages) > 1}
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="item-input">
+											{$language.title|escape:'html'} <input type="text" name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" value="{$entry.value[$iso]|escape:'html'}" />
+										</div>
+									{/if}
+								{/foreach}
+							{/if}
 						{/if}
 					{elseif 'colorpicker' == $entry.type}
 						<div class="item-input">
@@ -89,9 +102,23 @@ $(function() {
 							<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default}{/if}</div>
 						{/if}
 
+						{$isMultilingual = isset($entry.options.multilingual) && $entry.options.multilingual}
+
 						<div class="item-input">
-							<textarea name="v[{$entry.name}]" id="{$entry.name}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value|escape:'html'}</textarea>
+							{if $isMultilingual && count($core.languages) > 1}{$core.language.title|escape:'html'}{/if}
+							<textarea name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}</textarea>
 						</div>
+
+						{if $isMultilingual && count($core.languages) > 1}
+							{foreach $core.languages as $iso => $language}
+								{if $iso != $core.language.iso}
+									<div class="item-input">
+										{$language.title|escape:'html'}
+										<textarea name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value[$iso]|escape:'html'}</textarea>
+									</div>
+								{/if}
+							{/foreach}
+						{/if}
 					{elseif 'image' == $entry.type}
 						{if !is_writeable($smarty.const.IA_UPLOADS)}
 							<div class="alert alert-info">{lang key='upload_writable_permission'}</div>

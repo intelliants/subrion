@@ -200,9 +200,16 @@ class iaCache extends abstractUtil
 
 	public function clearAll()
 	{
+		$this->clearConfigCache();
 		$this->iaCore->getConfig(true);
 		$this->iaCore->setPackagesData(true);
 		$this->createJsCache(true);
+	}
+
+	public function clearConfigCache()
+	{
+		foreach ($this->iaCore->languages as $iso => $language)
+			$this->remove('config_' . $iso);
 	}
 
 	public function clearGlobalCache()

@@ -29,6 +29,9 @@ class iaBackendController extends iaAbstractControllerBackend
 	const TYPE_DIVIDER = 'divider';
 	const TYPE_IMAGE = 'image';
 	const TYPE_SELECT = 'select';
+	const TYPE_TEXT = 'text';
+	const TYPE_TEXTAREA = 'textarea';
+	const TYPE_ITEMSCHECKBOX = 'itemscheckbox';
 
 	protected $_name = 'configuration';
 
@@ -245,7 +248,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$where = "`type` != 'hidden' " . ($this->_type ? 'AND `custom` = 1' : '');
-		$params = $this->_iaDb->keyvalue(array('name', 'type'), $where, iaCore::getConfigTable());
+		$rows = $this->_iaDb->all(array('name', 'type', 'options'), $where, null, null, iaCore::getConfigTable());
+
+		$params = array();
+		foreach ($rows as $row)
+			$params[$row['name']] = $row;
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
@@ -262,8 +269,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			foreach ($values as $key => $value)
 			{
-				$s = strpos($key, '_items_enabled');
-				if ($s !== false)
+				$options = $params[$key]['options'] ? json_decode($params[$key]['options'], true) : array();
+
+				if (false !== ($s = strpos($key, '_items_enabled')))
 				{
 					$p = $this->_iaCore->get($key, '', !is_null($this->_type));
 					$array = $p ? explode(',', $p) : array();
@@ -275,17 +283,13 @@ class iaBackendController extends iaAbstractControllerBackend
 					if ($diff = array_diff($value, $array))
 					{
 						foreach ($diff as $item)
-						{
 							array_push($data, array('action' => '+', 'item' => $item));
-						}
 					}
 
 					if ($diff = array_diff($array, $value))
 					{
 						foreach ($diff as $item)
-						{
 							array_push($data, array('action' => '-', 'item' => $item));
-						}
 					}
 
 					$extra = substr($key, 0, $s);
@@ -295,7 +299,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				if (is_array($value))
 				{
-					$value = implode(',', $value);
+					$value = empty($options['multilingual'])
+						? implode(',', $value)
+						: self::_packMultilingualValue($value);
 				}
 
 				if (!utf8_is_valid($value))
@@ -304,7 +310,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					trigger_error('Bad UTF-8 detected (replacing with "?") in configuration', E_USER_NOTICE);
 				}
 
-				if (self::TYPE_IMAGE == $params[$key])
+				if (self::TYPE_IMAGE == $params[$key]['type'])
 				{
 					if (isset($_POST['delete'][$key]))
 					{
@@ -504,26 +510,42 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 
-			if ('itemscheckbox' == $entry['type'])
+			switch ($entry['type'])
 			{
-				$array = $this->_iaCore->get($entry['extras'] . '_items_implemented');
-				$array = $array ? explode(',', $array) : array();
-				$array = array_values(array_intersect($array, $itemsList));
-
-				if ($array)
-				{
-					$enabledItems = $iaItem->getEnabledItemsForPlugin($entry['extras']);
-
-					for ($i = 0; $i < count($array); $i++)
+				case self::TYPE_TEXT:
+				case self::TYPE_TEXTAREA: // 'multilingual' option enabled types
+					if (isset($entry['options']['multilingual']) && $entry['options']['multilingual'])
 					{
-						$array[$i] = trim($array[$i]);
-						$entry['items'][] = array(
-							'name' => $array[$i],
-							'title' => iaLanguage::get($array[$i]),
-							'checked' => (int)in_array($array[$i], $enabledItems)
-						);
+						$value = array();
+						foreach ($this->_iaCore->languages as $iso => $language)
+							$value[$iso] = preg_match('#\{\:' . $iso . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $entry['value'], $matches)
+								? $matches[1]
+								: '';
+
+						$entry['value'] = $value;
 					}
-				}
+
+					break;
+
+				case self::TYPE_ITEMSCHECKBOX:
+					$array = $this->_iaCore->get($entry['extras'] . '_items_implemented');
+					$array = $array ? explode(',', $array) : array();
+					$array = array_values(array_intersect($array, $itemsList));
+
+					if ($array)
+					{
+						$enabledItems = $iaItem->getEnabledItemsForPlugin($entry['extras']);
+
+						for ($i = 0; $i < count($array); $i++)
+						{
+							$array[$i] = trim($array[$i]);
+							$entry['items'][] = array(
+								'name' => $array[$i],
+								'title' => iaLanguage::get($array[$i]),
+								'checked' => (int)in_array($array[$i], $enabledItems)
+							);
+						}
+					}
 			}
 
 			if (self::TYPE_SELECT == $entry['type'])
@@ -562,5 +584,15 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return $params;
+	}
+
+	protected static function _packMultilingualValue($value)
+	{
+		$result = '';
+
+		foreach ($value as $k => $v)
+			$result.= '{:' . $k . ':}' . $v;
+
+		return $result;
 	}
 }

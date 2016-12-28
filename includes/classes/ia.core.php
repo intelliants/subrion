@@ -102,14 +102,12 @@ final class iaCore
 		$this->iaCache = $this->factory('cache');
 		iaSystem::renderTime('core', 'Basic Classes Initialized');
 
+		$this->_parseUrl();
+
 		$this->getConfig();
 		iaSystem::renderTime('core', 'Configuration Loaded');
 
 		iaSystem::setDebugMode();
-
-		$this->_parseUrl();
-
-		setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
 
 		// we can only load strings when we know if a specific language is requested based on URL
 		iaLanguage::load($this->iaView->language);
@@ -180,15 +178,18 @@ final class iaCore
 	{
 		$iaView = &$this->iaView;
 
+		$params = $this->iaDb->keyvalue(array('name', 'value'),
+			"`name` IN('baseurl', 'admin_page', 'home_page', 'lang')", self::getConfigTable());
+
 		$domain = preg_replace('#[^a-z_0-9-.:]#i', '', $_SERVER['HTTP_HOST']);
 		$requestPath = ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER);
 
-		if (!preg_match('#^www\.#', $domain) && preg_match('#:\/\/www\.#', $this->get('baseurl')))
+		if (!preg_match('#^www\.#', $domain) && preg_match('#:\/\/www\.#', $params['baseurl']))
 		{
 			$domain = preg_replace('#^#', 'www.', $domain);
 			$this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
 		}
-		elseif (preg_match('#^www\.#', $domain) && !preg_match('#:\/\/www\.#', $this->get('baseurl')))
+		elseif (preg_match('#^www\.#', $domain) && !preg_match('#:\/\/www\.#', $params['baseurl']))
 		{
 			$domain = preg_replace('#^www\.#', '', $domain);
 			$this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
@@ -197,7 +198,7 @@ final class iaCore
 		$iaView->assetsUrl = '//' . $domain . IA_URL_DELIMITER . FOLDER_URL;
 		$iaView->domain = $domain;
 		$iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
-		$iaView->language = $this->get('lang');
+		$iaView->language = $params['lang'];
 
 		$doExit = false;
 		$changeLang = false;
@@ -257,7 +258,7 @@ final class iaCore
 
 			switch (true)
 			{
-				case ($this->get('admin_page') == $value): // admin panel
+				case ($params['admin_page'] == $value): // admin panel
 					$this->_accessType = self::ACCESS_ADMIN;
 					continue 2;
 				case ('logout' == $value): // logging out
@@ -271,14 +272,14 @@ final class iaCore
 						continue 2;
 					}
 				default:
-					$iaView->name(empty($value) && 1 == count($url) ? $this->get('home_page') : $value);
+					$iaView->name(empty($value) && 1 == count($url) ? $params['home_page'] : $value);
 					$isSystemChunk = false;
 			}
 		}
 
 		if (self::ACCESS_ADMIN == $this->getAccessType())
 		{
-			if ($isSystemChunk && $this->get('home_page') == $iaView->name())
+			if ($isSystemChunk && $params['home_page'] == $iaView->name())
 			{
 				$iaView->name(iaView::DEFAULT_HOMEPAGE);
 			}
@@ -288,11 +289,7 @@ final class iaCore
 		$this->requestPath = $array;
 
 		// set system language
-		$this->language = $this->languages[$iaView->language];
-
-		// set dynamic config
-		$this->set('date_format', $this->language['date_format']);
-		$this->set('locale', $this->language['locale']);
+		$this->language = $this->languages[$this->iaView->language];
 
 		define('IA_EXIT', $doExit);
 	}
@@ -412,12 +409,14 @@ final class iaCore
 	{
 		if (empty($this->_config) || $reloadRequired)
 		{
-			$this->_config = $this->iaCache->get('config', 604800, true);
+			$key = 'config_' . $this->iaView->language;
+
+			$this->_config = $this->iaCache->get($key, 604800, true);
 			iaSystem::renderTime('config', 'Cached Configuration Loaded');
 
 			if (empty($this->_config) || $reloadRequired)
 			{
-				$this->_config = $this->iaDb->keyvalue(array('name', 'value'), "`type` != 'divider'", self::getConfigTable());
+				$this->_config = $this->_fetchConfig($this->iaView->language);
 				iaSystem::renderTime('config', 'Configuration loaded from DB');
 
 				$extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'extras');
@@ -426,14 +425,46 @@ final class iaCore
 				$this->_config['extras'] = $extras;
 				$this->_config['block_positions'] = $this->iaView->positions;
 
-				$this->iaCache->write('config', $this->_config);
+				$this->iaCache->write($key, $this->_config);
 				iaSystem::renderTime('config', 'Configuration written to cache file');
 			}
 
 			$this->_setTimezone($this->get('timezone'));
+			setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
+
+			// set dynamic config
+			$this->set('date_format', $this->language['date_format']);
+			$this->set('locale', $this->language['locale']);
 		}
 
 		return $this->_config;
+	}
+
+	protected function _fetchConfig($langIsoCode)
+	{
+		$result = array();
+		$rows = $this->iaDb->all(array('name', 'type', 'value', 'options'), "`type` != 'divider'", null, null, self::getConfigTable());
+
+		foreach ($rows as $row)
+		{
+			$value = $row['value'];
+
+			if ('text' == $row['type'] || 'textarea' == $row['type'])
+			{
+				$options = empty($row['options']) ? array() : json_decode($row['options'], true);
+
+				if (isset($options['multilingual']) && $options['multilingual'])
+				{
+					$value = preg_match('#\{\:' . $langIsoCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
+						? $matches[1]
+						: '';
+				}
+			}
+
+			$result[$row['name']] = $value;
+		}
+
+		return $result;
 	}
 
 	/**

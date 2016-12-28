@@ -334,6 +334,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (iaCore::ACTION_ADD == $action)
 		{
 			$this->_iaCore->factory('field')->syncMultilingualFields();
+			$this->_copyMultilingualConfigs($entry['code']);
 
 			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, array(
 				'item' => 'language',
@@ -709,5 +710,34 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return array(!$error, $messages, isset($languageCode) ? $languageCode : null);
+	}
+
+	protected function _copyMultilingualConfigs($langIsoCode)
+	{
+		$this->_iaDb->setTable(iaCore::getConfigTable());
+
+		$rows = $this->_iaDb->all(array('name', 'value', 'options'), "`type` IN ('text', 'textarea')");
+
+		$defaultLanguage = $this->_iaDb->row(array('code'), iaDb::convertIds(1, 'default'), iaLanguage::getLanguagesTable());
+
+		foreach ($rows as $row)
+		{
+			$options = $row['options'] ? json_decode($row['options'], true) : array();
+
+			if (isset($options['multilingual']) && $options['multilingual'])
+			{
+				$id = '{:' . $langIsoCode . ':}';
+
+				if (false === strpos($row['value'], $id))
+				{
+					preg_match('#\{\:' . $defaultLanguage['code'] . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $row['value'], $matches)
+						&& $row['value'].= $id . $matches[1];
+
+					$this->_iaDb->update(array('value' => $row['value']), iaDb::convertIds($row['name'], 'name'));
+				}
+			}
+		}
+
+		$this->_iaDb->resetTable();
 	}
 }
