@@ -1,4 +1,14 @@
 //
+// Global
+// --------------------------------------------------
+
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i');
+
+@font-family-base: 'Roboto', @font-family-sans-serif;
+
+
+
+//
 // Colors
 // --------------------------------------------------
 
@@ -9,6 +19,10 @@
 @brand-warning:         #f0ad4e;
 @brand-danger:          #d63b3f;
 @brand-info:            #5bc0de;
+
+@body-bg:               #f6f6f6;
+
+// @border-radius-base:    0;
 
 
 
@@ -22,7 +36,6 @@
 
 @main-nav-link-color:                   lighten(@main-nav-bg, 20%);
 @main-nav-link-hover-color:             lighten(@main-nav-bg, 2%);
-
 @main-nav-link-active-color:            @brand-primary;
 @main-nav-link-active-bg-color:         lighten(@main-nav-bg, 5%);
 @main-nav-link-active-border-color:     @brand-primary;
@@ -53,4 +66,72 @@
 // Top bar
 // --------------------------------------------------
 
-@navbar-bg: @brand-primary;
+@navbar-bg:                             #fff;
+@navbar-height:                         70px;
+
+@navbar-link-color:                     fade(@text-color, 50%);
+@navbar-link-hover-color:               fade(@text-color, 80%);
+
+
+
+//
+// Page
+// --------------------------------------------------
+
+@page-title-color:                      fade(@text-color, 90%);
+@page-actions-color:                    fade(@text-color, 50%);
+@page-actions-icon-color:               fade(@text-color, 70%);
+
+@breadcrumb-color:              fade(@text-color, 40%);
+@breadcrumb-active-color:       fade(@text-color, 50%);
+@breadcrumb-link-color:         fade(@text-color, 70%);
+@breadcrumb-link-hover-color:   @link-color;
+
+@breadcrumb-separator:          "\2192";
+
+
+//
+// Widgets
+// --------------------------------------------------
+
+@widget-bg:            #fff;
+
+@widget-header-bg:     #fff;
+@widget-header-border: #eee;
+
+@widget-footer-bg:     #fff;
+@widget-footer-color:  #bbb;
+@widget-footer-border: #eee;
+
+
+
+//
+// Dropdowns
+// --------------------------------------------------
+
+@dropdown-link-hover-bg: #f9f9f9;
+
+
+
+//
+// Forms
+// --------------------------------------------------
+
+@input-border-focus: #888;
+
+
+
+//
+// Navs
+// --------------------------------------------------
+
+@nav-tabs-active-link-hover-bg: #fff;
+
+
+
+//
+// Wells
+// --------------------------------------------------
+
+@thumbnail-border: @input-border;
+@thumbnail-bg:     #f6f6f6;

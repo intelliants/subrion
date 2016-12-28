@@ -12,52 +12,50 @@
 // Colors
 // --------------------------------------------------
 
-@base-dark-color:       #1a1c21;
+@base-dark-color:       #1d1c24;
 
-@brand-primary:         #47c1a8; // emerald
+@brand-primary:         #38eadb;
 @brand-success:         #5cb85c;
 @brand-warning:         #f0ad4e;
 @brand-danger:          #d63b3f;
 @brand-info:            #5bc0de;
 
-@body-bg:               #f6f6f6;
-
-// @border-radius-base:    0;
+@body-bg:               lighten(@base-dark-color, 2%);
+@text-color:            #fff;
 
 
 
 //
-// Layout
+// Main menu
 // --------------------------------------------------
 
 @main-nav-width:                        120px;
 @main-nav-bg:                           @base-dark-color;
 @brand-border-color:                    darken(@base-dark-color, 3%);
-
 @main-nav-link-color:                   lighten(@main-nav-bg, 20%);
 @main-nav-link-hover-color:             lighten(@main-nav-bg, 2%);
 @main-nav-link-active-color:            @brand-primary;
 @main-nav-link-active-bg-color:         lighten(@main-nav-bg, 5%);
 @main-nav-link-active-border-color:     @brand-primary;
 @main-nav-link-active-icon-color:       @brand-primary;
-
 @main-nav-link-icon-color:              lighten(@main-nav-bg, 30%);
-
 @main-nav-link-current-bg-color:        lighten(@main-nav-bg, 1%);
 @main-nav-link-current-border-color:    darken(@brand-primary, 30%);
 
-// Sub-navigation
+
+
+//
+// Sub nav
+// --------------------------------------------------
+
 @sub-nav-width:                         250px;
 @sub-nav-bg:                            lighten(@base-dark-color, 5%);
-
 @sub-nav-link-color:                    lighten(@sub-nav-bg, 40%);
 @sub-nav-link-hover-color:              lighten(@sub-nav-bg, 5%);
-
-@sub-nav-link-active-color:             @sub-nav-bg;
+@sub-nav-link-active-color:             @link-color;
 @sub-nav-link-active-bg-color:          @body-bg;
 @sub-nav-link-active-border-color:      @brand-primary;
 @sub-nav-link-active-icon-color:        @brand-primary;
-
 @sub-nav-heading-color:                 lighten(@sub-nav-bg, 20%);
 
 
@@ -66,9 +64,8 @@
 // Top bar
 // --------------------------------------------------
 
-@navbar-bg:                             #fff;
+@navbar-bg:                             @base-dark-color;
 @navbar-height:                         70px;
-
 @navbar-link-color:                     fade(@text-color, 50%);
 @navbar-link-hover-color:               fade(@text-color, 80%);
 
@@ -94,10 +91,10 @@
 // Widgets
 // --------------------------------------------------
 
-@widget-bg:            #fff;
+@widget-bg:            lighten(@body-bg, 3%);
 
-@widget-header-bg:     #fff;
-@widget-header-border: #eee;
+@widget-header-bg:     lighten(@body-bg, 3%);
+@widget-header-border: @body-bg;
 
 @widget-footer-bg:     #fff;
 @widget-footer-color:  #bbb;
@@ -117,7 +114,15 @@
 // Forms
 // --------------------------------------------------
 
-@input-border-focus: #888;
+@input-bg:                       @body-bg;
+@input-bg-disabled:              lighten(@body-bg, 5%);
+@input-color:                    @gray;
+@input-border:                   lighten(@body-bg, 10%);
+@input-border-radius:            @border-radius-base;
+@input-border-radius-large:      @border-radius-large;
+@input-border-radius-small:      @border-radius-small;
+@input-border-focus:             @link-color;
+@input-color-placeholder:        #999;
 
 
 
@@ -134,4 +139,4 @@
 // --------------------------------------------------
 
 @thumbnail-border: @input-border;
-@thumbnail-bg:     #f6f6f6;
+@thumbnail-bg:     @body-bg;

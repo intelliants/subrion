@@ -17,7 +17,13 @@ var config = {
             path: "less/**/*.less",
             src:  [
                 //"less/base.less",
-                "less/base-emerald.less"
+                //"less/base-alizarin.less",
+                //"less/base-calmy.less",
+                "less/base-darkness.less",
+                "less/base-emerald.less",
+                //"less/base-gebeus-waterfall.less",
+                //"less/base-radiant-orchid.less",
+                //"less/base-roseus.less"
             ],
             dest: "css"
         }
@@ -48,10 +54,11 @@ gulp.task("less", function(){
         .pipe(gulp.dest(config.paths.less.dest));
 });
 
-gulp.task("build", ["less"]);
+gulp.task("build", ["less", "images"]);
 
 gulp.task("watch", function(){
     gulp.watch(config.paths.less.path, ["less"]);
+    gulp.watch(config.paths.images.src, ["images"]);
 });
 
 gulp.task("default", function() {

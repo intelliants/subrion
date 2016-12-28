@@ -209,12 +209,12 @@ $(function($)
 
 									<span class="input-group-btn">
 										{if 'pictures' == $type}
-											<a class="btn btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><i class=" i-remove-sign"></i></a>
+											<a class="btn btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><span class="fa fa-remove"></span></a>
 										{else}
 											<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{$entry.title|escape:'html'}"><i class="i-box-add"></i></a>
-											<a class="btn btn-danger js-file-delete" href="#" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><i class="i-remove-sign"></i></a>
+											<a class="btn btn-danger js-file-delete" href="#" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><span class="fa fa-remove"></span></a>
 										{/if}
-										<span class="btn btn-default uploads-list-item__drag-handle"><i class="i-list-2"></i></span>
+										<span class="btn btn-default uploads-list-item__drag-handle"><span class="fa fa-reorder"></span></span>
 									</span>
 								</div>
 							</div>
