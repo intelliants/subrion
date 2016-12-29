@@ -930,16 +930,6 @@ SQL;
 					$this->assign('dashboard', $quickLinks);
 				}
 
-				// quick search block
-				$items = array('users' => array('title' => iaLanguage::get('users'), 'url' => 'members/'));
-				$this->iaCore->startHook('adminQuickSearch', array('items' => &$items));
-				$currentItem = $this->getValues('quick_search_item');
-				$currentItem = isset($items[$currentItem]) ? $currentItem : 'users';
-
-				$this->assign('quickSearch', $items);
-				$this->assign('quickSearchItem', $currentItem);
-				//
-
 				$this->set('headerMenu', $this->_getAdminHeaderMenu());
 				$this->set('menu', $this->getAdminMenu());
 			}

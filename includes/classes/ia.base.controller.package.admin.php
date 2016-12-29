@@ -35,8 +35,6 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 	protected $_iaField;
 
-	protected $_setQuickSearch = true;
-
 
 	public function __construct()
 	{
@@ -106,14 +104,11 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 	protected function _indexPage(&$iaView)
 	{
-		$this->_setQuickSearchActiveItem();
-
 		$iaView->grid('_IA_URL_packages/' . $this->getPackageName() . '/js/admin/' . $this->getName());
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$this->_setQuickSearchActiveItem();
 		$this->_setSystemDefaults($entryData);
 
 		$entryData['item'] = $this->getItemName();
@@ -297,14 +292,6 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 	public function updateCounters($entryId, array $entryData, $action, $previousData = null)
 	{
 		// within final class, the counters update routines should be placed here
-	}
-
-	protected function _setQuickSearchActiveItem()
-	{
-		if ($this->_setQuickSearch)
-		{
-			$this->_iaCore->iaView->assign('quickSearchItem', $this->getItemName());
-		}
 	}
 
 	protected function _setSystemDefaults(&$entryData)
