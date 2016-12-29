@@ -40,18 +40,4 @@ Ext.onReady(function()
 	}]});
 
 	grid.init();
-
-	var searchStatus = intelli.urlVal('status'),
-		searchName = intelli.urlVal('q');
-
-	if (searchStatus)
-	{
-		Ext.getCmp('fltStatus').setValue(searchStatus);
-		intelli.gridHelper.search(grid);
-	}
-	else if (searchName)
-	{
-		Ext.getCmp('fltName').setValue(searchName);
-		intelli.gridHelper.search(grid);
-	}
 });

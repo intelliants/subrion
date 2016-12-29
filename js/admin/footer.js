@@ -159,36 +159,6 @@ $(function()
 		$parent.find('.translate-group__langs input, .translate-group__langs textarea').val(defaultVal);
 	});
 
-	// quick search
-	$('.dropdown-menu a', '#quick-search').on('click', function(e)
-	{
-		e.preventDefault();
-
-		var $form = $('#quick-search');
-
-		if ('reset' == $(this).attr('rel'))
-		{
-			$('input[type="text"]:first', $form).val('');
-			$('.dropdown-menu a:first', $form).trigger('click');
-		}
-		else
-		{
-			$(this).parent().parent().find('li').removeClass('active');
-			$(this).parent().addClass('active');
-
-			$form.attr('action', $(this).attr('href'));
-
-			$(this).closest('ul').prev().html($(this).text() + ' <span class="caret"></span>');
-		}
-	});
-	$('li.active a:first', '#quick-search').trigger('click');
-	$('#quick-search').on('submit', function(e)
-	{
-		$(this).attr('action') || e.preventDefault();
-		$(this).find('input[type="text"]:first').val() || e.preventDefault();
-	});
-
-
 	// switching
 	$('.js-input-switch').on('switch-change', function(e, data)
 	{
