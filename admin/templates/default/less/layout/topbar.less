@@ -35,6 +35,26 @@
       > span {
         display: none;
       }
+
+      .fa {
+        width: 20px;
+        text-align: center;
+      }
+    }
+
+    &.dropdown {
+      &::after {
+        content: '';
+        display: block;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 0 0 10px 10px;
+        border-color: transparent transparent darken(@navbar-bg, 8%) transparent;
+      }
     }
 
     &.open > a,
