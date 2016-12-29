@@ -115,13 +115,13 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$settings = $this->_getSettings();
 
-		if (empty($settings['item']))
-		{
-			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-		}
-
 		if (in_array($settings['target'], array(iaAcl::USER, iaAcl::GROUP)))
 		{
+			if (empty($settings['item']))
+			{
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			}
+
 			if (iaAcl::USER == $settings['target'])
 			{
 				iaBreadcrumb::add(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');

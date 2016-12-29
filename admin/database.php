@@ -69,6 +69,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		$page = isset($this->_iaCore->requestPath[0]) && in_array($this->_iaCore->requestPath[0], $this->_actions) ? $this->_iaCore->requestPath[0] : $this->_actions[0];
 		$this->_checkActions($page, $iaView);
 
+		if (!$this->_iaCore->factory('acl')->isAccessible($this->getName(), $page))
+		{
+			return iaView::accessDenied();
+		}
+
 		switch ($page)
 		{
 			default:
@@ -351,18 +356,13 @@ class iaBackendController extends iaAbstractControllerBackend
 		$adminActions = $iaView->getValues('admin_actions');
 		foreach ($this->_actions as $index => $action)
 		{
-			if (!$iaAcl->checkAccess($this->getName() . $action))
+			if (!$iaAcl->isAccessible($this->getName(), $action))
 			{
 				unset($adminActions['db_' . $action], $this->_actions[$index]);
 			}
 		}
 
 		$iaView->assign('admin_actions', $adminActions);
-
-		if (!$iaAcl->checkAccess($this->getName() . $page))
-		{
-			return iaView::accessDenied();
-		}
 	}
 
 	private function _resetPage(&$iaView)

@@ -326,7 +326,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		isset($entryData['external']) || $entryData['external'] = false;
 		empty($entryData['subpages']) || $entryData['subpages'] = unserialize($entryData['subpages']);
 		isset($entryData['pages']) || $entryData['pages'] = $this->_iaDb->onefield('page_name', "`object_type` = 'blocks' && " . iaDb::convertIds($this->getEntryId(), 'object'), 0, null, iaBlock::getPagesTable());
-_d($this->getHelper()->getTypes());
+
 		$iaView->assign('menuPages', $menuPages);
 		$iaView->assign('pagesGroup', $pagesGroups);
 		$iaView->assign('pages', $this->_getPagesList($iaView->language));
