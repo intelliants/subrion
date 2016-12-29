@@ -934,7 +934,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('system', 'check_for_updates', '1', '''1'',''0''', 'radio', 'Check for updates', 14, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('system', 'auto_apply_critical_upgrades', '1', '''1'',''0''', 'radio', 'Automatically apply critical upgrades', 15, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"check_for_updates|1","multilingual":false}'),
 ('system', 'allow_remote_templates', '1', '''1'',''0''', 'radio', 'Allow remote templates', 16, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('system', 'sap_style', 'emerald', 'alizarin,calmy,darkness,emerald,gebeus-waterfall,radiant-orchid,roseus', 'select', 'Default colors scheme', 17, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
+('system', 'sap_style', 'default', 'calmy,darkness,default,gebeus-waterfall,radiant-orchid,roseus', 'select', 'Default colors scheme', 17, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('system', '', 'System configuration', '1', 'divider', '', 20, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('system', 'alias_urlencode', '0', '''1'',''0''', 'radio', 'Encode non-Latin symbols in URL', 21, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('system', 'redirect_time', '4000', '', 'text', 'Redirect time (ms)', 22, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
