@@ -146,16 +146,11 @@
 								</ul>
 							</li>
 							<li class="dropdown navbar-nav__user">
-								<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/" title="{lang key='edit'}">
 									{printImage imgfile=$member.avatar title=$member.fullname|default:$member.username gravatar=true email=$member.email}
-									<i class="fa fa-angle-down"></i>
 								</a>
-								<ul class="dropdown-menu pull-right">
-									<li><a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/">{lang key='edit'}</a></li>
-									<li><a href="{$smarty.const.IA_ADMIN_URL}logout/" title="{lang key='logout'}" id="user-logout"><span>{lang key='logout'}</span>
-								</a></li>
-								</ul>
 							</li>
+							<li><a href="{$smarty.const.IA_ADMIN_URL}logout/" title="{lang key='logout'}" id="user-logout"><i class="fa fa-sign-out"></i> <span>{lang key='logout'}</span></a></li>
 						</ul>
 						<ul class="nav navbar-nav navbar-left">
 							<li class="panel-toggle">
