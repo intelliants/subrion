@@ -873,7 +873,8 @@ INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`description`,`priva
 
 INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple_values`, `type`, `description`, `order`, `extras`, `private`, `custom`, `options`) VALUES
 ('general', '', 'General', '1', 'divider', '', 0, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('general', 'site', '{:en:}Subrion CMS', '1', 'text', 'Site title', 3, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
+('general', 'site', '{:en:}Subrion CMS', '1', 'text', 'Site title', 2, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
+('general', 'bc_home', '{:en:}Home', NULL, 'text', 'Breadcrumb first element', 3, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
 ('general', 'suffix', '{:en:}:: Powered by Subrion 4.0', '1', 'text', 'Suffix for page titles', 9, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
 ('general', 'site_logo', '', '', 'image', 'Website logo', 12, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('general', 'site_favicon', '', '', 'image', 'Website favicon', 13, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
@@ -881,9 +882,6 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('general', 'lang', 'en', '1', 'select', 'Default language', 33, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('general', 'language_switch', '1', '''1'',''0''', 'radio', 'Language switching', 36, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('general', 'timezone', 'America/New_York', '', 'select', 'Default timezone', 45, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('general', '', 'Pages', '1', 'divider', '', 60, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('general', 'admin_page', 'panel', NULL, 'text', 'Admin Dashboard URL', 63, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('general', 'bc_home', '{:en:}Home', NULL, 'text', 'Breadcrumb first element', 66, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
 
 ('members', '', 'General', '1', 'divider', '', 1, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('members', 'members_enabled', '1', '''1'',''0''', 'radio', 'Members functionality', 2, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
@@ -920,6 +918,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('mail', 'mimetype', '1', '''1'',''0''', 'radio', 'Send HTML mime-type emails instead of plain text', 51, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 
 ('system', '', 'Setup', '1', 'divider', '', 0, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
+('system', 'admin_page', 'panel', NULL, 'text', 'Admin Dashboard URL', 0, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('system', 'https', '0', '''1'',''0''', 'radio', 'HTTPS', 1, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('system', 'frontend', '1', '''1'',''0''', 'radio', 'Display frontend', 2, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('system', 'underconstruction', 'We are sorry. Our site is under construction.', '', 'textarea', 'Under construction message', 3, '', 1, 1, '{"wysiwyg":"1","code_editor":"0","show":"frontend|0","multilingual":false}'),
