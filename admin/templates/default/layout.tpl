@@ -145,7 +145,7 @@
 									<li><a href="https://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
 								</ul>
 							</li>
-							<li class="dropdown navbar-nav__user">
+							<li class="navbar-nav__user">
 								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/" title="{lang key='edit'}">
 									{printImage imgfile=$member.avatar title=$member.fullname|default:$member.username gravatar=true email=$member.email}
 								</a>
