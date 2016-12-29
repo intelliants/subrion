@@ -92,17 +92,17 @@
 											</h4>
 											<div class="box-simple fieldset">
 												<ul class="list-unstyled">
-													{foreach $fp as $field}
+													{foreach $fp as $fieldName => $title}
 														<li>
 															{if $for_plan != 2}
 																<label class="checkbox">
-																	<input{if isset($item.data.fields) && in_array($field, $item.data.fields)} checked{/if} type="checkbox" value="{$field}" name="fields[]">
-																	{lang key="field_{$field}"}
+																	<input{if isset($item.data.fields) && in_array($fieldName, $item.data.fields)} checked{/if} type="checkbox" value="{$fieldName}" name="fields[]">
+																	{$title|escape:'html'}
 																</label>
 															{else}
 																<label class="checkbox">
-																	<input checked type="checkbox" value="{$field}" disabled name="checked_fields[]">
-																	{lang key="field_{$field}"}
+																	<input checked type="checkbox" value="{$fieldName}" disabled name="checked_fields[]">
+																	{$title|escape:'html'}
 																</label>
 															{/if}
 														</li>

@@ -74,27 +74,30 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (isset($this->_fields[$entry['item']]))
 		{
 			$entry['data'] = array();
+
 			if (!empty($data['fields']) && !$this->getMessages())
 			{
-				$f = $this->_fields[$entry['item']];
-				$array = array();
-				foreach ($data['fields'] as $field)
+				$fields = $this->_fields[$entry['item']];
+				foreach ($data['fields'] as $fieldName)
 				{
-					if (in_array($field, $f[0]))
+					if (isset($fields[0][$fieldName]))
 					{
-						$entry['data']['fields'][] = $field;
-						$array[] = $field;
+						$entry['data']['fields'][] = $fieldName;
+						$update = true;
 					}
-					elseif (in_array($field, $f[1]))
+					elseif (isset($fields[1][$fieldName]))
 					{
-						$entry['data']['fields'][] = $field;
+						$entry['data']['fields'][] = $fieldName;
 					}
 				}
-				if ($array)
+
+				if (isset($update))
 				{
-					$this->_iaDb->update(array('for_plan' => 1), "`name` IN ('" . implode("','", $entry['data']['fields']) . "')", null, iaField::getTable());
+					$fieldsNames = array_map(array('iaSanitize', 'sql'), $entry['data']['fields']);
+					$this->_iaDb->update(array('for_plan' => 1), "`name` IN ('" . implode("','", $fieldsNames) . "')", null, iaField::getTable());
 				}
 			}
+
 			$entry['data'] = serialize($entry['data']);
 		}
 
@@ -306,20 +309,16 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaCore->factory('field');
 
 		$fields = array();
+
 		$rows = $this->_iaDb->all(array('name', 'item', 'for_plan', 'required'), ' 1=1 ORDER BY `for_plan` DESC', null, null, iaField::getTable());
 		foreach ($rows as $row)
 		{
 			$type = $row['for_plan'];
-			if ($row['required'] == 1)
-			{
-				$type = 2; // required
-			}
-			if (!isset($fields[$row['item']]))
-			{
-				$fields[$row['item']] = array(2 => array(), 1 => array(), 0 => array());
-			}
+			$row['required'] && $type = 2;
 
-			$fields[$row['item']][$type][] = $row['name'];
+			isset($fields[$row['item']]) || $fields[$row['item']] = array(2 => array(), 1 => array(), 0 => array());
+
+			$fields[$row['item']][$type][$row['name']] = iaField::getFieldTitle($row['item'], $row['name']);
 		}
 
 		return $fields;

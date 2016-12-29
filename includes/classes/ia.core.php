@@ -387,11 +387,7 @@ final class iaCore
 		// temporary stub
 		if (self::ACCESS_ADMIN == $this->getAccessType())
 		{
-			if (class_exists('iaBackendController'))
-			{
-				$iaModule = new iaBackendController();
-				$iaModule->process();
-			}
+			class_exists('iaBackendController') && (new iaBackendController())->process();
 		}
 		//
 

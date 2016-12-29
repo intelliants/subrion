@@ -108,13 +108,11 @@ class iaBlock extends abstractPlugin
 			$blockData['tpl'] = self::DEFAULT_MENU_TEMPLATE;
 		}
 
-		if (!empty($blockData['filename']))
-		{
-			$blockData['external'] = 1;
-		}
+		empty($blockData['filename']) || $blockData['external'] = true;
+		isset($blockData['header']) || $blockData['header'] = true;
 
-		$order = $this->iaDb->getMaxOrder(self::getTable());
-		$blockData['order'] = $order ? $order + 1 : 1;
+		$order = (int)$this->iaDb->getMaxOrder(self::getTable());
+		$blockData['order'] = ++$order;
 
 		if (isset($blockData['pages']))
 		{

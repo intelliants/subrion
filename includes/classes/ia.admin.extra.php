@@ -1116,10 +1116,7 @@ class iaExtra extends abstractCore
 							}
 						}
 
-						if ($db)
-						{
-							$iaDb->insert($items, null, iaBlock::getMenusTable());
-						}
+						$db && $iaDb->insert($items, null, iaBlock::getMenusTable());
 
 						foreach ($menus as $val)
 						{

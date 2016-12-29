@@ -23,9 +23,9 @@
 
 				<div class="col col-lg-4">
 					<select name="type" id="input-block-type">
-					{foreach $types as $key => $type}
+					{foreach $types as $type}
 						{if iaBlock::TYPE_MENU != $type}
-							{access object='admin_pages' id='blocks' action=$type}
+							{access object='admin_page' id='blocks' action=$type}
 							<option value="{$type}"{if $type == $item.type} selected{/if}>{$type}</option>
 							{/access}
 						{/if}

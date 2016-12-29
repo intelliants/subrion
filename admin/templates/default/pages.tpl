@@ -113,7 +113,7 @@
 				</div>
 			</div>
 
-			{access object='admin_pages' id='manage_menus' action=iaCore::ACTION_ADD}
+			{access object='admin_page' id='menus' action=iaCore::ACTION_ADD}
 				<div class="row">
 					<label class="col col-lg-2 control-label">{lang key='show_menus'}</label>
 
