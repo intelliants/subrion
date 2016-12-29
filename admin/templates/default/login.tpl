@@ -20,11 +20,7 @@
 		<link rel="shortcut icon" href="{$img}favicon.png">
 		<link rel="shortcut icon" href="{$img}favicon.ico">
 
-		{if isset($core.config.sap_style)}
-			{ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
-		{else}
-			{ia_print_css files='bootstrap' order=0}
-		{/if}
+		{ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
 
 		{ia_add_media files='jquery, subrion, js:admin/login' order=0}
 		{ia_print_js files='_IA_TPL_bootstrap.min'}

@@ -40,10 +40,9 @@ $(function()
 
 		var styles = {
 			colors: {
-				alizarin: 'background: #f6a440; border: 8px solid #432523;',
 				calmy: 'background: #a2dadb; border: 8px solid #3d4c4f;',
 				darkness: 'background: #777; border: 8px solid #333;',
-				emerald: 'background: #47c1a8; border: 8px solid #25272a;',
+				default: 'background: #47c1a8; border: 8px solid #25272a;',
 				'gebeus-waterfall': 'background: #38b7ea; border: 8px solid #1d1c24;',
 				'radiant-orchid': 'background: #B163A3; border: 8px solid #3d4049;',
 				roseus: 'background: #e45b9b; border: 8px solid #3d4049;',
@@ -55,9 +54,11 @@ $(function()
 		{
 			$parent.append('<div class="sap-style-color ' + (currentStyle == key ? ' active' : '') + '" data-color="' + key + '" style="' + value + styles.css + '"></div>');
 
-			var css = currentStyleLink.replace(currentStyle, key);
+			var css = currentStyleLink.replace('bootstrap-' + currentStyle, 'bootstrap-' + key);
 
-			$currentStyleCSS.before('<link rel="stylesheet" type="text/css" href="' + css + '" data-style="' + key + '">');
+			if (currentStyle != key) {
+				$currentStyleCSS.before('<link rel="stylesheet" type="text/css" href="' + css + '" data-style="' + key + '">');
+			}
 		});
 
 		$('.sap-style-color', $parent).on('click', function()

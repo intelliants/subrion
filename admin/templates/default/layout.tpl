@@ -21,11 +21,7 @@
 
 		{ia_hooker name='smartyAdminAfterHeadSection'}
 
-		{if isset($core.config.sap_style)}
-			{ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
-		{else}
-			{ia_print_css files='bootstrap' order=0}
-		{/if}
+		{ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
 
 		{ia_add_media files='jquery, extjs, subrion' order=0}
 

@@ -57,16 +57,16 @@
 						</div>
 					</div>
 					{if count($core.languages) > 1}
-					<div class="translate-group__langs">
-						{foreach $core.languages as $iso => $language}
-							{if $iso != $core.language.iso}
-							<div class="translate-group__item">
-								<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}">
-								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
-							</div>
-							{/if}
-						{/foreach}
-					</div>
+						<div class="translate-group__langs">
+							{foreach $core.languages as $iso => $language}
+								{if $iso != $core.language.iso}
+									<div class="translate-group__item">
+										<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}">
+										<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+									</div>
+								{/if}
+							{/foreach}
+						</div>
 					{/if}
 				</div>
 			{else}
