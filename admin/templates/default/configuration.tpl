@@ -36,12 +36,21 @@
 				{/if}
 			{elseif 'hidden' != $entry.type}
 				<div class="row {$entry.class}" {$dependent_fields}>
-					<label class="col col-lg-2 control-label" for="{$entry.name}">
-						{$entry.description|escape:'html'}
-						{if isset($tooltips[$entry.name])}
-							<a href="#" class="js-tooltip" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
+					<div class="col col-lg-2">
+						{$isMultilingual = isset($entry.options.multilingual) && $entry.options.multilingual}
+						{if $isMultilingual && count($core.languages) > 1}
+							<div class="btn-group btn-group-xs translate-group-actions">
+								<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$entry.name}"><span class="i-earth"></span></button>
+								<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$entry.name}"><span class="i-copy"></span></button>
+							</div>
 						{/if}
-					</label>
+						<label class="control-label" for="{$entry.name}">
+							{$entry.description|escape:'html'}
+							{if isset($tooltips[$entry.name])}
+								<a href="#" class="js-tooltip" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
+							{/if}
+						</label>
+					</div>
 
 					{if 'textarea' == $entry.type}
 						<div class="col col-lg-8">
@@ -68,20 +77,30 @@
 
 							{$isMultilingual = isset($entry.options.multilingual) && $entry.options.multilingual}
 
-							<div class="item-input">
-								{if $isMultilingual && count($core.languages) > 1}{$core.language.title|escape:'html'}{/if}
-								<input type="text" name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}-{$core.language.iso}" value="{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}" />
+							<div class="translate-group" id="language-group-{$entry.name}">
+								<div class="translate-group__default">
+									<div class="translate-group__item">
+										<input type="text" name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}-{$core.language.iso}" value="{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}" />
+										{if $isMultilingual && count($core.languages) > 1}
+											<div class="translate-group__item__code">
+												{$core.language.title|escape:'html'}
+											</div>
+										{/if}
+									</div>
+								</div>
+								{if $isMultilingual && count($core.languages) > 1}
+									<div class="translate-group__langs">
+										{foreach $core.languages as $iso => $language}
+											{if $iso != $core.language.iso}
+												<div class="translate-group__item">
+													<input type="text" name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" value="{$entry.value[$iso]|escape:'html'}" />
+													<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+												</div>
+											{/if}
+										{/foreach}
+									</div>
+								{/if}
 							</div>
-
-							{if $isMultilingual && count($core.languages) > 1}
-								{foreach $core.languages as $iso => $language}
-									{if $iso != $core.language.iso}
-										<div class="item-input">
-											{$language.title|escape:'html'} <input type="text" name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" value="{$entry.value[$iso]|escape:'html'}" />
-										</div>
-									{/if}
-								{/foreach}
-							{/if}
 						{/if}
 					{elseif 'colorpicker' == $entry.type}
 						<div class="item-input">
@@ -104,21 +123,30 @@ $(function() {
 
 						{$isMultilingual = isset($entry.options.multilingual) && $entry.options.multilingual}
 
-						<div class="item-input">
-							{if $isMultilingual && count($core.languages) > 1}{$core.language.title|escape:'html'}{/if}
-							<textarea name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}</textarea>
+						<div class="translate-group" id="language-group-{$entry.name}">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<textarea name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}</textarea>
+									{if $isMultilingual && count($core.languages) > 1}
+										<div class="translate-group__item__code">
+											{$core.language.title|escape:'html'}
+										</div>
+									{/if}
+								</div>
+							</div>
+							{if $isMultilingual && count($core.languages) > 1}
+								<div class="translate-group__langs">
+									{foreach $core.languages as $iso => $language}
+										{if $iso != $core.language.iso}
+											<div class="translate-group__item">
+												<textarea name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value[$iso]|escape:'html'}</textarea>
+												<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											</div>
+										{/if}
+									{/foreach}
+								</div>
+							{/if}
 						</div>
-
-						{if $isMultilingual && count($core.languages) > 1}
-							{foreach $core.languages as $iso => $language}
-								{if $iso != $core.language.iso}
-									<div class="item-input">
-										{$language.title|escape:'html'}
-										<textarea name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value[$iso]|escape:'html'}</textarea>
-									</div>
-								{/if}
-							{/foreach}
-						{/if}
 					{elseif 'image' == $entry.type}
 						{if !is_writeable($smarty.const.IA_UPLOADS)}
 							<div class="alert alert-info">{lang key='upload_writable_permission'}</div>
