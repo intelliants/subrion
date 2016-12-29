@@ -60,17 +60,19 @@ class iaPage extends abstractPlugin
 		return $this->iaDb->getAll($sql);
 	}
 
-	public function getTitles()
+	public function getTitles($side = iaCore::FRONT)
 	{
-		if (is_null(self::$_pageTitles))
-		{
-			$stmt = '`key` LIKE :key AND `category` = :category AND `code` = :code';
-			$this->iaDb->bind($stmt, array('key' => 'page_title_%', 'category' => iaLanguage::CATEGORY_PAGE, 'code' => $this->iaView->language));
+		$category = iaCore::FRONT == $side ? iaLanguage::CATEGORY_PAGE : iaLanguage::CATEGORY_ADMIN;
 
-			self::$_pageTitles = $this->iaDb->keyvalue("REPLACE(`key`, 'page_title_', '') `key`, `value`", $stmt, iaLanguage::getTable());
+		if (!isset(self::$_pageTitles[$category]))
+		{
+			$where = '`key` LIKE :key AND `category` = :category AND `code` = :code';
+			$this->iaDb->bind($where, array('key' => 'page_title_%', 'category' => $category, 'code' => $this->iaView->language));
+
+			self::$_pageTitles[$category] = $this->iaDb->keyvalue("REPLACE(`key`, 'page_title_', '') `key`, `value`", $where, iaLanguage::getTable());
 		}
 
-		return self::$_pageTitles;
+		return self::$_pageTitles[$category];
 	}
 
 	public function getPageTitle($pageName, $default = null)

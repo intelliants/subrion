@@ -138,9 +138,24 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
+		if (empty($data['type']))
+		{
+			$this->addMessage(iaLanguage::getf('field_is_not_selected', array('field' => iaLanguage::get('type'))), false);
+		}
+		else
+		{
+			$entry['type'] = $data['type'];
+		}
+
 		// validate block name
 		if (iaCore::ACTION_ADD == $action)
 		{
+			if (!$this->_iaCore->factory('acl')->isAccessible($this->getName(), $entry['type']))
+			{
+				$this->addMessage(iaView::ERROR_FORBIDDEN);
+				return;
+			}
+
 			if (empty($data['name']))
 			{
 				$entry['name'] = 'block_' . mt_rand(1000, 9999);
@@ -161,7 +176,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$entry['classname'] = $data['classname'];
 		$entry['position'] = $data['position'];
-		$entry['type'] = $data['type'];
 		$entry['status'] = isset($data['status']) ? (in_array($data['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $data['status'] : iaCore::STATUS_ACTIVE) : iaCore::STATUS_ACTIVE;
 		$entry['header'] = (int)$data['header'];
 		$entry['collapsible'] = (int)$data['collapsible'];
@@ -312,7 +326,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		isset($entryData['external']) || $entryData['external'] = false;
 		empty($entryData['subpages']) || $entryData['subpages'] = unserialize($entryData['subpages']);
 		isset($entryData['pages']) || $entryData['pages'] = $this->_iaDb->onefield('page_name', "`object_type` = 'blocks' && " . iaDb::convertIds($this->getEntryId(), 'object'), 0, null, iaBlock::getPagesTable());
-
+_d($this->getHelper()->getTypes());
 		$iaView->assign('menuPages', $menuPages);
 		$iaView->assign('pagesGroup', $pagesGroups);
 		$iaView->assign('pages', $this->_getPagesList($iaView->language));

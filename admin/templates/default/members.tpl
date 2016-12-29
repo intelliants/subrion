@@ -2,7 +2,7 @@
 	{preventCsrf}
 
 	{capture 'email' append='field_after'}
-		{access object='admin_pages' id='members' action='password'}
+		{access object='admin_page' id='members' action='password'}
 			<hr>
 
 			<div class="row">
@@ -22,7 +22,7 @@
 			<hr>
 		{/access}
 
-		{access object='admin_pages' id='members' action='usergroup'}
+		{access object='admin_page' id='members' action='usergroup'}
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-usergroup">{lang key='usergroup'}</label>
 				<div class="col col-lg-4">

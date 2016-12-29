@@ -115,6 +115,11 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$settings = $this->_getSettings();
 
+		if (empty($settings['item']))
+		{
+			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+		}
+
 		if (in_array($settings['target'], array(iaAcl::USER, iaAcl::GROUP)))
 		{
 			if (iaAcl::USER == $settings['target'])
@@ -162,11 +167,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$actions = $iaAcl->getActions();
 		$groups = array();
-		$titles = $iaPage->getTitles();
 
 		foreach (array(iaAcl::OBJECT_PAGE, iaAcl::OBJECT_ADMIN_PAGE) as $i => $pageType)
 		{
 			$fieldsList = array('name', 'action', 'group', 'parent');
+			$titles = $iaPage->getTitles(iaAcl::OBJECT_PAGE == $pageType ? iaCore::FRONT : iaCore::ADMIN);
 			$pages = $this->_iaDb->all($fieldsList, '`' . (1 == $i ? 'readonly' : 'service') . "` = 0 AND `name` != '' ORDER BY `parent` DESC, `id`", null, null, $pageType . 's');
 
 			foreach ($pages as $page)
@@ -237,6 +242,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$sql = 'SELECT u.`id`, u.`name`, IF(u.`id` = 1, 1, p.`access`) `admin_access` '
 			. 'FROM `:prefix:table_usergroups` u '
 			. "LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = u.`id` AND p.`type` = 'group' AND p.`object` = 'admin_access')";
+
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
 			'table_usergroups' => iaUsers::getUsergroupsTable(),

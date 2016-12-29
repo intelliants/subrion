@@ -782,26 +782,29 @@ SQL;
 			}
 		}
 
-		$fields = 'p.`id`, e.`type`, e.`url`, p.`name`, '
-			. 'p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`';
-		$sql = 'SELECT :fields'
-			. 'FROM `:prefix' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages` p '
-			. 'LEFT JOIN `:prefixextras` e ON (e.`name` = p.`extras`) '
-			. "WHERE :stmt AND p.`status` = ':status' "
-			. "AND (e.`status` = ':status' OR e.`status` IS NULL) "
+		$sql =
+			'SELECT '
+				. 'p.`id`, p.`name`, p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`, '
+				. 'e.`type`, e.`url` '
+			. 'FROM `:prefix:table_pages` p '
+			. 'LEFT JOIN `:prefix:table_extras` e ON (e.`name` = p.`extras`) '
+			. "WHERE :where AND p.`status` = ':status' "
+				. "AND (e.`status` = ':status' OR e.`status` IS NULL) "
 			. 'ORDER BY LENGTH(p.`alias`) DESC, p.`extras` DESC';
+
 		$sql = iaDb::printf($sql, array(
-			'fields' => $fields,
 			'prefix' => $this->iaCore->iaDb->prefix,
-			'stmt' => $where,
+			'table_pages' => (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages',
+			'table_extras' => 'extras',
+			'where' => $where,
 			'status' => iaCore::STATUS_ACTIVE
 		));
 
 		$pages = $this->iaCore->iaDb->getAll($sql);
+
 		$this->iaCore->startHook('phpCoreDefineAfterGetPages');
 
 		$baseUrl = $this->iaCore->get('baseurl', $this->domainUrl);
-		$page404 = true;
 
 		if ($pages)
 		{
@@ -814,7 +817,7 @@ SQL;
 
 			$requestPath = $this->iaCore->requestPath;
 			array_unshift($requestPath, $pageName);
-			$requestPath[count($requestPath) - 1] .= $pageExtension;
+			$requestPath[count($requestPath) - 1].= $pageExtension;
 
 			foreach ($pages as $page)
 			{
@@ -839,8 +842,6 @@ SQL;
 
 				if ($found)
 				{
-					$page404 = false;
-
 					$this->name($page['name']);
 					$pageParams = $page;
 
@@ -858,21 +859,22 @@ SQL;
 			$this->iaCore->setPackagesData();
 		}
 
-		if ($page404)
+		if (!isset($pageParams))
 		{
 			return self::errorPage(self::ERROR_NOT_FOUND);
 		}
 
 		$pageParams['title'] = iaLanguage::get('page_title_' . $pageParams['name']);
-		$pageParams['description'] = iaLanguage::get('page_meta_description_' . $pageParams['name']);
-		$pageParams['keywords'] = iaLanguage::get('page_meta_keywords_' . $pageParams['name']);
+		$pageParams['body'] = $pageParams['name'];
 
-		if (!isset($pageParams['body']))
+		if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 		{
-			$pageParams['body'] = isset($pageParams['name']) ? $pageParams['name'] : self::DEFAULT_HOMEPAGE;
+			$pageParams['description'] = iaLanguage::get('page_meta_description_' . $pageParams['name']);
+			$pageParams['keywords'] = iaLanguage::get('page_meta_keywords_' . $pageParams['name']);
 		}
 
-		if (isset($this->iaCore->requestPath[0]) && in_array($this->iaCore->requestPath[0], array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE)))
+		if (isset($this->iaCore->requestPath[0])
+			&& in_array($this->iaCore->requestPath[0], array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE)))
 		{
 			$pageParams['action'] = array_shift($this->iaCore->requestPath);
 		}
