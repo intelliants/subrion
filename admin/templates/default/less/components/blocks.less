@@ -133,6 +133,17 @@
 
   .form-actions {
     margin-top: 30px;
+
+    &.inline {
+      label {
+        font-weight: normal;
+        margin-left: 20px;
+      }
+      input, select {
+        display: inline-block;
+        vertical-align: middle;
+      }
+    }
   }
 
   .col-lg-2 {
@@ -265,19 +276,6 @@
     li {
       margin-bottom: 10px;
     } 
-  }
-}
-
-.form-actions {
-
-  &.inline {
-    label {
-      font-weight: normal;
-      margin-left: 20px;
-    }
-    input, select {
-      display: inline-block;
-    }
   }
 }
 

@@ -157,27 +157,6 @@
 								<a href="#"><i class="fa{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden} fa-chevron-right{else} fa-chevron-left{/if}"></i></a>
 							</li>
 						</ul>
-
-						{* TEMPORARILY DISABLED
-						<form id="quick-search" class="navbar-form navbar-right" action="{$smarty.const.IA_ADMIN_URL}members/">
-							<input type="text" name="q" style="width: 200px;" class="form-control" placeholder="{lang key='type_here_to_search'}"{if isset($smarty.get.q)} value="{$smarty.get.q|escape:'html'}"{/if}>
-							<div class="btn-group">
-								<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-									{$quickSearch[$quickSearchItem].title} <span class="caret"></span>
-								</button>
-								<ul class="dropdown-menu pull-right">
-									{foreach $quickSearch as $itemName => $entry}
-										<li{if $quickSearchItem == $itemName} class="active"{/if}><a href="{$smarty.const.IA_ADMIN_URL}{$entry.url}">{$entry.title}</a></li>
-									{/foreach}
-									{if count($quickSearch) > 1}
-										<li class="divider"></li>
-										<li><a href="#" rel="reset">{lang key='reset'}</a></li>
-									{/if}
-								</ul>
-							</div>
-							<button type="submit" class="btn btn-primary"><i class="i-search"></i></button>
-						</form>
-						*}
 					</div>
 
 					<div class="page">
