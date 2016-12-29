@@ -28,42 +28,39 @@
 
 @body-bg:               #f6f6f6;
 
-// @border-radius-base:    0;
-
 
 
 //
-// Layout
+// Main menu
 // --------------------------------------------------
 
 @main-nav-width:                        120px;
 @main-nav-bg:                           @base-dark-color;
 @brand-border-color:                    darken(@base-dark-color, 3%);
-
 @main-nav-link-color:                   lighten(@main-nav-bg, 20%);
 @main-nav-link-hover-color:             lighten(@main-nav-bg, 2%);
 @main-nav-link-active-color:            @brand-primary;
 @main-nav-link-active-bg-color:         lighten(@main-nav-bg, 5%);
 @main-nav-link-active-border-color:     @brand-primary;
 @main-nav-link-active-icon-color:       @brand-primary;
-
 @main-nav-link-icon-color:              lighten(@main-nav-bg, 30%);
-
 @main-nav-link-current-bg-color:        lighten(@main-nav-bg, 1%);
 @main-nav-link-current-border-color:    darken(@brand-primary, 30%);
 
-// Sub-navigation
+
+
+//
+// Sub nav
+// --------------------------------------------------
+
 @sub-nav-width:                         250px;
 @sub-nav-bg:                            lighten(@base-dark-color, 5%);
-
 @sub-nav-link-color:                    lighten(@sub-nav-bg, 40%);
 @sub-nav-link-hover-color:              lighten(@sub-nav-bg, 5%);
-
 @sub-nav-link-active-color:             @sub-nav-bg;
 @sub-nav-link-active-bg-color:          @body-bg;
 @sub-nav-link-active-border-color:      @brand-primary;
 @sub-nav-link-active-icon-color:        @brand-primary;
-
 @sub-nav-heading-color:                 lighten(@sub-nav-bg, 20%);
 
 
@@ -72,11 +69,13 @@
 // Top bar
 // --------------------------------------------------
 
-@navbar-bg:                             #fff;
-@navbar-height:                         70px;
-
-@navbar-link-color:                     fade(@text-color, 50%);
-@navbar-link-hover-color:               fade(@text-color, 80%);
+@navbar-bg:                             @brand-primary;
+@navbar-shadow:                         'none';
+@navbar-height:                         60px;
+@navbar-link-color:                     #fff;
+@navbar-link-hover-color:               #fff;
+@navbar-link-hover-bg-color:            fade(#fff, 10%);
+@navbar-notification-bg:                @brand-warning;
 
 
 
@@ -104,6 +103,8 @@
 
 @widget-header-bg:     #fff;
 @widget-header-border: #eee;
+@widget-header-color:  @text-color;
+
 
 @widget-footer-bg:     #fff;
 @widget-footer-color:  #bbb;

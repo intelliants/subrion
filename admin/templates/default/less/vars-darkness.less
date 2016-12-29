@@ -65,9 +65,12 @@
 // --------------------------------------------------
 
 @navbar-bg:                             @base-dark-color;
+@navbar-shadow:                         'none';
 @navbar-height:                         70px;
 @navbar-link-color:                     fade(@text-color, 50%);
 @navbar-link-hover-color:               fade(@text-color, 80%);
+@navbar-link-hover-bg-color:            fade(#fff, 10%);
+@navbar-notification-bg:                @brand-warning;
 
 
 
@@ -92,10 +95,9 @@
 // --------------------------------------------------
 
 @widget-bg:            lighten(@body-bg, 3%);
-
 @widget-header-bg:     lighten(@body-bg, 3%);
 @widget-header-border: @body-bg;
-
+@widget-header-color:  @text-color;
 @widget-footer-bg:     #fff;
 @widget-footer-color:  #bbb;
 @widget-footer-border: #eee;
