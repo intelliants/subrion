@@ -1,5 +1,6 @@
 <div class="row">
-	<div class="col col-lg-offset-3 col-lg-8">
+	<label class="col col-lg-2 control-label">&nbsp;</label>
+	<div class="col col-lg-8">
 		<button type="button" class="btn btn-default btn-sm" id="js-cmd-send-test-email" data-loading-test="{lang key='sending'}">{lang key='send_test_email'}</button>
 		<span class="label label-info" style="display: none">{lang key='save_changes_to_send_test_email'}</span>
 	</div>
