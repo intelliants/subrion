@@ -34,6 +34,11 @@
         border-radius: 0;
         color: darken(@widget-header-border, 20%);
 
+        &,
+        &:focus {
+          background-color: transparent;
+        }
+
         &:hover {
           color: darken(@widget-header-border, 40%);
           background: none;
