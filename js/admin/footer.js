@@ -623,9 +623,9 @@ $(function()
 
 function clearNotification(el)
 {
-	var $nLabel = $('.notifications.alerts > a .label-info'),
+	var $nLabel = $('.navbar-nav__notifications > a .label-info'),
 		$nLabelCount = parseInt($nLabel.text()),
-		$nBlock = $('.notifications.alerts .dropdown-block');
+		$nBlock = $('.navbar-nav__notifications__alerts');
 
 	if (0 != $nLabelCount)
 	{

@@ -34,7 +34,7 @@
 			intelli.config.admin_url = '{$smarty.const.IA_URL}{$core.config.admin_page}';
 		{/ia_add_js}
 	</head>
-	<body id="page--{$core.page.name}">
+	<body id="page--{$core.page.name}" class="ss-{$core.config.sap_style}">
 		<div class="overall-wrapper">
 			<div class="panels-wrapper">
 				<section id="panel-left">
