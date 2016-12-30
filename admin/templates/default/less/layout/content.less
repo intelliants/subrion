@@ -58,8 +58,14 @@
           }
 
           &:hover {
-            background: #fff;
+            background: @page-actions-hover-bg-color;
+            color: @page-actions-hover-color;
             text-decoration: none;
+
+            > i,
+            > span {
+              color: @page-actions-hover-color;
+            }
           }
 
           > i,
