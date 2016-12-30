@@ -32,3 +32,21 @@
 
 // Overrides
 @import "ext-override.less";
+
+
+
+//
+// Lets try to override grids here
+// --------------------------------------------------
+
+.ss-darkness {
+  .x-panel-default-framed {
+    border-color: lighten(@body-bg, 3%);
+  }
+  .x-resizable-handle {
+    background-color: lighten(@body-bg, 3%);
+  }
+  .x-toolbar-default {
+    background-color: lighten(@body-bg, 6%);
+  }
+}
