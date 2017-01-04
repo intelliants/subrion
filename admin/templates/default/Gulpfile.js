@@ -6,6 +6,7 @@ var pjson      = require('./package.json'),
     imagemin   = require("gulp-imagemin"),
     less       = require("gulp-less"),
     cleanCSS   = require('gulp-clean-css');
+    //progeny    = require('gulp-progeny'),
     //cache      = require('gulp-cached'),
     //remember   = require('gulp-remember'),
 
@@ -42,6 +43,7 @@ gulp.task("images", function(){
 gulp.task("less", function(){
     return gulp.src(config.paths.less.src)
         //.pipe(cache('less'))
+        //.pipe(progeny())
         .pipe(less().on('error', function(err) {
             gutil.log(err);
             this.emit('end');
