@@ -5,9 +5,9 @@ var pjson      = require('./package.json'),
     rename     = require("gulp-rename"),
     imagemin   = require("gulp-imagemin"),
     less       = require("gulp-less"),
-    cleanCSS   = require('gulp-clean-css'),
-    cache      = require('gulp-cached'),
-    remember   = require('gulp-remember');
+    cleanCSS   = require('gulp-clean-css');
+    //cache      = require('gulp-cached'),
+    //remember   = require('gulp-remember'),
 
 var config = {
     paths: {
@@ -41,7 +41,7 @@ gulp.task("images", function(){
 
 gulp.task("less", function(){
     return gulp.src(config.paths.less.src)
-        .pipe(cache('less'))
+        //.pipe(cache('less'))
         .pipe(less().on('error', function(err) {
             gutil.log(err);
             this.emit('end');
@@ -49,7 +49,7 @@ gulp.task("less", function(){
         .pipe(cleanCSS({
             advanced: false
         }))
-        .pipe(remember('less'))
+        //.pipe(remember('less'))
         .pipe(rename(function (path) {
             path.basename = path.basename.replace('base', 'bootstrap');
         }))

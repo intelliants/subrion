@@ -100,7 +100,7 @@
 @widget-bg:            lighten(@body-bg, 1%);
 @widget-header-bg:     lighten(@body-bg, 3%);
 @widget-header-border: @body-bg;
-@widget-header-color:  fade(@text-color, 30%);
+@widget-header-color:  lighten(@body-bg, 40%);
 @widget-footer-bg:     #fff;
 @widget-footer-color:  #bbb;
 @widget-footer-border: #eee;
@@ -122,13 +122,18 @@
 @form-label-color:               lighten(@main-nav-bg, 30%);
 @input-bg:                       @body-bg;
 @input-bg-disabled:              lighten(@body-bg, 5%);
-@input-color:                    @gray;
+@input-color:                    lighten(@main-nav-bg, 40%);
 @input-border:                   lighten(@body-bg, 10%);
 @input-border-radius:            @border-radius-base;
 @input-border-radius-large:      @border-radius-large;
 @input-border-radius-small:      @border-radius-small;
 @input-border-focus:             @link-color;
-@input-color-placeholder:        #999;
+@input-color-placeholder:        lighten(@main-nav-bg, 25%);
+@help-block-color:               lighten(@main-nav-bg, 20%);
+
+@switch-bg: '';
+@switch-primary-bg: '';
+@switch-secondary-bg: '';
 
 
 
@@ -146,3 +151,18 @@
 
 @thumbnail-border: @input-border;
 @thumbnail-bg:     @body-bg;
+
+
+
+//
+// Alerts
+// --------------------------------------------------
+
+@alert-info-bg:       fade(#d9edf7, 10%);
+@alert-info-border:   fade(#d9edf7, 80%);
+
+@alert-danger-bg:     fade(#f2dede, 10%);
+@alert-danger-border: fade(#f2dede, 80%);
+
+@alert-success-bg:     fade(#dff0d8, 10%);
+@alert-success-border: fade(#dff0d8, 80%);
