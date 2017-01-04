@@ -36,6 +36,16 @@
 
 
 //
+// Overrides
+// --------------------------------------------------
+
+.tab-content {
+  background: lighten(@main-nav-bg, 10%);
+}
+
+
+
+//
 // Lets try to override grids here
 // --------------------------------------------------
 
@@ -90,5 +100,18 @@
   }
   .x-grid-cell {
     color: fade(#fff, 40%) !important;
+    background: lighten(@body-bg, 5%) !important;
+    border-color: @input-border;
+  }
+  .x-grid-row-selected .x-grid-cell,
+  .x-grid-row-focused .x-grid-cell {
+    background: lighten(@body-bg, 8%) !important;
+  }
+
+  .grid-icon {
+    color: fade(#fff, 50%);
+  }
+  .grid-icon-disabled {
+    color: fade(#fff, 10%);
   }
 }

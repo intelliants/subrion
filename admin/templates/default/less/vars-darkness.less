@@ -131,9 +131,11 @@
 @input-color-placeholder:        lighten(@main-nav-bg, 25%);
 @help-block-color:               lighten(@main-nav-bg, 20%);
 
-@switch-bg: '';
-@switch-primary-bg: '';
-@switch-secondary-bg: '';
+@switch-label-color: @text-color;
+@switch-label-bg:    lighten(@body-bg, 8%);
+@switch-color:       #fff;
+@switch-success-bg:  @brand-success;
+@switch-danger-bg:   #ea8083;
 
 
 
@@ -141,7 +143,12 @@
 // Navs
 // --------------------------------------------------
 
-@nav-tabs-active-link-hover-bg: #fff;
+@nav-link-hover-bg:                         lighten(@main-nav-bg, 7%);
+@nav-tabs-border-color:                     lighten(@main-nav-bg, 10%);
+@nav-tabs-link-hover-border-color:          lighten(@main-nav-bg, 10%);
+@nav-tabs-active-link-hover-bg:             lighten(@main-nav-bg, 10%);
+@nav-tabs-active-link-hover-color:          fade(@text-color, 50%);
+@nav-tabs-active-link-hover-border-color:   lighten(@main-nav-bg, 10%);
 
 
 
