@@ -70,10 +70,13 @@ abstract class abstractPackageAdmin extends abstractCore
 		{
 			is_array($this->dashboardStatistics) || $this->dashboardStatistics = array();
 
-			$this->dashboardStatistics['url'] = $this->getModuleUrl();
 			if (!isset($this->dashboardStatistics['icon']))
 			{
 				$this->dashboardStatistics['icon'] = $this->getItemName();
+			}
+			if (!isset($this->dashboardStatistics['url']))
+			{
+				$this->dashboardStatistics['url'] = $this->getModuleUrl();
 			}
 		}
 
