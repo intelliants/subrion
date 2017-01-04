@@ -757,7 +757,7 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('member_fields','fields/members/','signup','','members,usergroups','Member Fields','regular',5),
 ('blocks_delete','javascript:;','remove','id="js-delete-block"','blocks:edit','delete','regular',1),
 ('blocks_list','blocks/','grid','','blocks:add,blocks:edit','blocks','regular',2),
-('blocks_add','blocks/add/','plus-alt','','blocks','add_block','regular',3),
+('blocks_add','blocks/create/','plus-alt','','blocks','add_block','regular',3),
 ('db_sql','database/sql/','database','','database','sql_management','regular',1),
 ('db_reset','database/reset/','loop','','database','reset','regular',2),
 ('db_consistency','database/consistency/','spinner','','database','consistency','regular',3),

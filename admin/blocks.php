@@ -44,6 +44,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaBlock = $this->_iaCore->factory('block', iaCore::ADMIN);
 		$this->setHelper($iaBlock);
+
+		if (iaView::REQUEST_HTML == $this->_iaCore->iaView->getRequestType()
+			&& isset($this->_iaCore->requestPath[0]) && 'create' == $this->_iaCore->requestPath[0])
+		{
+			$this->_iaCore->iaView->set('action', iaCore::ACTION_ADD);
+		}
 	}
 
 	protected function _entryAdd(array $entryData)
@@ -86,6 +92,18 @@ class iaBackendController extends iaAbstractControllerBackend
 		$conditions[] = "`type` != 'menu'";
 	}
 
+	protected function _gridUpdate($params)
+	{
+		// custom permission should be checked
+		if (isset($params['order'])
+			&& !$this->_iaCore->factory('acl')->isAccessible($this->getName(), 'order'))
+		{
+			return iaView::accessDenied();
+		}
+
+		return parent::_gridUpdate($params);
+	}
+
 	protected function _modifyGridResult(array &$entries)
 	{
 		$currentLanguage = $this->_iaCore->iaView;
@@ -123,20 +141,19 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _setDefaultValues(array &$entry)
 	{
 		$entry = array(
-			'status' => iaCore::STATUS_ACTIVE,
+			'name' => '',
 			'type' => iaBlock::TYPE_HTML,
 			'collapsed' => false,
 			'pages' => array(),
 			'title' => '',
-			'contents' => ''
+			'contents' => '',
+			'status' => iaCore::STATUS_ACTIVE
 		);
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
 		$this->_iaCore->startHook('adminAddBlockValidation');
-
-		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 		if (empty($data['type']))
 		{
@@ -153,7 +170,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			if (!$this->_iaCore->factory('acl')->isAccessible($this->getName(), $entry['type']))
 			{
 				$this->addMessage(iaView::ERROR_FORBIDDEN);
-				return;
+				return false;
 			}
 
 			if (empty($data['name']))
@@ -176,7 +193,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$entry['classname'] = $data['classname'];
 		$entry['position'] = $data['position'];
-		$entry['status'] = isset($data['status']) ? (in_array($data['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $data['status'] : iaCore::STATUS_ACTIVE) : iaCore::STATUS_ACTIVE;
+		$entry['status'] = isset($data['status']) && in_array($data['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $data['status'] : iaCore::STATUS_ACTIVE;
 		$entry['header'] = (int)$data['header'];
 		$entry['collapsible'] = (int)$data['collapsible'];
 		$entry['collapsed'] = (int)$data['collapsed'];
@@ -187,6 +204,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['pages'] = isset($data['pages']) ? $data['pages'] : array();
 		$entry['title'] = $data['title'];
 		$entry['contents'] = $data['content'];
+
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 		if ($entry['multilingual'])
 		{

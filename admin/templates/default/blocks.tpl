@@ -9,8 +9,8 @@
 				<label class="col col-lg-2 control-label">{lang key='name'}</label>
 
 				<div class="col col-lg-4">
-					{if iaCore::ACTION_ADD == $pageAction}
-						<input type="text" name="name" value="{if isset($item.name)}{$item.name|escape:'html'}{/if}">
+					{if iaCore::ACTION_ADD == $core.page.info.action}
+						<input type="text" name="name" value="{$item.name|escape:'html'}">
 						<p class="help-block">{lang key='unique_name'}</p>
 					{else}
 						<input type="text" value="{$item.name|escape:'html'}" disabled>
@@ -247,7 +247,7 @@
 
 					<div class="col col-lg-4">
 						<input type="text" name="filename" value="{if isset($item.filename) && !empty($item.filename)}{$item.filename|escape:'html'}{elseif isset($smarty.post.filename)}{$smarty.post.filename|escape:'html'}{/if}">
-						{if iaCore::ACTION_ADD == $pageAction}
+						{if iaCore::ACTION_ADD == $core.page.info.action}
 							<p class="help-block">{lang key='filename_notification'}</p>
 						{/if}
 					</div>
