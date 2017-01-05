@@ -375,7 +375,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->_saveTreeNodes($data['tree_nodes'], $entry);
 		}
 
-		$this->_iaCore->startHook('phpAdminFieldsSaved', array('field' => &$entry, '_this' => $this));
+		$this->_iaCore->startHook('phpAdminFieldsSaved', array('field' => &$entry, 'iaField' => $this));
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
