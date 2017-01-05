@@ -50,7 +50,7 @@ class iaExtra extends abstractCore
 
 	protected static $_table = 'extras';
 
-	private $_builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog', 'elfinder');
+	private $_builtinPlugins = array('kcaptcha', 'fancybox');
 
 	protected $_inTag;
 	protected $_currentPath;
@@ -1395,7 +1395,7 @@ class iaExtra extends abstractCore
 
 		if (self::TYPE_PLUGIN == $this->itemData['type'])
 		{
-			$extraEntry['removable'] = !in_array($this->itemData['name'], $this->_builtinPlugins);
+			$extraEntry['removable'] = !('personal_blog' != $this->itemData['name'] && in_array($this->itemData['name'], $this->_builtinPlugins));
 		}
 
 		if (!$this->isUpdate)
