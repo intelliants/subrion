@@ -54,6 +54,41 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_items = $this->_iaCore->factory('item')->getItems(true);
 	}
 
+	protected function _modifyGridResult(array &$entries)
+	{
+		foreach ($entries as $key => &$entry)
+		{
+			$entry['title'] = iaLanguage::get(self::PATTERN_TITLE . $entry['id']);
+			$entry['description'] = iaSanitize::tags(iaLanguage::get(self::PATTERN_DESCRIPTION . $entry['id']));
+			$entry['item'] = iaLanguage::get($entry['item']);
+
+			$entry['duration'].= ' ' . iaLanguage::get($entry['unit'] . ($entry['duration'] > 1 ? 's' : ''));
+			if ($entry['recurring'] && $entry['cycles'] != -1)
+			{
+				$entry['duration'].= ' (' . $entry['cycles'] . ' ' . iaLanguage::get('cycles') . ')';
+			}
+			$entry['duration'] = strtolower($entry['duration']);
+
+			unset($entries[$key]['unit'], $entries[$key]['cycles']);
+		}
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry = array(
+			'item' => '',
+			'cost' => '0.00',
+			'duration' => 30,
+			'unit' => iaPlan::UNIT_DAY,
+			'status' => iaCore::STATUS_ACTIVE,
+			'usergroup' => 0,
+			'recurring' => false,
+			'cycles' => 0,
+			'type' => iaPlan::TYPE_FEE,
+			'listings_limit' => 0
+		);
+	}
+
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
 		$entry['item'] = in_array($data['item'], $this->_items) ? $data['item'] : null;
@@ -192,41 +227,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$this->_iaDb->resetTable();
-	}
-
-	protected function _modifyGridResult(array &$entries)
-	{
-		foreach ($entries as $key => &$entry)
-		{
-			$entry['title'] = iaLanguage::get(self::PATTERN_TITLE . $entry['id']);
-			$entry['description'] = iaSanitize::tags(iaLanguage::get(self::PATTERN_DESCRIPTION . $entry['id']));
-			$entry['item'] = iaLanguage::get($entry['item']);
-
-			$entry['duration'].= ' ' . iaLanguage::get($entry['unit'] . ($entry['duration'] > 1 ? 's' : ''));
-			if ($entry['recurring'] && $entry['cycles'] != -1)
-			{
-				$entry['duration'].= ' (' . $entry['cycles'] . ' ' . iaLanguage::get('cycles') . ')';
-			}
-			$entry['duration'] = strtolower($entry['duration']);
-
-			unset($entries[$key]['unit'], $entries[$key]['cycles']);
-		}
-	}
-
-	protected function _setDefaultValues(array &$entry)
-	{
-		$entry = array(
-			'item' => '',
-			'cost' => '0.00',
-			'duration' => 30,
-			'unit' => iaPlan::UNIT_DAY,
-			'status' => iaCore::STATUS_ACTIVE,
-			'usergroup' => 0,
-			'recurring' => false,
-			'cycles' => 0,
-			'type' => iaPlan::TYPE_SUBSCRIPTION,
-			'listings_limit' => 0
-		);
 	}
 
 	protected function _entryAdd(array $entryData)

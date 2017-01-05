@@ -744,6 +744,9 @@ INSERT INTO `{install:prefix}acl_objects` (`pre_object`,`object`,`action`,`acces
 ('admin_page','pages','add',1),
 ('admin_page','pages','edit',1),
 ('admin_page','pages','home',0),
+('admin_page','plans','add',1),
+('admin_page','plans','edit',1),
+('admin_page','plans','delete',1),
 ('admin_page','plugins','install',1),
 ('admin_page','plugins','uninstall',0),
 ('admin_page','plugins','reinstall',0),
@@ -1201,16 +1204,6 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (2,'advertise',0,0,'advertise/',0,'page','','','');
 UPDATE `{install:prefix}pages` SET `status`='active',`last_updated`=NOW();
 
-INSERT INTO `{install:prefix}payment_plans_options` (`name`, `type`, `chargeable`, `default_value`) VALUES
-('num_images','int',0,'10'),
-('featured','bool',1,'1'),
-('highlighted','bool',1,'1'),
-('slide_show','bool',1,'1'),
-('sponsored','bool',1,'1'),
-('sponsored_days','int',0,'7'),
-('youtube_video','bool',1,'1');
-UPDATE `{install:prefix}payment_plans_options` SET `item`='members';
-
 INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`) VALUES
 (1,'administrators',1, 0),
 (2,'moderators',1, 0),
@@ -1295,6 +1288,10 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('admin_page-pages--edit','Allow to modify a page','admin'),
 ('admin_page-pages--home','Allow to change the Home page','admin'),
 ('admin_page-pages--read','Allow to view pages list','admin'),
+('admin_page-plans--add','Allow to add new plan','admin'),
+('admin_page-plans--delete','Allow to delete a plan','admin'),
+('admin_page-plans--edit','Allow to modify a plan','admin'),
+('admin_page-plans--read','Allow to view plans list','admin'),
 ('admin_page-plugins--install','Allow to install plugin','admin'),
 ('admin_page-plugins--reinstall','Allow to reinstall plugin','admin'),
 ('admin_page-plugins--uninstall','Allow to uninstall plugin','admin'),
@@ -2151,13 +2148,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('pending','Pending','common'),
 ('phone','Phone','common'),
 ('plan_added','Plan added.','common'),
-('plan_option_members_num_images', 'Number of images allowed', 'common'),
-('plan_option_members_featured', 'Featured Ad', 'common'),
-('plan_option_members_highlighted', 'Highlighted', 'common'),
-('plan_option_members_slide_show', 'Slide Show', 'common'),
-('plan_option_members_sponsored', 'Sponsored Ad', 'common'),
-('plan_option_members_sponsored_days', 'Number of days for Sponsored Listing', 'common'),
-('plan_option_members_youtube_video', 'YouTube Video', 'common'),
 ('plans','Plans','common'),
 ('position','Position','common'),
 ('previous','Previous','common'),

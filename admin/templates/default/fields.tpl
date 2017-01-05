@@ -95,7 +95,7 @@
 						<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
 							<label>
 								<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[]">
-								{$entry.title}
+								{$entry.title|escape:'html'}
 							</label>
 						</div>
 					{/foreach}
