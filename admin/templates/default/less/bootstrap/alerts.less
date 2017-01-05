@@ -9,7 +9,7 @@
 .alert {
   padding: @alert-padding;
   margin-bottom: @line-height-computed;
-  border: 1px solid transparent;
+  border-left: 3px solid transparent;
   border-radius: @alert-border-radius;
 
   // Headings for larger alerts
@@ -77,12 +77,6 @@
 .alert-danger,
 .alert-error {
   .alert-variant(@alert-danger-bg; @alert-danger-border; @alert-danger-text);
-}
-
-.alert {
-  border: none;
-  border-left-width: 3px;
-  border-left-style: solid;
 }
 
 // Mixin for generating new styles
