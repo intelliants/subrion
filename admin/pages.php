@@ -253,8 +253,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		// setting as the home page if needed
 		if (isset($data['home_page']) && $data['home_page'])
 		{
-			$iaAcl = $this->_iaCore->factory('acl');
-			if ($iaAcl->checkAccess($this->getName() . 'home'))
+			if ($this->_iaCore->factory('acl')->isAccessible($this->getName(), 'home'))
 			{
 				$this->_iaCore->set('home_page', $entry['name'], true);
 			}
@@ -304,7 +303,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			array('title' => iaLanguage::get('custom_menus', 'Custom menus'), 'list' => array())
 		);
 
-		if ($this->_iaCore->factory('acl')->checkAccess('admin_page:add', 0, 0, 'menus'))
+		if ($this->_iaCore->factory('acl')->isAccessible($this->getName(), iaCore::ACTION_ADD))
 		{
 			$this->_iaCore->factory('block', iaCore::ADMIN);
 
@@ -320,6 +319,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$selectedMenus = empty($_POST['menus'])
 				? $this->_iaDb->onefield('menu_id', iaDb::convertIds($entryData['name'], 'page_name'), null, null, iaBlock::getMenusTable())
 				: $_POST['menus'];
+
 			$iaView->assign('selectedMenus', $selectedMenus);
 		}
 
@@ -414,9 +414,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _saveMenus($entryName, $menus)
 	{
-		$iaAcl = $this->_iaCore->factory('acl');
-
-		if ($iaAcl->checkAccess('admin_page:add', 'menus'))
+		if ($this->_iaCore->factory('acl')->isAccessible($this->getName(), iaCore::ACTION_ADD))
 		{
 			$iaDb = &$this->_iaDb;
 			$iaBlock = $this->_iaCore->factory('block', iaCore::ADMIN);
