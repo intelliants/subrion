@@ -104,7 +104,8 @@ class iaPlan extends abstractCore
 
 		if (is_null(self::$_options))
 		{
-			self::$_options = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::getTableOptions());
+			self::$_options = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION,
+				iaDb::convertIds($this->_item, 'item'), null, null, self::getTableOptions());
 		}
 
 		foreach (self::$_options as $option)
@@ -185,7 +186,7 @@ class iaPlan extends abstractCore
 	/**
 	 * Returns an array of available plans
 	 *
-	 * @param null $itemName option item name
+	 * @param string $itemName item name
 	 *
 	 * @return array
 	 */
@@ -193,6 +194,9 @@ class iaPlan extends abstractCore
 	{
 		if (!$this->_item || $this->_item != $itemName)
 		{
+			$this->_item = $itemName;
+			$this->_plans = array();
+
 			$where = '`item` = :item AND `status` = :status ORDER BY `order` ASC';
 			$this->iaDb->bind($where, array('item' => $itemName, 'status' => iaCore::STATUS_ACTIVE));
 
@@ -202,13 +206,11 @@ class iaPlan extends abstractCore
 				{
 					$row['data'] = unserialize($row['data']);
 					$row['fields'] = isset($row['data']['fields']) ? implode(',', $row['data']['fields']) : '';
-					$row['options'] = $this->getPlanOptions($row['id']);
+					$options && $row['options'] = $this->getPlanOptions($row['id']);
 
 					$this->_plans[$row['id']] = $row;
 				}
 			}
-
-			$this->_item = $itemName;
 		}
 
 		return $this->_plans;

@@ -52,17 +52,19 @@
 				<label class="col col-lg-2 control-label">{lang key='type'} {lang key='field_required'}</label>
 
 				<div class="col col-lg-4">
-					<select name="type">
-						<option value="fee"{if iaPlan::TYPE_FEE} selected{/if}>{lang key='fee_based'}</option>
-						<option value="subscription"{if iaPlan::TYPE_SUBSCRIPTION} selected{/if}>{lang key='subscription'}</option>
-					</select>
+					<label class="radio-inline">
+						<input type="radio" name="type" value="fee"{if iaPlan::TYPE_FEE == $item.type} checked{/if}> {lang key='fee_based'}
+					</label>
+					<label class="radio-inline">
+						<input type="radio" name="type" value="subscription"{if iaPlan::TYPE_SUBSCRIPTION == $item.type} checked{/if}> {lang key='subscription'}
+					</label>
 				</div>
 			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='listings_limit'}</label>
 
-				<div class="col col-lg-4">
+				<div class="col col-lg-1">
 					<input type="text" name="listings_limit" class="js-input-numeric" value="{$item.listings_limit|escape:'html'}">
 					<p class="help-block">Leave 0 for unlimited</p>
 				</div>

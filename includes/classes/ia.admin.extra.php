@@ -1021,10 +1021,10 @@ class iaExtra extends abstractCore
 		if ($this->itemData['permissions'])
 		{
 			$iaDb->setTable('acl_privileges');
+
 			foreach ($this->itemData['permissions'] as $permission)
-			{
 				$iaDb->insert($permission);
-			}
+
 			$iaDb->resetTable();
 		}
 
@@ -1036,10 +1036,10 @@ class iaExtra extends abstractCore
 		if ($this->itemData['pages']['custom'] && $this->itemData['type'] == self::TYPE_PACKAGE)
 		{
 			$iaDb->setTable('items_pages');
+
 			foreach ($this->itemData['pages']['custom'] as $page)
-			{
 				$iaDb->insert(array('page_name' => $page['name'], 'item' => $page['item']));
-			}
+
 			$iaDb->resetTable();
 		}
 
@@ -1197,6 +1197,26 @@ class iaExtra extends abstractCore
 						$iaDb->insert($hook, $rawValues);
 					}
 				}
+			}
+
+			$iaDb->resetTable();
+		}
+
+		if (isset($this->itemData['plan_options']))
+		{
+			$this->iaCore->factory('plan');
+
+			$iaDb->setTable(iaPlan::getTableOptions());
+
+			foreach ($this->itemData['plan_options'] as $item)
+			{
+				if (empty($item['type']) || empty($item['name']) || empty($item['item'])) continue; // required fields
+
+				$title = $item['title'];
+				unset($item['title']);
+
+				$iaDb->insert($item);
+				$this->_addPhrase(sprintf('plan_option_%s_%s', $item['item'], $item['name']), $title);
 			}
 
 			$iaDb->resetTable();
@@ -1952,6 +1972,20 @@ class iaExtra extends abstractCore
 				elseif ($this->_checkPath('uninstall'))
 				{
 					$this->itemData['sql']['uninstall'][] = $entry;
+				}
+				break;
+
+			case 'option':
+				if ($this->_checkPath('plan_options'))
+				{
+					$this->itemData['plan_options'][] = array(
+						'item' => $this->_attr('item'),
+						'name' => $this->_attr('name'),
+						'type' => $this->_attr('type', '', array('bool', 'int', 'float', 'string')),
+						'default_value' => $this->_attr('default'),
+						'chargeable' => $this->_attr('chargeable', false),
+						'title' => $text
+					);
 				}
 		}
 	}

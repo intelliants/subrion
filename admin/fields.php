@@ -170,7 +170,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['relation'] = $data['relation'];
 		$entry['status'] = $data['status'];
 
-		$entry['fieldgroup_id'] = (int)$data['fieldgroup_id'];
+		$entry['fieldgroup_id'] = isset($data['fieldgroup_id']) ? (int)$data['fieldgroup_id'] : 0; // don't remove 'isset'
 		$entry['length'] = (int)$data['length'];
 
 		$entry['required'] = (int)$data['required'];
@@ -386,16 +386,13 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$entryData = $this->getById($this->getEntryId());
 
-			$title = array();
-			$annotation = array();
-
 			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` IN ('field_" . $entryData['item'] . '_' . $entryData['name']
 				. "', 'field_" . $entryData['item'] . '_' . $entryData['name'] . "_annotation') AND `category` = 'common'", null, null, iaLanguage::getTable());
 			foreach ($rows as $row)
 			{
 				sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $entryData['item'], $entryData['name']) == $row['key']
-					? ($title[$row['code']] = $row['value'])
-					: ($annotation[$row['code']] = $row['value']);
+					? ($entryData['title'][$row['code']] = $row['value'])
+					: ($entryData['annotation'][$row['code']] = $row['value']);
 			}
 
 			if ($entryData['default'])
@@ -441,12 +438,6 @@ class iaBackendController extends iaAbstractControllerBackend
 				$iaView->assign('noSystemFields', true);
 			}
 
-			foreach ($this->_iaCore->languages as $code => $language)
-			{
-				$entryData['title'][$code] = (isset($title[$code]) ? $title[$code] : '');
-				$entryData['annotation'][$code] = (isset($annotation[$code]) ? $annotation[$code] : '');
-			}
-
 			$entryData['pages'] = $this->_iaDb->onefield('page_name', iaDb::convertIds($this->getEntryId(), 'field_id'), null, null, iaField::getTablePages());
 			$entryData['parents'] = $this->_getParents($entryData['name']);
 
@@ -459,36 +450,23 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$iaItem = $this->_iaCore->factory('item');
-		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
-
-		$pages = array();
-
-		$stmt = empty($entryData['item'])
-			? iaDb::EMPTY_CONDITION
-			: iaDb::convertIds($entryData['item'], 'item');
-
-		// get items pages
-		$itemPagesList = $this->_iaDb->all(array('id', 'page_name', 'item'), $stmt . ' ORDER BY `item`, `page_name`', null, null, 'items_pages');
-		foreach ($itemPagesList as $entry)
-		{
-			$pages[$entry['id']] = array(
-				'name' => $entry['page_name'],
-				'title' => $iaPage->getPageTitle($entry['page_name']),
-				'item' => $entry['item']
-			);
-		}
 
 		$fieldTypes = $this->_iaDb->getEnumValues(iaField::getTable(), 'type');
-		$items = $iaItem->getItems();
-		$parents = array();
 
-		$fieldsList = $this->_iaDb->all(array('id', 'item', 'name'), (empty($entryData['name']) ? '' : "`name` != '{$entryData['name']}' AND ") . " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox') AND " . $stmt);
+		$parents = array();
+		$fieldsList = $this->_iaDb->all(array('id', 'item', 'name'),
+			(empty($entryData['name']) ? '' : "`name` != '{$entryData['name']}' AND ")
+			. " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox')"
+			. (empty($entryData['item']) ? '' : " AND `item` = '" . iaSanitize::sql($entryData['item']) . "'"));
 		foreach ($fieldsList as $row)
 		{
 			isset($parents[$row['item']]) || $parents[$row['item']] = array();
 			$array = $this->_iaDb->getEnumValues($iaItem->getItemTable($row['item']), $row['name']);
 			$parents[$row['item']][$row['name']] = array($row['id'], $array['values']);
 		}
+
+		isset($_POST['title']) && is_array($_POST['title']) && $entryData['title'] = $_POST['title'];
+		isset($_POST['annotation']) && is_array($_POST['annotation']) && $entryData['annotation'] = $_POST['annotation'];
 
 		$entryData['pages'] || $entryData['pages'] = array();
 
@@ -497,8 +475,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->assign('parents', $parents);
 		$iaView->assign('fieldTypes', $fieldTypes['values']);
 		$iaView->assign('groups', $this->_fetchFieldGroups($entryData['item']));
-		$iaView->assign('items', $items);
-		$iaView->assign('pages', $pages);
+		$iaView->assign('items', $iaItem->getItems());
+		$iaView->assign('pages', $this->_fetchPages($entryData['item']));
 		$iaView->assign('titles', $titles);
 		$iaView->assign('values', $values);
 	}
@@ -740,6 +718,28 @@ class iaBackendController extends iaAbstractControllerBackend
 			$result[] = array('id' => $row['id'], 'title' => iaField::getFieldgroupTitle($row['item'], $row['name']));
 
 		return $result;
+	}
+
+	private function _fetchPages($itemName)
+	{
+		$pages = array();
+
+		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
+
+		$where = $itemName ? iaDb::convertIds($itemName, 'item') : iaDb::EMPTY_CONDITION;
+
+		$itemPagesList = $this->_iaDb->all(array('id', 'page_name', 'item'),
+			$where . ' ORDER BY `item`, `page_name`', null, null, 'items_pages');
+		foreach ($itemPagesList as $entry)
+		{
+			$pages[$entry['id']] = array(
+				'name' => $entry['page_name'],
+				'title' => $iaPage->getPageTitle($entry['page_name']),
+				'item' => $entry['item']
+			);
+		}
+
+		return $pages;
 	}
 
 	protected function _savePhrases(array $fieldData, array $data)
