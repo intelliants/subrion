@@ -63,7 +63,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 	$path = IA_UPLOADS;
 	$url = IA_CLEAR_URL . 'uploads/';
-	if (!IA_ENABLE_FULL_ACCESS)
+	if (!IA_ENABLE_FULL_ACCESS && iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id)
 	{
 		iaCore::factory('util');
 
