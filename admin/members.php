@@ -216,7 +216,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->addMessage('username_already_taken');
 		}
 
-		if ($iaAcl->checkAccess($this->getName(), 'password') || iaCore::ACTION_ADD == $action)
+		if ($iaAcl->isAccessible($this->getName(), 'password') || iaCore::ACTION_ADD == $action)
 		{
 			$this->_password = trim($data['_password']);
 			if ($this->_password || !empty($data['_password2']))

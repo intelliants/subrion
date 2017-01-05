@@ -240,9 +240,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _save(&$iaView)
 	{
-		$iaAcl = $this->_iaCore->factory('acl');
-
-		if (!$iaAcl->checkAccess($iaView->name() . iaAcl::SEPARATOR . iaCore::ACTION_EDIT))
+		if (!$this->_iaCore->factory('acl')->isAccessible($iaView->name(), iaCore::ACTION_EDIT))
 		{
 			return iaView::accessDenied();
 		}

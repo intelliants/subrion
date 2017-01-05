@@ -101,6 +101,7 @@
 				<input type="hidden" value="1" name="service">
 			{/if}
 
+			{access object='admin_page' id='pages' action='home'}
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='use_as_home_page'}</label>
 				<div class="col col-lg-4">
@@ -112,6 +113,7 @@
 					{/if}
 				</div>
 			</div>
+			{/access}
 
 			{access object='admin_page' id='menus' action=iaCore::ACTION_ADD}
 				<div class="row">
