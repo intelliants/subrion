@@ -7,14 +7,6 @@
 {if isset($item.$fieldName)}
 	{if iaField::CHECKBOX == $type}
 		{$value = ','|explode:$item.$fieldName}
-	{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
-		{* TODO: refactor the code below *}
-		{if $item.$fieldName}
-			{$value = $item.$fieldName|unserialize}
-		{else}
-			{$value = array()}
-		{/if}
-		{* *}
 	{else}
 		{$value = $item.$fieldName}
 	{/if}
@@ -100,7 +92,7 @@ $(function()
 					{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
 						{printImage imgfile=$value.path width=$field.thumb_width height=$field.thumb_height thumbnail=1}
 					{else}
-						<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
+						<a href="{printImage imgfile=$value.path url=true type='full'}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
 							{printImage imgfile=$value.path width=$field.thumb_width height=$field.thumb_height}
 						</a>
 					{/if}
@@ -131,7 +123,7 @@ $(function()
 										<button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 									</div>
 									
-									<a class="thumbnail__image" href="{printImage imgfile=$entry.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]" title="{$entry.title|escape:'html'}">
+									<a class="thumbnail__image" href="{printImage imgfile=$entry.path url=true type='full'}" rel="ia_lightbox[{$fieldName}]" title="{$entry.title|escape:'html'}">
 										{printImage imgfile=$entry.path title=$entry.title class='img-responsive'}
 									</a>
 
