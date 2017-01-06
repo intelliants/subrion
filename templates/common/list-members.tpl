@@ -1,6 +1,6 @@
 <div class="ia-item">
 	<div class="ia-item__image">
-		{printImage imgfile=$listing.avatar title=$listing.fullname|default:$listing.username gravatar=true email=$listing.email gravatar_width=200}
+		{printImage imgfile=$listing.avatar.path title=$listing.fullname|default:$listing.username gravatar=true email=$listing.email gravatar_width=200}
 	</div>
 	<div class="ia-item__content">
 		<div class="ia-item__actions">

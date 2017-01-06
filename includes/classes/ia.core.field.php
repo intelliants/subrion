@@ -878,6 +878,15 @@ class iaField extends abstractCore
 		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
 	}
 
+	public function getSerializedFields($itemFilter = null)
+	{
+		$conditions = array("`type` IN ('image', 'pictures', 'storage')");
+		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
+		$conditions = implode(' AND ', $conditions);
+
+		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+	}
+
 	public function getTreeNodes($condition = '')
 	{
 		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $condition, null, null, 'fields_tree_nodes');

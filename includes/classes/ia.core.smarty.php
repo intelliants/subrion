@@ -609,19 +609,6 @@ class iaSmarty extends Smarty
 
 		$imageName = isset($params['gravatar']) ? 'no-avatar.png' : 'no-preview.png';
 
-		// temporary solution
-		// TODO: remove
-		if ('a:' == substr($params['imgfile'], 0, 2))
-		{
-			$array = unserialize($params['imgfile']);
-
-			$params['imgfile'] = $array['path'];
-			$params['title'] = isset($array['title']) ? $array['title'] : '';
-
-			iaDebug::debug($params['imgfile'], 'Serialized parameter passed to iaSmarty::printImage()', 'error');
-		}
-		//
-
 		if (!empty($params['imgfile']))
 		{
 			$thumbUrl = $iaCore->iaView->assetsUrl . 'uploads/';

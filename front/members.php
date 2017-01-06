@@ -52,14 +52,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		$activeGroup = $_SESSION['group'];
 
-		$cause = '`usergroup_id` = ' . $activeGroup . ' AND ';
+		$stmt = '`usergroup_id` = ' . $activeGroup . ' AND ';
 	}
 	else
 	{
-		$cause = '`usergroup_id` IN (' . implode(',', array_keys($usergroups)) . ') AND ';
+		$stmt = '`usergroup_id` IN (' . implode(',', array_keys($usergroups)) . ') AND ';
 	}
 	$iaView->assign('activeGroup', $activeGroup);
-
 
 	$filterBy = 'username';
 
@@ -79,15 +78,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$letters['existing'] = array();
 
 	$iaDb->setTable(iaUsers::getTable());
-	if ($array = $iaDb->all('DISTINCT UPPER(SUBSTR(`' . $filterBy . '`, 1, 1)) `letter`', $cause . "`status` = 'active' GROUP BY `username`"))
+	if ($array = $iaDb->all('DISTINCT UPPER(SUBSTR(`' . $filterBy . '`, 1, 1)) `letter`', $stmt . "`status` = 'active' GROUP BY `username`"))
 	{
 		foreach ($array as $item)
 		{
 			$letters['existing'][] = $item['letter'];
 		}
 	}
+	$iaDb->resetTable();
 
-	$cause .= $letters['active'] ? ('0-9' == $letters['active'] ? "(`$filterBy` REGEXP '^[0-9]') AND " : "(`$filterBy` LIKE '{$letters['active']}%') AND ") : '';
+	$stmt .= $letters['active'] ? ('0-9' == $letters['active'] ? "(`$filterBy` REGEXP '^[0-9]') AND " : "(`$filterBy` LIKE '{$letters['active']}%') AND ") : '';
 	if ($letters['active'])
 	{
 		$iaView->set('subpage', array_search($letters['active'], $letters) + 1);
@@ -96,16 +96,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	// gets current page and defines start position
 	$pagination = array(
 		'limit' => 20,
-		'total' => (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, $cause . "`status` = 'active' "),
 		'url' => IA_URL . 'members/' . ($letters['active'] ? $letters['active'] . '/' : '') . '?page={page}'
 	);
 	$page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
 	$start = (max($page, 1) - 1) * $pagination['limit'];
 
-	$membersList = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $cause . "`status` = 'active' ORDER BY `date_reg`", $start, $pagination['limit']);
+	list($pagination['total'], $membersList) = $iaUsers->coreSearch($stmt . "`status` = 'active' ", $start, $pagination['limit'], '`date_reg`');
 	$fields = $iaCore->factory('field')->filter($iaUsers->getItemName(), $membersList);
-
-	$iaDb->resetTable();
 
 	// breadcrumb formation
 	if ($activeGroup)

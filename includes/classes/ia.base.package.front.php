@@ -222,4 +222,44 @@ abstract class abstractPackageFront extends abstractCore
 	{
 		return null;
 	}
+
+	/**
+	 * Used to unserialize fields
+	 *
+	 * @param array $rows items array
+	 * @param boolean $singleRow true when item is passed as one row
+	 * @param array $fieldNames list of custom serialized fields
+	 */
+	protected function _processValues(array &$rows, $singleRow = false, $fieldNames = array())
+	{
+		// get serialized field names
+		$iaField = $this->iaCore->factory('field');
+		if ($this->getItemName())
+		{
+			$fieldNames = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+		}
+
+		!$singleRow || $rows = array($rows);
+
+		// process favorites
+		$rows = $this->iaCore->factory('item')->updateItemsFavorites($rows, $this->getItemName());
+
+		foreach ($rows as &$row)
+		{
+			// filter fields
+			$iaField->filter($this->getItemName(), $row);
+
+			if (!is_array($row) || !$fieldNames)
+			{
+				break;
+			}
+
+			foreach ($fieldNames as $name)
+			{
+				$row[$name] = $row[$name] ? unserialize($row[$name]) : array('path' => '', 'title' => '');
+			}
+		}
+
+		!$singleRow || $rows = array_shift($rows);
+	}
 }
