@@ -65,7 +65,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$sql = 'SELECT :columns, pt.`value` `title`, pi.`value` `item` '
 			. 'FROM `:prefix:table_groups` fg '
-			. 'LEFT JOIN `:prefix:table_phrases` pt ON (pt.`key` = CONCAT("fieldgroup_", fg.`name`) AND pt.`code` = ":lang") '
+			. 'LEFT JOIN `:prefix:table_phrases` pt ON (pt.`key` = CONCAT("fieldgroup_", fg.`item`, "_", fg.`name`) AND pt.`code` = ":lang") '
 			. 'LEFT JOIN `:prefix:table_phrases` pi ON (pi.`key` = fg.`item` AND pi.`code` = ":lang") '
 			. 'WHERE :conditions '
 			. 'GROUP BY fg.`id` :order '
@@ -91,7 +91,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach ($entries as &$entry)
 		{
 			// processing in case if there are no appropriate phrases
-			$entry['title'] || $entry['title'] = iaLanguage::get('fieldgroup_' . $entry['name']);
+			$entry['title'] || $entry['title'] = iaLanguage::get("fieldgroup_{$entry['item']}_{$entry['name']}");
 			$entry['item'] || $entry['item'] = iaLanguage::get($entry['item']);
 		}
 	}
@@ -103,7 +103,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($name = $this->_iaDb->one(array('name'), iaDb::convertIds($entryId)))
 			{
-				$phraseKey = 'fieldgroup_' . $name;
+				$phraseKey = "fieldgroup_{$entryData['item']}_{$name}";
 
 				return iaLanguage::addPhrase($phraseKey, iaSanitize::html($entryData['title']), null, '', iaLanguage::CATEGORY_COMMON, true);
 			}
@@ -123,7 +123,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($result && $row)
 		{
-			$stmt = iaDb::printf("`key` = 'fieldgroup_:name' OR `key` = 'fieldgroup_description_:item_:name'", $row);
+			$stmt = iaDb::printf("`key` = 'fieldgroup_:item_:name' OR `key` = 'fieldgroup_description_:item_:name'", $row);
 
 			$this->_iaDb->delete($stmt, iaLanguage::getTable());
 		}
@@ -143,7 +143,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$this->_iaDb->setTable(iaLanguage::getTable());
 
-			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_{$entryData['name']}'");
+			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_{$entryData['item']}_{$entryData['name']}'");
 			$entryData['description'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_description_{$entryData['item']}_{$entryData['name']}'");
 
 			$this->_iaDb->resetTable();
@@ -226,7 +226,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_iaDb->setTable(iaLanguage::getTable());
 
-		$phraseKeyTitle = 'fieldgroup_' . $name;
+		$phraseKeyTitle = "fieldgroup_{$item}_{$name}";
 		$phraseKeyDescription = "fieldgroup_description_{$item}_{$name}";
 
 		foreach ($this->_iaCore->languages as $code => $language)
