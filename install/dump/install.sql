@@ -494,6 +494,7 @@ CREATE TABLE `{install:prefix}migrations` (
 	`name` varchar(100) NOT NULL default '',
 	`status` enum('incomplete','skipped','complete') NOT NULL default 'complete',
 	`data` text,
+	`date` datetime null,
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
