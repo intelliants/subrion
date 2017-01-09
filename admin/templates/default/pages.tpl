@@ -170,58 +170,148 @@
 			<div class="wrap-group-heading">{lang key='seo'}</div>
 
 			<div class="row">
-				<ul class="nav nav-tabs">
-					{foreach $core.languages as $iso => $language}
-						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-meta-{$iso}" data-toggle="tab">{$language.title}</a></li>
-					{/foreach}
-				</ul>
-
-				<div class="tab-content">
-					{foreach $core.languages as $iso => $language}
-						<div class="tab-pane{if $language@first} active{/if}" id="tab-meta-{$iso}">
-							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='meta_description'}</label>
-								<div class="col col-lg-4">
-									<textarea name="meta_description[{$iso}]" rows="2">{if isset($metaDescription.$iso)}{$metaDescription.$iso|escape:'html'}{/if}</textarea>
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-meta_description"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-meta_description"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='meta_description'}</label>
+				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-meta_description">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<textarea name="meta_description[{$core.language.iso}]" rows="2" id="meta_description-{$core.language.iso}">{if isset($metaDescription[$core.language.iso])}{$metaDescription[$core.language.iso]|escape:'html'}{/if}</textarea>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
 								</div>
 							</div>
-							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='meta_keywords'}</label>
-								<div class="col col-lg-4">
-									<input type="text" name="meta_keywords[{$iso}]"{if isset($metaKeywords.$iso)} value="{$metaKeywords.$iso|escape:'html'}"{/if}>
-								</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<textarea name="meta_description[{$iso}]" rows="2">{if isset($metaDescription.$iso)}{$metaDescription.$iso|escape:'html'}{/if}</textarea>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
 							</div>
 						</div>
-					{/foreach}
+					{else}
+						<textarea name="meta_description[{$core.language.iso}]" rows="2">{if isset($metaDescription[$core.language.iso])}{$metaDescription[$core.language.iso]|escape:'html'}{/if}</textarea>
+					{/if}
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-meta_keywords"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-meta_keywords"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='meta_keywords'}</label>
+				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-meta_keywords">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="meta_keywords[{$core.language.iso}]"{if isset($metaKeywords[$core.language.iso])} value="{$metaKeywords[$core.language.iso]|escape:'html'}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="meta_keywords[{$iso}]"{if isset($metaKeywords.$iso)} value="{$metaKeywords.$iso|escape:'html'}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="meta_keywords[{$core.language.iso}]"{if isset($metaKeywords[$core.language.iso])} value="{$metaKeywords[$core.language.iso]|escape:'html'}"{/if}>
+					{/if}
 				</div>
 			</div>
 		</div>
 
 		<div class="wrap-group" id="js-content-fields">
 			<div class="row">
-				<ul class="nav nav-tabs">
-					{foreach $core.languages as $iso => $language}
-						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-content-{$iso}" data-toggle="tab" data-language="{$iso}">{$language.title}</a></li>
-					{/foreach}
-				</ul>
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-title"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='title'}</label>
+				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-title">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape:'html'}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="title[{$iso}]"{if isset($title.$iso)} value="{$title.$iso|escape:'html'}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape:'html'}"{/if}>
+					{/if}
+				</div>
+			</div>
 
-				<div class="tab-content">
-					{foreach $core.languages as $iso => $language}
-					<div class="tab-pane{if $language@first} active{/if}" id="tab-content-{$iso}">
-						<div class="row">
-							<label class="col col-lg-2 control-label">{lang key='title'}</label>
-							<div class="col col-lg-10">
-								<input type="text" name="title[{$iso}]"{if isset($title.$iso)} value="{$title.$iso|escape:'html'}"{/if}>
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-page_content"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-page_content"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='page_content'}</label>
+				</div>
+				<div class="col col-lg-8">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-page_content">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<textarea name="content[{$core.language.iso}]" data-language="{$core.language.iso}" rows="2" id="content-{$core.language.iso}">{if isset($content[$core.language.iso])}{$content[$core.language.iso]|escape:'html'}{/if}</textarea>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<textarea name="content[{$iso}]" data-language="{$iso}" rows="2">{if isset($content.$iso)}{$content.$iso|escape:'html'}{/if}</textarea>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
 							</div>
 						</div>
-						<div class="row js-local-url-field">
-							<label class="col col-lg-2 control-label">{lang key='page_content'}</label>
-							<div class="col col-lg-10">
-								<textarea rows="30" name="content[{$iso}]">{if isset($content.$iso)}{$content.$iso|escape:'html'}{/if}</textarea>
-							</div>
-						</div>
-					</div>
-					{/foreach}
+					{else}
+						<textarea name="content[{$core.language.iso}]" rows="2">{if isset($content[$core.language.iso])}{$content[$core.language.iso]|escape:'html'}{/if}</textarea>
+					{/if}
 				</div>
 			</div>
 		</div>
