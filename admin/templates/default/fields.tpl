@@ -6,65 +6,66 @@
 			<div class="wrap-group-heading">{lang key='options'}</div>
 
 			{if iaCore::ACTION_EDIT == $pageAction}
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='name'}</label>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='name'}</label>
 
-				<div class="col col-lg-4">
-					<input type="text" value="{$item.name|escape:'html'}" disabled>
-					<input type="hidden" name="name" value="{$item.name|escape:'html'}">
+					<div class="col col-lg-4">
+						<input type="text" value="{$item.name|escape:'html'}" disabled>
+						<input type="hidden" name="name" value="{$item.name|escape:'html'}">
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='field_item'}</label>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='field_item'}</label>
 
-				<div class="col col-lg-4">
-					<input type="text" value="{$item.item|escape:'html'}" disabled>
-					<input type="hidden" name="item" id="input-item" value="{$item.item|escape:'html'}">
+					<div class="col col-lg-4">
+						<input type="text" value="{$item.item|escape:'html'}" disabled>
+						<input type="hidden" name="item" id="input-item" value="{$item.item|escape:'html'}">
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='field_type'}</label>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='field_type'}</label>
 
-				<div class="col col-lg-4">
-					<input type="text" value="{lang key="field_type_{$item.type}" default=$item.type}" disabled>
-					<input type="hidden" name="type" id="input-type" value="{$item.type|escape:'html'}">
+					<div class="col col-lg-4">
+						<input type="text" value="{lang key="field_type_{$item.type}" default=$item.type}" disabled>
+						<input type="hidden" name="type" id="input-type" value="{$item.type|escape:'html'}">
+					</div>
 				</div>
-			</div>
 			{else}
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='name'} <span class="required">*</span></label>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='name'} <span class="required">*</span></label>
 
-				<div class="col col-lg-4">
-					<input type="text" name="name" value="{$item.name}">
-					<p class="help-block">{lang key='unique_name'}</p>
+					<div class="col col-lg-4">
+						<input type="text" name="name" value="{$item.name}">
+						<p class="help-block">{lang key='unique_name'}</p>
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='field_item'} <span class="required">*</span></label>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='field_item'} <span class="required">*</span></label>
 
-				<div class="col col-lg-4">
-					<select name="item" id="input-item">
-						<option value="">{lang key='_select_'}</option>
-						{foreach $items as $entry}
-							<option value="{$entry}"{if $item.item == $entry} selected{/if}>{lang key=$entry default=$entry}</option>
-						{/foreach}
-					</select>
+					<div class="col col-lg-4">
+						<select name="item" id="input-item">
+							<option value="">{lang key='_select_'}</option>
+							{foreach $items as $entry}
+								<option value="{$entry}"{if $item.item == $entry} selected{/if}>{lang key=$entry default=$entry}</option>
+							{/foreach}
+						</select>
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='field_type'} <span class="required">*</span></label>
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='field_type'} <span class="required">*</span></label>
 
-				<div class="col col-lg-4">
-					<select name="type" id="input-type">
-						<option value="">{lang key='_select_'}</option>
-						{foreach $fieldTypes as $type}
-							<option value="{$type}"{if $item.type == $type} selected{/if} data-annotation="{lang key="field_type_tip_{$type}" default=''}">{lang key="field_type_{$type}" default=$type}</option>
-						{/foreach}
-					</select>
-					<p class="help-block"></p>
+					<div class="col col-lg-4">
+						<select name="type" id="input-type">
+							<option value="">{lang key='_select_'}</option>
+							{foreach $fieldTypes as $type}
+								<option value="{$type}"{if $item.type == $type} selected{/if} data-annotation="{lang key="field_type_tip_{$type}" default=''}">{lang key="field_type_{$type}" default=$type}</option>
+							{/foreach}
+						</select>
+						<p class="help-block"></p>
+					</div>
 				</div>
-			</div>
 			{/if}
+
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='field_group'}</label>
 
@@ -91,14 +92,14 @@
 
 				<div class="col col-lg-4">
 					<div class="box-simple fieldset">
-					{foreach $pages as $entry}
-						<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
-							<label>
-								<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[]">
-								{$entry.title|escape:'html'}
-							</label>
-						</div>
-					{/foreach}
+						{foreach $pages as $entry}
+							<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
+								<label>
+									<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[]">
+									{$entry.title|escape:'html'}
+								</label>
+							</div>
+						{/foreach}
 					</div>
 					<a href="#" id="toggle-pages" class="label label-default pull-right"><i class="i-lightning"></i> {lang key='select_all'}</a>
 				</div>
@@ -205,28 +206,28 @@
 
 			<div id="storage" class="field_type" style="display: none;">
 				{if !is_writable($smarty.const.IA_UPLOADS)}
-				<div class="row">
-					<label class="col col-lg-2 control-label"></label>
+					<div class="row">
+						<label class="col col-lg-2 control-label"></label>
 
-					<div class="col col-lg-4">
-						<div class="alert alert-warning">{lang key='upload_writable_permission'}</div>
+						<div class="col col-lg-4">
+							<div class="alert alert-warning">{lang key='upload_writable_permission'}</div>
+						</div>
 					</div>
-				</div>
 				{else}
-				<div class="row">
-					<label class="col col-lg-2 control-label">{lang key='max_files'}</label>
+					<div class="row">
+						<label class="col col-lg-2 control-label">{lang key='max_files'}</label>
 
-					<div class="col col-lg-4">
-						<input class="js-filter-numeric" type="text" name="max_files" value="{$item.length|escape:'html'}">
+						<div class="col col-lg-4">
+							<input class="js-filter-numeric" type="text" name="max_files" value="{$item.length|escape:'html'}">
+						</div>
 					</div>
-				</div>
-				<div class="row">
-					<label class="col col-lg-2 control-label">{lang key='file_types'} <span class="required">*</span></label>
+					<div class="row">
+						<label class="col col-lg-2 control-label">{lang key='file_types'} <span class="required">*</span></label>
 
-					<div class="col col-lg-4">
-						<textarea rows="3" id="file_types" name="file_types">{if isset($item.file_types)}{$item.file_types|escape:'html'}{/if}</textarea>
+						<div class="col col-lg-4">
+							<textarea rows="3" id="file_types" name="file_types">{if isset($item.file_types)}{$item.file_types|escape:'html'}{/if}</textarea>
+						</div>
 					</div>
-				</div>
 				{/if}
 			</div>
 
@@ -539,33 +540,77 @@
 				</div>
 			</div>
 
-			<hr>
+			<hr class="m-y">
 
 			<div class="row">
-				<ul class="nav nav-tabs">
-					{foreach $core.languages as $code => $language}
-						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title|escape:'html'}</a></li>
-					{/foreach}
-				</ul>
-
-				<div class="tab-content">
-					{foreach $core.languages as $code => $language}
-						<div class="tab-pane{if $language@first} active{/if}" id="tab-language-{$code}">
-							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='title'} <span class="required">*</span></label>
-								<div class="col col-lg-10">
-									<input type="text" name="title[{$code}]"{if isset($item.title.$code)} value="{$item.title.$code|escape:'html'}"{/if}>
-								</div>
-							</div>
-							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='tooltip'}</label>
-								<div class="col col-lg-10">
-									<input type="text" name="annotation[{$code}]"{if isset($item.annotation.$code)} value="{$item.annotation.$code|escape:'html'}"{/if}>
-								</div>
-							</div>
-
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-title"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
 						</div>
-					{/foreach}
+					{/if}
+					<label class="control-label">{lang key='title'} <span class="required">*</span></label>
+				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-title">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="title[{$iso}]"{if isset($item.title.$iso)} value="{$item.title.$iso|escape:'html'}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
+					{/if}
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-tooltip"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-tooltip"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='tooltip'}</label>
+				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-tooltip">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="annotation[{$core.language.iso}]"{if isset($item.annotation[$core.language.iso])} value="{$item.annotation[$core.language.iso]|escape:'html'}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="annotation[{$iso}]"{if isset($item.annotation.$iso)} value="{$item.annotation.$iso|escape:'html'}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="annotation[{$core.language.iso}]"{if isset($item.annotation[$core.language.iso])} value="{$item.annotation[$core.language.iso]|escape:'html'}"{/if}>
+					{/if}
 				</div>
 			</div>
 		</div>
