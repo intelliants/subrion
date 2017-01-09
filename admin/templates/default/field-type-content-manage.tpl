@@ -6,7 +6,7 @@
 
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
-	<div class="col col-lg-2 ">
+	<div class="col col-lg-2">
 		{if $field.multilingual}
 			<div class="btn-group btn-group-xs translate-group-actions">
 				<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"><span class="i-earth"></span></button>

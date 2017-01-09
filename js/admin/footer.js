@@ -157,6 +157,8 @@ $(function()
 			defaultVal = $parent.find('input:first, textarea:first').val();
 
 		$parent.find('.translate-group__langs input, .translate-group__langs textarea').val(defaultVal);
+
+		// TODO: add an ability to copy content from CKEDITOR to other instances of it in same group
 	});
 
 	// switching

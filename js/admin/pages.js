@@ -178,16 +178,14 @@ $(function()
 	$('#input-name, #input-alias').on('blur', fillUrlBox);
 	$('#input-parent').on('change', fillUrlBox);
 
-	// Page content language tabs
-	$('a[data-toggle="tab"]', '#js-content-fields').on('shown.bs.tab', function()
-	{
-		var lngCode = $(this).data('language');
-		CKEDITOR.instances['content[' + lngCode + ']']
-			|| intelli.ckeditor('content[' + lngCode + ']', {toolbar: 'Extended'});
+	// Init CKEDITORs
+	$('textarea[name^="content"]').each(function() {
+		var $this   = $(this),
+			lngCode = $this.data('language');
 
-		$('#js-active-language').val(lngCode);
-	});
-	$('a[data-toggle="tab"]:first', '#js-content-fields').trigger('shown.bs.tab');
+		CKEDITOR.instances['content[' + lngCode + ']']
+					|| intelli.ckeditor('content[' + lngCode + ']', {toolbar: 'Extended'});
+	})
 
 	// page extension dropdown
 	$('a', '#js-page-extension-list').on('click', function(e)
