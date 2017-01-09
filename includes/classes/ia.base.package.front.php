@@ -68,11 +68,11 @@ abstract class abstractPackageFront extends abstractCore
 		return array('', '');
 	}
 
-	public function getById($id)
+	public function getById($id, $decorate = true)
 	{
 		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
 
-		$this->_processValues($row, true);
+		$decorate && $this->_processValues($row, true);
 
 		return $row;
 	}
@@ -234,7 +234,7 @@ abstract class abstractPackageFront extends abstractCore
 	 * @param boolean $singleRow true when item is passed as one row
 	 * @param array $fieldNames list of custom serialized fields
 	 */
-	protected function _processValues(array &$rows, $singleRow = false, $fieldNames = array())
+	protected function _processValues(&$rows, $singleRow = false, $fieldNames = array())
 	{
 		if (!$rows)
 		{
