@@ -70,7 +70,11 @@ abstract class abstractPackageFront extends abstractCore
 
 	public function getById($id)
 	{
-		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+
+		$this->_processValues($row, true);
+
+		return $row;
 	}
 
 	public function insert(array $itemData)
@@ -232,34 +236,43 @@ abstract class abstractPackageFront extends abstractCore
 	 */
 	protected function _processValues(array &$rows, $singleRow = false, $fieldNames = array())
 	{
-		// get serialized field names
-		$iaField = $this->iaCore->factory('field');
-		if ($this->getItemName())
+		if (!$rows)
 		{
-			$fieldNames = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+			return;
 		}
 
-		!$singleRow || $rows = array($rows);
+		$singleRow && $rows = array($rows);
 
 		// process favorites
 		$rows = $this->iaCore->factory('item')->updateItemsFavorites($rows, $this->getItemName());
 
-		foreach ($rows as &$row)
+		// get serialized field names
+		$iaField = $this->iaCore->factory('field');
+
+		$fieldNames = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+
+		if ($fieldNames)
 		{
-			// filter fields
-			$iaField->filter($this->getItemName(), $row);
-
-			if (!is_array($row) || !$fieldNames)
+			foreach ($rows as &$row)
 			{
-				break;
-			}
+				if (!is_array($row))
+				{
+					break;
+				}
 
-			foreach ($fieldNames as $name)
-			{
-				$row[$name] = $row[$name] ? unserialize($row[$name]) : array('path' => '', 'title' => '');
+				// filter fields
+				$iaField->filter($this->getItemName(), $row);
+
+				foreach ($fieldNames as $name)
+				{
+					if (isset($row[$name]))
+					{
+						$row[$name] = $row[$name] ? unserialize($row[$name]) : array();
+					}
+				}
 			}
 		}
 
-		!$singleRow || $rows = array_shift($rows);
+		$singleRow && $rows = array_shift($rows);
 	}
 }

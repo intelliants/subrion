@@ -352,7 +352,7 @@
 										<div class="row">
 											<label class="col col-lg-4 control-label">{lang key='item_value'} <span class="label label-info">{$language.title|escape:'html'}</span></label>
 											<div class="col col-lg-8">
-												<input type="text" name="values[{$code}][]" value="{$titles.$value.$code|escape:'html'}">
+												<input type="text" name="values[{$code}][]"{if isset($titles.$value.$code)} value="{$titles.$value.$code|escape:'html'}"{/if}>
 											</div>
 										</div>
 									{/foreach}
@@ -544,7 +544,7 @@
 			<div class="row">
 				<ul class="nav nav-tabs">
 					{foreach $core.languages as $code => $language}
-						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title}</a></li>
+						<li{if $language@iteration == 1} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title|escape:'html'}</a></li>
 					{/foreach}
 				</ul>
 

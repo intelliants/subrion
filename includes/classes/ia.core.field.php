@@ -880,7 +880,7 @@ class iaField extends abstractCore
 
 	public function getSerializedFields($itemFilter = null)
 	{
-		$conditions = array("`type` IN ('image', 'pictures', 'storage')");
+		$conditions = array("`status` = 'active' AND `type` IN ('image', 'pictures', 'storage')");
 		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
 		$conditions = implode(' AND ', $conditions);
 
@@ -894,9 +894,7 @@ class iaField extends abstractCore
 		if ($rows)
 		{
 			foreach ($rows as &$node)
-			{
-				$node['title'] = iaLanguage::get('field_' . $node['item'] . '_' . $node['field'] . '_' . $node['node_id']);
-			}
+				$node['title'] = self::getFieldValue($node['item'], $node['field'], $node['node_id']);
 		}
 
 		return $rows;
@@ -904,13 +902,10 @@ class iaField extends abstractCore
 
 	public function getTreeNode($condition)
 	{
-		$result = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $condition, 'fields_tree_nodes');
-		if ($result)
-		{
-			$result['title'] = iaLanguage::get('field_' . $result['item'] . '_' . $result['field'] . '_' . $result['node_id']);
-		}
+		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $condition, 'fields_tree_nodes');
+		$row && $row['title'] = self::getFieldValue($row['item'], $row['field'], $row['node_id']);
 
-		return $result;
+		return $row;
 	}
 
 
