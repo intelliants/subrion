@@ -33,7 +33,7 @@ class iaPage extends abstractPlugin
 
 	public $extendedExtensions = array('htm', 'html', 'php');
 
-	protected static $_pageTitles;
+	protected static $_pageTitles = array();
 
 
 	public static function getAdminTable()
@@ -62,29 +62,29 @@ class iaPage extends abstractPlugin
 
 	public function getTitles($side = iaCore::FRONT)
 	{
-		$category = iaCore::FRONT == $side ? iaLanguage::CATEGORY_PAGE : iaLanguage::CATEGORY_ADMIN;
-
-		if (!isset(self::$_pageTitles[$category]))
+		if (!isset(self::$_pageTitles[$side]))
 		{
+			$category = iaCore::FRONT == $side ? iaLanguage::CATEGORY_PAGE : iaLanguage::CATEGORY_ADMIN;
+
 			$where = '`key` LIKE :key AND `category` = :category AND `code` = :code';
 			$this->iaDb->bind($where, array('key' => 'page_title_%', 'category' => $category, 'code' => $this->iaView->language));
 
-			self::$_pageTitles[$category] = $this->iaDb->keyvalue("REPLACE(`key`, 'page_title_', '') `key`, `value`", $where, iaLanguage::getTable());
+			self::$_pageTitles[$side] = $this->iaDb->keyvalue("REPLACE(`key`, 'page_title_', '') `key`, `value`", $where, iaLanguage::getTable());
 		}
 
-		return self::$_pageTitles[$category];
+		return self::$_pageTitles[$side];
 	}
 
 	public function getPageTitle($pageName, $default = null)
 	{
 		$this->getTitles();
 
-		if (!isset(self::$_pageTitles[$pageName]))
+		if (!isset(self::$_pageTitles[iaCore::FRONT][$pageName]))
 		{
 			return is_null($default) ? $pageName : $default;
 		}
 
-		return self::$_pageTitles[$pageName];
+		return self::$_pageTitles[iaCore::FRONT][$pageName];
 	}
 
 	public function getGroups(array $exclusions = array())

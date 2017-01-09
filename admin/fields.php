@@ -26,7 +26,7 @@
 
 class iaBackendController extends iaAbstractControllerBackend
 {
-	const TREE_NODE_TITLE = 'field_%s_%s_%s';
+	const TREE_NODE_TITLE = 'field_%s_%s+%s';
 
 	protected $_name = 'fields';
 
@@ -39,7 +39,9 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_phraseGridEntryDeleted = 'field_deleted';
 
 	private $_data;
+
 	private $_values;
+	private $_nodes;
 
 
 	public function __construct()
@@ -333,9 +335,9 @@ class iaBackendController extends iaAbstractControllerBackend
 					break;
 
 				case iaField::TREE:
-					list($entry['values'], $entry['tree_nodes']) = $this->_parseTreeNodes($data['nodes']);
-
 					$entry['timepicker'] = (int)$data['multiple'];
+
+					list($entry['values'], $this->_nodes) = $this->_parseTreeNodes($data['nodes']);
 			}
 		}
 
@@ -365,14 +367,16 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
-		$this->_savePhrases($entry, $data);
+		$fieldName = empty($entry['name']) ? $this->_data['name'] : $entry['name'];
+
+		$this->_savePhrases($fieldName, $entry, $data);
 		$this->_savePages($data);
 		$this->_alterDbTable($entry, $action);
 		$this->_saveRelations($entry, $data);
 
 		if (iaField::TREE == $entry['type'])
 		{
-			$this->_saveTreeNodes($data['tree_nodes'], $entry);
+			$this->_saveTreeNodes($fieldName, $this->_nodes, $entry);
 		}
 
 		$this->_iaCore->startHook('phpAdminFieldsSaved', array('field' => &$entry, 'iaField' => $this));
@@ -659,7 +663,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getTree($itemName, $fieldName, $nodes)
 	{
-		$unpackedNodes = is_string($nodes) ? iaUtil::jsonDecode($nodes) : array();
+		$unpackedNodes = is_string($nodes) && $nodes ? iaUtil::jsonDecode($nodes) : array();
 
 		foreach ($unpackedNodes as &$node)
 		{
@@ -669,12 +673,12 @@ class iaBackendController extends iaAbstractControllerBackend
 		return iaUtil::jsonEncode($unpackedNodes);
 	}
 
-	protected function _saveTreeNodes($nodes, array $field)
+	protected function _saveTreeNodes($fieldName, $nodes, array $field)
 	{
 		$this->_iaDb->setTable('fields_tree_nodes');
 
-		$this->_iaDb->delete('`field` = :name && `item` = :item', null, array('name' => $field['name'], 'item' => $field['item']));
-		$this->_iaDb->delete('`key` LIKE :key', iaLanguage::getTable(), array('key' => 'field_' . $field['item'] . '_' . $field['name'] . '_%'));
+		$this->_iaDb->delete('`field` = :name && `item` = :item', null, array('name' => $fieldName, 'item' => $field['item']));
+		$this->_iaDb->delete('`key` LIKE :key', iaLanguage::getTable(), array('key' => 'field_' . $field['item'] . '_' . $fieldName . '+%'));
 
 		if ($nodes)
 		{
@@ -683,13 +687,13 @@ class iaBackendController extends iaAbstractControllerBackend
 				$caption = $node['text'];
 				unset($node['text']);
 
-				$node['field'] = $field['name'];
+				$node['field'] = $fieldName;
 				$node['item'] = $field['item'];
 				$node['extras'] = $field['extras'];
 
 				if ($this->_iaDb->insert($node))
 				{
-					$key = sprintf(self::TREE_NODE_TITLE, $field['item'], $field['name'], $node['node_id']);
+					$key = sprintf(self::TREE_NODE_TITLE, $field['item'], $fieldName, $node['node_id']);
 					$this->_addPhrase($key, $caption, $field['extras']);
 				}
 			}
@@ -701,9 +705,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _addPhrase($key, $value, $extras = '')
 	{
 		foreach ($this->_iaCore->languages as $code => $language)
-		{
 			iaLanguage::addPhrase($key, $value, $code, $extras);
-		}
 	}
 
 	private function _fetchFieldGroups($itemName)
@@ -742,11 +744,10 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $pages;
 	}
 
-	protected function _savePhrases(array $fieldData, array $data)
+	protected function _savePhrases($fieldName, array $fieldData, array $data)
 	{
 		$extras = empty($this->_data['extras']) ? '' : $this->_data['extras'];
 		$itemName = $fieldData['item'];
-		$fieldName = empty($fieldData['name']) ? $this->_data['name'] : $fieldData['name'];
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad');
 
