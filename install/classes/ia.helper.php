@@ -51,7 +51,10 @@ class iaHelper
 			return false;
 		}
 
-		self::loadCoreClass('users', 'core');
+		if (!self::loadCoreClass('users', 'core'))
+		{
+			return false;
+		}
 
 		return (iaCore::instance()->iaDb->one_bind(iaDb::STMT_COUNT_ROWS,
 				'`usergroup_id` = :group AND `date_logged` IS NOT NULL',
@@ -158,13 +161,10 @@ class iaHelper
 
 			$iaCore = iaCore::instance();
 
-			iaSystem::setDebugMode();
-
 			$iaCore->factory(array('sanitize', 'validate'));
 			$iaCore->iaDb = $iaCore->factory('db');
 			$iaCore->factory('language');
 			$iaCore->iaView = $iaCore->factory('view');
-
 			$iaCore->iaCache = $iaCore->factory('cache');
 
 			$config = array('baseurl', 'timezone', 'lang');
@@ -174,6 +174,8 @@ class iaHelper
 				'en' => array('title' => 'English', 'locale' => 'en_US', 'iso' => 'en', 'date_format' => '%b %e, %Y'));
 			$iaCore->iaView->language = empty($config['lang']) ? 'en' : $config['lang'];
 			$iaCore->language = $iaCore->languages[$iaCore->iaView->language];
+
+			iaSystem::setDebugMode();
 
 			date_default_timezone_set(empty($config['timezone']) ? 'UTC' : $config['timezone']);
 
