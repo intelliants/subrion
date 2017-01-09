@@ -21,7 +21,7 @@
 			{$item.$name|escape:'html'}
 
 		{case iaField::CHECKBOX break}
-			{arrayToLang values=$item.$name name=$name}
+			{arrayToLang values=$item.$name item=$field.item name=$name}
 
 		{case iaField::STORAGE break}
 			{$value = $item.$name}
@@ -47,8 +47,7 @@
 
 		{case iaField::COMBO}
 		{case iaField::RADIO break}
-			{$field_combo = "{$fieldName}_{$item.$name}"}
-			{lang key=$field_combo default='&nbsp;'}
+			{lang key="{$fieldName}+{$item.$name}" default='&nbsp;'}
 
 		{case iaField::DATE break}
 			{if $field.timepicker}
@@ -96,11 +95,11 @@
 	{/if}
 {elseif !trim($item.$name) && $field.empty_field}
 	{if !isset($wrappedValues)}
-		<span class="empty_field">{$field.empty_field}</span>
+		<span class="empty_field">{$field.empty_field|escape:'html'}</span>
 	{else}
 		<div class="field field-{$type}" id="{$name}_fieldzone">
 			<span>{lang key=$fieldName}:</span>
-			<span class="empty_field">{$field.empty_field}</span>
+			<span class="empty_field">{$field.empty_field|escape:'html'}</span>
 		</div>
 	{/if}
 {/if}
