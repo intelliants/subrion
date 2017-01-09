@@ -450,6 +450,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _importPage(&$iaView)
 	{
+		list($migrations, $appliedMigrations) = $this->_getMigrations();
+
 		if (isset($_POST['import']))
 		{
 			$filename = isset($_POST['sqlfile']) ? $_POST['sqlfile'] : '';
@@ -470,6 +472,11 @@ class iaBackendController extends iaAbstractControllerBackend
 				$this->_error = true;
 				$this->addMessage(iaLanguage::getf('cant_open_incorrect_format', array('filename' => $filename)), false);
 			}
+			elseif ($filename && in_array($filename, array_keys($appliedMigrations)))
+			{
+				$this->_error = true;
+				$this->addMessage(iaLanguage::getf('migration_already_applied', array('filename' => $filename)), false);
+			}
 			elseif (!($f = fopen($filename, 'r')))
 			{
 				$this->_error = true;
@@ -477,6 +484,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 			else
 			{
+				$errors = array();
 				$sql = '';
 				while ($s = fgets($f, 10240))
 				{
@@ -497,11 +505,33 @@ class iaBackendController extends iaAbstractControllerBackend
 						continue;
 					}
 
-					$this->_iaDb->query(str_replace('{prefix}', $this->_iaDb->prefix, $sql));
+					$result = $this->_iaDb->query(str_replace('{prefix}', $this->_iaDb->prefix, $sql));
+
+					if (!$result)
+					{
+						$errors[] = $this->_iaDb->getError();
+					}
 					$sql = '';
 				}
-
 				fclose($f);
+
+				// process migrations
+				if (strpos($filename, 'updates' . IA_DS . 'migrations'))
+				{
+					$migrationProcessed = array(
+						'name' => str_replace(IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS, '', $filename),
+						'status' => 'complete',
+						'date' => date(iaDb::DATETIME_FORMAT)
+					);
+
+					if ($errors)
+					{
+						$migrationProcessed['status'] = 'incomplete';
+						$migrationProcessed['data'] = json_encode($errors);
+					}
+
+					$this->_iaDb->insert($migrationProcessed, null, 'migrations');
+				}
 
 				$this->addMessage('upgrade_completed');
 
@@ -511,6 +541,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		// generate list of available folders for dump files
 		$dumpFolders = array(
+			'Migrations' => IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS,
 			'Updates' => IA_HOME . 'updates' . IA_DS
 		);
 		$packages = $this->_iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, 'extras');
@@ -532,13 +563,35 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						$dumpFiles[$name][] = array(
 							'filename' => $path . $file,
-							'title' => substr($file, 0, count($file) - 5)
+							'title' => substr($file, 0, count($file) - 5),
+							'applied' => (boolean)(strpos($path, 'updates' . IA_DS . 'migrations') && in_array($file, $appliedMigrations))
 						);
 					}
 				}
 			}
 		}
 
+		list($migrations,) = $this->_getMigrations();
+
+		$iaView->assign('migrations', $migrations);
 		$iaView->assign('dumpFiles', $dumpFiles);
+	}
+
+	protected function _getMigrations()
+	{
+		$migrations = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, 'migrations');
+
+		$appliedMigrations = array();
+		foreach ($migrations as &$migration)
+		{
+			$migration['filename'] = IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS . $migration['name'];
+
+			if ('complete' == $migration['status'])
+			{
+				$appliedMigrations[$migration['filename']] = $migration['name'];
+			}
+		}
+
+		return array($migrations, $appliedMigrations);
 	}
 }
