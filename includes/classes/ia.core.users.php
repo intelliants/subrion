@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -289,6 +289,12 @@ class iaUsers extends abstractCore
 
 		$row = $iaDb->getRow($sql);
 
+		// FIXME: use _processValues method, anyhow it's static now
+		if (is_array($row) && isset($row['avatar']))
+		{
+			$row['avatar'] = $row['avatar'] ? unserialize($row['avatar']) : array('path' => '', 'title' => '');
+		}
+
 		self::_setIdentity($row);
 
 		return (bool)$row;
@@ -552,12 +558,12 @@ class iaUsers extends abstractCore
 
 	public function getInfo($id, $key = 'id')
 	{
-		if ($key != 'id' && $key != 'username' && $key != 'email')
-		{
-			$key = 'id';
-		}
+		in_array($key, array('id', 'username', 'email')) || $key = 'id';
 
-		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status', array('id' => $id, 'status' => iaCore::STATUS_ACTIVE), self::getTable());
+		$row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status', array('id' => $id, 'status' => iaCore::STATUS_ACTIVE), self::getTable());
+		$this->_processValues($row, true);
+
+		return $row;
 	}
 
 	public function getAuth($userId, $user = null, $password = null, $remember = false)
@@ -590,6 +596,7 @@ class iaUsers extends abstractCore
 			'condition' => $condition
 		));
 		$row = $this->iaDb->getRow($sql);
+		$this->_processValues($row, true);
 
 		if (iaCore::STATUS_ACTIVE == $row['status'])
 		{
@@ -887,6 +894,8 @@ class iaUsers extends abstractCore
 		empty($order) || $stmt.= ' ORDER BY ' . $order;
 
 		$rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit, self::getTable());
+		$this->_processValues($rows);
+
 		$count = $this->iaDb->foundRows();
 
 		return array($count, $rows);
@@ -967,5 +976,37 @@ class iaUsers extends abstractCore
 		{
 			throw new Exception('User is not logged in.');
 		}
+	}
+
+	/**
+	 * Used to unserialize fields
+	 *
+	 * @param array $rows items array
+	 * @param boolean $singleRow true when item is passed as one row
+	 * @param array $fieldNames list of custom serialized fields
+	 */
+	protected function _processValues(array &$rows, $singleRow = false, $fieldNames = array())
+	{
+		if ($this->getItemName())
+		{
+			$iaField = $this->iaCore->factory('field');
+			$fieldNames = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+		}
+		!$singleRow || $rows = array($rows);
+
+		foreach ($rows as &$row)
+		{
+			if (!is_array($row) || !$fieldNames)
+			{
+				break;
+			}
+
+			foreach ($fieldNames as $name)
+			{
+				$row[$name] = $row[$name] ? unserialize($row[$name]) : array('path' => '', 'title' => '');
+			}
+		}
+
+		!$singleRow || $rows = array_shift($rows);
 	}
 }

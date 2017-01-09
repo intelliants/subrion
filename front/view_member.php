@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -89,7 +89,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		));
 	}
 
-	$member = array_shift($iaItem->updateItemsFavorites(array($member), $member['item']));
+	$members = $iaItem->updateItemsFavorites(array($member), $member['item']);
+	$member = array_shift($members);
 	$member['items'] = array();
 
 	// get all items added by this account
@@ -159,13 +160,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$iaView->display('view-member');
 
-
 	// add open graph data
-	$avatar = $member['avatar'] ? unserialize($member['avatar']) : '';
 	$openGraph = array(
 		'title' => $title,
 		'url' => IA_SELF,
-		'image' => $avatar ? IA_CLEAR_URL . 'uploads/' . $avatar['path'] : ''
+		'image' => isset($member['avatar']) && $member['avatar']['path'] ? IA_CLEAR_URL . 'uploads/' . $member['avatar']['path'] : ''
 	);
 	$iaView->set('og', $openGraph);
 }

@@ -24,7 +24,7 @@
 			{arrayToLang values=$item.$name name=$name}
 
 		{case iaField::STORAGE break}
-			{$value = $item.$name|unserialize}
+			{$value = $item.$name}
 
 			{if $value}
 				{foreach $value as $entry}
@@ -33,12 +33,12 @@
 			{/if}
 
 		{case iaField::IMAGE break}
-			{$entry = $item.$name|unserialize}
+			{$entry = $item.$name}
 			<div class="thumbnail" style="width: {$field.thumb_width}px;">
 				{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
 					{printImage imgfile=$entry.path|default:'' title=$entry.title|default:'' width=$field.thumb_width height=$field.thumb_height class='img-responsive'}
 				{else}
-					<a class="thumbnail__image" href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
+					<a class="thumbnail__image" href="{printImage imgfile=$entry.path|default:'' url=true type='full'}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
 						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:''}
 					</a>
 					{if !empty($entry.title)}<div class="caption"><h5>{$entry.title|default:''}</h5></div>{/if}
@@ -70,8 +70,8 @@
 						 data-ratio="800/400"
 						 data-allowfullscreen="true"
 						 data-fit="cover">
-						{foreach $item.$name|unserialize as $entry}
-							<a class="ia-gallery__item" {if !empty($entry.title)}data-caption="{$entry.title|escape:'html'}"{/if} href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}">{printImage imgfile=$entry.path|default:'' title=$entry.title}</a>
+						{foreach $item.$name as $entry}
+							<a class="ia-gallery__item" {if !empty($entry.title)}data-caption="{$entry.title|escape:'html'}"{/if} href="{printImage imgfile=$entry.path|default:'' url=true type='full'}">{printImage imgfile=$entry.path|default:'' title=$entry.title}</a>
 						{/foreach}
 					</div>
 				</div>

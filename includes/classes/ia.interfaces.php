@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -48,11 +48,6 @@ abstract class abstractCore
 		{
 			eval('$_table = static::$_table;');
 		}
-		else
-		{
-			$_table = 'none';
-			eval('$_table = ' . get_called_class() . '::$_table;');
-		}
 
 		if ($prefix)
 		{
@@ -81,76 +76,5 @@ abstract class abstractUtil
 	public function init()
 	{
 		$this->iaCore = iaCore::instance();
-	}
-}
-
-// php 5.2 extra compatibility
-if (!function_exists('get_called_class'))
-{
-	function get_called_class($backTrace = false, $l = 1)
-	{
-		$backTrace || $backTrace = debug_backtrace();
-
-		if (!isset($backTrace[$l]))
-		{
-			throw new Exception('Cannot find called class -> stack level too deep.');
-		}
-
-		if (!isset($backTrace[$l]['type']))
-		{
-			throw new Exception('type not set');
-		}
-		else
-		{
-			switch ($backTrace[$l]['type'])
-			{
-				case '::':
-					$lines = file($backTrace[$l]['file']);
-					$i = 0;
-					$callerLine = '';
-					do
-					{
-						$i++;
-						$callerLine = $lines[$backTrace[$l]['line'] - $i] . $callerLine;
-					}
-					while (false === stripos($callerLine, $backTrace[$l]['function']));
-
-					preg_match('#([a-zA-Z0-9\_]+)::' . $backTrace[$l]['function'] . '#', $callerLine, $matches);
-					if (!isset($matches[1]))
-					{
-						throw new Exception('Could not find caller class: originating method call is obscured.');
-					}
-
-					switch ($matches[1])
-					{
-						case 'self':
-						case 'parent':
-							return get_called_class($backTrace, $l + 1);
-						default:
-							return $matches[1];
-					}
-
-				case '->':
-					switch ($backTrace[$l]['function'])
-					{
-						case '__get':
-							if (!is_object($backTrace[$l]['object']))
-							{
-								throw new Exception('Edge case fail. __get called on a non object.');
-							}
-							return get_class($backTrace[$l]['object']);
-
-						default:
-							if (strrpos($backTrace[$l]['class'], 'ia') !== 0)
-							{
-								return get_class($backTrace[$l]['object']);
-							}
-							return $backTrace[$l]['class'];
-					}
-
-				default:
-					throw new Exception('Unknown backtrace method type.');
-			}
-		}
 	}
 }

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -608,19 +608,6 @@ class iaSmarty extends Smarty
 		$iaCore = iaCore::instance();
 
 		$imageName = isset($params['gravatar']) ? 'no-avatar.png' : 'no-preview.png';
-
-		// temporary solution
-		// TODO: remove
-		if ('a:' == substr($params['imgfile'], 0, 2))
-		{
-			$array = unserialize($params['imgfile']);
-
-			$params['imgfile'] = $array['path'];
-			$params['title'] = isset($array['title']) ? $array['title'] : '';
-
-			iaDebug::debug($params['imgfile'], 'Serialized parameter passed to iaSmarty::printImage()', 'error');
-		}
-		//
 
 		if (!empty($params['imgfile']))
 		{

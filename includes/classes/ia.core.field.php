@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -872,6 +872,15 @@ class iaField extends abstractCore
 	public function getStorageFields($itemFilter = null)
 	{
 		$conditions = array("`type` = 'storage'");
+		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
+		$conditions = implode(' AND ', $conditions);
+
+		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+	}
+
+	public function getSerializedFields($itemFilter = null)
+	{
+		$conditions = array("`type` IN ('image', 'pictures', 'storage')");
 		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
 		$conditions = implode(' AND ', $conditions);
 

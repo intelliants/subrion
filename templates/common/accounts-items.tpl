@@ -5,10 +5,7 @@
 
 			<div class="pull-left">
 				{if $oneitem.avatar}
-					{assign avatar $oneitem.avatar|unserialize}
-					{if $avatar}
-						{printImage imgfile=$avatar.path width=100 height=100 title=$oneitem.fullname|default:$oneitem.username class='media-object'}
-					{/if}
+					{printImage imgfile=$oneitem.avatar.path width=100 height=100 title=$oneitem.fullname|default:$oneitem.username class='media-object'}
 				{/if}
 			</div>
 			

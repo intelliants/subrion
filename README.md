@@ -37,6 +37,6 @@ What you mainly want to know is that:
 
 Copyright
 ---------------------
-* Copyright (C) 2008 - 2016 Intelliants LLC. All rights reserved.
+* Copyright (C) 2008 - 2017 Intelliants LLC. All rights reserved.
 * Distributed under the GNU GPL v3
 * See [License details](http://www.subrion.org/license.html)
