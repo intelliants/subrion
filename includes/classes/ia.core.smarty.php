@@ -582,16 +582,9 @@ class iaSmarty extends Smarty
 	{
 		$list = array();
 
-		if ($array = explode(',', $params['values']))
-		{
-			foreach ($array as $value)
-			{
-				if ($title = iaLanguage::get('field_' . $params['name'] . '_' . trim($value)))
-				{
-					$list[] = $title;
-				}
-			}
-		}
+		foreach (explode(',', $params['values']) as $value)
+			($title = iaField::getFieldValue($params['item'], $params['name'], trim($value)))
+			&& $list[] = $title;
 
 		echo implode(', ', $list);
 	}
