@@ -98,6 +98,21 @@
   background: @brand-primary;
 }
 
+.help-block {
+  color: @help-block-color;
+}
+
+.has-support-text {
+  .make-switch {
+    float: left;
+
+    + .help-block {
+      float: left;
+      margin: 10px 0 0 10px;
+    }
+  }
+}
+
 
 //
 // Fields
@@ -107,27 +122,35 @@
   display: none;
 }
 
-
-// custom config
-
+// custom config. hide inputs when default value is set
 .form-control.disabled {
   .box-shadow(none);
-
   background: #eee;
 }
 
 .row.custom {
+
   .set-default,
-  .item-input {
+  .item-input,
+  .translate-group-actions {
     display: none;
   }
 }
 
 .row.common {
+
   .set-custom,
   .item-val {
     display: none;
   }
+
+  .translate-group-actions {
+    display: block;
+  }
+}
+
+.custom-item-actions {
+  margin-top: 6px;
 }
 
 
@@ -183,27 +206,8 @@
   &.is-opened {
     .translate-group__item__code {
       display: block;
+      z-index: 20;
       .opacity(1);
     }
   }
-}
-
-.form-control + .translate-group {
-  margin-top: 5px;
-}
-
-.help-block {
-  color: @help-block-color;
-}
-
-.has-support-text {
-  .make-switch {
-    float: left;
-
-    + .help-block {
-      float: left;
-      margin: 10px 0 0 10px;
-    }
-  }
-
 }
