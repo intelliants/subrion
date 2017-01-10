@@ -961,15 +961,18 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('pictures', '', 'Lightbox', '', 'divider', 'Lightbox', 21, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('pictures', 'lightbox_name', 'fancybox', 'fancybox', 'select', 'Lightbox name', 24, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 
-('miscellaneous', '', 'Open Graph', '', 'divider', 'Open Graph', 1, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('miscellaneous', 'opengraph_description', '{:en:}', '', 'textarea', 'OG default description', 2, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
-('miscellaneous', 'opengraph_image', '', '', 'image', 'OG default image', 3, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('miscellaneous', '', 'CKeditor', '', 'divider', 'CKeditor', 4, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('miscellaneous', 'ckeditor_skin', 'moono-lisa', '''moono-lisa'',''moonocolor''', 'select', 'Skin', 5, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('miscellaneous', '', 'Captcha', '', 'divider', 'Captcha', 8, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('miscellaneous', 'captcha', '1', '''1'',''0''', 'radio', 'Captcha', 9, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
-('miscellaneous', 'captcha_name', 'kcaptcha', 'kcaptcha', 'select', 'Captcha name', 10, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"captcha|1","multilingual":false}'),
-('miscellaneous', 'captcha_preview', '', '', 'text', 'Captcha preview', 11, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"captcha|1","multilingual":false}'),
+('miscellaneous', '', 'Frontend code integration', '', 'divider', 'Frontend code integration', 1, '', 1, 1, ''),
+('miscellaneous', 'frontend_header_code', '', '', 'textarea', 'Code before closing HEAD tag', 2, '', 0, 1, '{"wysiwyg":"0","code_editor":"0"'),
+('miscellaneous', 'frontend_footer_code', '', '', 'textarea', 'Code before closing BODY tag', 3, '', 0, 1, '{"wysiwyg":"0","code_editor":"0"'),
+('miscellaneous', '', 'Open Graph', '', 'divider', 'Open Graph', 4, '', 1, 1, ''),
+('miscellaneous', 'opengraph_description', '{:en:}', '', 'textarea', 'OG default description', 5, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":true}'),
+('miscellaneous', 'opengraph_image', '', '', 'image', 'OG default image', 6, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
+('miscellaneous', '', 'CKeditor', '', 'divider', 'CKeditor', 7, '', 1, 1, ''),
+('miscellaneous', 'ckeditor_skin', 'moono-lisa', '''moono-lisa'',''moonocolor''', 'select', 'Skin', 8, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
+('miscellaneous', '', 'Captcha', '', 'divider', 'Captcha', 9, '', 1, 1, ''),
+('miscellaneous', 'captcha', '1', '''1'',''0''', 'radio', 'Captcha', 10, '', 0, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
+('miscellaneous', 'captcha_name', 'kcaptcha', 'kcaptcha', 'select', 'Captcha name', 11, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"captcha|1","multilingual":false}'),
+('miscellaneous', 'captcha_preview', '', '', 'text', 'Captcha preview', 12, '', 0, 0, '{"wysiwyg":"0","code_editor":"0","show":"captcha|1","multilingual":false}'),
 
 ('financial', '', 'General', '1', 'divider', '', 1, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('financial', 'currency', 'USD', '', 'text', 'Currency', 1, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
@@ -1146,10 +1149,11 @@ INSERT INTO `{install:prefix}file_types` (`id`, `extension`, `maxsize`, `image`)
 (28, 'ppt', 0, 0),
 (29, 'pptx', 0, 0);
 
-INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`) VALUES
-('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/opengraph.tpl'),
-('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''] . '' ('' . $ownerInfo[''email''] . '')'';\r\n		}\r\n	}\r\n}','active',5,'php','admin',''),
-('smartyFrontSearchSortingMembers','','active',0,'smarty','front','search.members.sorting-header.tpl');
+INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`, `extras`) VALUES
+('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/hook.header-code.tpl',''),
+('smartyFrontFinalize','{$core.config.frontend_footer_code}','active',2,'smarty','front','',''),
+('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''] . '' ('' . $ownerInfo[''email''] . '')'';\r\n		}\r\n	}\r\n}','active',1,'php','admin','',''),
+('smartyFrontSearchSortingMembers','','active',1,'smarty','front','search.members.sorting-header.tpl','');
 
 INSERT INTO `{install:prefix}items` (`payable`,`item`,`package`,`pages`) VALUES
 (1,'members','core','profile,view_member'),
@@ -2477,6 +2481,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('extra_actions','This code is executed every time on field change. It can be used for validation or any other operation.','tooltip'),
 
 ('for_plan_only','Specifies if the field should be available only when plan chosen.','tooltip'),
+('frontend_header_code','This code is inserted before closing HEAD tag. HTML/JS code allowed.','tooltip'),
+('frontend_footer_code','Injected before closing BODY tag. HTML/JS code allowed.','tooltip'),
 
 ('https','Use secure HTTPS protocol for your site. Before enabling this, please make sure you have properly configured your hosting account and/or webserver.','tooltip'),
 
