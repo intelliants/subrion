@@ -160,7 +160,7 @@
 			</div>
 
 			<div class="row" id="js-row-multilingual">
-				<label class="col col-lg-2 control-label">{lang key='multilingual'}</label>
+				<label class="col col-lg-2 control-label">{lang key='multilingual'} <a href="#" class="js-tooltip" title="{$tooltips.multilingual_field}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-4">
 					{html_radio_switcher value=$item.multilingual|default:0 name='multilingual'}

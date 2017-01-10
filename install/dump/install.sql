@@ -2486,6 +2486,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('members_enabled','Enables members functionality for your Subrion CMS based website.','tooltip'),
 ('members_autoapproval','Members are activated automatically without any confirmation.','tooltip'),
+('multilingual_field','Allows to have field value in different languages.','tooltip'),
 ('multiple_selection','Allows to choose multiple nodes.','tooltip'),
 
 ('plan_cycles','Number of billing cycles for payment period.','tooltip'),
