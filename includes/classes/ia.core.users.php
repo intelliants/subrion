@@ -561,7 +561,7 @@ class iaUsers extends abstractCore
 		in_array($key, array('id', 'username', 'email')) || $key = 'id';
 
 		$row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status', array('id' => $id, 'status' => iaCore::STATUS_ACTIVE), self::getTable());
-		$this->_processValues($row, true);
+		!$row || $this->_processValues($row, true);
 
 		return $row;
 	}
@@ -596,7 +596,7 @@ class iaUsers extends abstractCore
 			'condition' => $condition
 		));
 		$row = $this->iaDb->getRow($sql);
-		$this->_processValues($row, true);
+		!$row ||$this->_processValues($row, true);
 
 		if (iaCore::STATUS_ACTIVE == $row['status'])
 		{
@@ -894,7 +894,7 @@ class iaUsers extends abstractCore
 		empty($order) || $stmt.= ' ORDER BY ' . $order;
 
 		$rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit, self::getTable());
-		$this->_processValues($rows);
+		!$rows ||$this->_processValues($rows);
 
 		$count = $this->iaDb->foundRows();
 
