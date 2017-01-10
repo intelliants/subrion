@@ -1,3 +1,5 @@
+{$core.config.frontend_header_code}
+
 {if isset($core.page.info.og)}
 	{foreach $core.page.info.og as $key => $value}
 		<meta property="og:{$key}" content="{if $key == 'description'}{$value|strip_tags|escape:'html'|truncate:200}{else}{$value|strip_tags|escape:'html'}{/if}">
