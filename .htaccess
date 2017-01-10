@@ -7,6 +7,10 @@ Options -MultiViews
 	RewriteCond %{REQUEST_URI} !(.*)\.(.*)$
 	RewriteRule ^(.+[^/])$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]
 
+	# Return default not-found as it's faster
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule \.(jpg|jpeg|png|gif|bmp|ico|swf|js|css)$ - [NC,R=404,L]
+
 	# Google sitemap controller
 	RewriteRule ^(tmp/)?sitemap.xml$ tmp/sitemap.xml [L]
 
