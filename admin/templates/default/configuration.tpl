@@ -77,7 +77,7 @@
 
 							{$isMultilingual = isset($entry.options.multilingual) && $entry.options.multilingual}
 
-							<div class="translate-group" id="language-group-{$entry.name}">
+							<div class="translate-group item-input" id="language-group-{$entry.name}">
 								<div class="translate-group__default">
 									<div class="translate-group__item">
 										<input type="text" name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}-{$core.language.iso}" value="{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}" />
@@ -123,7 +123,7 @@ $(function() {
 
 						{$isMultilingual = isset($entry.options.multilingual) && $entry.options.multilingual}
 
-						<div class="translate-group" id="language-group-{$entry.name}">
+						<div class="translate-group item-input" id="language-group-{$entry.name}">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
 									<textarea name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}</textarea>
@@ -221,8 +221,10 @@ $(function() {
 					</div> <!-- /.col -->
 					{if $custom}
 						<div class="col col-lg-2">
-							<span class="btn btn-default set-custom" data-value="1">{lang key='config_set_custom'}</span>
-							<span class="btn btn-default set-default" data-value="0">{lang key='config_set_default'}</span>
+							<div class="custom-item-actions">
+								<span class="btn btn-default btn-xs set-custom js-tooltip" data-value="1" title="{lang key='config_set_custom'}" data-toggle="tooltip"><span class="fa fa-pencil"></span></span>
+								<span class="btn btn-default btn-xs set-default js-tooltip" data-value="0" title="{lang key='config_set_default'}" data-toggle="tooltip"><span class="fa fa-rotate-left"></span></span>
+							</div>
 						</div>
 					{/if}
 				</div><!-- /.row -->
