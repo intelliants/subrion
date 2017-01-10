@@ -170,7 +170,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['type'] = $data['type'];
 		$entry['empty_field'] = $data['empty_field'];
 		$entry['relation'] = $data['relation'];
-		$entry['status'] = $data['status'];
 
 		$entry['fieldgroup_id'] = isset($data['fieldgroup_id']) ? (int)$data['fieldgroup_id'] : 0; // don't remove 'isset'
 		$entry['length'] = (int)$data['length'];
@@ -183,6 +182,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['use_editor'] = (int)$data['use_editor'];
 
 		$entry['extra_actions'] = $data['extra_actions'];
+
+		empty($data['status']) || $entry['status'] = $data['status'];
 
 		foreach ($this->_iaCore->languages as $code => $language)
 		{
