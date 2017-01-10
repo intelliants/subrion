@@ -78,7 +78,6 @@
 		{case iaField::TREE}
 			{displayTreeNodes ids=$item.$name nodes=$field.values}
 		{/switch}
-
 	{/capture}
 
 	{if !isset($wrappedValues)}
