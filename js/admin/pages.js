@@ -185,7 +185,7 @@ $(function()
 
 		CKEDITOR.instances['content[' + lngCode + ']']
 					|| intelli.ckeditor('content[' + lngCode + ']', {toolbar: 'Extended'});
-	})
+	});
 
 	// page extension dropdown
 	$('a', '#js-page-extension-list').on('click', function(e)

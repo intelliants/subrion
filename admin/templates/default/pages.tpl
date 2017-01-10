@@ -310,7 +310,7 @@
 							</div>
 						</div>
 					{else}
-						<textarea name="content[{$core.language.iso}]" rows="2">{if isset($content[$core.language.iso])}{$content[$core.language.iso]|escape:'html'}{/if}</textarea>
+						<textarea name="content[{$core.language.iso}]" data-language="{$core.language.iso}" rows="2">{if isset($content[$core.language.iso])}{$content[$core.language.iso]|escape:'html'}{/if}</textarea>
 					{/if}
 				</div>
 			</div>
