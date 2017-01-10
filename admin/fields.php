@@ -392,12 +392,12 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entryData = $this->getById($this->getEntryId());
 
 			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` IN ('field_" . $entryData['item'] . '_' . $entryData['name']
-				. "', 'field_" . $entryData['item'] . '_' . $entryData['name'] . "_annotation') AND `category` = 'common'", null, null, iaLanguage::getTable());
+				. "', 'field_tooltip_" . $entryData['item'] . '_' . $entryData['name'] . "') AND `category` = 'common'", null, null, iaLanguage::getTable());
 			foreach ($rows as $row)
 			{
 				sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $entryData['item'], $entryData['name']) == $row['key']
 					? ($entryData['title'][$row['code']] = $row['value'])
-					: ($entryData['annotation'][$row['code']] = $row['value']);
+					: ($entryData['tooltip'][$row['code']] = $row['value']);
 			}
 
 			if ($entryData['default'])
@@ -471,7 +471,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		isset($_POST['title']) && is_array($_POST['title']) && $entryData['title'] = $_POST['title'];
-		isset($_POST['annotation']) && is_array($_POST['annotation']) && $entryData['annotation'] = $_POST['annotation'];
+		isset($_POST['tooltip']) && is_array($_POST['tooltip']) && $entryData['tooltip'] = $_POST['tooltip'];
 
 		$entryData['pages'] || $entryData['pages'] = array();
 
@@ -752,25 +752,23 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad');
 
-		$key = sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName);
-
 		$this->_iaDb->delete('`key` LIKE :key1 OR `key` LIKE :key2', iaLanguage::getTable(),
-			array('key1' => $key, 'key2' => $key . '_annotation'));
+			array(
+				'key1' => sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName),
+				'key2' => sprintf(iaField::FIELD_TOOLTIP_PHRASE_KEY, $itemName, $fieldName)
+			));
 
 		foreach ($this->_iaCore->languages as $code => $language)
 		{
 			$key = sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName);
-
 			$title = $data['title'][$code];
 			utf8_is_valid($title) || $title = utf8_bad_replace($title);
-
 			iaLanguage::addPhrase($key, $title, $code, $extras);
 
-			$key.= '_annotation';
-			$annotation = $data['annotation'][$code];
-			utf8_is_valid($annotation) || $annotation = utf8_bad_replace($annotation);
-
-			iaLanguage::addPhrase($key, $annotation, $code, $extras);
+			$key = sprintf(iaField::FIELD_TOOLTIP_PHRASE_KEY, $itemName, $fieldName);
+			$tooltip = $data['tooltip'][$code];
+			utf8_is_valid($tooltip) || $tooltip = utf8_bad_replace($tooltip);
+			iaLanguage::addPhrase($key, $tooltip, $code, $extras);
 		}
 
 		if ($this->_values)

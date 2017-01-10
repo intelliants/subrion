@@ -47,6 +47,7 @@ class iaField extends abstractCore
 
 	const FIELD_TITLE_PHRASE_KEY = 'field_%s_%s';
 	const FIELD_VALUE_PHRASE_KEY = 'field_%s_%s+%s';
+	const FIELD_TOOLTIP_PHRASE_KEY = 'field_tooltip_%s_%s';
 
 	const FIELDGROUP_TITLE_PHRASE_KEY = 'fieldgroup_%s_%s';
 	const FIELDGROUP_DESCRIPTION_PHRASE_KEY = 'fieldgroup_description_%s_%s';
@@ -81,6 +82,11 @@ class iaField extends abstractCore
 	public static function getFieldTitle($itemName, $fieldName)
 	{
 		return iaLanguage::get(sprintf(self::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName));
+	}
+
+	public static function getFieldTooltip($itemName, $fieldName)
+	{
+		return iaLanguage::get(sprintf(self::FIELD_TOOLTIP_PHRASE_KEY, $itemName, $fieldName));
 	}
 
 	public static function getFieldValue($itemName, $fieldName, $key)

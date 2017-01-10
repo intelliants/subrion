@@ -391,7 +391,7 @@ $(function()
 			{/if}
 		{/if}
 
-		{assign annotation {lang key="{$name}_annotation" default=''}}
-		{if $annotation}<p class="help-block annotation">{$annotation}</p>{/if}
+		{assign tooltip {lang key="field_tooltip_{$field.item}_{$field.name}" default=''}}
+		{if $tooltip}<p class="help-block tooltip">{$tooltip}</p>{/if}
 </div>
 {if isset($field_after[$fieldName])}{$field_after.$fieldName}{/if}

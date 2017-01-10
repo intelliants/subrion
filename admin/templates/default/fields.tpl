@@ -58,7 +58,7 @@
 						<select name="type" id="input-type">
 							<option value="">{lang key='_select_'}</option>
 							{foreach $fieldTypes as $type}
-								<option value="{$type}"{if $item.type == $type} selected{/if} data-annotation="{lang key="field_type_tip_{$type}" default=''}">{lang key="field_type_{$type}" default=$type}</option>
+								<option value="{$type}"{if $item.type == $type} selected{/if} data-tooltip="{lang key="field_type_tip_{$type}" default=''}">{lang key="field_type_{$type}" default=$type}</option>
 							{/foreach}
 						</select>
 						<p class="help-block"></p>
@@ -281,8 +281,8 @@
 
 						<div class="col col-lg-4">
 							<select name="resize_mode">
-								<option value="crop"{if isset($item.resize_mode) && iaPicture::CROP == $item.resize_mode} selected{/if} data-annotation="{lang key='crop_tip'}">{lang key='crop'}</option>
-								<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-annotation="{lang key='fit_tip'}">{lang key='fit'}</option>
+								<option value="crop"{if isset($item.resize_mode) && iaPicture::CROP == $item.resize_mode} selected{/if} data-tooltip="{lang key='crop_tip'}">{lang key='crop'}</option>
+								<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-tooltip="{lang key='fit_tip'}">{lang key='fit'}</option>
 							</select>
 							<p class="help-block"></p>
 						</div>
@@ -491,8 +491,8 @@
 
 						<div class="col col-lg-4">
 							<select name="pic_resize_mode">
-								<option value="crop"{if isset($item.resize_mode) && iaPicture::CROP == $item.resize_mode} selected{/if} data-annotation="{lang key='crop_tip'}">{lang key='crop'}</option>
-								<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-annotation="{lang key='fit_tip'}">{lang key='fit'}</option>
+								<option value="crop"{if isset($item.resize_mode) && iaPicture::CROP == $item.resize_mode} selected{/if} data-tooltip="{lang key='crop_tip'}">{lang key='crop'}</option>
+								<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-tooltip="{lang key='fit_tip'}">{lang key='fit'}</option>
 							</select>
 							<p class="help-block"></p>
 						</div>
@@ -593,7 +593,7 @@
 						<div class="translate-group" id="language-group-tooltip">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="annotation[{$core.language.iso}]"{if isset($item.annotation[$core.language.iso])} value="{$item.annotation[$core.language.iso]|escape:'html'}"{/if}>
+									<input type="text" name="tooltip[{$core.language.iso}]"{if isset($item.tooltip[$core.language.iso])} value="{$item.tooltip[$core.language.iso]|escape:'html'}"{/if}>
 									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
 								</div>
 							</div>
@@ -601,7 +601,7 @@
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="annotation[{$iso}]"{if isset($item.annotation.$iso)} value="{$item.annotation.$iso|escape:'html'}"{/if}>
+											<input type="text" name="tooltip[{$iso}]"{if isset($item.tooltip.$iso)} value="{$item.tooltip.$iso|escape:'html'}"{/if}>
 											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
 										</div>
 									{/if}
@@ -609,7 +609,7 @@
 							</div>
 						</div>
 					{else}
-						<input type="text" name="annotation[{$core.language.iso}]"{if isset($item.annotation[$core.language.iso])} value="{$item.annotation[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="tooltip[{$core.language.iso}]"{if isset($item.tooltip[$core.language.iso])} value="{$item.tooltip[$core.language.iso]|escape:'html'}"{/if}>
 					{/if}
 				</div>
 			</div>

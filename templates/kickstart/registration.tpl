@@ -1,4 +1,4 @@
-<p class="text-center lead">{lang key='registration_annotation'}</p>
+<p class="text-center lead">{lang key='registration_tooltip'}</p>
 <div class="ia-form-system -registration">
 
 	<form method="post" action="{$smarty.const.IA_SELF}" enctype="multipart/form-data" class="ia-form ia-form--bordered">
@@ -51,7 +51,7 @@
 {*
 <div class="row">
 	<div class="col-md-{if $core.providers}8{else}12{/if}">
-		<p>{lang key='registration_annotation'}</p>
+		<p>{lang key='registration_tooltip'}</p>
 
 		<form method="post" action="{$smarty.const.IA_SELF}" enctype="multipart/form-data" class="ia-form ia-form--bordered">
 			{preventCsrf}

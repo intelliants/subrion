@@ -20,7 +20,7 @@
 		</div>
 	</form>
 {elseif 'request' == $form}
-	<p>{lang key='forgot_annotation'}</p>
+	<p>{lang key='forgot_tooltip'}</p>
 
 	<form action="{$smarty.const.IA_URL}forgot/" method="post" class="ia-form ia-form--bordered">
 		<div class="fieldset">
