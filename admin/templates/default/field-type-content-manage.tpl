@@ -20,8 +20,8 @@
 				{lang key='image_dimensions'}: {$field.image_width}x{$field.image_height}
 			</div>
 		{/if}
-		{assign annotation {lang key="{$name}_annotation" default=''}}
-		{if $annotation}<div class="help-block">{$annotation}</div>{/if}
+		{assign tooltip {lang key="field_tooltip_{$field.item}_{$field.name}" default=''}}
+		{if $tooltip}<div class="help-block">{$tooltip}</div>{/if}
 	</div>
 
 	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual)}

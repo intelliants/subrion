@@ -284,9 +284,9 @@ $(function()
 			$('#js-multiple').css('display', 'block');
 		}
 
-		var annotation = $('option:selected', this).data('annotation');
+		var tooltip = $('option:selected', this).data('tooltip');
 		var $helpBlock = $(this).next();
-		annotation ? $helpBlock.text(annotation).show() : $helpBlock.hide();
+		tooltip ? $helpBlock.text(tooltip).show() : $helpBlock.hide();
 	}).change();
 
 	$('#js-field-relation').change(function()
@@ -318,7 +318,7 @@ $(function()
 
 	$('select[name="resize_mode"], select[name="pic_resize_mode"]').on('change', function()
 	{
-		$(this).next().text($('option:selected', this).data('annotation'));
+		$(this).next().text($('option:selected', this).data('tooltip'));
 	}).change();
 
 	$('.js-actions').on('click', function(e)
