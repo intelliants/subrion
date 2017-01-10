@@ -64,6 +64,11 @@ Ext.onReady(function()
 
 $(function()
 {
+	if ($('#js-grid-placeholder'))
+	{
+		return;
+	}
+
 	var $itemsTable = $('#js-items-table');
 
 	intelli.resetLinesCounter = function()
