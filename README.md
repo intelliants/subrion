@@ -16,7 +16,7 @@ We migrated our development to GitHub with the release of Subrion 4.x version. P
 
 Updates are free!
 ---------------------
-* Always use the [latest version](http://www.subrion.org/download/).
+* Always use the [latest version](https://subrion.org/download/).
 
 Using LESS
 ---------------------
@@ -39,4 +39,4 @@ Copyright
 ---------------------
 * Copyright (C) 2008 - 2017 Intelliants LLC. All rights reserved.
 * Distributed under the GNU GPL v3
-* See [License details](http://www.subrion.org/license.html)
+* See [License details](https://subrion.org/license.html)

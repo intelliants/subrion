@@ -21,9 +21,9 @@
  *
  *
  * @package Subrion\Plugin\PersonalBlog\Admin
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  * @author https://intelliants.com/ <support@subrion.org>
- * @license http://www.subrion.org/license.html
+ * @license https://subrion.org/license.html
  *
  ******************************************************************************/
 

@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 

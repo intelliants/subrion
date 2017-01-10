@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -136,7 +136,7 @@ class iaTemplate extends abstractCore
 								'notes' => $this->getNotes(),
 								'config' => $this->_config,
 								'config_groups' => $this->_configGroups,
-								'url' => 'http://www.subrion.org/template/' . $this->name . '.html'
+								'url' => 'https://subrion.org/template/' . $this->name . '.html'
 							);
 
 							$templates[$this->name]['logo'] = file_exists(IA_FRONT_TEMPLATES . $this->name . '/docs/img/icon.png')

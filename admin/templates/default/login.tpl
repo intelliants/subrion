@@ -38,7 +38,7 @@
 		<div class="page-login__content">
 			<div class="b-login">
 				<div class="b-login__img">
-					<a href="http://www.subrion.org/"><img src="{$img}subrion-logo-lines.png" alt="Subrion CMS" title="Subrion CMS"/></a>
+					<a href="https://subrion.org/"><img src="{$img}subrion-logo-lines.png" alt="Subrion CMS" title="Subrion CMS"/></a>
 					<h1>{lang key='welcome_to_admin_panel'}</h1>
 				</div>
 				<div class="b-login__form">
@@ -91,7 +91,7 @@
 					</div>
 					<div class="copyright">
 						<p>
-							Powered by <a href="http://www.subrion.org/" title="Subrion CMS">Subrion CMS v{$core.config.version}</a><br>
+							Powered by <a href="https://subrion.org/" title="Subrion CMS">Subrion CMS v{$core.config.version}</a><br>
 							Copyright &copy; 2008-{$smarty.now|date_format:'%Y'} <a href="https://intelliants.com/" title="Intelligent Web Solutions">Intelliants LLC</a>
 						</p>
 						<p>

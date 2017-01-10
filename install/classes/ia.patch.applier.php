@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -55,7 +55,7 @@ class iaPatchApplier
 			'it under the terms of the GNU General Public License as published by',
 			'the Free Software Foundation, either version 3 of the License, or',
 			'(at your option) any later version.',
-			'@link http://www.subrion.org/'
+			'@link https://subrion.org/'
 		),
 		765 => array(
 			'COMPANY: Intelliants LLC',

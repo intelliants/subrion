@@ -42,7 +42,7 @@
 				<div class="col col-lg-4">
 					{if isset($item.image) && $item.image}
 					<div class="input-group thumbnail thumbnail-single with-actions">
-						<a href="{printImage imgfile=$item.image fullimage=true url=true}" rel="ia_lightbox">
+						<a href="{printImage imgfile=$item.image type='full' url=true}" rel="ia_lightbox">
 							{printImage imgfile=$item.image}
 						</a>
 

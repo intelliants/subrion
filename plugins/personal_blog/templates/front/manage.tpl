@@ -41,7 +41,7 @@
 										<button class="btn btn-danger btn-sm js-delete-file" data-field="image" data-item="blog_entries" data-item-id="{$item.id|default:''}" data-picture-path="{$item.image}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 									</div>
 
-									<a href="{printImage imgfile=$item.image fullimage=true url=true}" rel="ia_lightbox[image]">
+									<a href="{printImage imgfile=$item.image type='full' url=true}" rel="ia_lightbox[image]">
 										{printImage imgfile=$item.image}
 									</a>
 
