@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -116,7 +116,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$replacements = array(
 					'{icon}' => file_exists(IA_FRONT_TEMPLATES . $template . IA_DS . 'docs' . IA_DS . 'img/icon.png') ? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'templates/' . $template . '/docs/img/icon.png" alt=""></td></tr>' : '',
-					'{link}' => '<tr><td><a href="http://www.subrion.org/template/' . $template . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>',
+					'{link}' => '<tr><td><a href="https://subrion.org/template/' . $template . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>',
 					'{name}' => $iaTemplate->title,
 					'{author}' => $iaTemplate->author,
 					'{contributor}' => $iaTemplate->contributor,

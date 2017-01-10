@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -419,10 +419,10 @@ Mysql configuration
 ----------------------------
 
 Useful information regarding the Subrion CMS can be found in Subrion User Forums -
-http://www.subrion.org/forums/
+https://subrion.org/forums/
 __________________________
 The Subrion Support Team
-http://www.subrion.org
+https://subrion.org
 https://intelliants.com
 HTML;
 					$salt = '#' . strtoupper(substr(md5(IA_HOME), 21, 10));
