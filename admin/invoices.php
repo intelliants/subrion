@@ -96,6 +96,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach ($entries as &$entry)
 		{
 			$entry['plan'] = $entry['plan_id'] ? iaLanguage::get('plan_title_' . $entry['plan_id']) : $entry['operation'];
+			is_null($entry['status']) && $entry['status'] = 'empty';
 			//$entry['gateway'] && ($entry['gateway'] = iaLanguage::get($entry['gateway']));
 
 			unset($entry['operation'], $entry['plan_id']);
