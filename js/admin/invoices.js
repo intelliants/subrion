@@ -64,7 +64,7 @@ Ext.onReady(function()
 
 $(function()
 {
-	if ($('#js-grid-placeholder'))
+	if ($('#js-grid-placeholder').length > 0)
 	{
 		return;
 	}
