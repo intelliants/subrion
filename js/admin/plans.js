@@ -75,11 +75,6 @@ $(function()
 		}
 	});
 
-	$('textarea.cked').each(function()
-	{
-		intelli.ckeditor($(this).attr('id'), {toolbar: 'Simple', height: '200px'});
-	});
-
 	$('#recurring').on('change', function()
 	{
 		if (1 == $(this).val())

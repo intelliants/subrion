@@ -6,6 +6,78 @@
 			<div class="wrap-group-heading">{lang key='general'}</div>
 
 			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-title"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='title'} {lang key='field_required'}</label>
+				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-title">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="title[{$core.language.iso}]" value="{$item.title[$core.language.iso]|default:''|escape:'html'}">
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="title[{$iso}]" value="{$item.title.$iso|default:''|escape:'html'}">
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="title[{$core.language.iso}]" value="{$item.title[$core.language.iso]|default:''|escape:'html'}">
+					{/if}
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-description"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-description"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='description'} {lang key='field_required'}</label>
+				</div>
+				<div class="col col-lg-8">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-description">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<textarea class="js-wysiwyg" id="description_{$core.language.iso}" name="description[{$core.language.iso}]" rows="10">{$item.description[$core.language.iso]|default:''|escape:'html'}</textarea>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<textarea class="js-wysiwyg" id="description_{$iso}" name="description[{$iso}]" rows="10">{$item.description.$iso|default:''|escape:'html'}</textarea>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<textarea class="js-wysiwyg" id="description_{$core.language.iso}" name="description[{$core.language.iso}]" rows="10">{$item.description[$core.language.iso]|default:''|escape:'html'}</textarea>
+					{/if}
+				</div>
+			</div>
+
+			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='item'} {lang key='field_required'}</label>
 
 				<div class="col col-lg-4">
@@ -178,37 +250,6 @@
 
 				<div class="col col-lg-1">
 					<input type="text" name="cycles" class="js-filter-numeric" value="{$item.cycles|escape:'html'}" maxlength="5">
-				</div>
-			</div>
-		</div>
-
-		<div class="wrap-group">
-			<div id="ckeditor" class="row">
-				<ul class="nav nav-tabs">
-					{foreach $core.languages as $code => $language}
-						<li{if $language@first} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title}</a></li>
-					{/foreach}
-				</ul>
-
-				<div class="tab-content">
-					{foreach $core.languages as $code => $language}
-						<div class="tab-pane{if $language@first} active{/if}" id="tab-language-{$code}">
-							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='title'} {lang key='field_required'}</label>
-
-								<div class="col col-lg-10">
-									<input type="text" name="title[{$code}]" value="{$item.title.$code|default:''|escape:'html'}">
-								</div>
-							</div>
-							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='description'} {lang key='field_required'}</label>
-
-								<div class="col col-lg-10">
-									<textarea id="description_{$code}" rows="30" name="description[{$code}]" class="js-wysiwyg">{$item.description.$code|default:''|escape:'html'}</textarea>
-								</div>
-							</div>
-						</div>
-					{/foreach}
 				</div>
 			</div>
 		</div>
