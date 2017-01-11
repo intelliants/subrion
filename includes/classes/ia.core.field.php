@@ -122,17 +122,8 @@ class iaField extends abstractCore
 		return $fields;
 	}
 
-	public function filter($itemName, array &$itemData, $pageName = null, $where = null)
+	protected function _fetchVisibleFieldsForPage($pageName, $itemName, $where)
 	{
-		$result = array();
-
-		is_null($pageName) && $pageName = $this->iaView->name();
-		is_null($where) && $where = iaDb::EMPTY_CONDITION;
-
-		$where.= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
-			? " AND (f.`plans` = '' OR FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`)) "
-			: " AND f.`plans` = '' ";
-
 		$sql = 'SELECT f.* '
 			. 'FROM `:prefix:table_fields` f '
 			. 'LEFT JOIN `:prefix:table_pages` fp ON (fp.`field_id` = f.`id`) '
@@ -154,34 +145,58 @@ class iaField extends abstractCore
 			'where' => $where
 		));
 
-		$rows = $this->iaDb->getAll($sql);
+		return $this->iaDb->getAll($sql);
+	}
 
-		$forPlans = array();
-		$fields = array();
-		$empty = array();
-		$multilingual = array();
+	public function filter($itemName, array &$itemData, $pageName = null, $where = null)
+	{
+		static $cache = array();
 
-		$iaAcl = $this->iaCore->factory('acl');
+		is_null($pageName) && $pageName = $this->iaView->name();
+		is_null($where) && $where = iaDb::EMPTY_CONDITION;
 
-		foreach ($rows as $row)
+		$where.= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
+			? " AND (f.`plans` = '' OR FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`)) "
+			: " AND f.`plans` = '' ";
+
+		if (isset($cache[$pageName][$itemName][$where]))
 		{
-			if ($iaAcl->checkAccess('field', $itemName . '_' . $row['name']))
-			{
-				$result[$row['id']] = $row;
-
-				$empty[$row['name']] = $row['empty_field'];
-				$row['multilingual'] && $multilingual[] = $row['name'];
-				($row['required'] || !$row['for_plan'])
-					? ($fields[] = $row['name'])
-					: ($forPlans[] = $row['name']);
-			}
+			list($result, $planAssigned, $fields, $multilingual) = $cache[$pageName][$itemName][$where];
 		}
+		else
+		{
+			$result = array();
+			$rows = $this->_fetchVisibleFieldsForPage($pageName, $itemName, $where);
 
-		self::_unpackValues($result);
+			$iaAcl = $this->iaCore->factory('acl');
+
+			$planAssigned = array();
+			$fields = array();
+			$empty = array();
+			$multilingual = array();
+
+			foreach ($rows as $row)
+			{
+				if ($iaAcl->checkAccess('field', $itemName . '_' . $row['name']))
+				{
+					$result[$row['id']] = $row;
+
+					$empty[$row['name']] = $row['empty_field'];
+					$row['multilingual'] && $multilingual[] = $row['name'];
+					($row['required'] || !$row['for_plan'])
+						? ($fields[] = $row['name'])
+						: ($planAssigned[] = $row['name']);
+				}
+			}
+
+			self::_unpackValues($result);
+
+			$cache[$pageName][$itemName][$where] = array($result, $planAssigned, $fields, $multilingual);
+		}
 
 		if ($itemData)
 		{
-			if ($forPlans)
+			if ($planAssigned)
 			{
 				$plans = $this->iaCore->factory('plan')->getPlans($itemName);
 
@@ -189,22 +204,15 @@ class iaField extends abstractCore
 					&& isset($plans[$itemData[iaPlan::SPONSORED_PLAN_ID]]['data']['fields']))
 				{
 					$planFields = $plans[$itemData[iaPlan::SPONSORED_PLAN_ID]]['data']['fields'];
-					foreach ($forPlans as $fieldName)
+					foreach ($planAssigned as $fieldName)
 						in_array($fieldName, $planFields) && $fields[] = $fieldName;
 				}
 			}
 
 			// assign a default value if not in allowed fields list
 			foreach ($itemData as $fieldName => $value)
-			{
-				if (!in_array($fieldName, $fields))
-				{
-					if (isset($empty[$fieldName]))
-					{
-						$itemData[$fieldName] = $empty[$fieldName];
-					}
-				}
-			}
+				in_array($fieldName, $fields) ||
+					(isset($empty[$fieldName]) && $itemData[$fieldName] = $empty[$fieldName]);
 
 			foreach ($multilingual as $fieldName)
 			{
@@ -866,31 +874,41 @@ class iaField extends abstractCore
 		return false;
 	}
 
-	public function getImageFields($itemFilter = null)
+	public function getImageFields($itemName = null)
 	{
-		$conditions = array("`type` IN ('image','pictures')");
-		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
-		$conditions = implode(' AND ', $conditions);
-
-		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+		return $this->_getFieldNames("`type` IN ('image','pictures')", $itemName);
 	}
 
-	public function getStorageFields($itemFilter = null)
+	public function getStorageFields($itemName = null)
 	{
-		$conditions = array("`type` = 'storage'");
-		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
-		$conditions = implode(' AND ', $conditions);
-
-		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+		return $this->_getFieldNames(iaDb::convertIds(self::STORAGE, 'type'), $itemName);
 	}
 
-	public function getSerializedFields($itemFilter = null)
+	public function getSerializedFields($itemName = null)
 	{
-		$conditions = array("`status` = 'active' AND `type` IN ('image', 'pictures', 'storage')");
-		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
+		return $this->_getFieldNames("`type` IN ('image', 'pictures', 'storage')", $itemName);
+	}
+
+	public function getMultilingualFields($itemName = null)
+	{
+		return $this->_getFieldNames(iaDb::convertIds(1, 'multilingual'), $itemName);
+	}
+
+	protected function _getFieldNames($condition, $itemName = null)
+	{
+		static $cache = array();
+
+		$conditions = array("`status` = 'active'", $condition);
+		is_null($itemName) || $conditions[] = iaDb::convertIds($itemName, 'item');
 		$conditions = implode(' AND ', $conditions);
 
-		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+		if (!isset($cache[$conditions]))
+		{
+			$result = $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+			$cache[$conditions] = $result ? $result : array();
+		}
+
+		return $cache[$conditions];
 	}
 
 	public function getTreeNodes($condition = '')

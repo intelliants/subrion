@@ -477,15 +477,17 @@ class iaBackendController extends iaAbstractControllerBackend
 				$this->_error = true;
 				$this->addMessage(iaLanguage::getf('migration_already_applied', array('filename' => $filename)), false);
 			}
-			elseif (!($f = fopen($filename, 'r')))
+			elseif (!$f = fopen($filename, 'r'))
 			{
 				$this->_error = true;
 				$this->addMessage(iaLanguage::getf('cant_open_sql', array('filename' => $filename)), false);
 			}
 			else
 			{
+				$masterLangCode = $this->_iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
 				$errors = array();
 				$sql = '';
+
 				while ($s = fgets($f, 10240))
 				{
 					$s = trim($s);
@@ -495,22 +497,21 @@ class iaBackendController extends iaAbstractControllerBackend
 						continue;
 					}
 
-					if ($s[strlen($s) - 1] == ';')
+					if (';' == $s[strlen($s) - 1])
 					{
-						$sql .= $s;
+						$sql.= $s;
 					}
 					else
 					{
-						$sql .= $s;
+						$sql.= $s;
 						continue;
 					}
 
-					$result = $this->_iaDb->query(str_replace('{prefix}', $this->_iaDb->prefix, $sql));
+					$result = $this->_iaDb->query(str_replace(array('{prefix}', '{lang}'),
+						array($this->_iaDb->prefix, $masterLangCode), $sql));
 
-					if (!$result)
-					{
-						$errors[] = $this->_iaDb->getError();
-					}
+					$result || $this->addMessage($this->_iaDb->getError(), false);
+
 					$sql = '';
 				}
 				fclose($f);
