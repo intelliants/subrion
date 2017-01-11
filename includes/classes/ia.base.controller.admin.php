@@ -483,23 +483,6 @@ abstract class iaAbstractControllerBackend
 		return $output;
 	}
 
-	protected function _entryAdd(array $entryData)
-	{
-		return $this->_iaDb->insert($entryData);
-	}
-
-	protected function _entryDelete($entryId)
-	{
-		return (bool)$this->_iaDb->delete(iaDb::convertIds($entryId));
-	}
-
-	protected function _entryUpdate(array $entryData, $entryId)
-	{
-		$this->_iaDb->update($entryData, iaDb::convertIds($entryId));
-
-		return (0 === $this->_iaDb->getErrorNumber());
-	}
-
 	protected function _unpackGridColumnsArray()
 	{
 		$result = '';
@@ -537,6 +520,23 @@ abstract class iaAbstractControllerBackend
 	protected function _modifyGridResult(array &$entries)
 	{
 
+	}
+
+	protected function _entryAdd(array $entryData)
+	{
+		return $this->_iaDb->insert($entryData);
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		return (bool)$this->_iaDb->delete(iaDb::convertIds($entryId));
+	}
+
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		$this->_iaDb->update($entryData, iaDb::convertIds($entryId));
+
+		return (0 === $this->_iaDb->getErrorNumber());
 	}
 
 	protected function _reopen($option, $action)
