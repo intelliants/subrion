@@ -103,35 +103,49 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 	}
 
 	// multilingual fields support for package items
-	protected function _unpackGridColumnsArray()
+	protected function _gridApplyFilters(&$conditions, &$values, array $params)
 	{
 		$multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
 
-		foreach ($this->_gridColumns as $key => &$field)
+		foreach ($this->_gridFilters as $name => $type)
 		{
-			if (in_array($field, $multilingualFields))
+			if (!empty($params[$name]))
 			{
-				unset($this->_gridColumns[$key]);
-				$this->_gridColumns[$field] = $field . '_' . $this->_iaCore->language['iso'];
+				$column = $name;
+				$value = $params[$name];
+
+				in_array($name, $multilingualFields) && $column.= '_' . $this->_iaCore->language['iso'];
+
+				switch ($type)
+				{
+					case self::EQUAL:
+						$conditions[] = sprintf('%s`%s` = :%s', $this->_gridQueryMainTableAlias, $column, $name);
+						$values[$name] = $value;
+						break;
+					case self::LIKE:
+						$conditions[] = sprintf('%s`%s` LIKE :%s', $this->_gridQueryMainTableAlias, $column, $name);
+						$values[$name] = '%' . $value . '%';
+				}
+			}
+		}
+	}
+
+	protected function _unpackGridColumnsArray()
+	{
+		if (is_array($this->_gridColumns)
+			&& ($multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName())))
+		{
+			foreach ($this->_gridColumns as $key => &$field)
+			{
+				if (in_array($field, $multilingualFields))
+				{
+					unset($this->_gridColumns[$key]);
+					$this->_gridColumns[$field] = $field . '_' . $this->_iaCore->language['iso'];
+				}
 			}
 		}
 
 		return parent::_unpackGridColumnsArray();
-	}
-
-	protected function _modifyGridParams(&$conditions, &$values, array $params)
-	{
-		$multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
-
-		foreach ($multilingualFields as $fieldName)
-		{
-			if (isset($params[$fieldName]))
-			{
-				/*$value = $params[$fieldName];
-				unset($params[$fieldName]);
-				$params[$fieldName . '_' . ]*/
-			}
-		}
 	}
 	//
 
@@ -200,7 +214,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 			return false;
 		}
 
-		$result = $this->_update($entryData, $entryId);
+		$result = $this->_update($this->_validateMultilingualFieldsKeys($entryData), $entryId);
 
 		if ($result)
 		{
@@ -367,10 +381,10 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		$rowsCount = $this->_iaDb->one(iaDb::STMT_COUNT_ROWS);
 		$dynamicLoadMode = ($rowsCount > 500);
 
-		$clause = $dynamicLoadMode ? sprintf('`parent_id` = %d', (int)$data['id']) : '1';
-		$clause.= ' ORDER BY `title`';
+		$where = $dynamicLoadMode ? sprintf('`parent_id` = %d', (int)$data['id']) : iaDb::EMPTY_CONDITION;
+		$where.= ' ORDER BY `title`';
 
-		$rows = $this->_iaDb->all(array('id', 'title', 'parent_id', 'child'), $clause);
+		$rows = $this->_iaDb->all(array('id', 'title', 'parent_id', 'child'), $where);
 
 		foreach ($rows as $row)
 		{
@@ -399,5 +413,22 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		}
 
 		return $plans;
+	}
+
+	protected function _validateMultilingualFieldsKeys(array $data)
+	{
+		if ($multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName()))
+		{
+			foreach ($data as $key => $value)
+			{
+				if (in_array($key, $multilingualFields))
+				{
+					$data[$key . '_' . $this->_iaCore->language['iso']] = $value;
+					unset($data[$key]);
+				}
+			}
+		}
+
+		return $data;
 	}
 }
