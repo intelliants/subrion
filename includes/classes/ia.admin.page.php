@@ -49,13 +49,20 @@ class iaPage extends abstractPlugin
 	public function getNonServicePages(array $exclude)
 	{
 		$sql =
-			"SELECT DISTINCTROW p.*, IF(t.`value` IS NULL, p.`name`, t.`value`) `title`
-			FROM `" . self::getTable(true) . "` p
-				LEFT JOIN `" . $this->iaDb->prefix . iaLanguage::getTable() . "` t
-					ON `key` = CONCAT('page_title_', p.`name`) AND t.`code` = '" . $this->iaView->language . "'
-			WHERE p.`status` = 'active'
-				AND p.`service` = 0 " . ($exclude ? "AND !FIND_IN_SET(p.`name`, '" . implode(',', $exclude) . "') " : ' ') .
-			'ORDER BY t.`value`';
+			'SELECT DISTINCTROW '
+				. 'p.*, l.`value`, IF(l.`value` IS NULL, p.`name`, l.`value`) `title` '
+			. 'FROM `:table_pages` p '
+			. "LEFT JOIN `:table_phrases` l ON (`key` = CONCAT('page_title_', p.`name`) AND l.`code` = ':lang') "
+			. "WHERE p.`status` = ':status' AND p.`service` = 0 :extra_where"
+			. 'ORDER BY l.`value`';
+
+		$sql = iaDb::printf($sql, array(
+			'table_pages' => self::getTable(true),
+			'table_phrases' => $this->_iaDb->prefix . iaLanguage::getTable(),
+			'lang' => $this->iaCore->language['iso'],
+			'status' => iaCore::STATUS_ACTIVE,
+			'extra_where' => $exclude ? "AND !FIND_IN_SET(p.`name`, '" . implode(',', $exclude) . "') " : ''
+		));
 
 		return $this->iaDb->getAll($sql);
 	}
