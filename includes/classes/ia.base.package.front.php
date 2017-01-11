@@ -249,9 +249,10 @@ abstract class abstractPackageFront extends abstractCore
 		// get serialized field names
 		$iaField = $this->iaCore->factory('field');
 
-		$fieldNames = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+		$serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+		$multilingualFields = $iaField->getMultilingualFields($this->getItemName());
 
-		if ($fieldNames)
+		if ($serializedFields || $multilingualFields)
 		{
 			foreach ($rows as &$row)
 			{
@@ -263,11 +264,20 @@ abstract class abstractPackageFront extends abstractCore
 				// filter fields
 				$iaField->filter($this->getItemName(), $row);
 
-				foreach ($fieldNames as $name)
+				foreach ($serializedFields as $fieldName)
 				{
-					if (isset($row[$name]))
+					if (isset($row[$fieldName]))
 					{
-						$row[$name] = $row[$name] ? unserialize($row[$name]) : array();
+						$row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : array();
+					}
+				}
+
+				$currentLangCode = $this->iaCore->language['iso'];
+				foreach ($multilingualFields as $fieldName)
+				{
+					if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName]))
+					{
+						$row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
 					}
 				}
 			}
