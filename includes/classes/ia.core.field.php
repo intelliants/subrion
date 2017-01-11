@@ -866,31 +866,35 @@ class iaField extends abstractCore
 		return false;
 	}
 
-	public function getImageFields($itemFilter = null)
+	public function getImageFields($itemName = null)
 	{
-		$conditions = array("`type` IN ('image','pictures')");
-		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
-		$conditions = implode(' AND ', $conditions);
-
-		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+		return $this->_getFieldNames("`type` IN ('image','pictures')", $itemName);
 	}
 
-	public function getStorageFields($itemFilter = null)
+	public function getStorageFields($itemName = null)
 	{
-		$conditions = array("`type` = 'storage'");
-		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
-		$conditions = implode(' AND ', $conditions);
-
-		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+		return $this->_getFieldNames(iaDb::convertIds(self::STORAGE, 'type'), $itemName);
 	}
 
-	public function getSerializedFields($itemFilter = null)
+	public function getSerializedFields($itemName = null)
 	{
-		$conditions = array("`status` = 'active' AND `type` IN ('image', 'pictures', 'storage')");
-		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
+		return $this->_getFieldNames("`type` IN ('image', 'pictures', 'storage')", $itemName);
+	}
+
+	public function getMultilingualFields($itemName = null)
+	{
+		return $this->_getFieldNames(iaDb::convertIds(1, 'multilingual'), $itemName);
+	}
+
+	protected function _getFieldNames($condition, $itemName = null)
+	{
+		$conditions = array("`status` = 'active'", $condition);
+		is_null($itemName) || $conditions[] = iaDb::convertIds($itemName, 'item');
 		$conditions = implode(' AND ', $conditions);
 
-		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+		$names = $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+
+		return $names ? $names : array();
 	}
 
 	public function getTreeNodes($condition = '')

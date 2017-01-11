@@ -102,6 +102,39 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		return parent::_gridRead($params);
 	}
 
+	// multilingual fields support for package items
+	protected function _unpackGridColumnsArray()
+	{
+		$multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
+
+		foreach ($this->_gridColumns as $key => &$field)
+		{
+			if (in_array($field, $multilingualFields))
+			{
+				unset($this->_gridColumns[$key]);
+				$this->_gridColumns[$field] = $field . '_' . $this->_iaCore->language['iso'];
+			}
+		}
+
+		return parent::_unpackGridColumnsArray();
+	}
+
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
+	{
+		$multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
+
+		foreach ($multilingualFields as $fieldName)
+		{
+			if (isset($params[$fieldName]))
+			{
+				/*$value = $params[$fieldName];
+				unset($params[$fieldName]);
+				$params[$fieldName . '_' . ]*/
+			}
+		}
+	}
+	//
+
 	protected function _indexPage(&$iaView)
 	{
 		$iaView->grid('_IA_URL_packages/' . $this->getPackageName() . '/js/admin/' . $this->getName());
