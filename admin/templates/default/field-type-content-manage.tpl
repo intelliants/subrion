@@ -57,18 +57,16 @@
 							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
 						</div>
 					</div>
-					{if count($core.languages) > 1}
-						<div class="translate-group__langs">
-							{foreach $core.languages as $iso => $language}
-								{if $iso != $core.language.iso}
-									<div class="translate-group__item">
-										<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}">
-										<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
-									</div>
-								{/if}
-							{/foreach}
-						</div>
-					{/if}
+					<div class="translate-group__langs">
+						{foreach $core.languages as $iso => $language}
+							{if $iso != $core.language.iso}
+								<div class="translate-group__item">
+									<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}">
+									<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+								</div>
+							{/if}
+						{/foreach}
+					</div>
 				</div>
 			{else}
 				<input type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
@@ -112,7 +110,6 @@
 							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
 						</div>
 					</div>
-					{if count($core.languages) > 1}
 					<div class="translate-group__langs">
 						{foreach $core.languages as $iso => $language}
 							{if $iso != $core.language.iso}
@@ -123,7 +120,6 @@
 							{/if}
 						{/foreach}
 					</div>
-					{/if}
 				</div>
 				{else}
 				<textarea name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
@@ -154,7 +150,6 @@ $(function($)
 							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
 						</div>
 					</div>
-					{if count($core.languages) > 1}
 					<div class="translate-group__langs">
 						{foreach $core.languages as $iso => $language}
 							{if $iso != $core.language.iso}
@@ -166,10 +161,9 @@ $(function($)
 							{/if}
 						{/foreach}
 					</div>
-					{/if}
 				</div>
 				{else}
-				{ia_wysiwyg value=$value name=$field.name}
+					{ia_wysiwyg value=$value name=$field.name}
 				{/if}
 			{/if}
 
