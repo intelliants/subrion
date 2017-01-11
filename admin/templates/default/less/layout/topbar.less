@@ -20,6 +20,10 @@
       line-height: @navbar-height;
       padding: 0 20px;
 
+      @media (max-width: @screen-sm) {
+        padding: 0 10px;
+      }
+
       &,
       &:focus {
         color: @navbar-link-color;
@@ -122,6 +126,13 @@
       & + & {
         margin-top: 10px;
       }
+    }
+  }
+
+  @media (max-width: @screen-sm) {
+    .dropdown-menu.pull-right {
+      right: auto !important;
+      left: 0 !important;
     }
   }
 }

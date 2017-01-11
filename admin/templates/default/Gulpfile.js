@@ -62,7 +62,6 @@ gulp.task("build", ["less", "images"]);
 
 gulp.task("watch", function(){
     gulp.watch(config.paths.less.path, ["less"]);
-    gulp.watch(config.paths.images.src, ["images"]);
 });
 
 gulp.task("default", function() {

@@ -6,6 +6,11 @@
   display: table-cell;
   vertical-align: top;
   .clearfix();
+
+  @media (max-width: @screen-sm) {
+    min-height: none;
+    display: block;
+  }
 }
 
 
@@ -18,6 +23,11 @@
   overflow: hidden;
   padding: 30px;
   min-height: 100%;
+
+  @media (max-width: @screen-sm) {
+    min-height: 0;
+    padding: 20px 10px;
+  }
 
   &__heading {
     .clearfix();
@@ -32,6 +42,10 @@
         color: @page-title-color;
         margin: 0 0 10px;
       }
+
+      @media (max-width: @screen-sm) {
+        float: none;
+      }
     }
 
     &__actions {
@@ -39,6 +53,7 @@
       margin: 0;
       padding: 0;
       float: right;
+      .clearfix();
 
       > li {
         float: left;
@@ -76,6 +91,11 @@
             color: @page-actions-icon-color;
           }
         }
+      }
+
+      @media (max-width: @screen-sm) {
+        float: none;
+        margin-top: 10px;
       }
     }
   }

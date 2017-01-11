@@ -24,6 +24,7 @@
 		{ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
 
 		{ia_add_media files='jquery, extjs, subrion' order=0}
+		{ia_print_js files='_IA_TPL_enquire.min, _IA_TPL_app'}
 
 		{ia_print_css display='on'}
 
@@ -37,6 +38,12 @@
 	<body id="page--{$core.page.name}" class="ss-{$core.config.sap_style}">
 		<div class="overall-wrapper">
 			<div class="panels-wrapper">
+				<div class="m-header">
+					<a class="m-header__brand" href="{$smarty.const.IA_ADMIN_URL}">
+						<img src="{$img}logo.png" alt="Subrion CMS &middot; {$core.config.version}">
+					</a>
+					<a href="#" class="m-header__toggle"><span class="fa fa-bars"></span></a>
+				</div>
 				<section id="panel-left">
 					<a class="brand" href="{$smarty.const.IA_ADMIN_URL}">
 						<img src="{$img}logo.png" alt="Subrion CMS &middot; {$core.config.version}">
@@ -89,7 +96,7 @@
 							<li>
 								<a href="{$smarty.const.IA_URL}" title="{lang key='site_home'}" target="_blank"><i class="fa fa-desktop"></i><span> {lang key='site_home'}</span></a>
 							</li>
-							<li>
+							<li class="hidden-xs hidden-sm">
 								<a href="{$smarty.const.IA_ADMIN_URL}visual-mode/" title="{lang key='visual_manage'}" target="_blank"><i class="fa fa-sliders"></i><span> {lang key='visual_manage'}</span></a>
 							</li>
 							<li class="dropdown">
@@ -148,7 +155,7 @@
 							</li>
 							<li><a href="{$smarty.const.IA_ADMIN_URL}logout/" title="{lang key='logout'}" id="user-logout"><i class="fa fa-sign-out"></i> <span>{lang key='logout'}</span></a></li>
 						</ul>
-						<ul class="nav navbar-nav navbar-left">
+						<ul class="nav navbar-nav navbar-left hidden-xs hidden-sm">
 							<li class="panel-toggle">
 								<a href="#"><i class="fa{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden} fa-chevron-right{else} fa-chevron-left{/if}"></i></a>
 							</li>
