@@ -1,13 +1,14 @@
 {$type = $field.type}
 {$fieldName = $field.name}
 {$name = "field_{$field.item}_{$field.name}"}
+{$translatable = ($field.multilingual && count($core.languages) > 1)}
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
 	<div class="col col-lg-2">
-		{if $field.multilingual}
+		{if $translatable}
 			<div class="btn-group btn-group-xs translate-group-actions">
 				<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"><span class="i-earth"></span></button>
 				<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"><span class="i-copy"></span></button>
@@ -48,7 +49,7 @@
 
 	{switch $type}
 		{case iaField::TEXT break}
-			{if $field.multilingual}
+			{if $translatable}
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
@@ -103,7 +104,7 @@
 
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
-				{if $field.multilingual}
+				{if $translatable}
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
@@ -144,7 +145,7 @@ $(function($)
 				{/if}
 				{/if}
 			{else}
-				{if $field.multilingual}
+				{if $translatable}
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
