@@ -220,7 +220,7 @@
 			<div class="widget widget-large" id="widget-changelog">
 				<div class="widget-header"><i class="i-lightning"></i> {lang key='changelog'}
 					<ul class="nav nav-pills pull-right">
-						<li class="dropdown">
+						<li class="dropdown hidden-xs hidden-sm">
 							<a class="dropdown-toggle" data-toggle="dropdown" href="#">
 								{foreach $changelog_titles as $item => $index}
 									{$item} <span class="caret"></span>

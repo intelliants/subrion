@@ -4,6 +4,11 @@
   vertical-align: top;
   background: @main-nav-bg;
 
+  @media (max-width: @screen-sm) {
+    display: block;
+    width: auto;
+  }
+
   // branding/logo and stuff
   .brand {
     text-align: center;
@@ -15,6 +20,10 @@
 
     img {
       max-width: 70%;
+    }
+
+    @media (max-width: @screen-sm) {
+      display: none;
     }
   }
 
@@ -89,6 +98,10 @@
     border-top: 1px solid @brand-border-color;
     padding: 20px 0;
     color: @main-nav-link-color;
+
+    @media (max-width: @screen-sm) {
+      display: none;
+    }
   }
 
   .social-links {
@@ -116,6 +129,10 @@
       &.social-links__github:hover {
         color: #fff;
       }
+    }
+
+    @media (max-width: @screen-sm) {
+      display: none;
     }
   }
 }

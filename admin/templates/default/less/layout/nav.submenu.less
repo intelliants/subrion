@@ -4,6 +4,11 @@
   display: table-cell;
   vertical-align: top;
 
+  @media (max-width: @screen-sm) {
+    display: block;
+    width: auto;
+  }
+
   &.is-hidden {
     display: none;
   }
