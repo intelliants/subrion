@@ -257,7 +257,7 @@ class iaSearch extends abstractCore
 		elseif (iaUsers::getItemName() == $this->_itemName)
 		{
 			$array = array();
-			$fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, array('page' => 'members'));
+			$fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, 'members');
 
 			$result = $this->_render('search.members' . iaView::TEMPLATE_FILENAME_EXT,
 				array('fields' => $fields, 'listings' => $rows));
@@ -716,7 +716,7 @@ class iaSearch extends abstractCore
 		$statements = array();
 
 		$tableAlias = $this->getOption('tableAlias') ? $this->getOption('tableAlias') . '.' : '';
-		$escapedQuery = iaSanitize::sql(strtolower($this->_query));
+		$escapedQuery = iaSanitize::sql($this->_query);
 
 		foreach ($this->_fieldTypes as $fieldName => $type)
 		{
@@ -737,12 +737,25 @@ class iaSearch extends abstractCore
 			}
 		}
 
-		$extraStatements = $this->getOption('regularSearchStatements');
-		$extraStatements || $extraStatements = array();
+		// multilingual fields support
+		$fieldsToSearchBy = $this->getOption('regularSearchFields');
+		$fieldsToSearchBy || $fieldsToSearchBy = array();
 
-		foreach ($extraStatements as $stmt)
+		$multilingualFields = $this->iaCore->factory('field')->getMultilingualFields($this->_itemName);
+
+		foreach ($fieldsToSearchBy as $item)
 		{
-			$statements[] = str_replace(':query', $escapedQuery, $stmt);
+			$table = $tableAlias;
+			$column = $item;
+
+			is_array($item) && list($table, $column) = $item;
+
+			$table = rtrim($table, '.');
+			$table && $table.= '.';
+
+			in_array($column, $multilingualFields) && $column.= '_' . $this->iaView->language;
+
+			$statements[] = sprintf("%s`%s` LIKE '%s'", $table, $column, '%' . $escapedQuery . '%');
 		}
 
 		return '(' . implode(' OR ', $statements) . ')';
