@@ -268,7 +268,7 @@ class iaItem extends abstractCore
 			// get favorites
 			$itemsFavorites = $this->iaDb->onefield('`id`', "`id` IN ('" . implode("','", $itemsList) . "') && `item` = '{$itemName}' && `member_id` = " . iaUsers::getIdentity()->id, 0, null, $this->getFavoritesTable());
 		}
-
+_d($itemsFavorites, $itemName, $listings);
 		if (empty($itemsFavorites))
 		{
 			return $listings;

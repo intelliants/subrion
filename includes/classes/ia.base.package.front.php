@@ -51,7 +51,7 @@ abstract class abstractPackageFront extends abstractCore
 		return $this->_statuses;
 	}
 
-	public function url($type, $data)
+	public function url($action, array $data)
 	{
 		return isset($data['url']) ? $this->getInfo('url') . $data['url'] : '';
 	}

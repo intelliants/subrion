@@ -22,7 +22,7 @@
 					{if isset($category.subcategories) && $category.subcategories}
 						<div class="ia-cat__sub">
 							{foreach $category.subcategories as $subcategory}
-								<a href="{ia_url type='url' item=$item data=$subcategory}">{$subcategory.title}</a>{if !$subcategory@last}, {/if}
+								<a href="{ia_url type='url' item=$item data=$subcategory}">{$subcategory.title|escape:'html'}</a>{if !$subcategory@last}, {/if}
 							{/foreach}
 						</div>
 					{/if}
