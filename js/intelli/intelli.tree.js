@@ -99,6 +99,12 @@ function IntelliTree(params)
 			}
 			else if ($.inArray(parseInt(nodes[i]), params.nodeOpened) != -1)
 			{
+				if (tree.get_node(nodes[i]))
+				{
+					tree.open_node(nodes[i]);
+					continue;
+				}
+
 				tree.load_node(nodes[i], function(n)
 				{
 					tree.open_node(n.id);
