@@ -869,8 +869,11 @@ SQL;
 
 		if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 		{
-			$pageParams['description'] = iaLanguage::get('page_meta_description_' . $pageParams['name']);
-			$pageParams['keywords'] = iaLanguage::get('page_meta_keywords_' . $pageParams['name']);
+			$key = 'page_meta_description_' . $pageParams['name'];
+			$pageParams['description'] = iaLanguage::exists($key) ? iaLanguage::get($key) : null;
+
+			$key = 'page_meta_keywords_' . $pageParams['name'];
+			$pageParams['keywords'] = iaLanguage::exists($key) ? iaLanguage::get($key) : null;
 		}
 
 		if (isset($this->iaCore->requestPath[0])
