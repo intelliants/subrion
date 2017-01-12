@@ -8,6 +8,7 @@
   "author": "Intelliants",
   "license": "GPL",
   "devDependencies": {
+    "browser-sync": "^2.18.6",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^2.0.11",
     "gulp-concat": "^2.6.0",

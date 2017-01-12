@@ -28,14 +28,15 @@ npm i
 ```
 To install all necessary node modules.
 
-Before running `dev` task, be sure to change local proxy config in **package.json** file for BrowserSync to work properly.
+#### BrowserSync
+Before running `dev` task, be sure to copy **config.sample.json** and rename it to **config.json**. Then change server config in **config.json** file for BrowserSync to work properly. Otherwise BrowserSync won't work.
 
 ### Tasks
 
 ```
 gulp dev
 ```
-Starts BrowserSync and watches for LESS files. Compiles LESS with SourceMaps.
+Starts BrowserSync and watches for LESS files. Optimizes images and compiles LESS with SourceMaps.
 
 ```
 gulp build
