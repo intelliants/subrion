@@ -1,13 +1,14 @@
-var fs          = require("fs"),
-    serverConf  = (fs.existsSync('./config.json')) ? require('./config.json').server : null,
-    gulp        = require("gulp"),
-    gutil       = require('gulp-util'),
-    concat      = require("gulp-concat"),
-    imagemin    = require("gulp-imagemin"),
-    less        = require("gulp-less"),
-    sourcemaps  = require('gulp-sourcemaps'),
-    cleanCSS    = require('gulp-clean-css'),
-    browserSync = require('browser-sync').create();
+var fs           = require("fs"),
+    serverConf   = (fs.existsSync('./config.json')) ? require('./config.json').server : null,
+    gulp         = require("gulp"),
+    gutil        = require('gulp-util'),
+    concat       = require("gulp-concat"),
+    imagemin     = require("gulp-imagemin"),
+    less         = require("gulp-less"),
+    sourcemaps   = require('gulp-sourcemaps'),
+    cleanCSS     = require('gulp-clean-css'),
+    autoprefixer = require('gulp-autoprefixer'),
+    browserSync  = require('browser-sync').create();
 
 var config = {
   paths: {
@@ -52,6 +53,10 @@ gulp.task("less", function() {
     .pipe(less().on('error', function(err) {
       gutil.log(err);
       this.emit('end');
+    }))
+    .pipe(autoprefixer({
+        browsers: ['last 2 versions'],
+        cascade: false
     }))
     .pipe(cleanCSS({
       advanced: false
