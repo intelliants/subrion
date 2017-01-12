@@ -813,6 +813,7 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`fil
 (1,'','','','','','menu','sys_extra',35),
 (1,'clear_cache','cache','index','index','clear/cache/','menu,header',null,37),
 (1,'phpinfo','phpinfo','index','index','phpinfo/','menu,header',null,40),
+(1,'debugmode','debugmode','index','index','debugmode/','header',null,41),
 (1,'sitemap','sitemap','index','index','sitemap/','menu,header',null,45),
 
 -- CONTENT
@@ -1430,6 +1431,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('days','days','admin'),
 ('days_ago',':days days ago','admin'),
 ('deactivate','Deactivate package','admin'),
+('debug_mode_activated','Debug mode activated for you.','admin'),
 ('default_language','Default Language','admin'),
 ('digits_only','digits only (1-255), default is 255','admin'),
 ('directory_not_writable','Directory ":directory" is not writable. You could not save to server.','admin'),
@@ -2407,6 +2409,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_clear_cache','Clear Cache','admin'),
 ('page_title_configuration','Settings','admin'),
 ('page_title_database','Database','admin'),
+('page_title_debugmode','Debug mode','admin'),
 ('page_title_email_templates','E-mail Templates','admin'),
 ('page_title_fields','Fields','admin'),
 ('page_title_fieldgroups','Field Groups','admin'),

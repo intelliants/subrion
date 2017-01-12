@@ -221,6 +221,10 @@ class iaBackendController extends iaAbstractControllerBackend
 				$iaView->display('index');
 				break;
 
+			case 'debugmode':
+				$this->_debugMode($iaView);
+				break;
+
 			case 'clear_cache':
 				$this->_clearCache($iaView);
 				break;
@@ -329,6 +333,28 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			iaUtil::go_to($_SERVER['HTTP_REFERER']);
 		}
+	}
+
+	private function _debugMode(&$iaView)
+	{
+		if (isset($_SESSION['debugger']) && $_SESSION['debugger'])
+		{
+			unset($_SESSION['debugger']);
+
+			iaUtil::go_to(IA_ADMIN_URL);
+		}
+
+		$iaView->setMessages(iaLanguage::get('debug_mode_activated'), iaView::SUCCESS);
+
+		$token = $this->_iaCore->get('debug_pass');
+		if (!$token)
+		{
+			$token = iaUtil::generateToken(16);
+			$this->_iaCore->set('debug_pass', $token, true);
+		}
+		$this->_iaCore->iaCache->clearGlobalCache();
+
+		iaUtil::go_to(IA_ADMIN_URL . '?debugger=' . $token);
 	}
 
 	private function _buildSitemap(&$iaView)
