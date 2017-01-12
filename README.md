@@ -4,24 +4,20 @@
 
 
 ## What is Subrion?
----------------------
 
 * Subrion is a **Content Management System** (CMS) which allows you to build websites for any purpose. Yes, from blog to corporate mega portal.
 * It is a powerful web application which requires a server with PHP / MySQL to run.
 * Subrion is a **free and open source software** distributed under the GPL v3.
 
 ## Development Roadmap
----------------------
 
 We migrated our development to GitHub with the release of Subrion 4.x version. Please check our previous issue tracker [here](https://dev.subrion.org/projects/subrion-cms/roadmap).
 
 ## Updates are free!
----------------------
 
 Always use the **[latest version](https://subrion.org/download/)**.
 
 ## Contributing
----------------------
 
 We appreciate any contribution to Subrion, whether it is related to bugs, grammar, or simply a suggestion or improvement. However, we ask that any contributions follow our simple guidelines in order to be properly received.
 
@@ -33,7 +29,6 @@ What you mainly want to know is that:
 Please read [Contribution Guidelines](CONTRIBUTING.md)
 
 ## Copyright
----------------------
 
 * Copyright (C) 2008 - 2017 Intelliants LLC. All rights reserved.
 * Distributed under the GNU GPL v3
