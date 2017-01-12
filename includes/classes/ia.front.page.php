@@ -55,7 +55,10 @@ class iaPage extends abstractCore
 		if ($row)
 		{
 			foreach (array('meta_description', 'meta_keywords') as $key)
-				$row[$key] = iaLanguage::get(sprintf('page_%s_%s', $key, $row['name']));
+			{
+				$phraseKey = sprintf('page_%s_%s', $key, $row['name']);
+				$row[$key] = iaLanguage::exists($phraseKey) ? iaLanguage::get($phraseKey) : null;
+			}
 		}
 
 		return $row;
