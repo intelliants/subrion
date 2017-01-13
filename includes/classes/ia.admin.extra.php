@@ -1812,8 +1812,10 @@ class iaExtra extends abstractCore
 						'resize_mode' => $this->_attr('mode', 'crop', array('fit', 'crop')),
 						'file_prefix' => $this->_attr(array('prefix', 'file_prefix')),
 						'file_types' => $this->_attr(array('types', 'file_types')),
-						'numberRangeForSearch' => isset($this->_attributes['numberRangeForSearch']) ? explode(',', $this->_attributes['numberRangeForSearch']) : '',
-						'folder_name' => $this->_attr('folder_name', '')
+						'folder_name' => $this->_attr('folder_name', ''),
+						// keys below will not be actually written to DB and handled manually
+						'multiselection' => $this->_attr('multiselection', false)
+						//'numberRangeForSearch' => isset($this->_attributes['numberRangeForSearch']) ? explode(',', $this->_attributes['numberRangeForSearch']) : '',
 					);
 				}
 				elseif ($this->_checkPath('changeset'))
@@ -2226,8 +2228,8 @@ class iaExtra extends abstractCore
 				{
 					$this->_addPhrase('field_' . $entry['name'] . '_range_' . $num, $num, iaLanguage::CATEGORY_FRONTEND);
 				}
-			}*/
-			unset($entry['numberRangeForSearch']);
+			}
+			unset($entry['numberRangeForSearch']);*/
 
 			if (is_array($entry['values']))
 			{
@@ -2246,12 +2248,18 @@ class iaExtra extends abstractCore
 				$entry['values'] = implode(',', array_keys($entry['values']));
 			}
 
+			if (iaField::TREE == $entry['type'])
+			{
+				//$entry['timepicker'] = $entry['multiselection'];
+			}
+
 			$fieldPages = $entry['item_pages'] ? $entry['item_pages'] : array();
 			$tableName = $entry['table_name'];
 			$className = $entry['class_name'];
 			$parents = $entry['parent'];
 
-			unset($entry['item_pages'], $entry['table_name'], $entry['class_name'], $entry['parent'], $entry['group'], $entry['title']);
+			unset($entry['item_pages'], $entry['table_name'], $entry['class_name'], $entry['parent'],
+				$entry['group'], $entry['title'], $entry['multiselection']);
 
 			$fieldId = $this->iaDb->insert($entry);
 
