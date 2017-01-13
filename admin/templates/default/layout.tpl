@@ -96,8 +96,17 @@
 							<li>
 								<a href="{$smarty.const.IA_URL}" title="{lang key='site_home'}" target="_blank"><i class="fa fa-desktop"></i><span> {lang key='site_home'}</span></a>
 							</li>
-							<li class="hidden-xs hidden-sm">
-								<a href="{$smarty.const.IA_ADMIN_URL}visual-mode/" title="{lang key='visual_manage'}" target="_blank"><i class="fa fa-sliders"></i><span> {lang key='visual_manage'}</span></a>
+							<li class="dropdown">
+								<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="">
+									<i class="fa fa-eye"></i><span> {lang key='mode'}</span>
+								</a>
+								<ul class="dropdown-menu">
+									{$manageMode = (isset($smarty.session.manageMode) && 'mode' == $smarty.session.manageMode)}
+									<li{if $manageMode} class="active"{/if}>
+										<a href="{if $manageMode}{$smarty.const.IA_URL}?manage_exit=y{else}{$smarty.const.IA_ADMIN_URL}visual-mode/{/if}" target="_blank"><i class="fa fa-sliders"></i><span> {lang key='visual_mode'}</span></a>
+									</li>
+									<li{if $smarty.const.INTELLI_QDEBUG} class="active"{/if}><a href="{$smarty.const.IA_ADMIN_URL}debug-mode/" title=""><i class="fa fa-bug"></i><span> {lang key='debug_mode'}</span></a></li>
+								</ul>
 							</li>
 							<li class="dropdown">
 								<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='quick_access'}">

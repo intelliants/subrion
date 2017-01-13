@@ -344,7 +344,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$token = $this->_iaCore->get('debug_pass');
 		if (!$token)
 		{
-			$token = iaUtil::generateToken(16);
+			$token = iaUtil::generateToken(32);
 			$this->_iaCore->set('debug_pass', $token, true);
 		}
 		$this->_iaCore->iaCache->clearGlobalCache();
