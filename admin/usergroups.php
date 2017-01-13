@@ -60,19 +60,25 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridQuery($columns, $where, $order, $start, $limit)
 	{
-		$sql = 'SELECT u.*, IF(u.`id` = 1, 0, u.`id`) `permissions`, u.`id` `config`, IF(u.`system` = 1, 0, 1) `delete` '
-			. ', IF(u.`id` = 1, 1, p.`access`) `admin` '
-			. ',(SELECT GROUP_CONCAT(m.`fullname` SEPARATOR \', \') FROM `' . iaUsers::getTable(true) . '` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id` LIMIT 10) `members` '
-			. ',(SELECT COUNT(m.`id`) FROM `' . iaUsers::getTable(true) . '` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id`) `count`'
-			. 'FROM `' . $this->_iaDb->prefix . $this->getTable() . '` u '
-			. 'LEFT JOIN `' . $this->_iaDb->prefix . 'acl_privileges` p '
-			. "ON (p.`type` = 'group' "
-			. 'AND p.`type_id` = u.`id` '
-			. "AND `object` = 'admin_access' "
-			. "AND `action` = 'read' "
-			. ')'
-			. $order . ' '
-			. 'LIMIT ' . $start . ', ' . $limit;
+		$sql = <<<SQL
+SELECT u.*, IF(u.`id` = 1, 0, u.`id`) `permissions`, u.`id` `config`, IF(u.`system` = 1, 0, 1) `delete`, 
+	IF(u.`id` = 1, 1, p.`access`) `admin`, 
+	(SELECT GROUP_CONCAT(m.`fullname` SEPARATOR ', ') FROM `:table_members` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id` LIMIT 10) `members`,
+	(SELECT COUNT(m.`id`) FROM `:table_members` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id`) `count`
+	FROM `:table_usergroups` u
+LEFT JOIN `:table_privileges` p ON (p.`type` = 'group' AND p.`type_id` = u.`id` AND `object` = 'admin_access' AND `action` = 'read')
+WHERE :conditions
+LIMIT :start, :limit
+SQL;
+		$sql = iaDb::printf($sql, array(
+			'table_members' => iaUsers::getTable(true),
+			'table_usergroups' => $this->_iaDb->prefix . iaUsers::getUsergroupsTable(),
+			'table_privileges' => $this->_iaDb->prefix . 'acl_privileges',
+			'conditions' => $where,
+			'order' => $order,
+			'start' => $start,
+			'limit' => $limit
+		));
 
 		$usergroups = $this->_iaDb->getAll($sql);
 		foreach ($usergroups as &$usergroup)

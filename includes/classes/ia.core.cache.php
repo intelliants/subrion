@@ -279,8 +279,8 @@ class iaCache extends abstractUtil
 				);
 
 				$fileContent = 'intelli.' . ('admin_lang' == $type ? 'admin.' : '') . 'lang = '
-					. iaUtil::jsonEncode($phrases) . ';'
-					. 'intelli.languages = ' . iaUtil::jsonEncode($languagesList) . ';';
+					. json_encode($phrases) . ';'
+					. 'intelli.languages = ' . json_encode($languagesList) . ';';
 				break;
 
 			case 'config':
@@ -299,7 +299,7 @@ class iaCache extends abstractUtil
 				foreach ($array as $item)
 					$config['items'][] = array($item, iaLanguage::get($item, $item));
 
-				$fileContent = 'intelli.config = ' . iaUtil::jsonEncode($config) . ';';
+				$fileContent = 'intelli.config = ' . json_encode($config) . ';';
 		}
 
 		if (isset($fileContent))

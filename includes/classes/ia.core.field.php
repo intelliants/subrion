@@ -124,16 +124,18 @@ class iaField extends abstractCore
 
 	protected function _fetchVisibleFieldsForPage($pageName, $itemName, $where)
 	{
-		$sql = 'SELECT f.* '
-			. 'FROM `:prefix:table_fields` f '
-			. 'LEFT JOIN `:prefix:table_pages` fp ON (fp.`field_id` = f.`id`) '
-			. "WHERE fp.`page_name` = ':page' "
-				. "AND f.`status` = ':status' "
-				. "AND f.`item` = ':item' "
-				. 'AND f.`adminonly` = 0 '
-				. 'AND :where '
-			. 'GROUP BY f.`id` '
-			. 'ORDER BY f.`order`';
+		$sql = <<<SQL
+SELECT f.* 
+	FROM `:prefix:table_fields` f 
+LEFT JOIN `:prefix:table_pages` fp ON (fp.`field_id` = f.`id`) 
+WHERE fp.`page_name` = ':page' 
+	AND f.`status` = ':status' 
+	AND f.`item` = ':item' 
+	AND f.`adminonly` = 0 
+	AND :where 
+GROUP BY f.`id` 
+ORDER BY f.`order`
+SQL;
 
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,

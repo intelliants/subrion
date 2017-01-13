@@ -63,14 +63,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridQuery($columns, $where, $order, $start, $limit)
 	{
-		$sql = 'SELECT :columns, pt.`value` `title`, pi.`value` `item` '
-			. 'FROM `:prefix:table_groups` fg '
-			. 'LEFT JOIN `:prefix:table_phrases` pt ON (pt.`key` = CONCAT("fieldgroup_", fg.`item`, "_", fg.`name`) AND pt.`code` = ":lang") '
-			. 'LEFT JOIN `:prefix:table_phrases` pi ON (pi.`key` = fg.`item` AND pi.`code` = ":lang") '
-			. 'WHERE :conditions '
-			. 'GROUP BY fg.`id` :order '
-			. 'LIMIT :start, :limit';
-
+		$sql = <<<SQL
+SELECT :columns, pt.`value` `title`, pi.`value` `item` 
+	FROM `:prefix:table_groups` fg 
+LEFT JOIN `:prefix:table_phrases` pt ON (pt.`key` = CONCAT("fieldgroup_", fg.`item`, "_", fg.`name`) AND pt.`code` = ":lang") 
+LEFT JOIN `:prefix:table_phrases` pi ON (pi.`key` = fg.`item` AND pi.`code` = ":lang") 
+WHERE :conditions 
+GROUP BY fg.`id` :order 
+LIMIT :start, :limit
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
 			'table_groups' => self::getTable(),

@@ -44,17 +44,7 @@ abstract class abstractCore
 
 	public static function getTable($prefix = false)
 	{
-		if (version_compare('5.3.0', PHP_VERSION, '<='))
-		{
-			eval('$_table = static::$_table;');
-		}
-
-		if ($prefix)
-		{
-			return iaCore::instance()->iaDb->prefix . $_table;
-		}
-
-		return $_table;
+		return $prefix ? iaCore::instance()->iaDb->prefix . static::$_table : static::$_table;
 	}
 
 	public function getMessage()

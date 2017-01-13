@@ -110,15 +110,17 @@ class iaInvoice extends abstractCore
 		}
 
 		// else return an address of the latest populated transaction
-
 		$iaTransaction = $this->iaCore->factory('transaction');
 
-		$sql = 'SELECT SQL_CALC_FOUND_ROWS i.`address1`, i.`address2`, i.`zip`, i.`country` '
-			. 'FROM `:prefix:table_transactions` t '
-			. 'LEFT JOIN `:prefix:table_invoices` i ON (i.`transaction_id` = t.`id`) '
-			. 'WHERE t.`member_id` = :member AND i.`address1` != "" '
-			. 'ORDER BY t.`date_created` DESC '
-			. 'LIMIT 1';
+		$sql = <<<SQL
+SELECT SQL_CALC_FOUND_ROWS i.`address1`, i.`address2`, i.`zip`, i.`country` 
+	FROM `:prefix:table_transactions` t 
+LEFT JOIN `:prefix:table_invoices` i ON (i.`transaction_id` = t.`id`) 
+WHERE t.`member_id` = :member AND i.`address1` != "" 
+ORDER BY t.`date_created` DESC 
+LIMIT 1
+SQL;
+
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_transactions' => $iaTransaction::getTable(),
