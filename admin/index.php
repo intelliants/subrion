@@ -71,35 +71,33 @@ class iaBackendController extends iaAbstractControllerBackend
 
 
 		// populate statistics
-		$iaItem = $iaCore->factory('item');
-		$itemsList = $iaItem->getPackageItems();
+		$itemsList = $iaCore->factory('item')->getPackageItems();
 		$validSizes = array('small', 'medium', 'package');
 
 		$iaCore->startHook('adminDashboardStatistics', array('items' => &$itemsList));
 
 		natcasesort($itemsList);
+
 		$statistics = array();
-
 		foreach ($validSizes as $size)
-		{
 			$statistics[$size] = array();
-		}
 
-		foreach ($itemsList as $itemName => $pluginType)
+		foreach ($itemsList as $name => $package)
 		{
-			$itemName = substr($itemName, 0, -1);
-			switch ($pluginType)
+			$itemName = substr($name, 0, -1);
+
+			switch ($package)
 			{
 				case 'core':
 					$classInstance = $iaCore->factory('member' == $itemName ? 'users' : $itemName);
 					break;
 				case 'plugin':
-					$array = explode(':', $itemName);
-					$itemName = isset($array[1]) ? $array[1] : $itemName;
+					$array = explode(':', $name);
+					$itemName = isset($array[1]) ? $array[1] : $name;
 					$classInstance = $iaCore->factoryPlugin($array[0], iaCore::ADMIN, isset($array[1]) ? $array[1] : null);
 					break;
 				default:
-					$classInstance = $iaCore->factoryPackage($itemName, $pluginType, iaCore::ADMIN);
+					$classInstance = $iaCore->factoryPackage($itemName, $package, iaCore::ADMIN);
 			}
 
 			if (!$customizationMode && in_array($itemName, $disabledWidgets))
@@ -107,24 +105,21 @@ class iaBackendController extends iaAbstractControllerBackend
 				continue;
 			}
 
-			if ($classInstance)
+			if ($classInstance && method_exists($classInstance, self::STATISTICS_GETTER_METHOD))
 			{
-				if (method_exists($classInstance, self::STATISTICS_GETTER_METHOD))
+				if ($classInstance->dashboardStatistics)
 				{
-					if ($classInstance->dashboardStatistics)
-					{
-						$data = call_user_func(array($classInstance, self::STATISTICS_GETTER_METHOD));
+					$data = call_user_func(array($classInstance, self::STATISTICS_GETTER_METHOD));
 
-						isset($data['icon']) || $data['icon'] = $itemName;
-						isset($data['caption']) || $data['caption'] = $itemName;
+					isset($data['icon']) || $data['icon'] = $name;
+					isset($data['caption']) || $data['caption'] = $name;
 
-						$data['caption'] = iaLanguage::get($data['caption'], $data['caption']);
+					$data['caption'] = iaLanguage::get($data['caption'], $data['caption']);
 
-						$widgetFormat = isset($data['_format']) && in_array($data['_format'], $validSizes)
-							? $data['_format']
-							: $validSizes[0];
-						$statistics[$widgetFormat][$itemName] = $data;
-					}
+					$widgetFormat = isset($data['_format']) && in_array($data['_format'], $validSizes)
+						? $data['_format']
+						: $validSizes[0];
+					$statistics[$widgetFormat][$itemName] = $data;
 				}
 			}
 		}
