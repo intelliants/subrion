@@ -40,8 +40,9 @@
         display: none;
       }
 
-      .fa {
+      > .fa {
         width: 20px;
+        font-size: 16px;
         text-align: center;
       }
     }
@@ -58,6 +59,29 @@
         border-style: solid;
         border-width: 0 0 10px 10px;
         border-color: transparent transparent darken(@navbar-bg, 8%) transparent;
+      }
+    }
+
+    .dropdown-menu {
+      min-width: 200px;
+
+      > li {
+
+        > a {
+
+          .fa {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+            margin-right: 5px;
+            color: fade(@text-color, 50%);
+          }
+
+          .label {
+            float: right;
+            line-height: @line-height-base;
+          }
+        }
       }
     }
 
@@ -126,13 +150,6 @@
       & + & {
         margin-top: 10px;
       }
-    }
-  }
-
-  @media (max-width: @screen-sm) {
-    .dropdown-menu.pull-right {
-      right: auto !important;
-      left: 0 !important;
     }
   }
 }
