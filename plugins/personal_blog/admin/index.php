@@ -234,17 +234,20 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 	protected function _gridQuery($columns, $where, $order, $start, $limit)
 	{
 		$sql =
-			'SELECT SQL_CALC_FOUND_ROWS ' .
-			'b.`id`, b.`title`, b.`alias`, b.`date_added`, b.`status`, m.`fullname` `owner`, 1 `update`, 1 `delete` ' .
-			'FROM `:prefix:table_blog_entries` b ' .
-			'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) ' .
-			($where ? "WHERE " . $where : '') . $order . ' ' .
-			'LIMIT :start, :limit';
+			'SELECT SQL_CALC_FOUND_ROWS '
+				. 'b.`id`, b.`title`, b.`alias`, b.`date_added`, b.`status`, '
+				. 'm.`fullname` `owner`, 1 `update`, 1 `delete` '
+			. 'FROM `:prefix:table_blog_entries` b '
+			. 'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) '
+			. 'WHERE :where :order '
+			. 'LIMIT :start, :limit';
 
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
 			'table_blog_entries' => $this->getTable(),
 			'table_members' => iaUsers::getTable(),
+			'where' => $where ? $where : iaDb::EMPTY_CONDITION,
+			'order' => $order,
 			'start' => $start,
 			'limit' => $limit
 		));
