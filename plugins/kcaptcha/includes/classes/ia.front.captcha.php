@@ -39,7 +39,7 @@ class iaCaptcha extends abstractUtil
 		$html = iaDb::printf($html, array(
 			'length' => (int)$this->iaCore->get('captcha_num_chars'),
 			'url' => IA_URL . 'captcha/',
-			'text' => iaLanguage::get('captcha_annotation'),
+			'text' => iaLanguage::get('captcha_tooltip'),
 			'title' => iaLanguage::get('click_to_redraw')
 		));
 

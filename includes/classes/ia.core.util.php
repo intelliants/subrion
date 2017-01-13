@@ -26,39 +26,8 @@
 
 class iaUtil extends abstractUtil
 {
-	const JSON_SERVICES_FILE = 'Services_JSON.php';
-	const REMOTE_TOOLS_URL = 'http://tools.subrion.org/';
+	const REMOTE_TOOLS_URL = 'https://tools.subrion.org/';
 
-
-	public static function jsonEncode($data)
-	{
-		if (function_exists('json_encode'))
-		{
-			return json_encode($data);
-		}
-		else
-		{
-			require_once IA_INCLUDES . 'utils' . IA_DS . self::JSON_SERVICES_FILE;
-			$jsonServices = new Services_JSON();
-
-			return $jsonServices->encode($data);
-		}
-	}
-
-	public static function jsonDecode($data)
-	{
-		if (function_exists('json_decode'))
-		{
-			return json_decode($data, true);
-		}
-		else
-		{
-			require_once IA_INCLUDES . 'utils' . IA_DS . self::JSON_SERVICES_FILE;
-			$jsonServices = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
-
-			return $jsonServices->decode($data);
-		}
-	}
 
 	public static function downloadRemoteContent($sourceUrl, $savePath)
 	{
@@ -113,10 +82,10 @@ class iaUtil extends abstractUtil
 		return $result;
 	}
 
-	/*
+	/**
 	 * Makes safe XHTML code, strip only dangerous tags and attributes
 	 *
-	 * @param string $string HTML text
+	 * @param $string HTML text
 	 *
 	 * @return string
 	 */

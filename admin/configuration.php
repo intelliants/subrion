@@ -406,10 +406,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getUsersSpecificConfig()
 	{
-		$sql = 'SELECT c.`name`, c.`value` '
-			. 'FROM `:prefix:table_custom_config` c, `:prefix:table_members` m '
-			. "WHERE c.`type` = ':type' AND c.`type_id` = m.`usergroup_id` AND m.`id` = :id";
-
+		$sql = <<<SQL
+SELECT c.`name`, c.`value` 
+	FROM `:prefix:table_custom_config` c, `:prefix:table_members` m 
+WHERE c.`type` = ':type' AND c.`type_id` = m.`usergroup_id` AND m.`id` = :id
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
 			'table_custom_config' => iaCore::getCustomConfigTable(),

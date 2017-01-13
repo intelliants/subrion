@@ -602,7 +602,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$nestedIds = array();
 		$preservedKeys = array('id', 'text', 'parent');
-		$data = iaUtil::jsonDecode($nodesFlatData);
+		$data = json_decode($nodesFlatData);
 
 		foreach ($data as $i => $node)
 		{
@@ -622,7 +622,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			);
 		}
 
-		return array(iaUtil::jsonEncode($data), $nestedIds);
+		return array(json_encode($data), $nestedIds);
 	}
 
 	private function _treeActions(array $params)
@@ -664,14 +664,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getTree($itemName, $fieldName, $nodes)
 	{
-		$unpackedNodes = is_string($nodes) && $nodes ? iaUtil::jsonDecode($nodes) : array();
+		$unpackedNodes = is_string($nodes) && $nodes ? json_decode($nodes) : array();
 
 		foreach ($unpackedNodes as &$node)
 		{
 			$node['text'] = iaLanguage::get(sprintf(self::TREE_NODE_TITLE, $itemName, $fieldName, $node['id']), $node['text']);
 		}
 
-		return iaUtil::jsonEncode($unpackedNodes);
+		return json_encode($unpackedNodes);
 	}
 
 	protected function _saveTreeNodes($fieldName, $nodes, array $field)

@@ -80,10 +80,13 @@ class iaPlan extends abstractCore
 
 	protected function _getOptionValuesByPlanId($planId)
 	{
-		$sql = 'SELECT o.`name`, v.`value` '
-			. 'FROM `:prefix:table_option_values` v '
-			. 'LEFT JOIN `:prefix:table_options` o ON (v.`option_id` = o.`id`) '
-			. 'WHERE v.`plan_id` = :plan';
+		$sql = <<<SQL
+SELECT o.`name`, v.`value` 
+	FROM `:prefix:table_option_values` v 
+LEFT JOIN `:prefix:table_options` o ON (v.`option_id` = o.`id`) 
+WHERE v.`plan_id` = :plan
+SQL;
+
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_option_values' => self::getTableOptionValues(),

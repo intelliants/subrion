@@ -975,14 +975,12 @@ SQL;
 			case self::REQUEST_JSON:
 				header('Content-Type: application/json');
 
-				$iaUtil = $this->iaCore->factory('util');
-
 				if (isset($outputValues[self::JSON_MAGIC_KEY]) && 1 == count($outputValues))
 				{
 					$outputValues = array_values($outputValues[self::JSON_MAGIC_KEY]);
 				}
 
-				echo $iaUtil->jsonEncode($outputValues);
+				echo json_encode($outputValues);
 
 				break;
 
@@ -1121,9 +1119,7 @@ SQL;
 
 	public function jsonp($data)
 	{
-		$this->iaCore->factory('util');
-
-		echo sprintf('%s(%s)', isset($_GET['fn']) ? $_GET['fn'] : '', iaUtil::jsonEncode($data));
+		echo sprintf('%s(%s)', isset($_GET['fn']) ? $_GET['fn'] : '', json_encode($data));
 		exit;
 	}
 
@@ -1507,13 +1503,12 @@ SQL;
 		return $result;
 	}
 
-	/*
+	/**
 	 * Return absolute path to template resource according to the script's logic
 	 *
-	 * @param string resourceName template resource name
-	 * @param bool useCustom
+	 * @param string $resourceName template resource name
 	 *
-	 * @return string absolute path to a template resource name
+	 * @return string
 	 */
 	public function _retrieveTemplatePath($resourceName)
 	{

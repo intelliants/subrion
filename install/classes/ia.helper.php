@@ -26,8 +26,8 @@
 
 class iaHelper
 {
-	const PLUGINS_LIST_SOURCE = 'http://tools.subrion.org/list/plugin/%s';
-	const PLUGINS_DOWNLOAD_SOURCE = 'http://tools.subrion.org/install/%s/%s';
+	const PLUGINS_LIST_SOURCE = 'https://tools.subrion.org/list/plugin/%s';
+	const PLUGINS_DOWNLOAD_SOURCE = 'https://tools.subrion.org/install/%s/%s';
 
 	const USER_AGENT = 'Subrion CMS Bot';
 

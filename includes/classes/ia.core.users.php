@@ -271,12 +271,13 @@ class iaUsers extends abstractCore
 
 	public static function reloadIdentity()
 	{
-		$sql =
-			'SELECT u.*, g.`name` `usergroup` ' .
-			'FROM `:prefix_:table_users` u ' .
-			'LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) ' .
-			"WHERE u.`id` = :id AND u.`status` = ':status' " .
-			'LIMIT 1';
+		$sql = <<<SQL
+SELECT u.*, g.`name` `usergroup` 
+	FROM `:prefix_:table_users` u 
+LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) 
+WHERE u.`id` = :id AND u.`status` = ':status' 
+LIMIT 1
+SQL;
 
 		$iaDb = iaCore::instance()->iaDb;
 		$sql = iaDb::printf($sql, array(
@@ -568,12 +569,13 @@ class iaUsers extends abstractCore
 
 	public function getAuth($userId, $user = null, $password = null, $remember = false)
 	{
-		$sql =
-			'SELECT u.*, g.`name` `usergroup` ' .
-			'FROM `:prefix_:table_users` u ' .
-			'LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) ' .
-			'WHERE :condition ' .
-			'LIMIT 1';
+		$sql = <<<SQL
+SELECT u.*, g.`name` `usergroup` 
+	FROM `:prefix_:table_users` u 
+LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) 
+WHERE :condition 
+LIMIT 1
+SQL;
 
 		if ((int)$userId)
 		{
