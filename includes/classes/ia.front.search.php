@@ -990,7 +990,7 @@ SQL;
 	protected function _parseTreeNodes($packedNodes)
 	{
 		$result = array();
-		$nodes = json_decode($packedNodes);
+		$nodes = json_decode($packedNodes, true);
 
 		$indent = array();
 		foreach ($nodes as $node)

@@ -374,7 +374,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			return;
 		}
 
-		$content = json_decode($content);
+		$content = json_decode($content, true);
 
 		if (is_array($content) && $content)
 		{

@@ -589,7 +589,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($response = iaUtil::getPageContent(iaUtil::REMOTE_TOOLS_URL . 'list/package/' . IA_VERSION))
 			{
-				$response = json_decode($response);
+				$response = json_decode($response, true);
 				if (!empty($response['error']))
 				{
 					$this->_messages[] = $response['error'];
