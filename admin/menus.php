@@ -306,7 +306,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$menus = isset($data['menus']) && $data['menus'] ? $data['menus'] : '';
-		$menus = json_decode($menus);
+		$menus = json_decode($menus, true);
 		array_shift($menus);
 
 		$rows = array();
