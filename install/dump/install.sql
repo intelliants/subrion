@@ -770,18 +770,18 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('db_import','database/import/','box-add','','database','import','regular',6),
 ('fields_list','fields/','list','','fields:edit,members_fields','fields','regular',1),
 ('field_add','fields/add/','plus-alt','','fields,members_fields','add_field','regular',2),
-('field_groups_list','fieldgroups/','list-2','','fieldgroups,members_fields','Field Groups','regular',3),
-('field_groups_add','fieldgroups/add/','folder-plus','','fieldgroups,members_fields','Add Field Group','regular',4),
+('field_groups_list','fieldgroups/','list-2','','fieldgroups,members_fields','field_groups','regular',3),
+('field_groups_add','fieldgroups/add/','folder-plus','','fieldgroups,members_fields','add_fieldgroup','regular',4),
 ('image_types_list','image-types/','list','','imagetypes:edit','image_types','regular',1),
 ('image_types_add','image-types/add/','plus-alt','','imagetypes','add_image_type','regular',2),
 ('invoice_add','invoices/add/','plus-alt','','invoices,invoices:edit','Add Invoice','regular',1),
 ('languages_list','languages/','list','','languages','view','regular',1),
 ('language_add','languages/add/','copy','','languages','new_language','regular',2),
 ('languages_download','languages/download/','box-remove','','languages','Download','regular',3),
-('language_phrase_add','javascript:;','plus-alt','id="js-add-phrase-cmd"','languages,phrases','Add Phrase','regular',4),
+('language_phrase_add','javascript:;','plus-alt','id="js-add-phrase-cmd"','languages,phrases','add_new_phrase','regular',4),
 ('languages_comparison','languages/comparison/','link-2','','languages','languages_comparison','regular',5),
 ('menu_list','menus/','list','','menus:add,menus:edit','Menus','regular',3),
-('menu_add','menus/add/','plus-alt','','menus','Add Menu','regular',4),
+('menu_add','menus/add/','plus-alt','','menus','add_menu','regular',4),
 ('pages_delete','javascript:;','remove','id="js-delete-page"','pages:edit','delete','regular',1),
 ('pages_list','pages/','list','','pages:add,pages:edit','Pages','regular',2),
 ('pages_add','pages/add/','plus-alt','','pages','Add Page','regular',3),
@@ -791,8 +791,8 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('transaction_add','javascript:;','plus','id="js-add-transaction-cmd"','transactions','Add Transaction','regular',1),
 ('tags_list','javascript:;','eye','id="js-view-tags"','email_templates','View Tags','regular',1),
 
-('dashboard_blocks_list','blocks/','grid','','','Edit Blocks','dashboard',0),
-('dashboard_pages_add','pages/add/','copy','','','Create Page','dashboard',0);
+('dashboard_blocks_list','blocks/','grid','','','edit_blocks','dashboard',0),
+('dashboard_pages_add','pages/add/','copy','','','pages_add','dashboard',0);
 
 INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`filename`,`alias`,`menus`,`attr`,`order`) VALUES
 (0,'index','read','','index','','menu',null,0),
