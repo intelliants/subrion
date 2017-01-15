@@ -69,7 +69,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			$iaView->assign('customization_mode', true);
 		}
 
-
 		// populate statistics
 		$itemsList = $iaCore->factory('item')->getPackageItems();
 		$validSizes = array('small', 'medium', 'package');
@@ -186,7 +185,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if ($customizationMode || !in_array('twitter', $disabledWidgets))
 		{
 			$data = iaUtil::getPageContent('https://tools.intelliants.com/timeline/');
-			$iaView->assign('timeline', json_decode($data));
+			$iaView->assign('timeline', json_decode($data, true));
 		}
 
 		if ($customizationMode || !in_array('recent-activity', $disabledWidgets))
@@ -375,7 +374,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			return;
 		}
 
-		$content = json_decode($content);
+		$content = json_decode($content, true);
 
 		if (is_array($content) && $content)
 		{

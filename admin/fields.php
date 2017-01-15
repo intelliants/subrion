@@ -602,7 +602,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$nestedIds = array();
 		$preservedKeys = array('id', 'text', 'parent');
-		$data = json_decode($nodesFlatData);
+		$data = json_decode($nodesFlatData, true);
 
 		foreach ($data as $i => $node)
 		{
@@ -664,7 +664,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getTree($itemName, $fieldName, $nodes)
 	{
-		$unpackedNodes = is_string($nodes) && $nodes ? json_decode($nodes) : array();
+		$unpackedNodes = is_string($nodes) && $nodes ? json_decode($nodes, true) : array();
 
 		foreach ($unpackedNodes as &$node)
 		{
