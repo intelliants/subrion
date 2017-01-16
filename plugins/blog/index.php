@@ -297,7 +297,7 @@ if (iaView::REQUEST_XML == $iaView->getRequestType())
 	//You can add your own by replacing rss.png in "/plugins/blog/templates/front/img" folder
 	$output['image'][] = array(
 		'title' => $iaCore->get('site') . ' :: ' . $iaView->title(),
-		'url' => IA_URL . 'plugins/blog/templates/front/img/rss.png',
+		'url' => IA_CLEAR_URL . 'plugins/blog/templates/front/img/rss.png',
 		'link' => $baseUrl
 	);
 
@@ -308,7 +308,7 @@ if (iaView::REQUEST_XML == $iaView->getRequestType())
 		$blogbody = '';
 		if($entry['image']!='') {
 			//Let's add the blog image as well, if used
-			$blogbody.= '<p><img src="' . IA_URL . 'uploads/' . $entry["image"] . '"/></p>';
+			$blogbody.= '<p><img src="' . IA_CLEAR_URL . 'uploads/' . $entry["image"] . '"/></p>';
 		}
 		$blogbody.= iaSanitize::tags($entry['body']);
 
