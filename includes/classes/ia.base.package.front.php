@@ -53,7 +53,12 @@ abstract class abstractPackageFront extends abstractCore
 
 	public function url($action, array $data)
 	{
-		return isset($data['url']) ? $this->getInfo('url') . $data['url'] : '';
+		return '#';
+	}
+
+	public function makeUrl(array $itemData)
+	{
+		return $this->getInfo($this->getPackageName()) . '#';
 	}
 
 	public function getInfo($key)

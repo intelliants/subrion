@@ -859,7 +859,7 @@ SQL;
 			$this->iaCore->setPackagesData();
 		}
 
-		if (!isset($pageParams))
+		if (!isset($found) || !$found)
 		{
 			return self::errorPage(self::ERROR_NOT_FOUND);
 		}

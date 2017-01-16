@@ -1436,7 +1436,7 @@ class iaExtra extends abstractCore
 		$this->iaCore->startHook('phpExtrasInstallAfter', array('extra' => $this->itemData['name']));
 
 		$this->iaCore->factory('cache')->clearAll();
-
+die();
 		return true;
 	}
 
@@ -2103,6 +2103,7 @@ class iaExtra extends abstractCore
 		require_once IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php';
 
 		$mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
+		$masterLanguageCode = $this->iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
 
 		$path = isset($this->_extrasTypePaths[$this->itemData['type']]) ? $this->_extrasTypePaths[$this->itemData['type']] : IA_HOME;
 		$extrasVersion = $this->itemData['info']['version'];
@@ -2152,7 +2153,10 @@ class iaExtra extends abstractCore
 				{
 					if ($entry['query'])
 					{
-						$query = str_replace(array('{prefix}', '{mysql_version}'), array($iaDb->prefix, $mysqlOptions), $entry['query']);
+						$query = str_replace(
+							array('{prefix}', '{mysql_version}', '{lang}'),
+							array($iaDb->prefix, $mysqlOptions, $masterLanguageCode),
+							$entry['query']);
 						$iaDb->query($query);
 					}
 				}
@@ -2250,7 +2254,7 @@ class iaExtra extends abstractCore
 
 			if (iaField::TREE == $entry['type'])
 			{
-				//$entry['timepicker'] = $entry['multiselection'];
+				$entry['timepicker'] = $entry['multiselection'];
 			}
 
 			$fieldPages = $entry['item_pages'] ? $entry['item_pages'] : array();
