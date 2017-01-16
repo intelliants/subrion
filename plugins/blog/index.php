@@ -294,10 +294,10 @@ if (iaView::REQUEST_XML == $iaView->getRequestType())
 	);
 
 	//Add default Feed Image displayed in RSS Readers
-	//You can add your own by replacing rss.png in "/plugins/events/img" folder
+	//You can add your own by replacing rss.png in "/plugins/blog/templates/front/img" folder
 	$output['image'][] = array(
 		'title' => $iaCore->get('site') . ' :: ' . $iaView->title(),
-		'url' => IA_URL . 'plugins/personal_blog/templates/front/img/rss.png',
+		'url' => IA_URL . 'plugins/blog/templates/front/img/rss.png',
 		'link' => $baseUrl
 	);
 
