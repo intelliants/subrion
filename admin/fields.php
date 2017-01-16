@@ -607,9 +607,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach ($data as $i => $node)
 		{
 			foreach ($node as $key => $value)
-			{
 				if (!in_array($key, $preservedKeys)) unset($data[$i][$key]);
-			}
 
 			$alias = strtolower(iaSanitize::alias($node['text']));
 			$nestedIds[$node['id']] = array(
@@ -678,8 +676,10 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_iaDb->setTable('fields_tree_nodes');
 
-		$this->_iaDb->delete('`field` = :name && `item` = :item', null, array('name' => $fieldName, 'item' => $field['item']));
-		$this->_iaDb->delete('`key` LIKE :key', iaLanguage::getTable(), array('key' => 'field_' . $field['item'] . '_' . $fieldName . '+%'));
+		$this->_iaDb->delete('`field` = :name && `item` = :item', null,
+			array('name' => $fieldName, 'item' => $field['item']));
+		$this->_iaDb->delete('`key` LIKE :key AND `code` = :lang', iaLanguage::getTable(),
+			array('key' => 'field_' . $field['item'] . '_' . $fieldName . '+%', 'lang' => $this->_iaCore->language['iso']));
 
 		if ($nodes)
 		{
@@ -695,7 +695,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				if ($this->_iaDb->insert($node))
 				{
 					$key = sprintf(self::TREE_NODE_TITLE, $field['item'], $fieldName, $node['node_id']);
-					$this->_addPhrase($key, $caption, $field['extras']);
+					$this->_addPhrase($key, $caption, $field['extras'], $this->_iaCore->language['iso']);
 				}
 			}
 		}
@@ -703,10 +703,14 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->resetTable();
 	}
 
-	protected function _addPhrase($key, $value, $extras = '')
+	protected function _addPhrase($key, $value, $extras = '', $masterLanguage = null)
 	{
 		foreach ($this->_iaCore->languages as $code => $language)
-			iaLanguage::addPhrase($key, $value, $code, $extras);
+		{
+			if ($masterLanguage && $code != $masterLanguage // do not overwrite phrases in other languages if exist
+				&& $this->_iaDb->exists('`key` = :key AND `code` = :code', array('key' => $key, 'code' => $code), iaLanguage::getTable())) continue;
+			iaLanguage::addPhrase($key, $value, $code, $extras, iaLanguage::CATEGORY_COMMON);
+		}
 	}
 
 	private function _fetchFieldGroups($itemName)

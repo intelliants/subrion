@@ -301,7 +301,7 @@
 						<button class="js-tree-action btn btn-xs btn-info disabled" data-action="update"><i class="i-edit"></i> Rename</button>
 						<em class="help-inline pull-right">{lang key='drag_to_reorder'}</em>
 
-						<input type="hidden" name="nodes"{if iaField::TREE == $item.type} value="{$item.values|escape}"{/if}>
+						<input type="hidden" name="nodes"{if iaField::TREE == $item.type} value="{$values|escape}"{/if}>
 						<div class="categories-tree" id="input-nodes" data-action="{$core.page.info.action}"></div>
 					</div>
 				</div>
