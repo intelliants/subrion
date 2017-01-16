@@ -953,13 +953,13 @@ SQL;
 	// DB mgmt utility methods
 	public function alterMultilingualColumns($dbTable, $fieldName, array $fieldData)
 	{
-		$defaultLanguage = null;
+		$defaultLanguageCode = null;
 
 		foreach ($this->iaCore->languages as $language)
 		{
 			if ($language['default'])
 			{
-				$defaultLanguage = $language;
+				$defaultLanguageCode = $language['iso'];
 				break;
 			}
 		}
@@ -967,11 +967,11 @@ SQL;
 		if ($fieldData['multilingual'])
 		{
 			$fieldData['name'] = $fieldName;
-			$this->alterColumnScheme($dbTable, $fieldData, $fieldName . '_' . $defaultLanguage['iso']);
+			$this->alterColumnScheme($dbTable, $fieldData, $fieldName . '_' . $defaultLanguageCode);
 
 			foreach ($this->iaCore->languages as $language)
 			{
-				if ($language['iso'] != $defaultLanguage['iso'])
+				if ($language['iso'] != $defaultLanguageCode)
 				{
 					$fieldData['name'] = $fieldName . '_' . $language['iso'];
 					$this->alterColumnScheme($dbTable, $fieldData);
@@ -980,12 +980,12 @@ SQL;
 		}
 		else
 		{
-			$fieldData['name'] = $fieldName . '_' . $defaultLanguage['iso'];
+			$fieldData['name'] = $fieldName . '_' . $defaultLanguageCode;
 			$this->alterColumnScheme($dbTable, $fieldData, $fieldName);
 
 			foreach ($this->iaCore->languages as $language)
 			{
-				if ($language['iso'] != $defaultLanguage['iso'])
+				if ($language['iso'] != $defaultLanguageCode)
 				{
 					$this->alterDropColumn($dbTable, $fieldName . '_' . $language['iso']);
 				}
