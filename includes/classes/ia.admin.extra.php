@@ -1415,7 +1415,7 @@ class iaExtra extends abstractCore
 
 		if (self::TYPE_PLUGIN == $this->itemData['type'])
 		{
-			$extraEntry['removable'] = !('personal_blog' != $this->itemData['name'] && in_array($this->itemData['name'], $this->_builtinPlugins));
+			$extraEntry['removable'] = !('blog' != $this->itemData['name'] && in_array($this->itemData['name'], $this->_builtinPlugins));
 		}
 
 		if (!$this->isUpdate)

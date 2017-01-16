@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @package Subrion\Plugin\PersonalBlog\Admin
+ * @package Subrion\Plugin\Blog\Admin
  * @link https://subrion.org/
  * @author https://intelliants.com/ <support@subrion.org>
  * @license https://subrion.org/license.html
@@ -35,7 +35,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 	protected $_tableBlogTags = 'blog_tags';
 	protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
-	protected $_pluginName = 'personal_blog';
+	protected $_pluginName = 'blog';
 
 	protected $_gridFilters = array('status' => 'equal');
 	protected $_gridQueryMainTableAlias = 'b';
