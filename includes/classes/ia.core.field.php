@@ -533,7 +533,7 @@ SQL;
 						break;
 
 					case self::TEXT:
-						if ($field['multilingual'] && is_array($data[$fieldName]))
+						if ($field['multilingual'])
 						{
 							foreach ($data[$fieldName] as $langCode => $value)
 								$item[$fieldName . '_' . $langCode] = iaSanitize::tags($value);
@@ -545,7 +545,7 @@ SQL;
 						break;
 
 					case self::TEXTAREA:
-						if ($field['multilingual'] && is_array($data[$fieldName]))
+						if ($field['multilingual'])
 						{
 							foreach ($data[$fieldName] as $langCode => $value)
 								$item[$fieldName . '_' . $langCode] = $field['use_editor'] ? iaUtil::safeHTML($value) : iaSanitize::tags($value);

@@ -1436,7 +1436,7 @@ class iaExtra extends abstractCore
 		$this->iaCore->startHook('phpExtrasInstallAfter', array('extra' => $this->itemData['name']));
 
 		$this->iaCore->factory('cache')->clearAll();
-die();
+
 		return true;
 	}
 
