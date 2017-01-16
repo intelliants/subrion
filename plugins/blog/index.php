@@ -289,19 +289,34 @@ if (iaView::REQUEST_XML == $iaView->getRequestType())
 	$output = array(
 		'title' => $iaCore->get('site') . ' :: ' . $iaView->title(),
 		'description' => '',
-		'url' => IA_URL . 'blog',
+		'link' => IA_URL . 'blog',
 		'item' => array()
+	);
+
+	//Add default Feed Image displayed in RSS Readers
+	//You can add your own by replacing rss.png in "/plugins/events/img" folder
+	$output['image'][] = array(
+		'title' => $iaCore->get('site') . ' :: ' . $iaView->title(),
+		'url' => IA_URL . 'plugins/personal_blog/templates/front/img/rss.png',
+		'link' => $baseUrl
 	);
 
 	$entries = $iaBlog->get(0, 20);
 
-	foreach ($entries as $entry)
-	{
+	foreach ($entries as $entry) {
+
+		$blogbody = '';
+		if($entry['image']!='') {
+			//Let's add the blog image as well, if used
+			$blogbody.= '<p><img src="' . IA_URL . 'uploads/' . $entry["image"] . '"/></p>';
+		}
+		$blogbody.= iaSanitize::tags($entry['body']);
+
 		$output['item'][] = array(
 			'title' => $entry['title'],
-			'link' => $baseUrl . $entry['id'] . '-' . $entry['alias'],
-			'pubDate' => date('D, d M Y H:i:s T', strtotime($entry['date_modified'])),
-			'description' => iaSanitize::tags($entry['body'])
+			'guid' => $baseUrl . $entry['id'] . '-' . $entry['alias'],
+			'pubDate' => date('D, d M Y H:i:s O', strtotime($entry['date_added'])),
+			'description' => $blogbody
 		);
 	}
 
