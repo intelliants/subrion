@@ -1,17 +1,16 @@
 {$type = $field.type}
 {$fieldName = $field.name}
 {$name = "field_{$field.item}_{$field.name}"}
-{$languagesCount = count($core.languages)}
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
 	<div class="col col-lg-2">
-		{if $field.multilingual}
+		{if $field.multilingual && count($core.languages) > 1}
 			<div class="btn-group btn-group-xs translate-group-actions">
-				<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"{if 1 == $languagesCount} disabled{/if}><span class="i-earth"></span></button>
-				<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"{if 1 == $languagesCount} disabled{/if}><span class="i-copy"></span></button>
+				<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"><span class="i-earth"></span></button>
+				<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"><span class="i-copy"></span></button>
 			</div>
 		{/if}
 		<label class="control-label">{$field.title|escape:'html'} {if $field.required}{lang key='field_required'}{/if}</label>
@@ -25,7 +24,7 @@
 		{if $tooltip}<div class="help-block">{$tooltip}</div>{/if}
 	</div>
 
-	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual)}
+	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual && count($core.languages) > 1)}
 		<div class="col col-lg-4">
 	{else}
 		<div class="col col-lg-8">
@@ -38,7 +37,7 @@
 	{if isset($item.$fieldName) && $item.$fieldName}
 		{if iaField::CHECKBOX == $type}
 			{$value = ','|explode:$item.$fieldName}
-		{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
+		{elseif in_array($type, [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])}
 			{$value = $item.$fieldName|unserialize}
 		{else}
 			{$value = $item.$fieldName}
