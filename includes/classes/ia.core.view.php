@@ -267,18 +267,19 @@ class iaView extends abstractUtil
 
 		$menuGroups = $iaDb->assoc(array('id', 'name'), $stmt . ' ORDER BY `order`', 'admin_pages_groups');
 
-		$sql = 'SELECT g.`name` `config`, e.`type`, '
-				. 'p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`extras` '
-			. 'FROM `:prefix:table_admin_pages` p '
-			. 'LEFT JOIN `:prefix:table_config_groups` g ON '
-				. "(p.`extras` IN (':extras') AND p.`extras` = g.`extras`) "
-			. 'LEFT JOIN `:prefix:table_extras` e ON '
-				. "(p.`extras` = e.`name`) "
-			. 'WHERE p.`group` IN (:groups) '
-				. "AND FIND_IN_SET('menu', p.`menus`) "
-				. "AND p.`status` = ':status' "
-				. "AND p.`extras` IN ('',':extras') "
-			. 'ORDER BY p.`order`';
+		$sql = <<<SQL
+SELECT g.`name` `config`, e.`type`, p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`extras` 
+	FROM `:prefix:table_admin_pages` p 
+LEFT JOIN `:prefix:table_config_groups` g ON 
+	(p.`extras` IN (':extras') AND p.`extras` = g.`extras`) 
+LEFT JOIN `:prefix:table_extras` e ON 
+	(p.`extras` = e.`name`) 
+WHERE p.`group` IN (:groups) 
+	AND FIND_IN_SET('menu', p.`menus`) 
+	AND p.`status` = ':status' 
+	AND p.`extras` IN ('',':extras') 
+ORDER BY p.`order`
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $iaDb->prefix,
 			'table_admin_pages' => 'admin_pages',
@@ -481,7 +482,6 @@ SELECT `object` FROM `{$table}`
 	)
 	GROUP BY `object`
 SQL;
-
 		$disabledBlocks = $this->iaCore->iaDb->getAssoc($sql, true);
 
 		return array_keys($disabledBlocks);
@@ -604,11 +604,13 @@ SQL;
 			}
 			else
 			{
-				$sql =
-					'SELECT m.*, p.`nofollow`, p.`new_window`, p.`action`, p.`custom_url` ' .
-					'FROM `:prefixmenus` m ' .
-					'LEFT JOIN `:prefixpages` p ON (p.`name` = m.`page_name`) ' .
-					'WHERE m.`menu_id` = :menu ORDER BY m.`level`, m.`id`';
+				$sql = <<<SQL
+SELECT m.*, p.`nofollow`, p.`new_window`, p.`action`, p.`custom_url` 
+	FROM `:prefixmenus` m 
+LEFT JOIN `:prefixpages` p ON (p.`name` = m.`page_name`) 
+WHERE m.`menu_id` = :menu
+ORDER BY m.`level`, m.`id`
+SQL;
 				$sql = iaDb::printf($sql, array(
 					'prefix' => $this->iaCore->iaDb->prefix,
 					'menu' => $menuId
@@ -782,16 +784,14 @@ SQL;
 			}
 		}
 
-		$sql =
-			'SELECT '
-				. 'p.`id`, p.`name`, p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`, '
-				. 'e.`type`, e.`url` '
-			. 'FROM `:prefix:table_pages` p '
-			. 'LEFT JOIN `:prefix:table_extras` e ON (e.`name` = p.`extras`) '
-			. "WHERE :where AND p.`status` = ':status' "
-				. "AND (e.`status` = ':status' OR e.`status` IS NULL) "
-			. 'ORDER BY LENGTH(p.`alias`) DESC, p.`extras` DESC';
-
+		$sql = <<<SQL
+SELECT p.`id`, p.`name`, p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`, 
+	e.`type`, e.`url` 
+FROM `:prefix:table_pages` p 
+LEFT JOIN `:prefix:table_extras` e ON (e.`name` = p.`extras`) 
+WHERE :where AND p.`status` = ':status' AND (e.`status` = ':status' OR e.`status` IS NULL) 
+ORDER BY LENGTH(p.`alias`) DESC, p.`extras` DESC
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaCore->iaDb->prefix,
 			'table_pages' => (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages',
@@ -859,7 +859,7 @@ SQL;
 			$this->iaCore->setPackagesData();
 		}
 
-		if (!isset($pageParams))
+		if (!isset($found) || !$found)
 		{
 			return self::errorPage(self::ERROR_NOT_FOUND);
 		}

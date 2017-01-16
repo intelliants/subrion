@@ -1,14 +1,13 @@
 {$type = $field.type}
 {$fieldName = $field.name}
 {$name = "field_{$field.item}_{$field.name}"}
-{$translatable = ($field.multilingual && count($core.languages) > 1)}
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
 	<div class="col col-lg-2">
-		{if $translatable}
+		{if $field.multilingual && count($core.languages) > 1}
 			<div class="btn-group btn-group-xs translate-group-actions">
 				<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"><span class="i-earth"></span></button>
 				<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"><span class="i-copy"></span></button>
@@ -25,7 +24,7 @@
 		{if $tooltip}<div class="help-block">{$tooltip}</div>{/if}
 	</div>
 
-	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual)}
+	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual && count($core.languages) > 1)}
 		<div class="col col-lg-4">
 	{else}
 		<div class="col col-lg-8">
@@ -38,7 +37,7 @@
 	{if isset($item.$fieldName) && $item.$fieldName}
 		{if iaField::CHECKBOX == $type}
 			{$value = ','|explode:$item.$fieldName}
-		{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
+		{elseif in_array($type, [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])}
 			{$value = $item.$fieldName|unserialize}
 		{else}
 			{$value = $item.$fieldName}
@@ -49,11 +48,11 @@
 
 	{switch $type}
 		{case iaField::TEXT break}
-			{if $translatable}
+			{if $field.multilingual}
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
-							<input type="text" name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" value="{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}">
+							<input type="text" name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" value="{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
 							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
 						</div>
 					</div>
@@ -61,7 +60,7 @@
 						{foreach $core.languages as $iso => $language}
 							{if $iso != $core.language.iso}
 								<div class="translate-group__item">
-									<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}">
+									<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
 									<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
 								</div>
 							{/if}
@@ -102,7 +101,7 @@
 
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
-				{if $translatable}
+				{if $field.multilingual}
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
@@ -141,7 +140,7 @@ $(function($)
 				{/if}
 				{/if}
 			{else}
-				{if $translatable}
+				{if $field.multilingual}
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">

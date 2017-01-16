@@ -24,17 +24,17 @@
  *
  ******************************************************************************/
 
-$iaPersonalBlog = $iaCore->factoryPlugin(IA_CURRENT_PLUGIN);
+$iaBlog = $iaCore->factoryPlugin(IA_CURRENT_PLUGIN);
 
 $baseUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
 
-$iaDb->setTable($iaPersonalBlog::getTable());
+$iaDb->setTable($iaBlog::getTable());
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
 	if (isset($iaCore->requestPath[0]) && 'alias' == $iaCore->requestPath[0])
 	{
-		$output['url'] = $baseUrl . $iaDb->getNextId() . '-' . $iaPersonalBlog->titleAlias($_POST['title']);
+		$output['url'] = $baseUrl . $iaDb->getNextId() . '-' . $iaBlog->titleAlias($_POST['title']);
 
 		$iaView->assign($output);
 	}
@@ -110,7 +110,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('body')));
 				}
 
-				$entry['alias'] = $iaPersonalBlog->titleAlias(empty($_POST['alias']) ? $entry['title'] : $_POST['alias']);
+				$entry['alias'] = $iaBlog->titleAlias(empty($_POST['alias']) ? $entry['title'] : $_POST['alias']);
 
 				if (!$messages)
 				{
@@ -139,14 +139,14 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					}
 
 					$result = (iaCore::ACTION_ADD == $pageAction)
-						? $iaPersonalBlog->insert($entry)
-						: $iaPersonalBlog->update($entry, $id);
+						? $iaBlog->insert($entry)
+						: $iaBlog->update($entry, $id);
 
 					if ($result)
 					{
 						$id = (iaCore::ACTION_ADD == $pageAction) ? $result : $id;
 
-						$iaPersonalBlog->saveTags($id, $_POST['tags']);
+						$iaBlog->saveTags($id, $_POST['tags']);
 
 						$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
 						iaUtil::go_to($baseUrl . sprintf('%d-%s', $id, $entry['alias']));
@@ -160,7 +160,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$iaView->setMessages($messages);
 			}
 
-			$tags = (iaCore::ACTION_ADD == $pageAction) ? '' : $iaPersonalBlog->getTagsString($id);
+			$tags = (iaCore::ACTION_ADD == $pageAction) ? '' : $iaBlog->getTagsString($id);
 
 			$iaView->assign('item', $entry);
 			$iaView->assign('blog_entry_tags', $tags);
@@ -181,7 +181,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 			}
 
-			$result = $iaPersonalBlog->delete($id);
+			$result = $iaBlog->delete($id);
 
 			$iaView->setMessages(iaLanguage::get($result ? 'deleted' : 'db_error'), $result ? iaView::SUCCESS : iaView::ERROR);
 
@@ -203,7 +203,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
 				
-				$entry = $iaPersonalBlog->getById($id);
+				$entry = $iaBlog->getById($id);
 
 				if (empty($entry))
 				{
@@ -224,10 +224,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				$iaView->set('og', $openGraph);
 
-				$iaView->assign('blog_tags', $iaPersonalBlog->getTags($id));
+				$iaView->assign('blog_tags', $iaBlog->getTags($id));
 				$iaView->assign('blog_entry', $entry);
 
-				if ($iaAcl->isAccessible(iaPersonalBlog::PAGE_NAME, iaCore::ACTION_EDIT) && iaUsers::hasIdentity()
+				if ($iaAcl->isAccessible(iaBlog::PAGE_NAME, iaCore::ACTION_EDIT) && iaUsers::hasIdentity()
 					&& iaUsers::getIdentity()->id == $entry['member_id'])
 				{
 					$pageActions[] = array(
@@ -255,10 +255,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					'template' => $baseUrl . '?page={page}'
 				);
 
-				$entries = $iaPersonalBlog->get($pagination['start'], $pagination['limit']);
+				$entries = $iaBlog->get($pagination['start'], $pagination['limit']);
 				$pagination['total'] = $iaDb->foundRows();
 
-				$iaView->assign('blog_tags', $iaPersonalBlog->getAllTags());
+				$iaView->assign('blog_tags', $iaBlog->getAllTags());
 				$iaView->assign('blog_entries', $entries);
 				$iaView->assign('pagination', $pagination);
 			}
@@ -293,7 +293,7 @@ if (iaView::REQUEST_XML == $iaView->getRequestType())
 		'item' => array()
 	);
 
-	$entries = $iaPersonalBlog->get(0, 20);
+	$entries = $iaBlog->get(0, 20);
 
 	foreach ($entries as $entry)
 	{

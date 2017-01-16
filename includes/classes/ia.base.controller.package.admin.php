@@ -176,7 +176,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		return parent::_entryUpdate($entryData, $entryId);
 	}
 
-	protected function _delete(array $entryId)
+	protected function _delete($entryId)
 	{
 		return parent::_entryDelete($entryId);
 	}
@@ -327,9 +327,14 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 				iaCore::ACTION_DELETE => iaLog::ACTION_DELETE
 			);
 
-			$title = (isset($entryData['title']) && $entryData['title'])
-				? $entryData['title']
-				: $this->_iaDb->one('title', iaDb::convertIds($entryId), self::getTable());
+			$titleKey = empty($this->_activityLog['title_field']) ? 'title' : $this->_activityLog['title_field'];
+			in_array($titleKey, $this->_iaField->getMultilingualFields($this->getItemName()))
+				&& $titleKey.= '_' . $this->_iaCore->language['iso'];
+
+			$title = empty($entryData[$titleKey])
+				? $this->_iaDb->one($titleKey, iaDb::convertIds($entryId), self::getTable())
+				: $entryData[$titleKey];
+
 			$params = array_merge($this->_activityLog, array('name' => $title, 'id' => $entryId));
 
 			$iaLog->write($actionsMap[$action], $params);
