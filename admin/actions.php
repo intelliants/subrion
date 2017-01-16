@@ -175,12 +175,13 @@ class iaBackendController extends iaAbstractControllerBackend
 				$this->_iaCore->factory('item');
 				$this->_iaCore->factory('page', iaCore::ADMIN);
 
-				$sql = 'SELECT '
-					. "IF(p.`extras` = '', 'core', p.`extras`) `value`, "
-					. "IF(p.`extras` = '', 'Core', g.`title`) `title` "
-					. 'FROM `:prefix:table_pages` p '
-					. 'LEFT JOIN `:prefix:table_extras` g ON (g.`name` = p.`extras`) '
-					. 'GROUP BY p.`extras`';
+				$sql = <<<SQL
+SELECT IF(p.`extras` = '', 'core', p.`extras`) `value`, 
+	IF(p.`extras` = '', 'Core', g.`title`) `title` 
+	FROM `:prefix:table_pages` p 
+LEFT JOIN `:prefix:table_extras` g ON (g.`name` = p.`extras`) 
+GROUP BY p.`extras`
+SQL;
 				$sql = iaDb::printf($sql, array(
 					'prefix' => $this->_iaDb->prefix,
 					'table_pages' => iaPage::getTable(),

@@ -1122,7 +1122,7 @@ class iaSmarty extends Smarty
 	public static function displayTreeNodes(array $params)
 	{
 		$ids = explode(',', $params['ids']);
-		$nodes = iaCore::instance()->factory('util')->jsonDecode($params['nodes']);
+		$nodes = json_decode($params['nodes'], true);
 
 		$result = array();
 

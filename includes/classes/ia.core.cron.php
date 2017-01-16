@@ -79,7 +79,7 @@ class iaCron extends abstractCore
 	/**
 	 * Parse string that looks like common cron line
 	 *
-	 * @param string $aStr string from cron file
+	 * @param string $jobString string from cron file
 	 *
 	 * @return array
 	 */

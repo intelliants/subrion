@@ -487,19 +487,19 @@ class iaSearch extends abstractCore
 		$iaCore = &$this->iaCore;
 		$iaDb = &$this->iaDb;
 
-		$sql = 'SELECT '
-			. 'b.`name`, b.`external`, b.`filename`, b.`title`, '
-			. 'b.`extras`, b.`sticky`, b.`contents`, b.`type`, b.`header`, '
-			. 'o.`page_name` `page` '
-			. 'FROM `:prefix:table_blocks` b '
-			//. 'LEFT JOIN `:prefix:table_language` l ON () '
-			. "LEFT JOIN `:prefix:table_objects` o ON (o.`object` = b.`id` AND o.`object_type` = 'blocks' AND o.`access` = 1) "
-			. "WHERE b.`type` IN('plain','smarty','html') "
-			. "AND b.`status` = ':status' "
-			. "AND b.`extras` IN (':extras') "
-			. "AND (CONCAT(b.`contents`,IF(b.`header` = 1, b.`title`, '')) LIKE ':query' OR b.`external` = 1) "
-			. 'AND o.`page_name` IS NOT NULL '
-			. 'GROUP BY b.`id`';
+		$sql = <<<SQL
+SELECT b.`name`, b.`external`, b.`filename`, b.`title`, 
+	b.`extras`, b.`sticky`, b.`contents`, b.`type`, b.`header`, 
+	o.`page_name` `page` 
+	FROM `:prefix:table_blocks` b 
+LEFT JOIN `:prefix:table_objects` o ON (o.`object` = b.`id` AND o.`object_type` = 'blocks' AND o.`access` = 1) 
+WHERE b.`type` IN('plain','smarty','html') 
+	AND b.`status` = ':status' 
+	AND b.`extras` IN (':extras') 
+	AND (CONCAT(b.`contents`,IF(b.`header` = 1, b.`title`, '')) LIKE ':query' OR b.`external` = 1) 
+	AND o.`page_name` IS NOT NULL 
+GROUP BY b.`id`
+SQL;
 
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $iaDb->prefix,
@@ -990,7 +990,7 @@ class iaSearch extends abstractCore
 	protected function _parseTreeNodes($packedNodes)
 	{
 		$result = array();
-		$nodes = iaUtil::jsonDecode($packedNodes);
+		$nodes = json_decode($packedNodes, true);
 
 		$indent = array();
 		foreach ($nodes as $node)
