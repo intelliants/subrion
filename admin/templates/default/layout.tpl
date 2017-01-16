@@ -76,7 +76,7 @@
 							<li class="single">
 								<ul class="list-unstyled quick-links clearfix">
 									{foreach $dashboard as $item}
-										<li><a href="{$item.url}"><span class="link-icon"><i class="i-{$item.icon}"></i></span>{lang key=$item.text}</a></li>
+										<li><a href="{$item.url}"><span class="link-icon"><i class="i-{$item.icon}"></i></span>{$item.text}</a></li>
 									{/foreach}
 									<li class="link-add">
 										<a href="#" id="js-cmd-add-quicklink">
