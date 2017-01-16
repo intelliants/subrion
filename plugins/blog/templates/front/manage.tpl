@@ -70,4 +70,4 @@
 		</div>
 	</div>
 </div>
-{ia_add_media files='tagsinput, js:_IA_URL_plugins/personal_blog/js/manage'}
+{ia_add_media files='tagsinput, js:_IA_URL_plugins/blog/js/manage'}

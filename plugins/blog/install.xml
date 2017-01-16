@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<plugin name="personal_blog">
-	<title>Personal Blog</title>
-	<summary>Allows to create a personal admin blog</summary>
+<plugin name="blog">
+	<title>Blog</title>
+	<summary>Adds blog functionality to Subrion powered website</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
 	<version>4.1.0</version>
@@ -9,13 +9,13 @@
 	<compatibility>4.1</compatibility>
 
 	<actions>
-		<action name="blogs" url="blog/" icon="list" pages="personal_blog:add,personal_blog:edit">List</action>
-		<action name="blog_add" url="blog/add/" icon="plus" pages="personal_blog:read,personal_blog:edit">Add Blog Entry</action>
+		<action name="blogs" url="blog/" icon="list" pages="blog:add,blog:edit">List</action>
+		<action name="blog_add" url="blog/add/" icon="plus" pages="blog:read,blog:edit">Add Blog Entry</action>
 		<action type="dashboard" name="dashboard_blogpost_add" url="blog/add/" icon="quill">New Blog Post</action>
 	</actions>
 
 	<adminpages>
-		<page group="content" name="personal_blog" order="45" url="blog/" menus="menu">Blog</page>
+		<page group="content" name="blog" order="45" url="blog/" menus="menu">Blog</page>
 	</adminpages>
 
 	<pages>
@@ -25,10 +25,10 @@
 	</pages>
 
 	<permissions>
-		<object meta_object="admin_page" id="personal_blog" access="1">Allow to view blog entries</object>
-		<object meta_object="admin_page" id="personal_blog" action="add" access="1">Add blog entry</object>
-		<object meta_object="admin_page" id="personal_blog" action="edit" access="1">Edit blog entry</object>
-		<object meta_object="admin_page" id="personal_blog" action="delete" access="1">Delete blog entry</object>
+		<object meta_object="admin_page" id="blog" access="1">Allow to view blog entries</object>
+		<object meta_object="admin_page" id="blog" action="add" access="1">Add blog entry</object>
+		<object meta_object="admin_page" id="blog" action="edit" access="1">Edit blog entry</object>
+		<object meta_object="admin_page" id="blog" action="delete" access="1">Delete blog entry</object>
 
 		<object id="blog" access="1">View blog entries</object>
 		<object id="blog" action="add" access="0">Add blog entry</object>
@@ -45,7 +45,7 @@
 		<phrase category="common" key="blog_entry_deleted">Blog entry deleted.</phrase>
 		<phrase category="common" key="body">Body</phrase>
 		<phrase category="common" key="edit_blog_entry">Edit Blog Entry</phrase>
-		<phrase category="common" key="personal_blog">Personal Blog</phrase>
+		<phrase category="common" key="blog">Blog</phrase>
 		<phrase category="common" key="separate_with_comma_or_enter">Use comma or press enter to separate tags</phrase>
 		<phrase category="common" key="tags">Tags</phrase>
 		<phrase category="common" key="title_alias">Title Alias</phrase>
@@ -85,12 +85,17 @@
 	</blocks>
 
 	<hooks>
-		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="plugins/personal_blog/includes/hook.blocks-load.php"><![CDATA[]]></hook>
-		<hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['personal_blog'] = 'plugin';]]></hook>
-		<hook name="sitemapGeneration" page_type="admin" pages="index,sitemap"><![CDATA[$items[] = 'personal_blog:blog';]]></hook>
+		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="plugins/blog/includes/hook.blocks-load.php"><![CDATA[]]></hook>
+		<hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['blog'] = 'plugin';]]></hook>
+		<hook name="sitemapGeneration" page_type="admin" pages="index,sitemap"><![CDATA[$items[] = 'blog:blog';]]></hook>
 	</hooks>
 
 	<install>
+		<sql>
+			<![CDATA[
+DROP TABLE IF EXISTS `{prefix}blog_entries`, `{prefix}blog_tags`, `{prefix}blog_entries_tags`;
+			]]>
+		</sql>
 		<sql>
 			<![CDATA[
 CREATE TABLE IF NOT EXISTS `{prefix}blog_entries` (
