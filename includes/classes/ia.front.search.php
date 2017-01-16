@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -31,6 +31,9 @@ class iaSearch extends abstractCore
 
 	const ITEM_SEARCH_METHOD = 'coreSearch';
 	const ITEM_COLUMN_TRANSLATION_METHOD = 'coreSearchTranslateColumn';
+
+	const SEARCH_PLUGIN = 'plugin';
+	const SEARCH_PACKAGE = 'package';
 
 	const GET_PARAM_PAGE = '__p';
 	const GET_PARAM_SORTING_FIELD = '__s';
@@ -45,11 +48,12 @@ class iaSearch extends abstractCore
 	protected $_sorting = '';
 
 	protected $_itemName;
+	protected $_type;
 	protected $_params;
 
 	protected $_caption = '';
 
-	protected $_packageName;
+	protected $_extrasName;
 	protected $_options = array();
 
 	protected $_itemInstance;
@@ -74,6 +78,7 @@ class iaSearch extends abstractCore
 		$results = array('pages' => $this->_searchByPages());
 		$results = array_merge($results, $this->_searchByItems());
 		$results[iaUsers::getItemName()] = $this->_searchByMembers();
+		$results = array_merge($results, $this->_searchByPlugins());
 
 		return $results;
 	}
@@ -99,7 +104,7 @@ class iaSearch extends abstractCore
 			$this->_processParams($params, true);
 		}
 
-		if ($search = $this->_performItemSearch($fieldsSearch))
+		if ($search = $this->_callInstanceMethod($fieldsSearch))
 		{
 			return array($search[0], $this->_renderResults($search[1]));
 		}
@@ -123,18 +128,19 @@ class iaSearch extends abstractCore
 
 		if ($this->_loadItemInstance($itemName))
 		{
-			$this->_limit = 10;
+			$this->_limit = $this->_getLimitByItemName($itemName);
 			$this->_start = ($page - 1) * $this->_limit;
 
 			$this->_processSorting($sorting);
 			$this->_processParams($params);
 
-			if ($search = $this->_performItemSearch())
+			if ($search = $this->_callInstanceMethod())
 			{
 				$p = empty($_GET['page']) ? null : $_GET['page']; $_GET['page'] = $page; // dirty hack to make this work correctly
 				$result['pagination'] = iaSmarty::pagination(array('aTotal' => $search[0], 'aItemsPerPage' => $this->_limit, 'aTemplate' => '#'), $this->iaView->iaSmarty);
 				is_null($p) || $_GET['page'] = $p;
 
+				$result['total'] = $search[0];
 				$result['html'] = $this->_renderResults($search[1]);
 			}
 		}
@@ -173,7 +179,7 @@ class iaSearch extends abstractCore
 
 	public function get()
 	{
-		if(iaUsers::hasIdentity())
+		if (iaUsers::hasIdentity())
 		{
 			$stmt = '`member_id` = :member ORDER BY `date` DESC';
 			$this->iaDb->bind($stmt, array('member' => (int)iaUsers::getIdentity()->id));
@@ -182,6 +188,11 @@ class iaSearch extends abstractCore
 		}
 
 		return false;
+	}
+
+	public function delete($id)
+	{
+		return $this->iaDb->delete(iaDb::convertIds($id), self::getTable());
 	}
 
 	// getters
@@ -225,23 +236,31 @@ class iaSearch extends abstractCore
 			);
 
 			$iaSmarty->assign('core', $core);
+			$iaSmarty->assign('img', IA_TPL_URL . 'img/');
 			$iaSmarty->assign('member', iaUsers::getIdentity(true));
 
 			$this->_smartyVarsAssigned = true;
 		}
 
-		if (iaUsers::getItemName() == $this->_itemName)
+		$result = '';
+
+		if (self::SEARCH_PACKAGE == $this->_type)
+		{
+			$result = $this->_render(sprintf('extra:%s/search.%s', $this->_extrasName, $this->_itemName),
+				array('listings' => $rows));
+		}
+		elseif (self::SEARCH_PLUGIN == $this->_type)
+		{
+			$result = $this->_render(sprintf('extra:%s/search', $this->_extrasName),
+				array('entries' => $rows));
+		}
+		elseif (iaUsers::getItemName() == $this->_itemName)
 		{
 			$array = array();
-			$fields = $this->iaCore->factory('field')->filter($array, $this->_itemName, array('page' => 'members'));
+			$fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, 'members');
 
 			$result = $this->_render('search.members' . iaView::TEMPLATE_FILENAME_EXT,
 				array('fields' => $fields, 'listings' => $rows));
-		}
-		else
-		{
-			$result = $this->_render(sprintf('extra:%s/search.%s', $this->_packageName, $this->_itemName),
-				array('listings' => $rows));
 		}
 
 		return $result;
@@ -278,7 +297,7 @@ class iaSearch extends abstractCore
 						$row['values'] = array();
 						foreach ($array as $value)
 						{
-							$row['values'][$value] = iaLanguage::get('field_' . $row['name'] . '_' . $value);
+							$row['values'][$value] = iaField::getLanguageValue($row['item'], $row['name'], $value);
 						}
 
 						break;
@@ -311,7 +330,7 @@ class iaSearch extends abstractCore
 				}
 				$stmt = substr($stmt, 0, -1);
 
-				$ranges = $this->iaDb->row($stmt, null, $this->iaCore->factory('item')->getItemTable($itemName));
+				$ranges = $this->iaDb->row($stmt, iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), $this->iaCore->factory('item')->getItemTable($itemName));
 
 				foreach ($numberFields as $fieldName)
 				{
@@ -406,7 +425,7 @@ class iaSearch extends abstractCore
 				{
 					if ($this->_loadItemInstance($entry['item']))
 					{
-						if ($search = $this->_performItemSearch(false))
+						if ($search = $this->_callInstanceMethod(false))
 						{
 							$search[1] = $this->_renderResults($search[1]);
 							$results[$this->_itemName] = $search;
@@ -423,13 +442,41 @@ class iaSearch extends abstractCore
 	{
 		if ($this->_loadItemInstance(iaUsers::getItemName()))
 		{
-			if ($search = $this->_performItemSearch(false))
+			if ($search = $this->_callInstanceMethod(false))
 			{
 				return array($search[0], $this->_renderResults($search[1]));
 			}
 		}
 
 		return false;
+	}
+
+	protected function _searchByPlugins()
+	{
+		$iaItem = $this->iaCore->factory('item');
+
+		$where = '`type` = :type AND `status` = :status';
+		$this->iaDb->bind($where, array('type' => 'plugin', 'status' => iaCore::STATUS_ACTIVE));
+
+		$result = array();
+		$plugins = $this->iaDb->onefield('name', $where, null, null, $iaItem::getExtrasTable());
+
+		foreach ($plugins as $pluginName)
+		{
+			if ($this->_loadPluginInstance($pluginName))
+			{
+				$search = call_user_func_array(array($this->_itemInstance, self::ITEM_SEARCH_METHOD), array(
+					$this->_query,
+					$this->_start,
+					$this->_limit
+				));
+
+				$result[$pluginName] = array($search[0], $this->_renderResults($search[1]));
+			}
+
+		}
+
+		return $result;
 	}
 
 	/**
@@ -440,19 +487,19 @@ class iaSearch extends abstractCore
 		$iaCore = &$this->iaCore;
 		$iaDb = &$this->iaDb;
 
-		$sql = 'SELECT '
-			. 'b.`name`, b.`external`, b.`filename`, b.`title`, '
-			. 'b.`extras`, b.`sticky`, b.`contents`, b.`type`, b.`header`, '
-			. 'o.`page_name` `page` '
-			. 'FROM `:prefix:table_blocks` b '
-			//. 'LEFT JOIN `:prefix:table_language` l ON () '
-			. "LEFT JOIN `:prefix:table_objects` o ON (o.`object` = b.`id` AND o.`object_type` = 'blocks' AND o.`access` = 1) "
-			. "WHERE b.`type` IN('plain','smarty','html') "
-			. "AND b.`status` = ':status' "
-			. "AND b.`extras` IN (':extras') "
-			. "AND (CONCAT(b.`contents`,IF(b.`header` = 1, b.`title`, '')) LIKE ':query' OR b.`external` = 1) "
-			. 'AND o.`page_name` IS NOT NULL '
-			. 'GROUP BY b.`id`';
+		$sql = <<<SQL
+SELECT b.`name`, b.`external`, b.`filename`, b.`title`, 
+	b.`extras`, b.`sticky`, b.`contents`, b.`type`, b.`header`, 
+	o.`page_name` `page` 
+	FROM `:prefix:table_blocks` b 
+LEFT JOIN `:prefix:table_objects` o ON (o.`object` = b.`id` AND o.`object_type` = 'blocks' AND o.`access` = 1) 
+WHERE b.`type` IN('plain','smarty','html') 
+	AND b.`status` = ':status' 
+	AND b.`extras` IN (':extras') 
+	AND (CONCAT(b.`contents`,IF(b.`header` = 1, b.`title`, '')) LIKE ':query' OR b.`external` = 1) 
+	AND o.`page_name` IS NOT NULL 
+GROUP BY b.`id`
+SQL;
 
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $iaDb->prefix,
@@ -581,6 +628,7 @@ class iaSearch extends abstractCore
 
 					continue 2;
 
+				case iaField::RADIO:
 				case iaField::COMBO:
 				case iaField::TREE:
 					$array = array();
@@ -668,7 +716,7 @@ class iaSearch extends abstractCore
 		$statements = array();
 
 		$tableAlias = $this->getOption('tableAlias') ? $this->getOption('tableAlias') . '.' : '';
-		$escapedQuery = iaSanitize::sql(strtolower($this->_query));
+		$escapedQuery = iaSanitize::sql($this->_query);
 
 		foreach ($this->_fieldTypes as $fieldName => $type)
 		{
@@ -689,12 +737,25 @@ class iaSearch extends abstractCore
 			}
 		}
 
-		$extraStatements = $this->getOption('regularSearchStatements');
-		$extraStatements || $extraStatements = array();
+		// multilingual fields support
+		$fieldsToSearchBy = $this->getOption('regularSearchFields');
+		$fieldsToSearchBy || $fieldsToSearchBy = array();
 
-		foreach ($extraStatements as $stmt)
+		$multilingualFields = $this->iaCore->factory('field')->getMultilingualFields($this->_itemName);
+
+		foreach ($fieldsToSearchBy as $item)
 		{
-			$statements[] = str_replace(':query', $escapedQuery, $stmt);
+			$table = $tableAlias;
+			$column = $item;
+
+			is_array($item) && list($table, $column) = $item;
+
+			$table = rtrim($table, '.');
+			$table && $table.= '.';
+
+			in_array($column, $multilingualFields) && $column.= '_' . $this->iaView->language;
+
+			$statements[] = sprintf("%s`%s` LIKE '%s'", $table, $column, '%' . $escapedQuery . '%');
 		}
 
 		return '(' . implode(' OR ', $statements) . ')';
@@ -737,7 +798,8 @@ class iaSearch extends abstractCore
 				? iaDb::ORDER_ASC
 				: strtoupper($sorting[1]);
 
-			$this->_sorting = sprintf('`%s` %s', $field, $order);
+			$this->_sorting = ($this->getOption('tableAlias') ? $this->getOption('tableAlias') . '.' : '')
+				. sprintf('`%s` %s', $field, $order);
 		}
 		else
 		{
@@ -834,14 +896,32 @@ class iaSearch extends abstractCore
 		return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', http_build_query($params));
 	}
 
+	protected function _loadPluginInstance($pluginName)
+	{
+		$instance = $this->iaCore->factoryPlugin($pluginName);
+
+		if (method_exists($instance, self::ITEM_SEARCH_METHOD))
+		{
+			$this->_type = self::SEARCH_PLUGIN;
+			$this->_itemInstance = &$instance;
+			$this->_extrasName = $pluginName;
+			$this->_options = array();
+
+			return true;
+		}
+
+		return false;
+	}
+
 	protected function _loadItemInstance($itemName)
 	{
 		$this->_itemName = $itemName;
 
 		if (iaUsers::getItemName() == $this->_itemName)
 		{
+			$this->_type = null;
 			$this->_itemInstance = $this->iaCore->factory('users');
-			$this->_packageName = null;
+			$this->_extrasName = null;
 			$this->_options = $this->_itemInstance->{self::ITEM_SEARCH_PROPERTY_OPTIONS};
 
 			return true;
@@ -855,8 +935,9 @@ class iaSearch extends abstractCore
 
 			if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED})
 			{
+				$this->_type = self::SEARCH_PACKAGE;
 				$this->_itemInstance = &$instance;
-				$this->_packageName = $itemData['package'];
+				$this->_extrasName = $itemData['package'];
 				$this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : array();
 
 				return true;
@@ -866,7 +947,7 @@ class iaSearch extends abstractCore
 		return false;
 	}
 
-	protected function _performItemSearch($fieldsSearch = true)
+	protected function _callInstanceMethod($fieldsSearch = true)
 	{
 		return call_user_func_array(array($this->_itemInstance, self::ITEM_SEARCH_METHOD), array(
 			$fieldsSearch ? $this->_getQueryStmtByParams() : $this->_getQueryStmtByString(),
@@ -909,7 +990,7 @@ class iaSearch extends abstractCore
 	protected function _parseTreeNodes($packedNodes)
 	{
 		$result = array();
-		$nodes = iaUtil::jsonDecode($packedNodes);
+		$nodes = json_decode($packedNodes, true);
 
 		$indent = array();
 		foreach ($nodes as $node)
@@ -928,5 +1009,25 @@ class iaSearch extends abstractCore
 		}
 
 		return $result;
+	}
+
+	protected function _getLimitByItemName($itemName)
+	{
+		$defaultLimit = 10;
+
+		$itemsMap = array(
+			'autos' => 'autos_number_perpage',
+			'boats' => 'boats_number_perpage',
+			'products' => 'commerce_products_per_page',
+			'coupons' => 'coupons_per_page',
+			'listings' => 'directory_listings_perpage',
+			'articles' > 'art_perpage',
+			'estates' => 'realestate_num_per_page',
+			'venues' => 'yp_listings_perpage'
+		);
+
+		return isset($itemsMap[$itemName])
+			? (int)$this->iaCore->get($itemsMap[$itemName], $defaultLimit)
+			: $defaultLimit;
 	}
 }

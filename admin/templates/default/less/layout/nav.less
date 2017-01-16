@@ -1,0 +1,149 @@
+#panel-left {
+  width: @main-nav-width;
+  display: table-cell;
+  vertical-align: top;
+  background: @main-nav-bg;
+
+  @media (max-width: @screen-sm) {
+    display: block;
+    width: auto;
+  }
+
+  // branding/logo and stuff
+  .brand {
+    text-align: center;
+    display: block;
+    width: @main-nav-width;
+    padding: 0;
+    border-bottom: 1px solid @brand-border-color;
+    line-height: @navbar-height;
+
+    img {
+      max-width: 70%;
+    }
+
+    @media (max-width: @screen-sm) {
+      display: none;
+    }
+  }
+
+  // main navigation items
+  .nav-main {
+    width: @main-nav-width;
+    margin: 0; padding: 0;
+    list-style-type: none;
+    text-align: center;
+
+    > li {
+      margin: 0;
+      padding: 0;
+
+      > a {
+        display: block;
+        position: relative;
+        padding: 20px 0;
+        text-decoration: none;
+        font-size: 12px;
+        color: @main-nav-link-color;
+        border-left: 2px solid transparent;
+        .transition(all .3s ease-in-out);
+
+        i {
+          display: block;
+          font-size: 26px;
+          margin-bottom: 5px;
+          color: @main-nav-link-icon-color;
+          .transition(all .2s ease-in);
+        }
+
+        &:hover {
+          background: @main-nav-link-hover-color;
+        }
+
+        &:focus {
+          text-decoration: none;
+        }
+      }
+
+      &.active {
+        > a {
+          background: @main-nav-link-active-bg-color !important;
+          color: @main-nav-link-active-color !important;
+          border-left: 2px solid @main-nav-link-active-border-color !important;
+
+          i {
+            color: @main-nav-link-active-icon-color;
+            font-size: 38px;
+          }
+        }
+
+        .nav-sub {
+          display: block;
+        }
+      }
+
+      &.current {
+        > a {
+          background: @main-nav-link-current-bg-color;
+          border-left: 2px solid @main-nav-link-current-border-color;
+        }
+      }
+    }
+  }
+
+  // system info
+  .system-info {
+    text-align: center;
+    font-size: 11px;
+    border-top: 1px solid @brand-border-color;
+    padding: 20px 0;
+    color: @main-nav-link-color;
+
+    @media (max-width: @screen-sm) {
+      display: none;
+    }
+  }
+
+  .social-links {
+    margin-bottom: 20px;
+    border-top: 1px solid @brand-border-color;
+    padding: 20px 0;
+    text-align: center;
+    
+    a {
+      font-size: 16px;
+      display: inline-block;
+      margin: 0 4px;
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+      }
+
+      &.social-links__twitter:hover {
+        color: #44ccf6;
+      }
+      &.social-links__facebook:hover {
+        color: #3b5998;
+      }
+      &.social-links__github:hover {
+        color: #fff;
+      }
+    }
+
+    @media (max-width: @screen-sm) {
+      display: none;
+    }
+  }
+}
+
+.menu-updated {
+  display: block;
+  width: 8px;
+  height: 8px;
+  background: @brand-danger;
+  border-radius: 50%;
+  position: absolute;
+  right: 20%;
+  top: 20%;
+}

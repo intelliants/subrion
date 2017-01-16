@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,11 +20,11 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
-define('IA_VER', '405');
+define('IA_VER', '410');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
@@ -40,7 +40,7 @@ $iaOutput->steps = array(
 $error = false;
 $message = '';
 
-$builtinPlugins = array('kcaptcha', 'fancybox', 'personal_blog', 'elfinder');
+$builtinPlugins = array('blog', 'kcaptcha', 'fancybox');
 
 switch ($step)
 {
@@ -109,6 +109,15 @@ switch ($step)
 				? '<td class="success">Available</td>'
 				: '<td class="danger">Unavailable (not required) </td>'
 		);
+
+		if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) || isset($_SERVER['HTTP_CF_VISITOR']))
+		{
+			$checks['server']['flexiblessl'] = array(
+				'name' => 'Cloudflare\'s Flexible SSL',
+				'value' => '<td class="warning">Cloudflare is in use. In case you want to push your site behind <em>Flexible SSL</em>, there might be issues with URLs</td>'
+			);
+		}
+
 
 		$recommendedSettings = array(
 			array ('File Uploads', 'file_uploads', 'ON'),
@@ -319,6 +328,8 @@ switch ($step)
 					$file = file($dumpFile);
 					if (count($file) > 0)
 					{
+						mysqli_query($link, "SET NAMES 'utf8'");
+
 						foreach ($file as $s)
 						{
 							$s = trim ($s);
@@ -408,10 +419,10 @@ Mysql configuration
 ----------------------------
 
 Useful information regarding the Subrion CMS can be found in Subrion User Forums -
-http://www.subrion.org/forums/
+https://subrion.org/forums/
 __________________________
 The Subrion Support Team
-http://www.subrion.org
+https://subrion.org
 https://intelliants.com
 HTML;
 					$salt = '#' . strtoupper(substr(md5(IA_HOME), 21, 10));
@@ -429,13 +440,13 @@ HTML;
 						'{debug}' => iaHelper::getPost('debug', 0, false),
 						'{username}' => iaHelper::_sql(iaHelper::getPost('admin_username'), $link),
 						'{password}' => iaHelper::_sql(iaHelper::getPost('admin_password'), $link),
-						'{url}' => URL_HOME . 'admin/'
+						'{url}' => URL_ADMIN_PANEL
 					);
 					$body = str_replace(array_keys($params), array_values($params), $body);
 					$params['{dbpass}'] = str_replace("'", "\\'", $params['{dbpass}']);
 					$config = str_replace(array_keys($params), array_values($params), $config);
 
-					@mail(iaHelper::_sql(iaHelper::getPost('admin_email')), 'Subrion CMS Installed', $body, 'From: tech@subrion.com');
+					@mail(iaHelper::_sql(iaHelper::getPost('admin_email')), 'Subrion CMS Installed', $body, 'From: support@subrion.org');
 					$filename = IA_HOME . 'includes' . IA_DS . 'config.inc.php';
 					$configMsg = '';
 

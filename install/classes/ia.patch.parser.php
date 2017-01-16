@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -209,6 +209,7 @@ class iaPatchParser
 
 		$index = (int)0;
 		$items = array();
+		$versionFileExists = false;
 
 		while ($index < $this->patch['info']['num_files'])
 		{
@@ -220,6 +221,11 @@ class iaPatchParser
 				$entry['path'] = $this->_read(self::FORMAT_RAW, $entry['length_fp']);
 				$entry['name'] = $this->_read(self::FORMAT_RAW, $entry['length_fn']);
 				$entry['contents'] = $this->_read(self::FORMAT_RAW, $entry['size']);
+
+				if ('index.php' == $entry['name'] && '.' == $entry['path'])
+				{
+					$versionFileExists = true;
+				}
 
 				if ($entry['flags'] & self::FILE_FLAG_COMPRESSED)
 				{
@@ -240,6 +246,11 @@ class iaPatchParser
 				$this->_error('Error parsing file entry.');
 			}
 			$index++;
+		}
+
+		if (!$versionFileExists)
+		{
+			$this->_error('Inconsistent patch file.');
 		}
 
 		return $items;

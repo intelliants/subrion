@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -30,6 +30,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_gridColumns = array('name', 'extras', 'item', 'collapsible', 'order', 'tabview');
 	protected $_gridFilters = array('id' => 'equal', 'item' => 'equal');
+	protected $_gridSorting = array('title' => array('value', 'pt'), 'item' => array('value', 'pi'));
+	protected $_gridQueryMainTableAlias = 'fg';
 
 	protected $_phraseAddSuccess = 'fieldgroup_added';
 	protected $_phraseGridEntryDeleted = 'fieldgroup_deleted';
@@ -59,12 +61,39 @@ class iaBackendController extends iaAbstractControllerBackend
 			: parent::_gridRead($params);
 	}
 
+	protected function _gridQuery($columns, $where, $order, $start, $limit)
+	{
+		$sql = <<<SQL
+SELECT :columns, pt.`value` `title`, pi.`value` `item` 
+	FROM `:prefix:table_groups` fg 
+LEFT JOIN `:prefix:table_phrases` pt ON (pt.`key` = CONCAT("fieldgroup_", fg.`item`, "_", fg.`name`) AND pt.`code` = ":lang") 
+LEFT JOIN `:prefix:table_phrases` pi ON (pi.`key` = fg.`item` AND pi.`code` = ":lang") 
+WHERE :conditions 
+GROUP BY fg.`id` :order 
+LIMIT :start, :limit
+SQL;
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_groups' => self::getTable(),
+			'table_phrases' => iaLanguage::getTable(),
+			'lang' => $this->_iaCore->iaView->language,
+			'columns' => $columns,
+			'conditions' => $where,
+			'order' => $order,
+			'start' => $start,
+			'limit' => $limit
+		));
+
+		return $this->_iaDb->getAll($sql);
+	}
+
 	protected function _modifyGridResult(array &$entries)
 	{
 		foreach ($entries as &$entry)
 		{
-			$entry['title'] = iaLanguage::get('fieldgroup_' . $entry['name'], $entry['name']);
-			$entry['item'] = iaLanguage::get($entry['item']);
+			// processing in case if there are no appropriate phrases
+			$entry['title'] || $entry['title'] = iaLanguage::get("fieldgroup_{$entry['item']}_{$entry['name']}");
+			$entry['item'] || $entry['item'] = iaLanguage::get($entry['item']);
 		}
 	}
 
@@ -75,7 +104,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($name = $this->_iaDb->one(array('name'), iaDb::convertIds($entryId)))
 			{
-				$phraseKey = 'fieldgroup_' . $name;
+				$phraseKey = "fieldgroup_{$entryData['item']}_{$name}";
 
 				return iaLanguage::addPhrase($phraseKey, iaSanitize::html($entryData['title']), null, '', iaLanguage::CATEGORY_COMMON, true);
 			}
@@ -95,7 +124,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($result && $row)
 		{
-			$stmt = iaDb::printf("`key` = 'fieldgroup_:name' OR `key` = 'fieldgroup_description_:item_:name'", $row);
+			$stmt = iaDb::printf("`key` = 'fieldgroup_:item_:name' OR `key` = 'fieldgroup_description_:item_:name'", $row);
 
 			$this->_iaDb->delete($stmt, iaLanguage::getTable());
 		}
@@ -115,7 +144,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$this->_iaDb->setTable(iaLanguage::getTable());
 
-			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_{$entryData['name']}'");
+			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_{$entryData['item']}_{$entryData['name']}'");
 			$entryData['description'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_description_{$entryData['item']}_{$entryData['name']}'");
 
 			$this->_iaDb->resetTable();
@@ -198,7 +227,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_iaDb->setTable(iaLanguage::getTable());
 
-		$phraseKeyTitle = 'fieldgroup_' . $name;
+		$phraseKeyTitle = "fieldgroup_{$item}_{$name}";
 		$phraseKeyDescription = "fieldgroup_description_{$item}_{$name}";
 
 		foreach ($this->_iaCore->languages as $code => $language)

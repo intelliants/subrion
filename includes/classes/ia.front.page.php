@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -45,12 +45,23 @@ class iaPage extends abstractCore
 
 	public function getByName($name, $status = iaCore::STATUS_ACTIVE)
 	{
-		return $this->iaDb->row_bind(
+		$row = $this->iaDb->row_bind(
 			iaDb::ALL_COLUMNS_SELECTION,
 			'`name` = :name AND `status` = :status AND `service` != 1',
 			array('name' => $name, 'status' => $status),
 			self::getTable()
 		);
+
+		if ($row)
+		{
+			foreach (array('meta_description', 'meta_keywords') as $key)
+			{
+				$phraseKey = sprintf('page_%s_%s', $key, $row['name']);
+				$row[$key] = iaLanguage::exists($phraseKey) ? iaLanguage::get($phraseKey) : null;
+			}
+		}
+
+		return $row;
 	}
 
 	protected function _getInfoByName($name)

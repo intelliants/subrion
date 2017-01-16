@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -102,14 +102,12 @@ final class iaCore
 		$this->iaCache = $this->factory('cache');
 		iaSystem::renderTime('core', 'Basic Classes Initialized');
 
+		$this->_parseUrl();
+
 		$this->getConfig();
 		iaSystem::renderTime('core', 'Configuration Loaded');
 
 		iaSystem::setDebugMode();
-
-		$this->_parseUrl();
-
-		setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
 
 		// we can only load strings when we know if a specific language is requested based on URL
 		iaLanguage::load($this->iaView->language);
@@ -180,15 +178,18 @@ final class iaCore
 	{
 		$iaView = &$this->iaView;
 
+		$params = $this->iaDb->keyvalue(array('name', 'value'),
+			"`name` IN('baseurl', 'admin_page', 'home_page', 'lang')", self::getConfigTable());
+
 		$domain = preg_replace('#[^a-z_0-9-.:]#i', '', $_SERVER['HTTP_HOST']);
 		$requestPath = ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER);
 
-		if (!preg_match('#^www\.#', $domain) && preg_match('#:\/\/www\.#', $this->get('baseurl')))
+		if (!preg_match('#^www\.#', $domain) && preg_match('#:\/\/www\.#', $params['baseurl']))
 		{
 			$domain = preg_replace('#^#', 'www.', $domain);
 			$this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
 		}
-		elseif (preg_match('#^www\.#', $domain) && !preg_match('#:\/\/www\.#', $this->get('baseurl')))
+		elseif (preg_match('#^www\.#', $domain) && !preg_match('#:\/\/www\.#', $params['baseurl']))
 		{
 			$domain = preg_replace('#^www\.#', '', $domain);
 			$this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
@@ -197,7 +198,7 @@ final class iaCore
 		$iaView->assetsUrl = '//' . $domain . IA_URL_DELIMITER . FOLDER_URL;
 		$iaView->domain = $domain;
 		$iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
-		$iaView->language = $this->get('lang');
+		$iaView->language = $params['lang'];
 
 		$doExit = false;
 		$changeLang = false;
@@ -257,7 +258,7 @@ final class iaCore
 
 			switch (true)
 			{
-				case ($this->get('admin_page') == $value): // admin panel
+				case ($params['admin_page'] == $value): // admin panel
 					$this->_accessType = self::ACCESS_ADMIN;
 					continue 2;
 				case ('logout' == $value): // logging out
@@ -271,14 +272,14 @@ final class iaCore
 						continue 2;
 					}
 				default:
-					$iaView->name(empty($value) && 1 == count($url) ? $this->get('home_page') : $value);
+					$iaView->name(empty($value) && 1 == count($url) ? $params['home_page'] : $value);
 					$isSystemChunk = false;
 			}
 		}
 
 		if (self::ACCESS_ADMIN == $this->getAccessType())
 		{
-			if ($isSystemChunk && $this->get('home_page') == $iaView->name())
+			if ($isSystemChunk && $params['home_page'] == $iaView->name())
 			{
 				$iaView->name(iaView::DEFAULT_HOMEPAGE);
 			}
@@ -288,11 +289,7 @@ final class iaCore
 		$this->requestPath = $array;
 
 		// set system language
-		$this->language = $this->languages[$iaView->language];
-
-		// set dynamic config
-		$this->set('date_format', $this->language['date_format']);
-		$this->set('locale', $this->language['locale']);
+		$this->language = $this->languages[$this->iaView->language];
 
 		define('IA_EXIT', $doExit);
 	}
@@ -390,11 +387,7 @@ final class iaCore
 		// temporary stub
 		if (self::ACCESS_ADMIN == $this->getAccessType())
 		{
-			if (class_exists('iaBackendController'))
-			{
-				$iaModule = new iaBackendController();
-				$iaModule->process();
-			}
+			class_exists('iaBackendController') && (new iaBackendController())->process();
 		}
 		//
 
@@ -412,12 +405,14 @@ final class iaCore
 	{
 		if (empty($this->_config) || $reloadRequired)
 		{
-			$this->_config = $this->iaCache->get('config', 604800, true);
+			$key = 'config_' . $this->iaView->language;
+
+			$this->_config = $this->iaCache->get($key, 604800, true);
 			iaSystem::renderTime('config', 'Cached Configuration Loaded');
 
 			if (empty($this->_config) || $reloadRequired)
 			{
-				$this->_config = $this->iaDb->keyvalue(array('name', 'value'), "`type` != 'divider'", self::getConfigTable());
+				$this->_config = $this->fetchConfig();
 				iaSystem::renderTime('config', 'Configuration loaded from DB');
 
 				$extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'extras');
@@ -426,11 +421,16 @@ final class iaCore
 				$this->_config['extras'] = $extras;
 				$this->_config['block_positions'] = $this->iaView->positions;
 
-				$this->iaCache->write('config', $this->_config);
+				$this->iaCache->write($key, $this->_config);
 				iaSystem::renderTime('config', 'Configuration written to cache file');
 			}
 
 			$this->_setTimezone($this->get('timezone'));
+			setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
+
+			// set dynamic config
+			$this->set('date_format', $this->language['date_format']);
+			$this->set('locale', $this->language['locale']);
 		}
 
 		return $this->_config;
@@ -527,9 +527,9 @@ final class iaCore
 
 		if ($db)
 		{
-			if ($value = $this->iaDb->one('`value`', iaDb::convertIds($key, 'name'), self::getConfigTable()))
+			if ($result = $this->fetchConfig(iaDb::convertIds($key, 'name')))
 			{
-				$result = $value;
+				$result = array_shift($result);
 			}
 		}
 		else
@@ -568,8 +568,7 @@ final class iaCore
 		{
 			$result = (bool)$this->iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'), null, self::getConfigTable());
 
-			$this->iaCache->createJsCache(array('config'));
-			$this->iaCache->remove('config.inc');
+			$this->iaCache->clearConfigCache();
 		}
 
 		return $result;
@@ -677,8 +676,8 @@ final class iaCore
 		$packages = array();
 		foreach ($rows as $entry)
 		{
-			$entry['url'] = ($entry['url'] == IA_URL_DELIMITER) ? '' : $entry['url'];
-			$entry['url'] = (strpos($entry['url'], 'http://') === false) ? IA_URL . $entry['url'] : $entry['url'];
+			$entry['url'] = (parse_url($entry['url'], PHP_URL_SCHEME) ? '' : IA_URL)
+				. ($entry['url'] == IA_URL_DELIMITER ? '' : $entry['url']);
 			$entry['tpl_url'] = IA_CLEAR_URL . 'packages' . IA_URL_DELIMITER . $entry['name'] . IA_URL_DELIMITER . 'templates' . IA_URL_DELIMITER;
 			$entry['tpl_common'] = IA_HOME . 'packages' . IA_URL_DELIMITER . $entry['name'] . IA_URL_DELIMITER . 'templates' . IA_URL_DELIMITER . 'common' . IA_URL_DELIMITER;
 			$packages[$entry['name']] = $entry;
@@ -845,22 +844,41 @@ final class iaCore
 		return $this->_classInstances[$class];
 	}
 
-	public function factoryPlugin($plugin, $type = self::FRONT, $name = null)
+	protected static function _toClassName($name)
 	{
-		if (empty($name))
-		{
-			$name = $plugin;
-		}
-		$class = self::CLASSNAME_PREFIX . ucfirst(strtolower($name));
+		// from plural to singular
+		$result = self::_toSingular($name);
+
+		// camelize
+		$result = str_replace(' ', '', ucwords(str_replace('_', ' ', $result)));
+
+		return $result;
+	}
+
+	protected static function _toSingular($name)
+	{
+		return 's' == $name[strlen($name) - 1] && !in_array($name, array('news'))
+			? substr($name, 0, -1)
+			: $name;
+	}
+
+	public function factoryPlugin($pluginName, $type = self::FRONT, $className = null)
+	{
+		empty($className) && $className = self::_toSingular($pluginName);
+
+		$class = self::CLASSNAME_PREFIX . self::_toClassName($className);
 
 		if (!isset($this->_classInstances[$class]))
 		{
-			$fileSize = $this->loadClass($type, $name, $plugin);
+			$fileSize = $this->loadClass($type, $className, $pluginName);
+
 			if (false === $fileSize)
 			{
 				return false;
 			}
-			iaDebug::debug('<b>plugin:</b> ia.' . $type . '.' . $name . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
+
+			iaDebug::debug('<b>plugin:</b> ia.' . $type . '.' . $className . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
+
 			$this->_classInstances[$class] = new $class();
 			$this->_classInstances[$class]->init();
 		}
@@ -971,5 +989,41 @@ final class iaCore
 	public function getSecurityToken()
 	{
 		return isset($_SESSION[self::SECURITY_TOKEN_MEMORY_KEY]) ? $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] : null;
+	}
+
+	public function fetchConfig($where = null)
+	{
+		$result = array();
+
+		is_null($where) && $where = iaDb::EMPTY_CONDITION;
+		$where.= " AND `type` != ':divider'";
+
+		$rows = $this->iaDb->all(array('name', 'type', 'value', 'options'), $where, null, null, self::getConfigTable());
+
+		if ($rows)
+		{
+			$currentLangCode = $this->iaView->language;
+
+			foreach ($rows as $row)
+			{
+				$value = $row['value'];
+
+				if ('text' == $row['type'] || 'textarea' == $row['type'])
+				{
+					$options = empty($row['options']) ? array() : json_decode($row['options'], true);
+
+					if (isset($options['multilingual']) && $options['multilingual'])
+					{
+						$value = preg_match('#\{\:' . $currentLangCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
+							? $matches[1]
+							: '';
+					}
+				}
+
+				$result[$row['name']] = $value;
+			}
+		}
+
+		return $result;
 	}
 }

@@ -1,49 +1,81 @@
 {$type = $field.type}
 {$fieldName = $field.name}
-{$name = "field_{$fieldName}"}
+{$name = "field_{$field.item}_{$field.name}"}
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
-{if isset($item.$fieldName) && $item.$fieldName}
-	{if iaField::CHECKBOX == $type}
-		{$value = ','|explode:$item.$fieldName}
-	{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
-		{$value = $item.$fieldName|unserialize}
-	{else}
-		{$value = $item.$fieldName}
-	{/if}
-{else}
-	{$value = $field.default}
-{/if}
-
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
 
-	<label class="col col-lg-2 control-label">{lang key=$name} {if $field.required}{lang key='field_required'}{/if}
+	<div class="col col-lg-2">
+		{if $field.multilingual && count($core.languages) > 1}
+			<div class="btn-group btn-group-xs translate-group-actions">
+				<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"><span class="i-earth"></span></button>
+				<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"><span class="i-copy"></span></button>
+			</div>
+		{/if}
+		<label class="control-label">{$field.title|escape:'html'} {if $field.required}{lang key='field_required'}{/if}</label>
 		{if iaField::PICTURES == $type || iaField::IMAGE == $type}
-			<span class="help-block">
+			<div class="help-block">
 				{lang key='thumb_dimensions'}: {$field.thumb_width}x{$field.thumb_height}<br>
 				{lang key='image_dimensions'}: {$field.image_width}x{$field.image_height}
-			</span>
+			</div>
 		{/if}
-		{assign annotation {lang key="{$name}_annotation" default=''}}
-		{if $annotation}<br><span class="help-block">{$annotation}</span>{/if}
-	</label>
+		{assign tooltip {lang key="field_tooltip_{$field.item}_{$field.name}" default=''}}
+		{if $tooltip}<div class="help-block">{$tooltip}</div>{/if}
+	</div>
 
-	{if iaField::TEXTAREA != $type}
+	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual && count($core.languages) > 1)}
 		<div class="col col-lg-4">
 	{else}
 		<div class="col col-lg-8">
 	{/if}
 
+	{if isset($field_inner[$fieldName])}
+		{$field_inner[$fieldName]}
+	{else}
+
+	{if isset($item.$fieldName) && $item.$fieldName}
+		{if iaField::CHECKBOX == $type}
+			{$value = ','|explode:$item.$fieldName}
+		{elseif in_array($type, [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])}
+			{$value = $item.$fieldName|unserialize}
+		{else}
+			{$value = $item.$fieldName}
+		{/if}
+	{else}
+		{$value = $field.default}
+	{/if}
+
 	{switch $type}
 		{case iaField::TEXT break}
-			<input type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+			{if $field.multilingual}
+				<div class="translate-group" id="language-group-{$fieldName}">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							<input type="text" name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" value="{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
+							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+						</div>
+					</div>
+					<div class="translate-group__langs">
+						{foreach $core.languages as $iso => $language}
+							{if $iso != $core.language.iso}
+								<div class="translate-group__item">
+									<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
+									<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+								</div>
+							{/if}
+						{/foreach}
+					</div>
+				</div>
+			{else}
+				<input type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+			{/if}
 
 		{case iaField::DATE break}
 			{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
 
 			<div class="input-group date" id="field_date_{$fieldName}">
-				<input type="text" class="js-datepicker" name="{$fieldName}" id="{$name}" value="{$default_date}" {if $field.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if}>
+				<input type="text" class="js-datepicker" name="{$fieldName}" id="{$name}" value="{$default_date}" {if $field.timepicker}data-date-format="YYYY-MM-DD HH:mm:ss"{else}data-date-format="YYYY-MM-DD"{/if}>
 				<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 			</div>
 
@@ -69,6 +101,26 @@
 
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
+				{if $field.multilingual}
+				<div class="translate-group" id="language-group-{$fieldName}">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							<textarea name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" rows="5">{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}</textarea>
+							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+						</div>
+					</div>
+					<div class="translate-group__langs">
+						{foreach $core.languages as $iso => $language}
+							{if $iso != $core.language.iso}
+							<div class="translate-group__item">
+								<textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" rows="5">{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}</textarea>
+								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+							</div>
+							{/if}
+						{/foreach}
+					</div>
+				</div>
+				{else}
 				<textarea name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
 				{if $field.length > 0}
 					{ia_add_js}
@@ -86,8 +138,32 @@ $(function($)
 					{/ia_add_js}
 					{ia_print_js files='jquery/plugins/jquery.textcounter'}
 				{/if}
+				{/if}
 			{else}
-				{ia_wysiwyg value=$value name=$field.name}
+				{if $field.multilingual}
+				<div class="translate-group" id="language-group-{$fieldName}">
+					<div class="translate-group__default">
+						<div class="translate-group__item">
+							{$value = {(empty($item["{$fieldName}_{$core.language.iso}"])) ? $field.default : $item["{$fieldName}_{$core.language.iso}"]}}
+							{ia_wysiwyg value=$value name="{$fieldName}[{$core.language.iso}]"}
+							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+						</div>
+					</div>
+					<div class="translate-group__langs">
+						{foreach $core.languages as $iso => $language}
+							{if $iso != $core.language.iso}
+							<div class="translate-group__item">
+								{$value = {(empty($item["{$fieldName}_{$iso}"])) ? $field.default : $item["{$fieldName}_{$iso}"]}}
+								{ia_wysiwyg value=$value name="{$fieldName}[{$iso}]"}
+								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+							</div>
+							{/if}
+						{/foreach}
+					</div>
+				</div>
+				{else}
+					{ia_wysiwyg value=$value name=$field.name}
+				{/if}
 			{/if}
 
 		{case iaField::IMAGE break}
@@ -127,12 +203,12 @@ $(function($)
 
 									<span class="input-group-btn">
 										{if 'pictures' == $type}
-											<a class="btn btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><i class=" i-remove-sign"></i></a>
+											<a class="btn btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><span class="fa fa-remove"></span></a>
 										{else}
 											<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{$entry.title|escape:'html'}"><i class="i-box-add"></i></a>
-											<a class="btn btn-danger js-file-delete" href="#" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><i class="i-remove-sign"></i></a>
+											<a class="btn btn-danger js-file-delete" href="#" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><span class="fa fa-remove"></span></a>
 										{/if}
-										<span class="btn btn-default uploads-list-item__drag-handle"><i class="i-list-2"></i></span>
+										<span class="btn btn-default uploads-list-item__drag-handle"><span class="fa fa-reorder"></span></span>
 									</span>
 								</div>
 							</div>
@@ -300,6 +376,7 @@ $(function()
 });
 			{/ia_add_js}
 	{/switch}
+	{/if}
 	</div>
 </div>
 

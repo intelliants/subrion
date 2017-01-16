@@ -1,0 +1,113 @@
+//
+// 404 page
+// --------------------------------------------------
+
+.page-error {
+  
+  .content__header {
+    text-align: center;
+
+    h1 {
+      float: none;
+    }
+  }
+}
+
+
+.google-suggestions {
+  text-align: center;
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+
+  form {
+    margin-top: 15px;
+  }
+
+  input[type="text"] {
+    .form-control();
+    width: 220px;
+    // float: left;
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  input[type="submit"] {
+    .btn();
+    .btn-primary();
+  }
+}
+
+
+
+//
+// Login, Registration forms
+// --------------------------------------------------
+
+.page-system {
+
+  .content__header {
+
+    h1 {
+      float: none;
+      text-align: center;
+    }
+  }
+}
+
+.ia-form-system {
+  max-width: 400px;
+  margin: 0 auto;
+  .box-shadow(0 0 15px rgba(0,0,0,.15));
+  padding: 40px;
+  background: #fff;
+
+  .checkbox-inline label {
+    font-weight: normal;
+  }
+
+  .social-providers {
+    border-top: 1px solid @border-color;
+    margin-left: -40px;
+    margin-right: -40px;
+    padding: 20px 40px 0;
+    text-align: center;
+    margin-top: 20px;
+
+    p {
+      color: fade(@text-color, 50%);
+      margin-bottom: 20px;
+    }
+  }
+
+  &.-registration {
+    padding: 0;
+
+    .ia-form {
+      padding: 40px;
+      border: 0 none;
+    }
+
+    .fieldset__header {
+      margin-left: -40px;
+      margin-right: -40px;
+      padding-left: 40px;
+      padding-right: 40px;
+      border-bottom-color: @border-color;
+    }
+
+    .fieldset__actions {
+      margin-left: -40px;
+      margin-right: -40px;
+      padding-left: 40px;
+      padding-right: 40px;
+    }
+  }
+
+  @media (max-width: @screen-sm) {
+    width: 280px;
+  }
+}

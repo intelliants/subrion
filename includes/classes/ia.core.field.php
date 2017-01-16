@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -45,6 +45,13 @@ class iaField extends abstractCore
 
 	const DEFAULT_LENGTH = 100;
 
+	const FIELD_TITLE_PHRASE_KEY = 'field_%s_%s';
+	const FIELD_VALUE_PHRASE_KEY = 'field_%s_%s+%s';
+	const FIELD_TOOLTIP_PHRASE_KEY = 'field_tooltip_%s_%s';
+
+	const FIELDGROUP_TITLE_PHRASE_KEY = 'fieldgroup_%s_%s';
+	const FIELDGROUP_DESCRIPTION_PHRASE_KEY = 'fieldgroup_description_%s_%s';
+
 	protected static $_table = 'fields';
 	protected static $_tableGroups = 'fields_groups';
 	protected static $_tablePages = 'fields_pages';
@@ -66,430 +73,282 @@ class iaField extends abstractCore
 		return self::$_tableRelations;
 	}
 
-	public function getByItemName($itemName)
+
+	public static function getLanguageValue($itemName, $fieldName, $value)
 	{
-		$fields = array();
-
-		$stmt = '`status` = :status AND `item` = :item';
-		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'item' => $itemName));
-
-		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt . ' ORDER BY `order`', null, null, self::getTable()))
-		{
-			$fieldsList = array();
-
-			foreach ($rows as $row)
-			{
-				if (in_array($row['type'], array(self::CHECKBOX, self::COMBO, self::RADIO)))
-				{
-					if (self::CHECKBOX == $row['type'])
-					{
-						$row['default'] = explode(',', $row['default']);
-					}
-
-					$values = explode(',', $row['values']);
-
-					$row['values'] = array();
-					foreach ($values as $v)
-					{
-						$row['values'][$v] = iaLanguage::get('field_' . $row['name'] . '_' . $v);
-					}
-				}
-
-				$fieldsList[] = $row['name'];
-				$fields[] = $row;
-			}
-
-			self::_handleRelations($itemName, $fieldsList, $fields);
-		}
-
-		return $fields;
+		return iaLanguage::get(sprintf(self::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $value));
 	}
 
-	public function filterByGroup(&$items, $item = false, $params = array())
+	public static function getFieldTitle($itemName, $fieldName)
 	{
-		foreach (array('page', 'where', 'not_empty') as $key)
-		{
-			isset($params[$key]) || $params[$key] = false;
-		}
-
-		$sections = $this->_getFieldgroups($params['page'], $item, $params['where'], $items, $params);
-
-		if ($params['not_empty'])
-		{
-			if ($sections)
-			{
-				foreach ($sections as $section)
-				{
-					if (isset($section['fields']) && $section['fields'] && is_array($section['fields']))
-					{
-						foreach ($section['fields'] as $field)
-						{
-							if (isset($items[$field['name']]) && $items[$field['name']])
-							{
-								return $sections;
-							}
-						}
-					}
-				}
-			}
-
-			return false;
-		}
-
-		return $sections;
+		return iaLanguage::get(sprintf(self::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName));
 	}
 
-	public function filter(&$items, $itemName, $params = array())
+	public static function getFieldTooltip($itemName, $fieldName)
 	{
-		foreach (array('page', 'where', 'filter') as $key)
-		{
-			isset($params[$key]) || $params[$key] = false;
-		}
-
-		if ($params['page'] === false && iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
-		{
-			$params['page'] = 'admin';
-		}
-
-		isset($params['info']) || $params['info'] = true;
-		if ($params['filter'] !== false && !is_array($params['filter']))
-		{
-			$params['filter'] = explode(',', $params['filter']);
-		}
-
-		$fieldsList = self::getAcoFieldsList($params['page'], $itemName, $params['where'], $params['info'], $items, $params);
-
-		if (!is_array($items))
-		{
-			return $fieldsList;
-		}
-
-		if (iaCore::ADMIN == $params['page'])
-		{
-			return $fieldsList;
-		}
-
-		$type = 'simple';
-		if (is_array(current($items)))
-		{
-			$type = 'group';
-		}
-
-		$forPlans = array();
-		$fields = array();
-		$empty = array();
-		foreach ($fieldsList as $key => $field)
-		{
-			$empty[$field['name']] = $field['empty_field'];
-			if (!$field['for_plan'] || $field['required'])
-			{
-				$fields[] = $field['name'];
-			}
-			else
-			{
-				$forPlans[] = $field['name'];
-			}
-			if ($params['filter'] && in_array($field['name'], $params['filter']))
-			{
-				unset($fieldsList[$key]);
-			}
-		}
-
-		if ('simple' == $type)
-		{
-			$items = $this->_checkItem($items, $itemName, $fields, $forPlans, $empty);
-		}
-		else
-		{
-			foreach ($items as $key => $value)
-			{
-				$items[$key] = $this->_checkItem($value, $itemName, $fields, $forPlans, $empty);
-			}
-		}
-
-		return $fieldsList;
+		return iaLanguage::get(sprintf(self::FIELD_TOOLTIP_PHRASE_KEY, $itemName, $fieldName));
 	}
 
-	protected function _checkItem($items, $itemName, $fields, $forPlans, $empty)
+	public static function getFieldValue($itemName, $fieldName, $key)
 	{
-		if ($forPlans)
-		{
-			$iaPlan = $this->iaCore->factory('plan');
+		return iaLanguage::get(sprintf(self::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $key), $key);
+	}
 
-			$plans = $iaPlan->getPlans($itemName);
-
-			if (isset($items[iaPlan::SPONSORED_PLAN_ID]) && $items[iaPlan::SPONSORED_PLAN_ID] != 0 && isset($plans[$items[iaPlan::SPONSORED_PLAN_ID]]))
-			{
-				if (isset($plans[$items[iaPlan::SPONSORED_PLAN_ID]]['data']['fields']))
-				{
-					$planFields = $plans[$items[iaPlan::SPONSORED_PLAN_ID]]['data']['fields'];
-					foreach ($forPlans as $field)
-					{
-						if (in_array($field, $planFields))
-						{
-							$fields[] = $field;
-						}
-					}
-				}
-			}
-		}
-
-		foreach ($items as $field => $value)
-		{
-			if (!in_array($field, $fields))
-			{
-				if (isset($empty[$field]))
-				{
-					$items[$field] = $empty[$field];
-				}
-			}
-		}
-
-		return $items;
+	public static function getFieldgroupTitle($itemName, $fieldName)
+	{
+		return iaLanguage::get(sprintf(self::FIELDGROUP_TITLE_PHRASE_KEY, $itemName, $fieldName));
 	}
 
 	/**
-	 * getAcoFieldsList
+	 * Returns fields by item name
 	 *
-	 * @obsolete should not be used
+	 * @param $itemName string Item name
+	 *
+	 * @return array
 	 */
-	public static function getAcoFieldsList($pageName = null, $itemName = null, $aWhere = '', $aAllFieldInfo = false, $aItemData = false, $params = array())
+	public function get($itemName)
 	{
-		$iaCore = iaCore::instance();
-		$iaView = &$iaCore->iaView;
-		$iaAcl = $iaCore->factory('acl');
-
-		$pageName = $pageName ? $pageName : $iaView->name();
-		$itemName = $itemName ? $itemName : $iaView->get('extras');
-
-		$selection = 'f.' . ($aAllFieldInfo || $pageName == 'admin' ? iaDb::ALL_COLUMNS_SELECTION : '`name`');
-		if (isset($params['selection']) && $params['selection'])
-		{
-			$selection = $params['selection'];
-		}
-
-		$sql = "SELECT $selection ";
-
-		if (iaCore::ADMIN == $pageName)
-		{
-			$aAllFieldInfo = true;
-			$sql .= "FROM `" . self::getTable(true) . "` f " .
-				"WHERE f.`status` = 'active' AND f.`item` = '{$itemName}' "
-				. ($aWhere ? ' AND ' . $aWhere : '');
-		}
-		elseif ('all' == $pageName)
-		{
-			$sql .= "FROM `" . self::getTable(true) . "` f " .
-				"WHERE " .
-					"f.`status` = 'active' AND " .
-					"f.`item` = '{$itemName}' AND " .
-					"f.`adminonly` = 0 "
-				. ($aWhere ? ' AND ' . $aWhere : '');
-			$sql .= $aItemData['sponsored_plan_id'] && (!$aItemData || $aItemData['sponsored']) ? " AND (`plans`='' OR FIND_IN_SET('{$aItemData['sponsored_plan_id']}', `plans`)) " : " AND `plans`='' ";
-		}
-		else
-		{
-			$sql .= 'FROM `' . $iaCore->iaDb->prefix . self::getTablePages() . '` fp ' .
-					'LEFT JOIN `' . $iaCore->iaDb->prefix . self::getTable() . '` f ON (fp.`field_id` = f.`id`) ' .
-					"WHERE fp.`page_name` = '{$pageName}' AND f.`status` = 'active' AND f.`item` = '{$itemName}' AND f.`adminonly` = 0 "
-						. ($aWhere ? ' AND ' . $aWhere : '');
-			$sql .= !empty($aItemData['sponsored_plan_id']) && (!$aItemData || $aItemData['sponsored']) ? " AND (`plans`='' OR FIND_IN_SET('{$aItemData['sponsored_plan_id']}', `plans`)) " : " AND `plans`='' ";
-		}
-
-		$sql .= 'ORDER BY ' . (empty($params['order']) ? 'f.`order`' : $params['order']);
-
-		$rows = $iaCore->iaDb->getAll($sql);
-		$fieldNames = array();
-
-		foreach ($rows as $key => $entry)
-		{
-			if (isset($entry['name']) && $entry['name'])
-			{
-				if ($iaAcl->checkAccess('field', $itemName . '_' . $entry['name']))
-				{
-					$fieldNames[$entry['id']] = $entry['name'];
-					continue;
-				}
-			}
-
-			unset($rows[$key]);
-		}
-
-		self::_handleRelations($itemName, $fieldNames, $rows);
-
-		if ($aAllFieldInfo)
-		{
-			return $rows;
-		}
-
 		$fields = array();
-		if ($rows)
+
+		$where = '`status` = :status && `item` = :item' . (!$this->iaCore->get('api_enabled') ? " && `fieldgroup_id` != 3 " : '') . ' ORDER BY `order`';
+		$this->iaDb->bind($where, array('status' => iaCore::STATUS_ACTIVE, 'item' => $itemName));
+
+		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTable()))
 		{
-			foreach ($rows as $row)
-			{
-				$fields[] = $row['name'];
-			}
+			foreach ($rows as $row) $fields[$row['id']] = $row;
+			self::_unpackValues($fields);
 		}
 
 		return $fields;
 	}
 
-	protected static function _handleRelations($itemName, array $fieldsList, array &$fields)
+	protected function _fetchVisibleFieldsForPage($pageName, $itemName, $where)
 	{
-		$iaDb = iaCore::instance()->iaDb;
+		$sql = <<<SQL
+SELECT f.* 
+	FROM `:prefix:table_fields` f 
+LEFT JOIN `:prefix:table_pages` fp ON (fp.`field_id` = f.`id`) 
+WHERE fp.`page_name` = ':page' 
+	AND f.`status` = ':status' 
+	AND f.`item` = ':item' 
+	AND f.`adminonly` = 0 
+	AND :where 
+GROUP BY f.`id` 
+ORDER BY f.`order`
+SQL;
 
-		$stmt = sprintf("`field` IN('%s') AND `item` = '%s'", implode("','", $fieldsList), $itemName);
-		$relations = $iaDb->all(array('field', 'element', 'child'), $stmt, null, null, self::getTableRelations());
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->iaDb->prefix,
+			'table_fields' => self::getTable(),
+			'table_pages' => self::getTablePages(),
+			'page' => $pageName,
+			'status' => iaCore::STATUS_ACTIVE,
+			'item' => $itemName,
+			'where' => $where
+		));
+
+		return $this->iaDb->getAll($sql);
+	}
+
+	public function filter($itemName, array &$itemData, $pageName = null, $where = null)
+	{
+		static $cache = array();
+
+		is_null($pageName) && $pageName = $this->iaView->name();
+		is_null($where) && $where = iaDb::EMPTY_CONDITION;
+
+		$where.= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
+			? " AND (f.`plans` = '' OR FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`)) "
+			: " AND f.`plans` = '' ";
+
+		if (isset($cache[$pageName][$itemName][$where]))
+		{
+			list($result, $planAssigned, $fields, $multilingual) = $cache[$pageName][$itemName][$where];
+		}
+		else
+		{
+			$result = array();
+			$rows = $this->_fetchVisibleFieldsForPage($pageName, $itemName, $where);
+
+			$iaAcl = $this->iaCore->factory('acl');
+
+			$planAssigned = array();
+			$fields = array();
+			$empty = array();
+			$multilingual = array();
+
+			foreach ($rows as $row)
+			{
+				if ($iaAcl->checkAccess('field', $itemName . '_' . $row['name']))
+				{
+					$result[$row['id']] = $row;
+
+					$empty[$row['name']] = $row['empty_field'];
+					$row['multilingual'] && $multilingual[] = $row['name'];
+					($row['required'] || !$row['for_plan'])
+						? ($fields[] = $row['name'])
+						: ($planAssigned[] = $row['name']);
+				}
+			}
+
+			self::_unpackValues($result);
+
+			$cache[$pageName][$itemName][$where] = array($result, $planAssigned, $fields, $multilingual);
+		}
+
+		if ($itemData)
+		{
+			if ($planAssigned)
+			{
+				$plans = $this->iaCore->factory('plan')->getPlans($itemName);
+
+				if (!empty($itemData[iaPlan::SPONSORED_PLAN_ID])
+					&& isset($plans[$itemData[iaPlan::SPONSORED_PLAN_ID]]['data']['fields']))
+				{
+					$planFields = $plans[$itemData[iaPlan::SPONSORED_PLAN_ID]]['data']['fields'];
+					foreach ($planAssigned as $fieldName)
+						in_array($fieldName, $planFields) && $fields[] = $fieldName;
+				}
+			}
+
+			// assign a default value if not in allowed fields list
+			foreach ($itemData as $fieldName => $value)
+				in_array($fieldName, $fields) ||
+					(isset($empty[$fieldName]) && $itemData[$fieldName] = $empty[$fieldName]);
+
+			foreach ($multilingual as $fieldName)
+			{
+				$key = $fieldName . '_' . $this->iaCore->language['iso'];
+				isset($itemData[$key]) && $itemData[$fieldName] = $itemData[$key];
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Manages internal structure of fields: unpacks values, validates parent/dependent structure
+	 *
+	 * @param $fields array Array of fields
+	 *
+	 * @return void
+	 */
+	protected static function _unpackValues(array &$fields)
+	{
+		if (!$fields)
+		{
+			return;
+		}
+
+		$relations = iaCore::instance()->iaDb->all(array('field_id', 'element', 'child'),
+			'`field_id` IN (' . implode(',', array_keys($fields)) . ')', null, null, self::getTableRelations());
 
 		$relationsMap = array();
 		foreach ($relations as $entry)
+			$relationsMap[$entry['field_id']][$entry['child']][] = $entry['element'];
+
+		foreach ($fields as $id => &$field)
 		{
-			$relationsMap[$entry['field']][$entry['child']][] = $entry['element'];
-		}
-
-		foreach ($fields as &$entry)
-		{
-			$entry['children'] = isset($relationsMap[$entry['name']]) ? $relationsMap[$entry['name']] : array();
-		}
-	}
-
-	private function _getFieldgroups($aco = null, $itemName = null, $aWhere = '', &$itemData, $params = array())
-	{
-		$aco = $aco ? $aco : (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin' : $this->iaView->name());
-		$itemName = $itemName ? $itemName : $this->iaView->get('extras');
-
-		$_params = array('page' => $aco, 'where' => $aWhere, 'filter' => '');
-		foreach ($_params as $key => $value)
-		{
-			isset($params[$key]) || $params[$key] = $value;
-		}
-
-		$fields = $this->filter($itemData, $itemName, $params);
-		if (empty($fields))
-		{
-			return array();
-		}
-
-		// get all available groups for item
-		$groups = $this->iaDb->assoc(array('id', 'name', 'order', 'collapsible', 'collapsed', 'tabview', 'tabcontainer'), "`item` = '{$itemName}' ORDER BY `order`", self::getTableGroups());
-
-		foreach ($fields as $fieldInfo)
-		{
-			if (self::PICTURES == $fieldInfo['type'])
+			// radios, combos and checkboxes needs special processing
+			if (in_array($field['type'], array(self::CHECKBOX, self::COMBO, self::RADIO)))
 			{
-				$fieldInfo['values'] = empty($fieldInfo['values']) ? array() : explode(',', $fieldInfo['values']);
-			}
-
-			if (in_array($fieldInfo['type'], array(self::CHECKBOX, self::COMBO, self::RADIO)))
-			{
-				if ($fieldInfo['type'] == self::CHECKBOX)
+				if (self::CHECKBOX == $field['type'])
 				{
-					$fieldInfo['default'] = explode(',', $fieldInfo['default']);
+					$field['default'] = explode(',', $field['default']);
 				}
 
-				$values = explode(',', $fieldInfo['values']);
+				$values = array();
+				foreach (explode(',', $field['values']) as $v)
+					$values[$v] = self::getLanguageValue($field['item'], $field['name'], $v);
+				$field['values'] = $values;
+			}
 
-				$fieldInfo['values'] = array();
-				if ($values)
+			$field['class'] = 'fieldzone';
+			if ($field['plans'])
+			{
+				foreach (explode(',', $field['plans']) as $p)
 				{
-					foreach ($values as $v)
-					{
-						$k = 'field_' . $fieldInfo['name'] . '_' . $v;
-						$fieldInfo['values'][$v] = iaLanguage::get($k);
-					}
+					$field['class'].= sprintf(' plan_%d ', $p);
 				}
 			}
 
-			isset($fieldInfo['class']) || $fieldInfo['class'] = 'fieldzone';
-
-			if ($fieldInfo['plans'])
-			{
-				foreach (explode(',', $fieldInfo['plans']) as $p)
-				{
-					$fieldInfo['class'] .= sprintf(' plan_%d ', $p);
-				}
-			}
-
-			if (empty($fieldInfo['fieldgroup_id']) || empty($groups[$fieldInfo['fieldgroup_id']]))
-			{
-				$fieldInfo['fieldgroup_id'] = '___empty___';
-
-				// emulate tab to avoid isset checks
-				$groups[$fieldInfo['fieldgroup_id']]['name'] = $fieldInfo['fieldgroup_id'];
-				$groups[$fieldInfo['fieldgroup_id']]['tabview'] = '';
-				$groups[$fieldInfo['fieldgroup_id']]['tabcontainer'] = '';
-				$groups[$fieldInfo['fieldgroup_id']]['collapsible'] = false;
-				$groups[$fieldInfo['fieldgroup_id']]['collapsed'] = false;
-			}
-
-			$groups[$fieldInfo['fieldgroup_id']]['fields'][$fieldInfo['id']] = $fieldInfo;
+			$field['title'] = self::getFieldTitle($field['item'], $field['name']);
+			$field['children'] = isset($relationsMap[$id]) ? $relationsMap[$id] : null;
 		}
-
-		$iaAcl = $this->iaCore->factory('acl');
-
-		// clear groups that don't have any fields
-		foreach ($groups as $key => $group)
-		{
-			if (!isset($group['fields']) || !$iaAcl->checkAccess('fieldgroup', $group['name']))
-			{
-				unset($groups[$key]);
-			}
-			else
-			{
-				$groups[$key]['description'] = iaLanguage::get('fieldgroup_description_' . $itemName . '_' . $group['name'], '');
-			}
-		}
-
-		return $groups;
 	}
 
-	public function getValues($field, $item)
+	protected function _getGroups($itemName, array $fields)
 	{
-		if ($values = $this->iaDb->one_bind(array('values'), '`name` = :field AND `item` = :item', array('field' => $field, 'item' => $item), self::getTable()))
-		{
-			$result = array();
-			foreach (explode(',', $values) as $key)
-			{
-				$result[$key] = iaLanguage::get('field_' . $field . '_' . $key, $key);
-			}
+		$where = '`item` = :item ORDER BY `order`';
+		$this->iaDb->bind($where, array('item' => $itemName));
 
-			return $result;
+		$groups = array();
+		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTableGroups());
+
+		foreach ($rows as $row)
+		{
+			$row['title'] = iaLanguage::get(sprintf(self::FIELDGROUP_TITLE_PHRASE_KEY, $row['item'], $row['name']), '');
+			$row['description'] = iaLanguage::get(sprintf(self::FIELDGROUP_DESCRIPTION_PHRASE_KEY, $row['item'], $row['name']), '');
+
+			$groups[$row['id']] = $row;
 		}
 
-		return false;
-	}
-
-	public function getGroups($itemName)
-	{
-		$groups = $this->iaDb->assoc(array('id', 'name', 'order', 'collapsed'), iaDb::EMPTY_CONDITION . ' ORDER BY `order`', self::getTableGroups());
-		$fields = $this->getByItemName($itemName);
-
-		if (empty($fields))
+		if (!$fields)
 		{
 			return $groups;
 		}
 
 		foreach ($fields as $value)
 		{
-			if (empty($value['fieldgroup_id']) || empty($groups[$value['fieldgroup_id']]))
-			{
-				$value['fieldgroup_id'] = '___empty___';
+			$fieldGroupId = (int)$value['fieldgroup_id'];
 
-				// emulate tab to avoid isset checks
-				$groups[$value['fieldgroup_id']]['name'] = $value['fieldgroup_id'];
-				$groups[$value['fieldgroup_id']]['tabview'] = '';
-				$groups[$value['fieldgroup_id']]['tabcontainer'] = '';
-				$groups[$value['fieldgroup_id']]['collapsible'] = false;
-				$groups[$value['fieldgroup_id']]['collapsed'] = false;
+			if (!isset($groups[$fieldGroupId])) // emulate tab to make TPL code compact
+			{
+				$groups[$fieldGroupId] = array('name' => '___empty___', 'title' => iaLanguage::get('other'),
+					'tabview' => '', 'tabcontainer' => '', 'description' => null, 'collapsible' => false, 'collapsed' => false);
 			}
 
-			$groups[$value['fieldgroup_id']]['fields'][] = $value;
+			$groups[$fieldGroupId]['fields'][] = $value;
 		}
 
 		return $groups;
 	}
 
-	public function parsePost(array $fields, $previousValues = null)
+	public function getGroups($itemName)
+	{
+		return $this->_getGroups($itemName, $this->get($itemName));
+	}
+
+	public function getGroupsFiltered($itemName, array &$itemData)
+	{
+		return $this->_getGroups($itemName, $this->filter($itemName, $itemData));
+	}
+
+	public function getTabs($itemName, array &$itemData, $defaultTab = 'common')
+	{
+		$fieldGroups = $this->getGroupsFiltered($itemName, $itemData);
+
+		$tabs = array();
+		foreach ($fieldGroups as $key => $group)
+		{
+			if ($group['tabview'])
+			{
+				$tabs['fieldgroup_' . $group['item'] . '_' . $group['name']][$key] = $group;
+			}
+			elseif ($group['tabcontainer'])
+			{
+				$tabs['fieldgroup_' . $group['tabcontainer']][$key] = $group;
+			}
+			else
+			{
+				$tabs[$defaultTab][$key] = $group;
+			}
+		}
+
+		return $tabs;
+	}
+
+	public function parsePost($itemName, array &$itemData)
 	{
 		$iaCore = &$this->iaCore;
 
@@ -596,6 +455,10 @@ class iaField extends abstractCore
 		$activeFields = array();
 		$parentFields = array();
 
+		$fields = (iaCore::ACCESS_FRONT == $iaCore->getAccessType())
+			? $this->filter($itemName, $itemData)
+			: $this->get($itemName);
+
 		foreach ($fields as $field)
 		{
 			$activeFields[$field['name']] = $field;
@@ -656,8 +519,8 @@ class iaField extends abstractCore
 						$error = true;
 
 						$messages[] = in_array($field['type'], array(self::RADIO, self::CHECKBOX, self::COMBO))
-							? iaLanguage::getf('field_is_not_selected', array('field' => iaLanguage::get('field_' . $fieldName)))
-							: iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
+							? iaLanguage::getf('field_is_not_selected', array('field' => self::getFieldTitle($field['item'], $fieldName)))
+							: iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
 
 						$invalidFields[] = $fieldName;
 					}
@@ -670,15 +533,35 @@ class iaField extends abstractCore
 						break;
 
 					case self::TEXT:
-						$item[$fieldName] = iaSanitize::tags($data[$fieldName]);
+						if ($field['multilingual'])
+						{
+							foreach ($data[$fieldName] as $langCode => $value)
+								$item[$fieldName . '_' . $langCode] = iaSanitize::tags($value);
+						}
+						else
+						{
+							$item[$fieldName] = iaSanitize::tags($data[$fieldName]);
+						}
 						break;
 
 					case self::TEXTAREA:
-						$item[$fieldName] = $field['use_editor'] ? iaUtil::safeHTML($data[$fieldName]) : iaSanitize::tags($data[$fieldName]);
+						if ($field['multilingual'])
+						{
+							foreach ($data[$fieldName] as $langCode => $value)
+								$item[$fieldName . '_' . $langCode] = $field['use_editor'] ? iaUtil::safeHTML($value) : iaSanitize::tags($value);
+						}
+						else
+						{
+							$item[$fieldName] = $field['use_editor'] ? iaUtil::safeHTML($data[$fieldName]) : iaSanitize::tags($data[$fieldName]);
+						}
 						break;
 
 					default:
 						$item[$fieldName] = is_array($data[$fieldName]) ? implode(',', $data[$fieldName]) : $data[$fieldName];
+						if (in_array($field['type'], array(self::RADIO, self::COMBO)))
+						{
+							$item[$fieldName] = empty($data[$fieldName]) ? 'NULL' : $data[$fieldName];
+						}
 				}
 			}
 			elseif (self::DATE == $field['type'])
@@ -690,7 +573,7 @@ class iaField extends abstractCore
 				elseif ($field['required'] && empty($data[$fieldName]))
 				{
 					$error = true;
-					$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
+					$messages[] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
 					$invalidFields[] = $fieldName;
 				}
 
@@ -756,7 +639,7 @@ class iaField extends abstractCore
 					elseif (empty($data[$fieldName]['url']) || in_array($data[$fieldName]['url'], $validProtocols))
 					{
 						$error = $req_error = true;
-						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
+						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaField::getFieldTitle($field['item'], $fieldName)));
 						$invalidFields[] = $fieldName;
 					}
 				}
@@ -781,7 +664,7 @@ class iaField extends abstractCore
 					else
 					{
 						$error = true;
-						$messages[] = iaLanguage::get('field_' . $fieldName) . ': ' . iaLanguage::get('error_url');
+						$messages[] = self::getFieldTitle($field['item'], $fieldName) . ': ' . iaLanguage::get('error_url');
 						$invalidFields[] = $fieldName;
 					}
 				}
@@ -802,9 +685,15 @@ class iaField extends abstractCore
 					}
 					elseif ($field['required'] && !in_array(UPLOAD_ERR_OK, $_FILES[$fieldName]['error']))
 					{
-						$error = true;
-						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('field_' . $fieldName)));
-						$invalidFields[] = $fieldName;
+						$existImages = empty($previousValues[$fieldName]) ? null : $previousValues[$fieldName];
+						$existImages = is_string($existImages) ? unserialize($existImages) : $existImages;
+
+						if (!$existImages)
+						{
+							$error = true;
+							$messages[] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+							$invalidFields[] = $fieldName;
+						}
 					}
 
 					// custom folder for uploaded images
@@ -970,108 +859,58 @@ class iaField extends abstractCore
 		return array($imageName, $error, $message);
 	}
 
-	/**
-	 * Sets elements of array according to provided fields structure
-	 *
-	 * @param array $itemData resulting array
-	 * @param array $fields standard fields structure returned by methods of this class
-	 * @param array $extraValues values that will be merged to $itemData
-	 * @param array $data source data (POST values are used if nothing specified)
-	 *
-	 * @return void
-	 */
-	public static function keepValues(array &$itemData, array $fields, array $extraValues = array(), $data = null)
+	public function getValues($fieldName, $itemName)
 	{
-		if (is_null($data))
-		{
-			$data = $_POST;
-		}
-		if (empty($data))
-		{
-			return;
-		}
+		$values = $this->iaDb->one_bind(array('values'), '`name` = :field AND `item` = :item',
+			array('field' => $fieldName, 'item' => $itemName), self::getTable());
 
-		foreach ($fields as $field)
+		if ($values)
 		{
-			if ($field['type'] != self::PICTURES && $field['type'] != self::IMAGE)
-			{
-				$fieldName = $field['name'];
-				if (isset($data[$fieldName]) && $data[$fieldName])
-				{
-					$itemData[$fieldName] = in_array($field['type'], array(self::CHECKBOX))
-						? implode(',', $data[$fieldName])
-						: $data[$fieldName];
-				}
-			}
+			$result = array();
+			foreach (explode(',', $values) as $key)
+				$result[$key] = self::getLanguageValue($itemName, $fieldName, $key);
+
+			return $result;
 		}
 
-		if (iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType())
-		{
-			if (isset($data['featured']))
-			{
-				$itemData['featured'] = $data['featured'];
-				$itemData['featured_end'] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($data['featured_end']));
-			}
-
-			if (isset($data['sponsored']))
-			{
-				$itemData['sponsored'] = $data['sponsored'];
-				if (isset($data['sponsored_end']))
-				{
-					$itemData['sponsored_end'] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($data['sponsored_end']));
-				}
-			}
-
-			empty($data['date_added']) || $itemData['date_added'] = iaSanitize::html($data['date_added']);
-			empty($data['status']) || $itemData['status'] = iaSanitize::html($data['status']);
-			empty($data['owner']) || $itemData['owner'] = iaSanitize::html($data['owner']);
-		}
-
-		if ($extraValues)
-		{
-			$itemData = array_merge($itemData, $extraValues);
-		}
+		return false;
 	}
 
-	public function generateTabs(array $fieldgroups)
+	public function getImageFields($itemName = null)
 	{
-		$tabs = $groups = array();
-
-		foreach ($fieldgroups as $key => $group)
-		{
-			if ($group['tabview'])
-			{
-				$tabs['fieldgroup_' . $group['name']][$key] = $group;
-			}
-			elseif ($group['tabcontainer'])
-			{
-				$tabs['fieldgroup_' . $group['tabcontainer']][$key] = $group;
-			}
-			else
-			{
-				$groups[$key] = $group;
-			}
-		}
-
-		return array($tabs, $groups);
+		return $this->_getFieldNames("`type` IN ('image','pictures')", $itemName);
 	}
 
-	public function getImageFields($itemFilter = null)
+	public function getStorageFields($itemName = null)
 	{
-		$conditions = array("`type` IN ('image','pictures')");
-		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
+		return $this->_getFieldNames(iaDb::convertIds(self::STORAGE, 'type'), $itemName);
+	}
+
+	public function getSerializedFields($itemName = null)
+	{
+		return $this->_getFieldNames("`type` IN ('image', 'pictures', 'storage')", $itemName);
+	}
+
+	public function getMultilingualFields($itemName = null)
+	{
+		return $this->_getFieldNames(iaDb::convertIds(1, 'multilingual'), $itemName);
+	}
+
+	protected function _getFieldNames($condition, $itemName = null)
+	{
+		static $cache = array();
+
+		$conditions = array("`status` = 'active'", $condition);
+		is_null($itemName) || $conditions[] = iaDb::convertIds($itemName, 'item');
 		$conditions = implode(' AND ', $conditions);
 
-		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
-	}
+		if (!isset($cache[$conditions]))
+		{
+			$result = $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+			$cache[$conditions] = $result ? $result : array();
+		}
 
-	public function getStorageFields($itemFilter = null)
-	{
-		$conditions = array("`type` = 'storage'");
-		empty($itemFilter) || $conditions[] = "`item` = '" . iaSanitize::sql($itemFilter) . "'";
-		$conditions = implode(' AND ', $conditions);
-
-		return $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
+		return $cache[$conditions];
 	}
 
 	public function getTreeNodes($condition = '')
@@ -1081,9 +920,7 @@ class iaField extends abstractCore
 		if ($rows)
 		{
 			foreach ($rows as &$node)
-			{
-				$node['title'] = iaLanguage::get('field_' . $node['item'] . '_' . $node['field'] . '_' . $node['node_id']);
-			}
+				$node['title'] = self::getFieldValue($node['item'], $node['field'], $node['node_id']);
 		}
 
 		return $rows;
@@ -1091,12 +928,197 @@ class iaField extends abstractCore
 
 	public function getTreeNode($condition)
 	{
-		$result = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $condition, 'fields_tree_nodes');
-		if ($result)
+		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $condition, 'fields_tree_nodes');
+		$row && $row['title'] = self::getFieldValue($row['item'], $row['field'], $row['node_id']);
+
+		return $row;
+	}
+
+
+	public function alterTable(array $fieldData)
+	{
+		$dbTable = $this->iaCore->factory('item')->getItemTable($fieldData['item']);
+
+		if ($fieldData['multilingual'])
 		{
-			$result['title'] = iaLanguage::get('field_' . $result['item'] . '_' . $result['field'] . '_' . $result['node_id']);
+			$this->alterMultilingualColumns($dbTable, $fieldData['name'], $fieldData);
+		}
+		else
+		{
+			$this->alterColumnScheme($dbTable, $fieldData);
+			$this->_alterColumnIndex($dbTable, $fieldData['name'], $fieldData['searchable']);
+		}
+	}
+
+	// DB mgmt utility methods
+	public function alterMultilingualColumns($dbTable, $fieldName, array $fieldData)
+	{
+		$defaultLanguageCode = null;
+
+		foreach ($this->iaCore->languages as $language)
+		{
+			if ($language['default'])
+			{
+				$defaultLanguageCode = $language['iso'];
+				break;
+			}
 		}
 
+		if ($fieldData['multilingual'])
+		{
+			$fieldData['name'] = $fieldName;
+			$this->alterColumnScheme($dbTable, $fieldData, $fieldName . '_' . $defaultLanguageCode);
+
+			foreach ($this->iaCore->languages as $language)
+			{
+				if ($language['iso'] != $defaultLanguageCode)
+				{
+					$fieldData['name'] = $fieldName . '_' . $language['iso'];
+					$this->alterColumnScheme($dbTable, $fieldData);
+				}
+			}
+		}
+		else
+		{
+			$fieldData['name'] = $fieldName . '_' . $defaultLanguageCode;
+			$this->alterColumnScheme($dbTable, $fieldData, $fieldName);
+
+			foreach ($this->iaCore->languages as $language)
+			{
+				if ($language['iso'] != $defaultLanguageCode)
+				{
+					$this->alterDropColumn($dbTable, $fieldName . '_' . $language['iso']);
+				}
+			}
+		}
+	}
+
+	public function alterColumnScheme($dbTable, array $fieldData, $newName = null)
+	{
+		is_null($newName) && $newName = $fieldData['name'];
+
+		$sql = $this->isDbColumnExist($dbTable, $fieldData['name'])
+			? 'ALTER TABLE `:prefix:table` CHANGE `:column1` `:column2` :scheme'
+			: 'ALTER TABLE `:prefix:table` ADD `:column2` :scheme';
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->iaDb->prefix,
+			'table' => $dbTable,
+			'column1' => $fieldData['name'],
+			'column2' => $newName,
+			'scheme' => $this->_alterCmdBody($fieldData)
+		));
+
+		$this->iaDb->query($sql);
+	}
+
+	private function _alterColumnIndex($dbTable, $fieldName, $enabled)
+	{
+		$sql = sprintf('SHOW INDEX FROM `%s%s`', $this->iaDb->prefix, $dbTable);
+
+		$exists = false;
+		if ($indexes = $this->iaDb->getAll($sql))
+		{
+			foreach ($indexes as $i)
+			{
+				if ($i['Key_name'] == $fieldName && $i['Index_type'] == 'FULLTEXT')
+				{
+					$exists = true;
+					break;
+				}
+			}
+		}
+
+		if ($enabled && !$exists)
+		{
+			$sql = sprintf('ALTER TABLE `%s%s` ADD FULLTEXT(`%s`)', $this->iaDb->prefix, $dbTable, $fieldName);
+		}
+		elseif (!$enabled && $exists)
+		{
+			$sql = sprintf('ALTER TABLE `%s%s` DROP INDEX `%s`', $this->iaDb->prefix, $dbTable, $fieldName);
+		}
+
+		isset($sql) && $this->iaDb->query($sql);
+	}
+
+	public function alterDropColumn($dbTable, $columnName)
+	{
+		$sql = sprintf('ALTER TABLE `%s%s` DROP `%s`', $this->iaDb->prefix, $dbTable, $columnName);
+
+		$this->iaDb->query($sql);
+	}
+
+	public function isDbColumnExist($dbTable, $columnName)
+	{
+		$sql = sprintf("SHOW COLUMNS FROM `%s%s` WHERE `Field` LIKE '%s'",
+			$this->iaDb->prefix, $dbTable, $columnName);
+
+		return (bool)$this->iaDb->getRow($sql);
+	}
+
+	private function _alterCmdBody(array $fieldData)
+	{
+		$result = '';
+
+		switch ($fieldData['type'])
+		{
+			case iaField::DATE:
+				$result.= 'DATETIME ';
+				break;
+			case iaField::NUMBER:
+				$result.= 'DOUBLE ';
+				break;
+			case iaField::TEXT:
+				$result.= 'VARCHAR(' . $fieldData['length'] . ') '
+					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
+				break;
+			case iaField::URL:
+			case iaField::TREE:
+				$result.= 'TINYTEXT ';
+				break;
+			case iaField::IMAGE:
+			case iaField::STORAGE:
+			case iaField::PICTURES:
+			case iaField::TEXTAREA:
+				$result.= 'TEXT ';
+				break;
+			default:
+				if (isset($fieldData['values']))
+				{
+					$values = explode(',', $fieldData['values']);
+
+					$result.= ($fieldData['type'] == iaField::CHECKBOX) ? 'SET' : 'ENUM';
+					$result.= "('" . implode("','", $values) . "')";
+
+					if (!empty($fieldData['default']))
+					{
+						$result.= " DEFAULT '{$fieldData['default']}' ";
+					}
+				}
+		}
+
+		$result.= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
+
 		return $result;
+	}
+
+	public function syncMultilingualFields()
+	{
+		$iaItem = $this->iaCore->factory('item');
+
+		$multilingualFields = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds(1, 'multilingual'),
+			null, null, self::getTable());
+
+		$this->iaCore->languages = $this->iaDb->assoc(
+			array('code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'),
+			iaDb::EMPTY_CONDITION . ' ORDER BY `order` ASC',
+			iaLanguage::getLanguagesTable()
+		);
+
+		foreach ($multilingualFields as $field)
+		{
+			$dbTable = $iaItem->getItemTable($field['item']);
+			$this->alterMultilingualColumns($dbTable, $field['name'], $field);
+		}
 	}
 }

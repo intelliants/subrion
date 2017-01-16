@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -147,6 +147,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					$error = true;
 					$messages[] = iaLanguage::get('error_no_member_email');
 				}
+				elseif (in_array($member['status'], array(iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED)))
+				{
+					$error = true;
+					$messages[] = iaLanguage::get('your_membership_is_inactive');
+				}
+
 				if (false !== $code && $member['sec_key'] != $code)
 				{
 					$error = true;
@@ -206,12 +212,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$iaPlan = $iaCore->factory('plan');
 
 		$iaView->assign('plans', $iaPlan->getPlans($iaUsers->getItemName()));
-		$iaView->assign('sections', $iaField->filterByGroup($itemData, $iaUsers->getItemName()));
+		$iaView->assign('sections', $iaField->getGroupsFiltered($iaUsers->getItemName(), $itemData));
 
 		if (isset($_POST['register']))
 		{
-			$fields = $iaField->filter($itemData, $iaUsers->getItemName());
-			list($itemData, $error, $messages, ) = $iaField->parsePost($fields);
+			list($itemData, $error, $messages, ) = $iaField->parsePost($iaUsers->getItemName(), $itemData);
 
 			if (!iaValidate::isCaptchaValid())
 			{
@@ -270,7 +275,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			}
 			else
 			{
-				iaField::keepValues($itemData, $fields);
 				$iaView->setMessages($messages);
 			}
 
@@ -287,10 +291,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				if ($memberId && isset($_POST['plan_id']) && is_numeric($_POST['plan_id']))
 				{
 					$plan = $iaPlan->getById($_POST['plan_id']);
-
-					$usergroup = $plan['usergroup'] ? $plan['usergroup'] : iaUsers::MEMBERSHIP_REGULAR;
-
-					$iaDb->update(array('id' => $memberId, 'usergroup_id' => $usergroup), 0, 0, iaUsers::getTable());
 
 					if ($plan['cost'] > 0)
 					{

@@ -1,0 +1,23 @@
+---
+subject: Payment completed
+---
+
+<h4>Hey <b>boss</b>!</h4> 
+<p>A payment has been completed on your site. Here is the information on the payment:</p>
+
+<spacer size="30"></spacer>
+
+<callout class="success special">
+  <row>
+    <columns small="3">Username:</columns>
+    <columns small="9"><b>{%USERNAME%}</b></columns>
+  </row>
+  <row>
+    <columns small="3">Amount:</columns>
+    <columns small="9"><b>{%CURRENCY%} {%AMOUNT%}</b></columns>
+  </row>
+  <row>
+    <columns small="3">Operation:</columns>
+    <columns small="9"><b>{%OPERATION%}</b></columns>
+  </row>
+</callout>

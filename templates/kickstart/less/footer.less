@@ -4,15 +4,43 @@
 // --------------------------------------------------
 
 .footer-blocks {
-	background: #f2f2f2;
-	padding: 100px 0;
-	// background: fade(@brand-dark, 97%);
-	// color: lighten(@brand-dark, 24%);
+  background: lighten(@brand-dark, 2%);
+  padding: @sections-v-pad/2 0;
 
-	// .panel-heading {
-	// 	color: lighten(@brand-dark, 24%);
-	// }
+  .box__caption {
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  .box__content {
+    color: fade(#fff, 70%);
+  }
+
+  .list-unstyled {
+    > li {
+      font-weight: bold;
+      padding-left: 30px;
+      position: relative;
+      color: #fff;
+      margin-bottom: 12px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      > .fa {
+        position: absolute;
+        left: 0;
+        top: 2px;
+        font-size: 18px;
+        width: 20px;
+        text-align: center;
+      }
+    }
+  }
 }
+
 
 
 //
@@ -20,77 +48,126 @@
 // --------------------------------------------------
 
 .footer {
-	padding: 100px 0;
-	background: #dfdfdf;
-	// color: lighten(#ddd, 24%);
-	position: relative;
-
-	&::after {
-		content: '';
-		display: block;
-		position: absolute;
-		z-index: 10;
-		left: 50%;
-		top: 0;
-		bottom: 0;
-		right: 0;
-		background: darken(#ddd, 2%);
-	}
-
-	> .container {
-		position: relative;
-		z-index: 20;
-	}
-
-	a,
-	a:focus {
-		color: #777;
-		background: none;
-
-		&:hover {
-			color: #444;
-		}
-	}
+  background: @footer-bg;
 }
+
+
+
+//
+// Footer navs
+// --------------------------------------------------
+
+.nav-footer {
+  margin: 0 20px 0 0;
+  padding: 0;
+  list-style-type: none;
+  float: left;
+  .clearfix();
+
+  > li {
+    float: left;
+    margin: 0 10px 0 0;
+
+    > a {
+      &,
+      &:focus {
+        display: block;
+        line-height: @footer-height;
+        color: @footer-link-color;
+        font-size: 12px;
+        text-decoration: none;
+      }
+
+      &:hover {
+        color: @footer-link-hover-color;
+        text-decoration: underline;
+      }
+    }
+
+    &.active > a,
+    &.active > a:focus,
+    &.active > a:hover {
+      color: @footer-link-active-color;
+    }
+  }
+
+  @media (max-width: @grid-float-breakpoint) {
+    float: none;
+
+    > li {
+
+      > a {
+        line-height: @line-height-computed;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+
+
+//
+// Footer social nav
+// --------------------------------------------------
+
+.nav-footer-social {
+  .clearfix();
+
+  > li {
+    margin: 0;
+
+    > a {
+      padding: 0 15px;
+      color: @footer-social-link-color;
+    }
+  }
+
+  @media (max-width: @grid-float-breakpoint) {
+    margin-bottom: 20px;
+    margin-top: 20px;
+
+    > li {
+      margin-right: 10px;
+
+      > a {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        background: lighten(@footer-bg, 10%);
+        padding: 0;
+        border-radius: 3px;
+      }
+    }
+  }
+}
+
+
+
+//
+// Footer text
+// --------------------------------------------------
 
 .copyright {
-	margin: @vertical-rhythm 0 0;
-	position: relative;
+  margin: 0;
+  line-height: @footer-height;
+  color: @footer-text-color;
+  float: right;
 
-	&::before {
-		display: block;
-		content: '';
-		position: absolute;
-		left: 0;
-		top: -15px;
-		width: 100px;
-		height: 1px;
-		background: fade(#fff, 5%);
-	}
-}
+  a {
+    &,
+    &:focus {
+      color: @footer-link-color;
+    }
 
-.social {
-	padding-left: @vertical-rhythm*2;
+    &:hover {
+      color: @footer-link-hover-color;
+    }
+  }
 
-	h4 {
-		margin: 0 0 @vertical-rhythm;
-	}
-
-	a {
-		font-size: 20px;
-		display: inline-block;
-		margin-right: @vertical-rhythm/2;
-		width: 28px;
-		height: 28px;
-		text-align: center;
-		line-height: 28px;
-		border-radius: 4px;
-		background: #bbb;
-
-		&:hover {
-			background: #afafaf;
-		}
-	}
+  @media (max-width: @grid-float-breakpoint) {
+    float: none;
+  }
 }
 
 
@@ -99,23 +176,40 @@
 // Back to top button
 // --------------------------------------------------
 
-.back-to-top,
-.back-to-top:focus {
-	float: right;
-	display: block;
-	// width: 30px;
-	height: 24px;
-	font-size: 14px;
-	line-height: 24px;
-	padding-left: 10px;
-	padding-right: 10px;
-	text-align: center;
-	background: #ccc;
-	color: #aaa;
-	text-decoration: none;
+.back-to-top {
+  position: fixed;
+  right: 30px;
+  bottom: 40px;
+  border: 0 none;
+  background: darken(@brand-dark, 3%);
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  color: #fff;
+  font-size: 22px;
+  outline: 0 none;
+  padding: 0;
+  opacity: 0;
+  visibility: hidden;
+  .transition(all .15s ease-in-out);
 
-	&:hover {
-		text-decoration: none;
-		background: #bbb;
-	}
+  &:focus {
+    outline: 0 none;
+  }
+
+  &:hover {
+    background: darken(@brand-dark, 1%);
+    margin-bottom: 3px;
+  }
+
+  &.on {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @media (max-width: @grid-float-breakpoint) {
+    bottom: 10px;
+    right: 10px;
+  }
 }

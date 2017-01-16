@@ -1,3 +1,31 @@
+var synchronizeAdminMenu = function(currentPage, extensionGroups)
+{
+	currentPage = currentPage || 'plugins';
+
+	$.ajax(
+	{
+		data: {action: 'menu', page: currentPage},
+		success: function(response)
+		{
+			var $menuSection = $('#panel-center'),
+				$menus = $(response.menus);
+
+			if (typeof extensionGroups != 'undefined')
+			{
+				$.each(extensionGroups, function(i, val)
+				{
+					$('#menu-section-' + val + ' a').append('<span class="menu-updated animated bounceIn"></span>');
+				});
+			}
+
+			$('ul', $menuSection).remove();
+			$menus.appendTo($menuSection);
+		},
+		type: 'POST',
+		url: intelli.config.admin_url + '/index/read.json'
+	});
+};
+
 intelli.plugins = {
 	failure: function()
 	{
@@ -22,7 +50,7 @@ intelli.plugins = {
 					: intelli.plugins.markers.available = true;
 			}
 
-			intelli.admin.synchronizeAdminMenu('plugins', response.groups);
+			synchronizeAdminMenu('plugins', response.groups);
 		}
 	}
 };
@@ -350,12 +378,7 @@ Ext.onReady(function()
 								intelli.available.grid.getView().getHeaderCt().gridDataColumns[0].setVisible(!isLocalMode);
 								intelli.available.grid.columns[6].setVisible(!isLocalMode);
 
-								intelli.available.grid.columns[1].sortable =
-								intelli.available.grid.columns[2].sortable =
-								intelli.available.grid.columns[3].sortable =
-								intelli.available.grid.columns[4].sortable =
-								intelli.available.grid.columns[5].sortable
-									= isLocalMode;
+								intelli.available.grid.columns[5].sortable = isLocalMode;
 
 								intelli.available.store.getProxy().extraParams.type = this.getValue();
 								intelli.available.store.loadPage(1);

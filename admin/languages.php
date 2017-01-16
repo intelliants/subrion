@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -184,9 +184,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			if (!$error)
 			{
-				$lang = (isset($_POST['language']) && array_key_exists($_POST['language'], $this->_iaCore->languages))
-					? $_POST['language']
-					: $iaView->language;
 				$key = iaSanitize::paranoid($_POST['key']);
 				$value = $_POST['value'];
 				$category = iaSanitize::paranoid($_POST['category']);
@@ -202,23 +199,23 @@ class iaBackendController extends iaAbstractControllerBackend
 					$error = true;
 					$output['message'] = iaLanguage::get('incorrect_value');
 				}
-
-				if ($this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category', array('key' => $key, 'language' => $lang, 'category' => $category)))
-				{
-					$error = true;
-					$output['message'] = iaLanguage::get('key_exists');
-				}
 			}
 
 			if (!$error)
 			{
-				$output['success'] = (bool)$this->_iaDb->insert(array('key' => $key, 'original' => $value, 'value' => $value, 'code' => $lang, 'category' => $category));
-				$output['message'] = iaLanguage::get($output['success'] ? $this->_phraseAddSuccess : $this->_phraseSaveError);
-
-				if ($output['success'])
+				foreach ($this->_iaCore->languages as $code => $language)
 				{
-					$this->getHelper()->createJsCache(true);
+					$exist = $this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category',
+						array('key' => $key, 'language' => $code, 'category' => $category));
+					if (isset($_POST['force_replacement']) || !$exist)
+					{
+						iaLanguage::addPhrase($key, $value[$code], $code, '', $category);
+					}
 				}
+
+				$output['message'] = $output['success']= iaLanguage::get($this->_phraseAddSuccess);
+
+				$this->getHelper()->createJsCache(true);
 			}
 		}
 
@@ -321,7 +318,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$entry['title'] = $data['title'];
-		$entry['code'] = $data['code'];
+		$entry['code'] = strtolower($data['code']);
 		$entry['locale'] = $data['locale'];
 		$entry['date_format'] = $data['date_format'];
 		$entry['direction'] = $data['direction'];
@@ -336,11 +333,16 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		if (iaCore::ACTION_ADD == $action)
 		{
+			$this->_iaCore->factory('field')->syncMultilingualFields();
+			$this->_copyMultilingualConfigs($entry['code']);
+
 			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, array(
 				'item' => 'language',
 				'name' => $entry['title'],
 				'id' => $this->getEntryId()
 			));
+
+			$this->_phraseAddSuccess = null;
 		}
 	}
 
@@ -352,7 +354,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'locale' => 'en_US',
 			'date_format' => '%b %e, %Y',
 			'direction' => 'auto',
-			'status' => iaCore::STATUS_INACTIVE,
+			'status' => iaCore::STATUS_INACTIVE
 		);
 	}
 
@@ -361,7 +363,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		// create language
 		$entryData['order'] = $this->_iaDb->getMaxOrder('languages') + 1;
 
-		$this->_iaDb->insert($entryData, null, iaLanguage::getLanguagesTable());
+		$result = $this->_iaDb->insert($entryData, null, iaLanguage::getLanguagesTable());
 
 		// copy phrases
 		$counter = 0;
@@ -389,7 +391,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		// clear language cache
 		$this->getHelper()->clearAll();
 
-		iaUtil::go_to($this->getPath());
+		return $result;
 	}
 
 	protected function _entryUpdate(array $entryData, $entryId)
@@ -609,7 +611,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$error = true;
 			$messages[] = iaLanguage::get('choose_import_file');
 		}
-		elseif (!($f = fopen($filename, 'r')))
+		elseif (!$fh = fopen($filename, 'r'))
 		{
 			$error = true;
 			$messages[] = iaLanguage::getf('cant_open_sql', array('filename' => $filename));
@@ -626,35 +628,52 @@ class iaBackendController extends iaAbstractControllerBackend
 			$error = true;
 			$languageCode = '';
 
-			if ('sql' == $format)
+			switch ($format)
 			{
-				$sql = '';
+				case 'sql':
+					$sql = '';
 
-				while ($s = fgets($f, 10240))
-				{
-					$s = trim ($s);
-					if ($s[0] == '#' || $s[0] == '') continue;
-					$sql .= $s;
-					if ($s[strlen($s) - 1] != ';') continue;
-					$sql = str_replace('{prefix}', $iaDb->prefix, $sql);
-					$iaDb->query($sql);
-					if (empty($languageCode))
+					while ($s = fgets($fh, 10240))
 					{
-						$matches = array();
-						if (preg_match('#, \'([a-z]{2})\', \'#', $sql, $matches) || preg_match('#,\'([a-z]{2})\',\'#', $sql, $matches))
+						$s = trim($s);
+						if ($s[0] == '#' || $s[0] == '') continue;
+						$sql .= $s;
+						if ($s[strlen($s) - 1] != ';') continue;
+						$sql = str_replace('{prefix}', $iaDb->prefix, $sql);
+						$iaDb->query($sql);
+						if (empty($languageCode))
 						{
-							$languageCode = $matches[1];
+							$matches = array();
+							if (preg_match('#, \'([a-z]{2})\', \'#', $sql, $matches) || preg_match('#,\'([a-z]{2})\',\'#', $sql, $matches))
+							{
+								$languageCode = $matches[1];
+							}
+						}
+						$sql = '';
+					}
+
+					$error = false;
+
+					break;
+
+				case 'csv':
+					while ($line = fgetcsv($fh, null, '|'))
+					{
+						if (6 == count($line))
+						{
+							list($key, , $value, $category, $iso, $extras) = $line;
+							if (empty($key) || 2 != strlen($iso)) continue;
+							iaLanguage::addPhrase($key, $value, $iso, $extras, $category);
 						}
 					}
-					$sql = '';
-				}
 
-				fclose($f);
-
-				$error = false;
+					$error = false;
+					isset($iso) && $languageCode = $iso;
 			}
 
-			if ('csv' == $format)
+			fclose($fh);
+
+			/*if ('csv' == $format)
 			{
 				if ($csvContent = file($filename))
 				{
@@ -685,11 +704,40 @@ class iaBackendController extends iaAbstractControllerBackend
 						$iaDb->query($sql);
 					}
 				}
-			}
+			}*/
 
 			$messages[] = iaLanguage::get($error ? 'incorrect_file_format' : 'saved');
 		}
 
 		return array(!$error, $messages, isset($languageCode) ? $languageCode : null);
+	}
+
+	protected function _copyMultilingualConfigs($langIsoCode)
+	{
+		$this->_iaDb->setTable(iaCore::getConfigTable());
+
+		$rows = $this->_iaDb->all(array('name', 'value', 'options'), "`type` IN ('text', 'textarea')");
+
+		$defaultLanguage = $this->_iaDb->row(array('code'), iaDb::convertIds(1, 'default'), iaLanguage::getLanguagesTable());
+
+		foreach ($rows as $row)
+		{
+			$options = $row['options'] ? json_decode($row['options'], true) : array();
+
+			if (isset($options['multilingual']) && $options['multilingual'])
+			{
+				$id = '{:' . $langIsoCode . ':}';
+
+				if (false === strpos($row['value'], $id))
+				{
+					preg_match('#\{\:' . $defaultLanguage['code'] . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $row['value'], $matches)
+						&& $row['value'].= $id . $matches[1]; // copying value of the 'default' language
+
+					$this->_iaDb->update(array('value' => $row['value']), iaDb::convertIds($row['name'], 'name'));
+				}
+			}
+		}
+
+		$this->_iaDb->resetTable();
 	}
 }

@@ -1,6 +1,6 @@
 <div class="ia-item ia-item--view">
 	<div class="ia-item__image">
-		{printImage imgfile=$item.avatar title=$item.fullname|default:$item.username gravatar=true email=$item.email gravatar_width=200}
+		{printImage imgfile=$item.avatar.path title=$item.fullname|default:$item.username gravatar=true email=$item.email gravatar_width=200}
 
 		{if $item.featured || $item.sponsored}
 			<div class="ia-item__labels">
@@ -32,19 +32,19 @@
 			<tbody>
 				{if isset($item.phone) && $item.phone}
 					<tr>
-						<td>{lang key='field_phone'}</td>
+						<td>{lang key='field_members_phone'}</td>
 						<td>{$item.phone}</td>
 					</tr>
 				{/if}
 				{if isset($item.website) && $item.website}
 					<tr>
-						<td>{lang key='field_website'}</td>
+						<td>{lang key='field_members_website'}</td>
 						<td>{$item.website|linkify}</td>
 					</tr>
 				{/if}
 				{if isset($item.biography) && $item.biography}
 					<tr>
-						<td>{lang key='field_biography'}</td>
+						<td>{lang key='field_members_biography'}</td>
 						<td>{$item.biography|escape}</td>
 					</tr>
 				{/if}
@@ -69,10 +69,10 @@
 	{/if}
 {/foreach}
 
-{include file='item-view-tabs.tpl' isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
+{include 'item-view-tabs.tpl' isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
 
 {if isset($groups['___empty___'])}
-	{include file='field-type-content-fieldset.tpl' item_sections=$groups isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
+	{include 'field-type-content-fieldset.tpl' item_sections=$groups isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
 {/if}
 
 {ia_hooker name='smartyViewListingBeforeFooter'}

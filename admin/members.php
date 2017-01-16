@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -52,6 +52,21 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_userGroups = $iaUsers->getUsergroups();
 	}
 
+	protected function _indexPage(&$iaView)
+	{
+		if (2 == count($this->_iaCore->requestPath) && 'login' == $this->_iaCore->requestPath[0])
+		{
+			$this->getHelper()->clearIdentity();
+			$this->getHelper()->getAuth($this->_iaCore->requestPath[1]);
+			$this->_iaCore->factory('utils');
+			iaUtil::go_to(IA_URL);
+
+			return;
+		}
+
+		parent::_indexPage($iaView);
+	}
+
 	protected function _gridRead($params)
 	{
 		if (1 == count($this->_iaCore->requestPath) && 'registration-email' == $this->_iaCore->requestPath[0])
@@ -70,7 +85,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->getHelper()->delete($stmt);
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
 		if (!empty($_GET['name']))
 		{
@@ -87,11 +102,14 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entry['usergroup'] = isset($this->_userGroups[$entry['usergroup_id']]) ? iaLanguage::get('usergroup_' . $this->_userGroups[$entry['usergroup_id']]) : '';
 			$entry['permissions'] = $entry['config'] = $entry['update'] = true;
 			$entry['delete'] = ($entry['id'] != $userId);
+			$entry['login'] = (iaCore::STATUS_ACTIVE == $entry['status']);
 		}
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
+		$entryData['item'] = $this->_itemName;
+
 		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
 			$adminsCount = $this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status', array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
@@ -113,7 +131,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$iaField = $this->_iaCore->factory('field');
-		$sections = $iaField->filterByGroup($entryData, $this->_itemName, array('page' => iaCore::ADMIN, 'selection' => "f.*, IF(f.`name` = 'avatar', 4, `order`) `order`", 'order' => '`order`'));
+		$sections = $iaField->getGroups($this->_itemName);
 
 		unset($this->_userGroups[iaUsers::MEMBERSHIP_GUEST]);
 
@@ -149,8 +167,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaAcl = $this->_iaCore->factory('acl');
 		$iaField = $this->_iaCore->factory('field');
 
-		$fields = iaField::getAcoFieldsList(iaCore::ADMIN, $this->_itemName);
-
 		// below is the hacky way to force the script to upload files to the appropriate user's folder
 		// FIXME
 		$activeUser = iaUsers::getIdentity(true);
@@ -158,7 +174,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'id' => $this->getEntryId(),
 			'username' => $data['username']
 		);
-		list($entry, $error, $this->_messages, ) = $iaField->parsePost($fields, $entry);
+		list($entry, $error, $this->_messages, ) = $iaField->parsePost($this->_itemName, $entry);
 		$_SESSION[iaUsers::SESSION_KEY] = $activeUser;
 		//
 
@@ -200,7 +216,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->addMessage('username_already_taken');
 		}
 
-		if ($iaAcl->checkAccess($this->getName(), 'password') || iaCore::ACTION_ADD == $action)
+		if ($iaAcl->isAccessible($this->getName(), 'password') || iaCore::ACTION_ADD == $action)
 		{
 			$this->_password = trim($data['_password']);
 			if ($this->_password || !empty($data['_password2']))
@@ -234,6 +250,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
+		$this->_iaCore->startHook('phpItemSaved', array(
+			'action' => $action,
+			'itemId' => $this->getEntryId(),
+			'itemData' => $entry,
+			'itemName' => $this->_itemName
+		));
+
 		if (iaCore::ACTION_ADD == $action)
 		{
 			$action = 'member_registration';

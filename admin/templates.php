@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -61,7 +61,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($this->_downloadTemplate())
 			{
-				$this->_iaCore->iaCache->remove('subrion_templates.inc');
+				$this->_iaCore->iaCache->remove('subrion_templates');
 			}
 		}
 
@@ -76,7 +76,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->assign('tmpl', $this->_iaCore->get('tmpl'));
 	}
 
-	protected function _gridRead()
+	protected function _gridRead($params)
 	{
 		$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
 
@@ -102,7 +102,7 @@ class iaBackendController extends iaAbstractControllerBackend
 							$contents = file_get_contents($documentationPath . $doc);
 							$output['tabs'][] = array(
 								'title' => iaLanguage::get('extra_' . $tab, $tab),
-								'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
+								'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 								'cls' => 'extension-docs'
 							);
 						}
@@ -116,7 +116,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$replacements = array(
 					'{icon}' => file_exists(IA_FRONT_TEMPLATES . $template . IA_DS . 'docs' . IA_DS . 'img/icon.png') ? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'templates/' . $template . '/docs/img/icon.png" alt=""></td></tr>' : '',
-					'{link}' => '<tr><td><a href="http://www.subrion.org/template/' . $template . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>',
+					'{link}' => '<tr><td><a href="https://subrion.org/template/' . $template . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>',
 					'{name}' => $iaTemplate->title,
 					'{author}' => $iaTemplate->author,
 					'{contributor}' => $iaTemplate->contributor,
@@ -148,7 +148,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				if ($response = iaUtil::getPageContent(iaUtil::REMOTE_TOOLS_URL . 'list/template/' . IA_VERSION))
 				{
-					$response = iaUtil::jsonDecode($response);
+					$response = json_decode($response, true);
 					if (!empty($response['error']))
 					{
 						$this->_messages[] = $response['error'];
@@ -191,8 +191,13 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 		}
+		$_templates = array_merge($templates, $remoteTemplates);
 
-		return array_merge($templates, $remoteTemplates);
+		$templateName = $this->_iaCore->get('tmpl');
+		$activeTemplate = $_templates[$templateName];
+		unset($_templates[$templateName]);
+
+		return array($templateName => $activeTemplate) + $_templates;
 	}
 
 	private function _installTemplate()

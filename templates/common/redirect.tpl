@@ -8,7 +8,7 @@
 		<meta name="generator" content="Subrion CMS {$core.config.version}">
 		<base href="{$smarty.const.IA_URL}">
 
-		<link rel="shortcut icon" href="{$core.page.nonProtocolUrl}favicon.ico">
+		<link rel="shortcut icon" href="{if !empty($core.config.site_favicon)}{$core.page.nonProtocolUrl}uploads/{$core.config.site_favicon}{else}{$core.page.nonProtocolUrl}favicon.ico{/if}">
 
 		<link href="{$core.page.nonProtocolUrl}templates/{$core.config.tmpl}/css/iabootstrap{if isset($smarty.cookies.template_color_scheme) && isset($core.config.template_color_scheme)}-{$smarty.cookies.template_color_scheme}{elseif isset($core.config.template_color_scheme)}-{$core.config.template_color_scheme}{/if}.css" rel="stylesheet">
 	</head>

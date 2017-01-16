@@ -1,12 +1,5 @@
 {foreach $item_sections as $key => $section}
 	{if !empty($section.fields) && isset($section.name) && !($section.name == 'plans' && $isView)}
-
-		{if '___empty___' != $section.name}
-			{$grouptitle = "fieldgroup_{$section.name}"}
-		{else}
-			{$grouptitle = 'other'}
-		{/if}
-
 		{capture name='field_text'}
 			{if 'plans' != $section.name}
 				{*--
@@ -28,7 +21,7 @@
 					{if (!isset($exceptions) || !in_array($field.name, $exceptions))
 						&& (!isset($relations[$field.name])
 							|| (isset($relations[$field.name]) && $relations[$field.name][1] == $item[$relations[$field.name][0]]))}
-						{include file="field-type-content-{(isset($isView)) ? 'view' : 'manage'}.tpl" wrappedValues=true}
+						{include "field-type-content-{(isset($isView)) ? 'view' : 'manage'}.tpl" wrappedValues=true}
 					{/if}
 				{/foreach}
 			{else}
@@ -38,21 +31,17 @@
 					</div>
 				{/foreach}
 
-				{include file='gateways.tpl'}
+				{include 'gateways.tpl'}
 			{/if}
 		{/capture}
 
 		{if trim($smarty.capture.field_text) != ''}
-			<div class="fieldset {if isset($section.collapsible) && $section.collapsible} is-collapsible{if $section.collapsed} is-collapsed{/if}{/if}" id="{$grouptitle}">
+			<div class="fieldset {if isset($section.collapsible) && $section.collapsible} is-collapsible{if $section.collapsed} is-collapsed{/if}{/if}" id="fieldgroup_{$section.name}">
 				{if isset($fieldset_before[$section.name])}{$fieldset_before[$section.name]}{/if}
-
-				{if isset($grouptitle)}
-					<div class="fieldset__header">{lang key=$grouptitle}</div>
-				{/if}
-
+				<div class="fieldset__header">{$section.title|escape:'html'}</div>
 				<div class="fieldset__content">
-					{if isset($section.description) && $section.description}
-						<p class="help-block fields-description">{$section.description}</p>
+					{if $section.description}
+						<p class="help-block fields-description">{$section.description|escape:'html'}</p>
 						<hr>
 					{/if}
 

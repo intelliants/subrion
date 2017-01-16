@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -79,12 +79,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 	elseif ($_POST && (isset($_POST['change_info']) || isset($_POST['plan_id'])))
 	{
+		$item = iaUsers::getIdentity(true);
+
 		if (isset($_POST['change_info']))
 		{
-			$item = array();
-			$fields = iaField::getAcoFieldsList(null, $itemName, null, true, iaUsers::getIdentity(true));
-
-			list($item, $error, $messages, $error_fields) = $iaField->parsePost($fields, iaUsers::getIdentity(true));
+			list($item, $error, $messages, $error_fields) = $iaField->parsePost($iaUsers->getItemName(), $item);
 
 			if (!$error)
 			{
@@ -117,8 +116,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		{
 			if ($plan = $iaPlan->getById((int)$_POST['plan_id']))
 			{
-				$url = $iaPlan->prePayment($itemName, iaUsers::getIdentity(true), $plan['id'], IA_SELF);
-				iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('plan_added'), $url);
+				if ((float)$plan['cost'])
+				{
+					$url = $iaPlan->prePayment($itemName, iaUsers::getIdentity(true), $plan['id'], IA_SELF);
+					iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('plan_added'), $url);
+				}
+				else
+				{
+					$iaPlan->setPaid(array('item' => $itemName, 'plan_id' => $plan['id'],
+						'item_id' => iaUsers::getIdentity()->id, 'member_id' => iaUsers::getIdentity()->id));
+				}
 			}
 			else
 			{
@@ -131,11 +138,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$item = iaUsers::getIdentity(true);
 
-	// get fieldgroups
-	list($tabs, $fieldgroups) = $iaField->generateTabs($iaField->filterByGroup($item, $itemName));
-
-	// compose tabs
-	$sections = array_merge(array('common' => $fieldgroups), $tabs);
+	$sections = $iaField->getTabs($itemName, $item);
 
 	$extraTabs = array();
 	$iaCore->startHook('phpFrontEditProfileExtraTabs', array('tabs' => &$extraTabs, 'item' => &$item));

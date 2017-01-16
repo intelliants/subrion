@@ -46,7 +46,7 @@
 							<a href="https://www.facebook.com/Intelliants" target="_blank"><i class="i-facebook-2"></i></a> 
 							<a href="https://plus.google.com/102005294232479547608/posts" target="_blank"><i class="i-googleplus"></i></a>
 						</div>
-						<a href="http://www.subrion.org/" title="Open Source CMS">Subrion CMS</a>
+						<a href="https://subrion.org/" title="Open Source CMS">Subrion CMS</a>
 						<br>
 						<span class="version">v <?php echo IA_VERSION ?></span>
 					</div>
@@ -83,19 +83,19 @@
 					<div class="navbar navbar-static-top navbar-inverse">
 						<ul class="nav navbar-nav navbar-left">
 							<li>
-								<a href="http://www.subrion.org/" title="Contact us if you have any questions." target="_blank">
+								<a href="https://subrion.org/" title="Contact us if you have any questions." target="_blank">
 									<i class="i-envelop"></i>
 									<span> Contacts</span>
 								</a>
 							</li>
 							<li>
-								<a href="http://www.subrion.com/desk/" title="Submit a ticket and get a fast reply." target="_blank">
+								<a href="https://www.subrion.com/desk/" title="Submit a ticket and get a fast reply." target="_blank">
 									<i class="i-support"></i>
 									<span> Helpdesk</span>
 								</a>
 							</li>
 							<li>
-								<a href="http://www.subrion.org/forums/" title="Ask questions in our user forums." target="_blank">
+								<a href="https://subrion.org/forums/" title="Ask questions in our user forums." target="_blank">
 									<i class="i-bubbles-2"></i>
 									<span> User Forums</span>
 								</a>

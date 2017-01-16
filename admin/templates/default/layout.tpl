@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<title>{ia_print_title}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="generator" content="Subrion CMS &middot; {$core.config.version}">
+		<meta name="generator" content="Subrion CMS - Open Source Content Management System">
 		<base href="{$smarty.const.IA_ADMIN_URL}">
 
 		<!--[if lt IE 9]>
@@ -21,13 +21,10 @@
 
 		{ia_hooker name='smartyAdminAfterHeadSection'}
 
-		{if isset($core.config.sap_style)}
-			{ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
-		{else}
-			{ia_print_css files='bootstrap' order=0}
-		{/if}
+		{ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
 
 		{ia_add_media files='jquery, extjs, subrion' order=0}
+		{ia_print_js files='_IA_TPL_enquire.min, _IA_TPL_app'}
 
 		{ia_print_css display='on'}
 
@@ -38,9 +35,15 @@
 			intelli.config.admin_url = '{$smarty.const.IA_URL}{$core.config.admin_page}';
 		{/ia_add_js}
 	</head>
-	<body id="page--{$core.page.name}">
+	<body id="page--{$core.page.name}" class="ss-{$core.config.sap_style}">
 		<div class="overall-wrapper">
 			<div class="panels-wrapper">
+				<div class="m-header">
+					<a class="m-header__brand" href="{$smarty.const.IA_ADMIN_URL}">
+						<img src="{$img}logo.png" alt="Subrion CMS &middot; {$core.config.version}">
+					</a>
+					<a href="#" class="m-header__toggle"><span class="fa fa-bars"></span></a>
+				</div>
 				<section id="panel-left">
 					<a class="brand" href="{$smarty.const.IA_ADMIN_URL}">
 						<img src="{$img}logo.png" alt="Subrion CMS &middot; {$core.config.version}">
@@ -61,9 +64,9 @@
 						<span class="version">v {$core.config.version}</span>
 					</div>
 					<div class="social-links">
-						<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><i class="i-twitter-2"></i></a>
-						<a href="https://www.facebook.com/Intelliants" target="_blank" class="social-links__facebook"><i class="i-facebook-2"></i></a> 
-						<a href="https://plus.google.com/102005294232479547608/posts" target="_blank" class="social-links__googleplus"><i class="i-googleplus"></i></a>
+						<a href="https://twitter.com/IntelliantsLLC" target="_blank" class="social-links__twitter"><span class="fa fa-twitter"></span></a>
+						<a href="https://www.facebook.com/Intelliants" target="_blank" class="social-links__facebook"><span class="fa fa-facebook"></span></a> 
+						<a href="https://github.com/intelliants/subrion" target="_blank" class="social-links__github"><span class="fa fa-github"></span></a>
 					</div>
 				</section>
 
@@ -73,7 +76,7 @@
 							<li class="single">
 								<ul class="list-unstyled quick-links clearfix">
 									{foreach $dashboard as $item}
-										<li><a href="{$item.url}"><span class="link-icon"><i class="i-{$item.icon}"></i></span>{$item.text}</a></li>
+										<li><a href="{$item.url}"><span class="link-icon"><i class="i-{$item.icon}"></i></span>{lang key=$item.text}</a></li>
 									{/foreach}
 									<li class="link-add">
 										<a href="#" id="js-cmd-add-quicklink">
@@ -84,21 +87,30 @@
 							</li>
 						</ul>
 					{/if}
-					{include file='menu.tpl'}
+					{include 'menu.tpl'}
 				</section>
 
 				<section id="panel-content">
-					<div class="navbar navbar-static-top navbar-inverse">
+					<div class="navbar">
 						<ul class="nav navbar-nav navbar-right">
 							<li>
-								<a href="{$smarty.const.IA_URL}" title="{lang key='site_home'}" target="_blank"><i class="i-screen"></i><span> {lang key='site_home'}</span></a>
+								<a href="{$smarty.const.IA_URL}" title="{lang key='site_home'}" target="_blank"><i class="fa fa-desktop"></i><span> {lang key='site_home'}</span></a>
 							</li>
-							<li>
-								<a href="{$smarty.const.IA_ADMIN_URL}visual-mode/" title="{lang key='visual_manage'}" target="_blank"><i class="i-equalizer"></i><span> {lang key='visual_manage'}</span></a>
+							<li class="dropdown">
+								<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="">
+									<i class="fa fa-eye"></i><span> {lang key='mode'}</span>
+								</a>
+								<ul class="dropdown-menu">
+									{$manageMode = (isset($smarty.session.manageMode) && 'mode' == $smarty.session.manageMode)}
+									<li{if $manageMode} class="active"{/if}>
+										<a href="{if $manageMode}{$smarty.const.IA_URL}?manage_exit=y{else}{$smarty.const.IA_ADMIN_URL}visual-mode/{/if}" target="_blank"><i class="fa fa-sliders"></i> {lang key='visual_mode'}</a>
+									</li>
+									<li><a href="{$smarty.const.IA_ADMIN_URL}debug-mode/" title=""><i class="fa fa-bug"></i> {lang key='debug_mode'}{if $smarty.const.INTELLI_QDEBUG}<span class="label label-warning">{lang key='active'}</span>{/if}</a></li>
+								</ul>
 							</li>
 							<li class="dropdown">
 								<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='quick_access'}">
-									<i class="i-fire"></i><span> {lang key='quick_access'}</span>
+									<i class="fa fa-bolt"></i><span> {lang key='quick_access'}</span>
 								</a>
 								<ul class="dropdown-menu">
 									{foreach $core.page.info.headerMenu as $entry}
@@ -112,14 +124,14 @@
 							</li>
 
 							{if isset($core.notifications.system)}
-								<li class="dropdown notifications alerts">
+								<li class="dropdown navbar-nav__notifications">
 									<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="{lang key='system_notifications'}">
-										<i class="i-flag"></i>
+										<i class="fa fa-bell"></i>
 										<span class="label label-info">{$core.notifications.system|count}</span>
 										<span> {lang key='system_notifications'}</span>
 									</a>
 									<ul class="dropdown-menu pull-right">
-										<li class="dropdown-block">
+										<li class="navbar-nav__notifications__alerts">
 											{foreach $core.notifications.system as $message}
 												<div class="alert alert-danger">{$message}</div>
 											{/foreach}
@@ -130,7 +142,7 @@
 
 							<li class="dropdown">
 								<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="Help and Support">
-									<i class="i-support"></i>
+									<i class="fa fa-support"></i>
 									<span> Help and Support</span>
 								</a>
 								<ul class="dropdown-menu pull-right">
@@ -139,87 +151,54 @@
 											<a data-toggle="modal" href="#feedback-modal">Submit feedback</a>
 										</li>
 									{/if}
-									<li><a href="http://www.subrion.com/desk/" target="_blank">Helpdesk</a></li>
-									<li><a href="http://www.subrion.org/forums/" target="_blank">User forums</a></li>
-									<li><a href="http://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
+									<li><a href="https://www.subrion.com/desk/" target="_blank">Helpdesk</a></li>
+									<li><a href="https://subrion.org/forums/" target="_blank">User forums</a></li>
+									<li><a href="https://github.com/intelliants/subrion" target="_blank">Github</a></li>
+									<li><a href="https://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
 								</ul>
 							</li>
-							<li>
-								<a href="{$smarty.const.IA_ADMIN_URL}logout/" title="{lang key='logout'}" id="user-logout">
-									<i class="i-switch"></i>
-									<span> {lang key='logout'}</span>
+							<li class="navbar-nav__user">
+								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/" title="{lang key='edit'}">
+									{printImage imgfile=$member.avatar.path title=$member.fullname|default:$member.username gravatar=true email=$member.email}
 								</a>
 							</li>
+							<li><a href="{$smarty.const.IA_ADMIN_URL}logout/" title="{lang key='logout'}" id="user-logout"><i class="fa fa-sign-out"></i> <span>{lang key='logout'}</span></a></li>
 						</ul>
-						<ul class="nav navbar-nav navbar-left">
+						<ul class="nav navbar-nav navbar-left hidden-xs hidden-sm">
 							<li class="panel-toggle">
-								<a href="#"><i class="{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden}i-chevron-right{else}i-chevron-left{/if}"></i></a>
+								<a href="#"><i class="fa{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden} fa-chevron-right{else} fa-chevron-left{/if}"></i></a>
 							</li>
-							<li id="user-info">
-								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/">
-									{printImage imgfile=$member.avatar title=$member.fullname|default:$member.username gravatar=true email=$member.email}
-									{$member.fullname|escape:'html'}
-								</a>
-							</li>
-
-							{*
-							KEEP THIS FOR FUTURE IMPLEMENTATION
-
-							<li class="dropdown">
-								<a class="dropdown-toggle" data-toggle="dropdown" href="#">{$member.fullname}</a>
-								<ul class="dropdown-menu pull-right">
-									<li><a href="{$url}members/edit/{$member.id}/">{lang key='edit'}</a></li>
-								</ul>
-							</li> 
-							*}
 						</ul>
-
-						<form id="quick-search" class="navbar-form navbar-right" action="{$smarty.const.IA_ADMIN_URL}members/">
-							<input type="text" name="q" style="width: 200px;" class="form-control" placeholder="{lang key='type_here_to_search'}"{if isset($smarty.get.q)} value="{$smarty.get.q|escape:'html'}"{/if}>
-							<div class="btn-group">
-								<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-									{$quickSearch[$quickSearchItem].title} <span class="caret"></span>
-								</button>
-								<ul class="dropdown-menu pull-right">
-									{foreach $quickSearch as $itemName => $entry}
-										<li{if $quickSearchItem == $itemName} class="active"{/if}><a href="{$smarty.const.IA_ADMIN_URL}{$entry.url}">{$entry.title}</a></li>
-									{/foreach}
-									{if count($quickSearch) > 1}
-										<li class="divider"></li>
-										<li><a href="#" rel="reset">{lang key='reset'}</a></li>
-									{/if}
-								</ul>
-							</div>
-							<button type="submit" class="btn btn-primary"><i class="i-search"></i></button>
-						</form>
 					</div>
 
-					<div class="content-wrapper">
-						<div class="block">
-							<div class="block-heading">
-								<ul class="nav nav-pills pull-right">
-									{if 'index' == $core.page.name}
-										{if isset($customization_mode)}
-											<li><a href="?reset"><i class="i-loop"></i> {lang key='reset'}</a></li>
-											<li><a href="?save" id="js-cmd-save"><i class="i-checkmark"></i> {lang key='save'}</a></li>
-											<li><a href=""><i class="i-close"></i> {lang key='discard'}</a></li>
-										{else}
-											<li><a href="?customize"><i class="i-equalizer"></i> {lang key='customize'}</a></li>
-										{/if}
-									{/if}
-
-									{foreach $core.page.info.toolbarActions as $action}
-										<li><a href="{$action.url}" {$action.attributes}>{if $action.icon}<i class="{$action.icon}"></i> {/if}{$action.title}</a></li>
-									{/foreach}
-								</ul>
-								<h3>{$core.page.title|escape:'html'}</h3>
-
+					<div class="page">
+						<div class="page__heading">
+							<div class="page__heading__title">
+								<h1>{$core.page.title|escape:'html'}</h1>
 								{include 'breadcrumb.tpl'}
 							</div>
 
-							{include 'notification.tpl'}
+							<ul class="page__heading__actions">
+								{if 'index' == $core.page.name}
+									{if isset($customization_mode)}
+										<li><a href="?reset"><span class="fa fa-refresh"></span> {lang key='reset'}</a></li>
+										<li><a href="?save" id="js-cmd-save"><span class="fa fa-check-circle"></span> {lang key='save'}</a></li>
+										<li><a href=""><span class="fa fa-times-circle"></span> {lang key='discard'}</a></li>
+									{else}
+										<li><a href="?customize"><span class="fa fa-magic"></span> {lang key='customize'}</a></li>
+									{/if}
+								{/if}
 
-							<div class="block-content">{$_content_}</div>
+								{foreach $core.page.info.toolbarActions as $action}
+									<li><a href="{$action.url}" {$action.attributes}>{if $action.icon}<i class="{$action.icon}"></i> {/if}{$action.title}</a></li>
+								{/foreach}
+							</ul>
+						</div>
+
+						{include 'notification.tpl'}
+
+						<div class="page__content">
+							{$_content_}
 						</div>
 					</div>
 				</section>

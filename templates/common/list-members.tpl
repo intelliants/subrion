@@ -1,6 +1,6 @@
 <div class="ia-item">
 	<div class="ia-item__image">
-		{printImage imgfile=$listing.avatar title=$listing.fullname|default:$listing.username gravatar=true email=$listing.email gravatar_width=200}
+		{printImage imgfile=$listing.avatar.path title=$listing.fullname|default:$listing.username gravatar=true email=$listing.email gravatar_width=200}
 	</div>
 	<div class="ia-item__content">
 		<div class="ia-item__actions">
@@ -18,19 +18,19 @@
 				<p><span class="fa fa-phone"></span> {$listing.phone}</p>
 			{/if}
 			{if isset($listing.website) && $listing.website}
-				<p><span class="fa fa-globe"></span> <a href="{$listing.website}">{lang key='field_website'}</a></p>
+				<p><span class="fa fa-globe"></span> <a href="{$listing.website}">{lang key='field_members_website'}</a></p>
 			{/if}
 			{if isset($listing.facebook) && $listing.facebook}
-				<p><span class="fa fa-facebook"></span> <a href="{$listing.facebook}">{lang key='field_facebook'}</a></p>
+				<p><span class="fa fa-facebook"></span> <a href="{$listing.facebook}">{lang key='field_members_facebook'}</a></p>
 			{/if}
 			{if isset($listing.twitter) && $listing.twitter}
-				<p><span class="fa fa-twitter"></span> <a href="{$listing.twitter}">{lang key='field_twitter'}</a></p>
+				<p><span class="fa fa-twitter"></span> <a href="{$listing.twitter}">{lang key='field_members_twitter'}</a></p>
 			{/if}
 			{if isset($listing.gplus) && $listing.gplus}
-				<p><span class="fa fa-google-plus"></span> <a href="{$listing.gplus}">{lang key='field_gplus'}</a></p>
+				<p><span class="fa fa-google-plus"></span> <a href="{$listing.gplus}">{lang key='field_members_gplus'}</a></p>
 			{/if}
 			{if isset($listing.linkedin) && $listing.linkedin}
-				<p><span class="fa fa-linkedin"></span> <a href="{$listing.linkedin}">{lang key='field_linkedin'}</a></p>
+				<p><span class="fa fa-linkedin"></span> <a href="{$listing.linkedin}">{lang key='field_members_linkedin'}</a></p>
 			{/if}
 		</div>
 
@@ -40,7 +40,7 @@
 
 		{foreach $fields as $field}
 			{if !in_array($field.name, array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')) && 'plan_id' != $field.name}
-				{include file='field-type-content-view.tpl' wrappedValues=true item=$listing}
+				{include 'field-type-content-view.tpl' wrappedValues=true item=$listing}
 			{/if}
 		{/foreach}
 	</div>

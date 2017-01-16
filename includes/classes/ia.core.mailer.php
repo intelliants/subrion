@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -31,6 +31,10 @@ class iaMailer extends PHPMailer
 	protected $_replacements = array();
 
 	protected $_iaCore;
+
+	protected $_bccEmails;
+
+	protected $_defaultSignature;
 
 
 	/*
@@ -98,7 +102,8 @@ class iaMailer extends PHPMailer
 				$this->SMTPAuth = (bool)$this->_iaCore->get('smtp_auth');
 				$this->Username = $this->_iaCore->get('smtp_user');
 				$this->Password = $this->_iaCore->get('smtp_password');
-				$this->SMTPSecure = 'ssl';
+				$this->SMTPSecure = strtolower($this->_iaCore->get('smtp_secure'));
+				$this->SMTPDebug = (bool)$this->_iaCore->get('smtp_debug') ? 3 : 0;
 
 				if ($port = $this->_iaCore->get('smtp_port'))
 				{
@@ -135,37 +140,70 @@ class iaMailer extends PHPMailer
 	{
 		$this->Subject = $this->_iaCore->get($name . '_subject');
 		$this->Body = $this->_iaCore->get($name . '_body');
+
+		$options = json_decode($this->_iaCore->iaDb->one('options', iaDb::convertIds($name, 'name'), iaCore::getConfigTable()));
+		$this->_defaultSignature = empty($options->signature);
 	}
 
-	public function sendToAdministrators($clearAddresses = true)
+	public function sendToAdministrators()
 	{
-		if ($administrators = $this->_iaCore->iaDb->keyvalue(array('email', 'fullname'), '`usergroup_id` = ' . iaUsers::MEMBERSHIP_ADMINISTRATOR, iaUsers::getTable()))
+		$where = '`usergroup_id` = :group AND `status` = :status';
+		$this->_iaCore->iaDb->bind($where, array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
+
+		$administrators = $this->_iaCore->iaDb->all(array('email', 'fullname'), $where, null, null, iaUsers::getTable());
+
+		if (!$administrators)
 		{
-			foreach ($administrators as $email => $name)
-			{
-				$this->addAddress($email, $name);
-			}
+			return false;
 		}
 
-		return $this->send($clearAddresses);
+		foreach ($administrators as $entry)
+		{
+			$this->addAddress($entry['email'], $entry['fullname']);
+		}
+
+		return $this->send(true);
 	}
 
-	public function send($clearAddresses = true)
+	protected function _setBcc()
+	{
+		if (is_null($this->_bccEmails))
+		{
+			$bccEmail = $this->_iaCore->get('bcc_email');
+			$array = explode(',', $bccEmail);
+
+			$this->_bccEmails = array_map('trim', $array);
+		}
+
+		foreach ($this->_bccEmails as $email)
+		{
+			$this->addBCC($email);
+		}
+	}
+
+	public function send($toAdmins = false)
 	{
 		$this->_applyReplacements();
+		$this->_setBcc();
+		if ($this->Body && $this->_defaultSignature && !$toAdmins)
+		{
+			$this->Body .= $this->_iaCore->get('default_email_signature');
+		}
 
 		$result = (bool)parent::send();
-
-		if ($clearAddresses)
-		{
-			parent::clearAddresses();
-		}
 
 		if (!$result)
 		{
 			iaDebug::debug($this->ErrorInfo, 'Email submission');
 		}
 
+		parent::clearAllRecipients();
+
 		return $result;
+	}
+
+	public function getError()
+	{
+		return $this->ErrorInfo;
 	}
 }

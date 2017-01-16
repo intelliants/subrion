@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,14 +20,14 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
 class iaHelper
 {
-	const PLUGINS_LIST_SOURCE = 'http://tools.subrion.org/list/plugin/%s';
-	const PLUGINS_DOWNLOAD_SOURCE = 'http://tools.subrion.org/install/%s/%s';
+	const PLUGINS_LIST_SOURCE = 'https://tools.subrion.org/list/plugin/%s';
+	const PLUGINS_DOWNLOAD_SOURCE = 'https://tools.subrion.org/install/%s/%s';
 
 	const USER_AGENT = 'Subrion CMS Bot';
 
@@ -51,7 +51,10 @@ class iaHelper
 			return false;
 		}
 
-		self::loadCoreClass('users', 'core');
+		if (!self::loadCoreClass('users', 'core'))
+		{
+			return false;
+		}
 
 		return (iaCore::instance()->iaDb->one_bind(iaDb::STMT_COUNT_ROWS,
 				'`usergroup_id` = :group AND `date_logged` IS NOT NULL',
@@ -158,20 +161,21 @@ class iaHelper
 
 			$iaCore = iaCore::instance();
 
-			iaSystem::setDebugMode();
-
 			$iaCore->factory(array('sanitize', 'validate'));
 			$iaCore->iaDb = $iaCore->factory('db');
 			$iaCore->factory('language');
 			$iaCore->iaView = $iaCore->factory('view');
-
 			$iaCore->iaCache = $iaCore->factory('cache');
 
 			$config = array('baseurl', 'timezone', 'lang');
 			$config = $iaCore->iaDb->keyvalue(array('name', 'value'), "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
 
-			empty($iaCore->languages) && $iaCore->languages = array('en' => array('title' => 'English', 'locale' => 'en_US', 'iso' => 'en'));
+			empty($iaCore->languages) && $iaCore->languages = array(
+				'en' => array('title' => 'English', 'locale' => 'en_US', 'iso' => 'en', 'date_format' => '%b %e, %Y'));
 			$iaCore->iaView->language = empty($config['lang']) ? 'en' : $config['lang'];
+			$iaCore->language = $iaCore->languages[$iaCore->iaView->language];
+
+			iaSystem::setDebugMode();
 
 			date_default_timezone_set(empty($config['timezone']) ? 'UTC' : $config['timezone']);
 

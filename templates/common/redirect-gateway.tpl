@@ -7,7 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="generator" content="Subrion CMS {$core.config.version}">
 
-		<link rel="shortcut icon" href="{$core.page.nonProtocolUrl}favicon.ico">
+<link rel="shortcut icon" href="{if !empty($core.config.site_favicon)}{$core.page.nonProtocolUrl}uploads/{$core.config.site_favicon}{else}{$core.page.nonProtocolUrl}favicon.ico{/if}">
 
 		<link href="{$core.page.nonProtocolUrl}templates/{$core.config.tmpl}/css/iabootstrap{if isset($smarty.cookies.template_color_scheme)}-{$smarty.cookies.template_color_scheme}{elseif isset($core.config.template_color_scheme)}-{$core.config.template_color_scheme}{/if}.css" rel="stylesheet">
 	</head>
@@ -20,7 +20,7 @@
 				<h3>{$redir.caption}</h3>
 				<div class="alert alert-info">{$redir.msg}</div>
 
-				{include file=$redir.form}
+				{include $redir.form}
 			{/if}
 		</div>
 

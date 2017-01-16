@@ -24,7 +24,7 @@ $(function()
 		$('#js-search-results-pagination').on('click', '.pagination a', function(e)
 		{
 			e.preventDefault();
-			intelli.search.run($(this).text());
+			intelli.search.run($(this).data('page'));
 		});
 	}
 
@@ -46,13 +46,20 @@ $(function()
 	if ($filtersForm.length > 0)
 	{
 		$('select.js-interactive', $filtersForm).select2();
+
+		$filtersForm.on('submit', function(e)
+		{
+			e.preventDefault();
+			intelli.search.run();
+		});
 		$('select, input', $filtersForm).not('.no-js').on('change', function()
 		{
 			intelli.search.run();
 		});
 
 		var $container = $('#js-search-results-container'),
-			$defaultOptions = $('#js-default-search-options');
+			$defaultOptions = $('#js-default-search-options'),
+			$spinner = $('<div class="list-spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 
 		if ($defaultOptions.length)
 		{
@@ -63,8 +70,8 @@ $(function()
 		intelli.search.initFilters();
 
 		intelli.search.bindEvents(
-			function(){$container.css('opacity', .3);},
-			function(){$container.css('opacity', 1);}
+			function(){$container.addClass('is-list-loading').append($spinner);},
+			function(){$container.removeClass('is-list-loading').find('.list-spinner').remove();}
 		);
 	}
 

@@ -25,6 +25,7 @@ Ext.onReady(function()
 			'status',
 			{name: 'date_reg', title: _t('date'), width: 120},
 			{name: 'date_logged', title: _t('last_login_date'), hidden: true, width: 100},
+			{name: 'login', title: _t('login'), href: intelli.config.admin_url + '/members/login/{id}', icon: 'key'},
 			{name: 'permissions', title: _t('permissions'), href: intelli.config.admin_url + '/permissions/?user={id}', icon: 'lock'},
 			{name: 'config', title: _t('go_to_config'), href: intelli.config.admin_url + '/configuration/?user={id}', icon: 'cogs'},
 			'update',
@@ -87,17 +88,11 @@ Ext.onReady(function()
 
 	grid.init();
 
-	var searchStatus = intelli.urlVal('status'),
-		searchName = intelli.urlVal('q');
+	var searchStatus = intelli.urlVal('status');
 
 	if (searchStatus)
 	{
 		Ext.getCmp('fltStatus').setValue(searchStatus);
-		intelli.gridHelper.search(grid);
-	}
-	else if (searchName)
-	{
-		Ext.getCmp('fltName').setValue(searchName);
 		intelli.gridHelper.search(grid);
 	}
 });

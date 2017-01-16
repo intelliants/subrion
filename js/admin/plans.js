@@ -51,8 +51,13 @@ $(function()
 		$('#js-fields-empty').hide();
 
 		var value = $(this).val();
-		if ('' == value) value = 'empty';
 
+		var $options = $('#js-plan-options');
+		$('.row', $options).hide();
+		$('.row[data-item="' + value + '"]', $options).show();
+		'' == value ? $('.help-block', $options).show() : $('.help-block', $options).hide();
+
+		if ('' == value) value = 'empty';
 		$('#js-fields-' + value).show();
 		$('#js-item-' + value).show();
 	}).change().on('change', function()
@@ -68,11 +73,6 @@ $(function()
 				$statusesSelect.append('<option value="' + statuses[i] + '">' + _t(statuses[i]) + '</option>');
 			}
 		}
-	});
-
-	$('textarea.cked').each(function()
-	{
-		intelli.ckeditor($(this).attr('id'), {toolbar: 'Simple', height: '200px'});
 	});
 
 	$('#recurring').on('change', function()
@@ -93,5 +93,11 @@ $(function()
 		e.preventDefault();
 		$('#js-cycles-tip').remove();
 		$('#js-cycles-option').show();
+	});
+
+	$('.js-input-switch input[type="checkbox"]', '#js-plan-options').on('change', function()
+	{
+		var $priceInput = $(this).closest('.js-input-switch').next();
+		1 == this.value ? $priceInput.show() : $priceInput.hide();
 	});
 });

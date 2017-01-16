@@ -2,7 +2,8 @@ Ext.onReady(function()
 {
 	if ($('#js-grid-placeholder').length)
 	{
-		intelli.fields = {
+		var grid = new IntelliGrid(
+		{
 			columns: [
 				'selection',
 				{name: 'name', title: _t('name'), hidden: true, width: 160},
@@ -30,10 +31,9 @@ Ext.onReady(function()
 				}
 			},
 			texts: {delete_single: _t('are_you_sure_to_delete_field')}
-		};
+		}, false);
 
-		intelli.fields = new IntelliGrid(intelli.fields, false);
-		intelli.fields.toolbar = Ext.create('Ext.Toolbar', {items:[
+		grid.toolbar = Ext.create('Ext.Toolbar', {items:[
 		{
 			emptyText: _t('fields_item_filter'),
 			name: 'item',
@@ -57,15 +57,87 @@ Ext.onReady(function()
 			displayField: 'title',
 			valueField: 'value'
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.fields)},
+			handler: function(){intelli.gridHelper.search(grid)},
 			text: '<i class="i-search"></i> ' + _t('search')
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.fields, true)},
+			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
-		intelli.fields.init();
+
+		grid.init();
 	}
 });
+
+intelli.translateTreeNode = function(o)
+{
+	var tree = $.jstree.reference(o.reference),
+		node = tree.get_node(o.reference);
+
+	var data = {
+		item: $('#input-item').val(),
+		field: $('input[name="name"]').val(),
+		id: node.id
+	};
+
+	$.ajax(
+	{
+		dataType: 'json',
+		url: intelli.config.admin_url + '/fields/tree.json',
+		data: data,
+		success: function(response)
+		{
+			if (0 == response.length)
+			{
+				return;
+			}
+
+			var translationModal = new Ext.Window(
+			{
+				title: _t('translate'),
+				layout: 'fit',
+				width: 350,
+				autoHeight: true,
+				plain: true,
+				items: [new Ext.FormPanel(
+				{
+					id: 'form-translate',
+					labelWidth: 75,
+					url: intelli.config.admin_url + '/fields/tree.json?item=' + data.item + '&field=' + data.field + '&id=' + data.id,
+					frame: true,
+					width: 350,
+					autoHeight: true,
+					defaults: {width: 230},
+					defaultType: 'textfield',
+					items: response,
+					buttons: [
+					{
+						text: _t('save'),
+						handler: function()
+						{
+							Ext.getCmp('form-translate').getForm().submit(
+							{
+								waitMsg : _t('saving'),
+								success: function()
+								{
+									var formText = Ext.getCmp('form-translate').getForm().getValues()[intelli.config.lang];
+									if (formText == '')
+									{
+										return;
+									}
+									tree.rename_node(node, formText);
+									translationModal.close();
+								}
+							});
+						}
+					},{
+						text: _t('cancel'),
+						handler: function(){translationModal.close();}
+					}]
+				})]
+			}).show();
+		}
+	});
+};
 
 $(function()
 {
@@ -193,8 +265,11 @@ $(function()
 		$('div.field_type').css('display', 'none');
 		$('#js-row-use-editor').css('display', ('textarea' != type ? 'none' : 'block') );
 
-		var object = $('#js-row-empty-text');
-		($.inArray(type, ['text', 'textarea', 'number']) !== -1) ? object.show() : object.hide();
+		var $o = $('#js-row-empty-text');
+		($.inArray(type, ['text', 'textarea', 'number']) !== -1) ? $o.show() : $o.hide();
+
+		$o = $('#js-row-multilingual');
+		('text' == type || 'textarea' == type) ? $o.show() : $o.hide();
 
 		if (type && $.inArray(type, ['textarea', 'text', 'number', 'storage', 'image', 'url', 'date', 'pictures', 'tree']) !== -1)
 		{
@@ -209,13 +284,9 @@ $(function()
 			$('#js-multiple').css('display', 'block');
 		}
 
-		(type && $.inArray(type, ['text', 'number', 'image', 'date', 'combo', 'radio']) !== -1)
-			? $('#link-to-details').show()
-			: $('#link-to-details').hide();
-
-		var annotation = $('option:selected', this).data('annotation');
+		var tooltip = $('option:selected', this).data('tooltip');
 		var $helpBlock = $(this).next();
-		annotation ? $helpBlock.text(annotation).show() : $helpBlock.hide();
+		tooltip ? $helpBlock.text(tooltip).show() : $helpBlock.hide();
 	}).change();
 
 	$('#js-field-relation').change(function()
@@ -247,7 +318,7 @@ $(function()
 
 	$('select[name="resize_mode"], select[name="pic_resize_mode"]').on('change', function()
 	{
-		$(this).next().text($('option:selected', this).data('annotation'));
+		$(this).next().text($('option:selected', this).data('tooltip'));
 	}).change();
 
 	$('.js-actions').on('click', function(e)
@@ -256,7 +327,7 @@ $(function()
 
 		var action = $(this).data('action');
 		var type = $('#input-type').val();
-		var val = $(this).parent().parent().find('input[name="values[]"]:first').val();
+		var val = $(this).parent().parent().find('input[name*="values["]:first').val();
 		var defaultVal = $('#multiple_default').val();
 		var allDefault = defaultVal.split('|');
 
@@ -390,12 +461,12 @@ $(function()
 			if (checked)
 			{
 				$(this).html('<i class="i-lightning"></i> ' + _t('select_none'));
-				$('input[type="checkbox"]:visible', '#js-pages-list-row').prop('checked', true);
+				$('input[type="checkbox"]:visible', '#js-row-pages-list').prop('checked', true);
 			}
 			else
 			{
 				$(this).html('<i class="i-lightning"></i> ' + _t('select_all'));
-				$('input[type="checkbox"]:visible', '#js-pages-list-row').prop('checked', false);
+				$('input[type="checkbox"]:visible', '#js-row-pages-list').prop('checked', false);
 			}
 			$(this).data('checked', !checked);
 		});
@@ -410,13 +481,13 @@ $(function()
 	{
 		if (this.value == 1)
 		{
-			$('#tr_required').show();
-			$('#for_plan_only').hide();
+			$('#js-row-validation-code').show();
+			$('#js-row-plan-only').hide();
 		}
 		else
 		{
-			$('#tr_required').hide();
-			$('#for_plan_only').show();
+			$('#js-row-validation-code').hide();
+			$('#js-row-plan-only').show();
 		}
 	});
 
@@ -426,7 +497,7 @@ $(function()
 		var $fieldGroup = $('#input-fieldgroup');
 		$fieldGroup.empty().append('<option value="" selected>' + _t('_select_') + '</option>').prop('disabled', true);
 
-		var $pagesList = $('#js-pages-list-row');
+		var $pagesList = $('#js-row-pages-list');
 		var itemName = $(this).val();
 
 		if (itemName)
@@ -449,9 +520,9 @@ $(function()
 			{
 				if (response.length > 0)
 				{
-					$.each(response, function(i, entry)
+					$.each(response, function(i, r)
 					{
-						$fieldGroup.append($('<option>').val(entry.id).text(_t('fieldgroup_' + entry.name)));
+						$fieldGroup.append($('<option>').val(r.id).text(r.title));
 					});
 
 					$fieldGroup.prop('disabled', false);
@@ -475,14 +546,10 @@ $(function()
 
 		if (!$this.hasClass('active'))
 		{
-			$this
-				.siblings('.active')
-				.removeClass('active')
-				.next()
-				.slideUp('fast', function()
-				{
-					$this.addClass('active').next().slideDown('fast');
-				});
+			$this.siblings('.active').removeClass('active').next().slideUp('fast', function()
+			{
+				$this.addClass('active').next().slideDown('fast');
+			});
 		}
 	});
 
@@ -514,7 +581,11 @@ $(function()
 
 	var nodes = $('input[name="nodes"]').val();
 
-	$tree.jstree({core: {check_callback: true, data: ('' != nodes) ? JSON.parse(nodes) : null}, plugins: ['dnd']})
+	$tree.jstree(
+	{
+		core: {check_callback: true, data: ('' != nodes) ? JSON.parse(nodes) : null}, plugins: ['dnd','contextmenu'],
+		contextmenu: {items: function(){ return {translate: {label: _t('translate'), action: intelli.translateTreeNode, _disabled: 'edit' != $('#input-nodes').data('action')}};}}
+	})
 	.on('changed.jstree', function(e, data)
 	{
 		var actionButtons = $('.js-tree-action[data-action="update"], .js-tree-action[data-action="delete"]');

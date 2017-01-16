@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -39,17 +39,16 @@ final class iaSystem
 		$systemClasses = array(
 			'abstractCore' => 'ia.interfaces',
 			'abstractUtil' => 'ia.interfaces',
-			'iaStore' => 'ia.interfaces',
 			// interfaces
 			'iaInterfaceDbAdapter' => 'ia.base.db',
 			// core
 			'iaCore' => 'ia.core',
 			'iaDebug' => 'ia.debug',
-			'iaGrid' => 'ia.admin.grid',
 			// plugins/packages
 			'abstractPlugin' => 'ia.base.plugin',
 			'abstractPackageAdmin' => 'ia.base.package.admin',
 			'abstractPackageFront' => 'ia.base.package.front',
+			'abstractPackageFrontApiResponder' => 'ia.base.package.front.api',
 			// backend controllers
 			'iaAbstractControllerBackend' => 'ia.base.controller.admin',
 			'iaAbstractControllerPluginBackend' => 'ia.base.controller.plugin.admin',

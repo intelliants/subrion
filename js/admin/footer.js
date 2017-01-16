@@ -140,35 +140,26 @@ $(function()
 		intelli.ckeditor($(this).attr('id'), {height: '200px'});
 	});
 
-	// quick search
-	$('.dropdown-menu a', '#quick-search').on('click', function(e)
+	$('.js-edit-lang-group').on('click', function()
 	{
-		e.preventDefault();
+		var $this = $(this),
+			$parent = $($this.data('group')),
+			$group = $parent.find('.translate-group__langs');
 
-		var $form = $('#quick-search');
-
-		if ('reset' == $(this).attr('rel'))
-		{
-			$('input[type="text"]:first', $form).val('');
-			$('.dropdown-menu a:first', $form).trigger('click');
-		}
-		else
-		{
-			$(this).parent().parent().find('li').removeClass('active');
-			$(this).parent().addClass('active');
-
-			$form.attr('action', $(this).attr('href'));
-
-			$(this).closest('ul').prev().html($(this).text() + ' <span class="caret"></span>');
-		}
-	});
-	$('li.active a:first', '#quick-search').trigger('click');
-	$('#quick-search').on('submit', function(e)
-	{
-		$(this).attr('action') || e.preventDefault();
-		$(this).find('input[type="text"]:first').val() || e.preventDefault();
+		$parent.hasClass('is-opened') ? $group.slideUp('fast') : $group.slideDown('fast');
+		$parent.toggleClass('is-opened');
 	});
 
+	$('.js-copy-lang-group').on('click', function()
+	{
+		var $this = $(this),
+			$parent = $($this.data('group')),
+			defaultVal = $parent.find('input:first, textarea:first').val();
+
+		$parent.find('.translate-group__langs input, .translate-group__langs textarea').val(defaultVal);
+
+		// TODO: add an ability to copy content from CKEDITOR to other instances of it in same group
+	});
 
 	// switching
 	$('.js-input-switch').on('switch-change', function(e, data)
@@ -294,19 +285,30 @@ $(function()
 		$('.x-tab-panel > div').removeClass('x-tab-panel-header');
 	}
 
-	if ($().datepicker)
+	if ($().datetimepicker)
 	{
-		$('.js-datepicker').datepicker(
+		$('.js-datepicker').datetimepicker(
 		{
-			format: 'yyyy-mm-dd H:i:s',
-			language: intelli.config.lang
+			format: 'YYYY-MM-DD HH:mm:ss',
+			locale: intelli.config.lang,
+			icons: {
+				time: 'i-clock',
+				date: 'i-calendar',
+				up: 'i-chevron-up',
+				down: 'i-chevron-down',
+				previous: 'i-chevron-left',
+				next: 'i-chevron-right',
+				today: 'i-checkmark',
+				clear: 'i-remove',
+				close: 'i-remove-sign'
+			}
 		});
 
 		$('.js-datepicker-toggle').on('click', function(e)
 		{
 			e.preventDefault();
 
-			$(this).prev().datepicker('show');
+			$(this).prev().datetimepicker('show');
 		});
 	}
 
@@ -532,7 +534,7 @@ $(function()
 	 * Resolving issues
 	 */
 
-	if ($('.notifications.alerts').length > 0)
+	if ($('.navbar-nav__notifications__alerts').length > 0)
 	{
 		// remove installer
 		var $installerAlert = $('.alert-danger:contains("module.install.php")');
@@ -623,9 +625,9 @@ $(function()
 
 function clearNotification(el)
 {
-	var $nLabel = $('.notifications.alerts > a .label-info'),
+	var $nLabel = $('.navbar-nav__notifications > a .label-info'),
 		$nLabelCount = parseInt($nLabel.text()),
-		$nBlock = $('.notifications.alerts .dropdown-block');
+		$nBlock = $('.navbar-nav__notifications__alerts');
 
 	if (0 != $nLabelCount)
 	{

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -29,20 +29,38 @@ $iaItem = $iaCore->factory('item');
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType())
 {
-	if (isset($_POST['action']) && 'save' == $_POST['action']
-		&& isset($_POST['item']) && isset($_POST['params']) && isset($_POST['name']))
+	if (isset($_POST['action']))
 	{
-		if (!iaUsers::hasIdentity())
+		if ('save' == $_POST['action'] && isset($_POST['item']) && isset($_POST['params']) && isset($_POST['name']))
 		{
-			return iaView::errorPage(iaView::ERROR_UNAUTHORIZED, iaLanguage::get('do_authorize_to_save_search'));
+			if (!iaUsers::hasIdentity())
+			{
+				return iaView::errorPage(iaView::ERROR_UNAUTHORIZED, iaLanguage::get('do_authorize_to_save_search'));
+			}
+
+			$result = $iaSearch->save($_POST['item'], $_POST['params'], $_POST['name']);
+
+			$iaView->assign('result', $result);
+			$iaView->assign('message', iaLanguage::get($result ? 'saved' : 'db_error'));
+
+			return;
 		}
+		elseif ('delete' == $_POST['action'] && !empty($_POST['id']))
+		{
+			if (!iaUsers::hasIdentity())
+			{
+				return iaView::errorPage(iaView::ERROR_FORBIDDEN);
+			}
 
-		$result = $iaSearch->save($_POST['item'], $_POST['params'], $_POST['name']);
+			$result = false;
+			if (iaUsers::getIdentity()->id == $iaDb->one('member_id', iaDb::convertIds($_POST['id']), iaSearch::getTable()))
+			{
+				$result = $iaSearch->delete($_POST['id'], $_POST['member_id']);
+			}
 
-		$iaView->assign('result', $result);
-		$iaView->assign('message', iaLanguage::get($result ? 'saved' : 'db_error'));
-
-		return;
+			$iaView->assign('result', $result);
+			$iaView->assign('message', iaLanguage::get($result ? 'deleted' : 'error'));
+		}
 	}
 
 	$itemName = (1 == count($iaCore->requestPath)) ? $iaCore->requestPath[0] : str_replace('search_', '', $iaView->name());
@@ -51,15 +69,25 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 	{
 		if (!empty($_SERVER['HTTP_REFERER'])) // this makes possible displaying filters block everywhere, but displaying results at the right page
 		{
-			$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('search_' . $itemName);
-			$pageUrl || $pageUrl = IA_URL . 'search/' . $itemName . '/';
+			$referrerUri = str_replace(IA_CLEAR_URL, '', $_SERVER['HTTP_REFERER']);
+			$lang = '';
 
-			if (parse_url($pageUrl, PHP_URL_PATH) != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH)
-				|| false !== stripos($_SERVER['HTTP_REFERER'], '?q='))
+			if (IA_URL_LANG) // we should keep user's current language
 			{
-				$pageUrl.= '#' . $iaSearch->httpBuildQuery($_GET);
+				$l = explode(IA_URL_DELIMITER, trim($referrerUri, IA_URL_DELIMITER));
+				$l = array_shift($l);
+				$lang = (isset($iaCore->languages[$l]) ? $l : $iaView->language) . IA_URL_DELIMITER;
+			}
 
-				$iaView->assign('url', $pageUrl);
+			$pageUri = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('search_' . $itemName, false);
+			$pageUri || $pageUri = 'search/' . $itemName . '/';
+			$pageUri = $lang . $pageUri;
+
+			if ($pageUri != $referrerUri || false !== stripos($_SERVER['HTTP_REFERER'], '?q='))
+			{
+				$pageUri = IA_CLEAR_URL . $pageUri . '#' . $iaSearch->httpBuildQuery($_GET);
+
+				$iaView->assign('url', $pageUri);
 				return;
 			}
 		}
@@ -115,6 +143,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			$results = $iaSearch->doItemSearch($itemName, $params, $pagination['start'], $pagination['limit']);
 
 			$pagination['total'] = $results[0];
+
+			$params = $_GET;
+			unset($params['page']);
+			$pagination['url'] = IA_SELF . '?' . http_build_query($params) . ($params ? '&' : '') . 'page={page}';
 		}
 
 		$iaView->set('filtersItemName', $itemName);

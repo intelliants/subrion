@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -51,7 +51,7 @@ class iaUsers extends abstractCore
 	public $dashboardStatistics = true;
 
 	public $coreSearchOptions = array(
-		'regularSearchStatements' => array("`username` LIKE '%:query%' OR `fullname` LIKE '%:query%'")
+		'regularSearchFields' => array('username', 'fullname')
 	);
 
 
@@ -271,12 +271,13 @@ class iaUsers extends abstractCore
 
 	public static function reloadIdentity()
 	{
-		$sql =
-			'SELECT u.*, g.`name` `usergroup` ' .
-			'FROM `:prefix_:table_users` u ' .
-			'LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) ' .
-			"WHERE u.`id` = :id AND u.`status` = ':status' " .
-			'LIMIT 1';
+		$sql = <<<SQL
+SELECT u.*, g.`name` `usergroup` 
+	FROM `:prefix_:table_users` u 
+LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) 
+WHERE u.`id` = :id AND u.`status` = ':status' 
+LIMIT 1
+SQL;
 
 		$iaDb = iaCore::instance()->iaDb;
 		$sql = iaDb::printf($sql, array(
@@ -288,6 +289,12 @@ class iaUsers extends abstractCore
 		));
 
 		$row = $iaDb->getRow($sql);
+
+		// FIXME: use _processValues method, anyhow it's static now
+		if (is_array($row) && isset($row['avatar']))
+		{
+			$row['avatar'] = $row['avatar'] ? unserialize($row['avatar']) : array('path' => '', 'title' => '');
+		}
 
 		self::_setIdentity($row);
 
@@ -486,7 +493,7 @@ class iaUsers extends abstractCore
 				'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
 			));
 
-			$iaMailer->send(true);
+			$iaMailer->send();
 		}
 
 		$action = 'member_registration_admin';
@@ -552,22 +559,23 @@ class iaUsers extends abstractCore
 
 	public function getInfo($id, $key = 'id')
 	{
-		if ($key != 'id' && $key != 'username' && $key != 'email')
-		{
-			$key = 'id';
-		}
+		in_array($key, array('id', 'username', 'email')) || $key = 'id';
 
-		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status', array('id' => $id, 'status' => iaCore::STATUS_ACTIVE), self::getTable());
+		$row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status', array('id' => $id, 'status' => iaCore::STATUS_ACTIVE), self::getTable());
+		!$row || $this->_processValues($row, true);
+
+		return $row;
 	}
 
 	public function getAuth($userId, $user = null, $password = null, $remember = false)
 	{
-		$sql =
-			'SELECT u.*, g.`name` `usergroup` ' .
-			'FROM `:prefix_:table_users` u ' .
-			'LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) ' .
-			'WHERE :condition ' .
-			'LIMIT 1';
+		$sql = <<<SQL
+SELECT u.*, g.`name` `usergroup` 
+	FROM `:prefix_:table_users` u 
+LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) 
+WHERE :condition 
+LIMIT 1
+SQL;
 
 		if ((int)$userId)
 		{
@@ -590,6 +598,7 @@ class iaUsers extends abstractCore
 			'condition' => $condition
 		));
 		$row = $this->iaDb->getRow($sql);
+		!$row ||$this->_processValues($row, true);
 
 		if (iaCore::STATUS_ACTIVE == $row['status'])
 		{
@@ -887,8 +896,119 @@ class iaUsers extends abstractCore
 		empty($order) || $stmt.= ' ORDER BY ' . $order;
 
 		$rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit, self::getTable());
+		!$rows ||$this->_processValues($rows);
+
 		$count = $this->iaDb->foundRows();
 
 		return array($count, $rows);
+	}
+
+	public function hybridAuth($providerName)
+	{
+		if (!$this->iaCore->get('hybrid_enabled'))
+		{
+			throw new Exception('HybridAuth is not enabled.');
+		}
+
+		$providerName = strtolower($providerName);
+		$configFile = IA_INCLUDES . 'hybridauth.inc.php';
+
+		require_once IA_INCLUDES . 'hybrid/Auth.php';
+
+		if (!file_exists($configFile))
+		{
+			throw new Exception('No HybridAuth config file. Please configure provider adapters.');
+		}
+
+		$hybridauth = new Hybrid_Auth($configFile);
+
+		if (empty(Hybrid_Auth::$config['providers']))
+		{
+			throw new Exception('No auth adapters configured.');
+		}
+
+		$provider = $hybridauth->authenticate(ucfirst($providerName));
+
+		if ($user_profile = $provider->getUserProfile())
+		{
+			// identify by Hybrid identifier
+			$memberId = $this->iaDb->one('member_id', iaDb::convertIds($user_profile->identifier, 'value'), self::getProvidersTable());
+
+			// identify by email address
+			if (!$memberId)
+			{
+				if ($memberInfo = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, "`email` = :email_address", array('email_address' => $user_profile->email), self::getTable()))
+				{
+					$this->iaDb->insert(array(
+						'member_id' => $memberInfo['id'],
+						'name' => $providerName,
+						'value' => $user_profile->identifier
+					), null, self::getProvidersTable());
+
+					$memberId = $memberInfo['id'];
+				}
+			}
+
+			// register new member if no matches
+			if (!$memberId)
+			{
+				$memberRegInfo['username'] = '';
+				$memberRegInfo['email'] = $user_profile->email;
+				$memberRegInfo['fullname'] = $user_profile->displayName;
+				// $memberRegInfo['avatar'] = $user_profile->photoURL;
+				$memberRegInfo['disable_fields'] = true;
+
+				$memberId = $this->register($memberRegInfo);
+
+				// add providers match
+				$this->iaDb->insert(array(
+					'member_id' => $memberId,
+					'name' => $providerName,
+					'value' => $user_profile->identifier
+				), null, iaUsers::getProvidersTable());
+
+				// no need to validate address
+				$this->update(array('id' => $memberId, 'sec_key' => '', 'status' => iaCore::STATUS_ACTIVE));
+			}
+
+			// authorize
+			$this->getAuth($memberId);
+		}
+		else
+		{
+			throw new Exception('User is not logged in.');
+		}
+	}
+
+	/**
+	 * Used to unserialize fields
+	 *
+	 * @param array $rows items array
+	 * @param boolean $singleRow true when item is passed as one row
+	 * @param array $fieldNames list of custom serialized fields
+	 */
+	protected function _processValues(array &$rows, $singleRow = false, $fieldNames = array())
+	{
+		if ($this->getItemName())
+		{
+			$iaField = $this->iaCore->factory('field');
+			$fieldNames = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+		}
+		!$singleRow || $rows = array($rows);
+
+		foreach ($rows as &$row)
+		{
+			if (!is_array($row) || !$fieldNames)
+			{
+				break;
+			}
+
+			foreach ($fieldNames as $name)
+			{
+				$row[$name] = $row[$name] ? unserialize($row[$name]) : array('path' => '', 'title' => '');
+			}
+		}
+
+		!$singleRow || $rows = array_shift($rows);
 	}
 }

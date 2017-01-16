@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -86,7 +86,7 @@ class iaView extends abstractUtil
 	{
 		parent::init();
 
-		$this->resources = new iaStore(array('css' => new iaStore(), 'js' => new iaStore()));
+		$this->resources = $this->_arrayAsObject(array('css' => $this->_arrayAsObject(), 'js' => $this->_arrayAsObject()));
 	}
 
 	public function set($key, $value)
@@ -267,18 +267,19 @@ class iaView extends abstractUtil
 
 		$menuGroups = $iaDb->assoc(array('id', 'name'), $stmt . ' ORDER BY `order`', 'admin_pages_groups');
 
-		$sql = 'SELECT g.`name` `config`, e.`type`, '
-				. 'p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`extras` '
-			. 'FROM `:prefix:table_admin_pages` p '
-			. 'LEFT JOIN `:prefix:table_config_groups` g ON '
-				. "(p.`extras` IN (':extras') AND p.`extras` = g.`extras`) "
-			. 'LEFT JOIN `:prefix:table_extras` e ON '
-				. "(p.`extras` = e.`name`) "
-			. 'WHERE p.`group` IN (:groups) '
-				. "AND FIND_IN_SET('menu', p.`menus`) "
-				. "AND p.`status` = ':status' "
-				. "AND p.`extras` IN ('',':extras') "
-			. 'ORDER BY p.`order`';
+		$sql = <<<SQL
+SELECT g.`name` `config`, e.`type`, p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`extras` 
+	FROM `:prefix:table_admin_pages` p 
+LEFT JOIN `:prefix:table_config_groups` g ON 
+	(p.`extras` IN (':extras') AND p.`extras` = g.`extras`) 
+LEFT JOIN `:prefix:table_extras` e ON 
+	(p.`extras` = e.`name`) 
+WHERE p.`group` IN (:groups) 
+	AND FIND_IN_SET('menu', p.`menus`) 
+	AND p.`status` = ':status' 
+	AND p.`extras` IN ('',':extras') 
+ORDER BY p.`order`
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $iaDb->prefix,
 			'table_admin_pages' => 'admin_pages',
@@ -348,6 +349,8 @@ class iaView extends abstractUtil
 				$menuEntry['items'] = $configGroups['common'];
 			}
 
+			$duplicates = array();
+
 			foreach ($group['items'] as $item)
 			{
 				if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE . iaAcl::SEPARATOR . iaCore::ACTION_READ, $item['name']))
@@ -366,10 +369,11 @@ class iaView extends abstractUtil
 					{
 						$data['attr'] = $item['attr'];
 					}
-					if ($item['type'] != iaItem::TYPE_PACKAGE
-						&& isset($item['config']) && $item['config'])
+					if ($item['type'] != iaItem::TYPE_PACKAGE && !empty($item['config'])
+						&& !in_array($item['config'], $duplicates))
 					{
 						$data['config'] = $item['config'];
+						$duplicates[] = $item['config'];
 					}
 					if ('templates' == $item['name'] && isset($configGroups['template'])) // custom processing for template configuration
 					{
@@ -478,7 +482,6 @@ SELECT `object` FROM `{$table}`
 	)
 	GROUP BY `object`
 SQL;
-
 		$disabledBlocks = $this->iaCore->iaDb->getAssoc($sql, true);
 
 		return array_keys($disabledBlocks);
@@ -601,11 +604,13 @@ SQL;
 			}
 			else
 			{
-				$sql =
-					'SELECT m.*, p.`nofollow`, p.`new_window`, p.`action`, p.`custom_url` ' .
-					'FROM `:prefixmenus` m ' .
-					'LEFT JOIN `:prefixpages` p ON (p.`name` = m.`page_name`) ' .
-					'WHERE m.`menu_id` = :menu ORDER BY m.`level`, m.`id`';
+				$sql = <<<SQL
+SELECT m.*, p.`nofollow`, p.`new_window`, p.`action`, p.`custom_url` 
+	FROM `:prefixmenus` m 
+LEFT JOIN `:prefixpages` p ON (p.`name` = m.`page_name`) 
+WHERE m.`menu_id` = :menu
+ORDER BY m.`level`, m.`id`
+SQL;
 				$sql = iaDb::printf($sql, array(
 					'prefix' => $this->iaCore->iaDb->prefix,
 					'menu' => $menuId
@@ -779,27 +784,27 @@ SQL;
 			}
 		}
 
-		$fields = 'p.`id`, e.`type`, e.`url`, p.`name`, '
-			. 'p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`'
-			. (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? ' ' : ', p.`meta_description` `description`, p.`meta_keywords` `keywords` ');
-		$sql = 'SELECT :fields'
-			. 'FROM `:prefix' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages` p '
-			. 'LEFT JOIN `:prefixextras` e ON (e.`name` = p.`extras`) '
-			. "WHERE :stmt AND p.`status` = ':status' "
-			. "AND (e.`status` = ':status' OR e.`status` IS NULL) "
-			. 'ORDER BY LENGTH(p.`alias`) DESC, p.`extras` DESC';
+		$sql = <<<SQL
+SELECT p.`id`, p.`name`, p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`, 
+	e.`type`, e.`url` 
+FROM `:prefix:table_pages` p 
+LEFT JOIN `:prefix:table_extras` e ON (e.`name` = p.`extras`) 
+WHERE :where AND p.`status` = ':status' AND (e.`status` = ':status' OR e.`status` IS NULL) 
+ORDER BY LENGTH(p.`alias`) DESC, p.`extras` DESC
+SQL;
 		$sql = iaDb::printf($sql, array(
-			'fields' => $fields,
 			'prefix' => $this->iaCore->iaDb->prefix,
-			'stmt' => $where,
+			'table_pages' => (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages',
+			'table_extras' => 'extras',
+			'where' => $where,
 			'status' => iaCore::STATUS_ACTIVE
 		));
 
 		$pages = $this->iaCore->iaDb->getAll($sql);
+
 		$this->iaCore->startHook('phpCoreDefineAfterGetPages');
 
 		$baseUrl = $this->iaCore->get('baseurl', $this->domainUrl);
-		$page404 = true;
 
 		if ($pages)
 		{
@@ -812,7 +817,7 @@ SQL;
 
 			$requestPath = $this->iaCore->requestPath;
 			array_unshift($requestPath, $pageName);
-			$requestPath[count($requestPath) - 1] .= $pageExtension;
+			$requestPath[count($requestPath) - 1].= $pageExtension;
 
 			foreach ($pages as $page)
 			{
@@ -837,8 +842,6 @@ SQL;
 
 				if ($found)
 				{
-					$page404 = false;
-
 					$this->name($page['name']);
 					$pageParams = $page;
 
@@ -856,19 +859,25 @@ SQL;
 			$this->iaCore->setPackagesData();
 		}
 
-		if ($page404)
+		if (!isset($found) || !$found)
 		{
 			return self::errorPage(self::ERROR_NOT_FOUND);
 		}
 
-		$pageParams['title'] = iaLanguage::get(sprintf('page_title_%s', $pageParams['name']));
+		$pageParams['title'] = iaLanguage::get('page_title_' . $pageParams['name']);
+		$pageParams['body'] = $pageParams['name'];
 
-		if (!isset($pageParams['body']))
+		if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 		{
-			$pageParams['body'] = isset($pageParams['name']) ? $pageParams['name'] : self::DEFAULT_HOMEPAGE;
+			$key = 'page_meta_description_' . $pageParams['name'];
+			$pageParams['description'] = iaLanguage::exists($key) ? iaLanguage::get($key) : null;
+
+			$key = 'page_meta_keywords_' . $pageParams['name'];
+			$pageParams['keywords'] = iaLanguage::exists($key) ? iaLanguage::get($key) : null;
 		}
 
-		if (isset($this->iaCore->requestPath[0]) && in_array($this->iaCore->requestPath[0], array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE)))
+		if (isset($this->iaCore->requestPath[0])
+			&& in_array($this->iaCore->requestPath[0], array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE)))
 		{
 			$pageParams['action'] = array_shift($this->iaCore->requestPath);
 		}
@@ -926,16 +935,6 @@ SQL;
 					$this->assign('dashboard', $quickLinks);
 				}
 
-				// quick search block
-				$items = array('users' => array('title' => iaLanguage::get('users'), 'url' => 'members/'));
-				$this->iaCore->startHook('adminQuickSearch', array('items' => &$items));
-				$currentItem = $this->getValues('quick_search_item');
-				$currentItem = isset($items[$currentItem]) ? $currentItem : 'users';
-
-				$this->assign('quickSearch', $items);
-				$this->assign('quickSearchItem', $currentItem);
-				//
-
 				$this->set('headerMenu', $this->_getAdminHeaderMenu());
 				$this->set('menu', $this->getAdminMenu());
 			}
@@ -976,14 +975,12 @@ SQL;
 			case self::REQUEST_JSON:
 				header('Content-Type: application/json');
 
-				$iaUtil = $this->iaCore->factory('util');
-
 				if (isset($outputValues[self::JSON_MAGIC_KEY]) && 1 == count($outputValues))
 				{
 					$outputValues = array_values($outputValues[self::JSON_MAGIC_KEY]);
 				}
 
-				echo $iaUtil->jsonEncode($outputValues);
+				echo json_encode($outputValues);
 
 				break;
 
@@ -1035,19 +1032,8 @@ SQL;
 
 				if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 				{
-					// get meta-description
-					$value = $this->get('description');
-					$metaDescription = (empty($value) && iaLanguage::exists('page_metadescr_' . $pageName))
-						? iaLanguage::get('page_metadescr_' . $pageName)
-						: $value;
-					$core['page']['meta-description'] = iaSanitize::html($metaDescription);
-
-					// get meta-keywords
-					$value = $this->get('keywords');
-					$metaKeywords = (empty($value) && iaLanguage::exists('page_metakeyword_' . $pageName))
-						? iaLanguage::get('page_metakeyword_' . $pageName)
-						: $value;
-					$core['page']['meta-keywords'] = iaSanitize::html($metaKeywords);
+					$core['page']['meta-description'] = iaSanitize::html($this->get('description'));
+					$core['page']['meta-keywords'] = iaSanitize::html($this->get('keywords'));
 
 					$this->_logStatistics();
 
@@ -1133,9 +1119,7 @@ SQL;
 
 	public function jsonp($data)
 	{
-		$this->iaCore->factory('util');
-
-		echo sprintf('%s(%s)', isset($_GET['fn']) ? $_GET['fn'] : '', iaUtil::jsonEncode($data));
+		echo sprintf('%s(%s)', isset($_GET['fn']) ? $_GET['fn'] : '', json_encode($data));
 		exit;
 	}
 
@@ -1519,13 +1503,12 @@ SQL;
 		return $result;
 	}
 
-	/*
+	/**
 	 * Return absolute path to template resource according to the script's logic
 	 *
-	 * @param string resourceName template resource name
-	 * @param bool useCustom
+	 * @param string $resourceName template resource name
 	 *
-	 * @return string absolute path to a template resource name
+	 * @return string
 	 */
 	public function _retrieveTemplatePath($resourceName)
 	{
@@ -1571,5 +1554,10 @@ SQL;
 		is_file($resourceName) || $resourceName = IA_TEMPLATES . 'common' . IA_DS . $default;
 
 		return $resourceName;
+	}
+
+	private function _arrayAsObject(array $params = array())
+	{
+		return new ArrayObject($params, ArrayObject::ARRAY_AS_PROPS);
 	}
 }

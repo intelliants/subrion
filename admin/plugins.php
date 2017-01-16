@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -98,11 +98,11 @@ class iaBackendController extends iaAbstractControllerBackend
 				break;
 
 			case 'local':
-				$output = $this->_getLocalPlugins($start, $limit, $dir, $filter);
+				$output = $this->_getLocalPlugins($start, $limit, $sort, $dir, $filter);
 				break;
 
 			case 'remote':
-				$output = $this->_getRemotePlugins($start, $limit, $dir, $filter);
+				$output = $this->_getRemotePlugins($start, $limit, $sort, $dir, $filter);
 		}
 
 		return $output;
@@ -121,7 +121,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	}
 
 
-	private function _getRemotePlugins($start, $limit, $dir, $filter)
+	private function _getRemotePlugins($start, $limit, $sort, $dir, $filter)
 	{
 		$pluginsData = array();
 
@@ -133,7 +133,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($response = iaUtil::getPageContent(iaUtil::REMOTE_TOOLS_URL . 'list/plugin/' . IA_VERSION))
 			{
-				$response = iaUtil::jsonDecode($response);
+				$response = json_decode($response, true);
 				if (!empty($response['error']))
 				{
 					$this->addMessage($response['error']);
@@ -188,10 +188,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		return $this->getMessages()
 			? array('result' => false, 'message' => $this->getMessages())
-			: $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter);
+			: $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter, $sort);
 	}
 
-	private function _getLocalPlugins($start, $limit, $dir, $filter)
+	private function _getLocalPlugins($start, $limit, $sort, $dir, $filter)
 	{
 		$total = 0;
 		$pluginsData = array();
@@ -261,7 +261,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		closedir($directory);
 
-		return $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter);
+		return $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter, $sort);
 	}
 
 	private function _getInstalledPlugins($start, $limit, $sort, $dir, $filter)
@@ -317,35 +317,63 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $result;
 	}
 
-	private function _sortPlugins(array $pluginsData, $start, $limit, $dir = iaDb::ORDER_DESC, $filter = '')
+	private function _sortPlugins(array $pluginsData, $start, $limit, $dir = iaDb::ORDER_DESC, $filter = '', $column = 'date')
 	{
-		$pluginsList = $pluginsData['pluginsList'];
-		$output = array('data' => array(), 'total' => count($pluginsList));
+		$plugins = $pluginsData['plugins'];
+		$output = array('data' => array(), 'total' => count($plugins));
 
-		if ($pluginsList)
+		if ($plugins)
 		{
-			natcasesort($pluginsList);
-			(iaDb::ORDER_DESC != $dir) || $pluginsList = array_reverse($pluginsList, true);
-
 			if ($filter)
 			{
-				foreach ($pluginsList as $pluginName => $pluginTitle)
+				foreach ($plugins as $plugin)
 				{
-					if (false === stripos($pluginName . $pluginTitle, $filter))
+					if (false === stripos($plugin['name'] . $plugin['title'], $filter))
 					{
-						unset($pluginsList[$pluginName]);
+						unset($plugins[$plugin['name']]);
 					}
 				}
 
-				$output['total'] = count($pluginsList);
+				$output['total'] = count($plugins);
 			}
-
-			$pluginsList = array_splice($pluginsList, $start, $limit);
-
-			foreach ($pluginsList as $pluginName => $pluginTitle)
+			if (iaDb::ORDER_ASC == $dir)
 			{
-				$output['data'][] = $pluginsData['plugins'][$pluginName];
+				if ('date' == $column)
+				{
+					usort($plugins, function ($a, $b) use ($column)
+					{
+						return strtotime($a[$column]) - strtotime($b[$column]);
+					});
+				}
+				else
+				{
+					usort($plugins, function ($a, $b) use ($column)
+					{
+						return strcasecmp($a[$column], $b[$column]);
+					});
+				}
 			}
+			else
+			{
+				if ('date' == $column)
+				{
+					usort($plugins, function ($a, $b) use ($column)
+					{
+						return strtotime($b[$column]) - strtotime($a[$column]);
+					});
+				}
+				else
+				{
+					usort($plugins, function ($a, $b) use ($column)
+					{
+						return strcasecmp($b[$column], $a[$column]);
+					});
+				}
+			}
+
+			$plugins = array_splice($plugins, $start, $limit);
+
+			$output['data'] = $plugins;
 		}
 
 		return $output;
@@ -369,7 +397,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						$tab = substr($doc, 0, count($doc) - 6);
 						$result['tabs'][] = array(
 							'title' => iaLanguage::get('extra_' . $tab, $tab),
-							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
+							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 							'cls' => 'extension-docs' . ' extension-docs--' . $tab
 						);
 					}
@@ -394,7 +422,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$icon = file_exists(IA_PLUGINS . $pluginName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
 				? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'plugins/' . $pluginName . '/docs/img/icon.png" alt="' . $data['info']['title'] . '"></td></tr>'
 				: '';
-			$link = '<tr><td><a href="http://www.subrion.org/plugin/' . $pluginName . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>';
+			$link = '<tr><td><a href="https://subrion.org/plugin/' . $pluginName . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>';
 
 			$replace = array(
 				$icon,
@@ -445,7 +473,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$pclZip = new PclZip($fileName);
 					$pclZip->extract(PCLZIP_OPT_PATH, IA_PLUGINS . $pluginName);
 
-					$this->_iaCore->iaCache->remove('subrion_plugins.inc');
+					$this->_iaCore->iaCache->remove('subrion_plugins');
 				}
 				else
 				{

@@ -1,0 +1,176 @@
+//
+// Global
+// --------------------------------------------------
+
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i');
+
+@font-family-base: 'Roboto', @font-family-sans-serif;
+
+
+
+//
+// Colors
+// --------------------------------------------------
+
+@base-dark-color:       #1d1c24;
+
+@brand-primary:         #38eadb;
+@brand-success:         #5cb85c;
+@brand-warning:         #f0ad4e;
+@brand-danger:          #d63b3f;
+@brand-info:            #5bc0de;
+
+@body-bg:               lighten(@base-dark-color, 2%);
+@text-color:            #fff;
+@hr-border:             fade(#fff, 5%);
+
+
+
+//
+// Main menu
+// --------------------------------------------------
+
+@main-nav-width:                        120px;
+@main-nav-bg:                           @base-dark-color;
+@brand-border-color:                    darken(@base-dark-color, 3%);
+@main-nav-link-color:                   lighten(@main-nav-bg, 20%);
+@main-nav-link-hover-color:             lighten(@main-nav-bg, 2%);
+@main-nav-link-active-color:            @brand-primary;
+@main-nav-link-active-bg-color:         lighten(@main-nav-bg, 5%);
+@main-nav-link-active-border-color:     @brand-primary;
+@main-nav-link-active-icon-color:       @brand-primary;
+@main-nav-link-icon-color:              lighten(@main-nav-bg, 30%);
+@main-nav-link-current-bg-color:        lighten(@main-nav-bg, 1%);
+@main-nav-link-current-border-color:    darken(@brand-primary, 30%);
+
+
+
+//
+// Sub nav
+// --------------------------------------------------
+
+@sub-nav-width:                         250px;
+@sub-nav-bg:                            lighten(@base-dark-color, 5%);
+@sub-nav-link-color:                    lighten(@sub-nav-bg, 40%);
+@sub-nav-link-hover-color:              lighten(@sub-nav-bg, 5%);
+@sub-nav-link-active-color:             @link-color;
+@sub-nav-link-active-bg-color:          @body-bg;
+@sub-nav-link-active-border-color:      @brand-primary;
+@sub-nav-link-active-icon-color:        @brand-primary;
+@sub-nav-heading-color:                 lighten(@sub-nav-bg, 20%);
+
+
+
+//
+// Top bar
+// --------------------------------------------------
+
+@navbar-bg:                             @base-dark-color;
+@navbar-shadow:                         'none';
+@navbar-height:                         60px;
+@navbar-link-color:                     lighten(@main-nav-bg, 30%);
+@navbar-link-hover-color:               lighten(@main-nav-bg, 40%);
+@navbar-link-hover-bg-color:            fade(#fff, 3%);
+@navbar-notification-bg:                @brand-warning;
+
+
+
+//
+// Page
+// --------------------------------------------------
+
+@page-title-color:                      fade(@text-color, 20%);
+@page-actions-color:                    lighten(@main-nav-bg, 30%);
+@page-actions-icon-color:               lighten(@main-nav-bg, 40%);
+@page-actions-hover-color:              @link-color;
+@page-actions-hover-bg-color:           transparent;
+
+@breadcrumb-color:              fade(@text-color, 20%);
+@breadcrumb-active-color:       fade(@text-color, 10%);
+@breadcrumb-link-color:         fade(@text-color, 30%);
+@breadcrumb-link-hover-color:   @link-color;
+
+@breadcrumb-separator:          "\2192";
+
+
+//
+// Widgets
+// --------------------------------------------------
+
+@widget-bg:            lighten(@body-bg, 1%);
+@widget-header-bg:     lighten(@body-bg, 3%);
+@widget-header-border: @body-bg;
+@widget-header-color:  lighten(@body-bg, 40%);
+@widget-footer-bg:     #fff;
+@widget-footer-color:  #bbb;
+@widget-footer-border: #eee;
+
+
+
+//
+// Dropdowns
+// --------------------------------------------------
+
+@dropdown-link-hover-bg: #f9f9f9;
+
+
+
+//
+// Forms
+// --------------------------------------------------
+
+@form-label-color:               lighten(@main-nav-bg, 30%);
+@input-bg:                       @body-bg;
+@input-bg-disabled:              lighten(@body-bg, 5%);
+@input-color:                    lighten(@main-nav-bg, 40%);
+@input-border:                   lighten(@body-bg, 10%);
+@input-border-radius:            @border-radius-base;
+@input-border-radius-large:      @border-radius-large;
+@input-border-radius-small:      @border-radius-small;
+@input-border-focus:             @link-color;
+@input-border-radius:            0;
+@input-color-placeholder:        lighten(@main-nav-bg, 25%);
+@help-block-color:               lighten(@main-nav-bg, 20%);
+
+@switch-label-color: @text-color;
+@switch-label-bg:    lighten(@body-bg, 8%);
+@switch-color:       #fff;
+@switch-success-bg:  @brand-success;
+@switch-danger-bg:   #ea8083;
+
+
+
+//
+// Navs
+// --------------------------------------------------
+
+@nav-link-hover-bg:                         lighten(@main-nav-bg, 7%);
+@nav-tabs-border-color:                     lighten(@main-nav-bg, 10%);
+@nav-tabs-link-hover-border-color:          lighten(@main-nav-bg, 10%);
+@nav-tabs-active-link-hover-bg:             lighten(@main-nav-bg, 10%);
+@nav-tabs-active-link-hover-color:          fade(@text-color, 50%);
+@nav-tabs-active-link-hover-border-color:   lighten(@main-nav-bg, 10%);
+
+
+
+//
+// Wells
+// --------------------------------------------------
+
+@thumbnail-border: @input-border;
+@thumbnail-bg:     @body-bg;
+
+
+
+//
+// Alerts
+// --------------------------------------------------
+
+@alert-info-bg:       fade(#d9edf7, 10%);
+@alert-info-border:   fade(#d9edf7, 80%);
+
+@alert-danger-bg:     fade(#f2dede, 10%);
+@alert-danger-border: fade(#f2dede, 80%);
+
+@alert-success-bg:     fade(#dff0d8, 10%);
+@alert-success-border: fade(#dff0d8, 80%);

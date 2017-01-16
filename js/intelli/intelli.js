@@ -211,11 +211,6 @@ intelli = {
 		params = params || {};
 		params.baseHref = intelli.config.ia_url;
 
-		if ('1' == intelli.config.ckeditor_mobile)
-		{
-			CKEDITOR.env.isCompatible = true;
-		}
-
 		CKEDITOR.replace(name, params);
 	},
 

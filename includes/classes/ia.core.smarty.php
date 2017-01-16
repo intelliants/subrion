@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -33,8 +33,8 @@ class iaSmarty extends Smarty
 	const DIRECT_CALL_MARKER = 'direct_call_marker';
 	const FLAG_CSS_RENDERED = 'css_rendered';
 
-	const LINK_STYLESHEET_PATTERN = '<link rel="stylesheet" type="text/css" href="%s">';
-	const LINK_SCRIPT_PATTERN = '<script type="text/javascript" src="%s"></script>';
+	const LINK_STYLESHEET_PATTERN = '<link rel="stylesheet" href="%s">';
+	const LINK_SCRIPT_PATTERN = '<script src="%s"></script>';
 
 	const EXTENSION_CSS = '.css';
 	const EXTENSION_JS = '.js';
@@ -80,9 +80,7 @@ class iaSmarty extends Smarty
 		$this->registerPlugin(self::PLUGIN_BLOCK, 'access', array(__CLASS__, 'access'));
 		$this->registerPlugin(self::PLUGIN_BLOCK, 'ia_add_js', array(__CLASS__, 'ia_add_js'));
 
-		$iaCore = iaCore::instance();
-
-		if (iaCore::ACCESS_FRONT == $iaCore->getAccessType())
+		if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 		{
 			$this->registerPlugin(self::PLUGIN_FUNCTION, 'accountActions', array(__CLASS__, 'accountActions'));
 			$this->registerPlugin(self::PLUGIN_FUNCTION, 'arrayToLang', array(__CLASS__, 'arrayToLang'));
@@ -100,7 +98,7 @@ class iaSmarty extends Smarty
 		// uncomment this to get rid of useless whitespaces in html
 		// $this->loadFilter('output', 'trimwhitespace');
 
-		$iaCore->startHook('phpSmartyAfterFuncInit', array('iaSmarty' => &$this));
+		$this->iaCore->startHook('phpSmartyAfterFuncInit', array('iaSmarty' => &$this));
 
 		iaSystem::renderTime('main', 'afterSmartyFuncInit');
 
@@ -113,14 +111,14 @@ class iaSmarty extends Smarty
 		$this->assign('field_before', array());
 		$this->assign('field_after', array());
 
-		$this->resources['subrion'] = 'text:Loading Subrion Awesome Stuff..., js:intelli/intelli, js:_IA_URL_tmp/cache/intelli.config, '
+		$this->resources['subrion'] = 'text:Loading Subrion Awesome Stuff..., js:intelli/intelli, js:_IA_URL_tmp/cache/intelli.config.' . $this->iaCore->iaView->language . ', '
 			. (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType()
 				? 'js:_IA_TPL_bootstrap.min, js:bootstrap/js/bootstrap-switch.min, js:bootstrap/js/passfield.min, js:intelli/intelli.admin, js:admin/footer, css:_IA_URL_js/bootstrap/css/passfield'
 				: 'js:intelli/intelli.minmax, js:frontend/footer')
 			. ',js:_IA_URL_tmp/cache/intelli' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? '.admin' : '') . '.lang.' . $this->iaCore->iaView->language;
 		$this->resources['extjs'] = 'text:Loading ExtJS..., css:_IA_URL_js/extjs/resources/ext-theme-neptune/ext-theme-neptune-all' . ($this->iaCore->get('sap_style') ? '-' . $this->iaCore->get('sap_style') : '') . ', js:extjs/ext-all';
-		$this->resources['datepicker'] = 'js:bootstrap/js/datepicker/bootstrap-datepicker, js:bootstrap/js/datepicker/locales/bootstrap-datepicker.' . $this->iaCore->get('lang') . ', css:_IA_URL_js/bootstrap/css/datepicker3';
-
+		$this->resources['moment'] = 'js:utils/moment-with-locales.min';
+		$this->resources['datepicker'] = 'js:bootstrap/js/bootstrap-datetimepicker.min, css:_IA_URL_js/bootstrap/css/bootstrap-datetimepicker';
 
 		$this->iaCore->startHook('phpSmartyAfterMediaInit', array('iaSmarty' => &$this));
 	}
@@ -361,7 +359,7 @@ class iaSmarty extends Smarty
 		// TODO: check if a call of this resource was already printed out
 		if ($iaView->get(self::FLAG_CSS_RENDERED))
 		{
-			$array = $iaView->resources->css->toArray();
+			$array = $iaView->resources->css;
 			end($array);
 			$resource = key($array);
 
@@ -378,7 +376,7 @@ class iaSmarty extends Smarty
 				self::ia_add_media(array('files' => 'manage_mode'), $iaView->iaSmarty);
 			}
 
-			foreach (self::_arrayCopyKeysSorted($iaView->resources->css->toArray()) as $resource)
+			foreach (self::_arrayCopyKeysSorted($iaView->resources->css) as $resource)
 			{
 				$output = sprintf(self::LINK_STYLESHEET_PATTERN, $resource);
 				echo PHP_EOL . "\t" . $output;
@@ -584,16 +582,9 @@ class iaSmarty extends Smarty
 	{
 		$list = array();
 
-		if ($array = explode(',', $params['values']))
-		{
-			foreach ($array as $value)
-			{
-				if ($title = iaLanguage::get('field_' . $params['name'] . '_' . trim($value)))
-				{
-					$list[] = $title;
-				}
-			}
-		}
+		foreach (explode(',', $params['values']) as $value)
+			($title = iaField::getFieldValue($params['item'], $params['name'], trim($value)))
+			&& $list[] = $title;
 
 		echo implode(', ', $list);
 	}
@@ -611,53 +602,54 @@ class iaSmarty extends Smarty
 
 		$imageName = isset($params['gravatar']) ? 'no-avatar.png' : 'no-preview.png';
 
-		$gravatarUrl = '';
-		if ($iaCore->get('gravatar_enabled') && isset($params['gravatar']) && isset($params['email']))
+		if (!empty($params['imgfile']))
+		{
+			$thumbUrl = $iaCore->iaView->assetsUrl . 'uploads/';
+
+			// TODO: remove fullimage option
+			if (isset($params['fullimage']) && $params['fullimage'])
+			{
+				$params['type'] = 'full';
+			}
+
+			(isset($params['type']) && $params['type']) || $params['type'] = 'thumb';
+			switch ($params['type'])
+			{
+				case 'full':
+
+					$imgfile = explode('/', $params['imgfile']);
+					$imgfile[count($imgfile) - 1] = str_replace('.', '~.', $imgfile[count($imgfile) - 1]);
+
+					$thumbUrl .= implode('/', $imgfile);
+
+					break;
+				case 'source':
+
+					$imgfile = explode('/', $params['imgfile']);
+					$imgfile[count($imgfile) - 1] = 'source_' . $imgfile[count($imgfile) - 1];
+
+					$thumbUrl .= implode('/', $imgfile);
+
+					break;
+				default:
+
+					$thumbUrl .= $params['imgfile'];
+
+					break;
+			}
+		}
+		elseif (isset($params['gravatar']) && $iaCore->get('gravatar_enabled') && isset($params['email']))
 		{
 			$d = $iaCore->get('gravatar_default_image') ? IA_CLEAR_URL . $iaCore->get('gravatar_default_image') : $iaCore->get('gravatar_type');
 			$s = isset($params['gravatar_width']) ? (int)$params['gravatar_width'] : $iaCore->get('gravatar_size');
 			$r = $iaCore->get('gravatar_rating');
+			$p = $iaCore->get('gravatar_secure') ? 'https' : 'http';
 
-			$protocol = $iaCore->get('gravatar_secure') ? 'https' : 'http';
-			$gravatarUrl = $protocol . '://www.gravatar.com/avatar/' . md5(strtolower(trim($params['email']))) . "?s=$s&d=$d&r=$r";
-		}
-
-		// temporary solution
-		// TODO: remove
-		if ('a:' == substr($params['imgfile'], 0, 2))
-		{
-			$array = unserialize($params['imgfile']);
-
-			$params['imgfile'] = $array['path'];
-			$params['title'] = isset($array['title']) ? $array['title'] : '';
-		}
-		//
-
-		if (!empty($params['imgfile']))
-		{
-			$thumbUrl = $iaCore->iaView->assetsUrl . 'uploads/';
-			if (isset($params['fullimage']) && $params['fullimage'])
-			{
-				$imgfile = explode('/', $params['imgfile']);
-				$imgfile[count($imgfile) - 1] = str_replace('.', '~.', $imgfile[count($imgfile) - 1]);
-
-				$thumbUrl .= implode('/', $imgfile);
-			}
-			else
-			{
-				$thumbUrl .= $params['imgfile'];
-			}
+			$thumbUrl = $p . '://www.gravatar.com/avatar/' . md5(strtolower(trim($params['email']))) . "?s=$s&d=$d&r=$r";
 		}
 		else
 		{
-			if ($gravatarUrl)
-			{
-				$thumbUrl = $gravatarUrl;
-			}
-			else
-			{
-				$thumbUrl = IA_TPL_URL . 'img/' . $imageName;
-			}
+			$thumbUrl = IA_TPL_URL . 'img/' . $imageName;
 		}
 
 		if (!empty($params['url']))
@@ -847,7 +839,7 @@ class iaSmarty extends Smarty
 		}
 
 		$iaCore = iaCore::instance();
-		$resources = self::_arrayCopyKeysSorted($iaCore->iaView->resources->js->toArray());
+		$resources = self::_arrayCopyKeysSorted($iaCore->iaView->resources->js);
 
 		$output = '';
 		foreach ($resources as $resource)
@@ -857,14 +849,14 @@ class iaSmarty extends Smarty
 				case (strpos($resource, 'code:') === 0):
 					if ($code = trim(substr($resource, 5)))
 					{
-						$output .= PHP_EOL . "\t" . '<script type="text/javascript"><!-- ' . PHP_EOL . $code . PHP_EOL . ' --></script>';
+						$output .= PHP_EOL . "\t" . '<script>' . PHP_EOL . $code . PHP_EOL . '</script>';
 					}
 					continue;
 				case (strpos($resource, 'text:') === 0):
 					if (iaUsers::hasIdentity() && iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType())
 					{
 						$text = trim(substr($resource, 5));
-						$output .= "<script type=\"text/javascript\">if(document.getElementById('js-ajax-loader-status'))document.getElementById('js-ajax-loader-status').innerHTML = '" . $text . "';</script>" . PHP_EOL;
+						$output .= "<script>if(document.getElementById('js-ajax-loader-status'))document.getElementById('js-ajax-loader-status').innerHTML = '" . $text . "';</script>" . PHP_EOL;
 					}
 					continue;
 				default:
@@ -1098,7 +1090,7 @@ class iaSmarty extends Smarty
 	}
 
 
-	private static function _arrayCopyKeysSorted(array $array)
+	private static function _arrayCopyKeysSorted(ArrayObject $array)
 	{
 		$a = array();
 		foreach ($array as $key => $value)
@@ -1130,7 +1122,7 @@ class iaSmarty extends Smarty
 	public static function displayTreeNodes(array $params)
 	{
 		$ids = explode(',', $params['ids']);
-		$nodes = iaCore::instance()->factory('util')->jsonDecode($params['nodes']);
+		$nodes = json_decode($params['nodes'], true);
 
 		$result = array();
 

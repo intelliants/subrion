@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -31,6 +31,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
+		if (2 == count($this->_iaCore->requestPath) && 'options' == $this->_iaCore->requestPath[0])
+		{
+			return $this->_fetchOptions($this->_iaCore->requestPath[1]);
+		}
+
 		switch ($_POST['action'])
 		{
 			case 'delete-file':
@@ -43,6 +48,9 @@ class iaBackendController extends iaAbstractControllerBackend
 					'error' => !$result,
 					'message' => iaLanguage::get($result ? 'deleted' : 'error')
 				);
+
+			case 'send-test-email':
+				return $this->_sendTestEmail();
 
 			default:
 				$result = array();
@@ -136,5 +144,53 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return $result;
+	}
+
+	protected function _sendTestEmail()
+	{
+		$iaMailer = $this->_iaCore->factory('mailer');
+
+		$iaMailer->Subject = 'Subrion CMS Mailing test';
+		$iaMailer->Body = 'THIS IS A TEST EMAIL MESSAGE FROM ADMIN DASHBOARD.';
+
+		$iaMailer->addAddress(iaUsers::getIdentity()->email);
+
+		$result = $iaMailer->send();
+
+		$output = array(
+			'result' => $result,
+			'message' => $result
+				? iaLanguage::getf('test_email_sent', array('email' => iaUsers::getIdentity()->email))
+				: iaLanguage::get('error') . ': ' . $iaMailer->getError()
+		);
+
+		return $output;
+	}
+
+	protected function _fetchOptions($entityName)
+	{
+		switch ($entityName)
+		{
+			case 'extras':
+				$this->_iaCore->factory('item');
+				$this->_iaCore->factory('page', iaCore::ADMIN);
+
+				$sql = <<<SQL
+SELECT IF(p.`extras` = '', 'core', p.`extras`) `value`, 
+	IF(p.`extras` = '', 'Core', g.`title`) `title` 
+	FROM `:prefix:table_pages` p 
+LEFT JOIN `:prefix:table_extras` g ON (g.`name` = p.`extras`) 
+GROUP BY p.`extras`
+SQL;
+				$sql = iaDb::printf($sql, array(
+					'prefix' => $this->_iaDb->prefix,
+					'table_pages' => iaPage::getTable(),
+					'table_extras' => iaItem::getExtrasTable()
+				));
+
+				return array('data' => $this->_iaDb->getAll($sql));
+		}
+
+		return array();
 	}
 }

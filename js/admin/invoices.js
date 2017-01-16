@@ -64,6 +64,11 @@ Ext.onReady(function()
 
 $(function()
 {
+	if ($('#js-grid-placeholder').length > 0)
+	{
+		return;
+	}
+
 	var $itemsTable = $('#js-items-table');
 
 	intelli.resetLinesCounter = function()
@@ -132,17 +137,29 @@ $(function()
 	{
 		source: function(query, process)
 		{
-			return $.ajax(
+			$.ajax(
 			{
-				url: intelli.config.ia_url + 'members.json',
+				url: intelli.config.ia_url + 'actions.json',
 				type: 'get',
 				dataType: 'json',
-				data: { q: query },
-				success: function(response)
-				{
-					return process(response);
+				data: { q: query, action: 'assign-owner' },
+				success: function(response) {
+					objects = items = [];
+					$.each(response, function(i, object) {
+						items[object.fullname] = object;
+						objects.push(object.fullname);
+					});
+
+					return process(objects);
 				}
-			});
+			})
+		},
+		updater: function(item) {
+			$('#member-id').val(items[item].id);
+			return item;
+		},
+		matcher: function() {
+			return true;
 		}
 	});
 });

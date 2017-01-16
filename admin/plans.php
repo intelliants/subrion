@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -47,13 +47,46 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		parent::__construct();
 
-		$iaPlan = $this->_iaCore->factory('plan');
-		$this->setHelper($iaPlan);
-
+		$this->setHelper($this->_iaCore->factory('plan'));
 		$this->setTable(iaPlan::getTable());
 
 		$this->_fields = $this->_getFieldsList();
 		$this->_items = $this->_iaCore->factory('item')->getItems(true);
+	}
+
+	protected function _modifyGridResult(array &$entries)
+	{
+		foreach ($entries as $key => &$entry)
+		{
+			$entry['title'] = iaLanguage::get(self::PATTERN_TITLE . $entry['id']);
+			$entry['description'] = iaSanitize::tags(iaLanguage::get(self::PATTERN_DESCRIPTION . $entry['id']));
+			$entry['item'] = iaLanguage::get($entry['item']);
+
+			$entry['duration'].= ' ' . iaLanguage::get($entry['unit'] . ($entry['duration'] > 1 ? 's' : ''));
+			if ($entry['recurring'] && $entry['cycles'] != -1)
+			{
+				$entry['duration'].= ' (' . $entry['cycles'] . ' ' . iaLanguage::get('cycles') . ')';
+			}
+			$entry['duration'] = strtolower($entry['duration']);
+
+			unset($entries[$key]['unit'], $entries[$key]['cycles']);
+		}
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry = array(
+			'item' => '',
+			'cost' => '0.00',
+			'duration' => 30,
+			'unit' => iaPlan::UNIT_DAY,
+			'status' => iaCore::STATUS_ACTIVE,
+			'usergroup' => 0,
+			'recurring' => false,
+			'cycles' => 0,
+			'type' => iaPlan::TYPE_FEE,
+			'listings_limit' => 0
+		);
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
@@ -76,27 +109,30 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (isset($this->_fields[$entry['item']]))
 		{
 			$entry['data'] = array();
+
 			if (!empty($data['fields']) && !$this->getMessages())
 			{
-				$f = $this->_fields[$entry['item']];
-				$array = array();
-				foreach ($data['fields'] as $field)
+				$fields = $this->_fields[$entry['item']];
+				foreach ($data['fields'] as $fieldName)
 				{
-					if (in_array($field, $f[0]))
+					if (isset($fields[0][$fieldName]))
 					{
-						$entry['data']['fields'][] = $field;
-						$array[] = $field;
+						$entry['data']['fields'][] = $fieldName;
+						$update = true;
 					}
-					elseif (in_array($field, $f[1]))
+					elseif (isset($fields[1][$fieldName]))
 					{
-						$entry['data']['fields'][] = $field;
+						$entry['data']['fields'][] = $fieldName;
 					}
 				}
-				if ($array)
+
+				if (isset($update))
 				{
-					$this->_iaDb->update(array('for_plan' => 1), "`name` IN ('" . implode("','", $entry['data']['fields']) . "')", null, iaField::getTable());
+					$fieldsNames = array_map(array('iaSanitize', 'sql'), $entry['data']['fields']);
+					$this->_iaDb->update(array('for_plan' => 1), "`name` IN ('" . implode("','", $fieldsNames) . "')", null, iaField::getTable());
 				}
 			}
+
 			$entry['data'] = serialize($entry['data']);
 		}
 
@@ -150,6 +186,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['status'] = $data['status'];
 		$entry['recurring'] = (int)$data['recurring'];
 		$entry['expiration_status'] = $data['expiration_status'];
+		$entry['type'] = $data['type'];
+		$entry['listings_limit'] = $data['listings_limit'];
 
 		$this->_iaCore->startHook('phpAdminPlanCommonFieldFilled', array('item' => &$entry));
 
@@ -165,38 +203,30 @@ class iaBackendController extends iaAbstractControllerBackend
 			iaLanguage::addPhrase(self::PATTERN_TITLE . $this->getEntryId(), iaSanitize::tags($this->_languages['title'][$code]), $code);
 			iaLanguage::addPhrase(self::PATTERN_DESCRIPTION . $this->getEntryId(), $this->_languages['description'][$code], $code);
 		}
-	}
 
-	protected function _modifyGridResult(array &$entries)
-	{
-		foreach ($entries as $key => &$entry)
+		// save plan options
+		$optionItems = $this->_iaDb->keyvalue(array('id', 'item'), null, iaPlan::getTableOptions());
+
+		$this->_iaDb->setTable(iaPlan::getTableOptionValues());
+
+		foreach ($data['options'] as $optionId => $values)
 		{
-			$entry['title'] = iaLanguage::get(self::PATTERN_TITLE . $entry['id']);
-			$entry['description'] = iaSanitize::tags(iaLanguage::get(self::PATTERN_DESCRIPTION . $entry['id']));
-			$entry['item'] = iaLanguage::get($entry['item']);
+			if (!isset($optionItems[$optionId]) || $optionItems[$optionId] != $entry['item']) continue;
 
-			$entry['duration'].= ' ' . iaLanguage::get($entry['unit'] . ($entry['duration'] > 1 ? 's' : ''));
-			if ($entry['recurring'] && $entry['cycles'] != -1)
-			{
-				$entry['duration'].= ' (' . $entry['cycles'] . ' ' . iaLanguage::get('cycles') . ')';
-			}
-			$entry['duration'] = strtolower($entry['duration']);
+			$where = sprintf('`plan_id` = %d AND `option_id` = %d', $this->getEntryId(), $optionId);
+			$values = array(
+				'plan_id' => $this->getEntryId(),
+				'option_id' => (int)$optionId,
+				'price' => isset($values['price']) ? $values['price'] : 0,
+				'value' => $values['value']
+			);
 
-			unset($entries[$key]['unit'], $entries[$key]['cycles']);
+			$this->_iaDb->exists($where)
+				? $this->_iaDb->update($values, $where)
+				: $this->_iaDb->insert($values);
 		}
-	}
 
-	protected function _setDefaultValues(array &$entry)
-	{
-		$entry = array(
-			'cost' => '0.00',
-			'duration' => 30,
-			'unit' => iaPlan::UNIT_DAY,
-			'status' => iaCore::STATUS_ACTIVE,
-			'usergroup' => 0,
-			'recurring' => false,
-			'cycles' => 0
-		);
+		$this->_iaDb->resetTable();
 	}
 
 	protected function _entryAdd(array $entryData)
@@ -266,6 +296,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$usergroups = $this->_iaCore->factory('users')->getUsergroups();
 		unset($usergroups[iaUsers::MEMBERSHIP_ADMINISTRATOR], $usergroups[iaUsers::MEMBERSHIP_GUEST]);
 
+		$iaView->assign('options', $this->_getOptions());
 		$iaView->assign('usergroups', $usergroups);
 		$iaView->assign('fields', $this->_fields);
 		$iaView->assign('items', $this->_items);
@@ -278,20 +309,16 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaCore->factory('field');
 
 		$fields = array();
+
 		$rows = $this->_iaDb->all(array('name', 'item', 'for_plan', 'required'), ' 1=1 ORDER BY `for_plan` DESC', null, null, iaField::getTable());
 		foreach ($rows as $row)
 		{
 			$type = $row['for_plan'];
-			if ($row['required'] == 1)
-			{
-				$type = 2; // required
-			}
-			if (!isset($fields[$row['item']]))
-			{
-				$fields[$row['item']] = array(2 => array(), 1 => array(), 0 => array());
-			}
+			$row['required'] && $type = 2;
 
-			$fields[$row['item']][$type][] = $row['name'];
+			isset($fields[$row['item']]) || $fields[$row['item']] = array(2 => array(), 1 => array(), 0 => array());
+
+			$fields[$row['item']][$type][$row['name']] = iaField::getFieldTitle($row['item'], $row['name']);
 		}
 
 		return $fields;
@@ -317,6 +344,24 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 
 			$result[$itemName] = implode(',', $statuses);
+		}
+
+		return $result;
+	}
+
+	protected function _getOptions()
+	{
+		$result = array();
+
+		$values = $this->_iaDb->assoc(array('option_id', 'price', 'value'), iaDb::convertIds($this->getEntryId(), 'plan_id'), iaPlan::getTableOptionValues());
+		$options = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, iaPlan::getTableOptions());
+
+		foreach ($options as $option)
+		{
+			$option['values'] = isset($values[$option['id']])
+				? $values[$option['id']]
+				: array('price' => 0, 'value' => $option['default_value']);
+			$result[$option['item']][] = $option;
 		}
 
 		return $result;

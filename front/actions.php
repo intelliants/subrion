@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -127,6 +127,15 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 
 			if ($itemId && $item && $field && $path)
 			{
+				$iaCore->factory('field');
+
+				$fieldData = $iaDb->row(array('type'), iaDb::convertIds($field, 'name'), iaField::getTable());
+
+				if (!$fieldData || !in_array($fieldData['type'], array(iaField::IMAGE, iaField::PICTURES)))
+				{
+					break;
+				}
+
 				$tableName = $iaCore->factory('item')->getItemTable($item);
 
 				if (iaUsers::getItemName() == $item)
@@ -200,19 +209,27 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 
 					if ($key !== false)
 					{
-						$iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName);
+						$fileExt = pathinfo($path, PATHINFO_EXTENSION);
 
-						$iaPicture = $iaCore->factory('picture');
-						$iaPicture->delete($path);
-
-						$output = array('error' => false, 'message' => iaLanguage::get('deleted'));
-
-						if (iaUsers::getItemName() == $item)
+						if (in_array($fileExt, array('php', 'tpl', 'xml')))
 						{
-							// update current profile data
-							if ($itemId == iaUsers::getIdentity()->id)
+							break;
+						}
+
+						if ($iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName))
+						{
+							$iaPicture = $iaCore->factory('picture');
+							$iaPicture->delete($path);
+
+							$output = array('error' => false, 'message' => iaLanguage::get('deleted'));
+
+							if (iaUsers::getItemName() == $item)
 							{
-								iaUsers::reloadIdentity();
+								// update current profile data
+								if ($itemId == iaUsers::getIdentity()->id)
+								{
+									iaUsers::reloadIdentity();
+								}
 							}
 						}
 					}
@@ -332,5 +349,31 @@ if (isset($_GET) && isset($_GET['action']))
 
 				die($output);
 			}
+			break;
+
+		case 'assign-owner':
+
+			if (iaView::REQUEST_JSON == $iaView->getRequestType())
+			{
+				if (isset($_GET['q']) && $_GET['q'])
+				{
+					$stmt = '(`username` LIKE :name OR `email` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
+					$iaDb->bind($stmt, array('name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE));
+
+					$sql = 'SELECT `id`, CONCAT (`fullname`, \' (\',`email`, \')\') `fullname` ' .
+						'FROM :table_members ' .
+						'WHERE :conditions ' .
+						'LIMIT 0, 20';
+					$sql = iaDb::printf($sql, array(
+						'table_members' => iaUsers::getTable(true),
+						'conditions' => $stmt,
+					));
+					$output = $iaDb->getAll($sql);
+
+					$iaView->assign($output);
+				}
+			}
+
+			break;
 	}
 }

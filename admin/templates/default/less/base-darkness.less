@@ -1,0 +1,120 @@
+// Core bootstrap
+@import "bootstrap.less";
+
+// Override vars
+@import "vars-darkness.less";
+
+// Vendor
+@import "vendor/fontawesome/font-awesome.less";
+@import "vendor/font-subrion.less";
+@import "vendor/bootstrap-switch.less";
+
+// Theme
+@import "theme.less";
+
+// Layout
+@import "layout/layout.less";
+@import "layout/nav.less";
+@import "layout/nav.submenu.less";
+@import "layout/topbar.less";
+@import "layout/content.less";
+
+// Components
+@import "components/blocks.less";
+@import "components/widgets.less";
+@import "components/forms.less";
+@import "components/cards.less";
+@import "components/wells.less";
+
+// Pages
+@import "pages/page.login.less";
+@import "pages/page.permissions.less";
+
+// Overrides
+@import "ext-override.less";
+
+// Utils
+@import "utils.less";
+
+
+
+//
+// Overrides
+// --------------------------------------------------
+
+.tab-content {
+  background: lighten(@main-nav-bg, 10%);
+}
+
+
+
+//
+// Lets try to override grids here
+// --------------------------------------------------
+
+.ss-darkness {
+
+  .x-panel-default-framed {
+    border-color: lighten(@body-bg, 3%);
+  }
+
+  .x-resizable-handle {
+    background-color: lighten(@body-bg, 3%);
+  }
+
+  .x-toolbar-default {
+    background-color: lighten(@body-bg, 6%);
+  }
+
+  .x-form-text {
+    background: @input-bg !important;
+    border-color: @input-border;
+    color: @input-color;
+  }
+
+  .x-form-trigger-wrap {
+    border-color: @input-border;
+  }
+
+  .x-trigger-cell {
+    background: @input-bg !important;
+  }
+
+  .x-grid-body {
+    background: lighten(@body-bg, 3%);
+    border-color: darken(@body-bg, 2%);
+  }
+  .x-grid-with-row-lines .x-grid-table {
+    border-color: darken(@body-bg, 2%);
+  }
+  .x-grid-header-ct {
+    border-color: darken(@body-bg, 2%);
+    background: darken(@body-bg, 2%);
+  }
+  .x-column-header {
+    background: lighten(@body-bg, 7%);
+    border-right: darken(@body-bg, 2%);
+  }
+  .x-grid-rowwrap {
+    border-color: @input-border;
+  }
+  .x-grid-row-alt {
+    background: lighten(@body-bg, 5%) !important;
+  }
+  .x-grid-cell {
+    color: fade(#fff, 40%) !important;
+    background: lighten(@body-bg, 5%) !important;
+    border-color: @input-border;
+  }
+  .x-grid-row-selected .x-grid-cell,
+  .x-grid-row-focused .x-grid-cell {
+    background: lighten(@body-bg, 8%) !important;
+  }
+
+  .grid-icon {
+    color: fade(#fff, 50%);
+  }
+  .grid-icon-disabled {
+    color: fade(#fff, 10%);
+  }
+}

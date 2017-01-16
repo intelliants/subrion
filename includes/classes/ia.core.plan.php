@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -42,11 +42,85 @@ class iaPlan extends abstractCore
 	const UNIT_MONTH = 'month';
 	const UNIT_YEAR = 'year';
 
+	const TYPE_FEE = 'fee';
+	const TYPE_SUBSCRIPTION = 'subscription';
+
 	protected static $_table = 'payment_plans';
+
+	protected static $_tableOptions = 'payment_plans_options';
+	protected static $_tableOptionValues = 'payment_plans_options_values';
+
+	protected static $_options;
 
 	protected $_item;
 	protected $_plans = array();
 
+
+	public static function getTableOptions()
+	{
+		return self::$_tableOptions;
+	}
+
+	public static function getTableOptionValues()
+	{
+		return self::$_tableOptionValues;
+	}
+
+	public function getOptionsValues($itemName, $itemId)
+	{
+		$iaItem = $this->iaCore->factory('item');
+
+		$item = $this->iaDb->row(array('sponsored', 'sponsored_plan_id'),
+			iaDb::convertIds($itemId), $iaItem->getItemTable($itemName));
+
+		return (!empty($item['sponsored']) && !empty($item['sponsored_plan_id']))
+			? $this->_getOptionValuesByPlanId($item['sponsored_plan_id'])
+			: array();
+	}
+
+	protected function _getOptionValuesByPlanId($planId)
+	{
+		$sql = <<<SQL
+SELECT o.`name`, v.`value` 
+	FROM `:prefix:table_option_values` v 
+LEFT JOIN `:prefix:table_options` o ON (v.`option_id` = o.`id`) 
+WHERE v.`plan_id` = :plan
+SQL;
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->iaDb->prefix,
+			'table_option_values' => self::getTableOptionValues(),
+			'table_options' => self::getTableOptions(),
+			'plan' => (int)$planId
+		));
+
+		$rows = $this->iaDb->getKeyValue($sql);
+
+		return $rows ? $rows : array();
+	}
+
+	public function getPlanOptions($planId)
+	{
+		$result = array();
+
+		$values = $this->iaDb->assoc(array('option_id', 'price', 'value'), iaDb::convertIds($planId, 'plan_id'), self::getTableOptionValues());
+
+		if (is_null(self::$_options))
+		{
+			self::$_options = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION,
+				iaDb::convertIds($this->_item, 'item'), null, null, self::getTableOptions());
+		}
+
+		foreach (self::$_options as $option)
+		{
+			isset($values[$option['id']]) && $option['price'] = $values[$option['id']]['price'];
+			$option['value'] = isset($values[$option['id']]) ? $values[$option['id']]['value'] : $option['default_value'];
+
+			$result[] = $option;
+		}
+
+		return $result;
+	}
 
 	/**
 	 * Payment pre-processing actions
@@ -115,31 +189,31 @@ class iaPlan extends abstractCore
 	/**
 	 * Returns an array of available plans
 	 *
-	 * @param null $itemName option item name
+	 * @param string $itemName item name
 	 *
 	 * @return array
 	 */
-	public function getPlans($itemName = null)
+	public function getPlans($itemName, $options = true)
 	{
-		if (is_null($itemName))
+		if (!$this->_item || $this->_item != $itemName)
 		{
-			return isset($this->_item) ? $this->_item : array();
-		}
+			$this->_item = $itemName;
+			$this->_plans = array();
 
-		if (!isset($this->_item) || ($this->_item != $itemName))
-		{
-			if ($plans = $this->iaDb->all(array('id', 'duration', 'unit', 'cost', 'data'), "`item` = '{$itemName}' AND `status` = 'active' ORDER BY `order` ASC", null, null, self::getTable()))
+			$where = '`item` = :item AND `status` = :status ORDER BY `order` ASC';
+			$this->iaDb->bind($where, array('item' => $itemName, 'status' => iaCore::STATUS_ACTIVE));
+
+			if ($rows = $this->iaDb->all(array('id', 'duration', 'unit', 'cost', 'data'), $where, null, null, self::getTable()))
 			{
-				foreach ($plans as $plan)
+				foreach ($rows as $row)
 				{
-					$plan['data'] = unserialize($plan['data']);
-					$plan['fields'] = isset($plan['data']['fields']) ? implode(',', $plan['data']['fields']) : '';
+					$row['data'] = unserialize($row['data']);
+					$row['fields'] = isset($row['data']['fields']) ? implode(',', $row['data']['fields']) : '';
+					$options && $row['options'] = $this->getPlanOptions($row['id']);
 
-					$this->_plans[$plan['id']] = $plan;
+					$this->_plans[$row['id']] = $row;
 				}
 			}
-
-			$this->_item = $itemName;
 		}
 
 		return $this->_plans;
@@ -196,8 +270,11 @@ class iaPlan extends abstractCore
 		$tableName = $this->iaCore->factory('item')->getItemTable($itemName);
 		$stmt = iaDb::convertIds($itemId);
 
-		$entry = $this->iaDb->row(array(self::SPONSORED, self::SPONSORED_PLAN_ID), $stmt, $tableName);
-		if (empty($entry) || !$entry[self::SPONSORED] || !isset($entry['member_id']))
+		$fields = array(self::SPONSORED, self::SPONSORED_PLAN_ID);
+		'members' == $itemName || $fields[] = 'member_id';
+
+		$entry = $this->iaDb->row($fields, $stmt, $tableName);
+		if (empty($entry) || !$entry[self::SPONSORED])
 		{
 			return false;
 		}
@@ -218,7 +295,10 @@ class iaPlan extends abstractCore
 
 		$result = $this->iaDb->update($values, $stmt, null, $tableName);
 
-		$this->_sendEmailNotification('expired', $plan, $entry['member_id']);
+		if (isset($entry['member_id']) && $entry['member_id'])
+		{
+			$this->_sendEmailNotification('expired', $plan, $entry['member_id']);
+		}
 
 		// then, try to call class' helper
 		$this->_runClassMethod($itemName, self::METHOD_CANCEL_PLAN, array($itemId));
@@ -295,7 +375,7 @@ class iaPlan extends abstractCore
 		);
 	}
 
-	protected function _sendEmailNotification($type, array $plan, $memberId)
+	protected function _sendEmailNotification($type, $plan, $memberId)
 	{
 		$notificationType = 'plan_' . $type;
 
@@ -323,7 +403,8 @@ class iaPlan extends abstractCore
 			'email' => $member['email'],
 			'username' => $member['username'],
 			'fullname' => $member['fullname'],
-			'plan' => iaLanguage::get('plan_title_' . $plan['id'])
+			'plan' => iaLanguage::get('plan_title_' . $plan['id']),
+			'currency' => $this->iaCore->get('currency'),
 		));
 
 		return $iaMailer->send();

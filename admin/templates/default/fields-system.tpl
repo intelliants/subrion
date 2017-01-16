@@ -1,8 +1,6 @@
 {if !isset($noSystemFields)}
 <div class="wrap-group">
-	<div class="wrap-group-heading">
-		<h4>{lang key='system_fields'}</h4>
-	</div>
+	<div class="wrap-group-heading">{lang key='system_fields'}</div>
 
 	{if isset($fieldset_before.systems)}{$fieldset_before.systems}{/if}
 
@@ -11,8 +9,8 @@
 			<label class="col col-lg-2 control-label">{lang key='owner'}</label>
 
 			<div class="col col-lg-4">
-				<input type="text" class="common text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner}" maxlength="50" size="50">
-				<input type="hidden" name="member_id" id="member-id" {if isset($item.member_id) && $item.member_id}value="{$item.member_id}"{/if}>
+				<input type="text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner}" maxlength="255">
+				<input type="hidden" name="member_id" id="member-id"{if isset($item.member_id) && $item.member_id} value="{$item.member_id}"{/if}>
 			</div>
 		</div>
 	{/if}
@@ -48,7 +46,7 @@
 
 				<div class="col col-lg-4">
 					<div class="input-group">
-						<input size="16" type="text" class="js-datepicker" value="{if isset($item.sponsored_end)}{$item.sponsored_end}{/if}" data-date-show-time="true" data-date-format="yyyy-mm-dd H:i" name="sponsored_end" readonly>
+						<input size="16" type="text" class="js-datepicker" value="{if isset($item.sponsored_end)}{$item.sponsored_end}{/if}" data-date-format="YYYY-MM-DD HH:mm" name="sponsored_end" readonly>
 						<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 					</div>
 				</div>
@@ -70,7 +68,7 @@
 
 			<div class="col col-lg-4">
 				<div class="input-group">
-					<input type="text" class="js-datepicker" name="featured_end" value="{$item.featured_end}" data-date-show-time="true" data-date-format="yyyy-mm-dd H:i">
+					<input type="text" class="js-datepicker" name="featured_end" value="{$item.featured_end}" data-date-format="YYYY-MM-DD HH:mm">
 					<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 				</div>
 			</div>
@@ -90,7 +88,7 @@
 	{if isset($item.date_added)}
 		{capture assign=datevalue}
 			{if isset($datetime)}
-				value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d %H:%M'}{/if}" data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"
+				value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d %H:%M'}{/if}" data-date-format="YYYY-MM-DD HH:mm:ss"
 			{else}
 				value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d'}{/if}"
 			{/if}
@@ -128,7 +126,7 @@
 
 	{if isset($fieldset_after.systems)}{$fieldset_after.systems}{/if}
 
-	{ia_add_media files='datepicker'}
+	{ia_add_media files='moment, datepicker'}
 	{ia_add_js}
 $(function()
 {
@@ -137,7 +135,7 @@ $(function()
 
 	$inputPlan.on('change', function()
 	{
-		$sponsoredEnd.datepicker('update', $('option:selected', this).data('date'));
+		$sponsoredEnd.data("DateTimePicker").date($('option:selected', this).data('date'));
 	});
 
 	if ('' == $sponsoredEnd.val())
@@ -165,10 +163,10 @@ $(function()
 		{
 			$.ajax(
 			{
-				url: intelli.config.ia_url + 'members.json',
+				url: intelli.config.ia_url + 'actions.json',
 				type: 'get',
 				dataType: 'json',
-				data: { q: query },
+				data: { q: query, action: 'assign-owner' },
 				success: function(response) {
 					objects = items = [];
 					$.each(response, function(i, object) {
@@ -183,6 +181,9 @@ $(function()
 		updater: function(item) {
 			$('#member-id').val(items[item].id);
 				return item;
+		},
+		matcher: function() {
+			return true;
 		}
 	});
 });
@@ -299,6 +300,7 @@ $(function()
 {if !isset($noControls)}
 	<div class="form-actions inline">
 		<input type="submit" name="save" class="btn btn-primary" value="{if iaCore::ACTION_ADD == $pageAction}{lang key='add'}{else}{lang key='save'}{/if}">
-		{include file='goto.tpl'}
+		{include 'goto.tpl'}
+		{ia_hooker name='adminSubmitOptions'}
 	</div>
 {/if}

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -34,8 +34,6 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 	protected $_activityLog;
 
 	protected $_iaField;
-
-	protected $_setQuickSearch = true;
 
 
 	public function __construct()
@@ -104,16 +102,60 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		return parent::_gridRead($params);
 	}
 
+	// multilingual fields support for package items
+	protected function _gridApplyFilters(&$conditions, &$values, array $params)
+	{
+		$multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
+
+		foreach ($this->_gridFilters as $name => $type)
+		{
+			if (!empty($params[$name]))
+			{
+				$column = $name;
+				$value = $params[$name];
+
+				in_array($name, $multilingualFields) && $column.= '_' . $this->_iaCore->language['iso'];
+
+				switch ($type)
+				{
+					case self::EQUAL:
+						$conditions[] = sprintf('%s`%s` = :%s', $this->_gridQueryMainTableAlias, $column, $name);
+						$values[$name] = $value;
+						break;
+					case self::LIKE:
+						$conditions[] = sprintf('%s`%s` LIKE :%s', $this->_gridQueryMainTableAlias, $column, $name);
+						$values[$name] = '%' . $value . '%';
+				}
+			}
+		}
+	}
+
+	protected function _unpackGridColumnsArray()
+	{
+		if (is_array($this->_gridColumns)
+			&& ($multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName())))
+		{
+			foreach ($this->_gridColumns as $key => &$field)
+			{
+				if (in_array($field, $multilingualFields))
+				{
+					unset($this->_gridColumns[$key]);
+					$this->_gridColumns[$field] = $field . '_' . $this->_iaCore->language['iso'];
+				}
+			}
+		}
+
+		return parent::_unpackGridColumnsArray();
+	}
+	//
+
 	protected function _indexPage(&$iaView)
 	{
-		$this->_setQuickSearchActiveItem();
-
 		$iaView->grid('_IA_URL_packages/' . $this->getPackageName() . '/js/admin/' . $this->getName());
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$this->_setQuickSearchActiveItem();
 		$this->_setSystemDefaults($entryData);
 
 		$entryData['item'] = $this->getItemName();
@@ -134,7 +176,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		return parent::_entryUpdate($entryData, $entryId);
 	}
 
-	protected function _delete(array $entryId)
+	protected function _delete($entryId)
 	{
 		return parent::_entryDelete($entryId);
 	}
@@ -172,7 +214,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 			return false;
 		}
 
-		$result = $this->_update($entryData, $entryId);
+		$result = $this->_update($this->_validateMultilingualFieldsKeys($entryData), $entryId);
 
 		if ($result)
 		{
@@ -253,6 +295,13 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		return $result;
 	}
 
+	protected function _preSaveEntry(array &$entry, array $data, $action)
+	{
+		list($entry, , $this->_messages, ) = $this->_iaField->parsePost($this->getItemName(), $entry);
+
+		return empty($this->_messages);
+	}
+
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 		if ($this->getItemName())
@@ -278,9 +327,14 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 				iaCore::ACTION_DELETE => iaLog::ACTION_DELETE
 			);
 
-			$title = (isset($entryData['title']) && $entryData['title'])
-				? $entryData['title']
-				: $this->_iaDb->one('title', iaDb::convertIds($entryId), self::getTable());
+			$titleKey = empty($this->_activityLog['title_field']) ? 'title' : $this->_activityLog['title_field'];
+			in_array($titleKey, $this->_iaField->getMultilingualFields($this->getItemName()))
+				&& $titleKey.= '_' . $this->_iaCore->language['iso'];
+
+			$title = empty($entryData[$titleKey])
+				? $this->_iaDb->one($titleKey, iaDb::convertIds($entryId), self::getTable())
+				: $entryData[$titleKey];
+
 			$params = array_merge($this->_activityLog, array('name' => $title, 'id' => $entryId));
 
 			$iaLog->write($actionsMap[$action], $params);
@@ -290,14 +344,6 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 	public function updateCounters($entryId, array $entryData, $action, $previousData = null)
 	{
 		// within final class, the counters update routines should be placed here
-	}
-
-	protected function _setQuickSearchActiveItem()
-	{
-		if ($this->_setQuickSearch)
-		{
-			$this->_iaCore->iaView->assign('quickSearchItem', $this->getItemName());
-		}
 	}
 
 	protected function _setSystemDefaults(&$entryData)
@@ -340,10 +386,10 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		$rowsCount = $this->_iaDb->one(iaDb::STMT_COUNT_ROWS);
 		$dynamicLoadMode = ($rowsCount > 500);
 
-		$clause = $dynamicLoadMode ? sprintf('`parent_id` = %d', (int)$data['id']) : '1';
-		$clause.= ' ORDER BY `title`';
+		$where = $dynamicLoadMode ? sprintf('`parent_id` = %d', (int)$data['id']) : iaDb::EMPTY_CONDITION;
+		$where.= ' ORDER BY `title`';
 
-		$rows = $this->_iaDb->all(array('id', 'title', 'parent_id', 'child'), $clause);
+		$rows = $this->_iaDb->all(array('id', 'title', 'parent_id', 'child'), $where);
 
 		foreach ($rows as $row)
 		{
@@ -372,5 +418,22 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		}
 
 		return $plans;
+	}
+
+	protected function _validateMultilingualFieldsKeys(array $data)
+	{
+		if ($multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName()))
+		{
+			foreach ($data as $key => $value)
+			{
+				if (in_array($key, $multilingualFields))
+				{
+					$data[$key . '_' . $this->_iaCore->language['iso']] = $value;
+					unset($data[$key]);
+				}
+			}
+		}
+
+		return $data;
 	}
 }

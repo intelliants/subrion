@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,11 +20,11 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
-abstract class abstractPackageAdmin extends iaGrid
+abstract class abstractPackageAdmin extends abstractCore
 {
 	protected $_activityLog;
 
@@ -70,10 +70,13 @@ abstract class abstractPackageAdmin extends iaGrid
 		{
 			is_array($this->dashboardStatistics) || $this->dashboardStatistics = array();
 
-			$this->dashboardStatistics['url'] = $this->getModuleUrl();
 			if (!isset($this->dashboardStatistics['icon']))
 			{
 				$this->dashboardStatistics['icon'] = $this->getItemName();
+			}
+			if (!isset($this->dashboardStatistics['url']))
+			{
+				$this->dashboardStatistics['url'] = $this->getModuleUrl();
 			}
 		}
 
@@ -114,9 +117,13 @@ abstract class abstractPackageAdmin extends iaGrid
 		return isset($cachedData[$key]) ? $cachedData[$key] : null;
 	}
 
-	public function getById($id)
+	public function getById($id, $process = true)
 	{
-		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+
+		$process && $this->_processValues($row, true);
+
+		return $row;
 	}
 
 	public function getDashboardStatistics($defaultProcessing = true)
@@ -399,5 +406,46 @@ abstract class abstractPackageAdmin extends iaGrid
 
 			$iaLog->write($actionsMap[$action], $params);
 		}
+	}
+
+	/**
+	 * Used to unwrap fields
+	 *
+	 * @param array $rows items array
+	 * @param boolean $singleRow true when item is passed as one row
+	 * @param array $fieldNames list of custom serialized fields
+	 */
+	protected function _processValues(&$rows, $singleRow = false)
+	{
+		if (!$rows)
+		{
+			return;
+		}
+
+		$singleRow && $rows = array($rows);
+
+		$iaField = $this->iaCore->factory('field');
+
+		if ($multilingualFields = $iaField->getMultilingualFields($this->getItemName()))
+		{
+			foreach ($rows as &$row)
+			{
+				if (!is_array($row))
+				{
+					break;
+				}
+
+				$currentLangCode = $this->iaCore->language['iso'];
+				foreach ($multilingualFields as $fieldName)
+				{
+					if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName]))
+					{
+						$row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
+					}
+				}
+			}
+		}
+
+		$singleRow && $rows = array_shift($rows);
 	}
 }

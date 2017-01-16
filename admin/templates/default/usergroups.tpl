@@ -3,9 +3,7 @@
 
 	<div class="wrap-list">
 		<div class="wrap-group">
-			<div class="wrap-group-heading">
-				<h4>{lang key='options'}</h4>
-			</div>
+			<div class="wrap-group-heading">{lang key='options'}</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-name">{lang key='name'}</label>
@@ -16,15 +14,41 @@
 				</div>
 			</div>
 
-			{foreach $core.languages as $code => $language}
-				<div class="row">
-					<label class="col col-lg-2 control-label">{lang key='title'}{if count($core.languages) > 1} <span class="label label-info">{$language.title}</span>{/if}</label>
-
-					<div class="col col-lg-4">
-						<input type="text" name="title[{$code}]" value="{if isset($smarty.post.title[$code]) && $smarty.post.title[$code]}{$smarty.post.title[$code]|escape:'html'}{/if}">
-					</div>
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-title"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='title'}</label>
 				</div>
-			{/foreach}
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-title">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape:'html'}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="title[{$iso}]"{if isset($smarty.post.title.$iso)} value="{$smarty.post.title.$iso|escape:'html'}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="title[{$core.language.iso}]"{if isset($smarty.post.title[$core.language.iso])} value="{$smarty.post.title[$core.language.iso]|escape:'html'}"{/if}>
+					{/if}
+				</div>
+			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-source">{lang key='copy_privileges_from'}</label>

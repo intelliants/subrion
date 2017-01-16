@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -70,17 +70,15 @@ class iaLanguage
 		{
 			if (INTELLI_DEBUG && is_null($default))
 			{
-				$iaCore = iaCore::instance();
-				$cache = $iaCore->iaCache->get('nonexistent_phrases', 0, true);
+				$iaCache = iaCore::instance()->iaCache;
 
-				if (empty($cache))
-				{
-					$cache = array();
-				}
+				$cache = $iaCache->get('nonexistent_phrases', 0, true);
+				$cache || $cache = array();
+
 				if (!in_array($key, $cache))
 				{
 					$cache[] = $key;
-					$iaCore->iaCache->write('nonexistent_phrases', serialize($cache));
+					$iaCache->write('nonexistent_phrases', serialize($cache));
 				}
 
 				iaDebug::debug($key, 'Phrases do not exist', 'error');
@@ -139,7 +137,7 @@ class iaLanguage
 
 	public static function getTooltips()
 	{
-		$iaCore = &iaCore::instance();
+		$iaCore = iaCore::instance();
 
 		$stmt = '`category` = :category AND `code` = :language';
 		$iaCore->iaDb->bind($stmt, array('category' => self::CATEGORY_TOOLTIP, 'language' => $iaCore->iaView->language),1);

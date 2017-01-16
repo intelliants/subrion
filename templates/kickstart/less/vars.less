@@ -10,68 +10,71 @@
 
 // template colors
 
-@brand-dark:       #141b1f;
-@brand-primary:    #38b7ea;
-@link-color:       #38b7ea;
+@brand-dark:       #323232;
+@brand-primary:    #00bff3;
+@link-color:       @brand-primary;
 @link-hover-color: darken(@link-color, 15%);
 @body-bg:          #fff;
-@footer-bg:        #f2f2f2;
 @headings-color:   inherit;
+@border-color:     #eee;
 
 // rhythm
 @vertical-rhythm:  30px;
+@sections-v-pad:   100px;
 
-// type
-@import url(//fonts.googleapis.com/css?family=Roboto:300,400,700,400italic,700italic&subset=latin,cyrillic);
+// font
+// @import url(//fonts.googleapis.com/css?family=Roboto:300,400,700,400italic,700italic&subset=latin,cyrillic);
+@import url('//fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i,800&subset=cyrillic');
 
 @font-family-base: 'Roboto', @font-family-sans-serif;
 
 @border-radius-base:        3px;
 @border-radius-large:       4px;
 @border-radius-small:       2px;
-@border-color:              #ddd;
 
+
+
+//
 // Inventory
+// --------------------------------------------------
+
 @inventory-bg:                 @brand-dark;
-@inventory-height:             30px;
-@inventory-link-color:         fade(#fff, 30%);
+@inventory-height:             50px;
+@inventory-link-color:         fade(#fff, 45%);
 @inventory-link-hover-color:   fade(#fff, 50%);
 @inventory-link-active-color:  fade(#fff, 70%);
+@inventory-social-link-color:  fade(#fff, 70%);
+@inventory-text-color:         fade(#fff, 30%);
 
-// Basics of a navbar
-@navbar-height:                    60px;
-@navbar-margin-bottom:             @line-height-computed;
-@navbar-border-radius:             0;
+
+
+//
+// Navbar
+// --------------------------------------------------
+
+@navbar-height:                    80px;
 @navbar-padding-horizontal:        floor((@grid-gutter-width / 2));
 @navbar-padding-vertical:          ((@navbar-height - @line-height-computed) / 2);
-@navbar-collapse-max-height:       340px;
-
-@navbar-default-color:             #fff;
-@navbar-default-bg:                transparent;
-@navbar-default-border:            transparent;
+@navbar-default-bg:                #fff;
 
 // Navbar links
-@navbar-default-link-color:                fade(#fff, 60%);
-@navbar-default-link-hover-color:          fade(#fff, 80%);
+@navbar-default-link-color:                fade(@brand-dark, 80%);
+@navbar-default-link-hover-color:          fade(@brand-dark, 60%);
 @navbar-default-link-hover-bg:             transparent;
-@navbar-default-link-active-color:         #fff;
+@navbar-default-link-active-color:         @brand-primary;
 @navbar-default-link-active-bg:            transparent;
 @navbar-default-link-disabled-color:       #ccc;
 @navbar-default-link-disabled-bg:          transparent;
 
-// Navbar brand label
-@navbar-default-brand-color:               @navbar-default-link-color;
-@navbar-default-brand-hover-color:         @navbar-default-link-hover-color;
-@navbar-default-brand-hover-bg:            transparent;
 
-// Navbar toggle
-@navbar-default-toggle-hover-bg:           #ddd;
-@navbar-default-toggle-icon-bar-bg:        #888;
-@navbar-default-toggle-border-color:       #ddd;
 
-// Breadcrumb
+//
+// Breadcrumbs
+// --------------------------------------------------
+
 @breadcrumb-padding-vertical:        10px;
 @breadcrumb-padding-horizontal:      0;
+
 
 
 //
@@ -82,6 +85,7 @@
 @box-content-color:  @text-color;
 
 
+
 //
 // Forms
 // --------------------------------------------------
@@ -89,4 +93,41 @@
 @fieldest-padding-vertical:   20px;
 @fieldest-padding-horizontal: 20px;
 
-@form-label-color: fade(@text-color, 80%);
+@form-label-color:            fade(@text-color, 80%);
+
+@input-border:                #ccc;
+@input-border-focus:          darken(@input-border, 35%);
+
+
+
+//
+// Dropdowns
+// --------------------------------------------------
+
+@dropdown-border-radius:  0;
+@dropdown-link-color:     fade(@text-color, 70%);
+@dropdown-link-hover-bg:  #f5f5f5;
+
+
+
+//
+// List group
+// --------------------------------------------------
+
+@list-group-border-radius:         0;
+@list-group-border:                @border-color;
+
+
+
+
+//
+// Footer
+// --------------------------------------------------
+
+@footer-bg:                 @brand-dark;
+@footer-height:             60px;
+@footer-link-color:         fade(#fff, 45%);
+@footer-link-hover-color:   fade(#fff, 50%);
+@footer-link-active-color:  fade(#fff, 70%);
+@footer-social-link-color:  fade(#fff, 70%);
+@footer-text-color:         fade(#fff, 30%);

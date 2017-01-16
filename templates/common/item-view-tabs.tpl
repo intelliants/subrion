@@ -47,7 +47,7 @@
 						{content_hook key=$section_name value=$tabs_before}
 
 						{if $section}
-							{include file='field-type-content-fieldset.tpl' item_sections=$section}
+							{include 'field-type-content-fieldset.tpl' item_sections=$section}
 						{/if}
 
 						{content_hook key=$section_name value=$tabs_after}

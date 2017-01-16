@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -364,23 +364,6 @@ class iaDebug
 		return '[Time: ' . $totalRealTime . '] [Mem.: ' . iaSystem::byteView($memoryUsed) . ']';
 	}
 
-	private static function _deepSanitizeHtml($value)
-	{
-		if (is_array($value))
-		{
-			foreach ($value as $k => $v)
-			{
-				$value[$k] = call_user_func(array(__CLASS__, __METHOD__), $v);
-			}
-
-			return $value;
-		}
-		else
-		{
-			return iaSanitize::html($value);
-		}
-	}
-
 	public static function dump($value = '<br />', $title = '', $type = false, $hl = 'php')
 	{
 		if (!INTELLI_DEBUG && !INTELLI_QDEBUG)
@@ -431,7 +414,7 @@ class iaDebug
 				else
 				{
 					echo "<code class='{$hl}'>";
-					print_r(self::_deepSanitizeHtml($value));
+					print_r($value);
 					echo '</code>';
 				}
  				echo '</pre>';

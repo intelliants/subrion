@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -69,37 +69,34 @@ class iaBackendController extends iaAbstractControllerBackend
 			$iaView->assign('customization_mode', true);
 		}
 
-
 		// populate statistics
-		$iaItem = $iaCore->factory('item');
-		$itemsList = $iaItem->getPackageItems();
+		$itemsList = $iaCore->factory('item')->getPackageItems();
 		$validSizes = array('small', 'medium', 'package');
 
 		$iaCore->startHook('adminDashboardStatistics', array('items' => &$itemsList));
 
 		natcasesort($itemsList);
+
 		$statistics = array();
-
 		foreach ($validSizes as $size)
-		{
 			$statistics[$size] = array();
-		}
 
-		foreach ($itemsList as $itemName => $pluginType)
+		foreach ($itemsList as $name => $package)
 		{
-			$itemName = substr($itemName, 0, -1);
-			switch ($pluginType)
+			$itemName = substr($name, 0, -1);
+
+			switch ($package)
 			{
 				case 'core':
 					$classInstance = $iaCore->factory('member' == $itemName ? 'users' : $itemName);
 					break;
 				case 'plugin':
-					$array = explode(':', $itemName);
-					$itemName = isset($array[1]) ? $array[1] : $itemName;
+					$array = explode(':', $name);
+					$itemName = isset($array[1]) ? $array[1] : $name;
 					$classInstance = $iaCore->factoryPlugin($array[0], iaCore::ADMIN, isset($array[1]) ? $array[1] : null);
 					break;
 				default:
-					$classInstance = $iaCore->factoryPackage($itemName, $pluginType, iaCore::ADMIN);
+					$classInstance = $iaCore->factoryPackage($itemName, $package, iaCore::ADMIN);
 			}
 
 			if (!$customizationMode && in_array($itemName, $disabledWidgets))
@@ -107,24 +104,21 @@ class iaBackendController extends iaAbstractControllerBackend
 				continue;
 			}
 
-			if ($classInstance)
+			if ($classInstance && method_exists($classInstance, self::STATISTICS_GETTER_METHOD))
 			{
-				if (method_exists($classInstance, self::STATISTICS_GETTER_METHOD))
+				if ($classInstance->dashboardStatistics)
 				{
-					if ($classInstance->dashboardStatistics)
-					{
-						$data = call_user_func(array($classInstance, self::STATISTICS_GETTER_METHOD));
+					$data = call_user_func(array($classInstance, self::STATISTICS_GETTER_METHOD));
 
-						isset($data['icon']) || $data['icon'] = $itemName;
-						isset($data['caption']) || $data['caption'] = $itemName;
+					isset($data['icon']) || $data['icon'] = $name;
+					isset($data['caption']) || $data['caption'] = $name;
 
-						$data['caption'] = iaLanguage::get($data['caption'], $data['caption']);
+					$data['caption'] = iaLanguage::get($data['caption'], $data['caption']);
 
-						$widgetFormat = isset($data['_format']) && in_array($data['_format'], $validSizes)
-							? $data['_format']
-							: $validSizes[0];
-						$statistics[$widgetFormat][$itemName] = $data;
-					}
+					$widgetFormat = isset($data['_format']) && in_array($data['_format'], $validSizes)
+						? $data['_format']
+						: $validSizes[0];
+					$statistics[$widgetFormat][$itemName] = $data;
 				}
 			}
 		}
@@ -173,7 +167,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								$class = 'other';
 						}
 
-						$issue = preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', ltrim($line, '+-* '));
+						$issue = preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', ltrim($line, '+-* '));
 						$log[$index][$class] .= '<li>' . $issue . '</li>';
 					}
 				}
@@ -190,8 +184,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		// twitter widget
 		if ($customizationMode || !in_array('twitter', $disabledWidgets))
 		{
-			$data = iaUtil::getPageContent('http://tools.intelliants.com/timeline/');
-			$iaView->assign('timeline', iaUtil::jsonDecode($data));
+			$data = iaUtil::getPageContent('https://tools.intelliants.com/timeline/');
+			$iaView->assign('timeline', json_decode($data, true));
 		}
 
 		if ($customizationMode || !in_array('recent-activity', $disabledWidgets))
@@ -219,6 +213,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'phpinfo':
 				$this->_showPhpinfo($iaView);
 				$iaView->display('index');
+				break;
+
+			case 'debugmode':
+				$this->_debugMode($iaView);
 				break;
 
 			case 'clear_cache':
@@ -254,7 +252,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$footer .= 'Email: ' . $email . '<br />' . PHP_EOL;
 				$footer .= 'Script version: ' . $this->_iaCore->get('version') . '<br />' . PHP_EOL;
 
-				$result = (bool)mail('tech@subrion.com', $this->_iaCore->get('site') . ' - ' . $_POST['feedback_subject'], $_POST['feedback_body'] . $footer, 'From: ' . $email);
+				$result = (bool)mail('support@subrion.org', $this->_iaCore->get('site') . ' - ' . $_POST['feedback_subject'], $_POST['feedback_body'] . $footer, 'From: ' . $email);
 
 				return array(
 					'result' => $result,
@@ -299,6 +297,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'<!DOCTYPE', '<body>',
 			'</body></html>',
 			'<table border="0" cellpadding="3" width="600">',
+			'<table>',
 		);
 
 		$replace = array(
@@ -307,6 +306,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'<th colspan="2" style="text-align: center; font-weight: bold;">',
 			'<!-- <!DOCTYPE', '<body> -->',
 			'<!-- </body></html> -->',
+			'<table class="table table-bordered table-condensed table-striped">',
 			'<table class="table table-bordered table-condensed table-striped">',
 		);
 
@@ -327,6 +327,28 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			iaUtil::go_to($_SERVER['HTTP_REFERER']);
 		}
+	}
+
+	private function _debugMode(&$iaView)
+	{
+		if (isset($_SESSION['debugger']) && $_SESSION['debugger'])
+		{
+			unset($_SESSION['debugger']);
+
+			iaUtil::go_to(IA_ADMIN_URL);
+		}
+
+		$iaView->setMessages(iaLanguage::get('debug_mode_activated'), iaView::SUCCESS);
+
+		$token = $this->_iaCore->get('debug_pass');
+		if (!$token)
+		{
+			$token = iaUtil::generateToken(32);
+			$this->_iaCore->set('debug_pass', $token, true);
+		}
+		$this->_iaCore->iaCache->clearGlobalCache();
+
+		iaUtil::go_to(IA_ADMIN_URL . '?debugger=' . $token);
 	}
 
 	private function _buildSitemap(&$iaView)
@@ -352,7 +374,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			return;
 		}
 
-		$content = iaUtil::jsonDecode($content);
+		$content = json_decode($content, true);
 
 		if (is_array($content) && $content)
 		{

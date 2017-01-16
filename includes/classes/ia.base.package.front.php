@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -51,9 +51,14 @@ abstract class abstractPackageFront extends abstractCore
 		return $this->_statuses;
 	}
 
-	public function url($type, $data)
+	public function url($action, array $data)
 	{
-		return isset($data['url']) ? $this->getInfo('url') . $data['url'] : '';
+		return '#';
+	}
+
+	public function makeUrl(array $itemData)
+	{
+		return $this->getInfo($this->getPackageName()) . '#';
 	}
 
 	public function getInfo($key)
@@ -68,9 +73,31 @@ abstract class abstractPackageFront extends abstractCore
 		return array('', '');
 	}
 
-	public function getById($id)
+	public function getById($id, $decorate = true)
 	{
-		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+
+		$decorate && $this->_processValues($row, true);
+
+		return $row;
+	}
+
+	public function getOne($where, $fields = '*')
+	{
+		$row = $this->iaDb->row($fields, $where, self::getTable());
+
+		$this->_processValues($row, true);
+
+		return $row;
+	}
+
+	public function getAll($where, $fields = '*', $start = null, $limit = null)
+	{
+		$rows = $this->iaDb->all($fields, $where, $start, $limit, self::getTable());
+
+		$this->_processValues($rows);
+
+		return $rows;
 	}
 
 	public function insert(array $itemData)
@@ -221,5 +248,64 @@ abstract class abstractPackageFront extends abstractCore
 	public function coreSearchTranslateColumn($column, $value)
 	{
 		return null;
+	}
+
+	/**
+	 * Used to unserialize fields
+	 *
+	 * @param array $rows items array
+	 * @param boolean $singleRow true when item is passed as one row
+	 * @param array $fieldNames list of custom serialized fields
+	 */
+	protected function _processValues(&$rows, $singleRow = false, $fieldNames = array())
+	{
+		if (!$rows)
+		{
+			return;
+		}
+
+		$singleRow && $rows = array($rows);
+
+		// process favorites
+		$rows = $this->iaCore->factory('item')->updateItemsFavorites($rows, $this->getItemName());
+
+		// get serialized field names
+		$iaField = $this->iaCore->factory('field');
+
+		$serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+		$multilingualFields = $iaField->getMultilingualFields($this->getItemName());
+
+		if ($serializedFields || $multilingualFields)
+		{
+			foreach ($rows as &$row)
+			{
+				if (!is_array($row))
+				{
+					break;
+				}
+
+				// filter fields
+				$iaField->filter($this->getItemName(), $row);
+
+				foreach ($serializedFields as $fieldName)
+				{
+					if (isset($row[$fieldName]))
+					{
+						$row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : array();
+					}
+				}
+
+				$currentLangCode = $this->iaCore->language['iso'];
+				foreach ($multilingualFields as $fieldName)
+				{
+					if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName]))
+					{
+						$row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
+					}
+				}
+			}
+		}
+
+		$singleRow && $rows = array_shift($rows);
 	}
 }

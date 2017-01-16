@@ -2,9 +2,7 @@
 	{preventCsrf}
 	<div class="wrap-list">
 		<div class="wrap-group">
-			<div class="wrap-group-heading">
-				<h4>{lang key='options'}</h4>
-			</div>
+			<div class="wrap-group-heading">{lang key='options'}</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='name'}</label>
@@ -73,25 +71,80 @@
 				</div>
 			</div>
 
-			{foreach $core.languages as $code => $language}
-				<div class="row">
-					<label class="col col-lg-2 control-label">{$language.title} {lang key='title'}</label>
-
-					<div class="col col-lg-4">
-						<input type="text" name="titles[{$code}]" value="{if isset($smarty.post.titles.$code)}{$smarty.post.titles.$code|escape:'html'}{elseif isset($item.titles[$code])}{$item.titles[$code]}{/if}">
-					</div>
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-title"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='title'}</label>
 				</div>
-				<div class="row">
-					<label class="col col-lg-2 control-label">{$language.title} {lang key='description'}</label>
-
-					<div class="col col-lg-4">
-						<textarea id="description[{$code}]" rows="6" name="description[{$code}]">{if isset($smarty.post.description.$code)}{$smarty.post.description[$code]|escape:'html'}{elseif isset($item.description[$code])}{$item.description.$code}{/if}</textarea>
-					</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-title">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="titles[{$core.language.iso}]" value="{if isset($smarty.post.titles[$core.language.iso])}{$smarty.post.titles[$core.language.iso]|escape:'html'}{elseif isset($item.titles[$core.language.iso])}{$item.titles[$core.language.iso]}{/if}">
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="titles[{$iso}]" value="{if isset($smarty.post.titles[$iso])}{$smarty.post.titles[$iso]|escape:'html'}{elseif isset($item.titles.$iso)}{$item.titles.$iso}{/if}">
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="titles[{$core.language.iso}]" value="{if isset($smarty.post.titles[$core.language.iso])}{$smarty.post.titles[$core.language.iso]|escape:'html'}{elseif isset($item.titles[$core.language.iso])}{$item.titles[$core.language.iso]}{/if}">
+					{/if}
 				</div>
-			{/foreach}
+			</div>
+
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-description"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-description"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='description'}</label>
+				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-description">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<textarea rows="6" name="description[{$core.language.iso}]">{if isset($smarty.post.description[$core.language.iso])}{$smarty.post.description[$core.language.iso]|escape:'html'}{elseif isset($item.description[$core.language.iso])}{$item.description[$core.language.iso]}{/if}</textarea>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<textarea rows="6" name="description[{$iso}]">{if isset($smarty.post.description.$iso)}{$smarty.post.description.$iso|escape:'html'}{elseif isset($item.description.$iso)}{$item.description.$iso}{/if}</textarea>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<textarea rows="6" name="description[{$core.language.iso}]">{if isset($smarty.post.description[$core.language.iso])}{$smarty.post.description[$core.language.iso]|escape:'html'}{elseif isset($item.description[$core.language.iso])}{$item.description[$core.language.iso]}{/if}</textarea>
+					{/if}
+				</div>
+			</div>
 		</div>
 
-		{include file='fields-system.tpl'}
+		{include 'fields-system.tpl'}
 	</div>
 </form>
 

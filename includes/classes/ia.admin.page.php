@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -33,7 +33,7 @@ class iaPage extends abstractPlugin
 
 	public $extendedExtensions = array('htm', 'html', 'php');
 
-	protected static $_pageTitles;
+	protected static $_pageTitles = array();
 
 
 	public static function getAdminTable()
@@ -48,41 +48,50 @@ class iaPage extends abstractPlugin
 
 	public function getNonServicePages(array $exclude)
 	{
-		$sql =
-			"SELECT DISTINCTROW p.*, IF(t.`value` IS NULL, p.`name`, t.`value`) `title`
-			FROM `" . self::getTable(true) . "` p
-				LEFT JOIN `" . $this->iaDb->prefix . iaLanguage::getTable() . "` t
-					ON `key` = CONCAT('page_title_', p.`name`) AND t.`code` = '" . $this->iaView->language . "'
-			WHERE p.`status` = 'active'
-				AND p.`service` = 0 " . ($exclude ? "AND !FIND_IN_SET(p.`name`, '" . implode(',', $exclude) . "') " : ' ') .
-			'ORDER BY t.`value`';
+		$sql = <<<SQL
+SELECT DISTINCTROW p.*, l.`value`, IF(l.`value` IS NULL, p.`name`, l.`value`) `title` 
+	FROM `:table_pages` p 
+LEFT JOIN `:table_phrases` l ON (`key` = CONCAT('page_title_', p.`name`) AND l.`code` = ':lang') 
+WHERE p.`status` = ':status' AND p.`service` = 0 :extra_where
+ORDER BY l.`value`
+SQL;
+
+		$sql = iaDb::printf($sql, array(
+			'table_pages' => self::getTable(true),
+			'table_phrases' => $this->_iaDb->prefix . iaLanguage::getTable(),
+			'lang' => $this->iaCore->language['iso'],
+			'status' => iaCore::STATUS_ACTIVE,
+			'extra_where' => $exclude ? "AND !FIND_IN_SET(p.`name`, '" . implode(',', $exclude) . "') " : ''
+		));
 
 		return $this->iaDb->getAll($sql);
 	}
 
-	public function getTitles()
+	public function getTitles($side = iaCore::FRONT)
 	{
-		if (is_null(self::$_pageTitles))
+		if (!isset(self::$_pageTitles[$side]))
 		{
-			$stmt = '`key` LIKE :key AND `category` = :category AND `code` = :code';
-			$this->iaDb->bind($stmt, array('key' => 'page_title_%', 'category' => iaLanguage::CATEGORY_PAGE, 'code' => $this->iaView->language));
+			$category = iaCore::FRONT == $side ? iaLanguage::CATEGORY_PAGE : iaLanguage::CATEGORY_ADMIN;
 
-			self::$_pageTitles = $this->iaDb->keyvalue("REPLACE(`key`, 'page_title_', '') `key`, `value`", $stmt, iaLanguage::getTable());
+			$where = '`key` LIKE :key AND `category` = :category AND `code` = :code';
+			$this->iaDb->bind($where, array('key' => 'page_title_%', 'category' => $category, 'code' => $this->iaView->language));
+
+			self::$_pageTitles[$side] = $this->iaDb->keyvalue("REPLACE(`key`, 'page_title_', '') `key`, `value`", $where, iaLanguage::getTable());
 		}
 
-		return self::$_pageTitles;
+		return self::$_pageTitles[$side];
 	}
 
 	public function getPageTitle($pageName, $default = null)
 	{
 		$this->getTitles();
 
-		if (!isset(self::$_pageTitles[$pageName]))
+		if (!isset(self::$_pageTitles[iaCore::FRONT][$pageName]))
 		{
 			return is_null($default) ? $pageName : $default;
 		}
 
-		return self::$_pageTitles[$pageName];
+		return self::$_pageTitles[iaCore::FRONT][$pageName];
 	}
 
 	public function getGroups(array $exclusions = array())
@@ -142,11 +151,11 @@ class iaPage extends abstractPlugin
 		$result = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $pageName),
 			$lookupThroughBackend ? self::getAdminTable() : self::getTable());
 
-		if (!$lookupThroughBackend && $result)
+		if ($result)
 		{
 			$result['title'] = $this->iaDb->one_bind(array('value'), '`key` = :key AND `category` = :category AND `code` = :lang',
-				array('key' => 'page_title_' . $pageName, 'category' => iaLanguage::CATEGORY_PAGE, 'lang' => $this->iaView->language),
-				iaLanguage::getTable());
+				array('key' => 'page_title_' . $pageName, 'category' => $lookupThroughBackend ? iaLanguage::CATEGORY_ADMIN : iaLanguage::CATEGORY_PAGE,
+					'lang' => $this->iaView->language), iaLanguage::getTable());
 		}
 
 		return $result;

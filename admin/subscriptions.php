@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -61,7 +61,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->_iaDb->getAll($sql);
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
 		if (!empty($_GET['reference_id']))
 		{

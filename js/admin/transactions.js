@@ -21,11 +21,11 @@ Ext.onReady(function()
 				{name: 'amount', title: _t('total'), width: 100},
 				{name: 'gateway', title: _t('gateway'), width: 70},
 				'status',
-				{name: 'date', title: _t('date'), width: 170},
+				{name: 'date_created', title: _t('date_created'), width: 170},
 				'delete'
 			],
 			fields: ['plan_id'],
-			sorters: [{property: 'date', direction: 'DESC'}],
+			sorters: [{property: 'date_created', direction: 'DESC'}],
 			statuses: ['pending','passed','failed','refunded'],
 			texts:{
 				delete_single: _t('are_you_sure_to_delete_this_transaction'),
@@ -39,7 +39,7 @@ Ext.onReady(function()
 			name: 'username',
 			emptyText: _t('username'),
 			listeners: intelli.gridHelper.listener.specialKey,
-			width: 120,
+			width: 120
 		}, {
 			xtype: 'textfield',
 			name: 'reference_id',
@@ -84,6 +84,12 @@ Ext.onReady(function()
 		}, {
 			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
+		}, {
+			handler: function(){
+				intelli.gridHelper.search(grid, false, true);
+				intelli.gridHelper.search(grid, true);
+			},
+			text: '<i class="i-box-remove"></i> ' + _t('export_to_excel')
 		}]});
 
 		if (searchParam)

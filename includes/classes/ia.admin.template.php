@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -136,7 +136,7 @@ class iaTemplate extends abstractCore
 								'notes' => $this->getNotes(),
 								'config' => $this->_config,
 								'config_groups' => $this->_configGroups,
-								'url' => 'http://www.subrion.org/template/' . $this->name . '.html'
+								'url' => 'https://subrion.org/template/' . $this->name . '.html'
 							);
 
 							$templates[$this->name]['logo'] = file_exists(IA_FRONT_TEMPLATES . $this->name . '/docs/img/icon.png')
@@ -389,10 +389,7 @@ class iaTemplate extends abstractCore
 
 		$iaDb->update(array('value' => $this->name), "`name` = 'tmpl'", null, iaCore::getConfigTable());
 
-		if ($this->_phrases)
-		{
-			$this->_processPhrases();
-		}
+		$this->_phrases && $this->_processPhrases();
 
 		if ($this->_config)
 		{
@@ -488,11 +485,9 @@ class iaTemplate extends abstractCore
 
 				if ($position['pages'])
 				{
-					$pages = explode(',', $position['pages']);
-					foreach ($pages as $page)
-					{
-						$positionPages[] = array('object_type' => 'positions', 'page_name' => $page, 'object' => $position['name'], 'access' => (int)$position['access']);
-					}
+					foreach (explode(',', $position['pages']) as $pageName)
+						$positionPages[] = array('object_type' => 'positions', 'page_name' => $pageName,
+							'object' => $position['name'], 'access' => (int)$position['access']);
 				}
 			}
 			$iaDb->resetTable();
@@ -501,9 +496,7 @@ class iaTemplate extends abstractCore
 			{
 				$iaDb->delete("`object_type` = 'positions'", 'objects_pages');
 				foreach ($positionPages as $positionPage)
-				{
 					$iaDb->insert($positionPage, null, 'objects_pages');
-				}
 			}
 		}
 
@@ -747,15 +740,19 @@ class iaTemplate extends abstractCore
 					'name' => $this->attr('name'),
 					'value' => $text,
 					'config_group' => $this->attr(array('group','configgroup')),
-					'multiple_values' => $this->attr(array('values', 'multiplevalues')),
+					'multiple_values' => $this->attr('values'),
 					'type' => $this->attr('type'),
 					'description' => $this->attr('description'),
-					'wysiwyg' => $this->attr('wysiwyg', false),
-					'code_editor' => $this->attr('code_editor', false),
 					'private' => $this->attr('private', false),
 					'order' => $this->attr('order', false),
-					'show' => $this->attr('show'),
-					'extras' => $this->name
+					'extras' => $this->name,
+					'options' => json_encode(array(
+							'wysiwyg' => $this->attr('wysiwyg', false),
+							'code_editor' => $this->attr('code_editor', false),
+							'show' => $this->attr('show'),
+							'multilingual' => $this->attr('multilingual', false)
+						)
+					)
 				);
 				break;
 

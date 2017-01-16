@@ -18,7 +18,7 @@
 			<td>{$transaction.reference_id}</td>
 			<td>{$transaction.operation}</td>
 			<td class="{$transaction.status}">{$transaction.status}</td>
-			<td>{$transaction.date|date_format:$core.config.date_format}</td>
+			<td>{$transaction.date_created|date_format:$core.config.date_format}</td>
 			<td>{$transaction.gateway}</td>
 			<td>{$transaction.amount} {$transaction.currency}</td>
 			<td>
@@ -63,15 +63,15 @@ $(function() {
 			<table class="table table-condensed">
 				<tbody>
 					<tr>
-						<td>Minimum deposit</td>
+						<td>{lang key='min_deposit'}</td>
 						<td>{$core.config.currency} {$core.config.funds_min_deposit}</td>
 					</tr>
 					<tr>
-						<td>Maximum deposit</td>
+						<td>{lang key='max_deposit'}</td>
 						<td>{$core.config.currency} {$core.config.funds_max_deposit}</td>
 					</tr>
 					<tr>
-						<td>Maximum balance</td>
+						<td>{lang key='max_balance'}</td>
 						<td>{$core.config.currency} {$core.config.funds_max}</td>
 					</tr>
 				</tbody>
@@ -80,8 +80,8 @@ $(function() {
 			{preventCsrf}
 
 			<div class="form-group">
+				<label>{lang key='amount_to_add'}</label>
 				<div class="input-group">
-					<span class="input-group-addon">{lang key='amount_to_add'}</span>
 					<input class="form-control" type="text" name="amount" id="amount" placeholder="{$core.config.funds_min_deposit}">
 					<span class="input-group-btn">
 						<button class="btn btn-primary" type="submit">{lang key='add_funds'}</button>

@@ -1,5 +1,5 @@
 {if isset($filters.item)}
-	<form class="ia-form ia-form-filters" id="js-item-filters-form" data-item="{$filters.item}" action="{$smarty.const.IA_CLEAR_URL}search/{$filters.item}.json">
+	<form class="ia-form ia-form-filters" id="js-item-filters-form" data-item="{$filters.item}" action="{$smarty.const.IA_URL}search/{$filters.item}.json">
 		{if $member}
 			<div class="ia-form-filters__actions">
 				<a href="{$smarty.const.IA_URL}search/my/" class="btn btn-xs btn-success" data-loading-text="{lang key='loading'}" id="js-cmd-open-searches">{lang key='my_searches'}</a>
@@ -21,13 +21,13 @@
 				{$selected = null}
 			{/if}
 			<div class="form-group">
-				<label>{lang key="field_{$field.name}"}</label>
+				<label>{lang key="field_{$field.item}_{$field.name}"}</label>
 				{switch $field.type}
 					{case iaField::CHECKBOX break}
-					<div class="radios-list">
-						{html_checkboxes assign='checkboxes' name=$field.name options=$field.values separator='</div>' selected=$selected}
-						<div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
-							</div>
+						<div class="radios-list">
+							{html_checkboxes assign='checkboxes' name=$field.name options=$field.values separator='</div>' selected=$selected}
+							<div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
+						</div>
 					{case iaField::COMBO break}
 						<select class="form-control js-interactive" name="{$field.name}[]" multiple>
 							{if !empty($field.values)}
@@ -36,12 +36,20 @@
 						</select>
 
 					{case iaField::RADIO break}
-						<div class="radios-list">
-							{if !empty($field.values)}
-							{html_radios assign='radios' name=$field.name id=$field.name options=$field.values separator='</div>'}
-							<div class="radio">{'<div class="radio">'|implode:$radios}
+						{if iaField::COMBO == $field.show_as}
+							<select class="form-control js-interactive" name="{$field.name}[]" multiple>
+								{if !empty($field.values)}
+									{html_options options=$field.values selected=$selected}
+								{/if}
+							</select>
+						{else}
+							<div class="radios-list">
+								{if !empty($field.values)}
+									{html_radios assign='radios' name=$field.name id=$field.name options=$field.values separator='</div>'}
+									<div class="radio">{'<div class="radio">'|implode:$radios}
 								{/if}
 							</div>
+						{/if}
 					{case iaField::STORAGE}
 					{case iaField::IMAGE}
 					{case iaField::PICTURES break}

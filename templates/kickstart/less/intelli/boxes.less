@@ -7,7 +7,7 @@
 
   &--border {
     padding: 20px;
-    border: 1px solid #ddd;
+    border: 1px solid @border-color;
   }
 
   &--featured {
@@ -24,7 +24,7 @@
 
   + .box,
   + div {
-    margin-top: @vertical-rhythm*2;
+    margin-top: @vertical-rhythm;
   }
 
   &__caption {
@@ -71,23 +71,22 @@
   right: 0;
   top: 50%;
   margin-top: -12px;
-  font-size: 24px;
+  font-size: 20px;
   width: 24px;
   height: 24px;
   line-height: 24px;
   text-decoration: none;
   text-align: center;
+  color: fade(@text-color, 30%);
 
   i {
     .fa-icon();
     &:before { content: @fa-var-angle-up; }
   }
 
-  &:hover {
+  &:hover,
+  &:focus {
     text-decoration: none;
-
-    i {
-      color: @link-color;
-    }
+    color: fade(@text-color, 50%);
   }
 }

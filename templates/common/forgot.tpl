@@ -20,7 +20,7 @@
 		</div>
 	</form>
 {elseif 'request' == $form}
-	<p>{lang key='forgot_annotation'}</p>
+	<p>{lang key='forgot_tooltip'}</p>
 
 	<form action="{$smarty.const.IA_URL}forgot/" method="post" class="ia-form ia-form--bordered">
 		<div class="fieldset">
@@ -33,7 +33,7 @@
 			</div>
 		</div>
 
-		{include file='captcha.tpl'}
+		{include 'captcha.tpl'}
 
 		<div class="fieldset__actions">
 			<button type="submit" name="restore" class="btn btn-primary">{lang key='restore_password'}</button>

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -145,7 +145,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$favorites[$itemName]['package'] = (iaCore::CORE == $itemsList[$itemName]) ? '' : $itemsList[$itemName];
 
 				// filter values
-				$favorites[$itemName]['fields'] = $iaField->filter($favorites[$itemName]['items'], $itemName);
+				$favorites[$itemName]['fields'] = $iaField->filter($itemName, $favorites[$itemName]['items']);
 			}
 		}
 	}
@@ -159,7 +159,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			if (isset($items['items']) && $items['items'])
 			{
 				// generate correct fields array
-				$favorites[$itemName]['fields'] = $iaField->filter($items['items'], $itemName);
+				$favorites[$itemName]['fields'] = $iaField->filter($itemName, $items['items']);
 
 				// generate correct template filename
 				$favorites[$itemName]['package'] = iaCore::CORE == $itemsList[$itemName] ? '' : $itemsList[$itemName];

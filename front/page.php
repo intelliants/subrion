@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -90,14 +90,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaPage = $iaCore->factory('page', iaCore::FRONT);
 	$page = $iaPage->getByName($name, $preview ? iaCore::STATUS_DRAFT : iaCore::STATUS_ACTIVE);
 
-	if (!$previewMode && (empty($page) || $iaCore->requestPath))
+	if (!$previewMode && (empty($page) || $iaCore->requestPath && !('index' == $iaCore->requestPath[0] && 1 == count($iaCore->requestPath))))
 	{
 		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
 	// check read permissions
-	$page['passw'] = trim($page['passw']);
-
 	if (isset($_POST['password']) && $page['passw'] && $passw != $page['passw'])
 	{
 		$iaView->setMessages(iaLanguage::get('password_incorrect'), iaView::ERROR_NOT_FOUND);

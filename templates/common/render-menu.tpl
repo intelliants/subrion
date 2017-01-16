@@ -24,7 +24,7 @@
 	{/if}
 {elseif in_array($position, array('left', 'right', 'user1', 'user2', 'top'))}
 	{if !empty($menu.contents[0]) && 'account' != $menu.name}
-		{ia_block title=$menu.title movable=true id=$menu.id name=$menu.name collapsible=$menu.collapsible classname=$menu.classname}
+		{ia_block header=$menu.header title=$menu.title movable=true id=$menu.id name=$menu.name collapsible=$menu.collapsible classname=$menu.classname}
 			{ia_menu menus=$menu.contents class="list-group {$menu.classname}"}
 		{/ia_block}
 	{/if}

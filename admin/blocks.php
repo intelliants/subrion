@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -29,7 +29,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_name = 'blocks';
 
 	protected $_gridColumns = array('title', 'contents', 'position', 'extras', 'type', 'status', 'order', 'multilingual', 'delete' => 'removable');
-	protected $_gridFilters = array('status' => 'equal', 'title' => 'like', 'type' => 'equal', 'position' => 'equal');
+	protected $_gridFilters = array('status' => self::EQUAL, 'title' => self::LIKE, 'type' => self::EQUAL, 'position' => self::EQUAL, 'extras' => self::EQUAL);
 
 	protected $_phraseAddSuccess = 'block_created';
 
@@ -44,6 +44,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaBlock = $this->_iaCore->factory('block', iaCore::ADMIN);
 		$this->setHelper($iaBlock);
+
+		if (iaView::REQUEST_HTML == $this->_iaCore->iaView->getRequestType()
+			&& isset($this->_iaCore->requestPath[0]) && 'create' == $this->_iaCore->requestPath[0])
+		{
+			$this->_iaCore->iaView->set('action', iaCore::ACTION_ADD);
+		}
 	}
 
 	protected function _entryAdd(array $entryData)
@@ -70,15 +76,32 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->getHelper()->update($entryData, $entryId);
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
-		if (isset($_GET['pos']) && $_GET['pos'])
+		if (!empty($params['pos']))
 		{
 			$conditions[] = '`position` = :position';
-			$values['position'] = $_GET['pos'];
+			$values['position'] = $params['pos'];
+		}
+
+		if (isset($values['extras']) && iaCore::CORE == strtolower($values['extras']))
+		{
+			$values['extras'] = '';
 		}
 
 		$conditions[] = "`type` != 'menu'";
+	}
+
+	protected function _gridUpdate($params)
+	{
+		// custom permission should be checked
+		if (isset($params['order'])
+			&& !$this->_iaCore->factory('acl')->isAccessible($this->getName(), 'order'))
+		{
+			return iaView::accessDenied();
+		}
+
+		return parent::_gridUpdate($params);
 	}
 
 	protected function _modifyGridResult(array &$entries)
@@ -118,12 +141,13 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _setDefaultValues(array &$entry)
 	{
 		$entry = array(
-			'status' => iaCore::STATUS_ACTIVE,
+			'name' => '',
 			'type' => iaBlock::TYPE_HTML,
 			'collapsed' => false,
 			'pages' => array(),
 			'title' => '',
-			'contents' => ''
+			'contents' => '',
+			'status' => iaCore::STATUS_ACTIVE
 		);
 	}
 
@@ -131,11 +155,24 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_iaCore->startHook('adminAddBlockValidation');
 
-		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+		if (empty($data['type']))
+		{
+			$this->addMessage(iaLanguage::getf('field_is_not_selected', array('field' => iaLanguage::get('type'))), false);
+		}
+		else
+		{
+			$entry['type'] = $data['type'];
+		}
 
 		// validate block name
 		if (iaCore::ACTION_ADD == $action)
 		{
+			if (!$this->_iaCore->factory('acl')->isAccessible($this->getName(), $entry['type']))
+			{
+				$this->addMessage(iaView::ERROR_FORBIDDEN);
+				return false;
+			}
+
 			if (empty($data['name']))
 			{
 				$entry['name'] = 'block_' . mt_rand(1000, 9999);
@@ -156,8 +193,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$entry['classname'] = $data['classname'];
 		$entry['position'] = $data['position'];
-		$entry['type'] = $data['type'];
-		$entry['status'] = isset($data['status']) ? (in_array($data['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $data['status'] : iaCore::STATUS_ACTIVE) : iaCore::STATUS_ACTIVE;
+		$entry['status'] = isset($data['status']) && in_array($data['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $data['status'] : iaCore::STATUS_ACTIVE;
 		$entry['header'] = (int)$data['header'];
 		$entry['collapsible'] = (int)$data['collapsible'];
 		$entry['collapsed'] = (int)$data['collapsed'];
@@ -168,6 +204,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['pages'] = isset($data['pages']) ? $data['pages'] : array();
 		$entry['title'] = $data['title'];
 		$entry['contents'] = $data['content'];
+
+		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 		if ($entry['multilingual'])
 		{
@@ -249,7 +287,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return !$this->getMessages();
 	}
 
-	protected function _postSaveEntry(array $entry, array $data, $action)
+	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 		if (iaCore::ACTION_ADD == $action)
 		{
@@ -337,15 +375,15 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
-		$sql =
-			'SELECT DISTINCTROW p.*, IF(l.`value` IS NULL, p.`name`, l.`value`) `title` '
-			. 'FROM `:prefix:table_pages` p '
-			. 'LEFT JOIN `:prefix:table_phrases` l '
-				. "ON (`key` = CONCAT('page_title_', p.`name`) AND l.`code` = ':lang' AND l.`category` = ':category') "
-			. "WHERE p.`status` = ':status' AND p.`service` = 0 "
-			. 'GROUP BY p.`name` '
-			. 'ORDER BY l.`value`';
-
+		$sql = <<<SQL
+SELECT DISTINCTROW p.*, IF(l.`value` IS NULL, p.`name`, l.`value`) `title` 
+	FROM `:prefix:table_pages` p 
+LEFT JOIN `:prefix:table_phrases` l 
+	ON (`key` = CONCAT('page_title_', p.`name`) AND l.`code` = ':lang' AND l.`category` = ':category') 
+WHERE p.`status` = ':status' AND p.`service` = 0 
+GROUP BY p.`name` 
+ORDER BY l.`value`
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
 			'table_pages' => $iaPage::getTable(),

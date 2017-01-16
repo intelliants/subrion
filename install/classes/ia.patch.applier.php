@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -55,17 +55,17 @@ class iaPatchApplier
 			'it under the terms of the GNU General Public License as published by',
 			'the Free Software Foundation, either version 3 of the License, or',
 			'(at your option) any later version.',
-			'@link http://www.subrion.org/'
+			'@link https://subrion.org/'
 		),
 		765 => array(
 			'COMPANY: Intelliants LLC',
 			'PROJECT: Subrion Content Management System',
-			'LICENSE: http://www.subrion.com/license.html',
-			'http://www.subrion.com/',
+			'LICENSE: https://subrion.pro/license.html',
+			'https://subrion.pro/',
 			'This program is an open source php content management system.',
 			'Link to Subrion.com may not be removed from the software pages',
 			'PHP code copyright notice may not be removed from source code',
-			'http://www.intelliants.com/'
+			'https://intelliants.com/'
 		),
 		22 => array('//##copyright##')
 	);

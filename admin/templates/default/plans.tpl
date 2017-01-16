@@ -6,13 +6,85 @@
 			<div class="wrap-group-heading">{lang key='general'}</div>
 
 			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-title"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='title'} {lang key='field_required'}</label>
+				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-title">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="title[{$core.language.iso}]" value="{$item.title[$core.language.iso]|default:''|escape:'html'}">
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="title[{$iso}]" value="{$item.title.$iso|default:''|escape:'html'}">
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="title[{$core.language.iso}]" value="{$item.title[$core.language.iso]|default:''|escape:'html'}">
+					{/if}
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-description"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-description"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='description'} {lang key='field_required'}</label>
+				</div>
+				<div class="col col-lg-8">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-description">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<textarea class="js-wysiwyg" id="description_{$core.language.iso}" name="description[{$core.language.iso}]" rows="10">{$item.description[$core.language.iso]|default:''|escape:'html'}</textarea>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<textarea class="js-wysiwyg" id="description_{$iso}" name="description[{$iso}]" rows="10">{$item.description.$iso|default:''|escape:'html'}</textarea>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<textarea class="js-wysiwyg" id="description_{$core.language.iso}" name="description[{$core.language.iso}]" rows="10">{$item.description[$core.language.iso]|default:''|escape:'html'}</textarea>
+					{/if}
+				</div>
+			</div>
+
+			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='item'} {lang key='field_required'}</label>
 
 				<div class="col col-lg-4">
 					<select name="item">
 						<option value="">{lang key='_select_'}</option>
 						{foreach $items as $i}
-							<option value="{$i}"{if (isset($item.item) && $item.item == $i) || (isset($smarty.post.item) && $smarty.post.item == $i)} selected{/if}>{lang key=$i default=$i}</option>
+							<option value="{$i}"{if $item.item == $i} selected{/if}>{lang key=$i default=$i}</option>
 						{/foreach}
 					</select>
 				</div>
@@ -49,6 +121,30 @@
 			</div>
 
 			<div class="row">
+				<label class="col col-lg-2 control-label">{lang key='type'} {lang key='field_required'}</label>
+
+				<div class="col col-lg-4">
+					<label class="radio-inline">
+						<input type="radio" name="type" value="fee"{if iaPlan::TYPE_FEE == $item.type} checked{/if}> {lang key='fee_based'}
+					</label>
+					<label class="radio-inline">
+						<input type="radio" name="type" value="subscription"{if iaPlan::TYPE_SUBSCRIPTION == $item.type} checked{/if}> {lang key='subscription'}
+					</label>
+				</div>
+			</div>
+
+			<div class="row">
+				<label class="col col-lg-2 control-label">{lang key='listings_limit'}</label>
+
+				<div class="col col-lg-1">
+					<input type="text" name="listings_limit" class="js-input-numeric" value="{$item.listings_limit|escape:'html'}">
+					<p class="help-block">Leave 0 for unlimited</p>
+				</div>
+			</div>
+
+			<hr>
+
+			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='plans_fields'}</label>
 
 				<div class="col col-lg-4">
@@ -70,17 +166,17 @@
 											</h4>
 											<div class="box-simple fieldset">
 												<ul class="list-unstyled">
-													{foreach $fp as $field}
+													{foreach $fp as $fieldName => $title}
 														<li>
 															{if $for_plan != 2}
 																<label class="checkbox">
-																	<input{if isset($item.data.fields) && in_array($field, $item.data.fields)} checked{/if} type="checkbox" value="{$field}" name="fields[]">
-																	{lang key="field_{$field}"}
+																	<input{if isset($item.data.fields) && in_array($fieldName, $item.data.fields)} checked{/if} type="checkbox" value="{$fieldName}" name="fields[]">
+																	{$title|escape:'html'}
 																</label>
 															{else}
 																<label class="checkbox">
-																	<input checked type="checkbox" value="{$field}" disabled name="checked_fields[]">
-																	{lang key="field_{$field}"}
+																	<input checked type="checkbox" value="{$fieldName}" disabled name="checked_fields[]">
+																	{$title|escape:'html'}
 																</label>
 															{/if}
 														</li>
@@ -158,38 +254,35 @@
 			</div>
 		</div>
 
-		<div class="wrap-group">
-			<div id="ckeditor" class="row">
-				<ul class="nav nav-tabs">
-					{foreach $core.languages as $code => $language}
-						<li{if $language@first} class="active"{/if}><a href="#tab-language-{$code}" data-toggle="tab" data-language="{$code}">{$language.title}</a></li>
-					{/foreach}
-				</ul>
+		<div class="wrap-group" id="js-plan-options">
+			<div class="wrap-group-heading">{lang key='options'}</div>
+			<p class="help-block"{if $item.item} style="display: none;"{/if}>{lang key='choose_item'}</p>
+			{foreach $options as $itemName => $group}
+				{foreach $group as $option}
+				<div class="row" data-item="{$itemName}"{if $item.item != $itemName} style="display: none"{/if}>
+					<label class="col col-lg-2 control-label">{lang key="plan_option_{$itemName}_{$option.name}"}</label>
 
-				<div class="tab-content">
-					{foreach $core.languages as $code => $language}
-						<div class="tab-pane{if $language@first} active{/if}" id="tab-language-{$code}">
-							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='title'} {lang key='field_required'}</label>
-
-								<div class="col col-lg-10">
-									<input type="text" name="title[{$code}]" value="{$item.title.$code|default:''|escape:'html'}">
-								</div>
-							</div>
-							<div class="row">
-								<label class="col col-lg-2 control-label">{lang key='description'} {lang key='field_required'}</label>
-
-								<div class="col col-lg-10">
-									<textarea id="description_{$code}" rows="30" name="description[{$code}]" class="js-wysiwyg">{$item.description.$code|default:''|escape:'html'}</textarea>
-								</div>
-							</div>
-						</div>
-					{/foreach}
+					<div class="col col-lg-{if 'int' == $option.type || 'float' == $option.type}1{else}4{/if}">
+						{switch $option.type}
+						{case 'int' break}
+							<input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
+						{case 'float' break}
+							<input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
+						{case 'bool' break}
+							{html_radio_switcher value={$option.values.value} name="options[{$option.id}][value]"}
+						{default}
+							<input type="text" name="options[{$option.id}][value]" value="{$option.values.value|escape:'html'}">
+						{/switch}
+						{if $option.chargeable}
+							<span style="margin-left: 40px;{if !$option.values.value} display: none{/if}">{lang key='price'}:&nbsp; <input type="text" style="display: inline; width: 90px" name="options[{$option.id}][price]" class="js-filter-numeric" maxlength="8" value="{$option.values.price}"></span>
+						{/if}
+					</div>
 				</div>
-			</div>
+				{/foreach}
+			{/foreach}
 		</div>
 
-		{include file='fields-system.tpl'}
+		{include 'fields-system.tpl'}
 	</div>
 </form>
 {ia_print_js files='ckeditor/ckeditor,jquery/plugins/jquery.numeric,admin/plans'}

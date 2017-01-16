@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,12 +20,14 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
 class iaCache extends abstractUtil
 {
+	const FILE_EXTENSION = '.inc';
+
 	protected $_cachingEnabled;
 
 	protected $_savePath = IA_CACHEDIR;
@@ -58,7 +60,7 @@ class iaCache extends abstractUtil
 	 */
 	public function get($fileName, $seconds = 0, $isObject = false)
 	{
-		$this->_filePath = $this->_savePath . str_replace('.', '', $fileName) . '.inc';
+		$this->_setFileName($fileName);
 
 		if (!$this->_cachingEnabled || !is_file($this->_filePath))
 		{
@@ -93,12 +95,12 @@ class iaCache extends abstractUtil
 	/**
 	 * Write data to cache files
 	 *
-	 * @param string $file file name to write data to (may be encrypted)
+	 * @param string $fileName file name to write data to (may be encrypted)
 	 * @param string $Data data to be written
 	 *
 	 * @return bool
 	 */
-	public function write($file, $Data)
+	public function write($fileName, $Data)
 	{
 		if (!$this->_cachingEnabled)
 		{
@@ -108,7 +110,8 @@ class iaCache extends abstractUtil
 		{
 			$Data = serialize($Data);
 		}
-		$this->_filePath = $this->_savePath . str_replace('.', '', $file) . '.inc';
+
+		$this->_setFileName($fileName);
 
 		if (!$file = fopen($this->_filePath, 'wb'))
 		{
@@ -143,7 +146,7 @@ class iaCache extends abstractUtil
 	 */
 	public function remove($fileName)
 	{
-		$this->_filePath = $this->_savePath . $fileName;
+		$this->_setFileName($fileName);
 
 		$iaView = &$this->iaCore->iaView;
 		$iaView->loadSmarty(true);
@@ -190,11 +193,28 @@ class iaCache extends abstractUtil
 		return $return_data;
 	}
 
+	protected function _setFileName($fileName)
+	{
+		$this->_filePath = $this->_savePath . str_replace('.', '', $fileName) . self::FILE_EXTENSION;
+	}
+
 	public function clearAll()
 	{
+		$this->clearConfigCache();
 		$this->iaCore->getConfig(true);
 		$this->iaCore->setPackagesData(true);
 		$this->createJsCache(true);
+	}
+
+	public function clearConfigCache()
+	{
+		$this->iaCore->factory('util');
+
+		foreach ($this->iaCore->languages as $iso => $language)
+		{
+			$this->remove('config_' . $iso);
+			iaUtil::deleteFile($this->_savePath . 'intelli.config.' . $iso . '.js');
+		}
 	}
 
 	public function clearGlobalCache()
@@ -210,7 +230,7 @@ class iaCache extends abstractUtil
 		$fileList = array(
 			'lang' => "intelli.lang.{$currentLanguage}.js",
 			'admin_lang' => "intelli.admin.lang.{$currentLanguage}.js",
-			'config' => 'intelli.config.js',
+			'config' => "intelli.config.{$currentLanguage}.js",
 		);
 
 		foreach ($fileList as $type => $file)
@@ -259,37 +279,27 @@ class iaCache extends abstractUtil
 				);
 
 				$fileContent = 'intelli.' . ('admin_lang' == $type ? 'admin.' : '') . 'lang = '
-					. iaUtil::jsonEncode($phrases) . ';'
-					. 'intelli.languages = ' . iaUtil::jsonEncode($languagesList) . ';';
+					. json_encode($phrases) . ';'
+					. 'intelli.languages = ' . json_encode($languagesList) . ';';
 				break;
 
 			case 'config':
-				$stmt = "`private` = 0 && `type` != 'divider' && `config_group` != 'email_templates'";
-				$config = $iaDb->keyvalue(array('name', 'value'), $stmt, iaCore::getConfigTable());
-
-				if (file_exists(IA_INCLUDES . 'custom.inc.php'))
-				{
-					include IA_INCLUDES . 'custom.inc.php';
-				}
-
+				$config = $this->iaCore->fetchConfig("`private` = 0 AND `config_group` != 'email_templates'");
 				$config['ia_url'] = IA_CLEAR_URL;
 				$config['packages'] = $this->iaCore->setPackagesData();
 				$config['items'] = array();
 				$config['extras'] = array(array('core', iaLanguage::get('core', 'Core')));
+				$config['lang'] = $this->iaCore->iaView->language;
 
 				$array = $iaDb->all(array('name', 'title'), "`status` = 'active' ORDER BY `type`", null, null, 'extras');
 				foreach ($array as $item)
-				{
 					$config['extras'][] = array($item['name'], $item['title']);
-				}
 
 				$array = $iaDb->onefield('`item`', "`item` != 'transactions'", null, null, 'items');
 				foreach ($array as $item)
-				{
 					$config['items'][] = array($item, iaLanguage::get($item, $item));
-				}
 
-				$fileContent = 'intelli.config = ' . iaUtil::jsonEncode($config) . ';';
+				$fileContent = 'intelli.config = ' . json_encode($config) . ';';
 		}
 
 		if (isset($fileContent))

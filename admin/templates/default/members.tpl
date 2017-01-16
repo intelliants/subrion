@@ -2,7 +2,9 @@
 	{preventCsrf}
 
 	{capture 'email' append='field_after'}
-		{access object='admin_pages' id='members' action='password'}
+		{access object='admin_page' id='members' action='password'}
+			<hr>
+
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-password">{lang key='password'}</label>
 				<div class="col col-lg-4">
@@ -16,9 +18,11 @@
 					<input type="password" name="_password2" id="input-password-confirmation" value="{if isset($smarty.post._password2)}{$smarty.post._password2|escape:'html'}{/if}">
 				</div>
 			</div>
+
+			<hr>
 		{/access}
 
-		{access object='admin_pages' id='members' action='usergroup'}
+		{access object='admin_page' id='members' action='usergroup'}
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-usergroup">{lang key='usergroup'}</label>
 				<div class="col col-lg-4">
@@ -71,5 +75,7 @@ $(function()
 		{/if}
 	{/capture}
 
-	{include file='field-type-content-fieldset.tpl' isSystem=true}
+	{include 'field-type-content-fieldset.tpl' isSystem=true}
 </form>
+
+{ia_hooker name='smartyAdminSubmitItemBeforeFooter'}

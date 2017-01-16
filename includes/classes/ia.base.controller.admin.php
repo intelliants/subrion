@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -134,16 +134,14 @@ abstract class iaAbstractControllerBackend
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 						}
 
-						$this->_entryId = isset($this->_iaCore->requestPath[0])
-							? $this->_iaCore->requestPath[0]
-							: null;
+						$this->_retrieveEntryId();
 
-						if (!$this->getEntryId())
+						if (is_null($this->getEntryId()))
 						{
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 						}
 
-						$entry = $this->getById($this->_entryId);
+						$entry = $this->getById($this->getEntryId());
 						if (empty($entry))
 						{
 							return iaView::errorPage(iaView::ERROR_NOT_FOUND);
@@ -249,6 +247,20 @@ abstract class iaAbstractControllerBackend
 		$iaView->grid('admin/' . $this->getName());
 	}
 
+	/**
+	 * Retrieves ID of entry currently being managed
+	 *
+	 * Should return NULL if no ID
+	 *
+	 * @return string or NULL
+	 */
+	protected function _retrieveEntryId()
+	{
+		$this->_entryId = isset($this->_iaCore->requestPath[0])
+			? $this->_iaCore->requestPath[0]
+			: null;
+	}
+
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
 
@@ -322,24 +334,8 @@ abstract class iaAbstractControllerBackend
 		$order = $this->_gridGetSorting($params);
 
 		$conditions = $values = array();
-		foreach ($this->_gridFilters as $name => $type)
-		{
-			if (isset($params[$name]) && $params[$name])
-			{
-				$value = $params[$name];
 
-				switch ($type) {
-					case self::EQUAL:
-						$conditions[] = sprintf('%s`%s` = :%s', $this->_gridQueryMainTableAlias, $name, $name);
-						$values[$name] = $value;
-						break;
-					case self::LIKE:
-						$conditions[] = sprintf('%s`%s` LIKE :%s', $this->_gridQueryMainTableAlias, $name, $name);
-						$values[$name] = '%' . $value . '%';
-				}
-			}
-		}
-
+		$this->_gridApplyFilters($conditions, $values, $params);
 		$this->_modifyGridParams($conditions, $values, $params);
 
 		$conditions || $conditions[] = iaDb::EMPTY_CONDITION;
@@ -368,11 +364,45 @@ abstract class iaAbstractControllerBackend
 			return '';
 		}
 
-		$direction = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $params['dir'] : iaDb::ORDER_ASC;
-		$column = isset($this->_gridSorting[$params['sort']]) ? (is_array($this->_gridSorting[$params['sort']]) ? $this->_gridSorting[$params['sort']][0] : $this->_gridSorting[$params['sort']]) : $params['sort'];
-		$tableAlias = isset($this->_gridSorting[$params['sort']][1]) && is_array($this->_gridSorting[$params['sort']]) ? $this->_gridSorting[$params['sort']][1] . '.' : $this->_gridQueryMainTableAlias;
+		$direction = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC))
+			? $params['dir']
+			: iaDb::ORDER_ASC;
+		$column = isset($this->_gridSorting[$params['sort']]) ? (is_array($this->_gridSorting[$params['sort']])
+			? $this->_gridSorting[$params['sort']][0]
+			: $this->_gridSorting[$params['sort']]) : $params['sort'];
+		$tableAlias = isset($this->_gridSorting[$params['sort']][1]) && is_array($this->_gridSorting[$params['sort']])
+			? $this->_gridSorting[$params['sort']][1] . '.'
+			: $this->_gridQueryMainTableAlias;
 
 		return sprintf(' ORDER BY %s`%s` %s', $tableAlias, $column, $direction);
+	}
+
+	protected function _gridApplyFilters(&$conditions, &$values, array $params)
+	{
+		foreach ($this->_gridFilters as $name => $type)
+		{
+			if (!empty($params[$name]))
+			{
+				$value = $params[$name];
+
+				switch ($type)
+				{
+					case self::EQUAL:
+						$conditions[] = sprintf('%s`%s` = :%s', $this->_gridQueryMainTableAlias, $name, $name);
+						$values[$name] = $value;
+						break;
+					case self::LIKE:
+						$conditions[] = sprintf('%s`%s` LIKE :%s', $this->_gridQueryMainTableAlias, $name, $name);
+						$values[$name] = '%' . $value . '%';
+				}
+			}
+		}
+	}
+
+	// to be overloaded if required to modify the DB query params
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
+	{
+
 	}
 
 	protected function _gridUpdate($params)
@@ -453,23 +483,6 @@ abstract class iaAbstractControllerBackend
 		return $output;
 	}
 
-	protected function _entryAdd(array $entryData)
-	{
-		return $this->_iaDb->insert($entryData);
-	}
-
-	protected function _entryDelete($entryId)
-	{
-		return (bool)$this->_iaDb->delete(iaDb::convertIds($entryId));
-	}
-
-	protected function _entryUpdate(array $entryData, $entryId)
-	{
-		$this->_iaDb->update($entryData, iaDb::convertIds($entryId));
-
-		return (0 === $this->_iaDb->getErrorNumber());
-	}
-
 	protected function _unpackGridColumnsArray()
 	{
 		$result = '';
@@ -477,12 +490,13 @@ abstract class iaAbstractControllerBackend
 		if (is_array($this->_gridColumns))
 		{
 			$this->_gridColumns = array_merge(array('id', 'update' => 1, 'delete' => 1), $this->_gridColumns);
+
 			foreach ($this->_gridColumns as $key => $field)
 			{
-				$result .= is_int($key)
+				$result.= is_int($key)
 					? $this->_gridQueryMainTableAlias . '`' . $field . '`'
 					: sprintf('%s `%s`', is_numeric($field) ? $field : $this->_gridQueryMainTableAlias . '`' . $field . '`', $key);
-				$result .= ', ';
+				$result.= ', ';
 			}
 
 			$result = substr($result, 0, -2);
@@ -502,16 +516,27 @@ abstract class iaAbstractControllerBackend
 		return $this->_iaDb->all($columns, $where . $order, $start, $limit);
 	}
 
-	// to be overloaded if required to modify the DB query params
-	protected function _modifyGridParams(&$conditions, &$values, array $params)
-	{
-
-	}
-
 	// to be overloaded if required to modify the resulting array
 	protected function _modifyGridResult(array &$entries)
 	{
 
+	}
+
+	protected function _entryAdd(array $entryData)
+	{
+		return $this->_iaDb->insert($entryData);
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		return (bool)$this->_iaDb->delete(iaDb::convertIds($entryId));
+	}
+
+	protected function _entryUpdate(array $entryData, $entryId)
+	{
+		$this->_iaDb->update($entryData, iaDb::convertIds($entryId));
+
+		return (0 === $this->_iaDb->getErrorNumber());
 	}
 
 	protected function _reopen($option, $action)

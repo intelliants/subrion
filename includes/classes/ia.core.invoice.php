@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -44,7 +44,8 @@ class iaInvoice extends abstractCore
 			'transaction_id' => $transaction['id'],
 			'date_created' => date(iaDb::DATETIME_FORMAT),
 			'date_due' => null,
-			'fullname' => empty($transaction['fullname']) ? iaUsers::getIdentity()->fullname : $transaction['fullname']
+			'fullname' => empty($transaction['fullname']) ? iaUsers::getIdentity()->fullname : $transaction['fullname'],
+			'member_id' => empty($transaction['fullname']) ? iaUsers::getIdentity()->id : 0,
 		);
 
 		$this->iaDb->insert($invoice, null, self::getTable());
@@ -109,15 +110,17 @@ class iaInvoice extends abstractCore
 		}
 
 		// else return an address of the latest populated transaction
-
 		$iaTransaction = $this->iaCore->factory('transaction');
 
-		$sql = 'SELECT SQL_CALC_FOUND_ROWS i.`address1`, i.`address2`, i.`zip`, i.`country` '
-			. 'FROM `:prefix:table_transactions` t '
-			. 'LEFT JOIN `:prefix:table_invoices` i ON (i.`transaction_id` = t.`id`) '
-			. 'WHERE t.`member_id` = :member AND i.`address1` != "" '
-			. 'ORDER BY t.`date` DESC '
-			. 'LIMIT 1';
+		$sql = <<<SQL
+SELECT SQL_CALC_FOUND_ROWS i.`address1`, i.`address2`, i.`zip`, i.`country` 
+	FROM `:prefix:table_transactions` t 
+LEFT JOIN `:prefix:table_invoices` i ON (i.`transaction_id` = t.`id`) 
+WHERE t.`member_id` = :member AND i.`address1` != "" 
+ORDER BY t.`date_created` DESC 
+LIMIT 1
+SQL;
+
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_transactions' => $iaTransaction::getTable(),
@@ -170,6 +173,11 @@ class iaInvoice extends abstractCore
 
 	protected function _sendEmailNotification(array $invoice, array $transaction)
 	{
+		if (!$this->iaCore->get('invoice_created'))
+		{
+			return true;
+		}
+
 		$iaUsers = $this->iaCore->factory('users');
 
 		$member = $iaUsers->getById($transaction['member_id']);

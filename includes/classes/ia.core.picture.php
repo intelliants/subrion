@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -90,6 +90,7 @@ class iaPicture extends abstractCore
 			'bottom_right' => 'RB'
 		);
 
+		$opacity = $iaCore->get('watermark_opacity', 75);
 		$position = $iaCore->get('watermark_position');
 		$position = $position && array_key_exists($position, $watermark_positions) ? $watermark_positions[$position] : $watermark_positions['bottom_right'];
 
@@ -101,8 +102,12 @@ class iaPicture extends abstractCore
 				$iaCore->get('watermark_text_size', 11),
 				$iaCore->get('watermark_text_color', '#FFFFFF')
 			);
+			$watermark->opacity($opacity);
 
 			$image->addLayerOnTop($watermark, 10, 10, $position);
+
+			// delete layer otherwise it's applied several times
+			$watermark->delete();
 		}
 		else
 		{
@@ -112,9 +117,12 @@ class iaPicture extends abstractCore
 			if (file_exists($watermarkFile) && !is_dir($watermarkFile))
 			{
 				$watermark = ImageWorkshop::initFromPath($watermarkFile);
-				$watermark->opacity(70);
+				$watermark->opacity($opacity);
 
 				$image->addLayerOnTop($watermark, 10, 10, $position);
+
+				// delete layer otherwise it's applied several times
+				$watermark->delete();
 			}
 		}
 
@@ -204,14 +212,11 @@ class iaPicture extends abstractCore
 				}
 			}
 
-			// save full image
-			$largestSide = ($imageInfo['image_width'] > $imageInfo['image_height']) ? $imageInfo['image_width'] : $imageInfo['image_height'];
+			// resize main image
+			$image->cropToAspectRatioInPixel($imageInfo['image_width'], $imageInfo['image_height'], 0, 0, 'MM');
+			$image->resizeInPixel($imageInfo['image_width'], $imageInfo['image_height']);
 
-			if ($largestSide)
-			{
-				$image->resizeByLargestSideInPixel($largestSide, true);
-			}
-
+			// apply watermark
 			$image = self::_applyWaterMark($image);
 			$image->save($path, self::_createFilename($aName, $ext));
 
@@ -219,6 +224,7 @@ class iaPicture extends abstractCore
 			$thumbWidth = $imageInfo['thumb_width'] ? $imageInfo['thumb_width'] : $this->iaCore->get('thumb_w');
 			$thumbHeight = $imageInfo['thumb_height'] ? $imageInfo['thumb_height'] : $this->iaCore->get('thumb_h');
 
+			// resize thumbnails
 			if ($thumbWidth || $thumbHeight)
 			{
 				$thumb = ImageWorkshop::initFromPath($aFile['tmp_name']);
@@ -230,11 +236,8 @@ class iaPicture extends abstractCore
 						break;
 
 					case self::CROP:
-						$largestSide = $thumbWidth > $thumbHeight ? $thumbWidth : $thumbHeight;
-
-						$thumb->cropMaximumInPixel(0, 0, 'MM');
-						$thumb->resizeInPixel($largestSide, $largestSide);
-						$thumb->cropInPixel($thumbWidth, $thumbHeight, 0, 0, 'MM');
+						$thumb->cropToAspectRatioInPixel($thumbWidth, $thumbHeight, 0, 0, 'MM');
+						$thumb->resizeInPixel($thumbWidth, $thumbHeight);
 				}
 
 				$thumb->save($path, self::_createFilename($aName, $ext, true));

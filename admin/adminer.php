@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -35,6 +35,14 @@ if (isset($_GET['file']))
 		case 'functions.js':
 			header('Content-Type: text/javascript; charset=utf-8');
 			echo file_get_contents(IA_INCLUDES . 'adminer' . IA_DS . 'adminer.js');
+			break;
+		case 'plus.gif':
+		case 'cross.gif':
+		case 'up.gif':
+		case 'down.gif':
+		case 'arrow.gif':
+			header("Content-Type: image/gif");
+			echo file_get_contents(IA_INCLUDES . 'adminer' . IA_DS . $_GET['file']);
 			break;
 	}
 }

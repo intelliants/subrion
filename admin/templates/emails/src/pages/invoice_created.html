@@ -1,0 +1,27 @@
+---
+subject: Invoice created
+---
+
+<h4>Hello <b>{%FULLNAME%}</b>!</h4> 
+<p>This is a notice that an invoice has been generated on <b>{%DATE%}</b>:</p>
+
+<spacer size="30"></spacer>
+
+<callout class="success special">
+  <row>
+    <columns small="3">Payment method:</columns>
+    <columns small="9"><b>{%GATEWAY%}</b></columns>
+  </row>
+  <row>
+    <columns small="3">Invoice:</columns>
+    <columns small="9"><b>#{%INVOICE%}</b></columns>
+  </row>
+  <row>
+    <columns small="3">Amount Due:</columns>
+    <columns small="9"><b>{%CURRENCY%} {%AMOUNT%}</b></columns>
+  </row>
+</callout>
+
+<spacer size="20"></spacer>
+
+<p>All your invoices could always be seen on the <a href="{%SITE_URL%}profile/funds/">Funds</a> page.</p>

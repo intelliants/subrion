@@ -1,0 +1,134 @@
+.page-login {
+	background: @base-dark-color url('../img/bg-login.jpg') 50% bottom no-repeat;
+	background-size: cover;
+	overflow: hidden;
+	height: 100%;
+	width: 100%;
+	display: table;
+	border-collapse: collapse;
+
+	&__content {
+		display: table-cell;
+		height: 100%;
+		vertical-align: middle;
+	}
+
+	@media (max-width: @screen-xs) {
+		overflow: visible;
+		display: block;
+		height: auto;
+
+		&__content {
+			vertical-align: top;
+			display: block;
+			height: auto;
+			padding: 20px;
+		}
+	}
+}
+
+.b-login {
+	background: #fff;
+	border-radius: 6px;
+	display: table;
+	width: 768px;
+	height: 480px;
+	border-collapse: collapse;
+	margin: 0 auto;
+	.box-shadow(0 0 150px rgba(0,0,0,.7));
+	font-family: 'Roboto', sans-serif;
+
+	&__img,
+	&__form {
+		display: table-cell;
+		vertical-align: middle;
+		width: 50%;
+		padding: 50px;
+	}
+
+	&__img {
+		background: #5ec0e3 url('../img/bg-login-card.jpg') 50% 50% no-repeat;
+		background-size: cover;
+		border-radius: 6px 0 0 6px;
+
+		h1 {
+			text-align: center;
+			font-size: 24px;
+			line-height: 28px;
+			color: #fff;
+			margin: 0;
+			font-family: 'Roboto', sans-serif;
+		}
+
+		> a {
+			display: block;
+			text-decoration: none;
+			width: 137px;
+			height: 126px;
+			margin: 0 auto 30px;
+
+			img {
+				width: 137px;
+				height: 126px;
+			}
+		}
+	}
+
+	@media (max-width: @screen-sm) {
+		width: 480px;
+		height: auto;
+
+		&__img,
+		&__form {
+			padding: 40px 20px;
+		}
+
+		&__img {
+
+			h1 {
+				font-size: 18px;
+				line-height: 22px;
+			}
+
+			> a,
+			> a img {
+				width: 80px;
+				height: 74px;
+			}
+		}
+	}
+
+	@media (max-width: @screen-xs) {
+		width: auto;
+		display: block;
+		border-radius: 6px;
+
+		&__img,
+		&__form {
+			width: auto;
+			display: block;
+		}
+
+		&__img {
+			border-radius: 6px 6px 0 0;
+
+			h1 {
+			}
+
+			> a,
+			> a img {
+
+			}
+		}
+	}
+}
+
+.copyright {
+	margin-top: 50px;
+	font-size: 12px;
+	color: fade(#000, 30%);
+
+	p:last-child {
+		margin: 0;
+	}
+}

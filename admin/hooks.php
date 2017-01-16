@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -42,7 +42,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		switch ($this->_iaCore->requestPath[0])
 		{
 			case 'get':
-				$output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_GET['id']));
+				$output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_GET['id']), array());
 				break;
 
 			case 'set':
@@ -59,7 +59,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $output;
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
 		if (isset($_GET['item']) && $_GET['item'])
 		{

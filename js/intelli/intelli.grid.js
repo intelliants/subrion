@@ -75,7 +75,7 @@ intelli.gridHelper = {
 		}
 	},
 
-	search: function(caller, isReset)
+	search: function(caller, isReset, isExcelExport)
 	{
 		var i;
 		var data = {};
@@ -101,7 +101,10 @@ intelli.gridHelper = {
 		}
 
 		$.extend(data, (undefined === caller.params.storeParams) ? {} : caller.params.storeParams);
-
+		if (isExcelExport)
+		{
+			data['export_excel'] = 1;
+		}
 		caller.store.getProxy().extraParams = data;
 		caller.store.loadPage(1);
 	},
@@ -166,6 +169,12 @@ function IntelliGrid(params, autoInit)
 	this.toolbar = null;
 	this.url = params.url || window.location.pathname;
 
+	var stateId = window.location.href,
+		bases = document.getElementsByTagName('base'),
+		urlBase = bases.length > 0 ? bases[0].href : intelli.config.ia_url;
+	stateId = stateId.replace(urlBase, '');
+	stateId = stateId.replace(/\//g, '');
+
 	if (params.texts)
 	{
 		for (i in params.texts)
@@ -177,20 +186,41 @@ function IntelliGrid(params, autoInit)
 		}
 	}
 
-	var statuses = [['active', 'active'], ['inactive', 'inactive']]; // default statuses
+	var statuses = [['active', _t('active')], ['inactive', _t('inactive')]]; // default statuses
 	if ('object' == typeof this.params.statuses)
 	{
 		statuses = [];
 		for (var i in this.params.statuses)
 		{
 			var status = this.params.statuses[i];
-			statuses.push([status, status]);
+			statuses.push([status, _t(status)]);
 		}
 	}
 
 	this.stores.statuses = Ext.create('Ext.data.SimpleStore', {fields: ['value', 'title'], data: statuses});
 
 	var self = this;
+
+	var __localStorage = function(key, value)
+	{
+		if (localStorage)
+		{
+			var k = stateId + key;
+
+			if ('undefined' == typeof value)
+			{
+				return localStorage.getItem(k);
+			}
+			else if (null === value)
+			{
+				localStorage.removeItem(k);
+			}
+			else
+			{
+				localStorage.setItem(key, value);
+			}
+		}
+	}
 
 	this.init = function(autoLoad)
 	{
@@ -233,8 +263,9 @@ function IntelliGrid(params, autoInit)
 		{
 			autoDestroy: true,
 			autoLoad: autoLoad,
+			currentPage: 1 || __localStorage('p'),
 			fields: self.fields,
-			pageSize: self.config.pageSize,
+			pageSize: __localStorage('n') || self.config.pageSize,
 			proxy:
 			{
 				buildRequest: function(operation)
@@ -260,7 +291,17 @@ function IntelliGrid(params, autoInit)
 						action: operation.action,
 						records: operation.records,
 						operation: operation,
-						url: operation.url
+						url: operation.url,
+						success: function (response) {
+							try {
+								var respObj = JSON.parse(response.responseText);
+							} catch (e) {
+								return false;
+							}
+							if ('boolean' == typeof respObj.result && respObj.result) {
+								window.location.href = respObj.redirect_url;
+							}
+						}
 					});
 					request.url = this.buildUrl(request);
 					operation.request = request;
@@ -306,12 +347,16 @@ function IntelliGrid(params, autoInit)
 				listeners: {
 					change: function(field, newValue, oldValue)
 					{
-						self.store.reload({limit: self.store.pageSize = parseInt(newValue)});
+						self.store.pageSize = parseInt(newValue);
+						self.store.loadPage(1);
+
+						__localStorage('n', self.store.pageSize);
+						__localStorage('p', null);
 					}
 				},
 				store: self.stores.paging,
 				typeAhead: true,
-				value: self.config.pageSize,
+				value: __localStorage('n') || self.config.pageSize,
 				width: 70,
 				xtype: 'combo'
 			}
@@ -399,16 +444,23 @@ function IntelliGrid(params, autoInit)
 
 		Ext.state.Manager.setProvider(Ext.create(Ext.supports.LocalStorage ? 'Ext.state.LocalStorageProvider' : 'Ext.state.CookieProvider'));
 
-		var stateId = window.location.href,
-			bases = document.getElementsByTagName('base'),
-			urlBase = bases.length > 0 ? bases[0].href : intelli.config.ia_url;
-		stateId = stateId.replace(urlBase, '');
-		stateId = stateId.replace(/\//g, '');
-
 		self.grid = Ext.create('Ext.grid.Panel',
 		{
 			allowDeselect: true,
-			bbar: Ext.create('Ext.PagingToolbar', {store: self.store, displayInfo: true, plugins: plugins, items: pagingBar}),
+			bbar: Ext.create('Ext.PagingToolbar',
+			{
+				store: self.store,
+				displayInfo: true,
+				plugins: plugins,
+				items: pagingBar,
+				listeners:
+				{
+					change: function(paging, pageData, options)
+					{
+						__localStorage('p', pageData ? pageData.currentPage : null);
+					}
+				}
+			}),
 			columns: self.columns,
 			height: self.config.height,
 			minHeight: self.config.minHeight,
@@ -451,8 +503,11 @@ function IntelliGrid(params, autoInit)
 						icon: Ext.Msg.QUESTION,
 						fn: function(btn)
 						{
-							('yes' != btn) ||
-							intelli.gridHelper.httpRequest(self, {id: [record.get('id')]}, 'delete');
+							if ('yes' == btn)
+							{
+								intelli.gridHelper.httpRequest(self, {id: [record.get('id')]}, 'delete');
+								__localStorage('p', null);
+							}
 						}
 					});
 					break;
@@ -671,7 +726,7 @@ function IntelliGrid(params, autoInit)
 						valueField: 'value'
 					}),
 					name: 'status',
-					renderer: function(value, metadata){metadata.css = 'grid-status-' + value; return value;},
+					renderer: function(value, metadata){metadata.css = 'grid-status-' + value; return _t(value);},
 					title: _t('status'),
 					width: 80
 				};

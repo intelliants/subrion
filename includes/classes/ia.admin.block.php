@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -21,9 +21,9 @@
  *
  *
  * @package Subrion\Admin
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  * @author https://intelliants.com/ <support@subrion.org>
- * @license http://www.subrion.org/license.html
+ * @license https://subrion.org/license.html
  *
  ******************************************************************************/
 
@@ -69,7 +69,7 @@ class iaBlock extends abstractPlugin
 	{
 		if (is_null($this->_positions))
 		{
-			$this->_positions = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::$_positionsTable);
+			$this->_positions = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::$_positionsTable);
 		}
 
 		return $this->_positions;
@@ -108,13 +108,11 @@ class iaBlock extends abstractPlugin
 			$blockData['tpl'] = self::DEFAULT_MENU_TEMPLATE;
 		}
 
-		if (!empty($blockData['filename']))
-		{
-			$blockData['external'] = 1;
-		}
+		empty($blockData['filename']) || $blockData['external'] = true;
+		isset($blockData['header']) || $blockData['header'] = true;
 
-		$order = $this->iaDb->getMaxOrder(self::getTable());
-		$blockData['order'] = $order ? $order + 1 : 1;
+		$order = (int)$this->iaDb->getMaxOrder(self::getTable());
+		$blockData['order'] = ++$order;
 
 		if (isset($blockData['pages']))
 		{

@@ -9,9 +9,9 @@
 .btn-info,
 .btn-warning,
 .btn-danger {
-  text-shadow: 0 -1px 0 rgba(0,0,0,.2);
-  @shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075);
-  .box-shadow(@shadow);
+  // text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+  // @shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075);
+  // .box-shadow(@shadow);
 
   // Reset the shadow
   &:active,
@@ -34,7 +34,8 @@
 .btn-styles(@btn-color: #555) {
   background-color: @btn-color;
   background-repeat: repeat-x;
-  border-color: darken(@btn-color, 14%);
+  // border-color: darken(@btn-color, 14%);
+  border-color: @btn-color;
 
   &:hover,
   &:focus  {
@@ -107,7 +108,7 @@
 }
 
 // Apply the mixin to the buttons
-.btn-default { .btn-styles(@btn-default-bg); text-shadow: 0 1px 0 #fff; border-color: #ccc; }
+.btn-default { .btn-styles(@btn-default-bg); border-color: #ccc; }
 .btn-primary { .btn-styles(@btn-primary-bg); }
 .btn-success { .btn-styles(@btn-success-bg); }
 .btn-info    { .btn-styles(@btn-info-bg); }
@@ -204,13 +205,14 @@
 
 .list-group {
   border-radius: @border-radius-base;
-  .box-shadow(0 1px 2px rgba(0,0,0,.075));
+  // .box-shadow(0 1px 2px rgba(0,0,0,.075));
 }
 .list-group-item.active,
 .list-group-item.active:hover,
 .list-group-item.active:focus {
-  text-shadow: 0 -1px 0 darken(@list-group-active-bg, 10%);
-  #gradient > .vertical(@start-color: @list-group-active-bg; @end-color: darken(@list-group-active-bg, 7.5%));
+  // text-shadow: 0 -1px 0 darken(@list-group-active-bg, 10%);
+  // #gradient > .vertical(@start-color: @list-group-active-bg; @end-color: darken(@list-group-active-bg, 7.5%));
+  background: @list-group-active-bg;
   border-color: darken(@list-group-active-border, 7.5%);
 
   .badge {
@@ -225,7 +227,7 @@
 
 // Common styles
 .panel {
-  .box-shadow(0 1px 2px rgba(0,0,0,.05));
+  // .box-shadow(0 1px 2px rgba(0,0,0,.05));
 }
 
 // Mixin for generating new styles
@@ -247,8 +249,39 @@
 // --------------------------------------------------
 
 .well {
-  #gradient > .vertical(@start-color: darken(@well-bg, 5%); @end-color: @well-bg);
-  border-color: darken(@well-bg, 10%);
-  @shadow: inset 0 1px 3px rgba(0,0,0,.05), 0 1px 0 rgba(255,255,255,.1);
-  .box-shadow(@shadow);
+  background: #f2f2f2;
+  border-radius: 0;
+  border: 0 none;
+  .box-shadow(none);
+}
+
+
+
+//
+// Elements page
+// --------------------------------------------------
+
+.c-el-head {
+  background: #f2f2f2;
+  padding: 120px 0;
+  
+  h1 {
+    margin: 0;
+    font-size: 44px;
+    line-height: 44px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+}
+
+.c-el-sec {
+  padding: 60px 0;
+  border-bottom: 1px solid #eee;
+
+  &__head {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 30px -30px;
+    color: fade(@text-color, 50%);
+  }
 }

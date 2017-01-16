@@ -1,16 +1,11 @@
 {$type = $field.type}
 {$name = $field.name}
-{$fieldName = "field_{$name}"}
+{$fieldName = "field_{$field.item}_{$field.name}"}
 
 {if isset($field_before[$name])}{$field_before.$name}{/if}
 
 {if trim($item.$name)}
 	{capture assign='_field_text'}
-		{* display as a link to view details page *}
-		{if trim($item.$name) && $field.link_to && isset($all_item_type) && in_array($type, array(iaField::TEXT, iaField::NUMBER, iaField::COMBO, iaField::RADIO, iaField::DATE))}
-			<a href="{ia_url data=$item item=$all_item_type attr='class="view-details-link"' type='url'}">
-		{/if}
-
 		{switch $type}
 		{case iaField::TEXT break}
 			{$item.$name|escape:'html'}
@@ -26,10 +21,10 @@
 			{$item.$name|escape:'html'}
 
 		{case iaField::CHECKBOX break}
-			{arrayToLang values=$item.$name name=$name}
+			{arrayToLang values=$item.$name item=$field.item name=$name}
 
 		{case iaField::STORAGE break}
-			{$value = $item.$name|unserialize}
+			{$value = $item.$name}
 
 			{if $value}
 				{foreach $value as $entry}
@@ -38,17 +33,12 @@
 			{/if}
 
 		{case iaField::IMAGE break}
-			{$entry = $item.$name|unserialize}
+			{$entry = $item.$name}
 			<div class="thumbnail" style="width: {$field.thumb_width}px;">
-				{if $field.link_to && isset($all_item_type)}
-					<a class="thumbnail__image" href="{ia_url data=$item item=$all_item_type type='url'}" title="{$entry.title|default:''}">
-						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:'' class='img-responsive'}
-					</a>
-					{if !empty($entry.title)}<div class="caption"><h5>{$entry.title|default:''}</h5></div>{/if}
-				{elseif $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
+				{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
 					{printImage imgfile=$entry.path|default:'' title=$entry.title|default:'' width=$field.thumb_width height=$field.thumb_height class='img-responsive'}
 				{else}
-					<a class="thumbnail__image" href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
+					<a class="thumbnail__image" href="{printImage imgfile=$entry.path|default:'' url=true type='full'}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
 						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:''}
 					</a>
 					{if !empty($entry.title)}<div class="caption"><h5>{$entry.title|default:''}</h5></div>{/if}
@@ -57,8 +47,7 @@
 
 		{case iaField::COMBO}
 		{case iaField::RADIO break}
-			{$field_combo = "{$fieldName}_{$item.$name}"}
-			{lang key=$field_combo default='&nbsp;'}
+			{lang key="{$fieldName}+{$item.$name}" default='&nbsp;'}
 
 		{case iaField::DATE break}
 			{if $field.timepicker}
@@ -80,8 +69,8 @@
 						 data-ratio="800/400"
 						 data-allowfullscreen="true"
 						 data-fit="cover">
-						{foreach $item.$name|unserialize as $entry}
-							<a class="ia-gallery__item" {if !empty($entry.title)}data-caption="{$entry.title|escape:'html'}"{/if} href="{printImage imgfile=$entry.path|default:'' url=true fullimage=true}">{printImage imgfile=$entry.path|default:'' title=$entry.title}</a>
+						{foreach $item.$name as $entry}
+							<a class="ia-gallery__item" {if !empty($entry.title)}data-caption="{$entry.title|escape:'html'}"{/if} href="{printImage imgfile=$entry.path|default:'' url=true type='full'}">{printImage imgfile=$entry.path|default:'' title=$entry.title}</a>
 						{/foreach}
 					</div>
 				</div>
@@ -89,12 +78,6 @@
 		{case iaField::TREE}
 			{displayTreeNodes ids=$item.$name nodes=$field.values}
 		{/switch}
-
-		{* display as a link to view details page *}
-		{if trim($item.$name) && $field.link_to && isset($all_item_type) && in_array($type, array(iaField::TEXT, iaField::NUMBER, iaField::COMBO, iaField::RADIO, iaField::DATE))}
-			</a>
-		{/if}
-
 	{/capture}
 
 	{if !isset($wrappedValues)}
@@ -111,11 +94,11 @@
 	{/if}
 {elseif !trim($item.$name) && $field.empty_field}
 	{if !isset($wrappedValues)}
-		<span class="empty_field">{$field.empty_field}</span>
+		<span class="empty_field">{$field.empty_field|escape:'html'}</span>
 	{else}
 		<div class="field field-{$type}" id="{$name}_fieldzone">
 			<span>{lang key=$fieldName}:</span>
-			<span class="empty_field">{$field.empty_field}</span>
+			<span class="empty_field">{$field.empty_field|escape:'html'}</span>
 		</div>
 	{/if}
 {/if}

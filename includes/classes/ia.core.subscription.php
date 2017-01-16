@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -36,11 +36,13 @@ class iaSubscription extends abstractCore
 	protected static $_table = 'payment_subscriptions';
 
 
-	public function create($planId)
+	public function create($planId, $item = null, $itemId = null)
 	{
 		$entry = array(
-			'plan_id' => (int)$planId,
 			'member_id' => iaUsers::hasIdentity() ? iaUsers::getIdentity()->id : 0,
+			'plan_id' => (int)$planId,
+			'item' => $item,
+			'item_id' => $itemId,
 			'status' => self::PENDING
 		);
 

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -32,6 +32,7 @@ class iaValidate extends abstractUtil
 	const USERNAME_PATTERN = '/^[a-zA-Z0-9.@_-]+$/';
 	const PATH_PATTERN = '/^[a-z\/0-9_-]*$/i';
 	const URL_PATTERN = '/^[a-zA-Z]+[:\/\/]+[A-Za-z0-9\-_]+\\.+[A-Za-z0-9\.\/%&=\?\-_]+$/i';
+	const URL_SOFT_PATTERN = '/^[A-Za-z0-9\-_]+\\.+[A-Za-z0-9\.\/%&=\?\-_]+$/i';
 	const INT_PATTERN = '/^[-+]?[0-9]+$/';
 	const FLOAT_PATTERN = '/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/';
 	const ALPHA_NUMERIC_PATTERN = '/^[A-Za-z0-9_]+$/';
@@ -64,12 +65,13 @@ class iaValidate extends abstractUtil
 	 * Checks if input string is a valid URL
 	 *
 	 * @param string $value text to be processed
+	 * @param bool $checkProtocol makes possible to perform softer check (protocol absence ignored)
 	 *
 	 * @return bool
 	 */
-	public static function isUrl($value)
+	public static function isUrl($value, $checkProtocol = true)
 	{
-		return (1 === preg_match(self::URL_PATTERN, $value));
+		return (1 === preg_match($checkProtocol ? self::URL_PATTERN : self::URL_SOFT_PATTERN, $value));
 	}
 
 	/**

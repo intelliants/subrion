@@ -1,0 +1,250 @@
+.landing {
+
+  .box+.box,
+  .box+div {
+    margin: 0;
+  }
+}
+
+//
+// Sections
+// --------------------------------------------------
+
+.section {
+  padding: @sections-v-pad 0;
+  background: #fff;
+
+  > .container > .box {
+    margin: 0;
+
+    &__caption {
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: @sections-v-pad/2;
+
+      &::after {
+        display: block;
+        content: '';
+        width: 100px;
+        height: 2px;
+        background: fade(#000, 10%);
+        position: absolute;
+        left: 50%;
+        bottom: -30px;
+        margin-left: -50px;
+      }
+    }
+
+    &__content {
+      padding: 0;
+    }
+  }
+}
+
+
+
+//
+// Section: who we are
+// --------------------------------------------------
+
+.section-what {
+
+  > .container > .box {
+
+    &__content {
+      
+    }
+  }
+}
+
+
+
+//
+// Section: features
+// --------------------------------------------------
+
+.section-features {
+  background: #232323 url('../img/bg-section-features.jpg') 50% 50% no-repeat;
+  background-size: cover;
+
+  > .container > .box {
+
+    &__caption {
+      color: #fff;
+
+      &::after {
+        background: fade(#fff, 10%);
+      }
+    }
+
+    &__content {
+      color: #fff;
+    }
+  }
+
+  .row + .row {
+    margin-top: @sections-v-pad/2;
+
+    @media (max-width: @grid-float-breakpoint) {
+      margin-top: 0;
+    }
+  }
+}
+
+.b-feature {
+  .clearfix();
+  padding-left: 20px;
+
+  &__img {
+    float: left;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    background: #fff;
+    border-radius: 50%;
+    font-size: 36px;
+    color: @text-color;
+    margin-right: 20px;
+    margin-top: 10px;
+  }
+
+  &__body {
+    overflow: hidden;
+
+    h3 {
+      margin: 0 0 15px;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &--right {
+    padding-right: 20px;
+
+    .b-feature__img {
+      float: right;
+      margin-right: 0;
+      margin-left: 20px;
+    }
+
+    .b-feature__body {
+      text-align: right;
+    }
+  }
+
+  @media (max-width: @grid-float-breakpoint) {
+    padding-left: 0;
+    margin-bottom: @vertical-rhythm;
+
+    &__img {
+      float: none;
+      margin: 0 auto 10px;
+    }
+
+    &__body {
+      text-align: center;
+    }
+
+    &--right {
+      padding-right: 0;
+
+      .b-feature__img {
+        float: none;
+        margin: 0 auto 10px;
+      }
+
+      .b-feature__body {
+        text-align: center;
+      }
+    }
+  }
+}
+
+
+
+//
+// Section: mobile
+// --------------------------------------------------
+
+.section-mobile {
+  
+  &__text {
+    margin-top: 85px;
+
+    @media (max-width: @grid-float-breakpoint) {
+      margin-top: 0;
+    }
+  }
+}
+
+
+
+//
+// Section: portfolio
+// --------------------------------------------------
+
+.section-portfolio {
+  border-top: 1px solid #eee;
+}
+
+
+
+//
+// Section: blog
+// --------------------------------------------------
+
+.section-blog {
+  background: #f2f2f2;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.blogroll {
+
+  .row + .row {
+    margin-top: @sections-v-pad;
+  }
+}
+
+.blog-item {
+
+  &__date {
+    font-weight: bold;
+    color: fade(@text-color, 50%);
+  }
+
+  &__title {
+    margin: 10px 0 20px;
+    font-weight: bold;
+
+    a {
+      &,
+      &:focus {
+        color: @text-color;
+      }
+
+      &:hover {
+        color: @link-color;
+        text-decoration: none;
+      }
+    }
+  }
+
+  &__intro {
+    color: fade(@text-color, 50%);
+  }
+
+  &__author {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    font-weight: bold;
+    color: fade(@text-color, 70%);
+  }
+}

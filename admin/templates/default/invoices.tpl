@@ -33,16 +33,17 @@
 					{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
 
 					<div class="input-group date">
-						<input type="text" class="js-datepicker" name="date_due" id="field_date_due" value="{$default_date}" data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s">
+						<input type="text" class="js-datepicker" name="date_due" id="field_date_due" value="{$default_date}" data-date-format="YYYY-MM-DD HH:mm:ss">
 						<span class="input-group-addon js-datepicker-toggle"><i class="i-calendar"></i></span>
 					</div>
 				</div>
 			</div>
 
 			<div class="row">
-				<label class="col col-lg-2 control-label">{lang key='fullname'} {lang key='field_required'}</label>
+				<label class="col col-lg-2 control-label">{lang key='owner'} {lang key='field_required'}</label>
 				<div class="col col-lg-4">
 					<input type="text" name="fullname" value="{$item.fullname|escape:'html'}" autocomplete="off">
+					<input type="hidden" name="member_id" id="member-id" {if isset($item.member_id) && $item.member_id}value="{$item.member_id}"{/if}>
 				</div>
 			</div>
 
@@ -142,8 +143,8 @@
 			</div>
 		</div>
 
-		{include file='fields-system.tpl' noSystemFields=true}
+		{include 'fields-system.tpl' noSystemFields=true}
 	</div>
 </form>
-{ia_add_media files='datepicker'}
+{ia_add_media files='moment, datepicker'}
 {ia_print_js files='ckeditor/ckeditor,jquery/plugins/jquery.numeric,admin/invoices'}

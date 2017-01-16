@@ -1,0 +1,165 @@
+.navbar {
+  .clearfix();
+  background: @navbar-bg;
+  .box-shadow(@navbar-shadow);
+  position: relative;
+  z-index: 1000;
+}
+
+.navbar-nav {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+
+  > li {
+    margin: 0;
+    float: left;
+
+    > a {
+      display: block;
+      line-height: @navbar-height;
+      padding: 0 20px;
+
+      @media (max-width: @screen-sm) {
+        padding: 0 10px;
+      }
+
+      &,
+      &:focus {
+        color: @navbar-link-color;
+        text-decoration: none;
+        background: transparent;
+      }
+
+      &:hover {
+        background: @navbar-link-hover-bg-color;
+        color: @navbar-link-hover-color;
+      }
+
+      > span {
+        display: none;
+      }
+
+      > .fa {
+        width: 20px;
+        font-size: 16px;
+        text-align: center;
+      }
+    }
+
+    &.dropdown {
+      &::after {
+        content: '';
+        display: block;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 0 0 10px 10px;
+        border-color: transparent transparent darken(@navbar-bg, 8%) transparent;
+      }
+    }
+
+    .dropdown-menu {
+      min-width: 200px;
+
+      > li {
+
+        > a {
+
+          .fa {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+            margin-right: 5px;
+            color: fade(@text-color, 50%);
+          }
+
+          .label {
+            float: right;
+            line-height: @line-height-base;
+          }
+        }
+      }
+    }
+
+    &.open > a,
+    &.open > a:focus {
+      background: @navbar-link-hover-bg-color;
+    }
+  }
+}
+
+.navbar-right {
+  float: right;
+}
+
+.navbar-left {
+  float: left;
+}
+
+
+
+//
+// User
+// --------------------------------------------------
+
+.navbar-nav__user {
+  img {
+    width: 30px;
+    border-radius: 50%;
+  }
+}
+
+
+
+//
+// Notifications in navbar
+// --------------------------------------------------
+
+.navbar-nav__notifications {
+  position: relative;
+
+  .label {
+    display: block;
+    position: absolute;
+    right: 5px;
+    top: 10px;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    line-height: 16px;
+    font-size: 10px;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+    background: @navbar-notification-bg;
+  }
+
+  &__alerts {
+    padding: 5px 10px;
+
+    .alert {
+      margin: 0;
+      font-size: 12px;
+      padding: 8px;
+      border-radius: 0;
+
+      & + & {
+        margin-top: 10px;
+      }
+    }
+  }
+}
+
+
+
+//
+// Quick search
+// --------------------------------------------------
+
+.navbar-form {
+  display: none;
+}

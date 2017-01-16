@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -101,7 +101,10 @@ class iaTransaction extends abstractCore
 
 		if ($transaction = $this->getById($id))
 		{
-			$result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), array('date' => iaDb::FUNCTION_NOW), self::getTable());
+				$transactionData['date_updated'] = date(iaDb::DATETIME_FORMAT);
+				!(self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
+					|| $transactionData['date_paid'] = date(iaDb::DATETIME_FORMAT);
+				$result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), null, self::getTable());
 
 			if ($result && isset($transactionData['status']))
 			{
@@ -127,7 +130,9 @@ class iaTransaction extends abstractCore
 					$transaction = $this->getById($id);
 
 					$this->_sendEmailNotification($transaction);
-					$this->_createInvoice($transaction);
+					empty($transaction['member_id']) || $this->_createInvoice($transaction);
+
+					$this->iaCore->factory('plan')->setPaid($transaction);
 				}
 			}
 		}
@@ -173,11 +178,17 @@ class iaTransaction extends abstractCore
 
 	public function createIpn($transaction)
 	{
-		unset($transaction['id'], $transaction['date']);
+		empty($transaction['status']) || $status = $transaction['status'];
+		unset($transaction['id'], $transaction['date_created'], $transaction['status']);
 
-		$this->iaDb->insert($transaction, array('date' => iaDb::FUNCTION_NOW), self::getTable());
+		$id = $this->iaDb->insert($transaction, array('date_created' => iaDb::FUNCTION_NOW), self::getTable());
 
-		return $this->iaDb->getInsertId();
+		if ($id && isset($status))
+		{
+			$this->update(array('status' => $status), $id);
+		}
+
+		return $id;
 	}
 
 	/**
@@ -215,7 +226,7 @@ class iaTransaction extends abstractCore
 			'plan_id' => $planId,
 			'return_url' => $returnUrl,
 			'operation' => $title,
-			'date' => date(iaDb::DATETIME_FORMAT)
+			'date_created' => date(iaDb::DATETIME_FORMAT)
 		);
 
 		$result = $this->iaDb->insert($transaction, null, $this->getTable());
@@ -250,9 +261,9 @@ class iaTransaction extends abstractCore
 		$data = array();
 		$weekDay = getdate();
 		$weekDay = $weekDay['wday'];
-		$stmt = '`status` = :status AND DATE(`date`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date`)';
+		$stmt = '`status` = :status AND DATE(`date_paid`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date_paid`)';
 		$this->iaDb->bind($stmt, array('status' => self::PASSED));
-		$rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date`)), SUM(`amount`)', $stmt);
+		$rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date_paid`)), SUM(`amount`)', $stmt);
 		for ($i = 0; $i < 7; $i++)
 		{
 			$data[$i] = isset($rows[$i]) ? $rows[$i] : 0;
@@ -266,7 +277,7 @@ class iaTransaction extends abstractCore
 			isset($rows[$status]) || $rows[$status] = 0;
 		}
 
-		$total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', '`status` = :status', array('status' => self::PASSED));
+		$total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', "`status` = :status && (`item` = 'funds' || (`item` != 'funds' && `gateway` != 'funds'))", array('status' => self::PASSED));
 		$total || $total = 0;
 
 		$this->iaDb->resetTable();
@@ -363,6 +374,31 @@ class iaTransaction extends abstractCore
 		if ($gatewayInstance && method_exists($gatewayInstance, self::GATEWAY_CALLBACK_NAME))
 		{
 			return call_user_func(array($gatewayInstance, self::GATEWAY_CALLBACK_NAME), $transaction);
+		}
+
+		return false;
+	}
+
+	public function refund($transactionId)
+	{
+		$transaction = $this->getById($transactionId);
+
+		if (!$transaction)
+		{
+			return false;
+		}
+
+		$gatewayName = $transaction['gateway'];
+
+		$gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common', $gatewayName);
+
+		if ($gatewayInstance && method_exists($gatewayInstance, 'refund'))
+		{
+			try
+			{
+				return call_user_func(array($gatewayInstance, 'refund'), $transaction);
+			}
+			catch (Exception $e) {}
 		}
 
 		return false;

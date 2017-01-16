@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -117,6 +117,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (in_array($settings['target'], array(iaAcl::USER, iaAcl::GROUP)))
 		{
+			if (empty($settings['item']))
+			{
+				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+			}
+
 			if (iaAcl::USER == $settings['target'])
 			{
 				iaBreadcrumb::add(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
@@ -162,11 +167,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$actions = $iaAcl->getActions();
 		$groups = array();
-		$titles = $iaPage->getTitles();
 
 		foreach (array(iaAcl::OBJECT_PAGE, iaAcl::OBJECT_ADMIN_PAGE) as $i => $pageType)
 		{
 			$fieldsList = array('name', 'action', 'group', 'parent');
+			$titles = $iaPage->getTitles(iaAcl::OBJECT_PAGE == $pageType ? iaCore::FRONT : iaCore::ADMIN);
 			$pages = $this->_iaDb->all($fieldsList, '`' . (1 == $i ? 'readonly' : 'service') . "` = 0 AND `name` != '' ORDER BY `parent` DESC, `id`", null, null, $pageType . 's');
 
 			foreach ($pages as $page)
@@ -234,9 +239,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _listUsergroups()
 	{
-		$sql = 'SELECT u.`id`, u.`name`, IF(u.`id` = 1, 1, p.`access`) `admin_access` '
-			. 'FROM `:prefix:table_usergroups` u '
-			. "LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = u.`id` AND p.`type` = 'group' AND p.`object` = 'admin_access')";
+		$sql = <<<SQL
+SELECT u.`id`, u.`name`, IF(u.`id` = 1, 1, p.`access`) `admin_access` 
+	FROM `:prefix:table_usergroups` u 
+LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = u.`id` AND p.`type` = 'group' AND p.`object` = 'admin_access')
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
 			'table_usergroups' => iaUsers::getUsergroupsTable(),
@@ -248,13 +255,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _listMembers()
 	{
-		$sql = 'SELECT m.`id`, m.`fullname`, g.`name` `usergroup`, IF(m.`usergroup_id` = 1, 1, p.`access`) `admin_access` '
-			. 'FROM `:prefix:table_members` m '
-			. 'LEFT JOIN `:prefix:table_groups` g ON (m.`usergroup_id` = g.`id`) '
-			. "LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = m.`id` AND p.`type` = 'user' AND p.`object` = 'admin_access')"
-			. 'WHERE m.`id` IN ('
-				. "SELECT DISTINCT `type_id` FROM `:prefix:table_privileges` WHERE `type` = 'user'"
-			. ')';
+		$sql = <<<SQL
+SELECT m.`id`, m.`fullname`, g.`name` `usergroup`, IF(m.`usergroup_id` = 1, 1, p.`access`) `admin_access` 
+	FROM `:prefix:table_members` m 
+LEFT JOIN `:prefix:table_groups` g ON (m.`usergroup_id` = g.`id`) 
+LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = m.`id` AND p.`type` = 'user' AND p.`object` = 'admin_access')
+WHERE m.`id` IN (SELECT DISTINCT `type_id` FROM `:prefix:table_privileges` WHERE `type` = 'user')
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
 			'table_members' => iaUsers::getTable(),

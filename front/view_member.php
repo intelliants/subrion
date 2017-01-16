@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -71,7 +71,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		'desc' => $member['fullname']
 	));
 
+	$iaField = $iaCore->factory('field');
 	$iaItem = $iaCore->factory('item');
+
 	$iaCore->set('num_items_perpage', 20);
 
 	$page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -83,21 +85,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$iaItem->setItemTools(array(
 			'id' => 'action-edit',
 			'title' => iaLanguage::get('edit'),
-			'attributes' => array(
-				'href' => $iaPage->getUrlByName('profile'),
-			)
+			'attributes' => array('href' => $iaPage->getUrlByName('profile'))
 		));
 	}
 
-	$member = array_shift($iaItem->updateItemsFavorites(array($member), $member['item']));
+	$members = $iaItem->updateItemsFavorites(array($member), $member['item']);
+	$member = array_shift($members);
 	$member['items'] = array();
-
-	// get fieldgroups
-	$iaField = $iaCore->factory('field');
-	list($tabs, $fieldgroups) = $iaField->generateTabs($iaField->filterByGroup($member, $iaUsers->getItemName()));
-
-	// compose tabs
-	$sections = array_merge(array('common' => $fieldgroups), $tabs);
 
 	// get all items added by this account
 	$itemsList = $iaItem->getPackageItems();
@@ -134,7 +128,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 					$member['items'][$itemName] = $result;
 					$member['items'][$itemName]['package'] = isset($itemsList[$itemName]) ? $itemsList[$itemName] : '';
-					$member['items'][$itemName]['fields'] = $iaField->filter($member['items'][$itemName]['items'], $itemName);
+					$member['items'][$itemName]['fields'] = $iaField->filter($itemName, $member['items'][$itemName]['items']);
 				}
 			}
 		}
@@ -156,20 +150,21 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$member['website'] = 'http://' . $member['website'];
 	}
 
+	$sections = $iaField->getTabs($iaUsers->getItemName(), $member);
+
 	$iaView->assign('item', $member);
 	$iaView->assign('sections', $sections);
 
 	$title = empty($member['fullname']) ? $member['username'] : $member['fullname'];
 	$iaView->title($title);
 
+	$iaView->display('view-member');
+
 	// add open graph data
-	$avatar = $member['avatar'] ? unserialize($member['avatar']) : '';
 	$openGraph = array(
 		'title' => $title,
 		'url' => IA_SELF,
-		'image' => $avatar ? IA_CLEAR_URL . 'uploads/' . $avatar['path'] : ''
+		'image' => isset($member['avatar']) && $member['avatar']['path'] ? IA_CLEAR_URL . 'uploads/' . $member['avatar']['path'] : ''
 	);
 	$iaView->set('og', $openGraph);
-
-	$iaView->display('view-member');
 }

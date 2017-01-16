@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,13 +20,20 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
-abstract class abstractPlugin extends iaGrid
+abstract class abstractPlugin extends abstractCore
 {
+	protected $_iaDb; // <4.0.5 plugins compatibility (should not be used, use $iaDb instead)
 
+
+	public function init()
+	{
+		parent::init();
+		$this->_iaDb = $this->iaDb;
+	}
 
 	public function insert(array $itemData)
 	{

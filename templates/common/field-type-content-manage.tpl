@@ -1,20 +1,12 @@
 {$type = $field.type}
 {$fieldName = $field.name}
-{$name = "field_{$fieldName}"}
+{$name = "field_{$field.item}_{$field.name}"}
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
 {if isset($item.$fieldName)}
 	{if iaField::CHECKBOX == $type}
 		{$value = ','|explode:$item.$fieldName}
-	{elseif in_array($type, array(iaField::IMAGE, iaField::PICTURES, iaField::STORAGE))}
-		{* TODO: refactor the code below *}
-		{if $item.$fieldName}
-			{$value = $item.$fieldName|unserialize}
-		{else}
-			{$value = array()}
-		{/if}
-		{* *}
 	{else}
 		{$value = $item.$fieldName}
 	{/if}
@@ -28,20 +20,20 @@
 
 <div class="form-group{if iaField::TEXTAREA == $type} form-group--textarea{/if} {$field.class} {$field.relation}{if $field.for_plan && !$field.required} form-group--plan" style="display:none;{/if}" id="{$fieldName}_fieldzone">
 	<label for="{$name}">
-		{lang key=$name}:
+		{$field.title|escape:'html'}:
 		{if $field.required}<span class="is-required">*</span>{/if}
 	</label>
 
 	{switch $type}
 		{case iaField::TEXT break}
-			<input class="form-control" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+			<input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::NUMBER break}
 			<input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
-				<textarea class="form-control" name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
+				<textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
 				{if $field.length > 0}
 					{ia_add_js}
 $(function()
@@ -57,7 +49,7 @@ $(function()
 					{ia_print_js files='jquery/plugins/jquery.textcounter'}
 				{/if}
 			{else}
-				{ia_wysiwyg value=$value name=$field.name}
+				{ia_wysiwyg value=$value name="{$field.name}{if $field.multilingual}[{$core.language.iso}]{/if}"}
 			{/if}
 
 		{case iaField::URL break}
@@ -82,13 +74,13 @@ $(function()
 			<div class="row">
 				<div class="col-md-6">
 					<div class="input-group date" id="field_date_{$fieldName}">
-						<input class="form-control js-datepicker" type="text" name="{$fieldName}" {if $field.timepicker} data-date-show-time="true" data-date-format="yyyy-mm-dd H:i:s"{else}data-date-format="yyyy-mm-dd"{/if} id="{$name}" value="{$default_date}">
+						<input class="form-control js-datepicker" type="text" name="{$fieldName}" {if $field.timepicker} data-date-format="YYYY-MM-DD HH:mm:ss"{else}data-date-format="YYYY-MM-DD"{/if} id="{$name}" value="{$default_date}">
 						<span class="input-group-addon js-datepicker-toggle"><span class="fa fa-calendar"></span></span>
 					</div>
 				</div>
 			</div>
 
-			{ia_add_media files='datepicker'}
+			{ia_add_media files='moment,datepicker'}
 
 		{case iaField::IMAGE break}
 			{if $value}
@@ -100,7 +92,7 @@ $(function()
 					{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
 						{printImage imgfile=$value.path width=$field.thumb_width height=$field.thumb_height thumbnail=1}
 					{else}
-						<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
+						<a href="{printImage imgfile=$value.path url=true type='full'}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
 							{printImage imgfile=$value.path width=$field.thumb_width height=$field.thumb_height}
 						</a>
 					{/if}
@@ -131,12 +123,12 @@ $(function()
 										<button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 									</div>
 									
-									<a class="thumbnail__image" href="{printImage imgfile=$entry.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]" title="{$entry.title|escape:'html'}">
+									<a class="thumbnail__image" href="{printImage imgfile=$entry.path url=true type='full'}" rel="ia_lightbox[{$fieldName}]" title="{$entry.title|escape:'html'}">
 										{printImage imgfile=$entry.path title=$entry.title class='img-responsive'}
 									</a>
 
 									<div class="caption">
-										<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
+										<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" data-emptytext="{lang key='empty_image_title'}" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
 									</div>
 
 									<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
@@ -399,7 +391,7 @@ $(function()
 			{/if}
 		{/if}
 
-		{assign annotation {lang key="{$name}_annotation" default=''}}
-		{if $annotation}<p class="help-block annotation">{$annotation}</p>{/if}
+		{assign tooltip {lang key="field_tooltip_{$field.item}_{$field.name}" default=''}}
+		{if $tooltip}<p class="help-block tooltip">{$tooltip}</p>{/if}
 </div>
 {if isset($field_after[$fieldName])}{$field_after.$fieldName}{/if}

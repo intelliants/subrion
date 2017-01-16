@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -30,6 +30,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_gridFilters = array('fullname' => self::LIKE, 'status' => self::EQUAL);
 	protected $_gridQueryMainTableAlias = 'i';
+	protected $_gridSorting = array(
+		'amount' => array('amount', 't'),
+		'gateway' => array('gateway', 't'),
+		'status' => array('status', 't')
+	);
 
 
 	public function __construct()
@@ -54,15 +59,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridQuery($columns, $where, $order, $start, $limit)
 	{
-		foreach (array('amount', 'gateway', 'status') as $joinedColumnName) // joined columns
-		{
-			if (false !== stripos($order, $joinedColumnName))
-			{
-				$order = str_replace(' i.`', ' t.`', $order);
-				break;
-			}
-		}
-
 		$sql =
 			'SELECT SQL_CALC_FOUND_ROWS '
 				. 'i.`id`, i.`date_created`, i.`fullname`, '
@@ -86,7 +82,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->_iaDb->getAll($sql);
 	}
 
-	protected function _modifyGridParams(&$conditions, &$values)
+	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
 		if (!empty($_GET['gateway']))
 		{
@@ -100,6 +96,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach ($entries as &$entry)
 		{
 			$entry['plan'] = $entry['plan_id'] ? iaLanguage::get('plan_title_' . $entry['plan_id']) : $entry['operation'];
+			is_null($entry['status']) && $entry['status'] = 'empty';
 			//$entry['gateway'] && ($entry['gateway'] = iaLanguage::get($entry['gateway']));
 
 			unset($entry['operation'], $entry['plan_id']);
@@ -145,13 +142,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		$entry['date_due'] = $data['date_due'];
+		$entry['member_id'] = $data['member_id'];
 		$entry['fullname'] = $data['fullname'];
+		$entry['date_due'] = $data['date_due'];
 		$entry['address1'] = $data['address1'];
 		$entry['address2'] = $data['address2'];
-		$entry['zip'] = $data['zip'];
 		$entry['country'] = $data['country'];
 		$entry['notes'] = $data['notes'];
+		$entry['zip'] = $data['zip'];
 
 		if (iaCore::ACTION_ADD == $action)
 		{

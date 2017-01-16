@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -88,7 +88,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						$contents = file_get_contents($documentationPath . $doc);
 						$result['tabs'][] = array(
 							'title' => iaLanguage::get('extra_' . $tab, ucfirst($tab)),
-							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="http://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
+							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 							'cls' => 'extension-docs'
 						);
 					}
@@ -589,7 +589,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($response = iaUtil::getPageContent(iaUtil::REMOTE_TOOLS_URL . 'list/package/' . IA_VERSION))
 			{
-				$response = iaUtil::jsonDecode($response);
+				$response = json_decode($response, true);
 				if (!empty($response['error']))
 				{
 					$this->_messages[] = $response['error'];

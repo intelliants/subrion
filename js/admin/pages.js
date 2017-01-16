@@ -83,7 +83,7 @@ Ext.onReady(function()
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
-			store: intelli.gridHelper.store.ajax(window.location + 'plugins.json'),
+			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/actions/options/extras.json'),
 			displayField: 'title',
 			name: 'extras',
 			valueField: 'value'
@@ -178,16 +178,14 @@ $(function()
 	$('#input-name, #input-alias').on('blur', fillUrlBox);
 	$('#input-parent').on('change', fillUrlBox);
 
-	// Page content language tabs
-	$('a[data-toggle="tab"]', '#js-content-fields').on('shown.bs.tab', function()
-	{
-		var lngCode = $(this).data('language');
-		CKEDITOR.instances['contents[' + lngCode + ']']
-			|| intelli.ckeditor('contents[' + lngCode + ']', {toolbar: 'Extended'});
+	// Init CKEDITORs
+	$('textarea[name^="content"]').each(function() {
+		var $this   = $(this),
+			lngCode = $this.data('language');
 
-		$('#js-active-language').val(lngCode);
+		CKEDITOR.instances['content[' + lngCode + ']']
+					|| intelli.ckeditor('content[' + lngCode + ']', {toolbar: 'Extended'});
 	});
-	$('a[data-toggle="tab"]:first', '#js-content-fields').trigger('shown.bs.tab');
 
 	// page extension dropdown
 	$('a', '#js-page-extension-list').on('click', function(e)

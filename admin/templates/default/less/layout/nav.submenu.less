@@ -1,0 +1,363 @@
+#panel-center {
+  width: @sub-nav-width;
+  background: @sub-nav-bg;
+  display: table-cell;
+  vertical-align: top;
+
+  @media (max-width: @screen-sm) {
+    display: block;
+    width: auto;
+  }
+
+  &.is-hidden {
+    display: none;
+  }
+
+  .nav-sub {
+    display: none;
+    overflow: hidden;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+
+    &.active {
+      display: block;
+    }
+
+    > li {
+      margin: 0 30px 0;
+      padding: 0;
+      position: relative;
+
+      > a {
+        padding: 5px 10px;
+        display: block;
+        color: @sub-nav-link-color;
+        margin-right: -30px;
+
+        &:hover {
+          background: @sub-nav-link-hover-color;
+          text-decoration: none;
+        }
+
+        &:focus {
+          text-decoration: none;
+        }
+      }
+
+      > span {
+        padding: 5px 10px;
+        display: block;
+        color: darken(@sub-nav-link-color, 25%);
+        margin-right: -30px;
+      }
+
+      > .nav-sub__config {
+        position: absolute;
+        right: -30px;
+        top: 0;
+        padding: 5px 20px;
+        margin: 0;
+        text-align: center;
+        color: darken(@sub-nav-link-color, 30%);
+
+        &:hover {
+          background: @sub-nav-link-hover-color;
+          color: @sub-nav-link-color;
+        }
+
+        &.active {
+          background: @sub-nav-link-active-bg-color;
+          color: @sub-nav-link-active-color;
+        }
+
+        &:focus {
+          text-decoration: none;
+        }
+      }
+
+      &.heading {
+        padding: 35px 10px 5px;
+        color: @sub-nav-heading-color;
+        text-transform: uppercase;
+        position: relative;
+
+        > .nav-sub__config {
+          top: 30px;
+        }
+      }
+
+      &.single {
+        padding: 30px 10px 5px;
+      }
+
+      &.active-setting {
+        background: @sub-nav-link-hover-color;
+        text-decoration: none;
+      }
+
+      &.active {
+        background: @sub-nav-link-active-bg-color;
+        margin-right: -30px;
+
+        > a {
+          color: @sub-nav-link-active-color;
+
+          &:hover {
+            background: @sub-nav-link-active-bg-color;
+            text-decoration: none;
+          }
+        }
+
+        > .nav-sub__config {
+          color: lighten(@sub-nav-link-active-color, 50%);
+          right: 30px;
+
+          &:hover {
+            color: @sub-nav-link-active-color;
+          }
+        }
+      }
+
+      &.user-info {
+        padding: 30px 10px 0;
+        
+        h3, h5 {
+          color: #fff;
+        }
+      }
+
+      .label {
+        float: right;
+        margin-right: 0;
+        margin-top: 5px;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+
+// QUICK LINKS
+// 
+// Metro Ui style
+// --------------
+
+#quick-links {
+  margin-left: -10px;
+  margin-bottom: 0;
+
+  li {
+    position: relative;
+    float: left;
+    margin: 0 0 10px 10px;
+    background: #fff;
+    .box-shadow(0 1px 1px rgba(0,0,0,.2));
+
+    &.large {
+      width: 200px;
+      height: 120px;
+    }
+
+    &.small {
+      width: 95px;
+      height: 120px;
+
+      i {
+        right: 50%;
+        margin-right: -22px;
+      }
+    }
+  }
+
+  a {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    // background: #ccc;
+    text-decoration: none;
+    color: #555;
+    padding-top: 10px;
+    padding-left: 10px;
+    // border-radius: @border-radius-base;
+
+    .title {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      font-size: 12px;
+    }
+
+    .info {
+      font-size: 12px;
+      margin: 0;
+
+      b {
+        font-size: 16px;
+      }
+    }
+
+    i,
+    img {
+      display: block;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 44px;
+    }
+
+    img {
+      width: 44px;
+      height: 44px;
+    }
+
+
+    &:hover {
+      box-shadow: inset 0 0 0 3px #f0f0f0;
+    }
+  }
+
+  // plates colors
+
+  @user-plate-color:         #00bff3;
+  @transactions-plate-color: #fbaf5d;
+  @publishing-plate-color:   #00a99d;
+  @realestate-plate-color:   #a864a8;
+  @autos-plate-color:        #7693b0;
+
+  li.members a {
+    i { 
+      color: @user-plate-color;
+    }
+
+    &:hover {
+      box-shadow: inset 0 0 0 3px @user-plate-color;
+    }
+  }
+
+  li.transactions a {
+    i { 
+      color: @transactions-plate-color; 
+    }
+    
+    &:hover {
+      box-shadow: inset 0 0 0 3px @transactions-plate-color;
+    }
+  }
+
+  li.publishing a {
+    i { 
+      color: @publishing-plate-color; 
+    }
+    
+    &:hover {
+      box-shadow: inset 0 0 0 3px @publishing-plate-color;
+    }
+  }
+
+  li.realestate a {
+    i { 
+      color: @realestate-plate-color; 
+    }
+
+    &:hover {
+      box-shadow: inset 0 0 0 3px @realestate-plate-color;
+    }  
+  }
+
+  li.auto a {
+    i { 
+      color: @autos-plate-color; 
+    }
+    
+    &:hover {
+      box-shadow: inset 0 0 0 3px @autos-plate-color;
+    }  
+  }
+
+  li.settings {
+    background: #f0f0f0;
+    box-shadow: none;
+  }
+  li.settings a {
+    background: none;
+    // text-align: center;
+    color: #ccc;
+
+    i { 
+      color: #ddd; 
+    }
+    
+    &:hover {
+      box-shadow: none;
+    }  
+  }
+}
+
+.quick-links {
+  margin-bottom: 0;
+
+  > li {
+    position: relative;
+    margin: 0 0 16px;
+
+    > a {
+      display: block;
+      color: #fff;
+      line-height: 36px;
+      padding-top: 0;
+      padding-bottom: 0;
+      color: lighten(@sub-nav-bg, 50%);
+      .clearfix();
+
+      .link-icon {
+        display: block;
+        float: left;
+        font-size: 22px;
+        // padding: 6px;
+        text-align: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        line-height: 40px;
+        margin-right: 12px;
+        background: @brand-primary;
+        color: #fff;
+
+        &-add {
+          background: lighten(@sub-nav-bg, 20%);
+          color: @sub-nav-bg;
+        }
+      }
+
+      &:hover {
+        // background: lighten(@nav-sub-bg, 20%);
+        // text-decoration: none;
+        // color: #000;
+      }
+    }
+
+    &.link-add {
+      > a {
+        color: lighten(@sub-nav-bg, 20%);
+      }
+      .link-icon {
+        background: lighten(@sub-nav-bg, 8%);
+        color: @sub-nav-bg;
+      }
+    }
+  }
+}
+
+
+// BARS AND CHARTS
+//---------------------------
+
+#usersBar {
+  // line-height: 50px;
+  // height: 50px;
+}

@@ -20,6 +20,21 @@
 							<strong>{lang key="plan_title_{$plan.id}"} &mdash; {$plan.cost} {$core.config.currency}</strong>
 						</label>
 						<div class="plans__item__body">{lang key="plan_description_{$plan.id}"}</div>
+						{if $plan.options}
+						<div class="well">
+							<ul>
+								{foreach $plan.options as $option}
+									<li>{lang key="plan_option_{$option.item}_{$option.name}"} —
+									{if 'bool' == $option.type}
+										{if $option.value}{lang key='yes'}{else}{lang key='no'}{/if}
+										{else}
+										{$option.value|escape:'html'}
+									{/if}
+									</li>
+								{/foreach}
+							</ul>
+						</div>
+						{/if}
 					</div>
 				{/foreach}
 			</div>

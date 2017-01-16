@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin name="blog">
+	<title>Blog</title>
+	<summary>Adds blog functionality to Subrion powered website</summary>
+	<author>Intelliants LLC</author>
+	<contributor>Intelliants LLC</contributor>
+	<version>4.1.0</version>
+	<date>2016-09-26</date>
+	<compatibility>4.1</compatibility>
+
+	<actions>
+		<action name="blogs" url="blog/" icon="list" pages="blog:add,blog:edit">List</action>
+		<action name="blog_add" url="blog/add/" icon="plus" pages="blog:read,blog:edit">Add Blog Entry</action>
+		<action type="dashboard" name="dashboard_blogpost_add" url="blog/add/" icon="quill">New Blog Post</action>
+	</actions>
+
+	<adminpages>
+		<page group="content" name="blog" order="45" url="blog/" menus="menu">Blog</page>
+	</adminpages>
+
+	<pages>
+		<page menus="main,bottom" name="blog" url="blog/">Blog</page>
+		<page name="tag" url="tag/" filename="tag">Tag</page>
+		<page name="blog_date" url="blog/date/" filename="date">Blog Archive</page>
+	</pages>
+
+	<permissions>
+		<object meta_object="admin_page" id="blog" access="1">Allow to view blog entries</object>
+		<object meta_object="admin_page" id="blog" action="add" access="1">Add blog entry</object>
+		<object meta_object="admin_page" id="blog" action="edit" access="1">Edit blog entry</object>
+		<object meta_object="admin_page" id="blog" action="delete" access="1">Delete blog entry</object>
+
+		<object id="blog" access="1">View blog entries</object>
+		<object id="blog" action="add" access="0">Add blog entry</object>
+		<object id="blog" action="edit" access="0">Edit blog entry</object>
+		<object id="blog" action="delete" access="0">Delete blog entry</object>
+	</permissions>
+
+	<phrases>
+		<phrase category="admin" key="blogposts">Blogposts</phrase>
+
+		<phrase category="common" key="add_blog_entry">Add Blog Entry</phrase>
+		<phrase category="common" key="blog">Blog</phrase>
+		<phrase category="common" key="blog_entry_added">Blog entry added.</phrase>
+		<phrase category="common" key="blog_entry_deleted">Blog entry deleted.</phrase>
+		<phrase category="common" key="body">Body</phrase>
+		<phrase category="common" key="edit_blog_entry">Edit Blog Entry</phrase>
+		<phrase category="common" key="blog">Blog</phrase>
+		<phrase category="common" key="separate_with_comma_or_enter">Use comma or press enter to separate tags</phrase>
+		<phrase category="common" key="tags">Tags</phrase>
+		<phrase category="common" key="title_alias">Title Alias</phrase>
+
+		<phrase category="frontend" key="blogroll">Blogroll</phrase>
+		<phrase category="frontend" key="no_blog_entries">Administrator has not posted any blogposts yet.</phrase>
+		<phrase category="frontend" key="no_tags">No tags added.</phrase>
+		<phrase category="frontend" key="page_title_tag">Blog Tags</phrase>
+		<phrase category="frontend" key="posted_on">Posted on</phrase>
+		<phrase category="frontend" key="view_all_blog_entries">View all blog entries</phrase>
+	</phrases>
+
+	<configgroup name="blog">Blog</configgroup>
+
+	<config group="blog" name="blog_plugin" type="divider">General</config>
+	<config group="blog" name="blog_number_block" type="text" description="Number of displayed entries in Blogroll entries">4</config>
+	<config group="blog" name="blog_number_new_block" type="text" description="Number of displayed entries in New Blog Posts block">3</config>
+	<config group="blog" name="blog_max_block" type="text" description="Number of chars in short description in Latest Blog entries">200</config>
+	<config group="blog" name="blog_number" type="text" description="Number of displayed entries">5</config>
+	<config group="blog" name="blog_max" type="text" description="Number of chars in short description">500</config>
+	<config group="blog" name="blog_order" type="select" values="alphabetic,date" description="Entries order by">date</config>
+	<config group="blog" name="blog_tag_number" type="text" description="Number of displayed tags">10</config>
+	<config group="blog" name="blog_image_resize" type="select" values="crop,fit" description="Image/Thumbnail resize mod">crop</config>
+	<config group="blog" name="blog_image_width" type="text" description="Image width">1280</config>
+	<config group="blog" name="blog_image_height" type="text" description="Image height">720</config>
+	<config group="blog" name="blog_thumb_width" type="text" description="Thumbnail width">250</config>
+	<config group="blog" name="blog_thumb_height" type="text" description="Thumbnail height">250</config>
+
+	<tooltips>
+		<tooltip key="blog_display_grid">This option allows you to display only images in Blogroll section. This display type suits best for portfolios.</tooltip>
+	</tooltips>
+
+	<blocks>
+		<block title="Blogroll" name="blogroll" position="verybottom" sticky="0" pages="index" order="1" type="smarty" filename="block.blogroll"><![CDATA[]]></block>
+		<block title="New blog posts" name="new_blog_posts" position="left" type="smarty" order="5" filename="block.new-posts"><![CDATA[]]></block>
+		<block title="Blogs Archive" name="blogs_archive" position="left" type="smarty" order="5" filename="block.blogs-archive"><![CDATA[]]></block>
+	</blocks>
+
+	<hooks>
+		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="plugins/blog/includes/hook.blocks-load.php"><![CDATA[]]></hook>
+		<hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['blog'] = 'plugin';]]></hook>
+		<hook name="sitemapGeneration" page_type="admin" pages="index,sitemap"><![CDATA[$items[] = 'blog:blog';]]></hook>
+	</hooks>
+
+	<install>
+		<sql>
+			<![CDATA[
+DROP TABLE IF EXISTS `{prefix}blog_entries`, `{prefix}blog_tags`, `{prefix}blog_entries_tags`;
+			]]>
+		</sql>
+		<sql>
+			<![CDATA[
+CREATE TABLE IF NOT EXISTS `{prefix}blog_entries` (
+	`id` mediumint(8) unsigned NOT NULL auto_increment,
+	`member_id` int(11) unsigned NOT NULL,
+	`title` tinytext NOT NULL,
+	`alias` varchar(155) NOT NULL,
+	`body` text NOT NULL,
+	`date_added` datetime NOT NULL,
+	`image` tinytext NOT NULL,
+	`status` enum('inactive','active') NOT NULL default 'inactive',
+	`lang` char(2) NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `LANGUAGE` (`lang`),
+	FULLTEXT KEY `SEARCH` (`title`, `body`)
+) {mysql_version};
+			]]>
+		</sql>
+		<sql>
+			<![CDATA[
+CREATE TABLE IF NOT EXISTS `{prefix}blog_tags` (
+	`id` mediumint(8) unsigned NOT NULL auto_increment,
+	`title` varchar(50) NOT NULL,
+	`alias` varchar(50) NOT NULL,
+	PRIMARY KEY (`id`)
+) {mysql_version};
+			]]>
+		</sql>
+		<sql>
+			<![CDATA[
+CREATE TABLE IF NOT EXISTS `{prefix}blog_entries_tags` (
+	`blog_id` mediumint(8) unsigned NOT NULL,
+	`tag_id` mediumint(8) unsigned NOT NULL,
+	UNIQUE KEY `UNIQUE` (`tag_id`, `blog_id`)
+) {mysql_version};
+			]]>
+		</sql>
+	</install>
+
+	<uninstall>
+		<sql>
+			<![CDATA[
+DROP TABLE IF EXISTS `{prefix}blog_entries`, `{prefix}blog_tags`, `{prefix}blog_entries_tags`;
+			]]>
+		</sql>
+	</uninstall>
+</plugin>

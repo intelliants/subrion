@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,45 +20,14 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
 class iaUtil extends abstractUtil
 {
-	const JSON_SERVICES_FILE = 'Services_JSON.php';
-	const REMOTE_TOOLS_URL = 'http://tools.subrion.org/';
+	const REMOTE_TOOLS_URL = 'https://tools.subrion.org/';
 
-
-	public static function jsonEncode($data)
-	{
-		if (function_exists('json_encode'))
-		{
-			return json_encode($data);
-		}
-		else
-		{
-			require_once IA_INCLUDES . 'utils' . IA_DS . self::JSON_SERVICES_FILE;
-			$jsonServices = new Services_JSON();
-
-			return $jsonServices->encode($data);
-		}
-	}
-
-	public static function jsonDecode($data)
-	{
-		if (function_exists('json_decode'))
-		{
-			return json_decode($data, true);
-		}
-		else
-		{
-			require_once IA_INCLUDES . 'utils' . IA_DS . self::JSON_SERVICES_FILE;
-			$jsonServices = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
-
-			return $jsonServices->decode($data);
-		}
-	}
 
 	public static function downloadRemoteContent($sourceUrl, $savePath)
 	{
@@ -113,10 +82,10 @@ class iaUtil extends abstractUtil
 		return $result;
 	}
 
-	/*
+	/**
 	 * Makes safe XHTML code, strip only dangerous tags and attributes
 	 *
-	 * @param string $string HTML text
+	 * @param $string HTML text
 	 *
 	 * @return string
 	 */
@@ -276,12 +245,12 @@ class iaUtil extends abstractUtil
 		self::go_to($url);
 	}
 
-	/*
-	 * Check that personal folder exists and return path
+	/**
+	 * Checks that personal folder exists and return path
 	 *
-	 * @param string $userName
+	 * @param string $userName member username
 	 *
-	 * @return str path from UPLOADS directory (you can completely insert it into DB)
+	 * @return string
 	 */
 	public static function getAccountDir($userName = '')
 	{
@@ -290,28 +259,12 @@ class iaUtil extends abstractUtil
 			$userName = iaUsers::hasIdentity() ? iaUsers::getIdentity()->username : false;
 		}
 
-		$serverDirectory = '';
-		umask(0);
+		$serverDirectory = empty($userName)
+			? '_notregistered' . IA_DS
+			: strtolower(substr($userName, 0, 1)) . IA_DS . $userName . IA_DS;
 
-		if (empty($userName))
-		{
-			$serverDirectory .= '_notregistered' . IA_DS;
-			if (!is_dir(IA_UPLOADS . $serverDirectory))
-			{
-				mkdir(IA_UPLOADS . $serverDirectory);
-			}
-		}
-		else
-		{
-			$subFolders = array();
-			$subFolders[] = strtolower(substr($userName, 0, 1)) . IA_DS;
-			$subFolders[] = $userName . IA_DS;
-			foreach ($subFolders as $folderName)
-			{
-				$serverDirectory .= $folderName;
-				is_dir(IA_UPLOADS . $serverDirectory) || mkdir(IA_UPLOADS . $serverDirectory);
-			}
-		}
+		umask(0);
+		is_dir(IA_UPLOADS . $serverDirectory) || mkdir(IA_UPLOADS . $serverDirectory, 0777, true);
 
 		return $serverDirectory;
 	}

@@ -220,7 +220,7 @@
 			<div class="widget widget-large" id="widget-changelog">
 				<div class="widget-header"><i class="i-lightning"></i> {lang key='changelog'}
 					<ul class="nav nav-pills pull-right">
-						<li class="dropdown">
+						<li class="dropdown hidden-xs hidden-sm">
 							<a class="dropdown-toggle" data-toggle="dropdown" href="#">
 								{foreach $changelog_titles as $item => $index}
 									{$item} <span class="caret"></span>
@@ -235,14 +235,14 @@
 
 									{if $index@iteration == 10}
 										<li class="divider"></li>
-										<li><a href="http://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i> {lang key='view_roadmap'}</a></li>
+										<li><a href="https://github.com/intelliants/subrion/milestones" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i> {lang key='view_roadmap'}</a></li>
 
 										{break}
 									{/if}
 								{/foreach}
 							</ul>
 						</li>
-						<li><a href="http://dev.subrion.org/projects/subrion-cms/roadmap" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i></a></li>
+						<li><a href="https://github.com/intelliants/subrion/milestones" target="_blank" title="{lang key='view_roadmap'}"><i class="i-flow-branch"></i></a></li>
 						<li><a href="#" class="widget-toggle"><i class="i-chevron-up"></i></a></li>
 					</ul>
 				</div>

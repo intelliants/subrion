@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -216,7 +216,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$output['message'] = iaLanguage::get('saved');
 					$output['success'] = true;
 
-					$this->_iaCore->iaCache->remove('menu_' . $menu . '.inc');
+					$this->_iaCore->iaCache->remove('menu_' . $menu);
 				}
 
 				break;
@@ -306,7 +306,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$menus = isset($data['menus']) && $data['menus'] ? $data['menus'] : '';
-		$menus = iaUtil::jsonDecode($menus);
+		$menus = json_decode($menus, true);
 		array_shift($menus);
 
 		$rows = array();
@@ -320,7 +320,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (iaCore::ACTION_EDIT == $action)
 		{
-			$this->_iaCore->iaCache->remove('menu_' . $this->getEntryId() . '.inc');
+			$this->_iaCore->iaCache->remove('menu_' . $this->getEntryId());
 		}
 	}
 
@@ -371,7 +371,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (!empty($_POST['menus']))
 		{
-			$iaView->assign('treeData', iaSanitize::html(iaUtil::jsonEncode($_POST['menus'])));
+			$iaView->assign('treeData', iaSanitize::html(json_encode($_POST['menus'])));
 		}
 
 		$iaView->assign('pageGroups', $pageGroups);
@@ -383,12 +383,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getPages()
 	{
-		$sql = 'SELECT DISTINCTROW p.*, IF(t.`value` is null, p.`name`, t.`value`) `title` '
-			. 'FROM `:prefixpages` p '
-			. 'LEFT JOIN `:prefix:table_language` t '
-				. "ON (`key` = CONCAT('page_title_', p.`name`) AND t.`code` = ':language') "
-			. "WHERE p.`status` = ':status' AND p.`service` = 0 "
-			. 'ORDER BY t.`value`';
+		$sql = <<<SQL
+SELECT DISTINCTROW p.*, IF(t.`value` is null, p.`name`, t.`value`) `title` 
+	FROM `:prefixpages` p 
+LEFT JOIN `:prefix:table_language` t ON (`key` = CONCAT('page_title_', p.`name`) AND t.`code` = ':language') 
+WHERE p.`status` = ':status' AND p.`service` = 0 
+ORDER BY t.`value`
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
 			'table_language' => iaLanguage::getTable(),

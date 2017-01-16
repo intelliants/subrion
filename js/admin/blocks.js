@@ -4,7 +4,7 @@ Ext.onReady(function()
 	{
 		var positionsStore = intelli.gridHelper.store.ajax(intelli.config.admin_url + '/blocks/positions.json');
 
-		intelli.blocks = new IntelliGrid(
+		var grid = new IntelliGrid(
 		{
 			columns: [
 				'selection',
@@ -32,21 +32,23 @@ Ext.onReady(function()
 			texts: {delete_single: _t('are_you_sure_to_delete_this_block')}
 		}, false);
 
-		intelli.blocks.toolbar = Ext.create('Ext.Toolbar', {items:[
+		grid.toolbar = Ext.create('Ext.Toolbar', {items:[
 		{
 			xtype: 'textfield',
 			name: 'title',
 			emptyText: _t('title'),
-			listeners: intelli.gridHelper.listener.specialKey
+			listeners: intelli.gridHelper.listener.specialKey,
+			width: 130
 		},{
 			emptyText: _t('status'),
 			name: 'status',
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
-			store: intelli.blocks.stores.statuses,
+			store: grid.stores.statuses,
 			displayField: 'title',
-			valueField: 'value'
+			valueField: 'value',
+			width: 90
 		},{
 			emptyText: _t('type'),
 			name: 'type',
@@ -59,7 +61,8 @@ Ext.onReady(function()
 				data : [['plain', 'plain'],['smarty', 'smarty'],['php', 'php'],['html', 'html'],['menu', 'menu']]
 			}),
 			displayField: 'title',
-			valueField: 'value'
+			valueField: 'value',
+			width: 90
 		},{
 			emptyText: _t('position'),
 			name: 'position',
@@ -68,17 +71,28 @@ Ext.onReady(function()
 			editable: false,
 			store: positionsStore,
 			displayField: 'title',
-			valueField: 'value'
+			valueField: 'value',
+			width: 110
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.blocks)},
+			emptyText: _t('extras'),
+			xtype: 'combo',
+			typeAhead: true,
+			editable: false,
+			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/actions/options/extras.json'),
+			displayField: 'title',
+			name: 'extras',
+			valueField: 'value',
+				width: 120
+		},{
+			handler: function(){intelli.gridHelper.search(grid)},
 			id: 'fltBtn',
 			text:'<i class="i-search"></i> ' +  _t('search')
 		},{
-			handler: function(){intelli.gridHelper.search(intelli.blocks, true)},
+			handler: function(){intelli.gridHelper.search(grid, true)},
 			text: '<i class="i-close"></i> ' + _t('reset')
 		}]});
 
-		intelli.blocks.init();
+		grid.init();
 	}
 	else
 	{
@@ -109,18 +123,21 @@ Ext.onReady(function()
 			}
 
 			var $multiLangRow = $('#js-multi-language-row');
+			var $jsExternalRow = $('#js-external-row');
 
 			if ('php' == type || 'smarty' == type)
 			{
 				last_multi = $multiLanguage.val();
 				$multiLangRow.hide().bootstrapSwitch('setState', 1);
+				$jsExternalRow.show();
 				initEditArea();
 			}
 			else
 			{
 				$multiLangRow.show();
 				$('#external_filename').hide();
-				$('#js-external-row').bootstrapSwitch('setState', 0);
+				$jsExternalRow.bootstrapSwitch('setState', 0);
+				$jsExternalRow.hide();
 
 				eAL.toggle_off('multi_contents');
 				$('#EditAreaArroundInfos_multi_contents').hide();

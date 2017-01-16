@@ -3,16 +3,14 @@
 
 	<div class="wrap-list">
 		<div class="wrap-group">
-			<div class="wrap-group-heading">
-				<h4>{lang key='options'}</h4>
-			</div>
+			<div class="wrap-group-heading">{lang key='options'}</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='name'}</label>
 
 				<div class="col col-lg-4">
-					{if iaCore::ACTION_ADD == $pageAction}
-						<input type="text" name="name" value="{if isset($item.name)}{$item.name|escape:'html'}{/if}">
+					{if iaCore::ACTION_ADD == $core.page.info.action}
+						<input type="text" name="name" value="{$item.name|escape:'html'}">
 						<p class="help-block">{lang key='unique_name'}</p>
 					{else}
 						<input type="text" value="{$item.name|escape:'html'}" disabled>
@@ -25,9 +23,9 @@
 
 				<div class="col col-lg-4">
 					<select name="type" id="input-block-type">
-					{foreach $types as $key => $type}
+					{foreach $types as $type}
 						{if iaBlock::TYPE_MENU != $type}
-							{access object='admin_pages' id='blocks' action=$type}
+							{access object='admin_page' id='blocks' action=$type}
 							<option value="{$type}"{if $type == $item.type} selected{/if}>{$type}</option>
 							{/access}
 						{/if}
@@ -217,9 +215,7 @@
 
 	<div class="wrap-list">
 		<div class="wrap-group">
-			<div class="wrap-group-heading">
-				<h4>{lang key='block_contents'}</h4>
-			</div>
+			<div class="wrap-group-heading">{lang key='block_contents'}</div>
 
 			<div class="wrap-row" id="blocks_contents" style="display: none;">
 				<div class="row" id="js-external-row">
@@ -251,7 +247,7 @@
 
 					<div class="col col-lg-4">
 						<input type="text" name="filename" value="{if isset($item.filename) && !empty($item.filename)}{$item.filename|escape:'html'}{elseif isset($smarty.post.filename)}{$smarty.post.filename|escape:'html'}{/if}">
-						{if iaCore::ACTION_ADD == $pageAction}
+						{if iaCore::ACTION_ADD == $core.page.info.action}
 							<p class="help-block">{lang key='filename_notification'}</p>
 						{/if}
 					</div>
@@ -281,7 +277,7 @@
 			</div>
 		</div>
 
-		{include file='fields-system.tpl'}
+		{include 'fields-system.tpl'}
 	</div>
 </form>
 {ia_print_js files='utils/edit_area/edit_area, ckeditor/ckeditor, admin/blocks'}

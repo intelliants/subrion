@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2016 Intelliants, LLC <http://www.intelliants.com>
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,7 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @link http://www.subrion.org/
+ * @link https://subrion.org/
  *
  ******************************************************************************/
 
@@ -130,10 +130,65 @@ class iaBackendController extends iaAbstractControllerBackend
 				break;
 
 			default:
+				if (isset($params['export_excel']) && $params['export_excel'])
+				{
+					$order = $this->_gridGetSorting($params);
+
+					$conditions = $values = array();
+					foreach ($this->_gridFilters as $name => $type)
+					{
+						if (isset($params[$name]) && $params[$name])
+						{
+							$value = $params[$name];
+
+							switch ($type) {
+								case self::EQUAL:
+									$conditions[] = sprintf('%s`%s` = :%s', $this->_gridQueryMainTableAlias, $name, $name);
+									$values[$name] = $value;
+									break;
+								case self::LIKE:
+									$conditions[] = sprintf('%s`%s` LIKE :%s', $this->_gridQueryMainTableAlias, $name, $name);
+									$values[$name] = '%' . $value . '%';
+							}
+						}
+					}
+
+					$this->_modifyGridParams($conditions, $values, $params);
+
+					$conditions || $conditions[] = iaDb::EMPTY_CONDITION;
+					$conditions = implode(' AND ', $conditions);
+					$this->_iaDb->bind($conditions, $values);
+
+					$columns = $this->_unpackGridColumnsArray();
+
+					if ($data = $this->_gridQuery($columns, $conditions, $order, 0, 2147483640, true))
+					{
+						$this->_modifyGridResult($data);
+
+						require_once IA_INCLUDES . 'utils/php-export-data.class.php';
+						$exportExcel = new ExportDataExcel('file', IA_TMP . 'transactions.xls');
+
+						$exportExcel->initialize();
+
+						$titles = array('username', 'plan', 'item', 'item_id', 'reference_id', 'total', 'gateway', 'status', 'date');
+						$exportExcel->addRow(array_map(function($key) {
+							return iaLanguage::get($key);
+						}, $titles));
+						foreach ($data as $row)
+						{
+							$exportExcel->addRow($row);
+						}
+						$exportExcel->finalize();
+
+						$result['result'] = true;
+						$result['redirect_url'] = IA_CLEAR_URL . 'tmp/transactions.xls';
+					}
+				}
+
 				$output = parent::_gridRead($params);
 		}
 
-		return $output;
+		return isset($result) ? array_merge($output, $result) : $output;
 	}
 
 	protected function _entryUpdate(array $values, $entryId)
@@ -146,16 +201,20 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $this->getHelper()->delete($entryId);
 	}
 
-	protected function _gridQuery($columns, $where, $order, $start, $limit)
+	protected function _gridQuery($columns, $where, $order, $start, $limit, $isExport = false)
 	{
-		$sql =
-			'SELECT SQL_CALC_FOUND_ROWS '
-				. 't.`id`, t.`item`, t.`item_id`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, '
-				. 't.`date`, t.`status`, t.`currency`, t.`operation`, t.`plan_id`, t.`reference_id`, '
-				. "t.`gateway`, IF(t.`fullname` = '', m.`username`, t.`fullname`) `user`, IF(t.`status` != 'passed', 1, 0) `delete` " .
-			'FROM `:prefix:table_transactions` t ' .
+		$fields = $isExport
+			? 'SELECT IF(t.`fullname` = \'\', m.`username`, t.`fullname`) `user`, ' .
+				't.`operation`, t.`item`, t.`item_id`, t.`reference_id`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, ' .
+				't.`gateway`, t.`status`, t.`date_created`'
+			: 'SELECT SQL_CALC_FOUND_ROWS ' .
+				't.`id`, t.`item`, t.`item_id`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, ' .
+				't.`date_created`, t.`status`, t.`currency`, t.`operation`, t.`plan_id`, t.`reference_id`, ' .
+				"t.`gateway`, IF(t.`fullname` = '', m.`username`, t.`fullname`) `user`, IF(t.`status` != 'passed', 1, 0) `delete` ";
+
+		$sql = $fields . 'FROM `:prefix:table_transactions` t ' .
 			'LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`) ' .
-			($where ? 'WHERE ' . $where . ' ' : '') . $order . ' ' .
+			($where ? 'WHERE ' . $where . ' ' : '') . str_replace('t.`user`', '`user`', $order) . ' ' .
 			'LIMIT :start, :limit';
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
@@ -182,7 +241,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 	}
 
-	protected function _jsonAction() // ADD action is handled here
+	protected function _jsonAction(&$iaView) // ADD action is handled here
 	{
 		$output = array('error' => false, 'message' => array());
 
@@ -196,7 +255,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'reference_id' => empty($_POST['reference_id']) ? date('mdyHis') : iaSanitize::htmlInjectionFilter($_POST['reference_id']),
 			'amount' => (float)$_POST['amount'],
 			'currency' => $this->_iaCore->get('currency'),
-			'date' => $_POST['date'] . ' ' . $_POST['time']
+			'date_created' => $_POST['date'] . ' ' . $_POST['time']
 		);
 
 		if ($transaction['plan_id'])

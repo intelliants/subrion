@@ -1,0 +1,7 @@
+{
+  "server": {
+    "proxy": "http://subrion.git/",
+    "host": "subrion.git",
+    "open": "external"
+  }
+}

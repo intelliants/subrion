@@ -1,5 +1,34 @@
 $(function()
 {
+	$('#js-modal-searches').on('click', '.js-delete-search', function(e) {
+		e.preventDefault();
+
+		var $this = $(this),
+		data = $this.data(),
+		id = data.id;
+
+		$.post(intelli.config.ia_url + 'search.json', {action: 'delete', id: id}, function(data)
+		{
+			if (Boolean(data.result))
+			{
+				var $wrap = $this.closest('.modal-body'),
+				itemsCount = $('tr', $wrap).length;
+				$this.closest('tr').remove();
+				if (itemsCount <= 1)
+				{
+					$('table', $wrap).remove();
+					$wrap.append('<p>' + _t('no_items') + '</p>');
+				}
+
+				intelli.notifFloatBox({msg: data.message, type: 'success', autohide: true});
+			}
+			else
+			{
+				intelli.notifFloatBox({msg: data.message, type: 'error', autohide: true});
+			}
+		});
+	});
+
 	if ($('#error').length > 0)
 	{
 		$('html, body').animate({scrollTop: $('.page-header').offset().top});
@@ -101,18 +130,30 @@ $(function()
 		$('.js-filter-numeric').numeric();
 	}
 
-	if ($().datepicker)
+	if ($().datetimepicker)
 	{
-		$('.js-datepicker').datepicker(
+		$('.js-datepicker').datetimepicker(
 		{
-			language: intelli.config.lang
+			format: 'YYYY-MM-DD HH:mm:ss',
+			locale: intelli.config.lang,
+			icons: {
+				time: 'fa fa-clock-o',
+				date: 'fa fa-calendar',
+				up: 'fa fa-chevron-up',
+				down: 'fa fa-chevron-down',
+				previous: 'fa fa-chevron-left',
+				next: 'fa fa-chevron-right',
+				today: 'fa fa-checkmark',
+				clear: 'fa fa-remove',
+				close: 'fa fa-remove-sign'
+			}
 		});
 
 		$('.js-datepicker-toggle').on('click', function(e)
 		{
 			e.preventDefault();
 
-			$(this).prev().datepicker('show');
+			$(this).prev().datetimepicker('show');
 		});
 	}
 
