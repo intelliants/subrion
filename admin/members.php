@@ -174,7 +174,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'id' => $this->getEntryId(),
 			'username' => $data['username']
 		);
-		list($entry, $error, $this->_messages, ) = $iaField->parsePost($this->_itemName, $entry);
+		list($entry, $error, $this->_messages) = $iaField->parsePost($this->_itemName, $entry);
 		$_SESSION[iaUsers::SESSION_KEY] = $activeUser;
 		//
 

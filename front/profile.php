@@ -83,7 +83,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		if (isset($_POST['change_info']))
 		{
-			list($item, $error, $messages, $error_fields) = $iaField->parsePost($iaUsers->getItemName(), $item);
+			list($item, $error, $messages) = $iaField->parsePost($iaUsers->getItemName(), $item);
 
 			if (!$error)
 			{

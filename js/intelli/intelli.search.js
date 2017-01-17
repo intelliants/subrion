@@ -37,8 +37,15 @@ intelli.search = (function()
 
 			for (var i = 0; i < hash.length; i++)
 			{
-				var a = hash[i].split('=');
-				result[decodeUri(a[0])] = decodeUri(a[1])
+				var key, value;
+				[key, value] = hash[i].split('=');
+
+				key = decodeUri(key);
+				value = decodeUri(value);
+
+				typeof result[key] == 'undefined'
+					? (result[key] = [value])
+					: result[key].push(value);
 			}
 		}
 
@@ -98,17 +105,18 @@ intelli.search = (function()
 
 		initFilters: function()
 		{
-			var values = parseHash();
+			var data = parseHash();
 
-			if (!values)
+			if (!data)
 			{
 				return;
 			}
 
-			for (var name in values)
+			for (var key in data)
+			for (var i = 0; i < data[key].length; i++)
 			{
-				var $ctl = $('[name="' + name + '"]', $form),
-					value = values[name];
+				var $ctl = $('[name="' + key + '"]', $form),
+					value = data[key][i];
 
 				if (!$ctl.length || !value)
 				{

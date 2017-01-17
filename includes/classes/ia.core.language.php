@@ -135,6 +135,16 @@ class iaLanguage
 		return self::$_phrases;
 	}
 
+	public static function getMasterLanguage()
+	{
+		static $row;
+
+		is_null($row) && $row = iaCore::instance()->iaDb->row(iaDb::ALL_COLUMNS_SELECTION,
+			iaDb::convertIds(1, 'master'), self::getLanguagesTable());
+
+		return (object)$row;
+	}
+
 	public static function getTooltips()
 	{
 		$iaCore = iaCore::instance();

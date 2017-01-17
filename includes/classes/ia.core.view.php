@@ -216,27 +216,18 @@ class iaView extends abstractUtil
 	{
 		if (empty($message))
 		{
-			return false;
+			return;
 		}
 
 		if (is_array($message))
 		{
 			foreach ($message as $entry)
-			{
 				$this->setMessages($entry, $type);
-			}
 		}
 		else
 		{
-			if (!isset($this->_messages[$type]))
-			{
-				$this->_messages[$type] = array();
-			}
-
-			if (!in_array($message, $this->_messages[$type]))
-			{
-				$this->_messages[$type][] = $message;
-			}
+			isset($this->_messages[$type]) || $this->_messages[$type] = array();
+			in_array($message, $this->_messages[$type]) || $this->_messages[$type][] = $message;
 		}
 	}
 
