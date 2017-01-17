@@ -363,7 +363,7 @@ SQL;
 				$item['sponsored_plan_id'] = $item['sponsored'] ? (int)$data['plan_id'] : 0;
 				if ($item['sponsored'])
 				{
-					if (!(isset($previousValues['sponsored_start']) && $previousValues['sponsored_start']))
+					if (!(isset($itemData['sponsored_start']) && $itemData['sponsored_start']))
 					{
 						$item['sponsored_start'] = date(iaDb::DATETIME_SHORT_FORMAT);
 					}
@@ -512,7 +512,6 @@ SQL;
 			{
 				case self::TEXT:
 				case self::TEXTAREA:
-
 					if ($field['multilingual'])
 					{
 						$langCode = (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
@@ -594,7 +593,7 @@ SQL;
 					{
 						if ($field['required'] && !in_array(UPLOAD_ERR_OK, $_FILES[$fieldName]['error']))
 						{
-							$existImages = empty($previousValues[$fieldName]) ? null : $previousValues[$fieldName];
+							$existImages = empty($itemData[$fieldName]) ? null : $itemData[$fieldName];
 							$existImages = is_string($existImages) ? unserialize($existImages) : $existImages;
 
 							$existImages || $errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
@@ -894,7 +893,7 @@ SQL;
 		else
 		{
 			$this->alterColumnScheme($dbTable, $fieldData);
-			$this->_alterColumnIndex($dbTable, $fieldData['name'], $fieldData['searchable']);
+			$this->alterColumnIndex($dbTable, $fieldData['name'], $fieldData['searchable']);
 		}
 	}
 
@@ -960,7 +959,7 @@ SQL;
 		$this->iaDb->query($sql);
 	}
 
-	private function _alterColumnIndex($dbTable, $fieldName, $enabled)
+	public function alterColumnIndex($dbTable, $fieldName, $enabled)
 	{
 		$sql = sprintf('SHOW INDEX FROM `%s%s`', $this->iaDb->prefix, $dbTable);
 
