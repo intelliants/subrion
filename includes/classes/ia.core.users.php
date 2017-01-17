@@ -706,7 +706,7 @@ SQL;
 
 		if (isset($_COOKIE['salt']) && $_COOKIE['salt'])
 		{
-			$s = unserialize($_COOKIE['salt']);
+			$s = json_decode($_COOKIE['salt'], true);
 			if (isset($s['salt']) && isset($s['items']) && $s['salt'] && $s['items'])
 			{
 				$salt = $s;
