@@ -1,0 +1,48 @@
+engines:
+  duplication:
+    enabled: false
+    checks:
+      Similar code:
+        enabled: false
+      UnusedFormalParameter:
+        enabled: false
+      Controversial/CamelCaseClassName:
+        enabled: false
+    config:
+      languages:
+      - javascript
+      - php
+  fixme:
+    enabled: false
+  phpmd:
+    enabled: true
+    checks:
+      CleanCode/ElseExpression:
+        enabled: false
+      CleanCode/BooleanArgumentFlag:
+        enabled: false
+      Controversial/Superglobals:
+        enabled: false
+      Controversial/CamelCaseVariableName:
+        enabled: false
+      Design/TooManyPublicMethods:
+        enabled: false
+      Design/NpathComplexity:
+        enabled: false
+ratings:
+  paths:
+  - "**.inc"
+  - "**.js"
+  - "**.php"
+exclude_paths:
+- "includes/OAuth2/**"
+- "includes/adminer/**"
+- "includes/elfinder/**"
+- "includes/htmlpurifier/**"
+- "includes/hybrid/**"
+- "includes/phpimageworkshop/**"
+- "includes/phpmailer/**"
+- "includes/phputf8/**"
+- "includes/smarty/**"
+- "includes/utils/**"
+- "includes/xml/**"
