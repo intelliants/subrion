@@ -1485,7 +1485,7 @@ SQL;
 				$result[] = array(
 					'attributes' => $entry['attributes'],
 					'icon' => empty($entry['icon']) ? '' : 'i-' . $entry['icon'],
-					'title' => iaLanguage::get($entry['text'], $entry['text']),
+					'title' => iaLanguage::get($entry['name'], $entry['text']),
 					'url' => iaDb::printf($entry['url'], $this->iaCore->iaView->get('toolbarActionsReplacements', array()))
 				);
 			}
