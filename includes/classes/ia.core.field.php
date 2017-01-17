@@ -796,6 +796,8 @@ SQL;
 		if ($imageName)
 		{
 			$imageName = str_replace(IA_DS, '/', $imageName);
+
+			$iaCore->startHook('phpImageFieldProcessed', array('field' => $field, 'image' => &$imageName));
 		}
 		else
 		{
