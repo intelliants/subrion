@@ -197,17 +197,13 @@
       width: 76px;
       text-align: center;
       overflow: hidden;
-      // display: none;
-      .opacity(0);
-      .transition(all .15s ease-in-out);
+      display: block;
     }
   }
 
   &.is-opened {
     .translate-group__item__code {
-      display: block;
       z-index: 20;
-      .opacity(1);
     }
   }
 }
