@@ -452,24 +452,17 @@ $(function()
 
 	intelli.displayUpdown();
 
-	$('#toggle-pages')
-		.data('checked', true)
-		.click(function(e)
-		{
-			e.preventDefault();
-			var checked = $(this).data('checked');
-			if (checked)
-			{
-				$(this).html('<i class="i-lightning"></i> ' + _t('select_none'));
-				$('input[type="checkbox"]:visible', '#js-row-pages-list').prop('checked', true);
-			}
-			else
-			{
-				$(this).html('<i class="i-lightning"></i> ' + _t('select_all'));
-				$('input[type="checkbox"]:visible', '#js-row-pages-list').prop('checked', false);
-			}
-			$(this).data('checked', !checked);
-		});
+	$('#toggle-pages').data('checked', true).click(function(e)
+	{
+		e.preventDefault();
+
+		var checked = $(this).data('checked');
+
+		$('input[type="checkbox"]:visible', '#js-row-pages-list').prop('checked', checked);
+		$(this)
+			.html('<i class="i-lightning"></i> ' + _t(checked ? 'select_none' : 'select_all'))
+			.data('checked', !checked);
+	});
 
 	$('input[name="relation_type"]').on('change', function()
 	{
@@ -494,10 +487,11 @@ $(function()
 	// populate & activate field groups select
 	$('#input-item').on('change', function()
 	{
-		var $fieldGroup = $('#input-fieldgroup');
+		var $fieldGroup = $('#input-fieldgroup'),
+			$pagesList = $('#js-row-pages-list');
+
 		$fieldGroup.empty().append('<option value="" selected>' + _t('_select_') + '</option>').prop('disabled', true);
 
-		var $pagesList = $('#js-row-pages-list');
 		var itemName = $(this).val();
 
 		if (itemName)

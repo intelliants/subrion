@@ -350,11 +350,7 @@ SQL;
 
 	public function parsePost($itemName, array &$itemData)
 	{
-		$iaCore = &$this->iaCore;
-
-		$error = false;
-		$messages = array();
-		$invalidFields = array();
+		$errors = array();
 
 		$item = array();
 		$data = &$_POST; // access to the data source by link
@@ -396,9 +392,7 @@ SQL;
 					}
 					else
 					{
-						$error = true;
-						$messages[] = iaLanguage::get('featured_status_finished_date_is_empty');
-						$invalidFields[] = 'featured_end';
+						$errors['featured_end'] = iaLanguage::get('featured_status_finished_date_is_empty');
 					}
 				}
 				else
@@ -418,13 +412,11 @@ SQL;
 				$time = strtotime($data['date_added']);
 				if (!$time)
 				{
-					$error = true;
-					$messages[] = iaLanguage::get('added_date_is_incorrect');
+					$errors['added_date'] = iaLanguage::get('added_date_is_incorrect');
 				}
 				elseif ($time > time())
 				{
-					$error = true;
-					$messages[] = iaLanguage::get('future_date_specified_for_added_date');
+					$errors['added_date'] = iaLanguage::get('future_date_specified_for_added_date');
 				}
 				else
 				{
@@ -435,7 +427,7 @@ SQL;
 			if (isset($data['owner']))
 			{
 				if (trim($data['owner']) && isset($data['member_id']) && $data['member_id'] &&
-					$memberId = $iaCore->iaDb->one('id', iaDb::convertIds((int)$data['member_id']), iaUsers::getTable()))
+					$memberId = $this->iaDb->one('id', iaDb::convertIds((int)$data['member_id']), iaUsers::getTable()))
 				{
 					$item['member_id'] = $memberId;
 				}
@@ -455,7 +447,7 @@ SQL;
 		$activeFields = array();
 		$parentFields = array();
 
-		$fields = (iaCore::ACCESS_FRONT == $iaCore->getAccessType())
+		$fields = (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 			? $this->filter($itemName, $itemData)
 			: $this->get($itemName);
 
@@ -484,18 +476,13 @@ SQL;
 		}
 		//
 
-		$iaCore->factory('util');
+		$this->iaCore->factory('util');
 		iaUtil::loadUTF8Functions('validation', 'bad');
 
 		foreach ($activeFields as $fieldName => $field)
 		{
-			isset($data[$fieldName]) || $data[$fieldName] = '';
-
-			// Check the UTF-8 is well formed
-			if (!is_array($data[$fieldName]) && !utf8_is_valid($data[$fieldName]))
-			{
-				$data[$fieldName] = utf8_bad_replace($data[$fieldName]);
-			}
+			$value = $field['allow_null'] ? null : '';
+			isset($data[$fieldName]) && $value = $data[$fieldName];
 
 			if ($field['extra_actions'])
 			{
@@ -505,285 +492,246 @@ SQL;
 				}
 			}
 
-			if (in_array($field['type'], array(self::TEXT, self::TEXTAREA, self::NUMBER, self::RADIO, self::CHECKBOX, self::COMBO)))
+			if ($field['required'])
 			{
-				if ($field['required'])
-				{
-					if ($field['required_checks'])
-					{
-						eval($field['required_checks']);
-					}
-
-					if (empty($data[$fieldName]))
-					{
-						$error = true;
-
-						$messages[] = in_array($field['type'], array(self::RADIO, self::CHECKBOX, self::COMBO))
-							? iaLanguage::getf('field_is_not_selected', array('field' => self::getFieldTitle($field['item'], $fieldName)))
-							: iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
-
-						$invalidFields[] = $fieldName;
-					}
-				}
-
-				switch ($field['type'])
-				{
-					case self::NUMBER:
-						$item[$fieldName] = (float)str_replace(' ', '', $data[$fieldName]);
-						break;
-
-					case self::TEXT:
-						if ($field['multilingual'])
-						{
-							foreach ($data[$fieldName] as $langCode => $value)
-								$item[$fieldName . '_' . $langCode] = iaSanitize::tags($value);
-						}
-						else
-						{
-							$item[$fieldName] = iaSanitize::tags($data[$fieldName]);
-						}
-						break;
-
-					case self::TEXTAREA:
-						if ($field['multilingual'])
-						{
-							foreach ($data[$fieldName] as $langCode => $value)
-								$item[$fieldName . '_' . $langCode] = $field['use_editor'] ? iaUtil::safeHTML($value) : iaSanitize::tags($value);
-						}
-						else
-						{
-							$item[$fieldName] = $field['use_editor'] ? iaUtil::safeHTML($data[$fieldName]) : iaSanitize::tags($data[$fieldName]);
-						}
-						break;
-
-					default:
-						$item[$fieldName] = is_array($data[$fieldName]) ? implode(',', $data[$fieldName]) : $data[$fieldName];
-						if (in_array($field['type'], array(self::RADIO, self::COMBO)))
-						{
-							$item[$fieldName] = empty($data[$fieldName]) ? 'NULL' : $data[$fieldName];
-						}
-				}
-			}
-			elseif (self::DATE == $field['type'])
-			{
-				if ($field['required'] && $field['required_checks'])
+				if ($field['required_checks'])
 				{
 					eval($field['required_checks']);
 				}
-				elseif ($field['required'] && empty($data[$fieldName]))
+
+				if (!$value && !$field['multilingual']
+					&& in_array($field['type'], array(self::TEXT, self::TEXTAREA, self::NUMBER, self::RADIO, self::CHECKBOX, self::COMBO, self::DATE)))
 				{
-					$error = true;
-					$messages[] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
-					$invalidFields[] = $fieldName;
-				}
-
-				$data[$fieldName] = trim($data[$fieldName]);
-
-				if (empty($data[$fieldName]))
-				{
-					$item[$fieldName] = $field['allow_null'] ? null : '';
-				}
-				else
-				{
-					if (strpos($data[$fieldName], ' ') === false)
-					{
-						$date = $data[$fieldName];
-						$time = false;
-					}
-					else
-					{
-						list($date, $time) = explode(' ', $data[$fieldName]);
-					}
-
-					// FIXME: fucking shit
-					$array = explode('-', $date);
-
-					$year = (int)$array[0];
-					$month = max(1, (int)$array[1]);
-					$day = max(1, (int)$array[2]);
-
-					$year = (strlen($year) == 4) ? $year : 2000;
-					$month = (strlen($month) < 2) ? '0' . $month : $month;
-					$day = (strlen($day) < 2) ? '0' . $day : $day;
-
-					$item[$fieldName] = $year . '-' . $month . '-' . $day;
-
-					if ($field['timepicker'] && $time)
-					{
-						$time = explode(':', $time);
-
-						$hour = max(1, (int)$time[0]);
-						$minute = max(1, (int)$time[1]);
-						$seconds = max(1, (int)$time[2]);
-
-						$hour = (strlen($hour) < 2) ? '0' . $hour : $hour;
-						$minute = (strlen($minute) < 2) ? '0' . $minute : $minute;
-						$seconds = (strlen($seconds) < 2) ? '0' . $seconds : $seconds;
-
-						$item[$fieldName] .= ' ' . $hour . ':' . $minute . ':' . $seconds;
-					}
+					$errors[$fieldName] = in_array($field['type'], array(self::RADIO, self::CHECKBOX, self::COMBO))
+						? iaLanguage::getf('field_is_not_selected', array('field' => self::getFieldTitle($field['item'], $fieldName)))
+						: iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
 				}
 			}
-			elseif (self::URL == $field['type'])
+
+			switch ($field['type'])
 			{
-				$validProtocols = array('http://', 'https://');
-				$item[$fieldName] = '';
+				case self::TEXT:
+				case self::TEXTAREA:
 
-				$req_error = false;
-				if ($field['required'])
-				{
-					if ($field['required_checks'])
+					if ($field['multilingual'])
 					{
-						eval($field['required_checks']);
-					}
-					elseif (empty($data[$fieldName]['url']) || in_array($data[$fieldName]['url'], $validProtocols))
-					{
-						$error = $req_error = true;
-						$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaField::getFieldTitle($field['item'], $fieldName)));
-						$invalidFields[] = $fieldName;
-					}
-				}
+						$langCode = (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
+							? $this->iaView->language
+							: iaLanguage::getMasterLanguage()->code;
 
-				if (!$req_error && !empty($data[$fieldName]['url']) && !in_array($data[$fieldName]['url'], $validProtocols))
-				{
-					if (false === stripos($data[$fieldName]['url'], 'http://')
-						&& false === stripos($data[$fieldName]['url'], 'https://'))
-					{
-						$data[$fieldName]['url'] = 'http://' . $data[$fieldName]['url'];
-					}
+						$value = isset($data[$fieldName][$langCode])
+							? $data[$fieldName][$langCode]
+							: null;
 
-					if (iaValidate::isUrl($data[$fieldName]['url']))
-					{
-						$item[$fieldName] = array();
-						$item[$fieldName]['url'] = iaSanitize::tags($data[$fieldName]['url']);
-						$item[$fieldName]['title'] = empty($data[$fieldName]['title'])
-							? str_replace($validProtocols, '', $data[$fieldName]['url'])
-							: $data[$fieldName]['title'];
-						$item[$fieldName] = implode('|', $item[$fieldName]);
-					}
-					else
-					{
-						$error = true;
-						$messages[] = self::getFieldTitle($field['item'], $fieldName) . ': ' . iaLanguage::get('error_url');
-						$invalidFields[] = $fieldName;
-					}
-				}
-			}
-			elseif (in_array($field['type'], array(self::IMAGE, self::STORAGE, self::PICTURES)))
-			{
-				if (!is_writable(IA_UPLOADS))
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_directory_readonly');
-				}
-				else
-				{
-					// run required field checks
-					if ($field['required'] && $field['required_checks'])
-					{
-						eval($field['required_checks']);
-					}
-					elseif ($field['required'] && !in_array(UPLOAD_ERR_OK, $_FILES[$fieldName]['error']))
-					{
-						$existImages = empty($previousValues[$fieldName]) ? null : $previousValues[$fieldName];
-						$existImages = is_string($existImages) ? unserialize($existImages) : $existImages;
-
-						if (!$existImages)
+						if ($field['required'] && !$value)
 						{
-							$error = true;
-							$messages[] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
-							$invalidFields[] = $fieldName;
-						}
-					}
-
-					// custom folder for uploaded images
-					if (!empty($field['folder_name']))
-					{
-						if (!is_dir(IA_UPLOADS . $field['folder_name']))
-						{
-							mkdir(IA_UPLOADS . $field['folder_name']);
-						}
-						$path = $field['folder_name'] . IA_DS;
-					}
-					else
-					{
-						$path = iaUtil::getAccountDir();
-					}
-
-					$item[$fieldName] = isset($data[$fieldName]) && $data[$fieldName] ? $data[$fieldName] : array();
-
-					// initialize class to work with images
-					$methodName = self::STORAGE == $field['type'] ? '_processFileField' : '_processImageField';
-
-					// process uploaded files
-					foreach ($_FILES[$fieldName]['tmp_name'] as $id => $tmp_name)
-					{
-						if ($_FILES[$fieldName]['error'][$id])
-						{
-							continue;
-						}
-
-						// files limit exceeded or rewrite image value
-						if (self::IMAGE != $field['type'] && count($item[$fieldName]) >= $field['length'])
-						{
-							break;
-						}
-
-						$file = array();
-						foreach ($_FILES[$fieldName] as $key => $value)
-						{
-							$file[$key] = $_FILES[$fieldName][$key][$id];
-						}
-
-						$processing = self::$methodName($field, $file, $path);
-						// 0 - filename, 1 - error, 2 - textual error description
-						if (!$processing[1]) // went smoothly
-						{
-							$fieldValue = array(
-								'title' => (isset($data[$fieldName . '_title'][$id]) ? substr(trim($data[$fieldName . '_title'][$id]), 0, 100) : ''),
-								'path' => $processing[0]
-							);
-
-							if (self::IMAGE == $field['type'])
-							{
-								$item[$fieldName] = $fieldValue;
-							}
-							else
-							{
-								$item[$fieldName][] = $fieldValue;
-							}
+							$errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
 						}
 						else
 						{
-							$error = true;
-							$messages[] = $processing[2];
+							$item[$fieldName . '_' . $langCode] = $value;
+
+							foreach ($this->iaCore->languages as $code => $language)
+							{
+								if ($code == $langCode) continue;
+
+								if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
+								{
+									$string = $value;
+								}
+								else
+								{
+									$string = empty($data[$fieldName][$code]) // copy the master language value if empty
+										? $value
+										: $data[$fieldName][$code];
+								}
+
+								utf8_is_valid($string) || $string = utf8_bad_replace($string);
+								$string = (iaField::TEXT == $field['type'])
+									? iaSanitize::tags($string)
+									: ($field['use_editor'] ? iaUtil::safeHTML($string) : iaSanitize::tags($string));
+
+								$item[$fieldName . '_' . $code] = $string;
+							}
 						}
 					}
-				}
+					else
+					{
+						// Check the UTF-8 is well formed
+						utf8_is_valid($value) || $value = utf8_bad_replace($value);
 
-				// If already has images, append them.
-				$item[$fieldName] = empty($item[$fieldName]) ? '' : serialize(array_merge($item[$fieldName])); // array_merge is used to reset numeric keys
-			}
-			elseif (self::TREE == $field['type'])
-			{
-				$item[$fieldName] = str_replace(' ', '', iaSanitize::tags($data[$fieldName]));
+						$item[$fieldName] = (iaField::TEXT == $field['type'])
+							? iaSanitize::tags($value)
+							: ($field['use_editor'] ? iaUtil::safeHTML($value) : iaSanitize::tags($value));
+					}
+
+					break;
+
+				case self::NUMBER:
+					$item[$fieldName] = (float)str_replace(' ', '', $value);
+
+					break;
+
+				case self::CHECKBOX:
+					is_array($value) && $value = implode(',', $value);
+
+					// BREAK stmt omitted intentionally
+
+				case self::COMBO:
+				case self::RADIO:
+					$item[$fieldName] = $value;
+
+					break;
+
+				case self::IMAGE:
+				case self::STORAGE:
+				case self::PICTURES:
+					if (!is_writable(IA_UPLOADS))
+					{
+						$errors[$fieldName] = iaLanguage::get('error_directory_readonly');
+					}
+					else
+					{
+						if ($field['required'] && !in_array(UPLOAD_ERR_OK, $_FILES[$fieldName]['error']))
+						{
+							$existImages = empty($previousValues[$fieldName]) ? null : $previousValues[$fieldName];
+							$existImages = is_string($existImages) ? unserialize($existImages) : $existImages;
+
+							$existImages || $errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+						}
+
+						// custom folder for uploaded images
+						if (!empty($field['folder_name']))
+						{
+							$fsPath = IA_UPLOADS . $field['folder_name'];
+							is_dir($fsPath) || mkdir($fsPath);
+
+							$path = $field['folder_name'] . IA_DS;
+						}
+						else
+						{
+							$path = iaUtil::getAccountDir();
+						}
+
+						$item[$fieldName] = isset($data[$fieldName]) ? $value : array();
+
+						// initialize class to work with images
+						$methodName = self::STORAGE == $field['type'] ? '_processFileField' : '_processImageField';
+
+						// process uploaded files
+						foreach ($_FILES[$fieldName]['tmp_name'] as $id => $tmp_name)
+						{
+							if ($_FILES[$fieldName]['error'][$id])
+							{
+								continue;
+							}
+
+							// files limit exceeded or rewrite image value
+							if (self::IMAGE != $field['type'] && count($item[$fieldName]) >= $field['length'])
+							{
+								break;
+							}
+
+							$file = array();
+							foreach ($_FILES[$fieldName] as $key => $value)
+								$file[$key] = $_FILES[$fieldName][$key][$id];
+
+							$processing = self::$methodName($field, $file, $path);
+							// 0 - filename, 1 - error, 2 - textual error description
+							if (!$processing[1]) // went smoothly
+							{
+								$fieldValue = array(
+									'title' => (isset($data[$fieldName . '_title'][$id]) ? substr(trim($data[$fieldName . '_title'][$id]), 0, 100) : ''),
+									'path' => $processing[0]
+								);
+
+								if (self::IMAGE == $field['type'])
+								{
+									$item[$fieldName] = $fieldValue;
+								}
+								else
+								{
+									$item[$fieldName][] = $fieldValue;
+								}
+							}
+							else
+							{
+								$errors[$fieldName] = $processing[2];
+							}
+						}
+					}
+
+					// If already has images, append them.
+					$item[$fieldName] = empty($item[$fieldName]) ? '' : serialize(array_merge($item[$fieldName])); // array_merge is used to reset numeric keys
+
+					break;
+
+				case iaField::DATE:
+					if ($value = trim($value))
+					{
+						$value = date($field['timepicker'] ? iaDb::DATETIME_FORMAT : iaDb::DATE_FORMAT,
+							strtotime($value));
+					}
+
+					$item[$fieldName] = $value;
+
+					break;
+
+				case iaField::TREE:
+					$value && $value = str_replace(' ', '', iaSanitize::tags($value));
+					$item[$fieldName] = $value;
+
+					break;
+
+				case iaField::URL:
+					$validProtocols = array('http://', 'https://');
+					$item[$fieldName] = '';
+
+					if ($field['required']
+						&& (empty($value['url']) || in_array($value['url'], $validProtocols)))
+					{
+						$errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => iaField::getFieldTitle($field['item'], $fieldName)));
+					}
+					else
+					{
+						if (false === stripos($value['url'], 'http://')
+							&& false === stripos($value['url'], 'https://'))
+						{
+							$value['url'] = 'http://' . $value['url'];
+						}
+
+						if (iaValidate::isUrl($value['url']))
+						{
+							$url = iaSanitize::tags($value['url']);
+							$title = empty($value['title'])
+								? str_replace($validProtocols, '', $value['url'])
+								: $value['title'];
+
+							$item[$fieldName] = $url . '|' . $title;
+						}
+						else
+						{
+							$errors[$fieldName] = iaLanguage::get('error_url') . ': ' . self::getFieldTitle($field['item'], $fieldName);
+						}
+					}
 			}
 
 			if (isset($item[$fieldName]))
 			{
 				// process hook if field value exists
-				$iaCore->startHook('phpParsePostAfterCheckField', array(
-					'field_name' => $fieldName,
-					'item' => &$item[$fieldName],
-					'value' => $field,
-					'error' => &$error,
-					'error_fields' => &$invalidFields,
-					'msg' => &$messages
+				$this->iaCore->startHook('phpParsePostAfterCheckField', array(
+					'field' => $field,
+					'value' => $item[$fieldName],
+					'errors' => &$errors
 				));
 			}
 		}
 
-		return array($item, $error, $messages, implode(',', $invalidFields));
+		$error = !empty($errors);
+		$fields = array_keys($errors);
+		$messages = array_values($errors);
+
+		return array($item, $error, $messages, $fields);
 	}
 
 	protected static function _generateFileName($filename = '', $prefix = '', $glue = true)
