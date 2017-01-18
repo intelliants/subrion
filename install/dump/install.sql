@@ -1080,8 +1080,8 @@ INSERT INTO `{install:prefix}fields_groups` (`name`,`item`,`order`,`collapsed`,`
 ('api','members',3,0,0);
 
 INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`) VALUES
+('members',1),
 ('members',2),
-('members',3),
 ('members',4),
 ('members',5),
 ('members',6),
@@ -1089,7 +1089,7 @@ INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`) VALUES
 ('members',9),
 ('members',10),
 ('members',11),
-('profile',1),
+('profile',2),
 ('profile',3),
 ('profile',4),
 ('profile',5),
@@ -1099,8 +1099,8 @@ INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`) VALUES
 ('profile',9),
 ('profile',10),
 ('profile',11),
+('favorites',1),
 ('favorites',2),
-('favorites',3),
 ('favorites',4),
 ('favorites',5),
 ('favorites',6),
