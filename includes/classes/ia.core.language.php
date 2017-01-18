@@ -37,6 +37,8 @@ class iaLanguage
 
 	protected static $_phrases = array();
 
+	protected static $_columns = array('code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status');
+
 	protected static $_validCategories = array(self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP);
 
 
@@ -49,7 +51,7 @@ class iaLanguage
 
 		// set list of available languages
 		$iaCore->languages = $iaCore->iaDb->assoc(
-			array('code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'),
+			self::$_columns,
 			iaDb::EMPTY_CONDITION . ' ORDER BY `order` ASC',
 			self::$_languagesTable
 		);
@@ -139,7 +141,7 @@ class iaLanguage
 	{
 		static $row;
 
-		is_null($row) && $row = iaCore::instance()->iaDb->row(iaDb::ALL_COLUMNS_SELECTION,
+		is_null($row) && $row = iaCore::instance()->iaDb->row(self::$_columns,
 			iaDb::convertIds(1, 'master'), self::getLanguagesTable());
 
 		return (object)$row;
