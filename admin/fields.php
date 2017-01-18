@@ -418,7 +418,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			if (iaField::TREE == $entryData['type'])
 			{
-				$values = $this->_getTree($entryData['item'], $entryData['name'], $entryData['values']);
+				$entryData['values'] = $this->_getTree($entryData['item'], $entryData['name'], $entryData['values']);
 			}
 			elseif ($entryData['values'])
 			{
