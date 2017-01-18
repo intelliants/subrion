@@ -96,12 +96,8 @@ Ext.onReady(function()
 	}
 	else
 	{
-		var $type = $('#input-block-type'),
-			$multiLanguage = $('#multilingual'),
-			$languages = $('input.js-language-check'),
-			$languagesToggle = $('#js-check-all-lngs');
+		var $type = $('#input-block-type');
 
-		var last_multi = false;
 		$type.on('change', function()
 		{
 			$('#pages').hide();
@@ -122,19 +118,15 @@ Ext.onReady(function()
 				});
 			}
 
-			var $multiLangRow = $('#js-multi-language-row');
 			var $jsExternalRow = $('#js-external-row');
 
 			if ('php' == type || 'smarty' == type)
 			{
-				last_multi = $multiLanguage.val();
-				$multiLangRow.hide().bootstrapSwitch('setState', 1);
 				$jsExternalRow.show();
 				initEditArea();
 			}
 			else
 			{
-				$multiLangRow.show();
 				$('#external_filename').hide();
 				$jsExternalRow.bootstrapSwitch('setState', 0);
 				$jsExternalRow.hide();
@@ -144,47 +136,6 @@ Ext.onReady(function()
 			}
 
 			$('span', $(this).next()).hide().filter('[data-type="' + type + '"]').show();
-		}).change();
-
-		$multiLanguage.on('change', function()
-		{
-			if (1 == $(this).val())
-			{
-				$('#languages, #blocks_contents_multi').hide();
-				$('#blocks_contents').show();
-
-				if ('html' != $type.val() && CKEDITOR.instances.multi_contents)
-				{
-					CKEDITOR.instances.multi_contents.destroy();
-				}
-			}
-			else
-			{
-				var type = $type.val();
-
-				if ('html' == type)
-				{
-					intelli.ckeditor('multi_contents', {toolbar: 'Extended', height: '400px'});
-				}
-				else if ('php' == type || 'smarty' == type)
-				{
-					$('#js-multi-language-row').bootstrapSwitch('setState', 1);
-					return;
-				}
-
-				if (!$languages.filter(':checked').length)
-				{
-					$languagesToggle.click();
-				}
-
-				$('#languages, #blocks_contents_multi').show();
-				$('#blocks_contents').hide();
-
-				$('input.js-language-check').each(function()
-				{
-					initContentBox({lang: $(this).val(), checked: $(this).prop('checked')});
-				});
-			}
 		}).change();
 
 		// Block visibility
@@ -369,19 +320,6 @@ Ext.onReady(function()
 			var obj = $('input[name="collapsed"]').closest('.row');
 			$(this).val() == 1 ? obj.show() : obj.hide();
 		}).change();
-
-		$languages.on('change', function()
-		{
-			initContentBox({lang: $(this).val(), checked: $(this).prop('checked')});
-			$languagesToggle.prop('checked', $languages.filter(':checked').length == $languages.length);
-		});
-
-		$languagesToggle
-		.on('click', function()
-		{
-			$languages.prop('checked', $(this).prop('checked')).change();
-		})
-		.prop('checked', $languages.filter(':checked').length == $languages.length);
 	}
 
 	$('#js-delete-block').on('click', function()
