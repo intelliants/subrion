@@ -509,10 +509,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			return;
 		}
 
-		$language = $this->_iaCore->requestPath[1];
+		$where = iaDb::convertIds($this->_iaCore->requestPath[1], 'code');
 
-		$this->_iaDb->delete('`code` = :language', null, array('language' => $language));
-		$this->_iaDb->delete('`code` = :language', iaLanguage::getLanguagesTable(), array('language' => $language));
+		$this->_iaDb->delete($where);
+		$this->_iaDb->delete($where, iaLanguage::getLanguagesTable());
 
 		$iaView->setMessages(iaLanguage::get($this->_phraseGridEntryDeleted), iaView::SUCCESS);
 
