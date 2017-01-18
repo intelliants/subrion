@@ -23,13 +23,13 @@
 
 				<div class="col col-lg-4">
 					<select name="type" id="input-block-type">
-					{foreach $types as $type}
-						{if iaBlock::TYPE_MENU != $type}
-							{access object='admin_page' id='blocks' action=$type}
-							<option value="{$type}"{if $type == $item.type} selected{/if}>{$type}</option>
-							{/access}
-						{/if}
-					{/foreach}
+						{foreach $types as $type}
+							{if iaBlock::TYPE_MENU != $type}
+								{access object='admin_page' id='blocks' action=$type}
+								<option value="{$type}"{if $type == $item.type} selected{/if}>{$type}</option>
+								{/access}
+							{/if}
+						{/foreach}
 					</select>
 					<p class="help-block">
 						<span data-type="plain" style="display: none;">{lang key='block_type_tip_plain'}</span>
@@ -84,15 +84,15 @@
 				</div>
 			</div>
 
-			<div class="row" id="js-multi-language-row">
+			{*<div class="row" id="js-multi-language-row">
 				<label class="col col-lg-2 control-label">{lang key='multilingual'}</label>
 
 				<div class="col col-lg-4">
 					{html_radio_switcher value=$item.multilingual name='multilingual'}
 				</div>
-			</div>
+			</div>*}
 
-			<div class="row" id="languages" style="display: none;">
+			{*<div class="row" id="languages" style="display: none;">
 				<label class="col col-lg-2 control-label">{lang key='language'}</label>
 
 				<div class="col col-lg-4">
@@ -110,7 +110,7 @@
 						</div>
 					{/foreach}
 				</div>
-			</div>
+			</div>*}
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='block_visible_everywhere'}</label>
@@ -217,15 +217,7 @@
 		<div class="wrap-group">
 			<div class="wrap-group-heading">{lang key='block_contents'}</div>
 
-			<div class="wrap-row" id="blocks_contents" style="display: none;">
-				<div class="row" id="js-external-row">
-					<label class="col col-lg-2 control-label">{lang key='external_file'}</label>
-
-					<div class="col col-lg-4">
-						{html_radio_switcher value=$item.external name='external'}
-					</div>
-				</div>
-
+			<div class="wrap-row" id="blocks_contents">
 				<div class="row">
 					<label class="col col-lg-2 control-label">{lang key='title'}</label>
 
@@ -234,11 +226,11 @@
 					</div>
 				</div>
 
-				<div class="row" id="js-multilingual-content-row">
-					<label class="col col-lg-2 control-label">{lang key='contents'}</label>
+				<div class="row" id="js-external-row">
+					<label class="col col-lg-2 control-label">{lang key='external_file'}</label>
 
-					<div class="col col-lg-8">
-						<textarea name="content" id="multi_contents" rows="8" class="js-ckeditor">{$item.content|escape:'html'}</textarea>
+					<div class="col col-lg-4">
+						{html_radio_switcher value=$item.external name='external'}
 					</div>
 				</div>
 
@@ -250,6 +242,14 @@
 						{if iaCore::ACTION_ADD == $core.page.info.action}
 							<p class="help-block">{lang key='filename_notification'}</p>
 						{/if}
+					</div>
+				</div>
+
+				<div class="row" id="js-multilingual-content-row">
+					<label class="col col-lg-2 control-label">{lang key='contents'}</label>
+
+					<div class="col col-lg-8">
+						<textarea name="content" id="multi_contents" rows="8" class="js-ckeditor">{$item.content|escape:'html'}</textarea>
 					</div>
 				</div>
 			</div>
