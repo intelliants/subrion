@@ -153,6 +153,7 @@ class iaSmarty extends Smarty
 		}
 
 		$name = $params['name'];
+		$id = isset($params['id']) ? $params['id'] : $name;
 		$value = isset($params['value']) ? iaSanitize::html($params['value']) : '';
 		$toolbar = (isset($params['toolbar']) && in_array($params['toolbar'], array('simple', 'dashboard', 'extended')))
 			? ",{toolbar:'{$params['toolbar']}'}"
@@ -162,11 +163,11 @@ class iaSmarty extends Smarty
 
 		$iaView->add_js('ckeditor/ckeditor');
 		$iaView->resources->js->{'code:$(function(){if(!window.CKEDITOR)'
-		. "$('textarea[id=\"{$name}\"]').show();else CKEDITOR.replace('{$name}'$toolbar);});"} = iaView::RESOURCE_ORDER_REGULAR;
+		. "$('textarea[id=\"{$id}\"]').show();else CKEDITOR.replace('{$id}'$toolbar);});"} = iaView::RESOURCE_ORDER_REGULAR;
 
 		return sprintf(
 			'<textarea style="display: none;" name="%s" id="%s">%s</textarea>',
-			$name, $name, $value
+			$name, $id, $value
 		);
 	}
 

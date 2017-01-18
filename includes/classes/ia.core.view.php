@@ -1009,6 +1009,7 @@ SQL;
 					'customConfig' => $this->iaCore->getCustomConfig(),
 					'language' => $this->iaCore->languages[$this->language],
 					'languages' => $this->iaCore->languages,
+					'masterLanguage' => (array)iaLanguage::getMasterLanguage(),
 					'notifications' => $notifications,
 					'packages' => $this->iaCore->packagesData,
 					'page' => array(

@@ -52,13 +52,13 @@
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
-							<input type="text" name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" value="{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
-							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+							<input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" value="{if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.masterLanguage.iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
+							<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>
 						</div>
 					</div>
 					<div class="translate-group__langs">
 						{foreach $core.languages as $iso => $language}
-							{if $iso != $core.language.iso}
+							{if $iso != $core.masterLanguage.code}
 								<div class="translate-group__item">
 									<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
 									<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
@@ -105,13 +105,13 @@
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
-							<textarea name="{$fieldName}[{$core.language.iso}]" id="{$name}-{$core.language.iso}" rows="5">{if empty($item["{$fieldName}_{$core.language.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.language.iso}"]|escape:'html'}{/if}</textarea>
-							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+							<textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" rows="5">{if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.masterLanguage.iso}"]|escape:'html'}{/if}</textarea>
+							<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>
 						</div>
 					</div>
 					<div class="translate-group__langs">
 						{foreach $core.languages as $iso => $language}
-							{if $iso != $core.language.iso}
+							{if $iso != $core.masterLanguage.iso}
 							<div class="translate-group__item">
 								<textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" rows="5">{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}</textarea>
 								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
@@ -144,17 +144,17 @@ $(function($)
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
-							{$value = {(empty($item["{$fieldName}_{$core.language.iso}"])) ? $field.default : $item["{$fieldName}_{$core.language.iso}"]}}
-							{ia_wysiwyg value=$value name="{$fieldName}[{$core.language.iso}]"}
-							<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+							{$value = {(empty($item["{$fieldName}_{$core.masterLanguage.iso}"])) ? $field.default : $item["{$fieldName}_{$core.masterLanguage.iso}"]}}
+							{ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
+							<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>
 						</div>
 					</div>
 					<div class="translate-group__langs">
 						{foreach $core.languages as $iso => $language}
-							{if $iso != $core.language.iso}
+							{if $iso != $core.masterLanguage.iso}
 							<div class="translate-group__item">
 								{$value = {(empty($item["{$fieldName}_{$iso}"])) ? $field.default : $item["{$fieldName}_{$iso}"]}}
-								{ia_wysiwyg value=$value name="{$fieldName}[{$iso}]"}
+								{ia_wysiwyg value=$value name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"}
 								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
 							</div>
 							{/if}
