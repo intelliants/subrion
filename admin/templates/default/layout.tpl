@@ -102,10 +102,10 @@
 								</a>
 								<ul class="dropdown-menu">
 									{$manageMode = (isset($smarty.session.manageMode) && 'mode' == $smarty.session.manageMode)}
-									<li{if $manageMode} class="active"{/if}>
-										<a href="{if $manageMode}{$smarty.const.IA_URL}?manage_exit=y{else}{$smarty.const.IA_ADMIN_URL}visual-mode/{/if}" target="_blank"><i class="fa fa-sliders"></i> {lang key='visual_mode'}</a>
+									<li>
+										<a href="{if $manageMode}{$smarty.const.IA_URL}?manage_exit=y{else}{$smarty.const.IA_ADMIN_URL}visual-mode/{/if}" target="_blank"><i class="fa fa-sliders"></i> {lang key='visual_mode'} {if $manageMode} <span class="label label-warning">{lang key='active'}</span>{/if}</a>
 									</li>
-									<li><a href="{$smarty.const.IA_ADMIN_URL}debug-mode/" title=""><i class="fa fa-bug"></i> {lang key='debug_mode'}{if $smarty.const.INTELLI_QDEBUG}<span class="label label-warning">{lang key='active'}</span>{/if}</a></li>
+									<li><a href="{$smarty.const.IA_ADMIN_URL}debug-mode/" title=""><i class="fa fa-bug"></i> {lang key='debug_mode'}{if $smarty.const.INTELLI_DEBUG}<span class="label label-warning">{lang key='global'}</span>{elseif $smarty.const.INTELLI_QDEBUG}<span class="label label-warning">{lang key='active'}</span>{/if}</a></li>
 								</ul>
 							</li>
 							<li class="dropdown">
