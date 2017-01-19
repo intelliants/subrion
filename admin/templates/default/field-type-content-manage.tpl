@@ -24,10 +24,10 @@
 		{if $tooltip}<div class="help-block">{$tooltip}</div>{/if}
 	</div>
 
-	{if iaField::TEXTAREA != $type || (iaField::TEXTAREA == $type && $field.multilingual && count($core.languages) > 1)}
-		<div class="col col-lg-4">
-	{else}
+	{if iaField::TEXTAREA == $type}
 		<div class="col col-lg-8">
+	{else}
+		<div class="col col-lg-4">
 	{/if}
 
 	{if isset($field_inner[$fieldName])}
