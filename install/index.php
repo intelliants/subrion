@@ -39,11 +39,6 @@ if (false === strpos($_SERVER['SCRIPT_NAME'], IA_URL_DELIMITER . INSTALL . IA_UR
 error_reporting (E_STRICT | E_ALL);
 ini_set('display_errors', true);
 
-if (version_compare(PHP_VERSION, '5.3.0', '<') && function_exists('set_magic_quotes_runtime'))
-{
-	@set_magic_quotes_runtime(0);
-}
-
 date_default_timezone_set('UTC');
 
 session_name(sprintf('INTELLI_%s', substr(md5(IA_HOME), 0, 10)));
