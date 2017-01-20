@@ -591,71 +591,123 @@ SQL;
 					}
 					else
 					{
-						if ($field['required'] && !in_array(UPLOAD_ERR_OK, $_FILES[$fieldName]['error']))
+						if (self::PICTURES == $field['type'] && iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
 						{
-							$existImages = empty($itemData[$fieldName]) ? null : $itemData[$fieldName];
-							$existImages = is_string($existImages) ? unserialize($existImages) : $existImages;
+							$files = $fieldName . '_dropzone_files';
+							$titles = $fieldName . '_dropzone_titles';
+							$item[$fieldName] = isset($data[$fieldName]) && $data[$fieldName] ? $data[$fieldName] : array();
+							$pictures = isset($data[$files]) && $data[$files] ? $data[$files] : array();
 
-							$existImages || $errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
-						}
-
-						// custom folder for uploaded images
-						if (!empty($field['folder_name']))
-						{
-							$fsPath = IA_UPLOADS . $field['folder_name'];
-							is_dir($fsPath) || mkdir($fsPath);
-
-							$path = $field['folder_name'] . IA_DS;
-						}
-						else
-						{
-							$path = iaUtil::getAccountDir();
-						}
-
-						$item[$fieldName] = isset($data[$fieldName]) ? $value : array();
-
-						// initialize class to work with images
-						$methodName = self::STORAGE == $field['type'] ? '_processFileField' : '_processImageField';
-
-						// process uploaded files
-						foreach ($_FILES[$fieldName]['tmp_name'] as $id => $tmp_name)
-						{
-							if ($_FILES[$fieldName]['error'][$id])
+							// run required field checks
+							if ($field['required'] && $field['required_checks'])
 							{
-								continue;
+								eval($field['required_checks']);
 							}
-
-							// files limit exceeded or rewrite image value
-							if (self::IMAGE != $field['type'] && count($item[$fieldName]) >= $field['length'])
+							elseif ($field['required'] && 1 > count($pictures) + count($item[$fieldName]))
 							{
-								break;
+								$errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+								$invalidFields[] = $fieldName;
 							}
-
-							$file = array();
-							foreach ($_FILES[$fieldName] as $key => $value)
-								$file[$key] = $_FILES[$fieldName][$key][$id];
-
-							$processing = self::$methodName($field, $file, $path);
-							// 0 - filename, 1 - error, 2 - textual error description
-							if (!$processing[1]) // went smoothly
+							if (count($pictures) + count($item[$fieldName]) > $field['length'])
 							{
-								$fieldValue = array(
-									'title' => (isset($data[$fieldName . '_title'][$id]) ? substr(trim($data[$fieldName . '_title'][$id]), 0, 100) : ''),
-									'path' => $processing[0]
-								);
-
-								if (self::IMAGE == $field['type'])
+								$errors[$fieldName] = iaLanguage::get('no_more_files');
+							}
+							elseif ($pictures)
+							{
+								$newPictures = array();
+								foreach ($pictures as $i => $picture)
 								{
-									$item[$fieldName] = $fieldValue;
+									$newPictures[] = array(
+										'title' => $data[$titles][$i],
+										'path' => $picture,
+									);
+								}
+
+								if (iaCore::ACTION_EDIT == $this->iaView->get('action'))
+								{
+									if ($oldPictures = $item[$fieldName])
+									{
+										$item[$fieldName] = array_merge($oldPictures, $newPictures);
+									}
+									else
+									{
+										$item[$fieldName] = $newPictures;
+									}
 								}
 								else
 								{
-									$item[$fieldName][] = $fieldValue;
+									$item[$fieldName] = $newPictures;
 								}
+							}
+						}
+						else
+						{
+							if ($field['required'] && !in_array(UPLOAD_ERR_OK, $_FILES[$fieldName]['error']))
+							{
+								$existImages = empty($itemData[$fieldName]) ? null : $itemData[$fieldName];
+								$existImages = is_string($existImages) ? unserialize($existImages) : $existImages;
+
+								$existImages || $errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+							}
+
+							// custom folder for uploaded images
+							if (!empty($field['folder_name']))
+							{
+								$fsPath = IA_UPLOADS . $field['folder_name'];
+								is_dir($fsPath) || mkdir($fsPath);
+
+								$path = $field['folder_name'] . IA_DS;
 							}
 							else
 							{
-								$errors[$fieldName] = $processing[2];
+								$path = iaUtil::getAccountDir();
+							}
+
+							$item[$fieldName] = isset($data[$fieldName]) ? $value : array();
+
+							// initialize class to work with images
+							$methodName = self::STORAGE == $field['type'] ? '_processFileField' : '_processImageField';
+
+							// process uploaded files
+							foreach ($_FILES[$fieldName]['tmp_name'] as $id => $tmp_name)
+							{
+								if ($_FILES[$fieldName]['error'][$id])
+								{
+									continue;
+								}
+
+								// files limit exceeded or rewrite image value
+								if (self::IMAGE != $field['type'] && count($item[$fieldName]) >= $field['length'])
+								{
+									break;
+								}
+
+								$file = array();
+								foreach ($_FILES[$fieldName] as $key => $value)
+									$file[$key] = $_FILES[$fieldName][$key][$id];
+
+								$processing = self::$methodName($field, $file, $path);
+								// 0 - filename, 1 - error, 2 - textual error description
+								if (!$processing[1]) // went smoothly
+								{
+									$fieldValue = array(
+										'title' => (isset($data[$fieldName . '_title'][$id]) ? substr(trim($data[$fieldName . '_title'][$id]), 0, 100) : ''),
+										'path' => $processing[0]
+									);
+
+									if (self::IMAGE == $field['type'])
+									{
+										$item[$fieldName] = $fieldValue;
+									}
+									else
+									{
+										$item[$fieldName][] = $fieldValue;
+									}
+								}
+								else
+								{
+									$errors[$fieldName] = $processing[2];
+								}
 							}
 						}
 					}

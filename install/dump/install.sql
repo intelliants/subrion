@@ -1963,6 +1963,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('by','by','common'),
 
 ('cancel','Cancel','common'),
+('cancel_upload_confirmation','Are you sure you want to cancel this upload?','common'),
 ('category','Category','common'),
 ('change','change','common'),
 ('change_password','Change Password','common'),
@@ -2006,6 +2007,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('done','Done','common'),
 ('download','Download','common'),
 ('draft','Draft','common'),
+('drop_files_here','Drop images here...','common'),
 
 ('email','Email','common'),
 ('edit','Edit','common'),
@@ -2216,6 +2218,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('upload','Upload','common'),
 ('upload_correct_permission',"Couldn't copy uploaded image to the destination folder. Please make sure that the script has write permissions.",'common'),
 ('upload_pictures','Upload Picture(s)','common'),
+('upload_successful','Upload successfully completed','common'),
+('uploading_please_wait','Uploading, please wait...','common'),
 ('users','Users','common'),
 ('usergroup','Usergroup','common'),
 ('username','Username','common'),
