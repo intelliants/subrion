@@ -253,6 +253,12 @@ $(function()
 		e.preventDefault();
 	});
 
+	// separate generator for api token
+	$('#api_token').passField({
+		showWarn: false, showTip: false,
+		pattern: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab' // 64 symbols
+	});
+
 	// add password generator
 	$('.js-input-password').passField({showWarn: false, showTip: false});
 
