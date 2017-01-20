@@ -53,7 +53,7 @@
 		Installation Folder
 	</div>
 	<div class="widget-content">
-		<p>In safety purposes you now have to remove the <code>/install/modules/module.install.php</code> file.</p>
+		<p>For safety purposes, please remove the file <code>/install/modules/module.install.php</code></p>
 	</div>
 </div>
 
