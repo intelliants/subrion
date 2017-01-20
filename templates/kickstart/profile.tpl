@@ -13,7 +13,7 @@
 					{/if}
 					{if $member.phone}
 					<div class="ia-item__additional">
-						<p><span class="fa fa-phone"></span> {lang key='field_phone'}: {$member.phone}</p>
+						<p><span class="fa fa-phone"></span> {lang key='field_members_phone'}: {$member.phone}</p>
 					</div>
 					{/if}
 				</div>
