@@ -299,7 +299,9 @@ $(function()
 
 {if !isset($noControls)}
 	<div class="form-actions inline">
-		<input type="submit" name="save" class="btn btn-primary" value="{if iaCore::ACTION_ADD == $pageAction}{lang key='add'}{else}{lang key='save'}{/if}">
+		<button type="submit" name="save" class="btn btn-primary form-actions__btn-submit js-btn-submit">
+			{if iaCore::ACTION_ADD == $pageAction}{lang key='add'}{else}{lang key='save'}{/if}
+		</button>
 		{include 'goto.tpl'}
 		{ia_hooker name='adminSubmitOptions'}
 	</div>

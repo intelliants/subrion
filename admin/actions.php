@@ -52,6 +52,57 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'send-test-email':
 				return $this->_sendTestEmail();
 
+			case 'dropzone-upload':
+				if (!is_writable(IA_UPLOADS))
+				{
+					$output['error'] = true;
+					$output['message'] = 'error_directory_readonly';
+				}
+				else
+				{
+					$this->_iaCore->factory('util');
+					$iaPicture = $this->_iaCore->factory('picture');
+
+					$folderName = iaUtil::getAccountDir();
+					$fieldName = 'file';
+					if (!is_dir(IA_UPLOADS . $folderName))
+					{
+						mkdir(IA_UPLOADS . $folderName);
+					}
+					$path = $folderName;
+
+					$this->_iaCore->factory('field');
+					$galleryField = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name AND `item` = :item',
+						array('name' => $_POST['field_name'], 'item' => $_POST['item_name']), iaField::getTable());
+
+					if ($imageName = $iaPicture->processImage($_FILES[$fieldName], $path, iaUtil::generateToken(16), $galleryField))
+					{
+						$output['file_name'] = $imageName;
+						$output['error'] = false;
+						$output['message'] = '';
+					}
+				}
+
+				$this->_iaCore->iaView->assign($output);
+				break;
+
+			case 'dropzone-delete':
+				$path = isset($_POST['path']) && $_POST['path'] ? $_POST['path'] : null;
+				$output['result'] = true;
+				$output['message'] = iaLanguage::get('deleted');
+				if ($path)
+				{
+					if (!$this->_iaCore->factory('picture')->delete($path))
+					{
+						$output['result'] = false;
+						$output['message'] = iaLanguage::get('error');
+					}
+				}
+
+				$this->_iaCore->iaView->assign($output);
+
+				break;
+
 			default:
 				$result = array();
 				$this->_iaCore->startHook('phpAdminActionsJsonHandle', array('action' => $_POST['action'], 'output' => &$result));
