@@ -15,6 +15,6 @@
 
 	<phrases>
 		<phrase key="click_to_redraw" category="frontend">Click here to redraw</phrase>
-		<phrase key="captcha_annotation" category="frontend">Please input letters you see on the image.&lt;br /&gt;Click on image to redraw.</phrase>
+		<phrase key="captcha_tooltip" category="frontend">Please input letters you see on the image.&lt;br /&gt;Click on image to redraw.</phrase>
 	</phrases>
 </plugin>
