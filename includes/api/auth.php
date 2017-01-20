@@ -114,6 +114,18 @@ class iaApiAuth extends abstractCore
 
 	public function getAccessTokenData(iaApiRequest $request)
 	{
+		$permanentKey = $this->iaCore->get('api_token');
+		if ($permanentKey and $permanentKey == $request->getServer('HTTP_X_AUTH_TOKEN'))
+		{
+			return array(
+				'key' => $permanentKey,
+				'member_id' => 0,
+				'expires' => null,
+				'ip' => null,
+				'session' => null,
+			);
+		}
+
 		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION,
 			iaDb::convertIds($request->getServer('HTTP_X_AUTH_TOKEN'), 'key'),
 			self::getTable());
