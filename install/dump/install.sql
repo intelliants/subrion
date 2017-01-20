@@ -1595,7 +1595,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('insert','Insert','admin'),
 ('installed_plugins','Installed plugins','admin'),
 ('install','Install','admin'),
-('install_not_deleted','Warning! In safety purposes you have to remove the :file file.','admin'),
+('install_not_deleted','Warning! For safety purposes, please remove the file :file','admin'),
 ('install_upgrade','Install or upgrade','admin'),
 ('installation_extra_requirement_doesnot_exist','The currently installed :type &ldquo;:extra&rdquo; is not compatible with the module.','admin'),
 ('installation_extra_requirement_exist','Requires the &ldquo;:extra&rdquo; :type to be installed.','admin'),
