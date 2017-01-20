@@ -24,7 +24,7 @@
 		{if $tooltip}<div class="help-block">{$tooltip}</div>{/if}
 	</div>
 
-	{if iaField::TEXTAREA == $type}
+	{if iaField::TEXTAREA == $type || iaField::PICTURES == $type}
 		<div class="col col-lg-8">
 	{else}
 		<div class="col col-lg-4">
@@ -221,7 +221,7 @@ $(function($)
 				{assign max_num $field.length}
 			{/if}
 
-			<div id="{$fieldName}_dropzone" class="dropzone" data-max_num="{$max_num}" data-length="{$field.length}"></div>
+			<div id="{$fieldName}_dropzone" class="s-dropzone dropzone" data-max_num="{$max_num}" data-length="{$field.length}"></div>
 
 			{ia_add_js}
 $(function()
