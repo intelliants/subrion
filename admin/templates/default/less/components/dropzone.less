@@ -1,0 +1,35 @@
+.s-dropzone.dropzone {
+  border: 2px dashed @input-border;
+  border-radius: 3px;
+  position: relative;
+
+  .dz-message {
+    font-size: 16px;
+    color: fade(@text-color, 50%);
+    margin: 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    .translate(0,-50%);
+  }
+
+  &:hover {
+    border-color: @link-color;
+
+    .dz-message {
+      color: @link-color;
+    }
+  }
+
+  // image thumb / preview
+  // .dz-preview {
+  //   display: block;
+  //   margin: 0;
+  //   background: #f2f2f2;
+
+  //   .dz-image {
+  //     border-radius: 3px;
+  //   }
+  // }
+}
