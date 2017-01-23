@@ -261,7 +261,7 @@
 						{/if}
 						<label class="control-label">{lang key='contents'}</label>
 					</div>
-					<div class="col col-lg-4">
+					<div class="col col-lg-8">
 						{if count($core.languages) > 1}
 							<div class="translate-group" id="language-group-content">
 								<div class="translate-group__default">
