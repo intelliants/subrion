@@ -298,24 +298,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$menus = array(
-			array('title' => iaLanguage::get('core_menus', 'Core menus'), 'list' => array()),
-			array('title' => iaLanguage::get('custom_menus', 'Custom menus'), 'list' => array())
-		);
+		$this->_iaCore->factory('block', iaCore::ADMIN);
 
 		if ($this->_iaCore->factory('acl')->isAccessible($this->getName(), iaCore::ACTION_ADD))
 		{
-			$this->_iaCore->factory('block', iaCore::ADMIN);
-
-			$menusList = $this->_iaDb->all(array('id', 'title', 'removable'), "`type` = 'menu'", null, null, iaBlock::getTable());
-			foreach ($menusList as $menuEntry)
-			{
-				$menus[$menuEntry['removable']]['list'][] = $menuEntry;
-			}
-
-			ksort($menus[0]['list']);
-			ksort($menus[1]['list']);
-
 			$selectedMenus = empty($_POST['menus'])
 				? $this->_iaDb->onefield('menu_id', iaDb::convertIds($entryData['name'], 'page_name'), null, null, iaBlock::getMenusTable())
 				: $_POST['menus'];
@@ -351,12 +337,43 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaView->assign('isHomePage', $isHomepage);
 		$iaView->assign('extensions', $this->getHelper()->extendedExtensions);
-		$iaView->assign('menus', $menus);
+		$iaView->assign('menus', $this->_getMenus());
 		$iaView->assign('pages', $this->getHelper()->getNonServicePages(array('index')));
 		$iaView->assign('pagesGroup', $groups);
 		$iaView->assign('parentPageId', $parentPage['id']);
 	}
 
+
+	private function _getMenus()
+	{
+		$menus = array(
+			array('title' => iaLanguage::get('core_menus', 'Core menus'), 'items' => array()),
+			array('title' => iaLanguage::get('custom_menus', 'Custom menus'), 'items' => array())
+		);
+
+		if ($this->_iaCore->factory('acl')->isAccessible($this->getName(), iaCore::ACTION_ADD))
+		{
+			$sql = 'SELECT m.`removable`, m.`id`, p.`value` `title` '
+				. 'FROM `:prefix:table_menus` m '
+				. 'LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT("block_title_", m.`id`) AND p.`code` = ":lang") '
+				. 'WHERE m.`type` = "menu" '
+				. 'ORDER BY `title`';
+
+			$sql = iaDb::printf($sql, array(
+				'prefix' => $this->_iaDb->prefix,
+				'table_menus' => iaBlock::getTable(),
+				'table_phrases' => iaLanguage::getTable(),
+				'lang' => $this->_iaCore->language['iso']
+			));
+
+			$rows = $this->_iaDb->getAssoc($sql);
+
+			$menus[0]['items'] = $rows[0];
+			isset($rows[1]) && $menus[1]['items'] = $rows[1];
+		}
+
+		return $menus;
+	}
 
 	private function _previewPage($action)
 	{

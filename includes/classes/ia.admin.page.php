@@ -58,7 +58,7 @@ SQL;
 
 		$sql = iaDb::printf($sql, array(
 			'table_pages' => self::getTable(true),
-			'table_phrases' => $this->_iaDb->prefix . iaLanguage::getTable(),
+			'table_phrases' => $this->iaDb->prefix . iaLanguage::getTable(),
 			'lang' => $this->iaCore->language['iso'],
 			'status' => iaCore::STATUS_ACTIVE,
 			'extra_where' => $exclude ? "AND !FIND_IN_SET(p.`name`, '" . implode(',', $exclude) . "') " : ''
