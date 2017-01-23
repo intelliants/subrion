@@ -26,14 +26,7 @@
 
 abstract class abstractPlugin extends abstractCore
 {
-	protected $_iaDb; // <4.0.5 plugins compatibility (should not be used, use $iaDb instead)
 
-
-	public function init()
-	{
-		parent::init();
-		$this->_iaDb = $this->iaDb;
-	}
 
 	public function insert(array $itemData)
 	{

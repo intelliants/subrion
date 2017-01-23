@@ -512,20 +512,18 @@ SQL;
 				continue;
 			}
 
+			$block['title'] = iaLanguage::get('block_title_' . $block['id']);
+			$block['display'] = !isset($_COOKIE['box_content_' . $block['name']]) || $_COOKIE['box_content_' . $block['name']] != 'none';
+			$block['hidden'] = $disabledBlock;
+
 			if ('menu' == $block['type'])
 			{
 				$block['contents'] = $this->_getMenuItems($block['id']);
 			}
-			else
+			elseif ('html' == $block['type'] || 'plain' == $block['type'])
 			{
-				if (!$block['multilingual'])
-				{
-					$block['contents'] = iaLanguage::get('block_content_blc' . $block['id']);
-					$block['title'] = iaLanguage::get('block_title_blc' . $block['id']);
-				}
+				$block['contents'] = iaLanguage::get('block_content_' . $block['id']);
 			}
-			$block['display'] = !isset($_COOKIE['box_content_' . $block['name']]) || $_COOKIE['box_content_' . $block['name']] != 'none';
-			$block['hidden'] = $disabledBlock;
 
 			$this->blocks[$block['position']][] = $block;
 			$this->_existBlocks[] = $block['name'];
