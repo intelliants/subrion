@@ -16,7 +16,6 @@
 			</div>
 
 			{if !$item.service && !$item.readonly}
-
 				<div class="row js-local-url-field">
 					<label class="col col-lg-2 control-label">{lang key='parent'}</label>
 

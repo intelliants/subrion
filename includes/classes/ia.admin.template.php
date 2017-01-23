@@ -504,51 +504,8 @@ class iaTemplate extends abstractCore
 
 		if ($this->blocks)
 		{
-			$iaDb->setTable($iaBlock::getTable());
-
-			$maxOrder = $iaDb->one('MAX(`order`)');
-			$maxOrder = ($maxOrder ? $maxOrder : 1);
-
 			foreach ($this->blocks as $block)
-			{
-				if (!$block['order'])
-				{
-					$maxOrder++;
-					$block['order'] = $maxOrder;
-				}
-				else
-				{
-					$block['order'] = (int)$block['order'];
-				}
-
-				if (!empty($block['filename']))
-				{
-					$block['external'] = 1;
-				}
-
-				$blockPages = $block['pages'];
-
-				unset($block['pages'], $block['added']);
-
-				if (!in_array($block['position'], $positionsList))
-				{
-					$block['position'] = $positionsList[0];
-				}
-
-				if (isset($block['contents']) && $block['contents'])
-				{
-					$block['contents'] = str_replace('{extras}', $this->name, $block['contents']);
-				}
-
-				$id = $iaDb->insert($block);
-
-				if ($blockPages)
-				{
-					$iaBlock->setVisibility($id, $block['sticky'], explode(',', $blockPages));
-				}
-			}
-
-			$iaDb->resetTable();
+				$iaBlock->insert($block);
 		}
 
 		$rollbackData = array();
@@ -747,12 +704,11 @@ class iaTemplate extends abstractCore
 					'order' => $this->attr('order', false),
 					'extras' => $this->name,
 					'options' => json_encode(array(
-							'wysiwyg' => $this->attr('wysiwyg', false),
-							'code_editor' => $this->attr('code_editor', false),
-							'show' => $this->attr('show'),
-							'multilingual' => $this->attr('multilingual', false)
-						)
-					)
+						'wysiwyg' => $this->attr('wysiwyg', false),
+						'code_editor' => $this->attr('code_editor', false),
+						'show' => $this->attr('show'),
+						'multilingual' => $this->attr('multilingual', false)
+					))
 				);
 				break;
 
@@ -790,7 +746,7 @@ class iaTemplate extends abstractCore
 					$this->blocks[] = array(
 						'name' => $this->attr('name', 'block_' . mt_rand(1000, 9999)),
 						'title' => $this->attr('title'),
-						'contents' => $text,
+						'content' => $text,
 						'position' => $this->attr('position'),
 						'type' => $this->attr('type'),
 						'order' => $this->attr('order', false),
@@ -799,9 +755,8 @@ class iaTemplate extends abstractCore
 						'header' => $this->attr('header', true),
 						'collapsible' => $this->attr('collapsible', false),
 						'sticky' => $this->attr('sticky', false),
-						'multilingual' => $this->attr('multilanguage', true),
 						'pages' => $this->attr('pages'),
-						'added' => $this->attr('added'),
+						//'added' => $this->attr('added'),
 						'rss' => $this->attr('rss'),
 						'filename' => $this->attr('filename'),
 						'classname' => $this->attr('classname')

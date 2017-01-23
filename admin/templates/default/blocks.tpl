@@ -26,17 +26,13 @@
 						{foreach $types as $type}
 							{if iaBlock::TYPE_MENU != $type}
 								{access object='admin_page' id='blocks' action=$type}
-								<option value="{$type}"{if $type == $item.type} selected{/if}>{$type}</option>
+								{$tip = {lang key="block_type_tip_{$type}"}}
+								<option value="{$type}" data-tip="{$tip|escape:'html'}"{if $type == $item.type} selected{/if}>{$type}</option>
 								{/access}
 							{/if}
 						{/foreach}
 					</select>
-					<p class="help-block">
-						<span data-type="plain" style="display: none;">{lang key='block_type_tip_plain'}</span>
-						<span data-type="html" style="display: none;">{lang key='block_type_tip_html'}</span>
-						<span data-type="smarty" style="display: none;">{lang key='block_type_tip_smarty'}</span>
-						<span data-type="php" style="display: none;">{lang key='block_type_tip_php'}</span>
-					</p>
+					<p class="help-block"></p>
 				</div>
 			</div>
 
@@ -84,41 +80,13 @@
 				</div>
 			</div>
 
-			{*<div class="row" id="js-multi-language-row">
-				<label class="col col-lg-2 control-label">{lang key='multilingual'}</label>
-
-				<div class="col col-lg-4">
-					{html_radio_switcher value=$item.multilingual name='multilingual'}
-				</div>
-			</div>*}
-
-			{*<div class="row" id="languages" style="display: none;">
-				<label class="col col-lg-2 control-label">{lang key='language'}</label>
-
-				<div class="col col-lg-4">
-					<div class="checkbox">
-						<label>
-							<input type="checkbox" id="js-check-all-lngs" value="1"{if isset($smarty.post.select_all) && $smarty.post.select_all == '1'} checked{/if}> {lang key='select_all'}
-						</label>
-					</div>
-
-					{foreach $core.languages as $code => $language}
-						<div class="checkbox">
-							<label>
-								<input type="checkbox" class="js-language-check" name="languages[]" value="{$code}"{if isset($item.languages) && in_array($code, $item.languages)} checked{/if}> {$language.title}
-							</label>
-						</div>
-					{/foreach}
-				</div>
-			</div>*}
-
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='block_visible_everywhere'}</label>
 
 				<div class="col col-lg-4">
 					{html_radio_switcher value=$item.sticky name='sticky'}
-					<p class="js-visibility-visible help-block">{lang key='block_visibility_exceptions_visible'}</p>
-					<p class="js-visibility-hidden help-block">{lang key='block_visibility_exceptions_hidden'}</p>
+					<p class="help-block" data-sticky="0">{lang key='block_visibility_exceptions_visible'}</p>
+					<p class="help-block" data-sticky="1">{lang key='block_visibility_exceptions_hidden'}</p>
 				</div>
 			</div>
 
@@ -217,15 +185,43 @@
 		<div class="wrap-group">
 			<div class="wrap-group-heading">{lang key='block_contents'}</div>
 
-			<div class="wrap-row" id="blocks_contents">
-				<div class="row">
-					<label class="col col-lg-2 control-label">{lang key='title'}</label>
-
-					<div class="col col-lg-4">
-						<input type="text" name="title" value="{if !is_array($item.title)}{$item.title|escape:'html'}{/if}">
-					</div>
+			<div class="row">
+				<div class="col col-lg-2">
+					{if count($core.languages) > 1}
+						<div class="btn-group btn-group-xs translate-group-actions">
+							<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-title"><span class="i-earth"></span></button>
+							<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
+						</div>
+					{/if}
+					<label class="control-label">{lang key='title'}</label>
 				</div>
+				<div class="col col-lg-4">
+					{if count($core.languages) > 1}
+						<div class="translate-group" id="language-group-title">
+							<div class="translate-group__default">
+								<div class="translate-group__item">
+									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+								</div>
+							</div>
+							<div class="translate-group__langs">
+								{foreach $core.languages as $iso => $language}
+									{if $iso != $core.language.iso}
+										<div class="translate-group__item">
+											<input type="text" name="title[{$iso}]"{if isset($item.title[$iso])} value="{$item.title[$iso]|escape:'html'}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+										</div>
+									{/if}
+								{/foreach}
+							</div>
+						</div>
+					{else}
+						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
+					{/if}
+				</div>
+			</div>
 
+			<div class="wrap-row" id="js-content-dynamic">
 				<div class="row" id="js-external-row">
 					<label class="col col-lg-2 control-label">{lang key='external_file'}</label>
 
@@ -234,46 +230,62 @@
 					</div>
 				</div>
 
-				<div class="row" id="external_filename">
+				<div class="row" id="js-row-external-file-name"{if !$item.external} style="display: none"{/if}>
 					<label class="col col-lg-2 control-label">{lang key='filename'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" name="filename" value="{if isset($item.filename) && !empty($item.filename)}{$item.filename|escape:'html'}{elseif isset($smarty.post.filename)}{$smarty.post.filename|escape:'html'}{/if}">
+						<input type="text" name="filename" value="{$item.filename|escape:'html'}">
 						{if iaCore::ACTION_ADD == $core.page.info.action}
 							<p class="help-block">{lang key='filename_notification'}</p>
 						{/if}
 					</div>
 				</div>
 
-				<div class="row" id="js-multilingual-content-row">
+				<div class="row" id="js-row-dynamic-content"{if $item.external} style="display: none"{/if}>
 					<label class="col col-lg-2 control-label">{lang key='contents'}</label>
 
 					<div class="col col-lg-8">
-						<textarea name="content" id="multi_contents" rows="8" class="js-ckeditor">{$item.content|escape:'html'}</textarea>
+						<textarea name="contents" id="input-content" rows="8">{$item.contents|escape:'html'}</textarea>
 					</div>
 				</div>
 			</div>
 
-			<div class="wrap-row" id="blocks_contents_multi" style="display: none;">
-				{foreach $core.languages as $code => $language}
-					<div id="blocks_contents_{$code}" class="wrap-row">
-						<div class="row">
-							<label class="col col-lg-2 control-label">{lang key='title'} <span class="label label-info">{$language.title}</span></label>
-
-							<div class="col col-lg-4">
-								<input type="text" name="titles[{$code}]" value="{if isset($item.titles.$code)}{$item.titles.$code|escape:'html'}{/if}">
+			<div class="wrap-row" id="js-content-static">
+				<div class="row">
+					<div class="col col-lg-2">
+						{if count($core.languages) > 1}
+							<div class="btn-group btn-group-xs translate-group-actions">
+								<button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-content"><span class="i-earth"></span></button>
+								<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-content"><span class="i-copy"></span></button>
 							</div>
-						</div>
-
-						<div class="row">
-							<label class="col col-lg-2 control-label">{lang key='contents'} <span class="label label-info">{$language.title}</span></label>
-
-							<div class="col col-lg-8">
-								<textarea name="contents[{$code}]" id="contents_{$code}" rows="8" class="js-ckeditor resizable">{if isset($item.contents.$code)}{$item.contents.$code|escape:'html'}{/if}</textarea>
-							</div>
-						</div>
+						{/if}
+						<label class="control-label">{lang key='contents'}</label>
 					</div>
-				{/foreach}
+					<div class="col col-lg-4">
+						{if count($core.languages) > 1}
+							<div class="translate-group" id="language-group-content">
+								<div class="translate-group__default">
+									<div class="translate-group__item">
+										<textarea name="content[{$core.language.iso}]" id="content_{$core.language.iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$core.language.iso])}{$item.content[$core.language.iso]|escape:'html'}{/if}</textarea>
+										<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									</div>
+								</div>
+								<div class="translate-group__langs">
+									{foreach $core.languages as $iso => $language}
+										{if $iso != $core.language.iso}
+											<div class="translate-group__item">
+												<textarea name="content[{$iso}]" id="content_{$iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$iso])}{$item.content[$iso]|escape:'html'}{/if}</textarea>
+												<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											</div>
+										{/if}
+									{/foreach}
+								</div>
+							</div>
+						{else}
+							<textarea name="content[{$core.language.iso}]" id="content_{$core.language.iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$core.language.iso])}{$item.content[$core.language.iso]|escape:'html'}{/if}</textarea>
+						{/if}
+					</div>
+				</div>
 			</div>
 		</div>
 
