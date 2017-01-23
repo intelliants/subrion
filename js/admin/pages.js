@@ -184,7 +184,7 @@ $(function()
 			lngCode = $this.data('language');
 
 		CKEDITOR.instances['content[' + lngCode + ']']
-					|| intelli.ckeditor('content[' + lngCode + ']', {toolbar: 'Extended'});
+					|| intelli.ckeditor('content[' + lngCode + ']', {toolbar: 'extended'});
 	});
 
 	// page extension dropdown
