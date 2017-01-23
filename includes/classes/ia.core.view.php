@@ -1236,6 +1236,12 @@ SQL;
 
 	public static function accessDenied($message = null)
 	{
+		if (is_null($message))
+		{
+			$phraseKey = 'access_denied_' . iaCore::instance()->iaView->get('name');
+			iaLanguage::exists($phraseKey) && $message = iaLanguage::get($phraseKey);
+		}
+
 		return self::errorPage(self::ERROR_FORBIDDEN, $message);
 	}
 
