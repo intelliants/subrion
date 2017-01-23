@@ -855,11 +855,11 @@ INSERT INTO `{install:prefix}admin_pages_groups` (`name`) VALUES
 ('extensions');
 
 INSERT INTO `{install:prefix}blocks` VALUES
-(2,'inventory','',0,'inventory','menu','','active',0,0,0,1,'','render-menu.tpl','0','',0,'',''),
-(3,'main','',0,'mainmenu','menu','','active',0,0,0,1,'','render-menu.tpl','0','',0,'',''),
-(4,'account','',0,'right','menu','','active',0,0,0,1,'','render-menu.tpl','0','',0,'',''),
-(5,'bottom','',0,'copyright','menu','','active',0,0,0,1,'','render-menu.tpl','0','',0,'',''),
-(6,'common_statistics','',1,'right','smarty','','active',1,0,0,0,'',1,'','block.common-statistics.tpl',0,'',''),
+(2,'inventory','',0,'inventory','menu','','active',0,0,0,1,'','render-menu.tpl',0,'',0,'',''),
+(3,'main','',0,'mainmenu','menu','','active',0,0,0,1,'','render-menu.tpl',0,'',0,'',''),
+(4,'account','',0,'right','menu','','active',0,0,0,1,'','render-menu.tpl',0,'',0,'',''),
+(5,'bottom','',0,'copyright','menu','','active',0,0,0,1,'','render-menu.tpl',0,'',0,'',''),
+(6,'common_statistics','',1,'right','smarty','','active',1,0,0,0,'','',1,'block.common-statistics.tpl',0,'',''),
 (7,'filters','$iaView = &$iaCore->iaView;\r\n\r\nif (($itemName = $iaView->get(''filtersItemName''))\r\n	|| (($itemName = str_replace(''search_'', '''', $iaView->name())) && $itemName != $iaView->name()))\r\n{\r\n	$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\n	echo $iaView->iaSmarty->fetch(''block.filters.tpl'');\r\n}',1,'left','php','','active',1,1,0,1,'','',0,'',1,'','');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES

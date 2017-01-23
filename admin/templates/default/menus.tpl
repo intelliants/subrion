@@ -37,7 +37,7 @@
 						<div class="translate-group" id="language-group-title">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape:'html'}"{/if}>
+									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
 									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
 								</div>
 							</div>
@@ -45,7 +45,7 @@
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="title[{$iso}]"{if isset($title.$iso)} value="{$title.$iso|escape:'html'}"{/if}>
+											<input type="text" name="title[{$iso}]"{if isset($item.title[$iso])} value="{$item.title[$iso]|escape:'html'}"{/if}>
 											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
 										</div>
 									{/if}
@@ -53,7 +53,7 @@
 							</div>
 						</div>
 					{else}
-						<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
 					{/if}
 				</div>
 			</div>
