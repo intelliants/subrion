@@ -125,7 +125,7 @@ Ext.onReady(function()
 				{
 					$('textarea.js-ckeditor').each(function()
 					{
-						intelli.ckeditor($(this).attr('id'), {toolbar: 'Extended', height: '400px'});
+						intelli.ckeditor($(this).attr('id'), {toolbar: 'extended', height: '400px'});
 					});
 				}
 				else
