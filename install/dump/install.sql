@@ -982,6 +982,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('api', '', 'General', '1', 'divider', '', 1, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('api', 'api_enabled', '0', '''1'',''0''', 'radio', 'API enabled', 1, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('api', 'api_push_access_key', '', '', 'text', 'GCM access key', 2, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"api_enabled|1","multilingual":false}'),
+('api', 'api_token', '', '', 'password', 'Permanent API token', 3, '', 1, 0, '{"wysiwyg":"0","code_editor":"0","show":"api_enabled|1","multilingual":false}'),
 
 ('email_templates', '', '', '', 'divider', 'Members', 0, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
 ('email_templates', 'member_approved', '1', '''1'',''0''', 'radio', 'Member approval', 1, '', 1, 1, '{"wysiwyg":"0","code_editor":"0","show":"","multilingual":false}'),
