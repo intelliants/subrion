@@ -1157,6 +1157,7 @@ INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page
 
 INSERT INTO `{install:prefix}items` (`payable`,`item`,`package`,`pages`) VALUES
 (1,'members','core','profile,view_member'),
+(0,'migrations','core',''),
 (0,'transactions','core','');
 
 INSERT INTO `{install:prefix}items_pages` (`page_name`,`item`) VALUES
