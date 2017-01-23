@@ -222,7 +222,7 @@ SQL;
 		$entry['filename'] = $data['filename'];
 
 		// bundled data
-		$entry['pages'] = $data['pages'];
+		$entry['pages'] = isset($data['pages']) ? $data['pages'] : array();
 		$entry['title'] = $data['title'];
 		$entry['content'] = (iaBlock::TYPE_PHP == $entry['type'] || iaBlock::TYPE_SMARTY == $entry['type'])
 			? $data['contents'] // single value
@@ -272,25 +272,6 @@ SQL;
 
 		if (empty($entryData['title']) && iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
-/*			$this->_iaDb->setTable(iaLanguage::getTable());
-
-			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = '" . iaBlock::LANG_PATTERN_TITLE . $this->getEntryId() . "'");
-			$entryData['contents'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = '" . iaBlock::LANG_PATTERN_CONTENT . $this->getEntryId() . "'");
-
-			$entryData['languages'] = empty($entryData['contents']) ? array() : array_keys($entryData['contents']);
-
-			if ($entryData['multilingual'] && empty($entryData['contents']) && iaBlock::TYPE_PHP != $entryData['type'])
-			{
-				foreach ($this->_iaCore->languages as $code => $language)
-				{
-					$entryData['titles'][$code] = $entryData['title'];
-					$entryData['contents'][$code] = $entryData['content'];
-				}
-			}
-
-			$this->_iaDb->resetTable();
-*/
-
 			$entryData['title'] = $this->_iaDb->keyvalue(array('code', 'value'),
 				iaDb::convertIds(iaBlock::LANG_PATTERN_TITLE . $this->getEntryId(), 'key'), iaLanguage::getTable());
 			$entryData['content'] = $this->_iaDb->keyvalue(array('code', 'value'),

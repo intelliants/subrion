@@ -137,7 +137,8 @@ class iaBlock extends abstractPlugin
 		{
 			$this->_saveBundle($id, $itemData, $bundle);
 
-			$title = $this->iaDb->one('value', iaDb::convertIds(self::LANG_PATTERN_TITLE . $id, 'key'), iaLanguage::getTable());
+			$title = $this->iaDb->one_bind('value', '`code` = :lang AND `key` = :key',
+				array('lang' => $this->iaView->language, 'key' => self::LANG_PATTERN_TITLE . $id), iaLanguage::getTable());
 			$type = $this->iaDb->one('`type`', iaDb::convertIds($id), self::getTable());
 
 			$this->iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array(
@@ -199,7 +200,7 @@ class iaBlock extends abstractPlugin
 
 					utf8_is_valid($title) || $title = utf8_bad_replace($title);
 
-					iaLanguage::addPhrase(self::LANG_PATTERN_TITLE . $id, $title, $iso);
+					iaLanguage::addPhrase(self::LANG_PATTERN_TITLE . $id, $title, $iso, '', iaLanguage::CATEGORY_FRONTEND);
 				}
 			}
 
@@ -216,7 +217,7 @@ class iaBlock extends abstractPlugin
 						$content = utf8_bad_replace($content);
 					}
 
-					iaLanguage::addPhrase(self::LANG_PATTERN_CONTENT . $id, $content, $iso);
+					iaLanguage::addPhrase(self::LANG_PATTERN_CONTENT . $id, $content, $iso, '', iaLanguage::CATEGORY_FRONTEND);
 				}
 			}
 		}
