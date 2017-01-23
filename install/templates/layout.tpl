@@ -25,7 +25,6 @@
 	</head>
 
 	<body>
-
 		<div class="overall-wrapper">
 			<div class="panels-wrapper">
 				<section id="panel-left">
@@ -103,7 +102,7 @@
 						</ul>
 						<p class="navbar-text pull-right">Copyright &copy; <?php echo date('Y') ?> <a href="https://intelliants.com/" title="Software Development Company">Intelliants LLC</a></p>
 					</div>
-				
+
 					<div class="content-wrapper">
 						<div class="block">
 							<?php if (isset($this->steps[$this->step])): ?>
@@ -125,6 +124,5 @@
 				</section>
 			</div>
 		</div>
-
 	</body>
 </html>
