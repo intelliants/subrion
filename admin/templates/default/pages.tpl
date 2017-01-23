@@ -120,21 +120,21 @@
 
 					<div class="col col-lg-4">
 						<ul class="nav nav-tabs">
-							{foreach $menus as $menu_list}
-								{if $menu_list.list}
-									<li{if $menu_list@iteration == 1} class="active"{/if}><a href="#tab-{$menu_list.title|replace:' ':''}" data-toggle="tab">{$menu_list.title}</a></li>
+							{foreach $menus as $menu}
+								{if $menu.items}
+									<li{if $menu@iteration == 1} class="active"{/if}><a href="#tab-{$menu.title|replace:' ':''}" data-toggle="tab">{$menu.title|escape:'html'}</a></li>
 								{/if}
 							{/foreach}
 						</ul>
 
 						<div class="tab-content">
-							{foreach $menus as $menu_list}
-								{if $menu_list.list}
-									<div class="tab-pane{if $menu_list@iteration == 1} active{/if}" id="tab-{$menu_list.title|replace:' ':''}">
-										{foreach $menu_list.list as $menu}
+							{foreach $menus as $menu}
+								{if $menu.items}
+									<div class="tab-pane{if $menu@iteration == 1} active{/if}" id="tab-{$menu.title|replace:' ':''}">
+										{foreach $menu.items as $menuItem}
 											<div class="checkbox">
 												<label>
-													<input type="checkbox" name="menus[]" value="{$menu.id}" id="p_{$menu.id}"{if in_array($menu.id, $selectedMenus)} checked{/if}> {$menu.title}
+													<input type="checkbox" name="menus[]" value="{$menuItem.id}" id="p_{$menuItem.id}"{if in_array($menuItem.id, $selectedMenus)} checked{/if}> {$menuItem.title|escape:'html'}
 												</label>
 											</div>
 										{/foreach}
