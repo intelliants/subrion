@@ -2,6 +2,7 @@
   border: 2px dashed @input-border;
   border-radius: 3px;
   position: relative;
+  padding: 10px;
 
   .dz-message {
     font-size: 16px;
@@ -22,14 +23,92 @@
     }
   }
 
-  // image thumb / preview
-  // .dz-preview {
-  //   display: block;
-  //   margin: 0;
-  //   background: #f2f2f2;
+  .dz-preview {
+    margin: 10px;
 
-  //   .dz-image {
-  //     border-radius: 3px;
-  //   }
-  // }
+    &:hover,
+    .dz-details:hover {
+      cursor: move;
+    }
+
+    .dz-image,
+    &.dz-file-preview .dz-image {
+      border-radius: 3px;
+    }
+
+    .dz-progress {
+      width: auto;
+      left: 0;
+      right: 0;
+      margin: 0;
+      top: auto;
+      bottom: -4px;
+      height: 3px;
+      border-radius: 3px;
+      background: fade(@brand-success, 15%);
+
+      .dz-upload {
+        background: linear-gradient(to bottom, lighten(@brand-success, 3%), darken(@brand-success, 3%))
+      }
+    }
+
+    .dz-details {
+      right: 0;
+      bottom: 0;
+
+      .dz-filename {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 24px;
+        line-height: 24px;
+        right: 24px;
+        border-radius: 0 0 0 3px;
+        padding: 0 5px;
+        overflow: hidden;
+        text-align: left;
+        background: fade(#fff, 45%);
+
+        &:hover {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        &:not(:hover) span,
+        &:hover span {
+          display: inline;
+          border: 0 none;
+          border-radius: 0;
+          background: none;
+          padding: 0;
+          line-height: 24px;
+          font-size: 11px;
+        }
+      }
+    }
+
+    .dz-remove {
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+      position: absolute;
+      z-index: 100;
+      right: 0;
+      bottom: 0;
+      border-radius: 0 0 3px 0;
+      background: fade(@brand-danger, 30%);
+      overflow: hidden;
+      text-align: center;
+
+      &::after {
+        .fa-icon;
+        color: #fff;
+        content: @fa-var-times;
+      }
+
+      &:hover {
+        background: fade(@brand-danger, 80%);
+      }
+    }
+  }
 }

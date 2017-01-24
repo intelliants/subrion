@@ -646,11 +646,11 @@ $(function()
 			acceptedFiles: 'image/*',
 			parallelUploads: 20,
 			maxFiles: $dropzone.data('max_num'),
-			dictRemoveFile: _t('delete'),
+			dictRemoveFile: '',
 			dictMaxFilesExceeded: _t('no_more_files'),
 			dictDefaultMessage: _t('drop_files_here'),
 			dictInvalidFileType: _t('field_tooltip_members_avatar'),
-			dictCancelUpload: _t('cancel'),
+			dictCancelUpload: '',
 			dictCancelUploadConfirmation: _t('cancel_upload_confirmation'),
 			init: function () {
 				var dropZone = this,

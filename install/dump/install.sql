@@ -2003,7 +2003,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('done','Done','common'),
 ('download','Download','common'),
 ('draft','Draft','common'),
-('drop_files_here','Drop images here...','common'),
+('drop_files_here','Drop images here or click to choose...','common'),
 
 ('email','Email','common'),
 ('edit','Edit','common'),
