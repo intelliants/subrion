@@ -186,6 +186,7 @@ $(function($)
 			{/if}
 
 		{case iaField::PICTURES break}
+{*
 			{if $value}
 			<div class="uploads-list" id="{$fieldName}_upload_list">
 				{foreach $value as $i => $entry}
@@ -220,96 +221,14 @@ $(function($)
 			{else}
 				{assign max_num $field.length}
 			{/if}
-
-			<div id="{$fieldName}_dropzone" class="s-dropzone dropzone" data-max_num="{$max_num}" data-length="{$field.length}"></div>
-
+*}
+			<div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
+				data-item_name="{$item.item}" data-item_id="{$id|default:''}" data-field_name="{$fieldName}"
+				data-max_num="{$field.length}" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
+				data-values='{if $value}{$value|json_encode}{/if}'></div>
 			{ia_add_js}
 $(function()
 {
-	Dropzone.autoDiscover = false;
-	var $dropzone = $('#{$fieldName}_dropzone');
-
-	var dropZone = new Dropzone('#{$fieldName}_dropzone', {
-		url: '{$core.config.admin_page}/actions.json',
-		addRemoveLinks: true,
-		acceptedFiles: 'image/*',
-		parallelUploads: 20,
-		maxFiles: $dropzone.data('max_num'),
-		dictRemoveFile: _t('delete'),
-		dictMaxFilesExceeded: _t('no_more_files'),
-		dictDefaultMessage: _t('drop_files_here'),
-		dictInvalidFileType: _t('field_tooltip_members_avatar'),
-		dictCancelUpload: _t('cancel'),
-		dictCancelUploadConfirmation: _t('cancel_upload_confirmation'),
-		init: function () {
-			var error = false,
-				dropZone = this,
-				errorMessage = '';
-
-			this.on('addedfile', function() {
-				dropZone.options.maxFiles = $dropzone.data('max_num');
-			});
-
-			this.on('success', function(file, response) {
-				var $input = $('<input type="hidden" name="{$fieldName}_dropzone_files[]" value="' + response.file_name + '">');
-				var $title = $('<label>{lang key="title"}</label><input type="text" name="{$fieldName}_dropzone_titles[]">');
-				$(file.previewElement).append($input).append($title);
-
-				error = false;
-			});
-
-			var $submit = $('.js-btn-submit');
-			this.on('sending', function(file, xhr, formData) {
-				$submit
-					.attr('disabled', true)
-					.html('<span class="fa fa-refresh fa-spin fa-fw"></span><span class="sr-only">' + _t('uploading_please_wait') + '</span> ' + _t('uploading_please_wait'));
-				formData.append('action', 'dropzone-upload');
-				formData.append('field_name', '{$fieldName}');
-				formData.append('item_name', '{$item.item}');
-			});
-
-			this.on('error', function(file) {
-				if ('canceled' != file.status) {
-					error = true;
-					errorMessage = 'error';
-				}
-			});
-
-			this.on('maxfilesexceeded', function() {
-				error = true;
-				errorMessage = 'no_more_files';
-			});
-
-			this.on('success', function(file, response) {
-				error = response.error;
-				errorMessage = response.message;
-			});
-
-			this.on('removedfile', function(file) {
-				$.post('{$core.config.admin_page}/actions.json', {
-					action: 'dropzone-delete',
-					path: $(file.previewElement).children('input[type="hidden"]').val()
-				}).done(function(response) {
-					intelli.notifFloatBox({ msg: response.message, type: response.result ? 'success' : 'error', autohide: true });
-				});
-			});
-
-			this.on('queuecomplete', function() {
-				var message = 'upload_successful',
-					type = 'success';
-				if (error) {
-					message = errorMessage;
-					errorMessage = '';
-					type = 'error';
-				}
-				intelli.notifFloatBox({ msg: _t(message), type: type, autohide: true });
-				$submit.attr('disabled', false);
-				var submitButtonText = '{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}';
-				$submit.html(_t(submitButtonText));
-			});
-		}
-	});
-
 	intelli.sortable('{$fieldName}_dropzone', {
 		handle: '.dz-image-preview'
 	});
