@@ -83,7 +83,7 @@ $(function()
 			{ia_add_media files='moment,datepicker'}
 
 		{case iaField::IMAGE break}
-			{if $value}
+			{if (isset($value.path) && $value.path) || (!isset($value.path) && $value)}
 				<div class="thumbnail">
 					<div class="thumbnail__actions">
 						<button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$value.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
@@ -187,7 +187,7 @@ $(function()
 				<div class="upload-items upload-items--files" id="{$fieldName}_upload_list">
 					{foreach $value as $entry}
 						<div class="input-group upload-items__item">
-							<input type="text" class="form-control" type="text" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
+							<input type="text" class="form-control" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
 							<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path}">
 							<div class="input-group-btn">
 								<a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{lang key='download'}"><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
