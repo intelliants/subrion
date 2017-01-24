@@ -92,7 +92,7 @@
 			</div>
 		</div>
 	{/if}
-{elseif !trim($item.$name) && $field.empty_field}
+{elseif empty($item.$name) && $field.empty_field}
 	{if !isset($wrappedValues)}
 		<span class="empty_field">{$field.empty_field|escape:'html'}</span>
 	{else}

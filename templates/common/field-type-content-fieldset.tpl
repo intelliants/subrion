@@ -2,25 +2,8 @@
 	{if !empty($section.fields) && isset($section.name) && !($section.name == 'plans' && $isView)}
 		{capture name='field_text'}
 			{if 'plans' != $section.name}
-				{*--
-					Checking for fields relations
-					TODO: to be rewritten along with the iaField method
-				 --*}
-				{$relations = []}
-				{if isset($isView)}
-					{foreach $section.fields as $field}
-						{if iaField::RELATION_PARENT == $field.relation && $field.children}
-							{foreach $field.children as $dependentField => $relation}
-								{$relations[$dependentField] = array($field.name, $relation[0])}
-							{/foreach}
-						{/if}
-					{/foreach}
-				{/if}
-				{*-- END --*}
 				{foreach $section.fields as $field}
-					{if (!isset($exceptions) || !in_array($field.name, $exceptions))
-						&& (!isset($relations[$field.name])
-							|| (isset($relations[$field.name]) && $relations[$field.name][1] == $item[$relations[$field.name][0]]))}
+					{if (!isset($exceptions) || !in_array($field.name, $exceptions))}
 						{include "field-type-content-{(isset($isView)) ? 'view' : 'manage'}.tpl" wrappedValues=true}
 					{/if}
 				{/foreach}
