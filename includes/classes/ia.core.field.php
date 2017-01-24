@@ -158,12 +158,12 @@ SQL;
 		is_null($where) && $where = iaDb::EMPTY_CONDITION;
 
 		$where.= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
-			? " AND (f.`plans` = '' OR FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`)) "
-			: " AND f.`plans` = '' ";
+			? " AND (f.`plans` = '' OR FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`))"
+			: " AND f.`plans` = ''";
 
 		if (isset($cache[$pageName][$itemName][$where]))
 		{
-			list($result, $planAssigned, $fields, $multilingual) = $cache[$pageName][$itemName][$where];
+			$result = $cache[$pageName][$itemName][$where];
 		}
 		else
 		{
@@ -172,54 +172,50 @@ SQL;
 
 			$iaAcl = $this->iaCore->factory('acl');
 
-			$planAssigned = array();
-			$fields = array();
-			$empty = array();
-			$multilingual = array();
-
 			foreach ($rows as $row)
-			{
-				if ($iaAcl->checkAccess('field', $itemName . '_' . $row['name']))
-				{
-					$result[$row['id']] = $row;
-
-					$empty[$row['name']] = $row['empty_field'];
-					$row['multilingual'] && $multilingual[] = $row['name'];
-					($row['required'] || !$row['for_plan'])
-						? ($fields[] = $row['name'])
-						: ($planAssigned[] = $row['name']);
-				}
-			}
+				$iaAcl->checkAccess('field', $itemName . '_' . $row['name'])
+					&& $result[$row['id']] = $row;
 
 			self::_unpackValues($result);
 
-			$cache[$pageName][$itemName][$where] = array($result, $planAssigned, $fields, $multilingual);
+			$cache[$pageName][$itemName][$where] = $result;
 		}
 
 		if ($itemData)
 		{
-			if ($planAssigned)
+			if (!empty($itemData['sponsored_plan_id']))
 			{
 				$plans = $this->iaCore->factory('plan')->getPlans($itemName);
-
-				if (!empty($itemData[iaPlan::SPONSORED_PLAN_ID])
-					&& isset($plans[$itemData[iaPlan::SPONSORED_PLAN_ID]]['data']['fields']))
+				if (isset($plans[$itemData['sponsored_plan_id']]['data']['fields']))
 				{
 					$planFields = $plans[$itemData[iaPlan::SPONSORED_PLAN_ID]]['data']['fields'];
-					foreach ($planAssigned as $fieldName)
-						in_array($fieldName, $planFields) && $fields[] = $fieldName;
 				}
 			}
 
-			// assign a default value if not in allowed fields list
-			foreach ($itemData as $fieldName => $value)
-				in_array($fieldName, $fields) ||
-					(isset($empty[$fieldName]) && $itemData[$fieldName] = $empty[$fieldName]);
-
-			foreach ($multilingual as $fieldName)
+			foreach ($result as $field)
 			{
-				$key = $fieldName . '_' . $this->iaCore->language['iso'];
-				isset($itemData[$key]) && $itemData[$fieldName] = $itemData[$key];
+				$fieldName = $field['name'];
+
+				// assign a default value if field is assigned to plan and item has no active 'sponsored' flag
+				if ($field['for_plan'] &&
+					(!isset($planFields) || (isset($planFields) && !in_array($fieldName, $planFields))))
+				{
+					isset($itemData[$fieldName]) && $itemData[$fieldName] = $field['empty_field'];
+					continue;
+				}
+
+				if ($field['multilingual'])
+				{
+					$key = $fieldName . '_' . $this->iaCore->language['iso'];
+					isset($itemData[$key]) && $itemData[$fieldName] = $itemData[$key];
+				}
+
+				if (self::RELATION_PARENT == $field['relation'] && isset($itemData[$fieldName]))
+				{
+					$value = $itemData[$fieldName];
+					foreach ($field['children'] as $dependentFieldName => $values)
+						if (!in_array($value, $values)) unset($itemData[$dependentFieldName]);
+				}
 			}
 		}
 
