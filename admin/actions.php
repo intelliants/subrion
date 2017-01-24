@@ -60,7 +60,6 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 				else
 				{
-					$this->_iaCore->factory('util');
 					$iaPicture = $this->_iaCore->factory('picture');
 					$this->_iaCore->factory('field');
 
