@@ -590,7 +590,10 @@ SQL;
 						if (self::PICTURES == $field['type'] && iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
 						{
 							$files = $fieldName . '_dropzone_files';
-							$titles = $fieldName . '_dropzone_titles';
+							//$titles = $fieldName . '_dropzone_titles';
+							$names = $fieldName . '_dropzone_names';
+							$sizes = $fieldName . '_dropzone_sizes';
+
 							$item[$fieldName] = isset($data[$fieldName]) && $data[$fieldName] ? $data[$fieldName] : array();
 							$pictures = isset($data[$files]) && $data[$files] ? $data[$files] : array();
 
@@ -614,8 +617,10 @@ SQL;
 								foreach ($pictures as $i => $picture)
 								{
 									$newPictures[] = array(
-										'title' => $data[$titles][$i],
+										//'title' => $data[$titles][$i],
 										'path' => $picture,
+										'name' => empty($data[$names][$i]) ? '' : $data[$names][$i],
+										'size' => empty($data[$sizes][$i]) ? '' : $data[$sizes][$i],
 									);
 								}
 
@@ -781,7 +786,7 @@ SQL;
 		return array($item, $error, $messages, $fields);
 	}
 
-	protected static function _generateFileName($filename = '', $prefix = '', $glue = true)
+	public static function generateFileName($filename = '', $prefix = '', $glue = true)
 	{
 		if (empty($filename))
 		{
@@ -809,7 +814,7 @@ SQL;
 		$error = false;
 		$message = null;
 
-		list($filename, $extension) = self::_generateFileName($file['name'], $field['file_prefix'], false);
+		list($filename, $extension) = self::generateFileName($file['name'], $field['file_prefix'], false);
 		$filename = $path . $filename . '.' . $extension;
 
 		// get available extensions
@@ -837,7 +842,7 @@ SQL;
 		$iaCore = iaCore::instance();
 		$iaPicture = $iaCore->factory('picture');
 
-		list($filename, ) = self::_generateFileName($file['name'], $field['file_prefix'], false);
+		list($filename, ) = self::generateFileName($file['name'], $field['file_prefix'], false);
 
 		$imageName = $iaPicture->processImage($file, $path, $filename, $field);
 
