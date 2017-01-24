@@ -43,7 +43,6 @@
 						<div class="social-links">
 							<a href="https://twitter.com/IntelliantsLLC" target="_blank"><i class="i-twitter-2"></i></a>
 							<a href="https://www.facebook.com/Intelliants" target="_blank"><i class="i-facebook-2"></i></a> 
-							<a href="https://plus.google.com/102005294232479547608/posts" target="_blank"><i class="i-googleplus"></i></a>
 						</div>
 						<a href="https://subrion.org/" title="Open Source CMS">Subrion CMS</a>
 						<br>
