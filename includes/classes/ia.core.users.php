@@ -994,7 +994,7 @@ SQL;
 			$iaField = $this->iaCore->factory('field');
 			$fieldNames = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
 		}
-		!$singleRow || $rows = array($rows);
+		$singleRow && $rows = array($rows);
 
 		foreach ($rows as &$row)
 		{
@@ -1005,10 +1005,10 @@ SQL;
 
 			foreach ($fieldNames as $name)
 			{
-				$row[$name] = $row[$name] ? unserialize($row[$name]) : array('path' => '', 'title' => '');
+				$row[$name] = $row[$name] ? unserialize($row[$name]) : array();
 			}
 		}
 
-		!$singleRow || $rows = array_shift($rows);
+		$singleRow && $rows = array_shift($rows);
 	}
 }
