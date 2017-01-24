@@ -186,46 +186,10 @@ $(function($)
 			{/if}
 
 		{case iaField::PICTURES break}
-{*
-			{if $value}
-			<div class="uploads-list" id="{$fieldName}_upload_list">
-				{foreach $value as $i => $entry}
-					<div class="uploads-list-item">
-						<a class="uploads-list-item__thumb" href="{printImage imgfile=$entry.path url=true fullimage=true}" title="{$entry.title|escape:'html'}" rel="ia_lightbox[{$field.name}]">{printImage imgfile=$entry.path}</a>
-
-						<div class="uploads-list-item__body">
-							<div class="input-group">
-								<input type="text" name="{$fieldName}[{$i}][title]" value="{$entry.title|escape:'html'}" id="{$fieldName}_{$entry@index}">
-								<input type="hidden" name="{$fieldName}[{$i}][path]" value="{$entry.path}">
-
-								<span class="input-group-btn">
-									<a class="btn btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><i class=" i-remove-sign"></i></a>
-									<span class="btn btn-default uploads-list-item__drag-handle"><i class="i-list-2"></i></span>
-								</span>
-							</div>
-						</div>
-					</div>
-				{/foreach}
-			</div>
-
-			{ia_add_js}
-			$(function()
-			{
-				intelli.sortable('{$fieldName}_upload_list', {
-					handle: '.uploads-list-item__drag-handle'
-				});
-			});
-			{/ia_add_js}
-
-			{assign var='max_num' value=($field.length - count($value))}
-			{else}
-				{assign max_num $field.length}
-			{/if}
-*}
 			<div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
 				data-item_name="{$item.item}" data-item_id="{$id|default:''}" data-field_name="{$fieldName}"
 				data-max_num="{$field.length}" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
-				data-values='{if $value}{$value|json_encode}{/if}'></div>
+				data-values='{if $value}{json_encode(array_values($value))}{/if}'></div>
 			{ia_add_js}
 $(function()
 {
