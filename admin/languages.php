@@ -353,7 +353,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'title' => '',
 			'locale' => 'en_US',
 			'date_format' => '%b %e, %Y',
-			'direction' => 'auto',
+			'direction' => 'ltr',
 			'status' => iaCore::STATUS_INACTIVE
 		);
 	}
