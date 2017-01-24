@@ -4,7 +4,7 @@
 
 {if isset($field_before[$name])}{$field_before.$name}{/if}
 
-{if trim($item.$name)}
+{if $item.$name}
 	{capture assign='_field_text'}
 		{switch $type}
 		{case iaField::TEXT break}
