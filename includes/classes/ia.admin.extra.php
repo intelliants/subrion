@@ -182,12 +182,10 @@ class iaExtra extends abstractCore
 
 			return false;
 		}
+
 		$this->_url = $url;
 
-		if (!$this->_parsed)
-		{
-			$this->parse();
-		}
+		$this->_parsed || $this->parse();
 
 		$this->checkValidity();
 
@@ -370,6 +368,7 @@ class iaExtra extends abstractCore
 	{
 		$this->isUpgrade = true;
 		$iaDb = &$this->iaDb;
+
 		$this->iaCore->startHook('phpExtrasUpgradeBefore', array('extra' => $this->itemData['name']));
 
 		$this->_processQueries('install', self::SQL_STAGE_START, true);
@@ -1908,9 +1907,9 @@ class iaExtra extends abstractCore
 					}
 
 					$this->itemData['blocks'][] = array(
-						'name' => $this->_attr('name', 'block_' . mt_rand(1000, 9999)),
+						'name' => $this->_attr('name'),
 						'title' => $this->_attr('title'),
-						'contents' => $text,
+						'content' => $text,
 						'position' => $this->_attr('position'),
 						'type' => $this->_attr('type'),
 						'order' => $this->_attr('order', false),
@@ -1919,7 +1918,6 @@ class iaExtra extends abstractCore
 						'header' => $this->_attr('header', true),
 						'collapsible' => $this->_attr('collapsible', false),
 						'sticky' => $this->_attr('sticky', true),
-						'multilingual' => $this->_attr('multilanguage', true),
 						'pages' => $this->_attr('pages'),
 						'rss' => $this->_attr('rss'),
 						'filename' => $filename,

@@ -25,7 +25,6 @@
 	</head>
 
 	<body>
-
 		<div class="overall-wrapper">
 			<div class="panels-wrapper">
 				<section id="panel-left">
@@ -44,7 +43,6 @@
 						<div class="social-links">
 							<a href="https://twitter.com/IntelliantsLLC" target="_blank"><i class="i-twitter-2"></i></a>
 							<a href="https://www.facebook.com/Intelliants" target="_blank"><i class="i-facebook-2"></i></a> 
-							<a href="https://plus.google.com/102005294232479547608/posts" target="_blank"><i class="i-googleplus"></i></a>
 						</div>
 						<a href="https://subrion.org/" title="Open Source CMS">Subrion CMS</a>
 						<br>
@@ -103,7 +101,7 @@
 						</ul>
 						<p class="navbar-text pull-right">Copyright &copy; <?php echo date('Y') ?> <a href="https://intelliants.com/" title="Software Development Company">Intelliants LLC</a></p>
 					</div>
-				
+
 					<div class="content-wrapper">
 						<div class="block">
 							<?php if (isset($this->steps[$this->step])): ?>
@@ -125,6 +123,5 @@
 				</section>
 			</div>
 		</div>
-
 	</body>
 </html>

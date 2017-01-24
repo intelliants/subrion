@@ -28,8 +28,10 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'menus';
 
-	protected $_gridColumns = array('title', 'name', 'status', 'order', 'position', 'delete' => 'removable');
+	protected $_gridColumns = array('name', 'status', 'order', 'position', 'delete' => 'removable');
 	protected $_gridFilters = array('position' => 'equal', 'status' => 'equal');
+	protected $_gridSorting = array('title' => array('value', 'p'));
+	protected $_gridQueryMainTableAlias = 'm';
 
 	protected $_phraseGridEntryDeleted = 'menu_deleted';
 	protected $_phraseGridEntriesDeleted = 'menus_deleted';
@@ -39,9 +41,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		parent::__construct();
 
-		$iaBlock = $this->_iaCore->factory('block', iaCore::ADMIN);
-		$this->setHelper($iaBlock);
-
+		$this->setHelper($this->_iaCore->factory('block', iaCore::ADMIN));
 		$this->setTable(iaBlock::getTable());
 	}
 
@@ -242,15 +242,66 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		if (!empty($params['name']))
 		{
-			$conditions[] = '(`name` LIKE :name OR `title` LIKE :name)';
+			$conditions[] = '(m.`name` LIKE :name OR p.`value` LIKE :name)';
 			$values['name'] = '%' . $params['name'] . '%';
 		}
 
-		$conditions[] = "`type` = 'menu'";
+		$conditions[] = "m.`type` = 'menu'";
+	}
+
+	protected function _gridQuery($columns, $where, $order, $start, $limit)
+	{
+		$sql = <<<SQL
+	SELECT :columns, p.`value` `title`
+	FROM `:prefix:table_menus` m
+	LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT('block_title_', m.`id`) AND p.`code` = ':lang')
+	WHERE :where :order
+	LIMIT :start, :limit
+SQL;
+
+		$sql = iaDb::printf($sql, array(
+			'prefix' => $this->_iaDb->prefix,
+			'table_menus' => $this->getTable(),
+			'table_phrases' => iaLanguage::getTable(),
+			'lang' => $this->_iaCore->language['iso'],
+			'columns' => $columns,
+			'where' => $where,
+			'order' => $order,
+			'start' => (int)$start,
+			'limit' => (int)$limit
+		));
+
+		return $this->_iaDb->getAll($sql);
+	}
+
+	protected function _setDefaultValues(array &$entry)
+	{
+		$entry = array(
+			'name' => 'menu_' . iaUtil::generateToken(5),
+			'position' => '',
+			'classname' => '',
+			'status' => iaCore::STATUS_ACTIVE,
+			'sticky' => false,
+			'tpl' => iaBlock::DEFAULT_MENU_TEMPLATE,
+			'type' => iaBlock::TYPE_MENU
+		);
+
+		$entry['header'] = $entry['collapsible'] = $entry['collapsed'] = false;
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
+		$entry['position'] = empty($data['position']) ? 'left' : $data['position'];
+		$entry['classname'] = $data['classname'];
+		$entry['sticky'] = (int)$data['sticky'];
+		$entry['header'] = (int)$data['header'];
+		$entry['collapsible'] = (int)$data['collapsible'];
+		$entry['collapsed'] = (int)$data['collapsed'];
+
+		// bundled data
+		$entry['title'] = $data['title'];
+		$entry['pages'] = isset($data['pages']) ? $data['pages'] : array();
+
 		if ($data['name'])
 		{
 			if ($name = iaSanitize::paranoid(iaSanitize::tags($data['name'])))
@@ -265,15 +316,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		$entry['title'] = empty($data['title']) ? iaLanguage::get('without_title') : $data['title'];
-		$entry['position'] = empty($data['position']) ? 'left' : $data['position'];
-		$entry['classname'] = $data['classname'];
-		$entry['sticky'] = (int)$data['sticky'];
-		$entry['pages'] = empty($data['pages']) ? array() : $data['pages'];
-		$entry['header'] = (int)$data['header'];
-		$entry['collapsible'] = (int)$data['collapsible'];
-		$entry['collapsed'] = (int)$data['collapsed'];
-
 		$menuExists = $this->_iaDb->exists(iaDb::convertIds($entry['name'], 'name'));
 
 		if (iaCore::ACTION_EDIT == $action)
@@ -282,7 +324,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			empty($menuExists) || $this->addMessage('menu_exists');
+			$menuExists && $this->addMessage('menu_exists');
 		}
 
 		return !$this->getMessages();
@@ -294,7 +336,9 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			foreach ($menus as $menu)
 			{
-				$pageId = reset(explode('_', $menu['id']));
+				$pageId = explode('_', $menu['id']);
+				$pageId = reset($pageId);
+
 				$list[] = array(
 					'parent_id' => ('root' == $menu['parentId']) ? 0 : $menu['parentId'],
 					'menu_id' => $menuId,
@@ -324,22 +368,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 	}
 
-	protected function _setDefaultValues(array &$entry)
-	{
-		$entry = array(
-			'name' => 'menu_' . iaUtil::generateToken(5),
-			'position' => '',
-			'classname' => '',
-			'status' => iaCore::STATUS_ACTIVE,
-			'sticky' => false,
-			'title' => '',
-			'tpl' => iaBlock::DEFAULT_MENU_TEMPLATE,
-			'type' => iaBlock::TYPE_MENU
-		);
-
-		$entry['header'] = $entry['collapsible'] = $entry['collapsed'] = false;
-	}
-
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
 		$pageGroups = array();
@@ -363,6 +391,9 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				$visibleOn = $array;
 			}
+
+			$entryData['title'] = $this->_iaDb->keyvalue(array('code', 'value'),
+				iaDb::convertIds(iaBlock::LANG_PATTERN_TITLE . $this->getEntryId(), 'key'), iaLanguage::getTable());
 		}
 		elseif (!empty($_POST['pages']))
 		{

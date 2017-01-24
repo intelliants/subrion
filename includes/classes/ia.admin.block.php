@@ -37,8 +37,8 @@ class iaBlock extends abstractPlugin
 
 	const DEFAULT_MENU_TEMPLATE = 'render-menu.tpl';
 
-	const LANG_PATTERN_TITLE = 'block_title_blc';
-	const LANG_PATTERN_CONTENT = 'block_content_blc';
+	const LANG_PATTERN_TITLE = 'block_title_';
+	const LANG_PATTERN_CONTENT = 'block_content_';
 
 	protected static $_table = 'blocks';
 	protected static $_pagesTable = 'objects_pages';
@@ -93,16 +93,16 @@ class iaBlock extends abstractPlugin
 	 */
 	public function insert(array $blockData)
 	{
-		if (empty($blockData['lang'])
-			|| ($blockData['lang'] && !array_key_exists($blockData['lang'], $this->iaCore->languages)))
+		if (empty($blockData['name']))
 		{
-			$blockData['lang'] = $this->iaView->language;
+			$blockData['name'] = 'block_' . mt_rand(1000, 9999);
 		}
 
 		if (!isset($blockData['type']) || !in_array($blockData['type'], $this->getTypes()))
 		{
 			$blockData['type'] = self::TYPE_PLAIN;
 		}
+
 		if (self::TYPE_MENU == $blockData['type'])
 		{
 			$blockData['tpl'] = self::DEFAULT_MENU_TEMPLATE;
@@ -114,41 +114,11 @@ class iaBlock extends abstractPlugin
 		$order = (int)$this->iaDb->getMaxOrder(self::getTable());
 		$blockData['order'] = ++$order;
 
-		if (isset($blockData['pages']))
+		$bundle = $this->_fetchBundledData($blockData);
+
+		if ($id = parent::insert($blockData))
 		{
-			$pages = $this->_preparePages($blockData['pages']);
-			unset($blockData['pages']);
-		}
-
-		if (isset($blockData['multilingual']))
-		{
-			if (!$blockData['multilingual'] && isset($blockData['languages']))
-			{
-				$languages = $blockData['languages'];
-				$titles = $blockData['titles'];
-				$contents = $blockData['contents'];
-
-				unset($blockData['languages'], $blockData['titles'], $blockData['contents']);
-			}
-		}
-
-		$id = parent::insert($blockData);
-
-		if ($id)
-		{
-			if (isset($languages))
-			{
-				foreach ($languages as $language)
-				{
-					iaLanguage::addPhrase(self::LANG_PATTERN_TITLE . $id, $titles[$language], $language);
-					iaLanguage::addPhrase(self::LANG_PATTERN_CONTENT . $id, $contents[$language], $language);
-				}
-			}
-
-			if (isset($pages))
-			{
-				$this->setVisibility($id, $blockData['sticky'], $pages);
-			}
+			$this->_saveBundle($id, $blockData, $bundle);
 		}
 
 		return $id;
@@ -156,86 +126,24 @@ class iaBlock extends abstractPlugin
 
 	public function update(array $itemData, $id)
 	{
-		$iaDb = &$this->iaDb;
-
-		$row = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
-
-		if (isset($itemData['pages']))
-		{
-			$pages = $this->_preparePages($itemData['pages']);
-			unset($itemData['pages']);
-		}
-
-		if (isset($itemData['multilingual']) && !$itemData['multilingual'])
-		{
-			if (isset($itemData['languages']))
-			{
-				$languages = $itemData['languages'];
-				$titles = $itemData['titles'];
-				$contents = $itemData['contents'];
-
-				unset($itemData['languages'], $itemData['titles'], $itemData['contents']);
-			}
-		}
+		$bundle = $this->_fetchBundledData($itemData);
 
 		if (isset($itemData['name']))
 		{
 			unset($itemData['name']);
 		}
 
-		$result = parent::update($itemData, $id);
-
-		if (isset($pages))
+		if ($result = parent::update($itemData, $id))
 		{
-			$this->setVisibility($id, $itemData['sticky'], $pages);
-		}
+			$this->_saveBundle($id, $itemData, $bundle);
 
-		if (isset($itemData['multilingual']) && !$itemData['multilingual'])
-		{
-			if (isset($languages))
-			{
-				$stmt = array();
-				$entries = array();
+			$title = $this->iaDb->one_bind('value', '`code` = :lang AND `key` = :key',
+				array('lang' => $this->iaView->language, 'key' => self::LANG_PATTERN_TITLE . $id), iaLanguage::getTable());
+			$type = $this->iaDb->one('`type`', iaDb::convertIds($id), self::getTable());
 
-				foreach ($languages as $langCode)
-				{
-					$entries[] = array(
-						'key' => self::LANG_PATTERN_TITLE . $id,
-						'value' => $titles[$langCode],
-						'category' => iaLanguage::CATEGORY_COMMON,
-						'code' => $langCode
-					);
-
-					$entries[] = array(
-						'key' => self::LANG_PATTERN_CONTENT . $id,
-						'value' => $contents[$langCode],
-						'category' => iaLanguage::CATEGORY_COMMON,
-						'code' => $langCode
-					);
-
-					$stmt[] = self::LANG_PATTERN_TITLE . $id;
-					$stmt[] = self::LANG_PATTERN_CONTENT . $id;
-				}
-
-				$iaDb->setTable(iaLanguage::getTable());
-				$iaDb->delete("`key` IN ('" . implode("','", $stmt) . "')");
-				$iaDb->insert($entries);
-				$iaDb->resetTable();
-			}
-		}
-		else
-		{
-			// let the user content be kept
-
-			//$iaDb->delete("`key` IN ('" . self::LANG_PATTERN_TITLE . $id . "', '"
-			//	. self::LANG_PATTERN_CONTENT . $id . "')", iaLanguage::getTable());
-		}
-
-		if ($result)
-		{
 			$this->iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array(
-				'item' => (self::TYPE_MENU == $row['type']) ? 'menu' : 'block',
-				'name' => $row['title'],
+				'item' => (self::TYPE_MENU == $type) ? 'menu' : 'block',
+				'name' => $title,
 				'id' => $id
 			));
 		}
@@ -243,11 +151,87 @@ class iaBlock extends abstractPlugin
 		return $result;
 	}
 
+	protected function _fetchBundledData(array &$block)
+	{
+		$result = array();
+
+		if (isset($block['pages']))
+		{
+			$result['pages'] = $this->_preparePages($block['pages']);
+			unset($block['pages']);
+		}
+
+		if (isset($block['title']))
+		{
+			$result['title'] = $block['title'];
+			unset($block['title']);
+		}
+
+		if (isset($block['content']))
+		{
+			if (($block['type'] == self::TYPE_PHP || $block['type'] == self::TYPE_SMARTY))
+			{
+				$block['contents'] = $block['content'];
+			}
+			else
+			{
+				$result['content'] = $block['content'];
+			}
+
+			unset($block['content']);
+		}
+
+		return $result;
+	}
+
+	protected function _saveBundle($id, array $block, array $bundle)
+	{
+		if (isset($bundle['title']) || isset($bundle['content']))
+		{
+			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+			if (isset($bundle['title']))
+			{
+				foreach ($this->iaCore->languages as $iso => $language)
+				{
+					$title = is_array($bundle['title'])
+						? $bundle['title'][$iso]
+						: $bundle['title'];
+
+					utf8_is_valid($title) || $title = utf8_bad_replace($title);
+
+					iaLanguage::addPhrase(self::LANG_PATTERN_TITLE . $id, $title, $iso, '', iaLanguage::CATEGORY_FRONTEND);
+				}
+			}
+
+			if (isset($bundle['content']))
+			{
+				foreach ($this->iaCore->languages as $iso => $language)
+				{
+					$content = is_array($bundle['content'])
+						? $bundle['content'][$iso]
+						: $bundle['content'];
+
+					if ($block['type'] != self::TYPE_HTML && !utf8_is_valid($content))
+					{
+						$content = utf8_bad_replace($content);
+					}
+
+					iaLanguage::addPhrase(self::LANG_PATTERN_CONTENT . $id, $content, $iso, '', iaLanguage::CATEGORY_FRONTEND);
+				}
+			}
+		}
+
+		if (isset($bundle['pages']) && is_array($bundle['pages']))
+		{
+			$this->setVisibility($id, $block['sticky'], $this->_preparePages($bundle['pages']));
+		}
+	}
+
 	public function delete($id, $log = true)
 	{
-		$iaDb = &$this->iaDb;
+		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
 
-		$row = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
 		$title = self::LANG_PATTERN_TITLE . $id;
 		$title = iaLanguage::exists($title) ? iaLanguage::get($title) : $row['title'];
 
@@ -257,11 +241,10 @@ class iaBlock extends abstractPlugin
 
 		if ($result)
 		{
-			$iaDb->delete('`object_type` = :object && `object` = :id', self::getPagesTable(), array('id' => $id, 'object' => 'blocks'));
-			$iaDb->delete('`key` = :title OR `key` = :content', iaLanguage::getTable(), array(
-				'title' => self::LANG_PATTERN_TITLE . $id,
-				'content' => self::LANG_PATTERN_CONTENT . $id
-			));
+			$this->iaDb->delete('`object_type` = :object AND `object` = :id', self::getPagesTable(),
+				array('id' => $id, 'object' => 'blocks'));
+			$this->iaDb->delete('`key` = :title OR `key` = :content', iaLanguage::getTable(),
+				array('title' => self::LANG_PATTERN_TITLE . $id, 'content' => self::LANG_PATTERN_CONTENT . $id));
 
 			if ($log)
 			{

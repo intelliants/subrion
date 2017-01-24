@@ -96,78 +96,69 @@ Ext.onReady(function()
 	}
 	else
 	{
-		var $type = $('#input-block-type');
-
-		$type.on('change', function()
+		$('#input-block-type').on('change', function()
 		{
+			$(this).next().html($('option:selected', this).data('tip'));
 			$('#pages').hide();
+
 			var type = $(this).val();
 
-			if ('html' == type)
-			{
-				$('textarea.js-ckeditor').each(function()
-				{
-					intelli.ckeditor($(this).attr('id'), {toolbar: 'Extended', height: '400px'});
-				});
-			}
-			else
-			{
-				$.each(CKEDITOR.instances, function(i, o)
-				{
-					o.destroy();
-				});
-			}
-
-			var $jsExternalRow = $('#js-external-row');
+			var $externalRow = $('#js-external-row'),
+				$contentDynamic = $('#js-content-dynamic'),
+				$contentStatic = $('#js-content-static');
 
 			if ('php' == type || 'smarty' == type)
 			{
-				$jsExternalRow.show();
-				initEditArea();
+				$('#frame_input-content').length > 0 ||
+				eAL.init({id: 'input-content', start_highlight: true, allow_resize: 'yes', allow_toggle: true,
+					syntax: 'php', toolbar: 'search, go_to_line, |, undo, redo', min_height: 350});
+
+				$contentDynamic.show();
+				$externalRow.show();
 			}
 			else
 			{
-				$('#external_filename').hide();
-				$jsExternalRow.bootstrapSwitch('setState', 0);
-				$jsExternalRow.hide();
+				eAL.toggle_off('input-content');
+				$('#EditAreaArroundInfos_input-content').hide();
 
-				eAL.toggle_off('multi_contents');
-				$('#EditAreaArroundInfos_multi_contents').hide();
+				if ('html' == type)
+				{
+					$('textarea.js-ckeditor').each(function()
+					{
+						intelli.ckeditor($(this).attr('id'), {toolbar: 'extended', height: '400px'});
+					});
+				}
+				else
+				{
+					$.each(CKEDITOR.instances, function(i, o)
+					{
+						o.destroy();
+					});
+				}
+
+				$contentDynamic.hide();
+				$externalRow.hide().bootstrapSwitch('setState', 0);
 			}
 
-			$('span', $(this).next()).hide().filter('[data-type="' + type + '"]').show();
+			$contentDynamic.is(':visible') ? $contentStatic.hide() : $contentStatic.show();
 		}).change();
 
-		// Block visibility
 		$('#sticky').on('change', function()
 		{
-			var $this = $(this);
-
-			if ($this.is(':checked'))
-			{
-				$('.js-visibility-hidden').show();
-				$('.js-visibility-visible').hide();
-			}
-			else
-			{
-				$('.js-visibility-hidden').hide();
-				$('.js-visibility-visible').show();
-			}
+			$(this).closest('.col').find('p.help-block').hide()
+				.filter('[data-sticky="' + ($(this).is(':checked') ? '1' : '0') + '"]').show();
 		}).change();
 
 		$('#external').change(function()
 		{
-			if ($(this).val() == 0)
-			{
-				$('#js-multilingual-content-row').show();
-				$('#external_filename').hide();
-			}
-			else
-			{
-				$('#js-multilingual-content-row').hide();
-				$('#external_filename').show();
-			}
-		}).change();
+			var enabled = $(this).is(':checked');
+
+			var $rowContent = $('#js-row-dynamic-content'),
+				$rowFilename = $('#js-row-external-file-name');
+
+			enabled ? $rowContent.hide() : $rowContent.show();
+			enabled ? $rowFilename.show() : $rowFilename.hide();
+		});
 
 /* TEMPORARILY DISABLED FOR FUTURE IMPLEMENTATION
 
@@ -352,37 +343,3 @@ Ext.onReady(function()
 		});
 	});
 });
-
-function initContentBox(o)
-{
-	var name = 'contents_' + o.lang;
-
-	if ('html' == $('#input-block-type').val())
-	{
-		CKEDITOR.instances[name] || intelli.ckeditor(name, {toolbar: 'Extended'});
-	}
-	else
-	{
-		if (CKEDITOR.instances[name])
-		{
-			CKEDITOR.instances[name].destroy();
-		}
-	}
-
-	var $group = $('#blocks_contents_' + o.lang);
-	o.checked ? $group.show() : $group.hide();
-}
-
-function initEditArea()
-{
-	editAreaLoader.init(
-	{
-		id: 'multi_contents',
-		start_highlight: true,
-		allow_resize: 'yes',
-		allow_toggle: true,
-		syntax: 'php',
-		toolbar: 'search, go_to_line, |, undo, redo',
-		min_height: 350
-	});
-}

@@ -86,7 +86,6 @@ CREATE TABLE `{install:prefix}api_tokens` (
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}blocks`;
 CREATE TABLE `{install:prefix}blocks` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
-	`title` varchar(64) NOT NULL,
 	`name` varchar(30) NOT NULL,
 	`contents` text,
 	`order` smallint(5) unsigned NOT NULL,
@@ -99,8 +98,6 @@ CREATE TABLE `{install:prefix}blocks` (
 	`collapsed` tinyint(1) unsigned NOT NULL default 0,
 	`sticky` tinyint(1) unsigned NOT NULL,
 	`rss` tinytext NOT NULL,
-	`multilingual` tinyint(1) unsigned NOT NULL,
-	`lang` char(2) NOT NULL default '',
 	`tpl` varchar(64) NOT NULL default '',
 	`external` tinyint(1) NOT NULL default 0,
 	`filename` text,
@@ -858,12 +855,12 @@ INSERT INTO `{install:prefix}admin_pages_groups` (`name`) VALUES
 ('extensions');
 
 INSERT INTO `{install:prefix}blocks` VALUES
-(2,'Inventory Menu','inventory','',0,'inventory','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
-(3,'Main Menu','main','',0,'mainmenu','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
-(4,'Member Menu','account','',0,'right','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
-(5,'Bottom Menu','bottom','',0,'copyright','menu','','active',0,0,0,1,'',1,'','render-menu.tpl','0','',0,'',''),
-(6,'Statistics','common_statistics','',1,'right','smarty','','active',1,0,0,0,'',1,'','',1,'block.common-statistics.tpl',0,'',''),
-(7,'Refine Search','filters','$iaView = &$iaCore->iaView;\r\n\r\nif (($itemName = $iaView->get(''filtersItemName''))\r\n	|| (($itemName = str_replace(''search_'', '''', $iaView->name())) && $itemName != $iaView->name()))\r\n{\r\n	$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\n	echo $iaView->iaSmarty->fetch(''block.filters.tpl'');\r\n}',1,'left','php','','active',1,1,0,1,'',1,'','',0,'',1,'','');
+(2,'inventory','',0,'inventory','menu','','active',0,0,0,1,'','render-menu.tpl',0,'',0,'',''),
+(3,'main','',0,'mainmenu','menu','','active',0,0,0,1,'','render-menu.tpl',0,'',0,'',''),
+(4,'account','',0,'right','menu','','active',0,0,0,1,'','render-menu.tpl',0,'',0,'',''),
+(5,'bottom','',0,'copyright','menu','','active',0,0,0,1,'','render-menu.tpl',0,'',0,'',''),
+(6,'common_statistics','',1,'right','smarty','','active',1,0,0,0,'','',1,'block.common-statistics.tpl',0,'',''),
+(7,'filters','$iaView = &$iaCore->iaView;\r\n\r\nif (($itemName = $iaView->get(''filtersItemName''))\r\n	|| (($itemName = str_replace(''search_'', '''', $iaView->name())) && $itemName != $iaView->name()))\r\n{\r\n	$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\n	echo $iaView->iaSmarty->fetch(''block.filters.tpl'');\r\n}',1,'left','php','','active',1,1,0,1,'','',0,'',1,'','');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
 ('blocks','',6,0),
@@ -1348,7 +1345,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('body_incorrect','Message body or subject is empty.','admin'),
 ('block_contents','Contents','admin'),
 ('block_created','Block created.','admin'),
-('block_languages_empty','No languages selected for non-multilingual block.','admin'),
 ('block_type_tip_html','HTML type is used for formatted HTML display. You can use WYSIWYG editor for your block content. This block can be also used for JavaScript code, but you <span style=\"color: red;\">need to paste it in SOURCE mode</span>','admin'),
 ('block_type_tip_php','PHP is used to have php code in your block content.','admin'),
 ('block_type_tip_plain','Plain type is used when you wish to display simple information. It will be displayed as is with escaping HTML tags.','admin'),
@@ -1628,9 +1624,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('language_locale','Locale','admin'),
 ('language_date_format','Date format','admin'),
 ('language_direction','Direction','admin'),
-('language_direction_auto','Auto','admin'),
-('language_direction_ltr','Left to right','admin'),
-('language_direction_rtl','Right to left','admin'),
+('language_direction_ltr','Left to right (LTR)','admin'),
+('language_direction_rtl','Right to left (RTL)','admin'),
 ('language_already_exists','Language already exists.','admin'),
 ('language_date_format_incorrect','Date format is incorrect.','admin'),
 ('language_locale_incorrect','Language locale is incorrect.','admin'),
@@ -2134,6 +2129,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('more','More','common'),
 ('move','Move','common'),
 ('move_to','Move To:','common'),
+('multilingual_field_is_empty',':field is empty for :lang.','common'),
 
 ('name','Name','common'),
 ('next','Next','common'),
@@ -2414,6 +2410,13 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('youre_in_preview_mode','You are in preview mode. <a href="?preview_exit=y">Exit</a>','frontend');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
+('block_title_2','Inventory Menu','frontend'),
+('block_title_3','Main Menu','frontend'),
+('block_title_4','Member Menu','frontend'),
+('block_title_5','Bottom Menu','frontend'),
+('block_title_6','Statistics','frontend'),
+('block_title_7','Refine Search','frontend'),
+
 ('page_title_adminer','DB Tools','admin'),
 ('page_title_blocks','Blocks','admin'),
 ('page_title_clear_cache','Clear Cache','admin'),

@@ -23,12 +23,13 @@ CKEDITOR.editorConfig = function(config)
 		['Cut', 'Copy', 'Paste','PasteText','PasteFromWord','-','Undo','Redo'],
 		['Link','Unlink'],
 		['Image','MediaEmbed','CodeSnippet','Table','HorizontalRule','SpecialChar'],
-		['Form','Checkbox','Radio','TextField','Textarea','Select','Button','ImageButton','HiddenField'],
+		// ['Form','Checkbox','Radio','TextField','Textarea','Select','Button','ImageButton','HiddenField'],
 		'/',
 		['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
-		['Styles','Format','Font','FontSize'],
-		['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', '-', 'BidiLtr', 'BidiRtl'],
+		['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
 		['NumberedList','BulletedList', '-', 'Outdent', 'Indent'],
+		// '/',
+		['Styles','Format','Font','FontSize'],
 		['TextColor','BGColor']
 	];
 
