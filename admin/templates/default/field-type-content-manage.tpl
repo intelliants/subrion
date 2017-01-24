@@ -167,7 +167,7 @@ $(function($)
 			{/if}
 
 		{case iaField::IMAGE break}
-			{if $value}
+			{if (isset($value.path) && $value.path) || (!isset($value.path) && $value)}
 				<div class="input-group thumbnail thumbnail-single with-actions">
 					<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]">
 						{printImage imgfile=$value.path}

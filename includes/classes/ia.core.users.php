@@ -1005,7 +1005,7 @@ SQL;
 
 			foreach ($fieldNames as $name)
 			{
-				$row[$name] = $row[$name] ? unserialize($row[$name]) : array();
+				$row[$name] = $row[$name] ? unserialize($row[$name]) : array('path' => '', 'title' => '');
 			}
 		}
 
