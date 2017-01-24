@@ -627,6 +627,115 @@ $(function()
 
 		disableMoveButtons();
 	});
+
+	if (typeof Dropzone !== 'undefined') {
+		Dropzone.autoDiscover = false;
+	}
+
+	$('.js-dropzone').each(function () {
+		var $dropzone = $(this);
+		var fieldName = $dropzone.data('field_name');
+		var itemName = $dropzone.data('item_name');
+		var itemId = $dropzone.data('item_id');
+		var submitButtonText = $dropzone.data('submit_btn_text');
+		var values = $dropzone.data('values');
+
+		var dropZone = new Dropzone('#' + $dropzone.attr('id'), {
+			url: intelli.config.admin_url + '/actions/read.json',
+			addRemoveLinks: true,
+			acceptedFiles: 'image/*',
+			parallelUploads: 20,
+			maxFiles: $dropzone.data('max_num'),
+			dictRemoveFile: _t('delete'),
+			dictMaxFilesExceeded: _t('no_more_files'),
+			dictDefaultMessage: _t('drop_files_here'),
+			dictInvalidFileType: _t('field_tooltip_members_avatar'),
+			dictCancelUpload: _t('cancel'),
+			dictCancelUploadConfirmation: _t('cancel_upload_confirmation'),
+			init: function () {
+				var dropZone = this,
+					error = false,
+					errorMessage = '';
+
+				this.on('success', function(file, response) {
+					var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.path + '">');
+					var $name = $('<input type="hidden" name="' + fieldName + '_dropzone_names[]" value="' + response.name + '">');
+					var $size = $('<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">');
+					// var $title = $('<label>{lang key="title"}</label><input type="text" name="' + fieldName + '_dropzone_titles[]">');
+					$(file.previewElement).append($path).append($name).append($size);
+				});
+
+				var $submit = $('.js-btn-submit');
+				this.on('sending', function(file, xhr, formData) {
+					$submit
+						.attr('disabled', true)
+						.html('<span class="fa fa-refresh fa-spin fa-fw"></span><span class="sr-only">' + _t('uploading_please_wait') + '</span> ' + _t('uploading_please_wait'));
+					formData.append('action', 'dropzone-upload-file');
+					formData.append('field_name', fieldName);
+					formData.append('item_name', itemName);
+				});
+
+				this.on('error', function(file) {
+					if ('canceled' != file.status) {
+						error = true;
+						errorMessage = 'error';
+					}
+				});
+
+				this.on('maxfilesexceeded', function() {
+					error = true;
+					errorMessage = 'no_more_files';
+				});
+
+				this.on('removedfile', function(file) {
+					var params = {
+						action: 'dropzone-delete-file',
+						path: $(file.previewElement).children('input[type="hidden"]').val()
+					};
+					if (typeof existingFiles !== 'undefined' && -1 !== existingFiles.indexOf(file.name)) {
+						dropZone.options.maxFiles = dropZone.options.maxFiles + 1;
+						params = {
+							action: 'delete-file',
+							path: $(file.previewElement).children('input[type="hidden"]').val(),
+							item: itemName,
+							field: fieldName,
+							itemid: itemId
+						};
+					}
+					$.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response) {
+						intelli.notifFloatBox({ msg: response.message, type: response.error ? 'error' : 'success', autohide: true });
+					});
+				});
+
+				this.on('queuecomplete', function() {
+					if (error) {
+						message = errorMessage;
+						error = false;
+						errorMessage = '';
+						intelli.notifFloatBox({ msg: _t(message), type: 'error', autohide: true });
+					}
+					$submit.attr('disabled', false);
+					$submit.html(_t(submitButtonText));
+				});
+			}
+		});
+
+		if (typeof values == 'object' && values) {
+			var existingFiles = [], mock;
+			values.forEach(function(file) {
+				mock = { name: file.name, size: file.size };
+				dropZone.emit('addedfile', mock);
+				dropZone.createThumbnailFromUrl(mock, intelli.config.ia_url + 'uploads/' + file.path);
+				var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + file.path + '">');
+				var $name = $('<input type="hidden" name="' + fieldName + '_dropzone_names[]" value="' + file.name + '">');
+				var $size = $('<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + file.size + '">');
+				$(mock.previewElement).append($path).append($name).append($size);
+				dropZone.emit('complete', mock);
+				existingFiles.push(file.name);
+			});
+			dropZone.options.maxFiles = dropZone.options.maxFiles - existingFiles.length;
+		}
+	});
 });
 
 function clearNotification(el)

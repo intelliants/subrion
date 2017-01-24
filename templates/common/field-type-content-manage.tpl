@@ -123,15 +123,15 @@ $(function()
 										<button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 									</div>
 									
-									<a class="thumbnail__image" href="{printImage imgfile=$entry.path url=true type='full'}" rel="ia_lightbox[{$fieldName}]" title="{$entry.title|escape:'html'}">
-										{printImage imgfile=$entry.path title=$entry.title class='img-responsive'}
+									<a class="thumbnail__image" href="{printImage imgfile=$entry.path url=true type='full'}" rel="ia_lightbox[{$fieldName}]">
+										{printImage imgfile=$entry.path class='img-responsive'}
 									</a>
 
-									<div class="caption">
+									{*<div class="caption">
 										<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" data-emptytext="{lang key='empty_image_title'}" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
 									</div>
 
-									<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
+									<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">*}
 									<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path}">
 								</div>
 							</div>

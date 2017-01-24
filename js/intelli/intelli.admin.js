@@ -125,10 +125,6 @@ intelli.admin = function()
 								$(link).closest('.file-upload, .uploads-list-item').remove();
 
 								var counter = $('#' + field);
-								var imagesCount = $('.uploads-list-item', '#' + field + '_upload_list').length;
-								var $dropzoneArea = $('#' + field + '_dropzone');
-								var diff = $dropzoneArea.data('length') - imagesCount;
-								$dropzoneArea.data('max_num', diff);
 
 								try {
 									counter.val(parseInt(counter.val()) + 1);

@@ -52,7 +52,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'send-test-email':
 				return $this->_sendTestEmail();
 
-			case 'dropzone-upload':
+			case 'dropzone-upload-file':
 				if (!is_writable(IA_UPLOADS))
 				{
 					$output['error'] = true;
@@ -62,6 +62,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					$this->_iaCore->factory('util');
 					$iaPicture = $this->_iaCore->factory('picture');
+					$this->_iaCore->factory('field');
 
 					$folderName = iaUtil::getAccountDir();
 					$fieldName = 'file';
@@ -74,10 +75,13 @@ class iaBackendController extends iaAbstractControllerBackend
 					$this->_iaCore->factory('field');
 					$galleryField = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name AND `item` = :item',
 						array('name' => $_POST['field_name'], 'item' => $_POST['item_name']), iaField::getTable());
+					list($fileName,) = iaField::generateFileName($_FILES[$fieldName]['name'], $galleryField['file_prefix'], false);
 
-					if ($imageName = $iaPicture->processImage($_FILES[$fieldName], $path, iaUtil::generateToken(16), $galleryField))
+					if ($filePath = $iaPicture->processImage($_FILES[$fieldName], $path, $fileName, $galleryField))
 					{
-						$output['file_name'] = $imageName;
+						$output['path'] = $filePath;
+						$output['name'] = $fileName;
+						$output['size'] = $_FILES[$fieldName]['size'];
 						$output['error'] = false;
 						$output['message'] = '';
 					}
@@ -86,15 +90,15 @@ class iaBackendController extends iaAbstractControllerBackend
 				$this->_iaCore->iaView->assign($output);
 				break;
 
-			case 'dropzone-delete':
+			case 'dropzone-delete-file':
 				$path = isset($_POST['path']) && $_POST['path'] ? $_POST['path'] : null;
-				$output['result'] = true;
+				$output['error'] = false;
 				$output['message'] = iaLanguage::get('deleted');
 				if ($path)
 				{
 					if (!$this->_iaCore->factory('picture')->delete($path))
 					{
-						$output['result'] = false;
+						$output['error'] = true;
 						$output['message'] = iaLanguage::get('error');
 					}
 				}
