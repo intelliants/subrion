@@ -49,6 +49,8 @@ class iaApi
 
 	protected $_mobilePush;
 
+	protected $_systemEntities = array('migrations');
+
 
 	public function init() {}
 
@@ -171,12 +173,12 @@ class iaApi
 	{
 		$extras = iaCore::instance()->factory('item')->getPackageByItem($name);
 
-		if (!$extras)
+		if (!$extras && !in_array($name, $this->_systemEntities))
 		{
 			throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
 		}
 
-		$entity = (iaCore::CORE == $extras)
+		$entity = (iaCore::CORE == $extras || in_array($name, $this->_systemEntities))
 			? $this->_loadCoreEntity($name)
 			: $this->_loadPackageEntity($extras, $name);
 
