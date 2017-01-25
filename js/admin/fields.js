@@ -589,4 +589,11 @@ $(function()
 	{
 		$('input[name="nodes"]').val(JSON.stringify(data.instance.get_json('#', {flat: true})));
 	});
+
+	$('.js-cmd-toggle-image-setup').on('click', function(e)
+	{
+		e.preventDefault();
+		$('#js-image-field-setup-by-imgtypes, #js-block-image-field-setup-by-settings').toggle();
+		$('input[name="use_img_types"]').val($(this).data('type'));
+	});
 });

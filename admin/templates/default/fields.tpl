@@ -241,52 +241,76 @@
 						</div>
 					</div>
 				{else}
-					<div class="row">
-						<label class="col col-lg-2 control-label">{lang key='file_prefix'}</label>
+					<hr>
+
+					<input type="hidden" name="use_img_types" value="{$item.timepicker}">
+
+					<div class="row" id="js-image-field-setup-by-imgtypes"{if !$item.timepicker} style="display: none;"{/if}>
+						<label class="col col-lg-2 control-label">{lang key='image_types'}</label>
 
 						<div class="col col-lg-4">
-							<input type="text" name="file_prefix" value="{if isset($item.file_prefix)}{$item.file_prefix|escape:'html'}{/if}">
+							{foreach $imageTypes as $imageType}
+								<div class="checkbox">
+									<label><input name="image_types[]" value="{$imageType.id}" type="checkbox"{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
+										{$imageType.name|escape:'html'} &nbsp; <small>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</small></label>
+								</div>
+							{/foreach}
+							<p class="help-block"><a href="#" class="pull-right js-cmd-toggle-image-setup" style="text-decoration: none; border-bottom: 1px dashed;" data-type="0">Use standard settings</a></p>
 						</div>
 					</div>
-					<div class="row">
-						<label class="col col-lg-2 control-label">{lang key='image_width'} / {lang key='image_height'}</label>
 
-						<div class="col col-lg-4">
-							<div class="row">
-								<div class="col col-lg-6">
-									<input type="text" name="image_width" value="{if isset($item.image_width)}{$item.image_width|escape:'html'}{else}900{/if}">
-								</div>
-								<div class="col col-lg-6">
-									<input type="text" name="image_height" value="{if isset($item.image_height)}{$item.image_height|escape:'html'}{else}600{/if}">
+					<div id="js-block-image-field-setup-by-settings"{if $item.timepicker} style="display: none;"{/if}>
+						<div class="row">
+							<label class="col col-lg-2 control-label">{lang key='image_width'} / {lang key='image_height'}</label>
+
+							<div class="col col-lg-4">
+								<div class="row">
+									<div class="col col-lg-6">
+										<input type="text" name="image_width" value="{if isset($item.image_width)}{$item.image_width|escape:'html'}{else}900{/if}">
+									</div>
+									<div class="col col-lg-6">
+										<input type="text" name="image_height" value="{if isset($item.image_height)}{$item.image_height|escape:'html'}{else}600{/if}">
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-					<div class="row">
-						<label class="col col-lg-2 control-label">{lang key='thumb_width'} / {lang key='thumb_height'}</label>
+						<div class="row">
+							<label class="col col-lg-2 control-label">{lang key='thumb_width'} / {lang key='thumb_height'}</label>
 
-						<div class="col col-lg-4">
-							<div class="row">
-								<div class="col col-lg-6">
-									<input type="text" name="thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape:'html'}{else}{$core.config.thumb_w}{/if}">
-								</div>
-								<div class="col col-lg-6">
-									<input type="text" name="thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape:'html'}{else}{$core.config.thumb_h}{/if}">
+							<div class="col col-lg-4">
+								<div class="row">
+									<div class="col col-lg-6">
+										<input type="text" name="thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape:'html'}{else}{$core.config.thumb_w}{/if}">
+									</div>
+									<div class="col col-lg-6">
+										<input type="text" name="thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape:'html'}{else}{$core.config.thumb_h}{/if}">
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-					<div class="row">
-						<label class="col col-lg-2 control-label">{lang key='resize_mode'}</label>
+						<div class="row">
+							<label class="col col-lg-2 control-label">{lang key='resize_mode'}</label>
 
-						<div class="col col-lg-4">
-							<select name="resize_mode">
-								<option value="crop"{if isset($item.resize_mode) && iaPicture::CROP == $item.resize_mode} selected{/if} data-tooltip="{lang key='crop_tip'}">{lang key='crop'}</option>
-								<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-tooltip="{lang key='fit_tip'}">{lang key='fit'}</option>
-							</select>
-							<p class="help-block"></p>
+							<div class="col col-lg-4">
+								<select name="resize_mode">
+									<option value="crop"{if isset($item.resize_mode) && iaPicture::CROP == $item.resize_mode} selected{/if} data-tooltip="{lang key='crop_tip'}">{lang key='crop'}</option>
+									<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-tooltip="{lang key='fit_tip'}">{lang key='fit'}</option>
+								</select>
+								<p class="help-block"></p>
+							</div>
+						</div>
+						<div class="row">
+							<label class="col col-lg-2 control-label">{lang key='file_prefix'}</label>
+
+							<div class="col col-lg-4">
+								<input type="text" name="file_prefix" value="{if isset($item.file_prefix)}{$item.file_prefix|escape:'html'}{/if}">
+
+								<p class="help-block"><a href="#" class="pull-right js-cmd-toggle-image-setup" style="text-decoration: none; border-bottom: 1px dashed;" data-type="1">Use image types instead</a></p>
+							</div>
 						</div>
 					</div>
+
+					<hr>
 				{/if}
 			</div>
 

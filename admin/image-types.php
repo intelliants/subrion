@@ -30,13 +30,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_table = 'image_types';
 
-	protected $_gridColumns = "`id`, `name`, `width`, `height`, `resize_mode`, `cropper`, 1 `update`, 1 `delete`";
+	protected $_gridColumns = array('name', 'width', 'height', 'resize_mode', 'cropper');
 	protected $_gridFilters = array('name' => self::LIKE, 'id' => self::EQUAL);
 
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
 		list($imageTypes, $entryData['types']) = $this->_getFileTypes($this->getEntryId());
+
 		$iaView->assign('imageTypes', $imageTypes);
 
 		if (isset($_POST['imageTypes']) && $_POST['imageTypes'])
@@ -54,7 +55,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if ($id)
 		{
 			$assignedTypes = $this->_iaDb->one('filetypes', iaDb::convertIds($id), $this->getTable());
-			!$assignedTypes || $assignedTypes = explode(',', $assignedTypes);
+			$assignedTypes && $assignedTypes = explode(',', $assignedTypes);
 		}
 
 		return array($fileTypes, $assignedTypes);
@@ -83,13 +84,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$entry['width'] = (int)$data['width'];
 		$entry['height'] = (int)$data['height'];
+		$entry['resize_mode'] = $data['pic_resize_mode'];
+		$entry['cropper'] = (int)$data['cropper'];
+
 		if (!$entry['width'] || !$entry['height'])
 		{
 			$this->addMessage('error_incorrect_dimensions');
 		}
-
-		$entry['resize_mode'] = $data['pic_resize_mode'];
-		$entry['cropper'] = (int)$data['cropper'];
 
 		return !$this->getMessages();
 	}
