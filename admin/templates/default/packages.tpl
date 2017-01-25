@@ -39,54 +39,52 @@
 								{lang key='compatibility'}: {$package.compatibility}
 							</p>
 
-							<p class="text-muted">{$package.summary}</p>
-
 							<div class="plate-actions clearfix">
 								{if $package.buttons}
 									{if $package.items.install}
 										{access object='admin_page' id='packages' action='install'}
-										<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/install/" href="javascript:;" onclick="installPackage(this,'{$package.name}')" title="{lang key='install'}" class="btn btn-success btn-small"><i class="i-plus-alt"></i></a>
+										<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/install/" href="javascript:;" onclick="installPackage(this,'{$package.name}')" title="{lang key='install'}" class="btn btn-success btn-sm"><i class="i-plus-alt"></i></a>
 										{/access}
 									{/if}
 									{if $package.items.readme}
-										<a href="javascript:;" title="{lang key='documentation'}" onclick="readme('{$package.name}')" class="btn btn-primary btn-small"><i class="i-info"></i></a>
+										<a href="javascript:;" title="{lang key='documentation'}" onclick="readme('{$package.name}')" class="btn btn-primary btn-sm"><i class="i-info"></i></a>
 									{/if}
 									{if $package.items.set_default}
 										{access object='admin_page' id='packages' action='set_default'}
 											{if $core.config.default_package != $package.name}
-												<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/set_default/" href="javascript:;" onclick="setDefault(this)" class="btn btn-primary btn-small" title="{lang key='set_as_default_package'}"><i class="i-loop"></i></a>
+												<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/set_default/" href="javascript:;" onclick="setDefault(this)" class="btn btn-primary btn-sm" title="{lang key='set_as_default_package'}"><i class="i-loop"></i></a>
 											{else}
-												<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$package.name}')" class="btn btn-primary btn-small" title="{lang key='reset_default'}"><i class="i-loop"></i></a>
+												<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$package.name}')" class="btn btn-primary btn-sm" title="{lang key='reset_default'}"><i class="i-loop"></i></a>
 											{/if}
 										{/access}
 									{/if}
 									{if $package.items.upgrade}
 										{access object='admin_page' id='packages' action='upgrade'}
-										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/upgrade/" class="btn btn-success btn-small" title="{lang key='upgrade'}"><i class="i-box-remove"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/upgrade/" class="btn btn-success btn-sm" title="{lang key='upgrade'}"><i class="i-box-remove"></i></a>
 										{/access}
 									{/if}
 									{if $package.items.config}
-										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$package.items.config.url}/#{$package.items.config.anchor}" class="btn btn-primary btn-small" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$package.items.config.url}/#{$package.items.config.anchor}" class="btn btn-primary btn-sm" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
 									{/if}
 									{if $package.items.manage}
-										<a href="{$smarty.const.IA_ADMIN_URL}{$package.items.manage}" class="btn btn-primary btn-small" title="{lang key='manage'}"><i class="i-equalizer"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}{$package.items.manage}" class="btn btn-primary btn-sm" title="{lang key='manage'}"><i class="i-equalizer"></i></a>
 									{/if}
 									{if $package.items.import}
-										<a href="{$smarty.const.IA_ADMIN_URL}database/import/" class="btn btn-primary btn-small" title="{lang key='import'}"><i class="i-database"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}database/import/" class="btn btn-primary btn-sm" title="{lang key='import'}"><i class="i-database"></i></a>
 									{/if}
 									{if $package.items.deactivate}
 										{access object='admin_page' id='packages' action='activate'}
-										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/deactivate/" class="btn btn-danger btn-small" title="{lang key='deactivate'}"><i class="i-switch"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/deactivate/" class="btn btn-danger btn-sm" title="{lang key='deactivate'}"><i class="i-switch"></i></a>
 										{/access}
 									{/if}
 									{if $package.items.activate}
 										{access object='admin_page' id='packages' action='activate'}
-										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/activate/" class="btn btn-success btn-small" title="{lang key='activate'}"><i class="i-switch"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/activate/" class="btn btn-success btn-sm" title="{lang key='activate'}"><i class="i-switch"></i></a>
 										{/access}
 									{/if}
 									{if $package.items.uninstall}
 										{access object='admin_page' id='packages' action='uninstall'}
-										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/uninstall/" class="btn btn-danger btn-small js-uninstall" title="{lang key='uninstall'}"><i class="i-remove-sign"></i></a>
+										<a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/uninstall/" class="btn btn-danger btn-sm js-uninstall" title="{lang key='uninstall'}"><i class="i-remove-sign"></i></a>
 										{/access}
 									{/if}
 								{elseif $package.remote}
