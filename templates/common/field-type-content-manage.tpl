@@ -168,7 +168,6 @@ $(function()
 					</div>
 					<div class="col-md-6">
 						<div class="input-group">
-							<input type="text" class="form-control" placeholder="{lang key='title'}" name="{$fieldName}_title[]" maxlength="100">
 							{if $max_num > 0}
 								<div class="input-group-btn">
 									<button type="button" class="js-add-img btn btn-default"><span class="fa fa-plus"></span></button>
