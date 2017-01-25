@@ -37,7 +37,7 @@
 				<label class="col col-lg-2 control-label">{lang key='resize_mode'}</label>
 
 				<div class="col col-lg-4">
-					<select name="pic_resize_mode">
+					<select name="resize_mode">
 						<option value="crop"{if isset($item.pic_resize_mode) && iaPicture::CROP == $item.pic_resize_mode} selected{/if} data-tooltip="{lang key='crop_tip'}">{lang key='crop'}</option>
 						<option value="fit"{if isset($item.pic_resize_mode) && iaPicture::FIT == $item.pic_resize_mode} selected{/if} data-tooltip="{lang key='fit_tip'}">{lang key='fit'}</option>
 					</select>
@@ -56,10 +56,10 @@
 				<label class="col col-lg-2 control-label">{lang key='allowed_file_types'}</label>
 
 				<div class="col col-lg-4">
-					{foreach $imageTypes as $entry}
+					{foreach $fileTypes as $entry}
 						<div class="checkbox">
 							<label>
-								<input type="checkbox" value="{$entry.id}"{if in_array($entry.id, $item.types)} checked{/if} name="imageTypes[{$entry.id}]">
+								<input type="checkbox" value="{$entry.id}"{if in_array($entry.id, $item.types)} checked{/if} name="fileTypes[{$entry.id}]">
 								{$entry.extension}
 							</label>
 						</div>
@@ -67,9 +67,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="form-actions">
-		<button type="submit" name="save" class="btn btn-primary">{lang key='save'}</button>
+		{include 'fields-system.tpl' noSystemFields=true}
 	</div>
 </form>

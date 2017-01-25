@@ -318,14 +318,20 @@ CREATE TABLE `{install:prefix}hooks` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}image_types`;
 CREATE TABLE `{install:prefix}image_types` (
-	`id` int(11) NOT NULL auto_increment,
+	`id` smallint(5) unsigned NOT NULL auto_increment,
 	`name` varchar(50) NOT NULL,
-	`width` int(11) NOT NULL,
-	`height` int(11) NOT NULL,
+	`width` int(11) unsigned NOT NULL,
+	`height` int(11) unsigned NOT NULL,
 	`resize_mode` enum('crop','fit') NOT NULL default 'crop',
-	`cropper` tinyint(1) NOT NULL default '0',
-	`filetypes` text NOT NULL,
-	UNIQUE KEY `id` (`id`)
+	`cropper` tinyint(1) NOT NULL default 0,
+	PRIMARY KEY (`id`)
+) {install:db_options};
+
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}image_types_filetypes`;
+CREATE TABLE `{install:prefix}image_types_filetypes` (
+  `image_type_id` smallint(5) unsigned NOT NULL,
+  `file_type_id` int(9) unsigned NOT NULL,
+  UNIQUE KEY `UNIQUE` (`image_type_id`,`file_type_id`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}invoices`;
@@ -1235,6 +1241,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('add_drop_table','Add DROP TABLE','admin'),
 ('add_field','Add Field','admin'),
 ('add_fieldgroup','Add Field Group','admin'),
+('add_image_type','Add Image Type','admin'),
 ('add_invoice','Add Invoice','admin'),
 ('add_item_value','Add Item Value','admin'),
 ('add_line','Add line','admin'),
@@ -1446,6 +1453,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('edit_block','Edit Block','admin'),
 ('edit_field','Edit Field ":field"','admin'),
 ('edit_fieldgroup','Edit Field Group','admin'),
+('edit_image_type','Edit Image Type','admin'),
 ('edit_invoice','Edit Invoice','admin'),
 ('edit_language','Edit Language','admin'),
 ('edit_member','Edit Member','admin'),

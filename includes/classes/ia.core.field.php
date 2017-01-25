@@ -59,6 +59,7 @@ class iaField extends abstractCore
 	protected static $_tableFileTypes = 'file_types';
 	protected static $_tableImageTypes = 'image_types';
 	protected static $_tableFieldsImageTypes = 'fields_image_types';
+	protected static $_tableImageTypesFileTypes = 'image_types_filetypes';
 
 
 	public static function getTableGroups()
@@ -74,6 +75,11 @@ class iaField extends abstractCore
 	public static function getTableRelations()
 	{
 		return self::$_tableRelations;
+	}
+
+	public static function getTableImageTypesFileTypes()
+	{
+		return self::$_tableImageTypesFileTypes;
 	}
 
 
@@ -449,8 +455,10 @@ SQL;
 		$this->iaCore->factory('util');
 		iaUtil::loadUTF8Functions('validation', 'bad');
 
-		foreach ($fields as $fieldName => $field)
+		foreach ($fields as $fieldId => $field)
 		{
+			$fieldName = $field['name'];
+
 			$value = $field['allow_null'] ? null : '';
 			isset($data[$fieldName]) && $value = $data[$fieldName];
 
@@ -663,7 +671,25 @@ SQL;
 								foreach ($_FILES[$fieldName] as $key => $value)
 									$file[$key] = $_FILES[$fieldName][$key][$id];
 
-								$processing = self::$methodName($field, $file, $path);
+								if ($field['timepicker'])
+								{
+									$imageTypeIds = $this->getImageTypesByFieldId($field['id']);
+									$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+
+									foreach ($this->getImageTypes() as $imageType)
+									{
+										if (!in_array($imageType['id'], $imageTypeIds)
+											|| !in_array($ext, $imageType['extensions'])) continue;
+
+										// TODO: correctly handle return value
+										$processing = self::$methodName($field, $file, $path);
+									}
+								}
+								else
+								{
+									$processing = self::$methodName($field, $file, $path);
+								}
+
 								// 0 - filename, 1 - error, 2 - textual error description
 								if (!$processing[1]) // went smoothly
 								{
@@ -1113,33 +1139,50 @@ SQL;
 	// image types
 	public function getImageTypes()
 	{
-		return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::$_tableImageTypes);
-	}
-
-	public function getImageTypesByFieldId($id)
-	{
 		static $cache;
 
 		if (is_null($cache))
 		{
 			$sql = <<<SQL
-	SELECT it.*,
-		(SELECT GROUP_CONCAT(`extension`) FROM `:prefix:table_file_types` WHERE `id` IN (it.`filetypes`)) `extensions`
+	SELECT it.*, GROUP_CONCAT(ft.`extension`) `extensions`
 	FROM `:prefix:table_image_types` it
-	WHERE it.`field_id` = :id
+	LEFT JOIN `:prefix:table_image_type_file_types` itft ON (itft.`image_type_id` = it.`id`)
+	LEFT JOIN `:prefix:table_file_types` ft ON (ft.`id` IN (itft.`file_type_id`))
+	GROUP BY it.`id`
 SQL;
 
 			$sql = iaDb::printf($sql, array(
 				'prefix' => $this->iaDb->prefix,
 				'table_image_types' => self::$_tableImageTypes,
-				'table_file_types' => self::$_tableFileTypes,
-				'id' => (int)$id
+				'table_image_type_file_types' => self::$_tableImageTypesFileTypes,
+				'table_file_types' => self::$_tableFileTypes
 			));
 
-			$cache = $this->iaDb->getAll($sql);
+			if ($cache = $this->iaDb->getAll($sql))
+			{
+				foreach ($cache as &$entry)
+					$entry['extensions'] = empty($entry['extensions']) ? '' : explode(',', $entry['extensions']);
+			}
 		}
-var_dump($cache);die;
+
 		return $cache;
+	}
+
+	public function getFileTypes($imagesOnly = false)
+	{
+		$where = $imagesOnly ? iaDb::convertIds(1, 'image') : iaDb::EMPTY_CONDITION;
+
+		return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::$_tableFileTypes);
+	}
+
+	public function getFileTypesByImageTypeId($id)
+	{
+		return $this->iaDb->onefield('file_type_id', iaDb::convertIds($id, 'image_type_id'), null, null, self::getTableImageTypesFileTypes());
+	}
+
+	public function getImageTypesByFieldId($id)
+	{
+		return $this->iaDb->onefield('image_type_id', iaDb::convertIds($id, 'field_id'), null, null, self::$_tableFieldsImageTypes);
 	}
 
 	public function saveImageTypesByFieldId($id, array $imageTypeIds)

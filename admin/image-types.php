@@ -34,58 +34,43 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_gridFilters = array('name' => self::LIKE, 'id' => self::EQUAL);
 
 
-	protected function _assignValues(&$iaView, array &$entryData)
+	public function __construct()
 	{
-		list($imageTypes, $entryData['types']) = $this->_getFileTypes($this->getEntryId());
+		parent::__construct();
 
-		$iaView->assign('imageTypes', $imageTypes);
-
-		if (isset($_POST['imageTypes']) && $_POST['imageTypes'])
-		{
-			$entryData['types'] = $_POST['imageTypes'];
-		}
+		$this->setHelper($this->_iaCore->factory('field'));
 	}
 
-	private function _getFileTypes($id = 0)
+	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$fileTypes = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '`image` = 1', 0, null, 'file_types');
+		$entryData['types'] = empty($_POST['fileTypes'])
+			? $this->getHelper()->getFileTypesByImageTypeId($this->getEntryId())
+			: $_POST['fileTypes'];
 
-		// get assigned image types for field
-		$assignedTypes = array();
-		if ($id)
-		{
-			$assignedTypes = $this->_iaDb->one('filetypes', iaDb::convertIds($id), $this->getTable());
-			$assignedTypes && $assignedTypes = explode(',', $assignedTypes);
-		}
-
-		return array($fileTypes, $assignedTypes);
+		$iaView->assign('fileTypes', $this->getHelper()->getFileTypes(true));
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
+		$entry['width'] = (int)$data['width'];
+		$entry['height'] = (int)$data['height'];
+		$entry['resize_mode'] = $data['resize_mode'];
+		//$entry['cropper'] = (int)$data['cropper'];
+
 		if (iaCore::ACTION_ADD == $action)
 		{
 			$entry['name'] = trim(strtolower(iaSanitize::paranoid($data['name'])));
 
-			if (empty($entry['name']))
+			if (!$entry['name'])
 			{
 				$this->addMessage('field_name_invalid');
 			}
 		}
 
-		if (empty($data['imageTypes']))
+		if (empty($data['fileTypes']))
 		{
 			$this->addMessage('error_file_type');
 		}
-		else
-		{
-			$entry['filetypes'] = implode(',', $data['imageTypes']);
-		}
-
-		$entry['width'] = (int)$data['width'];
-		$entry['height'] = (int)$data['height'];
-		$entry['resize_mode'] = $data['pic_resize_mode'];
-		$entry['cropper'] = (int)$data['cropper'];
 
 		if (!$entry['width'] || !$entry['height'])
 		{
@@ -97,6 +82,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
+		$this->_saveFileTypes(isset($data['fileTypes']) ? $data['fileTypes'] : array());
+
 		if (iaCore::ACTION_ADD == $action)
 		{
 			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, array(
@@ -105,5 +92,27 @@ class iaBackendController extends iaAbstractControllerBackend
 				'id' => $this->getEntryId()
 			));
 		}
+	}
+
+	private function _saveFileTypes(array $fileTypes)
+	{
+		$this->_iaDb->setTable(iaField::getTableImageTypesFileTypes());
+
+		$this->_iaDb->delete(iaDb::convertIds($this->getEntryId(), 'image_type_id'));
+
+		foreach ($fileTypes as $typeId)
+			$this->_iaDb->insert(array('image_type_id' => $this->getEntryId(), 'file_type_id' => (int)$typeId));
+
+		$this->_iaDb->resetTable();
+	}
+
+	protected function _entryDelete($entryId)
+	{
+		if ($result = parent::_entryDelete($entryId))
+		{
+			$this->_iaDb->delete(iaDb::convertIds($entryId, 'image_type_id'), iaField::getTableImageTypesFileTypes());
+		}
+
+		return $result;
 	}
 }
