@@ -253,10 +253,9 @@ CREATE TABLE `{install:prefix}fields_groups` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}fields_image_types`;
 CREATE TABLE `{install:prefix}fields_image_types` (
-  `id` int(11) NOT NULL auto_increment,
-  `field_id` int(11) NOT NULL,
-  `image_type_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  `field_id` smallint(5) unsigned NOT NULL,
+  `image_type_id` int(9) unsigned NOT NULL,
+  UNIQUE KEY `UNIQUE` (`field_id`,`image_type_id`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}fields_pages`;
@@ -292,12 +291,12 @@ CREATE TABLE `{install:prefix}fields_tree_nodes` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}file_types`;
 CREATE TABLE `{install:prefix}file_types` (
-	`id` int(11) NOT NULL auto_increment,
+	`id` int(9) unsigned NOT NULL auto_increment,
 	`extension` varchar(10) NOT NULL default '',
-	`maxsize` int(11) NOT NULL default '0',
-	`image` tinyint(4) default '0',
+	`maxsize` int(11) unsigned NOT NULL default 0,
+	`image` tinyint(1) unsigned default 0,
 	PRIMARY KEY (`id`),
-	KEY `extension` (`extension`)
+	KEY `EXTENSION` (`extension`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}hooks`;

@@ -315,12 +315,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['thumb_width'] = (int)$data['thumb_width'];
 					$entry['file_prefix'] = $data['file_prefix'];
 					$entry['resize_mode'] = $data['resize_mode'];
-
-					break;
-
-				case iaField::NUMBER:
-					$entry['length'] = (int)iaUtil::checkPostParam('number_length', 8);
-					$entry['default'] = '';
+					$entry['timepicker'] = (int)$data['use_img_types'];
 
 					break;
 
@@ -332,6 +327,13 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['thumb_width'] = (int)$data['pic_thumb_width'];
 					$entry['file_prefix'] = $data['pic_file_prefix'];
 					$entry['resize_mode'] = $data['pic_resize_mode'];
+					$entry['timepicker'] = (int)$data['use_img_types'];
+
+					break;
+
+				case iaField::NUMBER:
+					$entry['length'] = (int)iaUtil::checkPostParam('number_length', 8);
+					$entry['default'] = '';
 
 					break;
 
@@ -375,9 +377,16 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_alterDbTable($entry, $action);
 		$this->_saveRelations($entry, $data);
 
-		if (iaField::TREE == $entry['type'])
+		switch ($entry['type'])
 		{
-			$this->_saveTreeNodes($fieldName, $this->_nodes, $entry);
+			case iaField::IMAGE:
+			case iaField::PICTURES:
+				$imageTypes = array();
+				$entry['timepicker'] && isset($data['image_types']) && $imageTypes = $data['image_types'];
+				$this->getHelper()->saveImageTypesByFieldId($this->getEntryId(), $imageTypes);
+				break;
+			case iaField::TREE:
+				$this->_saveTreeNodes($fieldName, $this->_nodes, $entry);
 		}
 
 		$this->_iaCore->startHook('phpAdminFieldsSaved', array('field' => &$entry, 'iaField' => $this));
@@ -419,6 +428,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			if (iaField::TREE == $entryData['type'])
 			{
 				$entryData['values'] = $this->_getTree($entryData['item'], $entryData['name'], $entryData['values']);
+			}
+			elseif (iaField::IMAGE == $entryData['type'] || iaField::PICTURES == $entryData['type'])
+			{
+				$entryData['image_types'] = $this->getHelper()->getImageTypesByFieldId($this->getEntryId());
 			}
 			elseif ($entryData['values'])
 			{
@@ -484,6 +497,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->assign('pages', $this->_fetchPages($entryData['item']));
 		$iaView->assign('titles', $titles);
 		$iaView->assign('values', $values);
+		$iaView->assign('imageTypes', $this->getHelper()->getImageTypes());
 	}
 
 	protected function _entryUpdate(array $entryData, $entryId)

@@ -56,6 +56,9 @@ class iaField extends abstractCore
 	protected static $_tableGroups = 'fields_groups';
 	protected static $_tablePages = 'fields_pages';
 	protected static $_tableRelations = 'fields_relations';
+	protected static $_tableFileTypes = 'file_types';
+	protected static $_tableImageTypes = 'image_types';
+	protected static $_tableFieldsImageTypes = 'fields_image_types';
 
 
 	public static function getTableGroups()
@@ -439,43 +442,14 @@ SQL;
 			}
 		}
 
-		// the code block below filters fields based on parent/dependent structure
-		$activeFields = array();
-		$parentFields = array();
-
 		$fields = (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 			? $this->filter($itemName, $itemData)
 			: $this->get($itemName);
 
-		foreach ($fields as $field)
-		{
-			$activeFields[$field['name']] = $field;
-			if (iaField::RELATION_PARENT == $field['relation'])
-			{
-				$parentFields[$field['name']] = $field['children'];
-			}
-		}
-
-		foreach ($parentFields as $fieldName => $dependencies)
-		{
-			if (isset($data[$fieldName]))
-			{
-				$value = $data[$fieldName];
-				foreach ($dependencies as $dependentFieldName => $values)
-				{
-					if (!in_array($value, $values))
-					{
-						unset($activeFields[$dependentFieldName]);
-					}
-				}
-			}
-		}
-		//
-
 		$this->iaCore->factory('util');
 		iaUtil::loadUTF8Functions('validation', 'bad');
 
-		foreach ($activeFields as $fieldName => $field)
+		foreach ($fields as $fieldName => $field)
 		{
 			$value = $field['allow_null'] ? null : '';
 			isset($data[$fieldName]) && $value = $data[$fieldName];
@@ -542,7 +516,7 @@ SQL;
 								}
 
 								utf8_is_valid($string) || $string = utf8_bad_replace($string);
-								$string = (iaField::TEXT == $field['type'])
+								$string = (self::TEXT == $field['type'])
 									? iaSanitize::tags($string)
 									: ($field['use_editor'] ? iaUtil::safeHTML($string) : iaSanitize::tags($string));
 
@@ -555,7 +529,7 @@ SQL;
 						// Check the UTF-8 is well formed
 						utf8_is_valid($value) || $value = utf8_bad_replace($value);
 
-						$item[$fieldName] = (iaField::TEXT == $field['type'])
+						$item[$fieldName] = (self::TEXT == $field['type'])
 							? iaSanitize::tags($value)
 							: ($field['use_editor'] ? iaUtil::safeHTML($value) : iaSanitize::tags($value));
 					}
@@ -718,7 +692,7 @@ SQL;
 
 					break;
 
-				case iaField::DATE:
+				case self::DATE:
 					if ($value = trim($value))
 					{
 						$value = date($field['timepicker'] ? iaDb::DATETIME_FORMAT : iaDb::DATE_FORMAT,
@@ -729,20 +703,20 @@ SQL;
 
 					break;
 
-				case iaField::TREE:
+				case self::TREE:
 					$value && $value = str_replace(' ', '', iaSanitize::tags($value));
 					$item[$fieldName] = $value;
 
 					break;
 
-				case iaField::URL:
+				case self::URL:
 					$validProtocols = array('http://', 'https://');
 					$item[$fieldName] = '';
 
 					if ($field['required']
 						&& (empty($value['url']) || in_array($value['url'], $validProtocols)))
 					{
-						$errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => iaField::getFieldTitle($field['item'], $fieldName)));
+						$errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
 					}
 					else
 					{
@@ -1064,24 +1038,24 @@ SQL;
 
 		switch ($fieldData['type'])
 		{
-			case iaField::DATE:
+			case self::DATE:
 				$result.= 'DATETIME ';
 				break;
-			case iaField::NUMBER:
+			case self::NUMBER:
 				$result.= 'DOUBLE ';
 				break;
-			case iaField::TEXT:
+			case self::TEXT:
 				$result.= 'VARCHAR(' . $fieldData['length'] . ') '
 					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
 				break;
-			case iaField::URL:
-			case iaField::TREE:
+			case self::URL:
+			case self::TREE:
 				$result.= 'TINYTEXT ';
 				break;
-			case iaField::IMAGE:
-			case iaField::STORAGE:
-			case iaField::PICTURES:
-			case iaField::TEXTAREA:
+			case self::IMAGE:
+			case self::STORAGE:
+			case self::PICTURES:
+			case self::TEXTAREA:
 				$result.= 'TEXT ';
 				break;
 			default:
@@ -1089,7 +1063,7 @@ SQL;
 				{
 					$values = explode(',', $fieldData['values']);
 
-					$result.= ($fieldData['type'] == iaField::CHECKBOX) ? 'SET' : 'ENUM';
+					$result.= ($fieldData['type'] == self::CHECKBOX) ? 'SET' : 'ENUM';
 					$result.= "('" . implode("','", $values) . "')";
 
 					if (!empty($fieldData['default']))
@@ -1099,7 +1073,7 @@ SQL;
 				}
 		}
 
-		$result.= in_array($fieldData['type'], array(iaField::COMBO, iaField::RADIO)) ? 'NULL' : 'NOT NULL';
+		$result.= in_array($fieldData['type'], array(self::COMBO, self::RADIO)) ? 'NULL' : 'NOT NULL';
 
 		return $result;
 	}
@@ -1122,5 +1096,49 @@ SQL;
 			$dbTable = $iaItem->getItemTable($field['item']);
 			$this->alterMultilingualColumns($dbTable, $field['name'], $field);
 		}
+	}
+
+	// image types
+	public function getImageTypes()
+	{
+		return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, self::$_tableImageTypes);
+	}
+
+	public function getImageTypesByFieldId($id)
+	{
+		static $cache;
+
+		if (is_null($cache))
+		{
+			$sql = <<<SQL
+	SELECT it.*,
+		(SELECT GROUP_CONCAT(`extension`) FROM `:prefix:table_file_types` WHERE `id` IN (it.`filetypes`)) `extensions`
+	FROM `:prefix:table_image_types` it
+	WHERE it.`field_id` = :id
+SQL;
+
+			$sql = iaDb::printf($sql, array(
+				'prefix' => $this->iaDb->prefix,
+				'table_image_types' => self::$_tableImageTypes,
+				'table_file_types' => self::$_tableFileTypes,
+				'id' => (int)$id
+			));
+
+			$cache = $this->iaDb->getAll($sql);
+		}
+var_dump($cache);die;
+		return $cache;
+	}
+
+	public function saveImageTypesByFieldId($id, array $imageTypeIds)
+	{
+		$this->iaDb->setTable(self::$_tableFieldsImageTypes);
+
+		$this->iaDb->delete(iaDb::convertIds($id, 'field_id'));
+
+		foreach ($imageTypeIds as $imageTypeId)
+			$this->iaDb->insert(array('field_id' => (int)$id, 'image_type_id' => (int)$imageTypeId));
+
+		$this->iaDb->resetTable();
 	}
 }
