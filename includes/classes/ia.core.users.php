@@ -984,23 +984,40 @@ SQL;
 	 */
 	protected function _processValues(array &$rows, $singleRow = false, $fieldNames = array())
 	{
-		if ($this->getItemName())
-		{
-			$iaField = $this->iaCore->factory('field');
-			$fieldNames = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
-		}
+		$iaField = $this->iaCore->factory('field');
+
+		$serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
+		$multilingualFields = $iaField->getMultilingualFields($this->getItemName());
+
 		$singleRow && $rows = array($rows);
 
-		foreach ($rows as &$row)
+		if ($serializedFields || $multilingualFields)
 		{
-			if (!is_array($row) || !$fieldNames)
+			foreach ($rows as &$row)
 			{
-				break;
-			}
+				if (!is_array($row))
+				{
+					break;
+				}
 
-			foreach ($fieldNames as $name)
-			{
-				$row[$name] = $row[$name] ? unserialize($row[$name]) : array('path' => '', 'title' => '');
+				$iaField->filter($this->getItemName(), $row);
+
+				foreach ($serializedFields as $fieldName)
+				{
+					if (isset($row[$fieldName]))
+					{
+						$row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : array('title' => '', 'path' => '');
+					}
+				}
+
+				$currentLangCode = $this->iaCore->language['iso'];
+				foreach ($multilingualFields as $fieldName)
+				{
+					if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName]))
+					{
+						$row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
+					}
+				}
 			}
 		}
 
