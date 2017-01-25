@@ -48,7 +48,7 @@
 							<div class="input-group">
 								<input class="form-control" type="text" name="amount" id="amount" placeholder="{$core.config.funds_min_deposit}">
 								<span class="input-group-btn">
-									<button class="btn btn-primary" type="submit">{lang key='add_funds'}</button>
+									<button class="btn btn-primary" type="submit"><span class="fa fa-plus"></span> {lang key='add'}</button>
 								</span>
 							</div>
 						</div>

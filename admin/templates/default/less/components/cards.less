@@ -53,25 +53,31 @@
 
   .media-body {
     padding: 20px;
+
+    .text-muted {
+      font-size: 12px;
+    }
   }
 
   &__heading {
-    height: 48px;
+    height: 40px;
     overflow: hidden;
 
     h4 {
-      font-size: 22px;
-      line-height: 24px;
+      font-size: 18px;
+      line-height: 20px;
       margin: 0;
     }
   }
 
   &__image {
     position: relative;
-    // padding: 20px;
+    padding: 20px 20px 0;
+    overflow: hidden;
 
     > a {
       display: block;
+      text-decoration: none;
     }
 
     img {
@@ -86,67 +92,67 @@
 
   &__badge {
     position: absolute;
-      bottom: 40px;
-      left: 20px;
-      background: @badge-bg;
-      font-size: 12px;
-      color: #fff;
-      padding: 4px 12px;
+    bottom: 20px;
+    left: 20px;
+    background: @badge-bg;
+    font-size: 12px;
+    color: #fff;
+    padding: 4px 12px;
 
-      &:after,
+    &:after,
+    &:before {
+      content: '';
+      display: block;
+      position: absolute; left: 100%; top: 0;
+      width: 0px;
+      height: 0px;
+      border-style: solid;
+      border-width: 14px 14px 0 0;
+      border-color: @badge-bg transparent transparent transparent;
+    }
+
+    &:after {
+      top: auto; bottom: 0;
+      border-width: 14px 0 0 14px;
+      border-color: transparent transparent transparent @badge-bg;
+    }
+
+    &--premium {
+      background: @badge-premium-bg;
+
       &:before {
-        content: '';
-        display: block;
-        position: absolute; left: 100%; top: 0;
-        width: 0px;
-        height: 0px;
-        border-style: solid;
-        border-width: 14px 14px 0 0;
-        border-color: @badge-bg transparent transparent transparent;
+        border-color: @badge-premium-bg transparent transparent transparent;
       }
 
       &:after {
-        top: auto; bottom: 0;
-        border-width: 14px 0 0 14px;
-        border-color: transparent transparent transparent @badge-bg;
+        border-color: transparent transparent transparent @badge-premium-bg;
+      }
+    }
+
+    &--free {
+      background: @badge-free-bg;
+
+      &:before {
+        border-color: @badge-free-bg transparent transparent transparent;
       }
 
-      &--premium {
-        background: @badge-premium-bg;
+      &:after {
+        border-color: transparent transparent transparent @badge-free-bg;
+      }
+    }
 
-        &:before {
-          border-color: @badge-premium-bg transparent transparent transparent;
-        }
+    &--new {
+      bottom: 44px;
+      background: @badge-new-bg;
 
-        &:after {
-          border-color: transparent transparent transparent @badge-premium-bg;
-        }
+      &:before {
+        border-color: @badge-new-bg transparent transparent transparent;
       }
 
-      &--free {
-        background: @badge-free-bg;
-
-        &:before {
-          border-color: @badge-free-bg transparent transparent transparent;
-        }
-
-        &:after {
-          border-color: transparent transparent transparent @badge-free-bg;
-        }
+      &:after {
+        border-color: transparent transparent transparent @badge-new-bg;
       }
-
-      &--new {
-        bottom: 44px;
-        background: @badge-new-bg;
-
-        &:before {
-          border-color: @badge-new-bg transparent transparent transparent;
-        }
-
-        &:after {
-          border-color: transparent transparent transparent @badge-new-bg;
-        }
-      }
+    }
   }
 
   &__info {
@@ -165,7 +171,7 @@
   &__note {
     position: absolute;
     right: 20px;
-    bottom: 20px;
+    bottom: 0;
     left: 20px;
     background: rgba(0,0,0,0.8);
     color: #fff;

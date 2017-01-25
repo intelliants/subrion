@@ -9,9 +9,9 @@
 	<compatibility>4.1</compatibility>
 
 	<actions>
-		<action name="blogs" url="blog/" icon="list" pages="blog:add,blog:edit">List</action>
-		<action name="blog_add" url="blog/add/" icon="plus" pages="blog:read,blog:edit">Add Blog Entry</action>
-		<action type="dashboard" name="dashboard_blogpost_add" url="blog/add/" icon="quill">New Blog Post</action>
+		<action name="blogposts" url="blog/" icon="list" pages="blog:add,blog:edit"><![CDATA[]]></action>
+		<action name="add_blog_entry" url="blog/add/" icon="plus" pages="blog:read,blog:edit"><![CDATA[]]></action>
+		<action name="dashboard_blogpost_add" url="blog/add/" icon="quill" type="dashboard"><![CDATA[]]></action>
 	</actions>
 
 	<adminpages>
@@ -37,15 +37,15 @@
 	</permissions>
 
 	<phrases>
-		<phrase category="admin" key="blogposts">Blogposts</phrase>
+		<phrase category="admin" key="dashboard_blogpost_add">Add Blog Entry</phrase>
 
 		<phrase category="common" key="add_blog_entry">Add Blog Entry</phrase>
 		<phrase category="common" key="blog">Blog</phrase>
+		<phrase category="common" key="blogposts">Blogposts</phrase>
 		<phrase category="common" key="blog_entry_added">Blog entry added.</phrase>
 		<phrase category="common" key="blog_entry_deleted">Blog entry deleted.</phrase>
 		<phrase category="common" key="body">Body</phrase>
 		<phrase category="common" key="edit_blog_entry">Edit Blog Entry</phrase>
-		<phrase category="common" key="blog">Blog</phrase>
 		<phrase category="common" key="separate_with_comma_or_enter">Use comma or press enter to separate tags</phrase>
 		<phrase category="common" key="tags">Tags</phrase>
 		<phrase category="common" key="title_alias">Title Alias</phrase>
