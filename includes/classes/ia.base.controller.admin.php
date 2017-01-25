@@ -631,7 +631,7 @@ abstract class iaAbstractControllerBackend
 
 	protected function _setPageTitle(&$iaView, array $entryData, $action)
 	{
-		$phraseKey = $action . '_' . substr($this->getName(), 0, -1);
+		$phraseKey = $action . '_' . substr(str_replace('-', '_', $this->getName()), 0, -1);
 
 		$iaView->title(iaLanguage::get($phraseKey, $iaView->title()));
 	}

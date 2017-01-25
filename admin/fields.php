@@ -117,6 +117,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'required' => false,
 			'length' => iaField::DEFAULT_LENGTH,
 			'searchable' => false,
+			'timepicker' => false,
 			'default' => '',
 			'status' => iaCore::STATUS_ACTIVE,
 			'pages' => array()
