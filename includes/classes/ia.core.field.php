@@ -590,11 +590,13 @@ SQL;
 								$newPictures = array();
 								foreach ($pictures as $i => $picture)
 								{
+									$fileName = empty($data[$names][$i]) ? '' : $data[$names][$i];
+									iaSanitize::filenameEscape($fileName);
 									$newPictures[] = array(
 										//'title' => $data[$titles][$i],
 										'path' => $picture,
-										'name' => empty($data[$names][$i]) ? '' : $data[$names][$i],
-										'size' => empty($data[$sizes][$i]) ? '' : $data[$sizes][$i],
+										'name' => $fileName,
+										'size' => empty($data[$sizes][$i]) ? '' : (int)$data[$sizes][$i],
 									);
 								}
 
@@ -669,6 +671,16 @@ SQL;
 										'title' => (isset($data[$fieldName . '_title'][$id]) ? substr(trim($data[$fieldName . '_title'][$id]), 0, 100) : ''),
 										'path' => $processing[0]
 									);
+
+									if (self::PICTURES == $field['type'])
+									{
+										iaSanitize::filenameEscape($file['name']);
+										$fieldValue = array(
+											'path' => $processing[0],
+											'name' => $file['name'],
+											'size' => (int)$file['size'],
+										);
+									}
 
 									if (self::IMAGE == $field['type'])
 									{
