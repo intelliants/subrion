@@ -53,7 +53,7 @@
 					<div class="translate-group__default">
 						<div class="translate-group__item">
 							<input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" value="{if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.masterLanguage.iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
-							<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>
+							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>{/if}
 						</div>
 					</div>
 					<div class="translate-group__langs">
@@ -106,7 +106,7 @@
 					<div class="translate-group__default">
 						<div class="translate-group__item">
 							<textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" rows="5">{if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.masterLanguage.iso}"]|escape:'html'}{/if}</textarea>
-							<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>
+							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>{/if}
 						</div>
 					</div>
 					<div class="translate-group__langs">
@@ -146,7 +146,7 @@ $(function($)
 						<div class="translate-group__item">
 							{$value = {(empty($item["{$fieldName}_{$core.masterLanguage.iso}"])) ? $field.default : $item["{$fieldName}_{$core.masterLanguage.iso}"]}}
 							{ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
-							<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>
+							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>{/if}
 						</div>
 					</div>
 					<div class="translate-group__langs">
