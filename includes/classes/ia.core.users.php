@@ -290,12 +290,7 @@ SQL;
 
 		$row = $iaDb->getRow($sql);
 
-		// FIXME: use _processValues method, anyhow it's static now
-		if (is_array($row) && isset($row['avatar']))
-		{
-			$row['avatar'] = $row['avatar'] ? unserialize($row['avatar']) : array('path' => '', 'title' => '');
-		}
-
+		iaCore::instance()->factory('users')->_processValues($row, true);
 		self::_setIdentity($row);
 
 		return (bool)$row;
