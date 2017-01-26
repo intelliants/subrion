@@ -65,7 +65,7 @@
 						{/if}
 
 						<div class="item-input">
-							<input type="password" class="js-input-password" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:"html"}" />
+							<input type="password" class="js-input-password" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:'html'}" autocomplete="new-password" />
 						</div>
 					{elseif 'text' == $entry.type}
 						{if 'captcha_preview' == $entry.name}
