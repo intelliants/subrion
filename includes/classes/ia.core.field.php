@@ -87,6 +87,16 @@ class iaField extends abstractCore
 		return self::$_tableFieldsImageTypes;
 	}
 
+	public static function getTableFileTypes()
+	{
+		return self::$_tableFileTypes;
+	}
+
+	public static function getTableImageTypes()
+	{
+		return self::$_tableImageTypes;
+	}
+
 
 	public static function getLanguageValue($itemName, $fieldName, $value)
 	{

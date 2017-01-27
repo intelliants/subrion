@@ -121,6 +121,7 @@ class iaExtra extends abstractCore
 			'items' => null,
 			'item_fields' => null,
 			'item_field_groups' => null,
+			'image_types' => null,
 			'objects' => null,
 			'pages' => array(
 				'admin' => null,
@@ -715,23 +716,30 @@ class iaExtra extends abstractCore
 
 		$iaDb = &$this->iaDb;
 
-		$code = $iaDb->row_bind(array('uninstall_code', 'uninstall_sql', 'rollback_data'), '`name` = :name', array('name' => $extraName), self::getTable());
-		$pagesList = $iaDb->onefield('`name`', "`extras` = '{$extraName}'", null, null, 'pages');
-		$iaDb->delete("`page_name` IN ('" . implode("','", $pagesList) . "')", 'menus');
+		$this->iaCore->factory('field');
 
-		if (in_array($this->iaCore->get('home_page'), $pagesList))
-		{
-			$this->iaCore->set('home_page', 'index', true);
-		}
+		$code = $iaDb->row_bind(array('uninstall_code', 'uninstall_sql', 'rollback_data'), '`name` = :name', array('name' => $extraName), self::getTable());
 
 		if ($itemsList = $iaDb->onefield('item', "`package` = '{$extraName}'", null, null, 'items'))
 		{
-			$stmt = "`item` IN ('" . implode("','", $itemsList) . "')";
-			$iaDb->cascadeDelete(array('items_pages', 'favorites', 'views_log'), $stmt);
+			$where = "`item` IN ('" . implode("','", $itemsList) . "')";
+			$iaDb->cascadeDelete(array('items_pages', 'favorites', 'views_log'), $where);
 		}
 
-		if ($pagesList)
+		if ($imageTypeIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($extraName, 'extras'), null, null, iaField::getTableImageTypes()))
 		{
+			$iaDb->cascadeDelete(array(iaField::getTableImageTypesFileTypes(), iaField::getTableFieldsImageTypes()), iaDb::convertIds($imageTypeIds, 'image_type_id'));
+		}
+
+		if ($pagesList = $iaDb->onefield('`name`', "`extras` = '{$extraName}'", null, null, 'pages'))
+		{
+			if (in_array($this->iaCore->get('home_page'), $pagesList))
+			{
+				$this->iaCore->set('home_page', 'index', true);
+			}
+
+			$iaDb->delete("`page_name` IN ('" . implode("','", $pagesList) . "')", 'menus');
+
 			$iaDb->cascadeDelete(array('objects_pages'), "`page_name` IN ('" . implode("','", $pagesList) . "')");
 
 			$iaDb->setTable(iaLanguage::getTable());
@@ -756,11 +764,10 @@ class iaExtra extends abstractCore
 			'acl_objects',
 			'fields_groups',
 			'fields_tree_nodes',
+			iaField::getTableImageTypes(),
 			'cron'
 		);
 		$iaDb->cascadeDelete($tableList, "`extras` = '{$extraName}'");
-
-		$this->iaCore->factory('field');
 
 		$iaDb->setTable(iaField::getTable());
 
@@ -954,6 +961,42 @@ class iaExtra extends abstractCore
 			{
 				$iaDb->insert($entry, array('order' => ++$maxOrder));
 				$this->_addPhrase('pages_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
+			}
+
+			$iaDb->resetTable();
+		}
+
+		if ($this->itemData['image_types'])
+		{
+			$this->iaCore->factory('field');
+
+			$iaDb->setTable(iaField::getTableImageTypes());
+
+			foreach ($this->itemData['image_types'] as $entry)
+			{
+				if (!trim($entry['name'])) continue;
+
+				$entry['name'] = strtolower(iaSanitize::paranoid($entry['name']));
+
+				$extensions = explode(',', $entry['extensions']);
+				unset($entry['extensions']);
+
+				if ($id = $iaDb->insert($entry))
+				{
+					foreach ($extensions as $ext)
+					{
+						if (!$ext = trim($ext)) continue;
+
+						$fileTypeId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION,
+							iaDb::convertIds($ext, 'extension'), iaField::getTableFileTypes());
+
+						if ($fileTypeId)
+						{
+							$this->iaDb->insert(array('image_type_id' => $id, 'file_type_id' => $fileTypeId),
+								null, iaField::getTableImageTypesFileTypes());
+						}
+					}
+				}
 			}
 
 			$iaDb->resetTable();
@@ -1782,7 +1825,7 @@ class iaExtra extends abstractCore
 						'values' => $values,
 						'order' => $this->_attr('order', 0),
 						'item' => $this->_attr('item'),
-						'item_pages' => explode(',', $this->_attr('page')),
+						'item_pages' => $this->_attr('page'),
 						'group' => $this->_attr('group', $this->itemData['name']), // will be changed to the inserted ID by the further code
 						'name' => $this->_attr('name'),
 						'type' => $this->_attr('type'),
@@ -1813,7 +1856,8 @@ class iaExtra extends abstractCore
 						'file_types' => $this->_attr(array('types', 'file_types')),
 						'folder_name' => $this->_attr('folder_name', ''),
 						// keys below will not be actually written to DB and handled manually
-						'multiselection' => $this->_attr('multiselection', false)
+						'multiselection' => $this->_attr('multiselection', false),
+						'image_types' => $this->_attr('image_types')
 						//'numberRangeForSearch' => isset($this->_attributes['numberRangeForSearch']) ? explode(',', $this->_attributes['numberRangeForSearch']) : '',
 					);
 				}
@@ -1987,6 +2031,22 @@ class iaExtra extends abstractCore
 						'title' => $text
 					);
 				}
+				break;
+
+			case 'type':
+				if ($this->_checkPath('imagetypes'))
+				{
+					$this->itemData['image_types'][] = array(
+						'width' => $this->_attr('width'),
+						'height' => $this->_attr('height'),
+						'resize_mode' => $this->_attr('resize_mode', 'crop', array('crop', 'fit')),
+						'cropper' => $this->_attr('cropper', false),
+						'extras' => $this->itemData['name'],
+						'name' => $text,
+						'extensions' => $this->_attr('extensions')
+					);
+				}
+
 		}
 	}
 
@@ -2193,9 +2253,9 @@ class iaExtra extends abstractCore
 
 		$iaField = $this->iaCore->factory('field');
 
-		$fieldGroups = $this->iaDb->keyvalue('CONCAT(`item`, `name`) `key`, `id`', null, $iaField::getTableGroups());
+		$fieldGroups = $this->iaDb->keyvalue('CONCAT(`item`, `name`) `key`, `id`', null, iaField::getTableGroups());
 
-		$this->iaDb->setTable($iaField::getTable());
+		$this->iaDb->setTable(iaField::getTable());
 
 		$dependencies = array();
 
@@ -2250,18 +2310,23 @@ class iaExtra extends abstractCore
 				$entry['values'] = implode(',', array_keys($entry['values']));
 			}
 
-			if (iaField::TREE == $entry['type'])
-			{
-				$entry['timepicker'] = $entry['multiselection'];
-			}
-
-			$fieldPages = $entry['item_pages'] ? $entry['item_pages'] : array();
+			$fieldPages = $entry['item_pages'] ? explode(',', $entry['item_pages']) : array();
+			$imageTypes = $entry['image_types'] ? explode(',', $entry['image_types']) : array();
 			$tableName = $entry['table_name'];
 			$className = $entry['class_name'];
 			$parents = $entry['parent'];
 
+			if (iaField::TREE == $entry['type'])
+			{
+				$entry['timepicker'] = $entry['multiselection'];
+			}
+			elseif (iaField::IMAGE == $entry['type'] || iaField::PICTURES == $entry['type'])
+			{
+				$entry['timepicker'] = (bool)$imageTypes;
+			}
+
 			unset($entry['item_pages'], $entry['table_name'], $entry['class_name'], $entry['parent'],
-				$entry['group'], $entry['title'], $entry['multiselection']);
+				$entry['group'], $entry['title'], $entry['multiselection'], $entry['image_types']);
 
 			$fieldId = $this->iaDb->insert($entry);
 
@@ -2271,7 +2336,19 @@ class iaExtra extends abstractCore
 			$entry['class_name'] = $className;
 
 			foreach ($fieldPages as $pageName)
+			{
+				if (!$pageName = trim($pageName)) continue;
+
 				$this->iaDb->insert(array('page_name' => $pageName, 'field_id' => $fieldId), null, iaField::getTablePages());
+			}
+
+			foreach ($imageTypes as $imageTypeName)
+			{
+				if (!$imageTypeName = trim($imageTypeName)) continue;
+
+				$imageTypeId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($imageTypeName, 'name'), iaField::getTableImageTypes());
+				$imageTypeId && $this->iaDb->insert(array('field_id' => $fieldId, 'image_type_id' => $imageTypeId), null, iaField::getTableFieldsImageTypes());
+			}
 
 			if (iaField::RELATION_DEPENDENT == $entry['relation'] && $parents)
 			{

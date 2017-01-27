@@ -395,7 +395,11 @@ class iaBackendController extends iaAbstractControllerBackend
 			case iaField::IMAGE:
 			case iaField::PICTURES:
 				$imageTypes = array();
-				$entry['timepicker'] && isset($data['image_types']) && $imageTypes = $data['image_types'];
+				if ($entry['timepicker'])
+				{
+					$key = (iaField::IMAGE == $entry['type']) ? 'image_types' : 'pic_image_types';
+					empty($data[$key]) || $imageTypes = $data[$key];
+				}
 				$this->getHelper()->saveImageTypesByFieldId($this->getEntryId(), $imageTypes);
 				break;
 			case iaField::TREE:
