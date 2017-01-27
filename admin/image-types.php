@@ -110,7 +110,10 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		if ($result = parent::_entryDelete($entryId))
 		{
-			$this->_iaDb->delete(iaDb::convertIds($entryId, 'image_type_id'), iaField::getTableImageTypesFileTypes());
+			$where = iaDb::convertIds($entryId, 'image_type_id');
+
+			$this->_iaDb->delete($where, iaField::getTableImageTypesFileTypes());
+			$this->_iaDb->delete($where, iaField::getTableFieldsImageTypes());
 		}
 
 		return $result;

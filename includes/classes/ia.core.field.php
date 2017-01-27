@@ -82,6 +82,11 @@ class iaField extends abstractCore
 		return self::$_tableImageTypesFileTypes;
 	}
 
+	public static function getTableFieldsImageTypes()
+	{
+		return self::$_tableFieldsImageTypes;
+	}
+
 
 	public static function getLanguageValue($itemName, $fieldName, $value)
 	{
@@ -1187,7 +1192,7 @@ SQL;
 
 	public function saveImageTypesByFieldId($id, array $imageTypeIds)
 	{
-		$this->iaDb->setTable(self::$_tableFieldsImageTypes);
+		$this->iaDb->setTable(self::getTableFieldsImageTypes());
 
 		$this->iaDb->delete(iaDb::convertIds($id, 'field_id'));
 

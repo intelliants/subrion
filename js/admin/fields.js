@@ -596,4 +596,11 @@ $(function()
 		$('#js-image-field-setup-by-imgtypes, #js-block-image-field-setup-by-settings').toggle();
 		$('input[name="use_img_types"]').val($(this).data('type'));
 	});
+
+	$('.js-cmd-toggle-gallery-setup').on('click', function(e)
+	{
+		e.preventDefault();
+		$('#js-gallery-field-setup-by-imgtypes, #js-block-gallery-field-setup-by-settings').toggle();
+		$('input[name="pic_use_img_types"]').val($(this).data('type'));
+	});
 });
