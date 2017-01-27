@@ -8,9 +8,20 @@
 
 .alert {
   padding: @alert-padding;
+  padding-left: @alert-padding*3;
   margin-bottom: @line-height-computed;
-  border-left: 3px solid transparent;
+  // border-left: 3px solid transparent;
   border-radius: @alert-border-radius;
+  position: relative;
+
+  &::before {
+    .fa-icon;
+    content: @fa-var-exclamation-circle;
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    font-size: 20px;
+  }
 
   // Headings for larger alerts
   h4 {
@@ -64,6 +75,10 @@
 
 .alert-success {
   .alert-variant(@alert-success-bg; @alert-success-border; @alert-success-text);
+
+  &::before {
+    content: @fa-var-check-circle;
+  }
 }
 
 .alert-info,
@@ -78,6 +93,10 @@
 .alert-danger,
 .alert-error {
   .alert-variant(@alert-danger-bg; @alert-danger-border; @alert-danger-text);
+
+  &::before {
+    content: @fa-var-exclamation-triangle;
+  }
 }
 
 // Mixin for generating new styles
