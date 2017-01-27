@@ -43,6 +43,13 @@ gulp build
 ```
 Compiles LESS and optimizes images.
 
+### Compiling with GUI tools
+
+If you don't want to use Gulp task-runner to process template files, you can use any GUI compilers like [Prepros](https://prepros.io/), [Koala](http://koala-app.com/) or [Simpless](https://wearekiss.com/simpless).
+
+What is important:
+* The main file for compilation is `iabootstrap.less`. It should be compiled to `[root]/templates/kickstart/css/iabootstrap.css`
+
 ### Template styles/elements page
 
 There is a hidden page with all supported elements. You can access it like this:
