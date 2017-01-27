@@ -324,6 +324,7 @@ CREATE TABLE `{install:prefix}image_types` (
 	`height` int(11) unsigned NOT NULL,
 	`resize_mode` enum('crop','fit') NOT NULL default 'crop',
 	`cropper` tinyint(1) NOT NULL default 0,
+  `extras` varchar(40) NOT NULL default '',
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
