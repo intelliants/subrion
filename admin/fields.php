@@ -318,6 +318,12 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['resize_mode'] = $data['resize_mode'];
 					$entry['timepicker'] = (int)$data['use_img_types'];
 
+					if ($entry['timepicker'] && empty($data['image_types']))
+					{
+						$this->addMessage(iaLanguage::getf('field_is_not_selected',
+							array('field' => iaLanguage::get('image_types'))), false);
+					}
+
 					break;
 
 				case iaField::PICTURES:
@@ -328,7 +334,13 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['thumb_width'] = (int)$data['pic_thumb_width'];
 					$entry['file_prefix'] = $data['pic_file_prefix'];
 					$entry['resize_mode'] = $data['pic_resize_mode'];
-					$entry['timepicker'] = (int)$data['use_img_types'];
+					$entry['timepicker'] = (int)$data['pic_use_img_types'];
+
+					if ($entry['timepicker'] && empty($data['pic_image_types']))
+					{
+						$this->addMessage(iaLanguage::getf('field_is_not_selected',
+							array('field' => iaLanguage::get('image_types'))), false);
+					}
 
 					break;
 
@@ -491,6 +503,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$this->_iaCore->startHook('phpAdminFieldsAssignValues', array('entry' => &$entryData));
 
+		$imageTypes = $this->getHelper()->getImageTypes();
+		empty($imageTypes) && iaLanguage::set('no_image_types', iaLanguage::getf('no_image_types',
+			array('url' => IA_ADMIN_URL . 'image-types/add/')));
+
 		$iaView->assign('parents', $parents);
 		$iaView->assign('fieldTypes', $fieldTypes['values']);
 		$iaView->assign('groups', $this->_fetchFieldGroups($entryData['item']));
@@ -498,7 +514,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->assign('pages', $this->_fetchPages($entryData['item']));
 		$iaView->assign('titles', $titles);
 		$iaView->assign('values', $values);
-		$iaView->assign('imageTypes', $this->getHelper()->getImageTypes());
+		$iaView->assign('imageTypes', $imageTypes);
 	}
 
 	protected function _entryUpdate(array $entryData, $entryId)
