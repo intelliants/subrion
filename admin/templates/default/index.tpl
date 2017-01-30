@@ -29,7 +29,7 @@
 
 <div class="row animated-widgets">
 	<div class="col col-lg-6">
-		<div class="widget-block">
+		<div class="widget-block widget-block-group">
 			{foreach $statistics.medium as $itemName => $info}
 			<div class="widget widget-medium" id="widget-{$itemName}">
 				<div class="widget-content">
