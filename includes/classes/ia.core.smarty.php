@@ -76,6 +76,7 @@ class iaSmarty extends Smarty
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'lang', array(__CLASS__, 'lang'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'preventCsrf', array(__CLASS__, 'preventCsrf'));
 		$this->registerPlugin(self::PLUGIN_FUNCTION, 'printImage', array(__CLASS__, 'printImage'));
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_image', array(__CLASS__, 'ia_image'));
 
 		$this->registerPlugin(self::PLUGIN_BLOCK, 'access', array(__CLASS__, 'access'));
 		$this->registerPlugin(self::PLUGIN_BLOCK, 'ia_add_js', array(__CLASS__, 'ia_add_js'));
@@ -588,6 +589,56 @@ class iaSmarty extends Smarty
 			&& $list[] = $title;
 
 		echo implode(', ', $list);
+	}
+
+	public static function ia_image($params)
+	{
+		$iaCore = iaCore::instance();
+
+		if (!empty($params['file']))
+		{
+			switch (true)
+			{
+				case isset($params['type']):
+					$type = $params['type'];
+					break;
+				case isset($params['field']['timepicker']):
+					$type = $params['field']['timepicker'] ? 'original' : 'thumbnail';
+					break;
+				default:
+					$type = 'original';
+			}
+
+			$url = $iaCore->iaView->assetsUrl . 'uploads/' . $params['file']['path'] . $type . '/'
+				. $params['file']['file'];
+		}
+		elseif (isset($params['gravatar']) && $iaCore->get('gravatar_enabled') && isset($params['email']))
+		{
+			$d = $iaCore->get('gravatar_default_image') ? IA_CLEAR_URL . $iaCore->get('gravatar_default_image') : $iaCore->get('gravatar_type');
+			$s = isset($params['gravatar_width']) ? (int)$params['gravatar_width'] : $iaCore->get('gravatar_size');
+			$r = $iaCore->get('gravatar_rating');
+			$p = $iaCore->get('gravatar_secure') ? 'https' : 'http';
+
+			$url = $p . '://www.gravatar.com/avatar/' . md5(strtolower(trim($params['email']))) . "?s=$s&d=$d&r=$r";
+		}
+		else
+		{
+			$url = IA_TPL_URL . 'img/' . (isset($params['gravatar']) ? 'no-avatar.png' : 'no-preview.png');
+		}
+
+		if (isset($params['url']))
+		{
+			return $url;
+		}
+
+		$alt = isset($params['alt']) ? iaSanitize::html($params['alt']) : '';
+
+		$attr = '';
+		empty($params['width']) || $attr.= ' width="' . $params['width'] . '"';
+		empty($params['height']) || $attr.= ' height="' . $params['height'] . '"';
+		empty($params['class']) || $attr.= ' class="' . $params['class'] . '"';
+
+		return sprintf('<img src="%s" alt="%s"%s>', $url, $alt, $attr);
 	}
 
 	/**

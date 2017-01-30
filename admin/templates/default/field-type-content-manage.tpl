@@ -169,11 +169,11 @@ $(function($)
 		{case iaField::IMAGE break}
 			{if (isset($value.path) && $value.path) || (!isset($value.path) && $value)}
 				<div class="input-group thumbnail thumbnail-single with-actions">
-					<a href="{printImage imgfile=$value.path url=true fullimage=true}" rel="ia_lightbox[{$fieldName}]">
-						{printImage imgfile=$value.path}
+					<a href="{ia_image file=$value url=true}" rel="ia_lightbox[{$fieldName}]">
+						{ia_image file=$value field=$field}
 					</a>
 
-					<input type="hidden" name="{$fieldName}[path]" value="{$value.path}">
+					<input type="hidden" name="{$fieldName}[path]" value="{$value.path|escape:'html'}">
 
 					<div class="caption">
 						<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$value.path}',this,'{$field.item}','{$fieldName}','{$id}')"><i class="i-remove-sign"></i></a>

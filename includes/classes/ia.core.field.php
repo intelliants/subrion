@@ -467,13 +467,40 @@ SQL;
 			? $this->filter($itemName, $itemData)
 			: $this->get($itemName);
 
+		// the code block below filters fields based on parent/dependent structure
+		$activeFields = array();
+		$parentFields = array();
+
+		foreach ($fields as $field)
+		{
+			$activeFields[$field['name']] = $field;
+			if (iaField::RELATION_PARENT == $field['relation'])
+			{
+				$parentFields[$field['name']] = $field['children'];
+			}
+		}
+
+		foreach ($parentFields as $fieldName => $dependencies)
+		{
+			if (isset($data[$fieldName]))
+			{
+				$value = $data[$fieldName];
+				foreach ($dependencies as $dependentFieldName => $values)
+				{
+					if (!in_array($value, $values))
+					{
+						unset($activeFields[$dependentFieldName]);
+					}
+				}
+			}
+		}
+		//
+
 		$this->iaCore->factory('util');
 		iaUtil::loadUTF8Functions('validation', 'bad');
 
-		foreach ($fields as $fieldId => $field)
+		foreach ($activeFields as $fieldName => $field)
 		{
-			$fieldName = $field['name'];
-
 			$value = $field['allow_null'] ? null : '';
 			isset($data[$fieldName]) && $value = $data[$fieldName];
 
@@ -650,78 +677,25 @@ SQL;
 								$existImages || $errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
 							}
 
-							// custom folder for uploaded images
-							if (!empty($field['folder_name']))
+							foreach ($_FILES[$fieldName]['tmp_name'] as $i => $tmpName)
 							{
-								$fsPath = IA_UPLOADS . $field['folder_name'];
-								is_dir($fsPath) || mkdir($fsPath);
-
-								$path = $field['folder_name'] . IA_DS;
-							}
-							else
-							{
-								$path = iaUtil::getAccountDir();
-							}
-
-							$item[$fieldName] = isset($data[$fieldName]) ? $value : array();
-
-							// initialize class to work with images
-							$methodName = self::STORAGE == $field['type'] ? '_processFileField' : '_processImageField';
-
-							// process uploaded files
-							foreach ($_FILES[$fieldName]['tmp_name'] as $id => $tmp_name)
-							{
-								if ($_FILES[$fieldName]['error'][$id])
-								{
-									continue;
-								}
+								if ($_FILES[$fieldName]['error'][$i]) continue;
 
 								// files limit exceeded or rewrite image value
-								if (self::IMAGE != $field['type'] && count($item[$fieldName]) >= $field['length'])
+								if (self::IMAGE != $field['type']
+									&& count($item[$fieldName]) >= $field['length']) break;
+
+								try
 								{
-									break;
-								}
+									$fileEntry = $this->processUploadedFile($tmpName, $field, $_FILES[$fieldName]['name'][$i], $_FILES[$fieldName]['type'][$i]);
 
-								$file = array();
-								foreach ($_FILES[$fieldName] as $key => $value)
-									$file[$key] = $_FILES[$fieldName][$key][$id];
-
-								if ($field['timepicker'])
-								{
-									$imageTypeIds = $this->getImageTypesByFieldId($field['id']);
-									$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-
-									foreach ($this->getImageTypes() as $imageType)
-									{
-										if (!in_array($imageType['id'], $imageTypeIds)
-											|| !in_array($ext, $imageType['extensions'])) continue;
-
-										// TODO: correctly handle return value
-										$processing = self::$methodName($field, $file, $path);
-									}
-								}
-								else
-								{
-									$processing = self::$methodName($field, $file, $path);
-								}
-
-								// 0 - filename, 1 - error, 2 - textual error description
-								if (!$processing[1]) // went smoothly
-								{
 									$fieldValue = array(
-										'title' => (isset($data[$fieldName . '_title'][$id]) ? substr(trim($data[$fieldName . '_title'][$id]), 0, 100) : ''),
-										'path' => $processing[0]
+										'title' => (isset($data[$fieldName . '_title'][$i]) ? substr(trim($data[$fieldName . '_title'][$i]), 0, 100) : ''),
+										'path' => $fileEntry['path'],
+										'file' => $fileEntry['file']
 									);
 
-									if (self::PICTURES == $field['type'])
-									{
-										iaSanitize::filenameEscape($file['name']);
-										$fieldValue = array(
-											'path' => $processing[0],
-											'name' => $file['name'],
-											'size' => (int)$file['size'],
-										);
-									}
+									self::PICTURES == $field['type'] && $fieldValue['size'] = $_FILES[$fieldName]['size'][$i];
 
 									if (self::IMAGE == $field['type'])
 									{
@@ -732,9 +706,9 @@ SQL;
 										$item[$fieldName][] = $fieldValue;
 									}
 								}
-								else
+								catch (Exception $e)
 								{
-									$errors[$fieldName] = $processing[2];
+									$errors[$fieldName] = $e->getMessage();
 								}
 							}
 						}
@@ -779,7 +753,7 @@ SQL;
 							$value['url'] = 'http://' . $value['url'];
 						}
 
-						if (iaValidate::isUrl($value['url']))
+						if (in_array($value['url'], $validProtocols) || iaValidate::isUrl($value['url']))
 						{
 							$url = iaSanitize::tags($value['url']);
 							$title = empty($value['title'])
@@ -813,79 +787,116 @@ SQL;
 		return array($item, $error, $messages, $fields);
 	}
 
-	public static function generateFileName($filename = '', $prefix = '', $glue = true)
+	public function processUploadedFile($tmpFile, array $field, $fileName, $mimeType = null)
 	{
-		if (empty($filename))
+		$uploadPath = $field['folder_name'] ? $field['folder_name'] . IA_DS : iaUtil::getAccountDir();
+		$absUploadPath = IA_UPLOADS . $uploadPath;
+
+		iaSanitize::filenameEscape($fileName);
+
+		if ($field['file_prefix'])
 		{
-			return $prefix . (iaUtil::generateToken());
+			$fileName = $field['file_prefix'] . $fileName;
 		}
 
-		$extension = '';
-		if (false !== strpos($filename, '.'))
+		if (is_file($absUploadPath . $fileName)) // first, try to upload under original name
 		{
-			$extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-			$filename = $prefix . pathinfo($filename, PATHINFO_FILENAME);
-
-			if (false !== strpos($filename, '.'))
-			{
-				$filename = str_replace(array('.', '~'), '-', $filename);
-			}
+			$fileName.= '_' . iaUtil::generateToken(5); // if exists, then add unique tail
 		}
-		$filename = iaSanitize::alias($filename) . '_'. iaUtil::generateToken(5);
 
-		return $glue ? $filename . '.' . $extension : array($filename, $extension);
+		switch ($field['type'])
+		{
+			case self::IMAGE:
+			case self::PICTURES:
+				$this->_processImageField($field, $tmpFile, $absUploadPath, $fileName, $mimeType);
+				$this->iaCore->startHook('phpImageFieldProcessed',
+					array('field' => $field, 'path' => $uploadPath, 'image' => &$fileName));
+				break;
+			case self::STORAGE:
+				$this->_processStorageField($field, $tmpFile, $absUploadPath, $fileName);
+		}
+
+		return array('path' => $uploadPath, 'file' => $fileName);
 	}
 
-	protected static function _processFileField(array $field, array $file, $path)
+	protected function _processStorageField(array $field, $tmpFile, $path, $fileName)
 	{
-		$error = false;
-		$message = null;
+		$allowedExtensions = $field['file_types']
+			? explode(',', $field['file_types']) // no need to replace spaces, it's done when setting up a field
+			: array();
 
-		list($filename, $extension) = self::generateFileName($file['name'], $field['file_prefix'], false);
-		$filename = $path . $filename . '.' . $extension;
+		$extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
-		// get available extensions
-		$allowedExtensions = empty($field['file_types']) ? false : explode(',', str_replace(' ', '', $field['file_types']));
-
-		if ($extension && $allowedExtensions && in_array($extension, $allowedExtensions))
+		if (!$extension || !in_array($extension, $allowedExtensions))
 		{
-			move_uploaded_file($file['tmp_name'], IA_UPLOADS . $filename);
-			chmod(IA_UPLOADS . $filename, 0644);
-		}
-		else
-		{
-			$error = true;
-			$message = iaLanguage::getf('file_type_error', array('extension' => $field['file_types']));
+			throw new Exception(iaLanguage::getf('file_type_error', array('extension' => $field['file_types'])));
 		}
 
-		return array($filename, $error, $message);
+		iaUtil::makeDirCascade($path);
+
+		if (!move_uploaded_file($tmpFile, $path . $fileName))
+		{
+			throw new Exception(iaLanguage::get('upload_correct_permission'));
+		}
+
+		chmod($path . $fileName, 0644);
 	}
 
-	protected static function _processImageField(array $field, array $file, $path)
+	protected function _processImageField(array $field, $tmpFile, $path, $fileName, $mimeType)
 	{
-		$error = false;
-		$message = null;
+		$iaPicture = $this->iaCore->factory('picture');
 
-		$iaCore = iaCore::instance();
-		$iaPicture = $iaCore->factory('picture');
-
-		list($filename, ) = self::generateFileName($file['name'], $field['file_prefix'], false);
-
-		$imageName = $iaPicture->processImage($file, $path, $filename, $field);
-
-		if ($imageName)
+		if ($field['timepicker']) // image types enabled field
 		{
-			$imageName = str_replace(IA_DS, '/', $imageName);
+			$imageTypeIds = $this->getImageTypesByFieldId($field['id']);
+			$ext = pathinfo($fileName, PATHINFO_EXTENSION);
 
-			$iaCore->startHook('phpImageFieldProcessed', array('field' => $field, 'image' => &$imageName));
+			$imageTypes = array();
+			$allowedFileExtensions = array();
+			foreach ($this->getImageTypes() as $imageType)
+				in_array($imageType['id'], $imageTypeIds) // check if image type assigned to this field
+				&& in_array($ext, $imageType['extensions']) // check if uploaded file's extension is enabled in settings
+				&& ($imageTypes[] = $imageType) // include image type to processing
+				&& ($allowedFileExtensions = array_merge($allowedFileExtensions, $imageType['extensions']));
 		}
-		else
+		else // standard processing (original, thumbnail & large image)
 		{
-			$error = true;
-			$message = $iaPicture->getMessage();
+			$imageTypes = array(
+				array('name' => 'thumbnail', 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode']),
+				array('name' => 'large', 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode'])
+			);
+
+			$allowedFileExtensions = $iaPicture->getSupportedImageTypes();
 		}
 
-		return array($imageName, $error, $message);
+		if (!$imageTypes)
+		{
+			$this->iaView->setMessages(iaLanguage::get('no_uploaded_files_processed'), iaView::ALERT);
+			return;
+		}
+
+		$allowedFileExtensions = array_unique($allowedFileExtensions);
+
+		$originalFilePath = $path . 'original/';
+
+		// first, put original file into appropriate folder
+		// here we should manipulate the first argument so the file extension check performed correctly
+		$this->_processStorageField(array_merge($field, array('file_types' => implode(',', $allowedFileExtensions))),
+			$tmpFile, $originalFilePath, $fileName);
+
+		$originalFile = $originalFilePath . $fileName;
+
+		// process images according to assigned image types rules
+		foreach ($imageTypes as $imageType)
+		{
+			$imageTypeFolder = $path . $imageType['name'] . IA_DS;
+			iaUtil::makeDirCascade($imageTypeFolder);
+
+			$destinationFile = $imageTypeFolder . $fileName;
+
+			$iaPicture->process($originalFile, $destinationFile, $mimeType, $imageType['width'],
+				$imageType['height'], $imageType['resize_mode'], true);
+		}
 	}
 
 	public function getValues($fieldName, $itemName)
@@ -1176,7 +1187,7 @@ SQL;
 			if ($cache = $this->iaDb->getAll($sql))
 			{
 				foreach ($cache as &$entry)
-					$entry['extensions'] = empty($entry['extensions']) ? '' : explode(',', $entry['extensions']);
+					$entry['extensions'] = empty($entry['extensions']) ? array() : explode(',', $entry['extensions']);
 			}
 		}
 
@@ -1210,5 +1221,10 @@ SQL;
 			$this->iaDb->insert(array('field_id' => (int)$id, 'image_type_id' => (int)$imageTypeId));
 
 		$this->iaDb->resetTable();
+	}
+
+	public function deleteUploadedFile($itemName, $itemId, $fieldName, $imgIndex)
+	{
+
 	}
 }
