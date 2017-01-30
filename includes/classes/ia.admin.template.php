@@ -403,6 +403,9 @@ class iaTemplate extends abstractCore
 				$id = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($entry['name'], 'name'));
 				$entry['order'] = isset($entry['order']) ? $entry['order'] : ++$maxOrder;
 
+				$description = $entry['description'];
+				unset($entry['description']);
+
 				if (!$id || empty($entry['name']))
 				{
 					$this->iaDb->insert($entry);
@@ -416,6 +419,8 @@ class iaTemplate extends abstractCore
 
 					$this->iaDb->update($entry, iaDb::convertIds($id));
 				}
+
+				self::_addPhrase('config_' . $entry['name'], $description, iaLanguage::CATEGORY_ADMIN);
 			}
 
 			$iaDb->resetTable();

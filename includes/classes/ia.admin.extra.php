@@ -408,8 +408,8 @@ class iaExtra extends abstractCore
 						? $iaDb->getMaxOrder() + 1
 						: $action['order'];
 
-					$iaDb->exists('`name` = :name', array('name' => $action['name']))
-						? $iaDb->update($action, "`name` = '{$action['name']}'")
+					$iaDb->exists('`name` = :name && `extras` = :extras', array('name' => $action['name'], 'extras' => $this->itemData['name']))
+						? $iaDb->update($action, "`name` = '{$action['name']}' && `extras` = '{$this->itemData['name']}'")
 						: $iaDb->insert($action);
 				}
 			}
@@ -1013,7 +1013,8 @@ class iaExtra extends abstractCore
 			foreach ($this->itemData['actions'] as $action)
 			{
 				$action['name'] = strtolower(str_replace(' ', '_', $action['name']));
-				if ($action['name'] && !$iaDb->exists('`name` = :name', array('name' => $action['name'])))
+				if ($action['name'] && !$iaDb->exists('`name` = :name && `extras` = :extras',
+						array('name' => $action['name'], 'extras' => $this->itemData['name'])))
 				{
 					$action['order'] = (empty($action['order']) || !is_numeric($action['order']))
 						? $iaDb->getMaxOrder() + 1
@@ -2425,6 +2426,9 @@ class iaExtra extends abstractCore
 			$entry['order'] = isset($entry['order']) ? $entry['order'] : ++$maxOrder;
 			$entry['options'] = json_encode($entry['options']);
 
+			$description = $entry['description'];
+			unset($entry['description']);
+
 			if (!$id || empty($entry['name']))
 			{
 				$this->iaDb->insert($entry);
@@ -2438,6 +2442,8 @@ class iaExtra extends abstractCore
 
 				$this->iaDb->update($entry, iaDb::convertIds($id));
 			}
+
+			self::_addPhrase('config_' . $entry['name'], $description, iaLanguage::CATEGORY_ADMIN);
 		}
 
 		$this->iaDb->resetTable();

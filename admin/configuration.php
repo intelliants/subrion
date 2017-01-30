@@ -482,6 +482,7 @@ SQL;
 		foreach ($params as &$entry)
 		{
 			$entry['options'] = $entry['options'] ? json_decode($entry['options'], true) : array();
+			$entry['description'] = iaLanguage::get('config_' . $entry['name']);
 
 			$className = 'default';
 
