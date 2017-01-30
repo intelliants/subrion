@@ -2248,6 +2248,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('no','No','common'),
 ('no_items','No items.','common'),
 ('no_more_files','You can not upload more files. Limit exceeded.','common'),
+('no_uploaded_files_processed','No uploaded files processed due to file extension restrictions.','common'),
 ('nothing_found','Nothing found.','common'),
 
 ('ok','Ok','common'),

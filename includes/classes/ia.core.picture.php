@@ -31,29 +31,16 @@ class iaPicture extends abstractCore
 {
 	const FIT = 'fit';
 	const CROP = 'crop';
-	const ALLOW_ANIMATED_GIFS = false;
 
-	const SOURCE_PREFIX = 'source_';
-
-	protected static $_typesMap = array(
+	protected $_typesMap = array(
 		'image/gif' => 'gif',
 		'image/jpeg' => 'jpg',
 		'image/pjpeg' => 'jpg',
 		'image/png' => 'png'
 	);
 
+	protected $_allowAnimatedGifs = false;
 
-	/**
-	 * Return image file extension
-	 *
-	 * @param string $fileName file mime type
-	 *
-	 * @return string
-	 */
-	protected static function _getImageExt($fileName)
-	{
-		return array_key_exists($fileName, self::$_typesMap) ? '.' . self::$_typesMap[$fileName] : '';
-	}
 
 	/**
 	 * Generate filename for an uploaded image
@@ -64,18 +51,23 @@ class iaPicture extends abstractCore
 	 *
 	 * @return string
 	 */
-	protected static function _createFilename($name, $ext, $thumb = false)
+	/*protected static function _createFilename($name, $ext, $thumb = false)
 	{
 		return $thumb ? $name . $ext : $name . '~' . $ext;
+	}*/
+
+	public function getSupportedImageTypes()
+	{
+		return $this->_typesMap;
 	}
 
-	protected function _applyWaterMark($image)
+	protected function _applyWaterMark(&$image)
 	{
 		$iaCore = &$this->iaCore;
 
 		if (!$iaCore->get('watermark'))
 		{
-			return $image;
+			return;
 		}
 
 		$watermark_positions = array(
@@ -114,7 +106,8 @@ class iaPicture extends abstractCore
 			$watermarkFile = $iaCore->get('watermark_image') ?
 				IA_UPLOADS . $iaCore->get('watermark_image') :
 				IA_TEMPLATES . $iaCore->get('tmpl') . IA_DS . 'img' . IA_DS . 'watermark.png';
-			if (file_exists($watermarkFile) && !is_dir($watermarkFile))
+
+			if (is_file($watermarkFile) && !is_dir($watermarkFile))
 			{
 				$watermark = ImageWorkshop::initFromPath($watermarkFile);
 				$watermark->opacity($opacity);
@@ -125,131 +118,48 @@ class iaPicture extends abstractCore
 				$watermark->delete();
 			}
 		}
-
-		return $image;
 	}
 
-	/**
-	 * Process image types here and returns filename to write
-	 *
-	 * @param array $aFile uploaded file information
-	 * @param string $folder the file path
-	 * @param string $aName the file name
-	 * @param array $imageInfo image information array: width, height, resize_mode
-	 *
-	 * @return bool|string
-	 * @throws ImageWorkshopException
-	 * @throws Exception
-	 */
-	public function processImage($aFile, $folder, $aName, $imageInfo)
+	public function process($sourceFile, $destinationFile, $mimeType, $width, $height, $resizeMode, $applyWatermark = false)
 	{
-		$ext = self::_getImageExt($aFile['type']);
-
-		if (empty($ext))
-		{
-			$this->setMessage(iaLanguage::getf('file_type_error', array('extension' => implode(', ', array_unique(self::$_typesMap)))));
-
-			return false;
-		}
+		$result = false;
 
 		try {
-			$path = IA_UPLOADS . $folder;
-			$image = ImageWorkshop::initFromPath($aFile['tmp_name']);
-
-			// save source image
-			$image->save($path, self::SOURCE_PREFIX . $aName . $ext);
-
-			// process thumbnails for files uploaded in CKEditor and other tools
-			if (empty($imageInfo))
-			{
-				// apply watermark
-				$image = self::_applyWaterMark($image);
-				$image->save($path, self::_createFilename($aName, $ext));
-
-				return true;
-			}
-
 			// check this is an animated GIF
-			if (self::ALLOW_ANIMATED_GIFS && 'image/gif' == $aFile['type'])
+			if ('image/gif' == $mimeType)
 			{
-				require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifFrameExtractor.php';
-
-				$gifPath = $aFile['tmp_name'];
-				if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($gifPath))
-				{
-					// Extractions of the GIF frames and their durations
-					$gfe = new GifFrameExtractor\GifFrameExtractor();
-					$frames = $gfe->extract($gifPath);
-
-					// For each frame, we add a watermark and we resize it
-					$retouchedFrames = array();
-					$thumbFrames = array();
-					foreach ($frames as $frame)
-					{
-						$frameLayer = ImageWorkshop::initFromResourceVar($frame['image']);
-						$thumbLayer = ImageWorkshop::initFromResourceVar($frame['image']);
-
-						$frameLayer->resizeInPixel($imageInfo['image_width'], $imageInfo['image_height'], true);
-						$frameLayer = self::_applyWaterMark($frameLayer);
-						$retouchedFrames[] = $frameLayer->getResult();
-
-						$thumbLayer->resizeInPixel($imageInfo['thumb_width'], $imageInfo['thumb_height'], true);
-						$thumbFrames[] = $thumbLayer->getResult();
-					}
-
-					// Then we re-generate the GIF
-					require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifCreator.php';
-
-					$gc = new GifCreator\GifCreator();
-					$gc->create($retouchedFrames, $gfe->getFrameDurations(), 0);
-					file_put_contents($path . self::_createFilename($aName, $ext), $gc->getGif());
-
-					$thumbCreator = new GifCreator\GifCreator();
-					$thumbCreator->create($thumbFrames, $gfe->getFrameDurations(), 0);
-					file_put_contents($path . self::_createFilename($aName, $ext, true), $thumbCreator->getGif());
-
-					return self::_createFilename($folder . $aName, $ext, true);
-				}
+				return $this->_processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark);
 			}
 
-			// resize main image
-			$image->cropToAspectRatioInPixel($imageInfo['image_width'], $imageInfo['image_height'], 0, 0, 'MM');
-			$image->resizeInPixel($imageInfo['image_width'], $imageInfo['image_height']);
+			$image = ImageWorkshop::initFromPath($sourceFile);
+
+			// resize image
+			switch ($resizeMode)
+			{
+				case self::FIT:
+					$image->resizeInPixel($width, $height, true, 0, 0, 'MM');
+					break;
+				case self::CROP:
+					$image->cropToAspectRatioInPixel($width, $height, 0, 0, 'MM');
+					$image->resizeInPixel($width, $height);
+			}
 
 			// apply watermark
-			$image = self::_applyWaterMark($image);
-			$image->save($path, self::_createFilename($aName, $ext));
+			//$applyWatermark && self::_applyWaterMark($image);
 
-			// generate thumbnail
-			$thumbWidth = $imageInfo['thumb_width'] ? $imageInfo['thumb_width'] : $this->iaCore->get('thumb_w');
-			$thumbHeight = $imageInfo['thumb_height'] ? $imageInfo['thumb_height'] : $this->iaCore->get('thumb_h');
+			$path = pathinfo($destinationFile, PATHINFO_DIRNAME);
+			$file = pathinfo($destinationFile, PATHINFO_BASENAME);
 
-			// resize thumbnails
-			if ($thumbWidth || $thumbHeight)
-			{
-				$thumb = ImageWorkshop::initFromPath($aFile['tmp_name']);
-				switch ($imageInfo['resize_mode'])
-				{
-					case self::FIT:
-						$thumb->resizeInPixel($thumbWidth, $thumbHeight, true, 0, 0, 'MM');
+			$image->save($path, $file);
 
-						break;
-
-					case self::CROP:
-						$thumb->cropToAspectRatioInPixel($thumbWidth, $thumbHeight, 0, 0, 'MM');
-						$thumb->resizeInPixel($thumbWidth, $thumbHeight);
-				}
-
-				$thumb->save($path, self::_createFilename($aName, $ext, true));
-			}
+			$result = true;
 		}
 		catch (Exception $e)
 		{
-			$this->iaView->setMessages(iaLanguage::get('invalid_image_file'));
-			return false;
+			$this->setMessage(iaLanguage::get('invalid_image_file'));
 		}
 
-		return self::_createFilename($folder . $aName, $ext, true);
+		return $result;
 	}
 
 	/**
@@ -319,5 +229,37 @@ class iaPicture extends abstractCore
 			!file_exists(IA_UPLOADS . $fileThumb) &&
 			!file_exists(IA_UPLOADS . $fileOriginal)
 		);
+	}
+
+	protected function _processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark = false)
+	{
+		require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifFrameExtractor.php';
+
+		if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($sourceFile) && $this->_allowAnimatedGifs)
+		{
+			// Extractions of the GIF frames and their durations
+			$gfe = new GifFrameExtractor\GifFrameExtractor();
+
+			// For each frame, we add a watermark and we resize it
+			$frames = array();
+			foreach ($gfe->extract($sourceFile) as $frame)
+			{
+				$frameLayer = ImageWorkshop::initFromResourceVar($frame['image']);
+
+				$frameLayer->resizeInPixel($width, $height, true);
+				$applyWatermark && self::_applyWaterMark($frameLayer);
+				$frames[] = $frameLayer->getResult();
+			}
+
+			// Then we re-generate the GIF
+			require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifCreator.php';
+
+			$gc = new GifCreator\GifCreator();
+			$gc->create($frames, $gfe->getFrameDurations(), 0);
+
+			return file_put_contents($destinationFile, $gc->getGif());
+		}
+
+		return false;
 	}
 }
