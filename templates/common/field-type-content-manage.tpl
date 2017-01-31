@@ -83,7 +83,7 @@ $(function()
 			{ia_add_media files='moment,datepicker'}
 
 		{case iaField::IMAGE break}
-			{if (isset($value.path) && $value.path) || (!isset($value.path) && $value)}
+			{if $value}
 				<div class="thumbnail">
 					<div class="thumbnail__actions">
 						<button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$value.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
@@ -92,12 +92,14 @@ $(function()
 					{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
 						{ia_image file=$value field=$field width=$field.thumb_width height=$field.thumb_height}
 					{else}
-						<a href="{ia_image file=$value.path field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
+						<a href="{ia_image file=$value field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
 							{ia_image file=$value width=$field.thumb_width height=$field.thumb_height}
 						</a>
 					{/if}
 
-					<input type="hidden" name="{$fieldName}[path]" value="{$value.path}">
+					{foreach $value as $k => $v}
+					<input type="hidden" name="{$fieldName}[{$k}]" value="{$v|escape:'html'}">
+					{/foreach}
 				</div>
 			{/if}
 
@@ -107,36 +109,38 @@ $(function()
 						{lang key='browse'} <input type="file" name="{$fieldName}[]" id="{$name}">
 					</span>
 				</span>
-				<input type="text" class="form-control js-file-name" readonly value="{if $value}{$value.path}{/if}">
+				<input type="text" class="form-control js-file-name" readonly value="{if $value}{$value.file}{/if}">
 			</div>
 
 		{case iaField::PICTURES break}
 			{ia_add_media files='js:bootstrap/js/bootstrap-editable.min, css:_IA_URL_js/bootstrap/css/bootstrap-editable' order=5}
 
 			{if $value}
-					<div class="row upload-items" id="{$fieldName}_upload_list">
-						{foreach $value as $entry}
-							<div class="col-md-4">
-								<div class="thumbnail upload-items__item">
-									<div class="btn-group thumbnail__actions">
-										<span class="btn btn-default btn-sm drag-handle"><span class="fa fa-arrows"></span></span>
-										<button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
-									</div>
-									
-									<a class="thumbnail__image" href="{ia_image file=$entry field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
-										{ia_image file=$entry field=$field class='img-responsive'}
-									</a>
-
-									{*<div class="caption">
-										<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" data-emptytext="{lang key='empty_image_title'}" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
-									</div>
-
-									<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">*}
-									<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path}">
+				<div class="row upload-items" id="{$fieldName}_upload_list">
+					{foreach $value as $entry}
+						<div class="col-md-4">
+							<div class="thumbnail upload-items__item">
+								<div class="btn-group thumbnail__actions">
+									<span class="btn btn-default btn-sm drag-handle"><span class="fa fa-arrows"></span></span>
+									<button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 								</div>
+
+								<a class="thumbnail__image" href="{ia_image file=$entry field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
+									{ia_image file=$entry field=$field class='img-responsive'}
+								</a>
+
+								{*<div class="caption">
+									<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" data-emptytext="{lang key='empty_image_title'}" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
+								</div>
+
+								<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">*}
+								{foreach $entry as $k => $v}
+								<input type="hidden" name="{$fieldName}[{$entry@index}][{$k}]" value="{$v|escape:'html'}">
+								{/foreach}
 							</div>
-						{/foreach}
-					</div>
+						</div>
+					{/foreach}
+				</div>
 
 				{ia_add_js}
 $(function()
@@ -187,11 +191,12 @@ $(function()
 					{foreach $value as $entry}
 						<div class="input-group upload-items__item">
 							<input type="text" class="form-control" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
-							<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path}">
+							<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path|escape:'html'}">
+							<input type="hidden" name="{$fieldName}[{$entry@index}][file]" value="{$entry.file|escape:'html'}">
 							<div class="input-group-btn">
-								<a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{lang key='download'}"><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
+								<a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{lang key='download'}"><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
 								<span class="btn btn-default drag-handle"><span class="fa fa-arrows-v"></span></span>
-								<button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}">{lang key='delete'}</button>
+								<button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file}">{lang key='delete'}</button>
 							</div>
 						</div>
 					{/foreach}

@@ -114,27 +114,30 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				if (!$messages)
 				{
-					if (isset($_FILES['image']['tmp_name']) && $_FILES['image']['tmp_name'])
+					if (isset($_FILES['image']['error']) && !$_FILES['image']['error'])
 					{
-						$iaPicture = $iaCore->factory('picture');
+						$iaField = $iaCore->factory('field');
 
-						$imageInfo = array(
-							'image_width' => $iaCore->get('blog_image_width'),
-							'image_height' => $iaCore->get('blog_image_height'),
-							'thumb_width' => $iaCore->get('blog_thumb_width'),
-							'thumb_height' => $iaCore->get('blog_thumb_height'),
-							'resize_mode' => $iaCore->get('blog_image_resize'),
-						);
-
-						if ($image = $iaPicture->processImage($_FILES['image'], iaUtil::getAccountDir(), iaUtil::generateToken(), $imageInfo))
+						try
 						{
-							if ($entry['image']) // it has an already assigned image
-							{
-								$iaPicture = $iaCore->factory('picture');
-								$iaPicture->delete($entry['image']);
-							}
+							$imagePath = $iaField->uploadImage($_FILES['image'], $iaCore->get('blog_image_width'),
+								$iaCore->get('blog_image_height'), $iaCore->get('blog_thumb_width'),
+								$iaCore->get('blog_thumb_height'), $iaCore->get('blog_image_resize'));
 
-							$entry['image'] = $image;
+							if ($imagePath)
+							{
+								if ($entry['image'])
+								{
+									list($path, $file) = explode('|', $entry['image']);
+									$iaField->deleteUploadedFile($path, $file);
+								}
+
+								$entry['image'] = $imagePath;
+							}
+						}
+						catch (Exception $e)
+						{
+							$messages[] = $e->getMessage();
 						}
 					}
 

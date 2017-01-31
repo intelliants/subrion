@@ -4,7 +4,7 @@
 
 {if isset($field_before[$name])}{$field_before.$name}{/if}
 
-{if $item.$name}
+{if $item[$name]}
 	{capture assign='_field_text'}
 		{switch $type}
 		{case iaField::TEXT break}
@@ -24,13 +24,9 @@
 			{arrayToLang values=$item.$name item=$field.item name=$name}
 
 		{case iaField::STORAGE break}
-			{$value = $item.$name}
-
-			{if $value}
-				{foreach $value as $entry}
-					<a href="{$core.page.nonProtocolUrl}uploads/{$entry.path}">{if $entry.title}{$entry.title|escape:'html'}{else}{lang key='download'} {$entry@iteration}{/if}</a>{if !$entry@last}, {/if}
-				{/foreach}
-			{/if}
+			{foreach $item[$name] as $entry}
+				<a href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}">{if $entry.title}{$entry.title|escape:'html'}{else}{lang key='download'} {$entry@iteration}{/if}</a>{if !$entry@last}, {/if}
+			{/foreach}
 
 		{case iaField::IMAGE break}
 			{$entry = $item.$name}
