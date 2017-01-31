@@ -38,7 +38,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 				return iaView::errorPage(iaView::ERROR_UNAUTHORIZED, iaLanguage::get('do_authorize_to_save_search'));
 			}
 
-			$result = $iaSearch->save($_POST['item'], $_POST['params'], $_POST['name']);
+			$url = str_replace(IA_URL, '', $_POST['params']);
+			$result = $iaSearch->save($_POST['item'], $url, $_POST['name']);
 
 			$iaView->assign('result', $result);
 			$iaView->assign('message', iaLanguage::get($result ? 'saved' : 'db_error'));
