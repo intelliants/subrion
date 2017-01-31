@@ -91,18 +91,20 @@
   position: relative;
   margin-bottom: 30px;
   background-color: @widget-bg;
-  .box-shadow(0 1px 1px rgba(0,0,0,.2));
+  .box-shadow(0 1px 5px rgba(0,0,0,.1));
+  border-radius: 3px;
 
   // Optional header
   &-header {
     position: relative;
     z-index: 500;
-    padding: 10px 15px;
+    padding: 15px 20px;
     margin-bottom: -1px;
     font-size: (@font-size-base * 1.25);
     font-weight: 500;
     background-color: @widget-header-bg;
     border-bottom: 1px solid @widget-header-border;
+    border-radius: 3px 3px 0 0;
     color: @widget-header-color;
 
     small {
@@ -163,7 +165,7 @@
     z-index: 499;
     height: 300px;
     overflow: auto;
-    padding: 16px 15px 16px;
+    padding: 20px 20px 20px;
     color: @text-color;
 
     > *:last-child {
@@ -236,6 +238,7 @@
   &-icon {
     font-size: 50px;
     line-height: 50px;
+    color: @widget-icon-color;
   }
 
   &-total-stats {
@@ -377,6 +380,18 @@
   }
 }
 
+.widget-block-group {
+
+  .widget {
+    &:first-child {
+      border-radius: 3px 0 0 3px;
+    }
+    &:last-child {
+      border-radius: 0 3px 3px 0;
+    }
+  }
+}
+
 .widget-header-form {
   float: right;
   margin: -2px 0 0;
@@ -437,7 +452,7 @@
   &-package {
 
     .widget-content {
-      height: 200px;
+      height: 220px;
     }
   }
 
