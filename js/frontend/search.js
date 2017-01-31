@@ -105,8 +105,7 @@ $(function()
 				return;
 			}
 
-			var location = window.location.pathname + window.location.search + window.location.hash,
-				data = {action: 'save', params: location, item: $filtersForm.data('item'), name: name};
+			var data = {action: 'save', params: window.location.href, item: $filtersForm.data('item'), name: name};
 
 			$.post(intelli.config.ia_url + 'search.json', data, function(response)
 			{
