@@ -189,8 +189,8 @@ $(function($)
 
 		{case iaField::PICTURES break}
 			<div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
-				data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}"
-				data-max_num="{$field.length}" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
+				data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
+				data-imagetype-thumbnail="{$field.imagetype_thumbnail}" data-max_num="{$field.length}" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
 				data-values='{if $value}{json_encode(array_values($value))}{/if}'></div>
 			{ia_add_js}
 $(function()

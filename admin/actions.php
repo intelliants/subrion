@@ -56,18 +56,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				return $this->_dropzoneUpload();
 
 			case 'dropzone-delete-file':
-				$output = array('error' => true, 'message' => iaLanguage::get('error'));
-
-				if (!empty($_POST['path']))
-				{
-					if ($this->_iaCore->factory('picture')->delete($_POST['path']))
-					{
-						$output['error'] = false;
-						$output['message'] = iaLanguage::get('deleted');
-					}
-				}
-
-				return $output;
+				return $this->_dropZoneDelete();
 
 			default:
 				$result = array();
@@ -108,14 +97,48 @@ class iaBackendController extends iaAbstractControllerBackend
 						$field, $_FILES[$fieldName]['name'], $_FILES[$fieldName]['type']);
 
 					$result['size'] = $_FILES[$fieldName]['size'];
-					$result['error'] = false;
-					$result['message'] = null;
+					$result['imagetype'] = $field['imagetype_primary'];
 				}
 				catch (Exception $e)
 				{
 					$result['message'] = $e->getMessage();
 				}
 			}
+		}
+
+		return $result;
+	}
+
+	protected function _dropzoneDelete()
+	{
+		$result = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+
+		if (empty($_POST['field']) || empty($_POST['item']) || empty($_POST['path']) || empty($_POST['file']))
+		{
+			return $result;
+		}
+
+		$iaField = $this->_iaCore->factory('field');
+
+		if ($field = $iaField->getField($_POST['field'], $_POST['item']))
+		{
+			$imageTypeIds = $iaField->getImageTypesByFieldId($field['id']);
+
+			$imageTypes = array();
+			foreach ($iaField->getImageTypes() as $imageType)
+				if (in_array($imageType['id'], $imageTypeIds)) $imageTypes[] = $imageType['name'];
+
+			$file = $_POST['file'];
+			iaSanitize::filenameEscape($file);
+
+			$iaField->deleteUploadedFile($_POST['path'], $file, $imageTypes);
+
+			$result['error'] = false;
+			$result['message'] = iaLanguage::get('deleted');
+		}
+		else
+		{
+			$result['message'] = iaLanguage::get('error');
 		}
 
 		return $result;
