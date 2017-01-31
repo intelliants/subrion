@@ -39,7 +39,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		switch ($_POST['action'])
 		{
 			case 'delete-file':
-				return $this->_deleteFile($_POST);
+				return $this->_deleteUploadedFile($_POST);
 
 			case 'remove-installer':
 				$result = iaUtil::deleteFile(IA_HOME . 'install/modules/module.install.php');
@@ -53,58 +53,21 @@ class iaBackendController extends iaAbstractControllerBackend
 				return $this->_sendTestEmail();
 
 			case 'dropzone-upload-file':
-				if (!is_writable(IA_UPLOADS))
-				{
-					$output['error'] = true;
-					$output['message'] = 'error_directory_readonly';
-				}
-				else
-				{
-					$iaPicture = $this->_iaCore->factory('picture');
-					$this->_iaCore->factory('field');
-
-					$folderName = iaUtil::getAccountDir();
-					$fieldName = 'file';
-					if (!is_dir(IA_UPLOADS . $folderName))
-					{
-						mkdir(IA_UPLOADS . $folderName);
-					}
-					$path = $folderName;
-
-					$this->_iaCore->factory('field');
-					$galleryField = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name AND `item` = :item',
-						array('name' => $_POST['field_name'], 'item' => $_POST['item_name']), iaField::getTable());
-					list($fileName,) = iaField::generateFileName($_FILES[$fieldName]['name'], $galleryField['file_prefix'], false);
-
-					if ($filePath = $iaPicture->processImage($_FILES[$fieldName], $path, $fileName, $galleryField))
-					{
-						$output['path'] = $filePath;
-						$output['name'] = $fileName;
-						$output['size'] = $_FILES[$fieldName]['size'];
-						$output['error'] = false;
-						$output['message'] = '';
-					}
-				}
-
-				$this->_iaCore->iaView->assign($output);
-				break;
+				return $this->_dropzoneUpload();
 
 			case 'dropzone-delete-file':
-				$path = isset($_POST['path']) && $_POST['path'] ? $_POST['path'] : null;
-				$output['error'] = false;
-				$output['message'] = iaLanguage::get('deleted');
-				if ($path)
+				$output = array('error' => true, 'message' => iaLanguage::get('error'));
+
+				if (!empty($_POST['path']))
 				{
-					if (!$this->_iaCore->factory('picture')->delete($path))
+					if ($this->_iaCore->factory('picture')->delete($_POST['path']))
 					{
-						$output['error'] = true;
-						$output['message'] = iaLanguage::get('error');
+						$output['error'] = false;
+						$output['message'] = iaLanguage::get('deleted');
 					}
 				}
 
-				$this->_iaCore->iaView->assign($output);
-
-				break;
+				return $output;
 
 			default:
 				$result = array();
@@ -119,82 +82,59 @@ class iaBackendController extends iaAbstractControllerBackend
 		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 	}
 
-	private function _deleteFile($params)
+	protected function _dropzoneUpload()
+	{
+		$result = array('error' => true, 'message' => 'invalid_parameters');
+
+		is_writable(IA_UPLOADS) || $result['message'] = 'error_directory_readonly';
+
+		if (empty($_POST['field']) || empty($_POST['item']) || empty($_FILES) || !is_writable(IA_UPLOADS))
+		{
+			return $result;
+		}
+
+		$iaField = $this->_iaCore->factory('field');
+
+		if ($field = $iaField->getField($_POST['field'], $_POST['item']))
+		{
+			$fieldName = 'file';
+
+			if (iaField::PICTURES == $field['type'] && iaCore::STATUS_ACTIVE == $field['status']
+				&& isset($_FILES[$fieldName]['error']) && !$_FILES[$fieldName]['error'])
+			{
+				try
+				{
+					$result = $iaField->processUploadedFile($_FILES[$fieldName]['tmp_name'],
+						$field, $_FILES[$fieldName]['name'], $_FILES[$fieldName]['type']);
+
+					$result['size'] = $_FILES[$fieldName]['size'];
+					$result['error'] = false;
+					$result['message'] = null;
+				}
+				catch (Exception $e)
+				{
+					$result['message'] = $e->getMessage();
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	protected function _deleteUploadedFile($params)
 	{
 		$result = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
 
-		$item = isset($params['item']) ? iaSanitize::sql($params['item']) : null;
-		$field = isset($params['field']) ? iaSanitize::sql($params['field']) : null;
-		$path = isset($params['path']) ? iaSanitize::sql($params['path']) : null;
+		$item = isset($params['item']) ? $params['item'] : null;
 		$itemId = isset($params['itemid']) ? (int)$params['itemid'] : null;
+		$field = isset($params['field']) ? $params['field'] : null;
+		$file = isset($params['file']) ? $params['file'] : null;
 
-		if ($itemId && $item && $field && $path)
+		if ($itemId && $item && $field)
 		{
-			$tableName = $this->_iaCore->factory('item')->getItemTable($item);
-			$itemValue = $this->_iaDb->one($field, iaDb::convertIds($itemId), $tableName);
-
-			$iaAcl = $this->_iaCore->factory('acl');
-			if ($iaAcl->isAdmin() && $itemValue)
-			{
-				$pictures = ($itemValue[1] == ':') ? unserialize($itemValue) : $itemValue;
-				$key = null;
-
-				if (is_array($pictures)) // picture gallery
-				{
-					if ($primitive = !is_array($pictures[key($pictures)]))// used to correctly handle the Image type fields (holds the single image)
-					{
-						$pictures = array($pictures);
-					}
-					foreach ($pictures as $k => $v)
-					{
-						if ($path == $v['path'])
-						{
-							$key = $k;
-							break;
-						}
-					}
-					if (!is_null($key))
-					{
-						unset($pictures[$key]);
-					}
-
-					$newItemValue = $primitive ? '' : serialize($pictures);
-				}
-				else
-				{
-					// single image
-					$newItemValue = '';
-					if ($pictures == $path)
-					{
-						$key = true;
-					}
-				}
-
-				if (!is_null($key))
-				{
-					if ($this->_iaCore->factory('picture')->delete($path))
-					{
-						if ($this->_iaDb->update(array($field => $newItemValue), iaDb::convertIds($itemId), null, $tableName))
-						{
-							if (iaUsers::getItemName() == $item)
-							{
-								// update current profile data
-								if ($itemId == iaUsers::getIdentity()->id)
-								{
-									iaUsers::reloadIdentity();
-								}
-							}
-						}
-
-						$result['error'] = false;
-						$result['message'] = iaLanguage::get('deleted');
-					}
-					else
-					{
-						$result['message'] = iaLanguage::get('error');
-					}
-				}
-			}
+			$result = $this->_iaCore->factory('field')->deleteUploadedFileByField($item, $itemId, $field, $file)
+				? array('error' => false, 'message' => iaLanguage::get('deleted'))
+				: array('error' => true, 'message' => iaLanguage::get('error'));
 		}
 
 		return $result;

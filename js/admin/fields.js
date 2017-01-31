@@ -603,4 +603,22 @@ $(function()
 		$('#js-gallery-field-setup-by-imgtypes, #js-block-gallery-field-setup-by-settings').toggle();
 		$('input[name="pic_use_img_types"]').val($(this).data('type'));
 	});
+
+	var $imgFieldImageTypesSetup = $('#js-image-field-setup-by-imgtypes');
+
+	$('.checkbox', $imgFieldImageTypesSetup).hover(
+		function(){if($('input[type="checkbox"]', this).is(':checked'))$('.label', this).removeClass('hide')},
+		function(){$('.label', this).addClass('hide')}
+	);
+
+	$('input[type="checkbox"]', $imgFieldImageTypesSetup).on('click', function()
+	{
+		var $o = $(this).closest('.checkbox').find('a');
+		$(this).is(':checked') ? $o.removeClass('hide') : $o.addClass('hide')
+	});
+
+	$('a', $imgFieldImageTypesSetup).on('click', function(e)
+	{
+
+	});
 });

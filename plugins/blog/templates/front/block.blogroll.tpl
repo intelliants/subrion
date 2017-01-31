@@ -6,7 +6,7 @@
 					<div class="ia-item ia-item--card">
 						{if $one_blog_entry.image}
 							<div class="ia-item__image">
-								<a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{printImage imgfile=$one_blog_entry.image title=$one_blog_entry.title}</a>
+								<a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{ia_image file=$one_blog_entry.image title=$one_blog_entry.title}</a>
 							</div>
 						{/if}
 						<div class="ia-item__content">

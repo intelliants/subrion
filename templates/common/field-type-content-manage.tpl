@@ -90,10 +90,10 @@ $(function()
 					</div>
 
 					{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
-						{printImage imgfile=$value.path width=$field.thumb_width height=$field.thumb_height thumbnail=1}
+						{ia_image file=$value field=$field width=$field.thumb_width height=$field.thumb_height}
 					{else}
-						<a href="{printImage imgfile=$value.path url=true type='full'}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
-							{printImage imgfile=$value.path width=$field.thumb_width height=$field.thumb_height}
+						<a href="{ia_image file=$value.path field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
+							{ia_image file=$value width=$field.thumb_width height=$field.thumb_height}
 						</a>
 					{/if}
 
@@ -123,8 +123,8 @@ $(function()
 										<button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$entry.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 									</div>
 									
-									<a class="thumbnail__image" href="{printImage imgfile=$entry.path url=true type='full'}" rel="ia_lightbox[{$fieldName}]">
-										{printImage imgfile=$entry.path class='img-responsive'}
+									<a class="thumbnail__image" href="{ia_image file=$entry field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
+										{ia_image file=$entry field=$field class='img-responsive'}
 									</a>
 
 									{*<div class="caption">

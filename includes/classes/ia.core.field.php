@@ -45,6 +45,8 @@ class iaField extends abstractCore
 
 	const DEFAULT_LENGTH = 100;
 
+	const UPLOAD_FOLDER_ORIGINAL = 'original';
+
 	const FIELD_TITLE_PHRASE_KEY = 'field_%s_%s';
 	const FIELD_VALUE_PHRASE_KEY = 'field_%s_%s+%s';
 	const FIELD_TOOLTIP_PHRASE_KEY = 'field_tooltip_%s_%s';
@@ -645,7 +647,7 @@ SQL;
 									$newPictures[] = array(
 										//'title' => $data[$titles][$i],
 										'path' => $picture,
-										'name' => $fileName,
+										'file' => $fileName,
 										'size' => empty($data[$sizes][$i]) ? '' : (int)$data[$sizes][$i],
 									);
 								}
@@ -787,14 +789,51 @@ SQL;
 		return array($item, $error, $messages, $fields);
 	}
 
+	/**
+	 *
+	 * Upload images for non fields assigned data
+	 *
+	 * @param array $file $_FILES superglobal item
+	 * @param int $width width of primary image
+	 * @param int $height height of primary image
+	 * @param int $thumbWidth width of thumbnail
+	 * @param int $thumbHeight height of thumbnail
+	 */
+	public function uploadImage(array $file, $width, $height, $thumbWidth, $thumbHeight, $resizeMode)
+	{
+		$field = array(
+			'type' => self::IMAGE,
+			'thumb_width' => $thumbWidth,
+			'thumb_height' => $thumbHeight,
+			'image_width' => $width,
+			'image_height' => $height,
+			'resize_mode' => $resizeMode
+		);
+
+		$imageEntry = $this->processUploadedFile($file['tmp_name'], $field, $file['name']);
+
+		return $imageEntry['path'] . '|' . $imageEntry['file'];
+	}
+
+	/**
+	 *
+	 * Method processed uploaded files assigned to fields
+	 *
+	 * @param string $tmpFile path to the temporary uploaded file
+	 * @param array $field field data to fetch settings from
+	 * @param string $fileName file name for destination file
+	 * @param string/null $mimeType mime type (if available)
+	 *
+	 * @return array array to be serialized and then written to DB
+	 */
 	public function processUploadedFile($tmpFile, array $field, $fileName, $mimeType = null)
 	{
-		$uploadPath = $field['folder_name'] ? $field['folder_name'] . IA_DS : iaUtil::getAccountDir();
+		$uploadPath = empty($field['folder_name']) ? iaUtil::getAccountDir() : $field['folder_name'] . IA_DS;
 		$absUploadPath = IA_UPLOADS . $uploadPath;
 
 		iaSanitize::filenameEscape($fileName);
 
-		if ($field['file_prefix'])
+		if (!empty($field['file_prefix']))
 		{
 			$fileName = $field['file_prefix'] . $fileName;
 		}
@@ -809,7 +848,7 @@ SQL;
 			case self::IMAGE:
 			case self::PICTURES:
 				$this->_processImageField($field, $tmpFile, $absUploadPath, $fileName, $mimeType);
-				$this->iaCore->startHook('phpImageFieldProcessed',
+				$this->iaCore->startHook('phpImageUploaded',
 					array('field' => $field, 'path' => $uploadPath, 'image' => &$fileName));
 				break;
 			case self::STORAGE:
@@ -821,9 +860,9 @@ SQL;
 
 	protected function _processStorageField(array $field, $tmpFile, $path, $fileName)
 	{
-		$allowedExtensions = $field['file_types']
-			? explode(',', $field['file_types']) // no need to replace spaces, it's done when setting up a field
-			: array();
+		$allowedExtensions = empty($field['file_types'])
+			? array()
+			: explode(',', $field['file_types']); // no need to replace spaces, it's done when setting up a field
 
 		$extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
@@ -846,7 +885,7 @@ SQL;
 	{
 		$iaPicture = $this->iaCore->factory('picture');
 
-		if ($field['timepicker']) // image types enabled field
+		if (isset($field['timepicker']) && isset($field['timepicker'])) // image types enabled field
 		{
 			$imageTypeIds = $this->getImageTypesByFieldId($field['id']);
 			$ext = pathinfo($fileName, PATHINFO_EXTENSION);
@@ -1223,8 +1262,109 @@ SQL;
 		$this->iaDb->resetTable();
 	}
 
-	public function deleteUploadedFile($itemName, $itemId, $fieldName, $imgIndex)
+	public function deleteUploadedFile($path, $file, $imageTypes = array('thumbnail', 'large'))
 	{
+		$imageTypes[] = self::UPLOAD_FOLDER_ORIGINAL;
 
+		foreach ($imageTypes as $imageTypeName)
+			iaUtil::deleteFile(IA_UPLOADS . $path . $imageTypeName . '/' . $file);
+	}
+
+	public function deleteUploadedFileByField($itemName, $itemId, $fieldName, $fileName = null)
+	{
+		$tableName = $this->iaCore->factory('item')->getItemTable($itemName);
+		$itemValue = $this->iaDb->one($fieldName, iaDb::convertIds($itemId), $tableName);
+
+		if ($itemValue)
+		{
+			$newValue = $itemValue;
+
+			if ($field = $this->getField($fieldName, $itemName))
+			{
+				$files = unserialize($itemValue);
+
+				switch ($field['type'])
+				{
+					case self::PICTURES:
+					case self::STORAGE:
+						foreach ($files as $i => $fileEntry)
+							if ($fileEntry['file'] == $fileName)
+							{
+								$path = $fileEntry['path'];
+								$file = $fileEntry['file'];
+								unset($files[$i]);
+								break;
+							}
+						break;
+					case self::IMAGE:
+						if ($files['file'] == $fileName)
+						{
+							$path = $files['path'];
+							$file = $files['file'];
+							$files = array();
+							break;
+						}
+				}
+
+				$newValue = $files ? serialize(array_merge($files)) : '';
+
+				if ($newValue != $itemValue)
+				{
+					if (in_array($field['type'], array(self::IMAGE, self::PICTURES)))
+					{
+						if ($field['timepicker']) // image types enabled field
+						{
+							$imageTypeIds = $this->getImageTypesByFieldId($field['id']);
+
+							$imageTypes = array();
+							foreach ($this->getImageTypes() as $imageType)
+								in_array($imageType['id'], $imageTypeIds)
+								&& ($imageTypes[] = $imageType['name']);
+
+							$this->deleteUploadedFile($path, $file, $imageTypes);
+						}
+						else // standard processing (original, thumbnail & large image)
+						{
+							$this->deleteUploadedFile($path, $file);
+						}
+					}
+					else
+					{
+						$this->deleteUploadedFile($path, $file, array());
+					}
+				}
+			}
+			else
+			{
+				if ($fileName == $itemValue)
+				{
+					$newValue = '';
+
+					list($path, $file) = explode('|', $itemValue);
+					$this->deleteUploadedFile($path, $file);
+				}
+			}
+
+			if ($itemValue != $newValue)
+			{
+				if ($this->iaDb->update(array($fieldName => $newValue), iaDb::convertIds($itemId), null, $tableName))
+				{
+					// check if image removed from the entry of currently logged in user
+					// and reload his identity if so
+					iaUsers::getItemName() == $itemName && iaUsers::hasIdentity()
+						&& $itemId == iaUsers::getIdentity()->id && iaUsers::reloadIdentity();
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public function getField($fieldName, $itemName)
+	{
+		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name AND `item` = :item',
+			array('name' => $fieldName, 'item' => $itemName), self::getTable());
 	}
 }

@@ -231,6 +231,8 @@ CREATE TABLE `{install:prefix}fields` (
 	`relation` enum('regular','parent','dependent') NOT NULL default 'regular',
 	`allow_null` tinyint(1) unsigned NOT NULL,
 	`folder_name` varchar(150) NOT NULL,
+  `imagetype_primary` varchar(20) NOT NULL,
+  `imagetype_thumbnail` varchar(20) NOT NULL,
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `UNIQUE` (`name`,`item`)
 ) {install:db_options};

@@ -36,10 +36,10 @@
 			{$entry = $item.$name}
 			<div class="thumbnail" style="width: {$field.thumb_width}px;">
 				{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
-					{printImage imgfile=$entry.path|default:'' title=$entry.title|default:'' width=$field.thumb_width height=$field.thumb_height class='img-responsive'}
+					{ia_image file=$entry field=$field title=$entry.title width=$field.thumb_width height=$field.thumb_height class='img-responsive'}
 				{else}
-					<a class="thumbnail__image" href="{printImage imgfile=$entry.path|default:'' url=true type='full'}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
-						{printImage imgfile=$entry.path|default:'' title=$entry.title|default:''}
+					<a class="thumbnail__image" href="{ia_image file=$entry.path field=$field url=true large=1}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
+						{ia_image file=$entry field=$field title=$entry.title}
 					</a>
 					{if !empty($entry.title)}<div class="caption"><h5>{$entry.title|default:''}</h5></div>{/if}
 				{/if}
@@ -60,7 +60,7 @@
 			<a href="{$value[0]}"{if $field.url_nofollow} rel="nofollow"{/if} target="_blank">{$value[1]|escape:'html'}</a>
 
 		{case iaField::PICTURES break}
-			{if $item.$name}
+			{if $item[$name]}
 				{ia_add_media files='fotorama'}
 				<div id="{$name}" class="ia-gallery">
 					<div class="fotorama" 
@@ -69,8 +69,8 @@
 						 data-ratio="800/400"
 						 data-allowfullscreen="true"
 						 data-fit="cover">
-						{foreach $item.$name as $entry}
-							<a class="ia-gallery__item" {if !empty($entry.title)}data-caption="{$entry.title|escape:'html'}"{/if} href="{printImage imgfile=$entry.path|default:'' url=true type='full'}">{printImage imgfile=$entry.path|default:'' title=$entry.title}</a>
+						{foreach $item[$name] as $entry}
+							<a class="ia-gallery__item"{if !empty($entry.title)} data-caption="{$entry.title|escape:'html'}"{/if} href="{ia_image file=$entry field=$field url=true large=true}">{ia_image file=$entry field=$field title=$entry.title}</a>
 						{/foreach}
 					</div>
 				</div>

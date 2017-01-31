@@ -1006,7 +1006,7 @@ SQL;
 				{
 					if (isset($row[$fieldName]))
 					{
-						$row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : array('title' => '', 'path' => '');
+						$row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : array();
 					}
 				}
 

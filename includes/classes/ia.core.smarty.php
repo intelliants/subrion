@@ -595,22 +595,34 @@ class iaSmarty extends Smarty
 	{
 		$iaCore = iaCore::instance();
 
-		if (!empty($params['file']))
+		if (isset($params['file']) && $params['file'])
 		{
-			switch (true)
+			if (is_array($params['file'])) // treat it as a field
 			{
-				case isset($params['type']):
-					$type = $params['type'];
-					break;
-				case isset($params['field']['timepicker']):
-					$type = $params['field']['timepicker'] ? 'original' : 'thumbnail';
-					break;
-				default:
-					$type = 'original';
-			}
+				switch (true)
+				{
+					case isset($params['type']):
+						$type = $params['type'];
+						break;
+					case isset($params['field']['timepicker']):
+						$type = $params['field']['timepicker']
+							? $params['field'][isset($params['large']) ? 'imagetype_primary' : 'imagetype_thumbnail']
+							: 'thumbnail';
+						break;
+					default:
+						$type = 'original';
+				}
 
-			$url = $iaCore->iaView->assetsUrl . 'uploads/' . $params['file']['path'] . $type . '/'
-				. $params['file']['file'];
+				$url = $iaCore->iaView->assetsUrl . 'uploads/' . $params['file']['path'] . $type . '/'
+					. $params['file']['file'];
+			}
+			else // this scheme used by plugins
+			{
+				list($path, $file) = explode('|', $params['file']);
+				$type = isset($params['large']) ? 'large' : 'thumbnail';
+
+				$url = $iaCore->iaView->assetsUrl . 'uploads/' . $path . $type . '/' . $file;
+			}
 		}
 		elseif (isset($params['gravatar']) && $iaCore->get('gravatar_enabled') && isset($params['email']))
 		{
@@ -631,9 +643,17 @@ class iaSmarty extends Smarty
 			return $url;
 		}
 
+		$attr = '';
+
 		$alt = isset($params['alt']) ? iaSanitize::html($params['alt']) : '';
 
-		$attr = '';
+		if (isset($params['title']))
+		{
+			$title = iaSanitize::html($params['title']);
+			$alt || $alt = $title;
+			$attr.= ' title="' . $title . '"';
+		}
+
 		empty($params['width']) || $attr.= ' width="' . $params['width'] . '"';
 		empty($params['height']) || $attr.= ' height="' . $params['height'] . '"';
 		empty($params['class']) || $attr.= ' class="' . $params['class'] . '"';
