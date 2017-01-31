@@ -15,7 +15,7 @@
 	</actions>
 
 	<adminpages>
-		<page group="content" name="blog" order="45" url="blog/" menus="menu">Blog</page>
+		<page group="content" name="blog" order="50" url="blog/" menus="menu">Blog</page>
 	</adminpages>
 
 	<pages>
