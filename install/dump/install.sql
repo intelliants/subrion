@@ -1864,7 +1864,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('plans','Plans','admin'),
 ('plans_fields','Fields for plan','admin'),
 ('plugin','Plugin','admin'),
-('plugin_files_physically_missed','Plugin files physically missed.','admin'),
+('plugin_files_physically_missed','Plugin files are missing. Probably folder name does not match plugin name.','admin'),
 ('plugin_installed','":name" plugin installed.','admin'),
 ('plugin_may_not_be_removed','Plugin may not be removed.','admin'),
 ('plugin_reinstalled','":name" plugin reinstalled.','admin'),

@@ -19,13 +19,13 @@ $(function()
 		if (!$o.hasClass('is-hidden'))
 		{
 			$o.addClass('is-hidden');
-			$this.find('i').removeClass('i-chevron-left').addClass('i-chevron-right');
+			$this.find('i').removeClass('fa-angle-left').addClass('fa-angle-right');
 			intelli.cookie.write('panelHidden', '1');
 		}
 		else
 		{
 			$o.removeClass('is-hidden');
-			$this.find('i').removeClass('i-chevron-right').addClass('i-chevron-left');
+			$this.find('i').removeClass('fa-angle-right').addClass('fa-angle-left');
 			intelli.cookie.write('panelHidden', '0');
 		}
 	});

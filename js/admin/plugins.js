@@ -60,12 +60,21 @@ var installClick = function(record, action)
 	if ('reinstall' != action && 'remote' == Ext.getCmp('modeFilter').getValue() && (record.get('price') != '0.00'))
 	{
 		intelli.notifFloatBox({msg: _t('buy_before_install'), type: 'error', autohide: true});
+
 		return;
 	}
 
 	if (record.get('notes'))
 	{
 		Ext.Msg.show({title: _t('invalid_plugin_dependencies'), msg: record.get('notes'), buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING});
+
+		return;
+	}
+
+	if (record.get('name') != record.get('file'))
+	{
+		Ext.Msg.show({title: _t('error'), msg: _t('plugin_files_physically_missed'), buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING});
+
 		return;
 	}
 
@@ -265,7 +274,7 @@ intelli.available = {
 		{name: 'install', title: _t('install'), icon: 'box-add', click: installClick}
 	],
 	expanderTemplate: '{description}',
-	fields: ['file', 'description', 'price'],
+	fields: ['file', 'description', 'price', 'name'],
 	resizer: false,
 /*	rowselect: function(that)
 	{

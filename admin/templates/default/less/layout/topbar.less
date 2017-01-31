@@ -59,7 +59,7 @@
         height: 0;
         border-style: solid;
         border-width: 0 0 7px 7px;
-        border-color: transparent transparent darken(@navbar-bg, 6%) transparent;
+        border-color: transparent transparent darken(@navbar-bg, 8%) transparent;
       }
 
       &.open::after {
@@ -119,6 +119,18 @@
 
 .navbar-left {
   float: left;
+}
+
+.panel-toggle {
+
+  > a,
+  > a:focus {
+    color: fade(@navbar-link-color, 50%) !important;
+  }
+
+  > a:hover {
+    color: @navbar-link-hover-color !important;
+  }
 }
 
 

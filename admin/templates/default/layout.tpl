@@ -166,7 +166,7 @@
 						</ul>
 						<ul class="nav navbar-nav navbar-left hidden-xs hidden-sm">
 							<li class="panel-toggle">
-								<a href="#"><i class="fa{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden} fa-chevron-right{else} fa-chevron-left{/if}"></i></a>
+								<a href="#"><i class="fa{if isset($smarty.cookies.panelHidden) && '1' == $smarty.cookies.panelHidden} fa-angle-right{else} fa-angle-left{/if}"></i></a>
 							</li>
 						</ul>
 					</div>
