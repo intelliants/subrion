@@ -303,56 +303,44 @@ if (isset($_GET) && isset($_GET['action']))
 	{
 		case 'ckeditor_upload':
 			$iaView->disableLayout();
+			$iaView->display(iaView::NONE);
 			$iaView->set('nodebug', 1);
 
-			$err = 0;
-
-			if (isset($_GET['Type']) && 'Image' == $_GET['Type'] && isset($_FILES['upload']))
+			if (isset($_GET['Type']) && 'Image' == $_GET['Type']
+				&& isset($_FILES['upload']['error']) && !$_FILES['upload']['error'])
 			{
-				$oFile = $_FILES['upload'];
-				$sErrorNumber = '0';
+				$file = $_FILES['upload'];
+				$folder = 'uploads/' . iaUtil::getAccountDir();
+				$imgTypes = $iaCore->factory('picture')->getSupportedImageTypes();
 
-				$imgTypes = array(
-					'image/gif' => 'gif',
-					'image/jpeg' => 'jpg',
-					'image/pjpeg' => 'jpg',
-					'image/png' => 'png'
-				);
-				$_user = iaUsers::hasIdentity() ? iaUsers::getIdentity()->username : false;
-				$sFileUrl = 'uploads/' . iaUtil::getAccountDir($_user);
-
-				$ext = array_key_exists($oFile['type'], $imgTypes) ? $imgTypes[$oFile['type']] : false;
-
-				if (!$ext)
+				if (!isset($imgTypes[$file['type']]))
 				{
-					$err = '202 error';
+					return '202 error';
 				}
 
-				$tok = iaUtil::generateToken();
-				$fname = $tok . '.' . $ext;
+				$fileName = iaUtil::generateToken() . '.' . $imgTypes[$file['type']];
+				$filePath = IA_HOME . $folder . $fileName;
 
-				if (!$err)
+				if (!move_uploaded_file($file['tmp_name'], $filePath))
 				{
-					move_uploaded_file($oFile['tmp_name'], IA_HOME . $sFileUrl . $fname);
-					chmod(IA_HOME . $sFileUrl . $fname, 0777);
+					return iaLanguage::get('error');
 				}
 
-				// fix windows URLs
-				$fileUrl = $sFileUrl . $fname;
-				$fileUrl = str_replace('\\', '/', $fileUrl);
+				chmod($filePath, 0777);
 
+				$fileUrl = IA_CLEAR_URL . $folder . $fileName;
 				$callback = (int)$_GET['CKEditorFuncNum'];
 
 				$output = '<html><body><script type="text/javascript">';
-				$output .= "window.parent.CKEDITOR.tools.callFunction('$callback', '" . IA_CLEAR_URL . $fileUrl . "', '');";
-				$output .= '</script></body></html>';
+				$output.= "window.parent.CKEDITOR.tools.callFunction('{$callback}', '{$fileUrl}', '');";
+				$output.= '</script></body></html>';
 
 				die($output);
 			}
+
 			break;
 
 		case 'assign-owner':
-
 			if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			{
 				if (isset($_GET['q']) && $_GET['q'])
@@ -368,12 +356,11 @@ if (isset($_GET) && isset($_GET['action']))
 						'table_members' => iaUsers::getTable(true),
 						'conditions' => $stmt,
 					));
+
 					$output = $iaDb->getAll($sql);
 
 					$iaView->assign($output);
 				}
 			}
-
-			break;
 	}
 }

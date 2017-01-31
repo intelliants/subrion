@@ -607,7 +607,7 @@ class iaSmarty extends Smarty
 					case isset($params['field']['timepicker']):
 						$type = $params['field']['timepicker']
 							? $params['field'][isset($params['large']) ? 'imagetype_primary' : 'imagetype_thumbnail']
-							: 'thumbnail';
+							: (isset($params['large']) ? 'large' : 'thumbnail');
 						break;
 					default:
 						$type = 'original';

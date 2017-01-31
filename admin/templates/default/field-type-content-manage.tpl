@@ -167,7 +167,7 @@ $(function($)
 			{/if}
 
 		{case iaField::IMAGE break}
-			{if (isset($value.path) && $value.path) || (!isset($value.path) && $value)}
+			{if $value}
 				<div class="input-group thumbnail thumbnail-single with-actions">
 					<a href="{ia_image file=$value field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
 						{ia_image file=$value field=$field}
@@ -211,13 +211,13 @@ $(function()
 							<span class="uploads-list-item__thumb uploads-list-item__thumb--file"><i class="i-file-2"></i></span>
 							<div class="uploads-list-item__body">
 								<div class="input-group">
-									{foreach $value as $k => $v}
+									{foreach $entry as $k => $v}
 									<input type="hidden" name="{$fieldName}[{$i}][{$k}]" value="{$v|escape:'html'}">
 									{/foreach}
 									<input type="text" name="{$fieldName}[{$i}][title]" value="{$entry.title|escape:'html'}" id="{$fieldName}_{$entry@index}">
 
 									<span class="input-group-btn">
-										<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{$entry.title|escape:'html'}"><i class="i-box-add"></i></a>
+										<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{$entry.title|escape:'html'}"><i class="i-box-add"></i></a>
 										<a class="btn btn-danger js-cmd-delete-file" href="#" title="{lang key='delete'}" data-file="{$entry.file}" data-item="{$field.item}" data-field="{$field.name}" data-id="{$id}"><span class="fa fa-remove"></span></a>
 										<span class="btn btn-default uploads-list-item__drag-handle"><span class="fa fa-reorder"></span></span>
 									</span>

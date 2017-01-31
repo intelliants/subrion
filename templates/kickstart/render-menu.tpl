@@ -35,7 +35,7 @@
 {else}
 	<!--__ms_{$menu.id}-->
 	{if $menu.header || isset($manageMode)}
-		<div class="nav-menu-header {$menu.classname}">{$menu.title}</div>
+		<div class="nav-menu-header {$menu.classname}">{$menu.title|escape:'html'}</div>
 	{else}
 		<div class="menu {$menu.classname}">
 	{/if}

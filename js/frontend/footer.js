@@ -205,14 +205,14 @@ $(function()
 
 		var self = $(this);
 
-		var path = self.data('picture-path');
+		var file = self.data('file');
 		var id = self.data('item-id');
 		var item = self.data('item');
 		var field = self.data('field');
 
 		intelli.confirm(_t('sure_rm_file'), '', function(result) {
 			if (result) {
-				$.post(intelli.config.ia_url + 'actions/read.json', {action: 'delete-file', item: item, field: field, path: path, itemid: id}, function(data)
+				$.post(intelli.config.ia_url + 'actions/read.json', {action: 'delete-file', item: item, field: field, file: file, itemid: id}, function(data)
 				{
 					if ('boolean' == typeof data.error && !data.error)
 					{

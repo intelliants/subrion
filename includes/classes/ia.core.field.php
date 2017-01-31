@@ -621,6 +621,8 @@ SQL;
 				case self::IMAGE:
 				case self::STORAGE:
 				case self::PICTURES:
+					$item[$fieldName] = isset($data[$fieldName]) ? $value : array();
+
 					if (!is_writable(IA_UPLOADS))
 					{
 						$errors[$fieldName] = iaLanguage::get('error_directory_readonly');
@@ -634,7 +636,6 @@ SQL;
 							$files = $fieldName . '_dropzone_files';
 							$sizes = $fieldName . '_dropzone_sizes';
 
-							$item[$fieldName] = isset($data[$fieldName]) && $data[$fieldName] ? $data[$fieldName] : array();
 							$pictures = empty($data[$paths]) ? array() : $data[$paths];
 
 							// run required field checks
@@ -854,7 +855,9 @@ SQL;
 
 		if (is_file($absUploadPath . $fileName)) // first, try to upload under original name
 		{
-			$fileName.= '_' . iaUtil::generateToken(5); // if exists, then add unique tail
+			// if exists, then add unique tail
+			$pathInfo = pathinfo($fileName);
+			$fileName = $pathInfo['filename'] . '_' . iaUtil::generateToken(5) . '.' . $pathInfo['extension'];
 		}
 
 		switch ($field['type'])
@@ -899,7 +902,7 @@ SQL;
 	{
 		$iaPicture = $this->iaCore->factory('picture');
 
-		if (isset($field['timepicker']) && isset($field['timepicker'])) // image types enabled field
+		if (isset($field['timepicker']) && $field['timepicker']) // image types enabled field
 		{
 			$imageTypeIds = $this->getImageTypesByFieldId($field['id']);
 			$ext = pathinfo($fileName, PATHINFO_EXTENSION);
@@ -1278,10 +1281,17 @@ SQL;
 
 	public function deleteUploadedFile($path, $file, $imageTypes = array('thumbnail', 'large'))
 	{
-		$imageTypes[] = self::UPLOAD_FOLDER_ORIGINAL;
+		if (is_array($imageTypes))
+		{
+			$imageTypes[] = self::UPLOAD_FOLDER_ORIGINAL;
 
-		foreach ($imageTypes as $imageTypeName)
-			iaUtil::deleteFile(IA_UPLOADS . $path . $imageTypeName . IA_DS . $file);
+			foreach ($imageTypes as $imageTypeName)
+				iaUtil::deleteFile(IA_UPLOADS . $path . $imageTypeName . IA_DS . $file);
+		}
+		else
+		{
+			iaUtil::deleteFile(IA_UPLOADS . $path . $file);
+		}
 	}
 
 	public function deleteUploadedFileByField($itemName, $itemId, $fieldName, $fileName = null)
@@ -1344,7 +1354,7 @@ SQL;
 					}
 					else
 					{
-						$this->deleteUploadedFile($path, $file, array());
+						$this->deleteUploadedFile($path, $file, null);
 					}
 				}
 			}
