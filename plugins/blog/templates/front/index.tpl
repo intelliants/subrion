@@ -2,7 +2,7 @@
 	<p class="text-i text-fade-50">{lang key='posted_on'} {$blog_entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$blog_entry.fullname}</p>
 
 	{if $blog_entry.image}
-		{printImage imgfile=$blog_entry.image type='full' title=$blog_entry.title|escape:'html' class='img-responsive m-b'}
+		{ia_image file=$blog_entry.image type='full' title=$blog_entry.title class='img-responsive m-b'}
 	{/if}
 
 	{$blog_entry.body}
@@ -36,7 +36,7 @@
 			{foreach $blog_entries as $blog_entry}
 				<div class="ia-item">
 					{if $blog_entry.image}
-						<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}" class="ia-item__image">{printImage imgfile=$blog_entry.image title=$blog_entry.title}</a>
+						<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}" class="ia-item__image">{ia_image file=$blog_entry.image title=$blog_entry.title}</a>
 					{/if}
 					<div class="ia-item__content">
 						<h4 class="ia-item__title">

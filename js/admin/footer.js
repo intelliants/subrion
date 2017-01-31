@@ -238,12 +238,6 @@ $(function()
 		removeFileUploadField(this);
 	});
 
-	$('.js-file-delete').on('click', function(e)
-	{
-		e.preventDefault();
-		// removeFile(this);
-	});
-
 	// tooltips
 	$('.js-tooltip').tooltip(
 	{
@@ -632,10 +626,11 @@ $(function()
 		Dropzone.autoDiscover = false;
 	}
 
-	$('.js-dropzone').each(function () {
+	$('.js-dropzone').each(function()
+	{
 		var $dropzone = $(this);
-		var fieldName = $dropzone.data('field_name');
-		var itemName = $dropzone.data('item_name');
+		var fieldName = $dropzone.data('field');
+		var itemName = $dropzone.data('item');
 		var itemId = $dropzone.data('item_id');
 		var submitButtonText = $dropzone.data('submit_btn_text');
 		var values = $dropzone.data('values');
@@ -659,7 +654,7 @@ $(function()
 
 				this.on('success', function(file, response) {
 					var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.path + '">'),
-						$name = $('<input type="hidden" name="' + fieldName + '_dropzone_names[]" value="' + response.name + '">'),
+						$name = $('<input type="hidden" name="' + fieldName + '_dropzone_names[]" value="' + response.file + '">'),
 						$size = $('<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">'),
 						$fancyboxLink = $('<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + response.path.replace(/^(.+)\.(\w+)$/, '$1~.$2') + '"><span class="fa fa-search-plus"></span></a>');
 
@@ -676,23 +671,26 @@ $(function()
 						.attr('disabled', true)
 						.html('<span class="fa fa-refresh fa-spin fa-fw"></span><span class="sr-only">' + _t('uploading_please_wait') + '</span> ' + _t('uploading_please_wait'));
 					formData.append('action', 'dropzone-upload-file');
-					formData.append('field_name', fieldName);
-					formData.append('item_name', itemName);
+					formData.append('field', fieldName);
+					formData.append('item', itemName);
 				});
 
-				this.on('error', function(file) {
+				this.on('error', function(file)
+				{
 					if ('canceled' != file.status) {
 						error = true;
 						errorMessage = 'error';
 					}
 				});
 
-				this.on('maxfilesexceeded', function() {
+				this.on('maxfilesexceeded', function()
+				{
 					error = true;
 					errorMessage = 'no_more_files';
 				});
 
-				this.on('removedfile', function(file) {
+				this.on('removedfile', function(file)
+				{
 					var params = {
 						action: 'dropzone-delete-file',
 						path: $(file.previewElement).children('input[type="hidden"]').val()
@@ -712,7 +710,8 @@ $(function()
 					});
 				});
 
-				this.on('queuecomplete', function() {
+				this.on('queuecomplete', function()
+				{
 					if (error) {
 						message = errorMessage;
 						error = false;
@@ -725,10 +724,12 @@ $(function()
 			}
 		});
 
-		if (typeof values == 'object' && values) {
+		if (typeof values == 'object' && values)
+		{
 			var existingFiles = [], mock;
 
-			values.forEach(function(file) {
+			values.forEach(function(file)
+			{
 				mock = { name: file.name, size: file.size };
 
 				dropZone.emit('addedfile', mock);
@@ -747,6 +748,13 @@ $(function()
 			});
 			dropZone.options.maxFiles = dropZone.options.maxFiles - existingFiles.length;
 		}
+	});
+
+	$('.js-cmd-delete-file').on('click', function(e)
+	{
+		e.preventDefault();
+		var data = $(this).data();
+		intelli.admin.removeFile(data.file, this, data.item, data.field, data.id);
 	});
 });
 

@@ -244,6 +244,8 @@
 					<hr>
 
 					<input type="hidden" name="use_img_types" value="{$item.timepicker}">
+					<input type="hidden" name="imagetype_primary" value="{$item.imagetype_primary}">
+					<input type="hidden" name="imagetype_thumbnail" value="{$item.imagetype_thumbnail}">
 
 					<div class="row" id="js-image-field-setup-by-imgtypes"{if !$item.timepicker} style="display: none;"{/if}>
 						<label class="col col-lg-2 control-label">{lang key='image_types'} <span class="required">*</span></label>
@@ -254,6 +256,7 @@
 									<div class="checkbox">
 										<label><input name="image_types[]" value="{$imageType.id}" type="checkbox"{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
 											{$imageType.name|escape:'html'} &nbsp; <small>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</small></label>
+										<a href="#" class="label label-default hide">Set as primary</a>
 									</div>
 								{/foreach}
 							{else}

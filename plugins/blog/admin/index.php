@@ -35,8 +35,6 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 	protected $_tableBlogTags = 'blog_tags';
 	protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
-	protected $_pluginName = 'blog';
-
 	protected $_gridFilters = array('status' => 'equal');
 	protected $_gridQueryMainTableAlias = 'b';
 
@@ -131,26 +129,24 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 
 		unset($entry['owner'], $entry['tags']);
 
-		if (isset($_FILES['image']['tmp_name']) && $_FILES['image']['tmp_name'])
+		if (isset($_FILES['image']['error']) && !$_FILES['image']['error'])
 		{
-			$iaPicture = $this->_iaCore->factory('picture');
-
-			$imageInfo = array(
-				'image_width' => $this->_iaCore->get('blog_image_width'),
-				'image_height' => $this->_iaCore->get('blog_image_height'),
-				'thumb_width' => $this->_iaCore->get('blog_thumb_width'),
-				'thumb_height' => $this->_iaCore->get('blog_thumb_height'),
-				'resize_mode' => $this->_iaCore->get('blog_image_resize'),
-			);
-
-			if ($image = $iaPicture->processImage($_FILES['image'], iaUtil::getAccountDir(), iaUtil::generateToken(), $imageInfo))
+			try
 			{
-				empty($entry['image']) || $iaPicture->delete($entry['image']); // already has an assigned image
-				$entry['image'] = $image;
+				$path = $this->_iaCore->factory('field')->uploadImage($_FILES['image'], $this->_iaCore->get('blog_image_width'),
+					$this->_iaCore->get('blog_image_height'), $this->_iaCore->get('blog_thumb_width'),
+					$this->_iaCore->get('blog_thumb_height'), $this->_iaCore->get('blog_image_resize'));
+
+				//empty($entry['image']) || $iaPicture->delete($entry['image']); // already has an assigned image
+				$entry['image'] = $path;
+			}
+			catch (Exception $e)
+			{
+				$this->addMessage($e->getMessage(), false);
 			}
 		}
 
-		return true;
+		return !$this->getMessages();
 	}
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)

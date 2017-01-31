@@ -169,25 +169,27 @@ $(function($)
 		{case iaField::IMAGE break}
 			{if (isset($value.path) && $value.path) || (!isset($value.path) && $value)}
 				<div class="input-group thumbnail thumbnail-single with-actions">
-					<a href="{ia_image file=$value url=true}" rel="ia_lightbox[{$fieldName}]">
+					<a href="{ia_image file=$value field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
 						{ia_image file=$value field=$field}
 					</a>
 
-					<input type="hidden" name="{$fieldName}[path]" value="{$value.path|escape:'html'}">
+					{foreach $value as $k => $v}
+						<input type="hidden" name="{$fieldName}[{$k}]" value="{$v|escape:'html'}">
+					{/foreach}
 
 					<div class="caption">
-						<a class="btn btn-small btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$value.path}',this,'{$field.item}','{$fieldName}','{$id}')"><i class="i-remove-sign"></i></a>
+						<a class="btn btn-small btn-danger js-cmd-delete-file" href="#" title="{lang key='delete'}" data-file="{$value.file}" data-item="{$field.item}" data-field="{$fieldName}" data-id="{$id}"><i class="i-remove-sign"></i></a>
 					</div>
 				</div>
 
-				{ia_html_file name="{$fieldName}[]" id=$name value=$value.path}
+				{ia_html_file name="{$fieldName}[]" id=$name value=$value.file}
 			{else}
 				{ia_html_file name="{$fieldName}[]" id=$name}
 			{/if}
 
 		{case iaField::PICTURES break}
 			<div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
-				data-item_name="{$item.item}" data-item_id="{$id|default:''}" data-field_name="{$fieldName}"
+				data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}"
 				data-max_num="{$field.length}" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
 				data-values='{if $value}{json_encode(array_values($value))}{/if}'></div>
 			{ia_add_js}
@@ -206,23 +208,17 @@ $(function()
 				<div class="uploads-list" id="{$fieldName}_upload_list">
 					{foreach $value as $i => $entry}
 						<div class="uploads-list-item">
-							{if 'pictures' == $type}
-								<a class="uploads-list-item__thumb" href="{printImage imgfile=$entry.path url=true fullimage=true}" title="{$entry.title|escape:'html'}" rel="ia_lightbox[{$field.name}]">{printImage imgfile=$entry.path}</a>
-							{else}
-								<span class="uploads-list-item__thumb uploads-list-item__thumb--file"><i class="i-file-2"></i></span>
-							{/if}
+							<span class="uploads-list-item__thumb uploads-list-item__thumb--file"><i class="i-file-2"></i></span>
 							<div class="uploads-list-item__body">
 								<div class="input-group">
+									{foreach $value as $k => $v}
+									<input type="hidden" name="{$fieldName}[{$i}][{$k}]" value="{$v|escape:'html'}">
+									{/foreach}
 									<input type="text" name="{$fieldName}[{$i}][title]" value="{$entry.title|escape:'html'}" id="{$fieldName}_{$entry@index}">
-									<input type="hidden" name="{$fieldName}[{$i}][path]" value="{$entry.path}">
 
 									<span class="input-group-btn">
-										{if 'pictures' == $type}
-											<a class="btn btn-danger" href="javascript:void(0);" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><span class="fa fa-remove"></span></a>
-										{else}
-											<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{$entry.title|escape:'html'}"><i class="i-box-add"></i></a>
-											<a class="btn btn-danger js-file-delete" href="#" title="{lang key='delete'}" onclick="return intelli.admin.removeFile('{$entry.path}', this, '{$field.item}', '{$field.name}', '{$id|default:''}')"><span class="fa fa-remove"></span></a>
-										{/if}
+										<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}" title="{$entry.title|escape:'html'}"><i class="i-box-add"></i></a>
+										<a class="btn btn-danger js-cmd-delete-file" href="#" title="{lang key='delete'}" data-file="{$entry.file}" data-item="{$field.item}" data-field="{$field.name}" data-id="{$id}"><span class="fa fa-remove"></span></a>
 										<span class="btn btn-default uploads-list-item__drag-handle"><span class="fa fa-reorder"></span></span>
 									</span>
 								</div>

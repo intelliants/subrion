@@ -5,12 +5,12 @@
 				<div class="col-md-3">
 					<div class="ia-item ia-item--card">
 						{if $pf_entry.image}
-							<a href="{$smarty.const.IA_URL}portfolio/{$pf_entry.id}-{$pf_entry.alias}" class="ia-item__image">{printImage imgfile=$pf_entry.image title=$pf_entry.title}<span class="fa fa-eye"></span></a>
+							<a href="{$smarty.const.IA_URL}portfolio/{$pf_entry.id}-{$pf_entry.alias}" class="ia-item__image">{ia_image file=$pf_entry.image title=$pf_entry.title}<span class="fa fa-eye"></span></a>
 						{/if}
 
 						<div class="ia-item__content">
 							<h4 class="ia-item__title text-center">
-								<a href="{$smarty.const.IA_URL}portfolio/{$pf_entry.id}-{$pf_entry.alias}">{$pf_entry.title|escape: html}</a>
+								<a href="{$smarty.const.IA_URL}portfolio/{$pf_entry.id}-{$pf_entry.alias}">{$pf_entry.title|escape:'html'}</a>
 							</h4>
 						</div>
 					</div>

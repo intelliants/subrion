@@ -104,14 +104,14 @@ intelli.admin = function()
 			Ext.Msg.show({title: opt.title, msg: opt.msg, buttons: Ext.Msg.OK, icon: icon});
 		},
 
-		removeFile: function(path, link, item, field, itemid)
+		removeFile: function(file, link, item, field, itemid)
 		{
 			Ext.Msg.confirm(_t('confirm'), _t('sure_rm_file'), function(btn, text)
 			{
 				if (btn == 'yes')
 				{
 					$.post(intelli.config.admin_url + '/actions/read.json',
-						{action: 'delete-file', item: item, field: field, path: path, itemid: itemid},
+						{action: 'delete-file', item: item, field: field, file: file, itemid: itemid},
 						function(data)
 						{
 							if ('boolean' == typeof data.error && !data.error)

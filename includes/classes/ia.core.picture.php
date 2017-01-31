@@ -145,7 +145,7 @@ class iaPicture extends abstractCore
 			}
 
 			// apply watermark
-			//$applyWatermark && self::_applyWaterMark($image);
+			$applyWatermark && self::_applyWaterMark($image);
 
 			$path = pathinfo($destinationFile, PATHINFO_DIRNAME);
 			$file = pathinfo($destinationFile, PATHINFO_BASENAME);

@@ -2,7 +2,7 @@
 	{foreach $entries as $entry}
 		<div class="ia-item">
 			{if $entry.image}
-				<a href="{$smarty.const.IA_URL}blog/{$entry.id}-{$entry.alias}" class="ia-item__image">{printImage imgfile=$entry.image title=$entry.title}</a>
+				<a href="{$smarty.const.IA_URL}blog/{$entry.id}-{$entry.alias}" class="ia-item__image">{ia_image file=$entry.image title=$entry.title}</a>
 			{/if}
 			<div class="ia-item__content">
 				<h4 class="ia-item__title">

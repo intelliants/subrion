@@ -11,7 +11,7 @@
 
 						<div class="b-testimonial__author">
 							{if $one_testimonials.avatar}
-								{printImage imgfile=$one_testimonials.avatar width=60 height=60 class='img-circle'}
+								{ia_image file=$one_testimonials.avatar width=60 height=60 class='img-circle'}
 							{else}
 								<img class="img-circle" src="{$img}no-avatar.png" alt="{$one_testimonials.name}" width="60" height="60">
 							{/if}

@@ -42,7 +42,7 @@
 		{foreach $blogs as $blog_entry}
 			<div class="media ia-item">
 				{if $blog_entry.image}
-					<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}" class="pull-left ia-item-thumbnail">{printImage imgfile=$blog_entry.image width='150' title=$blog_entry.title class='media-object'}</a>
+					<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}" class="pull-left ia-item-thumbnail">{ia_image file=$blog_entry.image width=150 title=$blog_entry.title class='media-object'}</a>
 				{/if}
 				<div class="media-body">
 					<h4 class="media-heading">

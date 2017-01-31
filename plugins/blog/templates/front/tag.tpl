@@ -2,14 +2,14 @@
 	{foreach $blog_entries as $blog_entry}
 		<div class="ia-item">
 			{if $blog_entry.image}
-				<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}" class="ia-item__image">{printImage imgfile=$blog_entry.image title=$blog_entry.title}</a>
+				<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}" class="ia-item__image">{ia_image file=$blog_entry.image title=$blog_entry.title}</a>
 			{/if}
 			<div class="ia-item__content">
 				<h4 class="ia-item__title">
 					<a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}">{$blog_entry.title|escape:'html'}</a>
 				</h4>
 				<div class="ia-item__additional">
-					<p>{lang key='posted_on'} {$blog_entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$blog_entry.fullname}</p>
+					<p>{lang key='posted_on'} {$blog_entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$blog_entry.fullname|escape:'html'}</p>
 				</div>
 				<div class="ia-item__body">{$blog_entry.body|strip_tags|truncate:$core.config.blog_max:'...'}</div>
 			</div>

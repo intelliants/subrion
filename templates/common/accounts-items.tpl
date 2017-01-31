@@ -5,10 +5,10 @@
 
 			<div class="pull-left">
 				{if $oneitem.avatar}
-					{printImage imgfile=$oneitem.avatar.path width=100 height=100 title=$oneitem.fullname|default:$oneitem.username class='media-object'}
+					{ia_image file=$oneitem.avatar width=100 height=100 alt=$oneitem.fullname|default:$oneitem.username class='media-object'}
 				{/if}
 			</div>
-			
+
 			<div class="media-body">
 				{foreach $all_item_fields as $onefield}
 					{if 'plan_id' != $onefield.name && 'avatar' != $onefield.name}
