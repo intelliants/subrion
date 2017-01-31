@@ -274,7 +274,7 @@ intelli.available = {
 		{name: 'install', title: _t('install'), icon: 'box-add', click: installClick}
 	],
 	expanderTemplate: '{description}',
-	fields: ['file', 'description', 'price'],
+	fields: ['file', 'description', 'price', 'name'],
 	resizer: false,
 /*	rowselect: function(that)
 	{
