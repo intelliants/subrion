@@ -652,11 +652,12 @@ $(function()
 					error = false,
 					errorMessage = '';
 
-				this.on('success', function(file, response) {
-					var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.path + '">'),
-						$name = $('<input type="hidden" name="' + fieldName + '_dropzone_names[]" value="' + response.file + '">'),
+				this.on('success', function(file, response)
+				{
+					var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + response.path + '">'),
+						$name = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.file + '">'),
 						$size = $('<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">'),
-						$fancyboxLink = $('<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + response.path.replace(/^(.+)\.(\w+)$/, '$1~.$2') + '"><span class="fa fa-search-plus"></span></a>');
+						$fancyboxLink = $('<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>');
 
 					// Reserved if it will be necessary in future
 					// var $title = $('<label>{lang key="title"}</label><input type="text" name="' + fieldName + '_dropzone_titles[]">');
@@ -666,7 +667,8 @@ $(function()
 				});
 
 				var $submit = $('.js-btn-submit');
-				this.on('sending', function(file, xhr, formData) {
+				this.on('sending', function(file, xhr, formData)
+				{
 					$submit
 						.attr('disabled', true)
 						.html('<span class="fa fa-refresh fa-spin fa-fw"></span><span class="sr-only">' + _t('uploading_please_wait') + '</span> ' + _t('uploading_please_wait'));
@@ -693,20 +695,21 @@ $(function()
 				{
 					var params = {
 						action: 'dropzone-delete-file',
-						path: $(file.previewElement).children('input[type="hidden"]').val()
+						item: itemName,
+						field: fieldName,
+						path: $(file.previewElement).children('input[type="hidden"]').val(),
+						file: file.name
 					};
-					if (typeof existingFiles !== 'undefined' && -1 !== existingFiles.indexOf(file.name)) {
+					if (typeof existingFiles !== 'undefined' && -1 !== existingFiles.indexOf(file.name))
+					{
 						dropZone.options.maxFiles = dropZone.options.maxFiles + 1;
-						params = {
-							action: 'delete-file',
-							path: $(file.previewElement).children('input[type="hidden"]').val(),
-							item: itemName,
-							field: fieldName,
-							itemid: itemId
-						};
+
+						params.action = 'delete-file';
+						params.itemid = itemId;
 					}
-					$.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response) {
-						intelli.notifFloatBox({ msg: response.message, type: response.error ? 'error' : 'success', autohide: true });
+					$.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response)
+					{
+						intelli.notifFloatBox({msg: response.message, type: response.error ? 'error' : 'success', autohide: true});
 					});
 				});
 
@@ -726,25 +729,26 @@ $(function()
 
 		if (typeof values == 'object' && values)
 		{
+			var imageTypes = {primary: $dropzone.data('imagetype-primary'), thumbnail: $dropzone.data('imagetype-thumbnail')};
 			var existingFiles = [], mock;
 
-			values.forEach(function(file)
+			values.forEach(function(entry)
 			{
-				mock = { name: file.name, size: file.size };
+				mock = {name: entry.file, size: entry.size};
 
 				dropZone.emit('addedfile', mock);
-				dropZone.createThumbnailFromUrl(mock, intelli.config.ia_url + 'uploads/' + file.path);
+				dropZone.createThumbnailFromUrl(mock, intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.thumbnail + '/' + entry.file);
 
-				var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + file.path + '">'),
-					$name = $('<input type="hidden" name="' + fieldName + '_dropzone_names[]" value="' + file.name + '">'),
-					$size = $('<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + file.size + '">'),
-					$fancyboxLink = $('<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + file.path.replace(/^(.+)\.(\w+)$/, '$1~.$2') + '"><span class="fa fa-search-plus"></span></a>');
+				var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + entry.path + '">'),
+					$name = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + entry.file + '">'),
+					$size = $('<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + entry.size + '">'),
+					$fancyboxLink = $('<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.primary + '/' + entry.file + '"><span class="fa fa-search-plus"></span></a>');
 
 				$(mock.previewElement).append($path).append($name).append($size);
 				$(mock.previewElement).find('.dz-details').append($fancyboxLink);
 
 				dropZone.emit('complete', mock);
-				existingFiles.push(file.name);
+				existingFiles.push(entry.file);
 			});
 			dropZone.options.maxFiles = dropZone.options.maxFiles - existingFiles.length;
 		}

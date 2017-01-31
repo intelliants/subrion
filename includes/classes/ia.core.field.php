@@ -47,6 +47,9 @@ class iaField extends abstractCore
 
 	const UPLOAD_FOLDER_ORIGINAL = 'original';
 
+	const IMAGE_TYPE_LARGE = 'large';
+	const IMAGE_TYPE_THUMBNAIL = 'thumbnail';
+
 	const FIELD_TITLE_PHRASE_KEY = 'field_%s_%s';
 	const FIELD_VALUE_PHRASE_KEY = 'field_%s_%s+%s';
 	const FIELD_TOOLTIP_PHRASE_KEY = 'field_tooltip_%s_%s';
@@ -271,18 +274,29 @@ SQL;
 
 		foreach ($fields as $id => &$field)
 		{
-			// radios, combos and checkboxes needs special processing
-			if (in_array($field['type'], array(self::CHECKBOX, self::COMBO, self::RADIO)))
+			switch ($field['type'])
 			{
-				if (self::CHECKBOX == $field['type'])
-				{
-					$field['default'] = explode(',', $field['default']);
-				}
+				case self::CHECKBOX:
+				case self::COMBO:
+				case self::RADIO:
+					if (self::CHECKBOX == $field['type'])
+					{
+						$field['default'] = explode(',', $field['default']);
+					}
 
-				$values = array();
-				foreach (explode(',', $field['values']) as $v)
-					$values[$v] = self::getLanguageValue($field['item'], $field['name'], $v);
-				$field['values'] = $values;
+					$values = array();
+					foreach (explode(',', $field['values']) as $v)
+						$values[$v] = self::getLanguageValue($field['item'], $field['name'], $v);
+					$field['values'] = $values;
+
+					break;
+
+				case self::PICTURES:
+				case self::IMAGE:
+					empty($field['timepicker']) && $field['imagetype_primary'] = self::IMAGE_TYPE_LARGE;
+					empty($field['timepicker']) && $field['imagetype_thumbnail'] = self::IMAGE_TYPE_THUMBNAIL;
+					//$field['imagetype_primary'] = $field['timepicker'] ? $field['imagetype_primary'] : self::IMAGE_TYPE_LARGE;
+					//$field['imagetype_thumbnail'] = $field['timepicker'] ? $field['imagetype_thumbnail'] : self::IMAGE_TYPE_THUMBNAIL;
 			}
 
 			$field['class'] = 'fieldzone';
@@ -615,13 +629,13 @@ SQL;
 					{
 						if (self::PICTURES == $field['type'] && iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
 						{
-							$files = $fieldName . '_dropzone_files';
+							$paths = $fieldName . '_dropzone_paths';
 							//$titles = $fieldName . '_dropzone_titles';
-							$names = $fieldName . '_dropzone_names';
+							$files = $fieldName . '_dropzone_files';
 							$sizes = $fieldName . '_dropzone_sizes';
 
 							$item[$fieldName] = isset($data[$fieldName]) && $data[$fieldName] ? $data[$fieldName] : array();
-							$pictures = isset($data[$files]) && $data[$files] ? $data[$files] : array();
+							$pictures = empty($data[$paths]) ? array() : $data[$paths];
 
 							// run required field checks
 							if ($field['required'] && $field['required_checks'])
@@ -642,7 +656,7 @@ SQL;
 								$newPictures = array();
 								foreach ($pictures as $i => $picture)
 								{
-									$fileName = empty($data[$names][$i]) ? '' : $data[$names][$i];
+									$fileName = empty($data[$files][$i]) ? '' : $data[$files][$i];
 									iaSanitize::filenameEscape($fileName);
 									$newPictures[] = array(
 										//'title' => $data[$titles][$i],
@@ -1267,7 +1281,7 @@ SQL;
 		$imageTypes[] = self::UPLOAD_FOLDER_ORIGINAL;
 
 		foreach ($imageTypes as $imageTypeName)
-			iaUtil::deleteFile(IA_UPLOADS . $path . $imageTypeName . '/' . $file);
+			iaUtil::deleteFile(IA_UPLOADS . $path . $imageTypeName . IA_DS . $file);
 	}
 
 	public function deleteUploadedFileByField($itemName, $itemId, $fieldName, $fileName = null)

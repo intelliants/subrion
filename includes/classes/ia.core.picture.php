@@ -42,20 +42,6 @@ class iaPicture extends abstractCore
 	protected $_allowAnimatedGifs = false;
 
 
-	/**
-	 * Generate filename for an uploaded image
-	 *
-	 * @param string $name name of the uploaded file
-	 * @param string $ext extension of the uploaded file
-	 * @param bool $thumb true to generate thumbnail filename
-	 *
-	 * @return string
-	 */
-	/*protected static function _createFilename($name, $ext, $thumb = false)
-	{
-		return $thumb ? $name . $ext : $name . '~' . $ext;
-	}*/
-
 	public function getSupportedImageTypes()
 	{
 		return $this->_typesMap;
