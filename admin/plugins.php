@@ -236,7 +236,7 @@ class iaBackendController extends iaAbstractControllerBackend
 							if ($notes)
 							{
 								$notes = implode(PHP_EOL, $notes);
-								$notes.= PHP_EOL . PHP_EOL . iaLanguage::get('installation_impossible');
+								$notes .= PHP_EOL . PHP_EOL . iaLanguage::get('installation_impossible');
 							}
 
 							$pluginsData['pluginsList'][$this->getHelper()->itemData['name']] = $this->getHelper()->itemData['info']['title'];
@@ -247,6 +247,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								'description' => $this->getHelper()->itemData['info']['summary'],
 								'author' => $this->getHelper()->itemData['info']['author'],
 								'date' => $this->getHelper()->itemData['info']['date'],
+								'name' => $this->getHelper()->itemData['name'],
 								'file' => $file,
 								'notes' => $notes,
 								'info' => true,
