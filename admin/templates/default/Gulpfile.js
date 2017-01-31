@@ -18,7 +18,7 @@ var config = {
         },
         less: {
             path: "less/**/*.less",
-            src:  [
+            src: [
                 "less/base-calmy.less",
                 "less/base-darkness.less",
                 "less/base-default.less",
@@ -26,6 +26,7 @@ var config = {
                 "less/base-radiant-orchid.less",
                 "less/base-roseus.less"
             ],
+            srcDev: "less/base-default.less",
             dest: "css"
         }
     }
@@ -58,10 +59,36 @@ gulp.task("less", function(){
         .pipe(gulp.dest(config.paths.less.dest));
 });
 
+gulp.task("less-dev", function(){
+    return gulp.src(config.paths.less.srcDev)
+        //.pipe(cache('less'))
+        //.pipe(progeny())
+        .pipe(less().on('error', function(err) {
+            gutil.log(err);
+            this.emit('end');
+        }))
+        .pipe(cleanCSS({
+            advanced: false
+        }))
+        //.pipe(remember('less'))
+        .pipe(rename(function (path) {
+            path.basename = path.basename.replace('base', 'bootstrap');
+        }))
+        .pipe(gulp.dest(config.paths.less.dest));
+});
+
 gulp.task("build", ["less", "images"]);
 
 gulp.task("watch", function(){
     gulp.watch(config.paths.less.path, ["less"]);
+});
+
+gulp.task("watch", function(){
+    gulp.watch(config.paths.less.path, ["less"]);
+});
+
+gulp.task("watch-dev", function(){
+    gulp.watch(config.paths.less.path, ["less-dev"]);
 });
 
 gulp.task("default", function() {

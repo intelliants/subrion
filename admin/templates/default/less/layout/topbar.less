@@ -19,6 +19,7 @@
       display: block;
       line-height: @navbar-height;
       padding: 0 20px;
+      border-left: 1px solid darken(@navbar-bg, 3%);
 
       @media (max-width: @screen-sm) {
         padding: 0 10px;
@@ -42,7 +43,7 @@
 
       > .fa {
         width: 20px;
-        font-size: 16px;
+        font-size: 20px;
         text-align: center;
       }
     }
@@ -109,6 +110,9 @@
 .navbar-nav__user {
   img {
     width: 30px;
+    height: 30px;
+    overflow: hidden;
+    background: #fff;
     border-radius: 50%;
   }
 }
