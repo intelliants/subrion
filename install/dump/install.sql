@@ -1319,6 +1319,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('and_then','And then','admin'),
 ('are_you_sure_install_plugin','Are you sure you wish to install this plugin?','admin'),
 ('are_you_sure_reinstall_plugin','Are you sure you wish to reinstall this plugin? All data of plugin will be lost. You will not be able to recover your plugin data after its reinstallation.','admin'),
+('are_you_sure_reinstall_template','Are you sure you wish to reinstall this template? All data of template will be lost. You are to re-apply the changes.','admin'),
 ('are_you_sure_resend_registration_email','This will permanently reset the current password of this member. Are you sure you want to re-send registration email?','admin'),
 ('are_you_sure_to_delete_field','Are you sure to delete current field? All added information for this field will be lost.','admin'),
 ('are_you_sure_to_delete_fieldgroup','Are you sure to delete selected fields group?','admin'),
@@ -2649,7 +2650,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('underconstruction','This message is shown in case &quot;Display Frontend&quot; option is disabled.','tooltip'),
 ('upgrade_available','Upgrade patch to version :version is available. In order to upgrade please <a href=":url">follow this link</a>.','admin'),
-('usergroup_assignable','Member can assign to the group himself.','tooltip'),
+('usergroup_assignable','Members are allowed to choose this group manually.','tooltip'),
 ('usergroup_visible','Group members are displayed on Members page and filters.','tooltip');
 
 UPDATE `{install:prefix}language` SET `code`='{install:lang}',`original`=`value`;

@@ -45,7 +45,7 @@
 								{if $template.name != $tmpl}
 									<button type="submit" name="install" class="btn btn-success btn-sm"><i class="i-checkmark"></i> {lang key='set_as_default_template'}</button>
 								{else}
-									<button type="submit" name="reinstall" class="btn btn-warning btn-sm"><i class="i-loop"></i></button>
+									<button type="button" class="btn btn-warning btn-sm js-reinstall"><i class="i-loop"></i></button>
 									{if $template.config_groups}
 										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$template.config_groups['Template'].name}/" class="btn btn-sm btn-default" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
 									{/if}
