@@ -551,6 +551,8 @@ class iaBackendController extends iaAbstractControllerBackend
 			$dumpFolders[iaLanguage::get($package)] = IA_PACKAGES . $package . IA_DS . 'includes' . IA_DS . 'dumps' . IA_DS;
 		}
 
+		list($migrations, $appliedMigrations) = $this->_getMigrations();
+
 		// generate list of available dump files
 		$dumpFiles = array();
 		foreach ($dumpFolders as $name => $path)
@@ -571,8 +573,6 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 		}
-
-		list($migrations,) = $this->_getMigrations();
 
 		$iaView->assign('migrations', $migrations);
 		$iaView->assign('dumpFiles', $dumpFiles);
