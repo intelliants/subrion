@@ -44,7 +44,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->display($this->getName());
 
 		$templates = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`config_group` = 'email_templates' AND `type` IN ('radio', 'divider') ORDER BY `order`");
-
 		$iaView->assign('templates', $templates);
 	}
 

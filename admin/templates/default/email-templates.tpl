@@ -15,10 +15,10 @@
 								{if isset($previous_group)}
 									</optgroup>
 								{/if}
-								<optgroup label="{$entry.description}">
+								<optgroup label="{lang key="config_{$entry.name}"}">
 								{assign previous_group $entry.name}
 							{else}
-								<option value="{$entry.name}">{$entry.description}</option>
+								<option value="{$entry.name}">{lang key="config_{$entry.name}"}</option>
 							{/if}
 						{/foreach}
 						</optgroup>
