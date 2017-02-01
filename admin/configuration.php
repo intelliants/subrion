@@ -210,7 +210,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				iaBreadcrumb::add($page['title'], IA_ADMIN_URL . $page['alias']);
 			}
-			elseif ($pluginPage = $this->_iaDb->row(array('alias', 'group'), iaDb::printf("`name` = ':name' OR `name` = ':name_stats'", array('name' => $groupData['extras'])), iaPage::getAdminTable()))
+			elseif ($pluginPage = $this->_iaDb->row(array('alias', 'group'), iaDb::printf("`name` = ':name' || `name` = ':name_stats'", array('name' => $groupData['extras'])), iaPage::getAdminTable()))
 			{
 				// it is a package
 				$iaView->set('group', $pluginPage['group']);
@@ -245,7 +245,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			return iaView::accessDenied();
 		}
 
-		$where = "`type` != 'hidden' " . ($this->_type ? 'AND `custom` = 1' : '');
+		$where = "`type` != 'hidden' " . ($this->_type ? '&& `custom` = 1' : '');
 		$rows = $this->_iaDb->all(array('name', 'type', 'options'), $where, null, null, iaCore::getConfigTable());
 
 		$params = array();
@@ -355,7 +355,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				if ($this->_type)
 				{
-					$where = sprintf("`name` = '%s' AND `type` = '%s' AND `type_id` = %d", $key, $this->_type, $this->_typeId);
+					$where = sprintf("`name` = '%s' && `type` = '%s' && `type_id` = %d", $key, $this->_type, $this->_typeId);
 
 					$this->_iaDb->setTable(iaCore::getCustomConfigTable());
 
@@ -396,7 +396,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
 
-			empty($this->_redirectUrl) || iaUtil::go_to($this->_redirectUrl);
+			empty($this->_redirectUrl) || iaUtil::go_to(IA_URL . $this->_redirectUrl);
 		}
 		elseif ($messages)
 		{
@@ -409,7 +409,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$sql = <<<SQL
 SELECT c.`name`, c.`value` 
 	FROM `:prefix:table_custom_config` c, `:prefix:table_members` m 
-WHERE c.`type` = ':type' AND c.`type_id` = m.`usergroup_id` AND m.`id` = :id
+WHERE c.`type` = ':type' && c.`type_id` = m.`usergroup_id` && m.`id` = :id
 SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->_iaDb->prefix,
@@ -449,15 +449,12 @@ SQL;
 			case 'https':
 				$baseUrl = $this->_iaCore->get('baseurl');
 				$newBaseUrl = 'http' . ($value ? 's' : '') . substr($baseUrl, strpos($baseUrl, '://'));
-
-				$this->_iaDb->update(array('value' => $newBaseUrl), iaDb::convertIds('baseurl', 'name'));
-
-				$this->_redirectUrl = str_replace($baseUrl, $newBaseUrl, IA_SELF);
+				$this->_iaCore->set('baseurl', $newBaseUrl, true);
 
 				break;
 
 			case 'admin_page':
-				$this->_redirectUrl = IA_URL . iaSanitize::htmlInjectionFilter($value) . '/configuration/general/';
+				$this->_redirectUrl = iaSanitize::htmlInjectionFilter($value) . '/configuration/system/';
 		}
 
 		return true;
@@ -465,7 +462,7 @@ SQL;
 
 	private function _getParams($groupName)
 	{
-		$where = "`config_group` = '{$groupName}' AND `type` != 'hidden' " . ($this->_type ? 'AND `custom` = 1' : '') . ' ORDER BY `order`';
+		$where = "`config_group` = '{$groupName}' && `type` != 'hidden' " . ($this->_type ? '&& `custom` = 1' : '') . ' ORDER BY `order`';
 		$params = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, iaCore::getConfigTable());
 
 		if ($this->_type)
