@@ -1,7 +1,7 @@
 $(function()
 {
 	$('.widget:not(.widget-medium,.widget-small,.widget-package) .widget-content').mCustomScrollbar({theme: 'dark-thin'});
-	$('.widget-small-config').on('click', function(e){window.location = intelli.config.admin_url + '/plugins';});
+	$('.widget-small-config').on('click', function(e){window.location = intelli.config.admin_url + '/plugins/';});
 
 	$('.widget-medium .js-stats').each(function(i, obj)
 	{
