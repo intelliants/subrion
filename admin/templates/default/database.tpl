@@ -125,7 +125,7 @@
 	<div class="row">
 		<div class="col col-lg-6">
 			<div class="widget widget-large" id="widget-usergroups">
-				<div class="widget-header"><i class="i-database"></i> Migrations</div>
+				<div class="widget-header"><i class="i-database"></i> {lang key=migrations}</div>
 				<div class="widget-content">
 					<table class="table table-light table-hover">
 						<thead>
@@ -160,7 +160,7 @@
 		</div>
 		<div class="col col-lg-6">
 			<div class="widget widget-large" id="widget-members">
-				<div class="widget-header"><i class="i-lightning"></i> Non-applied migrations</div>
+				<div class="widget-header"><i class="i-lightning"></i> {lang key=migrations_not_applied}</div>
 				<div class="widget-content">
 					<table class="table table-light table-hover">
 						<thead>
