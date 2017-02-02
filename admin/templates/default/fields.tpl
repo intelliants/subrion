@@ -243,9 +243,9 @@
 				{else}
 					<hr>
 
-					<input type="hidden" name="use_img_types" value="{$item.timepicker}">
-					<input type="hidden" name="imagetype_primary" value="{$item.imagetype_primary}">
-					<input type="hidden" name="imagetype_thumbnail" value="{$item.imagetype_thumbnail}">
+					<input type="hidden" name="use_img_types" value="{$item.timepicker|intval}">
+					<input type="hidden" name="imagetype_primary" value="{$item.imagetype_primary|escape:'html'}">
+					<input type="hidden" name="imagetype_thumbnail" value="{$item.imagetype_thumbnail|escape:'html'}">
 
 					<div class="row" id="js-image-field-setup-by-imgtypes"{if !$item.timepicker} style="display: none;"{/if}>
 						<label class="col col-lg-2 control-label">{lang key='image_types'} <span class="required">*</span></label>
@@ -254,9 +254,13 @@
 							{if $imageTypes}
 								{foreach $imageTypes as $imageType}
 									<div class="checkbox">
-										<label><input name="image_types[]" value="{$imageType.id}" type="checkbox"{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
+										<label><input name="image_types[]" value="{$imageType.id}" data-name="{$imageType.name}" type="checkbox"
+											{if $item.imagetype_primary == $imageType.name} data-type="primary"
+											{elseif $item.imagetype_thumbnail == $imageType.name} data-type="thumbnail"{/if}
+											{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
 											{$imageType.name|escape:'html'} &nbsp; <small>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</small></label>
-										<a href="#" class="label label-default hide">Set as primary</a>
+										<a href="#" class="label label-info hide js-image-type-primary" data-type="primary">Set as primary</a>
+										<a href="#" class="label label-default hide js-image-type-thumbnail" data-type="thumbnail">Set as thumbnail</a>
 									</div>
 								{/foreach}
 							{else}
@@ -477,6 +481,8 @@
 					<hr>
 
 					<input type="hidden" name="pic_use_img_types" value="{$item.timepicker}">
+					<input type="hidden" name="pic_imagetype_primary" value="{$item.imagetype_primary|escape:'html'}">
+					<input type="hidden" name="pic_imagetype_thumbnail" value="{$item.imagetype_thumbnail|escape:'html'}">
 
 					<div class="row" id="js-gallery-field-setup-by-imgtypes"{if !$item.timepicker} style="display: none;"{/if}>
 						<label class="col col-lg-2 control-label">{lang key='image_types'} <span class="required">*</span></label>
@@ -485,8 +491,13 @@
 							{if $imageTypes}
 								{foreach $imageTypes as $imageType}
 									<div class="checkbox">
-										<label><input name="pic_image_types[]" value="{$imageType.id}" type="checkbox"{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
+										<label><input name="pic_image_types[]" value="{$imageType.id}" data-name="{$imageType.name}" type="checkbox"
+											{if $item.imagetype_primary == $imageType.name} data-type="primary"
+											{elseif $item.imagetype_thumbnail == $imageType.name} data-type="thumbnail"{/if}
+											{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
 											{$imageType.name|escape:'html'} &nbsp; <small>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</small></label>
+										<a href="#" class="label label-info hide js-image-type-primary" data-type="primary">Set as primary</a>
+										<a href="#" class="label label-default hide js-image-type-thumbnail" data-type="thumbnail">Set as thumbnail</a>
 									</div>
 								{/foreach}
 							{else}

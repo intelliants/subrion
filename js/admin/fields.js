@@ -604,21 +604,42 @@ $(function()
 		$('input[name="pic_use_img_types"]').val($(this).data('type'));
 	});
 
-	var $imgFieldImageTypesSetup = $('#js-image-field-setup-by-imgtypes');
+	var $imgFieldImageTypesSetup = $('#js-image-field-setup-by-imgtypes, #js-gallery-field-setup-by-imgtypes');
 
 	$('.checkbox', $imgFieldImageTypesSetup).hover(
-		function(){if($('input[type="checkbox"]', this).is(':checked'))$('.label', this).removeClass('hide')},
-		function(){$('.label', this).addClass('hide')}
-	);
+	function()
+	{
+		var $checkbox = $('input[type="checkbox"]:checked', this);
+		if (!$checkbox.length) return;
+		$('.label', this).not('.js-image-type-' + $checkbox.data('type')).removeClass('hide');
+	},
+	function()
+	{
+		$('.label', this).addClass('hide')
+	});
 
 	$('input[type="checkbox"]', $imgFieldImageTypesSetup).on('click', function()
 	{
 		var $o = $(this).closest('.checkbox').find('a');
-		$(this).is(':checked') ? $o.removeClass('hide') : $o.addClass('hide')
+		$(this).is(':checked')
+			? $o.not('.js-image-type-' + $(this).data('type')).removeClass('hide')
+			: $o.addClass('hide')
 	});
 
 	$('a', $imgFieldImageTypesSetup).on('click', function(e)
 	{
+		e.preventDefault();
 
+		var type = $(this).data('type'),
+			$checkbox = $(this).closest('.checkbox').find('input[type="checkbox"]');
+
+		$checkbox.data('type', type);
+
+		var inputName = ('primary' == type) ? 'imagetype_primary' : 'imagetype_thumbnail';
+		'pictures' == $(this).closest('.field_type').attr('id') && (inputName = 'pic_' + inputName);
+
+		$('input[name="' + inputName + '"]').val($checkbox.data('name'));
+
+		$(this).fadeOut('fast');
 	});
 });
