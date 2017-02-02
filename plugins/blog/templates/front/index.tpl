@@ -2,7 +2,7 @@
 	<p class="text-i text-fade-50">{lang key='posted_on'} {$blog_entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$blog_entry.fullname}</p>
 
 	{if $blog_entry.image}
-		{ia_image file=$blog_entry.image type='full' title=$blog_entry.title class='img-responsive m-b'}
+		{ia_image file=$blog_entry.image type='large' title=$blog_entry.title class='img-responsive m-b'}
 	{/if}
 
 	{$blog_entry.body}
