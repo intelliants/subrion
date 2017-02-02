@@ -425,7 +425,7 @@ Ext.onReady(function()
 			{name: 'uninstall', title: _t('uninstall'), icon: 'remove', click: uninstallClick}
 		],
 		expanderTemplate: '{summary}',
-		fields: ['file', 'summary'],
+		fields: ['file', 'summary', 'name'],
 		resizer: false,
 		sorters: [{property: 'date', direction: 'DESC'}],
 		storeParams: {type: 'installed'},
