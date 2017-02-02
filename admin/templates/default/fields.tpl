@@ -304,20 +304,20 @@
 									<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-tooltip="{lang key='fit_tip'}">{lang key='fit'}</option>
 								</select>
 								<p class="help-block"></p>
-							</div>
-						</div>
-						<div class="row">
-							<label class="col col-lg-2 control-label">{lang key='file_prefix'}</label>
-
-							<div class="col col-lg-4">
-								<input type="text" name="file_prefix" value="{if isset($item.file_prefix)}{$item.file_prefix|escape:'html'}{/if}">
 								<p class="help-block"><a href="#" class="pull-right js-cmd-toggle-image-setup" style="text-decoration: none; border-bottom: 1px dashed;" data-type="1">Use image types instead</a></p>
 							</div>
 						</div>
 					</div>
-
 					<hr>
 				{/if}
+
+				<div class="row">
+					<label class="col col-lg-2 control-label">{lang key='file_prefix'}</label>
+
+					<div class="col col-lg-4">
+						<input type="text" name="file_prefix" value="{if isset($item.file_prefix)}{$item.file_prefix|escape:'html'}{/if}">
+					</div>
+				</div>
 			</div>
 
 			<div id="tree" class="field_type" style="display: none;">
