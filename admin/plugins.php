@@ -306,10 +306,12 @@ class iaBackendController extends iaAbstractControllerBackend
 						$this->getHelper()->setXml($fileContent);
 						$this->getHelper()->parse();
 
-						if (($this->getHelper()->itemData['compatibility'] && version_compare(IA_VERSION, $iaExtra->itemData['compatibility'], '>=')) && version_compare($this->getHelper()->itemData['info']['version'], $entry['version'], '>'))
+						if (($this->getHelper()->itemData['compatibility'] && version_compare(IA_VERSION, $this->getHelper()->itemData['compatibility'], '>=')) && version_compare($this->getHelper()->itemData['info']['version'], $entry['version'], '>'))
 						{
 							$entry['upgrade'] = $entry['name'];
 						}
+
+						$entry['name'] = $this->getHelper()->itemData['name'];
 					}
 				}
 			}
