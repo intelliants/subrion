@@ -122,16 +122,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($field = $iaField->getField($_POST['field'], $_POST['item']))
 		{
-			$imageTypeIds = $iaField->getImageTypesByFieldId($field['id']);
-
-			$imageTypes = array();
-			foreach ($iaField->getImageTypes() as $imageType)
-				if (in_array($imageType['id'], $imageTypeIds)) $imageTypes[] = $imageType['name'];
-
-			$file = $_POST['file'];
-			iaSanitize::filenameEscape($file);
-
-			$iaField->deleteUploadedFile($_POST['path'], $file, $imageTypes);
+			$iaField->deleteFileByPath($_POST['path'], $_POST['file'],
+				$iaField->getImageTypeNamesByField($field));
 
 			$result['error'] = false;
 			$result['message'] = iaLanguage::get('deleted');
@@ -155,7 +147,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($itemId && $item && $field)
 		{
-			$result = $this->_iaCore->factory('field')->deleteUploadedFileByField($item, $itemId, $field, $file)
+			$result = $this->_iaCore->factory('field')->deleteFileByFieldName($field, $item, $itemId, $file)
 				? array('error' => false, 'message' => iaLanguage::get('deleted'))
 				: array('error' => true, 'message' => iaLanguage::get('error'));
 		}

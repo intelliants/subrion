@@ -853,7 +853,11 @@ SQL;
 			$fileName = $field['file_prefix'] . $fileName;
 		}
 
-		if (is_file($absUploadPath . $fileName)) // first, try to upload under original name
+		$fileExists = in_array($field['type'], array(self::IMAGE, self::PICTURES))
+			? is_file($absUploadPath . self::UPLOAD_FOLDER_ORIGINAL . IA_DS . $fileName)
+			: is_file($absUploadPath . $fileName);
+
+		if ($fileExists) // first, try to upload under original name
 		{
 			// if exists, then add unique tail
 			$pathInfo = pathinfo($fileName);
@@ -904,7 +908,7 @@ SQL;
 
 		if (isset($field['timepicker']) && $field['timepicker']) // image types enabled field
 		{
-			$imageTypeIds = $this->getImageTypesByFieldId($field['id']);
+			$imageTypeIds = $this->getImageTypeIdsByFieldId($field['id']);
 			$ext = pathinfo($fileName, PATHINFO_EXTENSION);
 
 			$imageTypes = array();
@@ -980,6 +984,14 @@ SQL;
 	public function getStorageFields($itemName = null)
 	{
 		return $this->_getFieldNames(iaDb::convertIds(self::STORAGE, 'type'), $itemName);
+	}
+
+	public function getUploadFields($itemName = null)
+	{
+		$where = '`type` IN (:image, :pictures, :storage)';
+		$this->iaDb->bind($where, array('image' => self::IMAGE, 'pictures' => self::PICTURES, 'storage' => self::STORAGE));
+
+		return $this->_getFieldNames($where, $itemName);
 	}
 
 	public function getSerializedFields($itemName = null)
@@ -1262,9 +1274,32 @@ SQL;
 		return $this->iaDb->onefield('file_type_id', iaDb::convertIds($id, 'image_type_id'), null, null, self::getTableImageTypesFileTypes());
 	}
 
-	public function getImageTypesByFieldId($id)
+	public function getImageTypeNamesByField(array $field)
 	{
-		return $this->iaDb->onefield('image_type_id', iaDb::convertIds($id, 'field_id'), null, null, self::$_tableFieldsImageTypes);
+		if ($field['type'] != self::IMAGE && $field['type'] != self::PICTURES)
+		{
+			return array();
+		}
+
+		$result = array(self::IMAGE_TYPE_THUMBNAIL, self::IMAGE_TYPE_LARGE);
+
+		if ($field['timepicker'])
+		{
+			$result = array();
+
+			if ($ids = $this->getImageTypeIdsByFieldId($field['id']))
+			{
+				foreach ($this->getImageTypes() as $imageType)
+					in_array($imageType['id'], $ids) && $result[] = $imageType['name'];
+			}
+		}
+
+		return $result;
+	}
+
+	public function getImageTypeIdsByFieldId($fieldId)
+	{
+		return $this->iaDb->onefield('image_type_id', iaDb::convertIds($fieldId, 'field_id'), null, null, self::$_tableFieldsImageTypes);
 	}
 
 	public function saveImageTypesByFieldId($id, array $imageTypeIds)
@@ -1279,22 +1314,79 @@ SQL;
 		$this->iaDb->resetTable();
 	}
 
-	public function deleteUploadedFile($path, $file, $imageTypes = array('thumbnail', 'large'))
+	public function deleteFileByPath($path, $file, $imageTypes = null)
 	{
-		if (is_array($imageTypes))
+		iaSanitize::filenameEscape($file);
+
+		if (is_null($imageTypes))
+		{
+			return iaUtil::deleteFile(IA_UPLOADS . $path . $file);
+		}
+		elseif (is_array($imageTypes))
 		{
 			$imageTypes[] = self::UPLOAD_FOLDER_ORIGINAL;
 
+			$files = array();
 			foreach ($imageTypes as $imageTypeName)
-				iaUtil::deleteFile(IA_UPLOADS . $path . $imageTypeName . IA_DS . $file);
+				iaUtil::deleteFile($files[] = IA_UPLOADS . $path . $imageTypeName . IA_DS . $file);
+
+			// returning valid result
+			$result = true;
+			foreach ($files as $file)
+			{
+				if (is_file($file))
+				{
+					$result = false;
+					break;
+				}
+			}
+
+			return $result;
 		}
-		else
+
+		return false;
+	}
+
+	public function cleanUpItemFiles($itemName, array $itemData)
+	{
+		if ($uploadFields = $this->getUploadFields($itemName))
 		{
-			iaUtil::deleteFile(IA_UPLOADS . $path . $file);
+			foreach ($uploadFields as $fieldName)
+				empty($itemData[$fieldName]) || $this->_deleteFilesByFieldName($fieldName, $itemName, $itemData[$fieldName]);
 		}
 	}
 
-	public function deleteUploadedFileByField($itemName, $itemId, $fieldName, $fileName = null)
+	protected function _deleteFilesByFieldName($fieldName, $itemName, $files)
+	{
+		if (!$files || !is_string($files))
+		{
+			return false;
+		}
+
+		if (!$field = $this->getField($fieldName, $itemName))
+		{
+			return false;
+		}
+
+		$filesArray = unserialize($files);
+
+		switch ($field['type'])
+		{
+			case self::IMAGE:
+				return $this->deleteFileByPath($filesArray['path'], $filesArray['file'], $this->getImageTypeNamesByField($field));
+			case self::PICTURES:
+			case self::STORAGE:
+				$result = array();
+				$imageTypeNames = ($field['type'] == self::PICTURES) ? $this->getImageTypeNamesByField($field) : null;
+				foreach ($filesArray as $fileEntry)
+					$result[] = $this->deleteFileByPath($fileEntry['path'], $fileEntry['file'], $imageTypeNames);
+				return !in_array(false, $result, true);
+			default:
+				throw new Exception('File removal request on unsupported type of field');
+		}
+	}
+
+	public function deleteFileByFieldName($fieldName, $itemName, $itemId, $fileName = null)
 	{
 		$tableName = $this->iaCore->factory('item')->getItemTable($itemName);
 		$itemValue = $this->iaDb->one($fieldName, iaDb::convertIds($itemId), $tableName);
@@ -1334,28 +1426,9 @@ SQL;
 
 				if ($newValue != $itemValue)
 				{
-					if (in_array($field['type'], array(self::IMAGE, self::PICTURES)))
-					{
-						if ($field['timepicker']) // image types enabled field
-						{
-							$imageTypeIds = $this->getImageTypesByFieldId($field['id']);
-
-							$imageTypes = array();
-							foreach ($this->getImageTypes() as $imageType)
-								in_array($imageType['id'], $imageTypeIds)
-								&& ($imageTypes[] = $imageType['name']);
-
-							$this->deleteUploadedFile($path, $file, $imageTypes);
-						}
-						else // standard processing (original, thumbnail & large image)
-						{
-							$this->deleteUploadedFile($path, $file);
-						}
-					}
-					else
-					{
-						$this->deleteUploadedFile($path, $file, null);
-					}
+					in_array($field['type'], array(self::IMAGE, self::PICTURES))
+						? $this->deleteFileByPath($path, $file, $this->getImageTypeNamesByField($field))
+						: $this->deleteFileByPath($path, $file);
 				}
 			}
 			else
@@ -1365,7 +1438,7 @@ SQL;
 					$newValue = '';
 
 					list($path, $file) = explode('|', $itemValue);
-					$this->deleteUploadedFile($path, $file);
+					$this->deleteFileByPath($path, $file, array(self::IMAGE_TYPE_THUMBNAIL, self::IMAGE_TYPE_LARGE));
 				}
 			}
 

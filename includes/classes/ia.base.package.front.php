@@ -154,43 +154,7 @@ abstract class abstractPackageFront extends abstractCore
 
 			if ($result)
 			{
-				$iaField = $this->iaCore->factory('field');
-
-				// delete images field values
-				if ($imageFields = $iaField->getImageFields($this->getItemName()))
-				{
-					$iaPicture = $this->iaCore->factory('picture');
-
-					foreach ($imageFields as $imageFieldName)
-					{
-						if (isset($entryData[$imageFieldName]) && $entryData[$imageFieldName])
-						{
-							$iaPicture->delete($entryData[$imageFieldName]);
-						}
-					}
-				}
-
-				// delete storage field values
-				if ($storageFields = $iaField->getStorageFields($this->getItemName()))
-				{
-					foreach ($storageFields as $storageFieldName)
-					{
-						if (isset($entryData[$storageFieldName]) && $entryData[$storageFieldName])
-						{
-							if (':' == $entryData[$storageFieldName][1])
-							{
-								$unpackedData = unserialize($entryData[$storageFieldName]);
-								if (is_array($unpackedData) && $unpackedData)
-								{
-									foreach ($unpackedData as $oneFile)
-									{
-										iaUtil::deleteFile(IA_UPLOADS . $oneFile['path']);
-									}
-								}
-							}
-						}
-					}
-				}
+				$this->iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
 
 				$this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
 

@@ -448,7 +448,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 			elseif (iaField::IMAGE == $entryData['type'] || iaField::PICTURES == $entryData['type'])
 			{
-				$entryData['image_types'] = $this->getHelper()->getImageTypesByFieldId($this->getEntryId());
+				$entryData['image_types'] = $this->getHelper()->getImageTypeIdsByFieldId($this->getEntryId());
 			}
 			elseif ($entryData['values'])
 			{
