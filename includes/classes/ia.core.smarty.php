@@ -619,7 +619,7 @@ class iaSmarty extends Smarty
 			else // this scheme used by plugins
 			{
 				list($path, $file) = explode('|', $params['file']);
-				$type = isset($params['large']) ? 'large' : 'thumbnail';
+				$type = !isset($params['type']) ? 'thumbnail' : $params['type'];
 
 				$url = $iaCore->iaView->assetsUrl . 'uploads/' . $path . $type . '/' . $file;
 			}
