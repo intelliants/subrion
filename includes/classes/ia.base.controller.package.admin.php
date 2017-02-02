@@ -242,43 +242,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 			if ($result)
 			{
-				$iaField = $this->_iaCore->factory('field');
-
-				// we have to check for uploaded images of this listing
-				if ($imageFields = $iaField->getImageFields($this->getItemName()))
-				{
-					$iaPicture = $this->_iaCore->factory('picture');
-
-					foreach ($imageFields as $imageFieldName)
-					{
-						if (!empty($entryData[$imageFieldName]))
-						{
-							$iaPicture->delete($entryData[$imageFieldName]);
-						}
-					}
-				}
-
-				// delete storage field values
-				if ($storageFields = $iaField->getStorageFields($this->getPackageName()))
-				{
-					foreach ($storageFields as $storageFieldName)
-					{
-						if (isset($entryData[$storageFieldName]) && $entryData[$storageFieldName])
-						{
-							if (':' == $entryData[$storageFieldName][1])
-							{
-								$unpackedData = unserialize($entryData[$storageFieldName]);
-								if (is_array($unpackedData) && $unpackedData)
-								{
-									foreach ($unpackedData as $oneFile)
-									{
-										iaUtil::deleteFile(IA_UPLOADS . $oneFile['path']);
-									}
-								}
-							}
-						}
-					}
-				}
+				$this->_iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
 
 				$this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
 
