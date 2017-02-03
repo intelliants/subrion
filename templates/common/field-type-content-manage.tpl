@@ -201,18 +201,6 @@ $(function()
 						</div>
 					{/foreach}
 				</div>
-
-				{ia_add_js}
-$(function()
-{
-	var params = {
-		handle: '.drag-handle'
-	}
-
-	intelli.sortable('{$fieldName}_upload_list', params);
-});
-				{/ia_add_js}
-
 				{$max_num = ($field.length - count($value))}
 			{else}
 				{$max_num = $field.length}

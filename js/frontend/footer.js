@@ -232,6 +232,11 @@ $(function()
 		});
 	});
 
+	$('.upload-items').each(function()
+	{
+		intelli.sortable($(this).attr('id'), {handle: '.drag-handle'});
+	});
+
 	// add/delete pictures fields
 	function detectFilename()
 	{
