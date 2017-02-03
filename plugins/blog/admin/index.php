@@ -133,11 +133,13 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		{
 			try
 			{
-				$path = $this->_iaCore->factory('field')->uploadImage($_FILES['image'], $this->_iaCore->get('blog_image_width'),
+				$iaField = $this->_iaCore->factory('field');
+
+				$path = $iaField->uploadImage($_FILES['image'], $this->_iaCore->get('blog_image_width'),
 					$this->_iaCore->get('blog_image_height'), $this->_iaCore->get('blog_thumb_width'),
 					$this->_iaCore->get('blog_thumb_height'), $this->_iaCore->get('blog_image_resize'));
 
-				//empty($entry['image']) || $iaPicture->delete($entry['image']); // already has an assigned image
+				empty($entry['image']) || $iaField->deleteUploadedFile('image', $this->getTable(), $this->getEntryId(), $entry['image']);
 				$entry['image'] = $path;
 			}
 			catch (Exception $e)

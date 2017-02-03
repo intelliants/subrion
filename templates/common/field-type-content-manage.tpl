@@ -86,7 +86,7 @@ $(function()
 			{if $value}
 				<div class="thumbnail">
 					<div class="thumbnail__actions">
-						<button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-picture-path="{$value.path}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+						<button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$value.file|escape:'html'}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 					</div>
 
 					{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
@@ -196,7 +196,7 @@ $(function()
 							<div class="input-group-btn">
 								<a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{lang key='download'}"><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
 								<span class="btn btn-default drag-handle"><span class="fa fa-arrows-v"></span></span>
-								<button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file}">{lang key='delete'}</button>
+								<button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file|escape:'html'}">{lang key='delete'}</button>
 							</div>
 						</div>
 					{/foreach}

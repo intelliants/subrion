@@ -214,7 +214,9 @@ $(function()
 			if (result) {
 				$.post(intelli.config.ia_url + 'actions/read.json', {action: 'delete-file', item: item, field: field, file: file, itemid: id}, function(data)
 				{
-					if ('boolean' == typeof data.error && !data.error)
+					intelli.notifFloatBox({msg: data.message, type: data.error ? 'error' : 'success', autohide: true});
+
+					if (!data.error)
 					{
 						self.closest('.fieldzone').find('.js-file-name').val('');
 						self.closest('.thumbnail').remove();
@@ -224,8 +226,6 @@ $(function()
 						{
 							$('#wrap_' + field).show();
 						}
-
-						intelli.notifFloatBox({msg: data.message, type: 'success', autohide: true});
 					}
 				});
 			}

@@ -351,7 +351,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						$entry['imagetype_primary'] = $data['pic_imagetype_primary'];
 						$entry['imagetype_thumbnail'] = $data['pic_imagetype_thumbnail'];
 
-						if (empty($data['image_types']))
+						if (empty($data['pic_image_types']))
 						{
 							$this->addMessage(iaLanguage::getf('field_is_not_selected',
 								array('field' => iaLanguage::get('image_types'))), false);
