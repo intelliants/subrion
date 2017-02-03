@@ -654,16 +654,15 @@ $(function()
 
 				this.on('success', function(file, response)
 				{
-					var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + response.path + '">'),
-						$name = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.file + '">'),
-						$size = $('<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">'),
-						$fancyboxLink = $('<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>');
+					var $preview = $(file.previewElement),
+						htmlInputs =
+							'<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + response.path + '">'
+							+ '<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.file + '">'
+							+ '<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">',
+						htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>';
 
-					// Reserved if it will be necessary in future
-					// var $title = $('<label>{lang key="title"}</label><input type="text" name="' + fieldName + '_dropzone_titles[]">');
-
-					$(file.previewElement).append($path).append($name).append($size);
-					$(file.previewElement).find('.dz-details').append($fancyboxLink);
+					$preview.append(htmlInputs).find('.dz-details').append(htmlFancybox);
+					$('[data-dz-name]', $preview).text(response.file);
 				});
 
 				var $submit = $('.js-btn-submit');
@@ -679,7 +678,8 @@ $(function()
 
 				this.on('error', function(file)
 				{
-					if ('canceled' != file.status) {
+					if ('canceled' != file.status)
+					{
 						error = true;
 						errorMessage = 'error';
 					}
@@ -697,8 +697,8 @@ $(function()
 						action: 'dropzone-delete-file',
 						item: itemName,
 						field: fieldName,
-						path: $(file.previewElement).children('input[type="hidden"]').val(),
-						file: file.name
+						path: $('input[type="hidden"]:first', file.previewElement).val(),
+						file: $('[data-dz-name]', file.previewElement).text()
 					};
 					if (typeof existingFiles !== 'undefined' && -1 !== existingFiles.indexOf(file.name))
 					{
@@ -719,10 +719,9 @@ $(function()
 						message = errorMessage;
 						error = false;
 						errorMessage = '';
-						intelli.notifFloatBox({ msg: _t(message), type: 'error', autohide: true });
+						intelli.notifFloatBox({msg: _t(message), type: 'error', autohide: true});
 					}
-					$submit.attr('disabled', false);
-					$submit.html(_t(submitButtonText));
+					$submit.attr('disabled', false).html(_t(submitButtonText));
 				});
 			}
 		});
@@ -739,17 +738,18 @@ $(function()
 				dropZone.emit('addedfile', mock);
 				dropZone.createThumbnailFromUrl(mock, intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.thumbnail + '/' + entry.file);
 
-				var $path = $('<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + entry.path + '">'),
-					$name = $('<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + entry.file + '">'),
-					$size = $('<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + entry.size + '">'),
-					$fancyboxLink = $('<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.primary + '/' + entry.file + '"><span class="fa fa-search-plus"></span></a>');
+				var htmlInputs =
+						'<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + entry.path + '">'
+						+ '<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + entry.file + '">'
+						+ '<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + entry.size + '">',
+					htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.primary + '/' + entry.file + '"><span class="fa fa-search-plus"></span></a>';
 
-				$(mock.previewElement).append($path).append($name).append($size);
-				$(mock.previewElement).find('.dz-details').append($fancyboxLink);
+				$(mock.previewElement).append(htmlInputs).find('.dz-details').append(htmlFancybox);
 
 				dropZone.emit('complete', mock);
 				existingFiles.push(entry.file);
 			});
+
 			dropZone.options.maxFiles = dropZone.options.maxFiles - existingFiles.length;
 		}
 	});
