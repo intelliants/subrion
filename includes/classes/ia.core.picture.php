@@ -35,7 +35,7 @@ class iaPicture extends abstractCore
 	protected $_typesMap = array(
 		'image/gif' => 'gif',
 		'image/jpeg' => 'jpg',
-		'image/pjpeg' => 'jpg',
+		'image/pjpeg' => 'jpeg',
 		'image/png' => 'png'
 	);
 

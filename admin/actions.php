@@ -147,7 +147,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($itemId && $item && $field)
 		{
-			$result = $this->_iaCore->factory('field')->deleteFileByFieldName($field, $item, $itemId, $file)
+			$result = $this->_iaCore->factory('field')->deleteUploadedFile($field, $item, $itemId, $file)
 				? array('error' => false, 'message' => iaLanguage::get('deleted'))
 				: array('error' => true, 'message' => iaLanguage::get('error'));
 		}

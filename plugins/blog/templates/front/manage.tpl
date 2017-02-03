@@ -38,14 +38,14 @@
 							{if isset($item.image) && $item.image}
 								<div class="thumbnail">
 									<div class="thumbnail__actions">
-										<button class="btn btn-danger btn-sm js-delete-file" data-field="image" data-item="blog_entries" data-item-id="{$item.id|default:''}" data-picture-path="{$item.image}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+										<button class="btn btn-danger btn-sm js-delete-file" data-field="image" data-item="blog_entries" data-item-id="{$item.id|default:''}" data-file="{$item.image|escape:'html'}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 									</div>
 
 									<a href="{ia_image file=$item.image type='large' url=true}" rel="ia_lightbox[image]">
 										{ia_image file=$item.image}
 									</a>
 
-									<input type="hidden" name="image[path]" value="{$item.image}">
+									<input type="hidden" name="image[path]" value="{$item.image|escape:'html'}">
 								</div>
 							{/if}
 
@@ -55,7 +55,7 @@
 										{lang key='browse'} <input type="file" name="image" id="field_image">
 									</span>
 								</span>
-								<input type="text" class="form-control js-file-name" readonly value="{if $item.image}{$item.image}{/if}">
+								<input type="text" class="form-control js-file-name" readonly{if $item.image} value="{$item.image|escape:'html'}{/if}">
 							</div>
 						</div>
 					</div>

@@ -922,8 +922,8 @@ SQL;
 		else // standard processing (original, thumbnail & large image)
 		{
 			$imageTypes = array(
-				array('name' => 'thumbnail', 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode']),
-				array('name' => 'large', 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode'])
+				array('name' => self::IMAGE_TYPE_THUMBNAIL, 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode']),
+				array('name' => self::IMAGE_TYPE_LARGE, 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode'])
 			);
 
 			$allowedFileExtensions = $iaPicture->getSupportedImageTypes();
@@ -1318,6 +1318,8 @@ SQL;
 	{
 		iaSanitize::filenameEscape($file);
 
+		$this->iaCore->factory('util');
+
 		if (is_null($imageTypes))
 		{
 			return iaUtil::deleteFile(IA_UPLOADS . $path . $file);
@@ -1386,10 +1388,31 @@ SQL;
 		}
 	}
 
-	public function deleteFileByFieldName($fieldName, $itemName, $itemId, $fileName = null)
+	public function deleteUploadedFile($fieldName, $itemName, $itemId, $fileName = null, $checkOwnership = false)
 	{
 		$tableName = $this->iaCore->factory('item')->getItemTable($itemName);
-		$itemValue = $this->iaDb->one($fieldName, iaDb::convertIds($itemId), $tableName);
+
+		if ($checkOwnership)
+		{
+			if (!iaUsers::hasIdentity())
+			{
+				return false;
+			}
+
+			$memberIdColumn = (iaUsers::getItemName() == $fieldName) ? iaDb::ID_COLUMN_SELECTION : 'member_id';
+			$row = $this->iaDb->row(array($memberIdColumn, $fieldName), iaDb::convertIds($itemId), $tableName);
+
+			if (!$row || iaUsers::getIdentity()->id != $row[$memberIdColumn])
+			{
+				return false;
+			}
+
+			$itemValue = $row[$fieldName];
+		}
+		else
+		{
+			$itemValue = $this->iaDb->one(array($fieldName), iaDb::convertIds($itemId), $tableName);
+		}
 
 		if ($itemValue)
 		{
