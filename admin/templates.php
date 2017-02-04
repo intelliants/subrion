@@ -271,10 +271,8 @@ class iaBackendController extends iaAbstractControllerBackend
 					unlink(IA_FRONT_TEMPLATES . $templateName);
 				}
 
-				include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
-
-				$pclZip = new PclZip($fileName);
-				$pclZip->extract(PCLZIP_OPT_PATH, IA_FRONT_TEMPLATES . $templateName);
+				$archive = wapmorgan\UnifiedArchive\UnifiedArchive::open($fileName);
+				$archive->extractNode(IA_FRONT_TEMPLATES . $templateName);
 
 				$this->addMessage(iaLanguage::getf('template_downloaded', array('name' => $templateName)), false);
 
