@@ -471,10 +471,8 @@ class iaBackendController extends iaAbstractControllerBackend
 						unlink($this->_folder . $pluginName);
 					}
 
-					include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
-
-					$pclZip = new PclZip($fileName);
-					$pclZip->extract(PCLZIP_OPT_PATH, IA_PLUGINS . $pluginName);
+					$archive = wapmorgan\UnifiedArchive\UnifiedArchive::open($fileName);
+					$archive->extractNode(IA_PLUGINS . $pluginName);
 
 					$this->_iaCore->iaCache->remove('subrion_plugins');
 				}
