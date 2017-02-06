@@ -317,8 +317,8 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['file_prefix'] = $data['file_prefix'];
 					$entry['resize_mode'] = $data['resize_mode'];
 					$entry['timepicker'] = (int)$data['use_img_types'];
-					$entry['imagetype_primary'] = '';
-					$entry['imagetype_thumbnail'] = '';
+					$entry['imagetype_primary'] = iaField::IMAGE_TYPE_LARGE;
+					$entry['imagetype_thumbnail'] = iaField::IMAGE_TYPE_THUMBNAIL;
 
 					if ($entry['timepicker'])
 					{
@@ -343,8 +343,8 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['file_prefix'] = $data['pic_file_prefix'];
 					$entry['resize_mode'] = $data['pic_resize_mode'];
 					$entry['timepicker'] = (int)$data['pic_use_img_types'];
-					$entry['imagetype_primary'] = '';
-					$entry['imagetype_thumbnail'] = '';
+					$entry['imagetype_primary'] = iaField::IMAGE_TYPE_LARGE;
+					$entry['imagetype_thumbnail'] = iaField::IMAGE_TYPE_THUMBNAIL;
 
 					if ($entry['timepicker'])
 					{

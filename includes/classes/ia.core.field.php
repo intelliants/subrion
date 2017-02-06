@@ -629,7 +629,8 @@ SQL;
 					}
 					else
 					{
-						if (self::PICTURES == $field['type'] && iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
+						if ((self::PICTURES == $field['type'] || self::IMAGE == $field['type'])
+							&& iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
 						{
 							$paths = $fieldName . '_dropzone_paths';
 							//$titles = $fieldName . '_dropzone_titles';
@@ -654,24 +655,24 @@ SQL;
 							}
 							elseif ($pictures)
 							{
-								$newPictures = array();
-								foreach ($pictures as $i => $picture)
+								if (self::PICTURES == $field['type'])
 								{
-									$fileName = empty($data[$files][$i]) ? '' : $data[$files][$i];
-									iaSanitize::filenameEscape($fileName);
-									$newPictures[] = array(
-										//'title' => $data[$titles][$i],
-										'path' => $picture,
-										'file' => $fileName,
-										'size' => empty($data[$sizes][$i]) ? '' : (int)$data[$sizes][$i],
-									);
-								}
-
-								if (iaCore::ACTION_EDIT == $this->iaView->get('action'))
-								{
-									if ($oldPictures = $item[$fieldName])
+									$newPictures = array();
+									foreach ($pictures as $i => $picture)
 									{
-										$item[$fieldName] = array_merge($oldPictures, $newPictures);
+										$fileName = empty($data[$files][$i]) ? '' : $data[$files][$i];
+										iaSanitize::filenameEscape($fileName);
+										$newPictures[] = array(
+											//'title' => $data[$titles][$i],
+											'path' => $picture,
+											'file' => $fileName,
+											'size' => empty($data[$sizes][$i]) ? '' : (int)$data[$sizes][$i],
+										);
+									}
+
+									if (iaCore::ACTION_EDIT == $this->iaView->get('action'))
+									{
+										$item[$fieldName] = array_merge($item[$fieldName], $newPictures);
 									}
 									else
 									{
@@ -680,7 +681,11 @@ SQL;
 								}
 								else
 								{
-									$item[$fieldName] = $newPictures;
+									$item[$fieldName] = array(
+										'path' => $data[$paths][0],
+										'file' => $data[$files][0],
+										'size' => empty($data[$sizes][0]) ? '' : (int)$data[$sizes][0]
+									);
 								}
 							}
 						}
@@ -712,7 +717,7 @@ SQL;
 										'file' => $fileEntry['file']
 									);
 
-									self::PICTURES == $field['type'] && $fieldValue['size'] = $_FILES[$fieldName]['size'][$i];
+									self::STORAGE != $field['type'] && $fieldValue['size'] = $_FILES[$fieldName]['size'][$i];
 
 									if (self::IMAGE == $field['type'])
 									{
@@ -1399,7 +1404,7 @@ SQL;
 				return false;
 			}
 
-			$memberIdColumn = (iaUsers::getItemName() == $fieldName) ? iaDb::ID_COLUMN_SELECTION : 'member_id';
+			$memberIdColumn = (iaUsers::getItemName() == $itemName) ? iaDb::ID_COLUMN_SELECTION : 'member_id';
 			$row = $this->iaDb->row(array($memberIdColumn, $fieldName), iaDb::convertIds($itemId), $tableName);
 
 			if (!$row || iaUsers::getIdentity()->id != $row[$memberIdColumn])

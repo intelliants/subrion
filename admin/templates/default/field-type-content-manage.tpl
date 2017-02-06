@@ -14,7 +14,7 @@
 			</div>
 		{/if}
 		<label class="control-label">{$field.title|escape:'html'} {if $field.required}{lang key='field_required'}{/if}</label>
-		{if iaField::PICTURES == $type || iaField::IMAGE == $type}
+		{if (iaField::PICTURES == $type || iaField::IMAGE == $type) && !$field.timepicker}
 			<div class="help-block">
 				{lang key='thumb_dimensions'}: {$field.thumb_width}x{$field.thumb_height}<br>
 				{lang key='image_dimensions'}: {$field.image_width}x{$field.image_height}
@@ -167,7 +167,14 @@ $(function($)
 			{/if}
 
 		{case iaField::IMAGE break}
-			{if $value}
+			<div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
+				data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
+				data-imagetype-thumbnail="{$field.imagetype_thumbnail}" data-max_num="1" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
+				data-values='{if $value}{json_encode(array($value))}{/if}'></div>
+			{ia_add_media files='css: _IA_URL_js/dropzone/dropzone'}
+			{ia_print_js files='dropzone/dropzone'}
+
+			{* if $value}
 				<div class="input-group thumbnail thumbnail-single with-actions">
 					<a href="{ia_image file=$value field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
 						{ia_image file=$value field=$field}
@@ -185,21 +192,13 @@ $(function($)
 				{ia_html_file name="{$fieldName}[]" id=$name value=$value.file}
 			{else}
 				{ia_html_file name="{$fieldName}[]" id=$name}
-			{/if}
+			{/if *}
 
 		{case iaField::PICTURES break}
 			<div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
 				data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
 				data-imagetype-thumbnail="{$field.imagetype_thumbnail}" data-max_num="{$field.length}" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
 				data-values='{if $value}{json_encode(array_values($value))}{/if}'></div>
-			{ia_add_js}
-$(function()
-{
-	intelli.sortable('{$fieldName}_dropzone', {
-		handle: '.dz-image-preview'
-	});
-});
-			{/ia_add_js}
 			{ia_add_media files='css: _IA_URL_js/dropzone/dropzone'}
 			{ia_print_js files='dropzone/dropzone'}
 
