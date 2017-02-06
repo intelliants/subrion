@@ -106,6 +106,38 @@ class iaPicture extends abstractCore
 		}
 	}
 
+	protected function _processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark = false)
+	{
+		require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifFrameExtractor.php';
+
+		if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($sourceFile) && $this->_allowAnimatedGifs)
+		{
+			// Extractions of the GIF frames and their durations
+			$gfe = new GifFrameExtractor\GifFrameExtractor();
+
+			// For each frame, we add a watermark and we resize it
+			$frames = array();
+			foreach ($gfe->extract($sourceFile) as $frame)
+			{
+				$frameLayer = ImageWorkshop::initFromResourceVar($frame['image']);
+
+				$frameLayer->resizeInPixel($width, $height, true);
+				$applyWatermark && self::_applyWaterMark($frameLayer);
+				$frames[] = $frameLayer->getResult();
+			}
+
+			// Then we re-generate the GIF
+			require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifCreator.php';
+
+			$gc = new GifCreator\GifCreator();
+			$gc->create($frames, $gfe->getFrameDurations(), 0);
+
+			return file_put_contents($destinationFile, $gc->getGif());
+		}
+
+		return false;
+	}
+
 	public function process($sourceFile, $destinationFile, $mimeType, $width, $height, $resizeMode, $applyWatermark = false)
 	{
 		$result = false;
@@ -146,106 +178,5 @@ class iaPicture extends abstractCore
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Delete picture field value
-	 *
-	 * @param string $fileName filename to be deleted
-	 *
-	 * @return bool
-	 */
-	public function delete($fileName)
-	{
-		if (':' == $fileName[1])
-		{
-			$unpackedData = unserialize($fileName);
-			if (is_array($unpackedData) && $unpackedData)
-			{
-				if (is_array($unpackedData[key($unpackedData)])) // multiupload field
-				{
-					foreach ($unpackedData as $entry)
-					{
-						if (isset($entry['path']) && $entry['path'])
-						{
-							$this->_deleteSingleImage($entry['path']);
-						}
-					}
-
-					return true;
-				}
-				else // single image field
-				{
-					return $this->_deleteSingleImage($unpackedData['path']);
-				}
-			}
-
-			return false;
-		}
-		else
-		{
-			return $this->_deleteSingleImage($fileName);
-		}
-	}
-
-	/**
-	 * Delete image & derivatives (original, thumbnail) from the filesystem
-	 *
-	 * @param string $fileName filename to be deleted
-	 *
-	 * @return bool
-	 */
-	protected function _deleteSingleImage($fileName)
-	{
-		$fileThumb = explode('.', $fileName);
-		$fileThumb = end($fileThumb);
-		$fileThumb = str_replace('.' . $fileThumb, '~.' . $fileThumb, $fileName);
-
-		$fileOriginal = basename($fileName);
-		$fileOriginal = str_replace($fileOriginal, self::SOURCE_PREFIX . $fileOriginal, $fileName);
-
-		$this->iaCore->factory('util')->deleteFile(array(
-			IA_UPLOADS . $fileName,
-			IA_UPLOADS . $fileThumb,
-			IA_UPLOADS . $fileOriginal
-		));
-
-		return (
-			!file_exists(IA_UPLOADS . $fileName) &&
-			!file_exists(IA_UPLOADS . $fileThumb) &&
-			!file_exists(IA_UPLOADS . $fileOriginal)
-		);
-	}
-
-	protected function _processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark = false)
-	{
-		require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifFrameExtractor.php';
-
-		if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($sourceFile) && $this->_allowAnimatedGifs)
-		{
-			// Extractions of the GIF frames and their durations
-			$gfe = new GifFrameExtractor\GifFrameExtractor();
-
-			// For each frame, we add a watermark and we resize it
-			$frames = array();
-			foreach ($gfe->extract($sourceFile) as $frame)
-			{
-				$frameLayer = ImageWorkshop::initFromResourceVar($frame['image']);
-
-				$frameLayer->resizeInPixel($width, $height, true);
-				$applyWatermark && self::_applyWaterMark($frameLayer);
-				$frames[] = $frameLayer->getResult();
-			}
-
-			// Then we re-generate the GIF
-			require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifCreator.php';
-
-			$gc = new GifCreator\GifCreator();
-			$gc->create($frames, $gfe->getFrameDurations(), 0);
-
-			return file_put_contents($destinationFile, $gc->getGif());
-		}
-
-		return false;
 	}
 }
