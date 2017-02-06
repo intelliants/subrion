@@ -56,7 +56,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				return $this->_dropzoneUpload();
 
 			case 'dropzone-delete-file':
-				return $this->_dropZoneDelete();
+				return $this->_dropzoneDelete();
 
 			default:
 				$result = array();
@@ -88,7 +88,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$fieldName = 'file';
 
-			if (iaField::PICTURES == $field['type'] && iaCore::STATUS_ACTIVE == $field['status']
+			if (in_array($field['type'], array(iaField::IMAGE, iaField::PICTURES))
+				&& iaCore::STATUS_ACTIVE == $field['status']
 				&& isset($_FILES[$fieldName]['error']) && !$_FILES[$fieldName]['error'])
 			{
 				try
@@ -96,6 +97,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$result = $iaField->processUploadedFile($_FILES[$fieldName]['tmp_name'],
 						$field, $_FILES[$fieldName]['name'], $_FILES[$fieldName]['type']);
 
+					$result['error'] = false;
 					$result['size'] = $_FILES[$fieldName]['size'];
 					$result['imagetype'] = $field['imagetype_primary'];
 				}

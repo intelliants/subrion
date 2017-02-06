@@ -1074,7 +1074,7 @@ INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`leng
 ('currency','transactions',0,'text',10,35,1,0,'',0),
 ('sec_key','transactions',0,'text',250,40,1,0,'',0);
 UPDATE `{install:prefix}fields` SET `relation`='regular';
-UPDATE `{install:prefix}fields` SET `use_editor`=1,`thumb_height`=200,`file_prefix`='avat_',`image_width`=300,`image_height`=300,`thumb_width`=200 WHERE `name`='avatar';
+UPDATE `{install:prefix}fields` SET `use_editor`=1,`thumb_height`=200,`file_prefix`='avat_',`image_width`=300,`image_height`=300,`thumb_width`=200,`imagetype_primary`='large',`imagetype_thumbnail`='thumbnail' WHERE `name`='avatar';
 UPDATE `{install:prefix}fields` SET `adminonly`=1 WHERE `name`='api_push_token';
 UPDATE `{install:prefix}fields` SET `adminonly`=1,`values`='yes,no',`default`='yes' WHERE `name`='api_push_receive';
 UPDATE `{install:prefix}fields` SET `timepicker`=1 WHERE `name`IN('date_created','date_paid') AND `item`='transactions';

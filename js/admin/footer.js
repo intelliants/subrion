@@ -171,22 +171,22 @@ $(function()
 	// file upload
 	var fileUpload = function(elem)
 	{
-		var parent  = $(elem).closest('.file-upload'),
-			trigger = $('input[type="file"]', parent);
+		var $parent  = $(elem).closest('.file-upload');
 
-		trigger.trigger('click');
-		trigger.on('change', function()
-		{
-			var filename = trigger.val();
-			var lastIndex = filename.lastIndexOf("\\");
-
-			if (lastIndex >= 0)
+		$('input[type="file"]', $parent)
+			.trigger('click')
+			.on('change', function()
 			{
-				filename = filename.substring(lastIndex + 1);
-			}
+				var filename = $(this).val();
+				var lastIndex = filename.lastIndexOf("\\");
 
-			$('input[type="text"]:not(.file-title)', parent).val(filename);
-		});
+				if (lastIndex >= 0)
+				{
+					filename = filename.substring(lastIndex + 1);
+				}
+
+				$('input[type="text"]:not(.file-title)', $parent).val(filename);
+			});
 	};
 
 	var addFileUploadField = function(elem)
@@ -209,13 +209,13 @@ $(function()
 
 	var removeFileUploadField = function(elem)
 	{
-		var parent = $(elem).closest('.file-upload');
-		var counterObj = $('#'+$('input[type="file"]', parent).attr('name').replace('[]', ''));
+		var $parent = $(elem).closest('.file-upload');
+		var counterObj = $('#'+$('input[type="file"]', $parent).attr('name').replace('[]', ''));
 		var counterNum = parseInt(counterObj.val());
 
-		if (parent.prev().hasClass('file-upload') || parent.next().hasClass('file-upload'))
+		if ($parent.prev().hasClass('file-upload') || $parent.next().hasClass('file-upload'))
 		{
-			parent.remove();
+			$parent.remove();
 			counterObj.val(counterNum + 1);
 		}
 	};
@@ -239,17 +239,15 @@ $(function()
 	});
 
 	// tooltips
-	$('.js-tooltip').tooltip(
-	{
-		container: 'body'
-	}).on('click', function(e)
+	$('.js-tooltip').tooltip({container: 'body'}).on('click', function(e)
 	{
 		e.preventDefault();
 	});
 
-	// separate generator for api token
-	$('#api_token').passField({
-		showWarn: false, showTip: false,
+	$('#api_token').passField(
+	{
+		showWarn: false,
+		showTip: false,
 		pattern: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab' // 64 symbols
 	});
 
@@ -419,11 +417,12 @@ $(function()
 	// get substring count with limit
 	$.fn.substrCount = function(needle)
 	{
+		var p;
 		var h = this.text();
 		var times = 0;
-		while((pos=h.indexOf(needle)) != -1)
+		while((p=h.indexOf(needle)) != -1)
 		{
-			h = h.substr(pos+needle.length);
+			h = h.substr(p+needle.length);
 			times++;
 		}
 
@@ -512,12 +511,7 @@ $(function()
 		{
 			$(this).append('<span class="question" id="tip_'+ id +'"><img src="'+intelli.config.admin_url+'/templates/'+intelli.config.admin_tmpl+'/img/icons/sp.gif" alt="" width="16" height="17" /></span>').find("span.question").each(function()
 			{
-				new Ext.ToolTip(
-				{
-					target: this,
-					dismissDelay: 0,
-					contentEl: 'tip-content-' + id
-				});
+				new Ext.ToolTip({target: this, dismissDelay: 0, contentEl: 'tip-content-' + id});
 			});
 		}
 	});
@@ -622,7 +616,8 @@ $(function()
 		disableMoveButtons();
 	});
 
-	if (typeof Dropzone !== 'undefined') {
+	if (typeof Dropzone !== 'undefined')
+	{
 		Dropzone.autoDiscover = false;
 	}
 
@@ -635,7 +630,8 @@ $(function()
 		var submitButtonText = $dropzone.data('submit_btn_text');
 		var values = $dropzone.data('values');
 
-		var dropZone = new Dropzone('#' + $dropzone.attr('id'), {
+		var dropZone = new Dropzone('#' + $dropzone.attr('id'),
+		{
 			url: intelli.config.admin_url + '/actions/read.json',
 			addRemoveLinks: true,
 			acceptedFiles: 'image/*',
@@ -647,13 +643,19 @@ $(function()
 			dictInvalidFileType: _t('field_tooltip_members_avatar'),
 			dictCancelUpload: '',
 			dictCancelUploadConfirmation: _t('cancel_upload_confirmation'),
-			init: function () {
+			init: function()
+			{
 				var dropZone = this,
 					error = false,
 					errorMessage = '';
 
 				this.on('success', function(file, response)
 				{
+					if (response.error)
+					{
+						return false;
+					}
+
 					var $preview = $(file.previewElement),
 						htmlInputs =
 							'<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + response.path + '">'
@@ -685,32 +687,39 @@ $(function()
 					}
 				});
 
-				this.on('maxfilesexceeded', function()
+				this.on('maxfilesexceeded', function(file)
 				{
 					error = true;
 					errorMessage = 'no_more_files';
+
+					$(file.previewElement).remove();
 				});
 
 				this.on('removedfile', function(file)
 				{
-					var params = {
-						action: 'dropzone-delete-file',
-						item: itemName,
-						field: fieldName,
-						path: $('input[type="hidden"]:first', file.previewElement).val(),
-						file: $('[data-dz-name]', file.previewElement).text()
-					};
-					if (typeof existingFiles !== 'undefined' && -1 !== existingFiles.indexOf(file.name))
+					if ('undefined' == typeof file.status || 'success' == file.status)
 					{
-						dropZone.options.maxFiles = dropZone.options.maxFiles + 1;
+						var params = {
+							action: 'dropzone-delete-file',
+							item: itemName,
+							field: fieldName,
+							path: $('input[type="hidden"]:first', file.previewElement).val(),
+							file: $('[data-dz-name]', file.previewElement).text()
+						};
 
-						params.action = 'delete-file';
-						params.itemid = itemId;
+						if (typeof existingFiles !== 'undefined' && -1 !== existingFiles.indexOf(file.name))
+						{
+							dropZone.options.maxFiles = dropZone.options.maxFiles + 1;
+
+							params.action = 'delete-file';
+							params.itemid = itemId;
+						}
+
+						$.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response)
+						{
+							intelli.notifFloatBox({msg: response.message, type: response.error ? 'error' : 'success', autohide: true});
+						});
 					}
-					$.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response)
-					{
-						intelli.notifFloatBox({msg: response.message, type: response.error ? 'error' : 'success', autohide: true});
-					});
 				});
 
 				this.on('queuecomplete', function()
@@ -752,6 +761,8 @@ $(function()
 
 			dropZone.options.maxFiles = dropZone.options.maxFiles - existingFiles.length;
 		}
+
+		intelli.sortable($dropzone.attr('id'), {handle: '.dz-image-preview'});
 	});
 
 	$('.js-cmd-delete-file').on('click', function(e)

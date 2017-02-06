@@ -626,7 +626,7 @@ $(function()
 			: $o.addClass('hide')
 	});
 
-	$('a', $imgFieldImageTypesSetup).on('click', function(e)
+	$('.checkbox a', $imgFieldImageTypesSetup).on('click', function(e)
 	{
 		e.preventDefault();
 
