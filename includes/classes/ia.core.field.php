@@ -670,14 +670,9 @@ SQL;
 										);
 									}
 
-									if (iaCore::ACTION_EDIT == $this->iaView->get('action'))
-									{
-										$item[$fieldName] = array_merge($item[$fieldName], $newPictures);
-									}
-									else
-									{
-										$item[$fieldName] = $newPictures;
-									}
+									$item[$fieldName] = (iaCore::ACTION_EDIT == $this->iaView->get('action'))
+										? array_merge($item[$fieldName], $newPictures)
+										: $newPictures;
 								}
 								else
 								{
