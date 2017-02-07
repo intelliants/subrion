@@ -35,7 +35,7 @@
 						<div class="form-group">
 							<label for="input-image">{lang key='image'}</label>
 
-							{if isset($item.image) && $item.image}
+							{if !empty($item.image)}
 								<div class="thumbnail">
 									<div class="thumbnail__actions">
 										<button class="btn btn-danger btn-sm js-delete-file" data-field="image" data-item="blog_entries" data-item-id="{$item.id|default:''}" data-file="{$item.image|escape:'html'}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
