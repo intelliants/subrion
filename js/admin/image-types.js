@@ -8,10 +8,11 @@ Ext.onReady(function()
 			{name: 'name', title: _t('name'), width: 1},
 			{name: 'width', title: _t('image_width'), width: 100, editor: 'text'},
 			{name: 'height', title: _t('image_height'), width: 100, editor: 'text'},
+			{name: 'resize_mode', title: _t('resize_mode'), width: 100},
 			'update',
 			'delete'
 		],
-		sorters: [{property: 'id', direction: 'ASC'}],
+		sorters: [{property: 'id', direction: 'ASC'}]
 	}, false);
 
 	grid.toolbar = new Ext.Toolbar({items:[

@@ -119,7 +119,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			'searchable' => false,
 			'timepicker' => false,
 			'default' => '',
+			'imagetype_primary' => '',
+			'imagetype_thumbnail' => '',
 			'status' => iaCore::STATUS_ACTIVE,
+			// bundled info
 			'pages' => array()
 		);
 	}
@@ -320,17 +323,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['imagetype_primary'] = iaField::IMAGE_TYPE_LARGE;
 					$entry['imagetype_thumbnail'] = iaField::IMAGE_TYPE_THUMBNAIL;
 
-					if ($entry['timepicker'])
-					{
-						$entry['imagetype_primary'] = $data['imagetype_primary'];
-						$entry['imagetype_thumbnail'] = $data['imagetype_thumbnail'];
-
-						if (empty($data['image_types']))
-						{
-							$this->addMessage(iaLanguage::getf('field_is_not_selected',
-								array('field' => iaLanguage::get('image_types'))), false);
-						}
-					}
+					$entry['timepicker'] && $this->_assignImageTypes($entry, $data);
 
 					break;
 
@@ -346,17 +339,8 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['imagetype_primary'] = iaField::IMAGE_TYPE_LARGE;
 					$entry['imagetype_thumbnail'] = iaField::IMAGE_TYPE_THUMBNAIL;
 
-					if ($entry['timepicker'])
-					{
-						$entry['imagetype_primary'] = $data['pic_imagetype_primary'];
-						$entry['imagetype_thumbnail'] = $data['pic_imagetype_thumbnail'];
-
-						if (empty($data['pic_image_types']))
-						{
-							$this->addMessage(iaLanguage::getf('field_is_not_selected',
-								array('field' => iaLanguage::get('image_types'))), false);
-						}
-					}
+					$entry['timepicker'] && $this->_assignImageTypes($entry, $data,
+						'pic_image_types', 'pic_imagetype_primary', 'pic_imagetype_thumbnail');
 
 					break;
 
@@ -945,5 +929,36 @@ class iaBackendController extends iaAbstractControllerBackend
 		while (in_array($i, $keys)) $i++;
 
 		return $i;
+	}
+
+	protected function _assignImageTypes(&$entry, $data, $imageTypesKey = 'image_types', $primary = 'imagetype_primary', $thumbnail = 'imagetype_thumbnail')
+	{
+		if (empty($data[$imageTypesKey]) || !is_array($data[$imageTypesKey]))
+		{
+			$this->addMessage(iaLanguage::getf('field_is_not_selected',
+				array('field' => iaLanguage::get('image_types'))), false);
+		}
+		else
+		{
+			$entry['imagetype_primary'] = $data[$primary];
+			$entry['imagetype_thumbnail'] = $data[$thumbnail];
+
+			$sizes = array();
+			foreach ($this->getHelper()->getImageTypes() as $imageType)
+				in_array($imageType['id'], $data[$imageTypesKey])
+				&& $sizes[$imageType['name']] = $imageType['width'] + $imageType['height'];
+
+			$names = array_keys($sizes);
+
+			if (!$entry['imagetype_primary'] || !in_array($entry['imagetype_primary'], $names))
+			{
+				$entry['imagetype_primary'] = array_search(max($sizes), $sizes);
+			}
+
+			if (!$entry['imagetype_thumbnail'] || !in_array($entry['imagetype_thumbnail'], $names))
+			{
+				$entry['imagetype_thumbnail'] = array_search(min($sizes), $sizes);
+			}
+		}
 	}
 }

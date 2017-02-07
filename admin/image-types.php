@@ -30,7 +30,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_table = 'image_types';
 
-	protected $_gridColumns = array('name', 'width', 'height', 'resize_mode', 'cropper');
+	protected $_gridColumns = array('name', 'width', 'height', 'resize_mode');
 	protected $_gridFilters = array('name' => self::LIKE, 'id' => self::EQUAL);
 
 
