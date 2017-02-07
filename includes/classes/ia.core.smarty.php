@@ -670,77 +670,9 @@ class iaSmarty extends Smarty
 	 */
 	public static function printImage($params)
 	{
-		$iaCore = iaCore::instance();
+		iaDebug::debug("'printImage' obsolete method call: " . $params['imgfile'], 'Notice');
 
-		$imageName = isset($params['gravatar']) ? 'no-avatar.png' : 'no-preview.png';
-
-		if (!empty($params['imgfile']))
-		{
-			$thumbUrl = $iaCore->iaView->assetsUrl . 'uploads/';
-
-			// TODO: remove fullimage option
-			if (isset($params['fullimage']) && $params['fullimage'])
-			{
-				$params['type'] = 'full';
-			}
-
-			(isset($params['type']) && $params['type']) || $params['type'] = 'thumb';
-			switch ($params['type'])
-			{
-				case 'full':
-
-					$imgfile = explode('/', $params['imgfile']);
-					$imgfile[count($imgfile) - 1] = str_replace('.', '~.', $imgfile[count($imgfile) - 1]);
-
-					$thumbUrl .= implode('/', $imgfile);
-
-					break;
-				case 'source':
-
-					$imgfile = explode('/', $params['imgfile']);
-					$imgfile[count($imgfile) - 1] = 'source_' . $imgfile[count($imgfile) - 1];
-
-					$thumbUrl .= implode('/', $imgfile);
-
-					break;
-				default:
-
-					$thumbUrl .= $params['imgfile'];
-
-					break;
-			}
-		}
-		elseif (isset($params['gravatar']) && $iaCore->get('gravatar_enabled') && isset($params['email']))
-		{
-			$d = $iaCore->get('gravatar_default_image') ? IA_CLEAR_URL . $iaCore->get('gravatar_default_image') : $iaCore->get('gravatar_type');
-			$s = isset($params['gravatar_width']) ? (int)$params['gravatar_width'] : $iaCore->get('gravatar_size');
-			$r = $iaCore->get('gravatar_rating');
-			$p = $iaCore->get('gravatar_secure') ? 'https' : 'http';
-
-			$thumbUrl = $p . '://www.gravatar.com/avatar/' . md5(strtolower(trim($params['email']))) . "?s=$s&d=$d&r=$r";
-		}
-		else
-		{
-			$thumbUrl = IA_TPL_URL . 'img/' . $imageName;
-		}
-
-		if (!empty($params['url']))
-		{
-			return $thumbUrl;
-		}
-
-		$width = isset($params['width']) ? ' width="' . $params['width'] . '"' : '';
-		$height = isset($params['height']) ? ' height="' . $params['height'] . '"' : '';
-		$title = isset($params['title']) ? iaSanitize::html($params['title']) : '';
-		$class = isset($params['class']) ? ' class="' . $params['class'] . '"' : '';
-
-		return sprintf(
-			'<img src="%s" alt="%s" title="%s"%s>',
-			$thumbUrl,
-			$title,
-			$title,
-			$width . $height . $class
-		);
+		return self::ia_image(array_merge($params, ['file' => $params['imgfile']]));
 	}
 
 	/**
