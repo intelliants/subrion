@@ -200,7 +200,7 @@ CREATE TABLE `{install:prefix}fields` (
 	`name` varchar(60) NOT NULL,
 	`item` varchar(50) NOT NULL default 'members',
 	`fieldgroup_id` smallint(5) unsigned NOT NULL,
-	`type` enum('text','url','number','date','textarea','combo','radio','checkbox','storage','image','pictures','tree') NOT NULL default 'text',
+	`type` enum('text','url','number','date','textarea','combo','radio','checkbox','storage','image','pictures','tree','iconpicker') NOT NULL default 'text',
 	`length` mediumint(7) unsigned NOT NULL,
 	`values` text,
 	`default` tinytext NOT NULL,

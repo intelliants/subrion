@@ -310,6 +310,8 @@ $(function()
 		});
 	}
 
+	$('.js-iconpicker').iconpicker();
+
 	/* header-menu show/hide START */
 	if ($('#alert').length)
 	{

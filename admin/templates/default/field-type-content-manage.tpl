@@ -99,6 +99,13 @@
 				</div>
 			</div>
 
+		{case iaField::ICONPICKER break}
+			{$value = ($value) ? $value : 'fa-folder'}
+			<div class="input-group iconpicker-container">
+				<input type="text" data-placement="bottomRight" class="js-iconpicker" name="{$fieldName}" id="{$name}" value="{$value}">
+				<span class="input-group-addon"><i class="fa {$value}"></i></span>
+			</div>
+
 		{case iaField::TEXTAREA break}
 			{if !$field.use_editor}
 				{if $field.multilingual}
