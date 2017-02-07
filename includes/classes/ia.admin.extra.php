@@ -2323,7 +2323,16 @@ class iaExtra extends abstractCore
 			}
 			elseif (iaField::IMAGE == $entry['type'] || iaField::PICTURES == $entry['type'])
 			{
-				$entry['timepicker'] = (bool)$imageTypes;
+				if ($entry['timepicker'] = (bool)$imageTypes)
+				{
+					$entry['imagetype_primary'] = isset($imageTypes[1]) ? $imageTypes[1] : $imageTypes[0];
+					$entry['imagetype_thumbnail'] = $imageTypes[0];
+				}
+				else
+				{
+					$entry['imagetype_primary'] = iaField::IMAGE_TYPE_LARGE;
+					$entry['imagetype_thumbnail'] = iaField::IMAGE_TYPE_THUMBNAIL;
+				}
 			}
 
 			unset($entry['item_pages'], $entry['table_name'], $entry['class_name'], $entry['parent'],
