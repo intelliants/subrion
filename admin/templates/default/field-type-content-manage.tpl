@@ -181,26 +181,6 @@ $(function($)
 			{ia_add_media files='css: _IA_URL_js/dropzone/dropzone'}
 			{ia_print_js files='dropzone/dropzone'}
 
-			{* if $value}
-				<div class="input-group thumbnail thumbnail-single with-actions">
-					<a href="{ia_image file=$value field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
-						{ia_image file=$value field=$field}
-					</a>
-
-					{foreach $value as $k => $v}
-						<input type="hidden" name="{$fieldName}[{$k}]" value="{$v|escape:'html'}">
-					{/foreach}
-
-					<div class="caption">
-						<a class="btn btn-small btn-danger js-cmd-delete-file" href="#" title="{lang key='delete'}" data-file="{$value.file}" data-item="{$field.item}" data-field="{$fieldName}" data-id="{$id}"><i class="i-remove-sign"></i></a>
-					</div>
-				</div>
-
-				{ia_html_file name="{$fieldName}[]" id=$name value=$value.file}
-			{else}
-				{ia_html_file name="{$fieldName}[]" id=$name}
-			{/if *}
-
 		{case iaField::PICTURES break}
 			<div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
 				data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"

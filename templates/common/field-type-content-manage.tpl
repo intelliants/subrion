@@ -93,7 +93,7 @@ $(function()
 						{ia_image file=$value field=$field width=$field.thumb_width height=$field.thumb_height}
 					{else}
 						<a href="{ia_image file=$value field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]" style="max-width: {$field.thumb_width}px;">
-							{ia_image file=$value width=$field.thumb_width height=$field.thumb_height}
+							{ia_image file=$value field=$field width=$field.thumb_width height=$field.thumb_height}
 						</a>
 					{/if}
 
