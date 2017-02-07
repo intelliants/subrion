@@ -2159,8 +2159,6 @@ class iaExtra extends abstractCore
 		$iaDb = &$this->iaDb;
 		$iaDbControl = $this->iaCore->factory('dbcontrol', iaCore::ADMIN);
 
-		require_once IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php';
-
 		$mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
 		$masterLanguageCode = $this->iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
 
@@ -2188,9 +2186,9 @@ class iaExtra extends abstractCore
 
 					if (iaUtil::isZip($fileFullPath))
 					{
-						$archive = new PclZip($fileFullPath);
+						$archive = wapmorgan\UnifiedArchive\UnifiedArchive::open($fileFullPath);
 
-						$files = $archive->extract(PCLZIP_OPT_PATH, IA_TMP);
+						$files = $archive->extractNode(IA_TMP);
 
 						if (0 == $files)
 						{

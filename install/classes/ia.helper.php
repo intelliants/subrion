@@ -377,10 +377,9 @@ class iaHelper
 						mkdir($pluginFolder);
 					}
 
-					require_once self::_composePath(array(IA_HOME, 'includes', 'utils')) . 'pclzip.lib.php';
-					$zipSource = new PclZip($savePath);
+					$archive = wapmorgan\UnifiedArchive\UnifiedArchive::open($savePath);
 
-					if ($zipSource->extract(PCLZIP_OPT_PATH, $extrasFolder . $pluginName))
+					if ($archive->extractNode($extrasFolder . $pluginName))
 					{
 						$installationFile = file_get_contents($pluginFolder . self::INSTALLATION_FILE_NAME);
 						if ($installationFile !== false)
