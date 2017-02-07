@@ -9,7 +9,7 @@
 			<label class="col col-lg-2 control-label">{lang key='owner'}</label>
 
 			<div class="col col-lg-4">
-				<input type="text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner}" maxlength="255">
+				<input type="text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner|escape:'html'}" maxlength="255">
 				<input type="hidden" name="member_id" id="member-id"{if isset($item.member_id) && $item.member_id} value="{$item.member_id}"{/if}>
 			</div>
 		</div>
@@ -167,9 +167,11 @@ $(function()
 				type: 'get',
 				dataType: 'json',
 				data: { q: query, action: 'assign-owner' },
-				success: function(response) {
+				success: function(response)
+				{
 					objects = items = [];
-					$.each(response, function(i, object) {
+					$.each(response, function(i, object)
+					{
 						items[object.fullname] = object;
 						objects.push(object.fullname);
 					});
@@ -178,11 +180,13 @@ $(function()
 				}
 			})
 		},
-		updater: function(item) {
+		updater: function(item)
+		{
 			$('#member-id').val(items[item].id);
-				return item;
+			return item;
 		},
-		matcher: function() {
+		matcher: function()
+		{
 			return true;
 		}
 	});
