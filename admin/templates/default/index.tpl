@@ -28,7 +28,7 @@
 {/if}
 
 <div class="row animated-widgets">
-	<div class="col col-lg-6">
+	<div class="col col-lg-7">
 		<div class="widget-block widget-block-group">
 			{foreach $statistics.medium as $itemName => $info}
 			<div class="widget widget-medium" id="widget-{$itemName}">
@@ -161,7 +161,7 @@
 		{ia_hooker name='smartyDashboardContentLeft'}
 	</div>
 
-	<div class="col col-lg-6">
+	<div class="col col-lg-5">
 
 		{if isset($activity_log)}
 		<div class="widget widget-large" id="widget-recent-activity">
@@ -222,12 +222,8 @@
 					<ul class="nav nav-pills pull-right">
 						<li class="dropdown hidden-xs hidden-sm">
 							<a class="dropdown-toggle" data-toggle="dropdown" href="#">
-								{foreach $changelog_titles as $item => $index}
-									{$item} <span class="caret"></span>
-									{if $index@iteration == 1}
-										{break}
-									{/if}
-								{/foreach}
+								<span class="fa fa-list"></span>
+								<span class="caret"></span>
 							</a>
 							<ul class="dropdown-menu pull-right">
 								{foreach $changelog_titles as $item => $index}
