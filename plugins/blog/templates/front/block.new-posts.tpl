@@ -9,7 +9,7 @@
 					<h5 class="media-heading">
 						<a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{$one_blog_entry.title|escape: 'html'}</a>
 					</h5>
-					<p class="text-fade-50">{$one_blog_entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$one_blog_entry.fullname}</p>
+					<p class="text-fade-50">{$one_blog_entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$one_blog_entry.fullname|escape:'html'}</p>
 					<p>{$one_blog_entry.body|strip_tags|truncate:50:'...'}</p>
 				</div>
 			</div>

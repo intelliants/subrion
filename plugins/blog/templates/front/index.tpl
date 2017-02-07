@@ -65,7 +65,7 @@
 								{lang key='no_tags'}
 							{/if}
 							</p>
-							<p>{lang key='posted_on'} {$blog_entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$blog_entry.fullname}</p>
+							<p>{lang key='posted_on'} {$blog_entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$blog_entry.fullname|escape:'html'}</p>
 						</div>
 						<div class="ia-item__body">{$blog_entry.body|strip_tags|truncate:$core.config.blog_max:'...'}</div>
 					</div>

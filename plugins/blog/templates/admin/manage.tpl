@@ -40,9 +40,9 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-image">{lang key='image'}</label>
 				<div class="col col-lg-4">
-					{if isset($item.image) && $item.image}
+					{if !empty($item.image)}
 					<div class="input-group thumbnail thumbnail-single with-actions">
-						<a href="{ia_image file=$item.image url=true large=true}" rel="ia_lightbox">
+						<a href="{ia_image file=$item.image type='large' url=true}" rel="ia_lightbox">
 							{ia_image file=$item.image}
 						</a>
 
