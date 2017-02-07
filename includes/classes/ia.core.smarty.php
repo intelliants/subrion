@@ -114,7 +114,7 @@ class iaSmarty extends Smarty
 
 		$this->resources['subrion'] = 'text:Loading Subrion Awesome Stuff..., js:intelli/intelli, js:_IA_URL_tmp/cache/intelli.config.' . $this->iaCore->iaView->language . ', '
 			. (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType()
-				? 'js:_IA_TPL_bootstrap.min, js:bootstrap/js/bootstrap-switch.min, js:bootstrap/js/passfield.min, js:intelli/intelli.admin, js:admin/footer, css:_IA_URL_js/bootstrap/css/passfield'
+				? 'js:_IA_TPL_bootstrap.min, js:bootstrap/js/bootstrap-switch.min, js:bootstrap/js/fontawesome-iconpicker.min, js:bootstrap/js/passfield.min, js:intelli/intelli.admin, js:admin/footer, css:_IA_URL_js/bootstrap/css/passfield, css:_IA_URL_js/bootstrap/css/fontawesome-iconpicker.min'
 				: 'js:intelli/intelli.minmax, js:frontend/footer')
 			. ',js:_IA_URL_tmp/cache/intelli' . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? '.admin' : '') . '.lang.' . $this->iaCore->iaView->language;
 		$this->resources['extjs'] = 'text:Loading ExtJS..., css:_IA_URL_js/extjs/resources/ext-theme-neptune/ext-theme-neptune-all' . ($this->iaCore->get('sap_style') ? '-' . $this->iaCore->get('sap_style') : '') . ', js:extjs/ext-all';
