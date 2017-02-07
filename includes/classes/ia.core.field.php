@@ -29,6 +29,7 @@ class iaField extends abstractCore
 	const CHECKBOX = 'checkbox';
 	const COMBO = 'combo';
 	const DATE = 'date';
+	const ICONPICKER = 'iconpicker';
 	const IMAGE = 'image';
 	const NUMBER = 'number';
 	const PICTURES = 'pictures';
@@ -36,8 +37,8 @@ class iaField extends abstractCore
 	const STORAGE = 'storage';
 	const TEXT = 'text';
 	const TEXTAREA = 'textarea';
-	const URL = 'url';
 	const TREE = 'tree';
+	const URL = 'url';
 
 	const RELATION_DEPENDENT = 'dependent';
 	const RELATION_PARENT = 'parent';
@@ -599,6 +600,11 @@ SQL;
 							? iaSanitize::tags($value)
 							: ($field['use_editor'] ? iaUtil::safeHTML($value) : iaSanitize::tags($value));
 					}
+
+					break;
+
+				case self::ICONPICKER:
+					$item[$fieldName] = $value;
 
 					break;
 
@@ -1180,6 +1186,7 @@ SQL;
 				$result.= 'VARCHAR(' . $fieldData['length'] . ') '
 					. ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
 				break;
+			case self::ICONPICKER:
 			case self::URL:
 			case self::TREE:
 				$result.= 'TINYTEXT ';
