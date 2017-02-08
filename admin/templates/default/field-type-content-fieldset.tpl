@@ -22,7 +22,7 @@
 		{/if}
 	{/foreach}
 
-	{if isset($isSystem) && $isSystem}
+	{if !empty($isSystem)}
 		{include 'fields-system.tpl'}
 	{/if}
 </div>

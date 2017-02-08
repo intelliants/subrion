@@ -10,7 +10,7 @@
 
 			<div class="col col-lg-4">
 				<input type="text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner|escape:'html'}" maxlength="255">
-				<input type="hidden" name="member_id" id="member-id"{if isset($item.member_id) && $item.member_id} value="{$item.member_id}"{/if}>
+				<input type="hidden" name="member_id" id="member-id"{if !empty($item.member_id)} value="{$item.member_id}"{/if}>
 			</div>
 		</div>
 	{/if}
@@ -28,7 +28,7 @@
 			<label class="col col-lg-2 control-label" for="input-plan">{lang key='plan'}</label>
 
 			<div class="col col-lg-4">
-				{if isset($plans) && $plans}
+				{if !empty($plans)}
 					<select name="plan_id" id="input-plan">
 						{foreach $plans as $plan}
 							<option value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} selected{/if} data-date="{$plan.defaultEndDate}">{lang key="plan_title_{$plan.id}"} - {$core.config.currency} {$plan.cost}</option>
@@ -40,7 +40,7 @@
 			</div>
 		</div>
 
-		{if isset($plans) && $plans && !isset($noSponsoredEnd)}
+		{if !empty($plans) && !isset($noSponsoredEnd)}
 			<div class="row" id="js-row-sponsored-end"{if $item.sponsored != 1} style="display:none"{/if}>
 				<label class="col col-lg-2 control-label">{lang key='sponsored_end'}</label>
 

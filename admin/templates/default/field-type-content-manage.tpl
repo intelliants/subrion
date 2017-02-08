@@ -34,7 +34,7 @@
 		{$field_inner[$fieldName]}
 	{else}
 
-	{if isset($item.$fieldName) && $item.$fieldName}
+	{if !empty($item.$fieldName)}
 		{if iaField::CHECKBOX == $type}
 			{$value = ','|explode:$item.$fieldName}
 		{elseif in_array($type, [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])}

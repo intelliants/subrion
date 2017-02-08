@@ -11,7 +11,7 @@
 				<div class="row gap">
 					<div class="col col-lg-8">
 						<p>{lang key='run_sql_queries'}</p>
-						<textarea style="height: 150px;" rows="6" cols="4" name="query" id="query" class="gap">{if isset($smarty.post.show_query) && $smarty.post.show_query && isset($sql) && $sql}{$sql}{else}SELECT * FROM {/if}</textarea>
+						<textarea style="height: 150px;" rows="6" cols="4" name="query" id="query" class="gap">{if !empty($smarty.post.show_query) && isset($sql) && $sql}{$sql}{else}SELECT * FROM {/if}</textarea>
 						<div id="sqlButtons">
 							<a href="#" class="btn btn-primary btn-sm">WHERE</a>
 							<a href="#" class="btn btn-primary btn-sm">SELECT * FROM</a>

@@ -43,13 +43,13 @@
 				</div>
 				<div class="b-login__form">
 					<div class="login-body">
-						{if isset($access_denied) && $access_denied}
+						{if !empty($access_denied)}
 							<div class="alert alert-danger">{lang key='access_denied'}</div>
 						{/if}
-						{if isset($error_login) && $error_login}
+						{if !empty($error_login)}
 							<div class="alert alert-danger">{lang key='error_login'}</div>
 						{/if}
-						{if isset($empty_login) && $empty_login}
+						{if !empty($empty_login)}
 							<div class="alert alert-danger">{lang key='empty_login'}</div>
 						{/if}
 						

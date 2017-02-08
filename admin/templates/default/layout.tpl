@@ -54,7 +54,7 @@
 						</li>
 						{foreach $core.page.info.menu as $entry}
 							<li{if $core.page.info.group == $entry.id} class="current active"{/if} id="menu-section-{$entry.name}">
-								<a href="#"{if isset($entry.items) && $entry.items} data-toggle="nav-sub-{$entry.name}"{/if}><i class="i-cogs i-{$entry.name}"></i>{$entry.title}</a>
+								<a href="#"{if !empty($entry.items)} data-toggle="nav-sub-{$entry.name}"{/if}><i class="i-cogs i-{$entry.name}"></i>{$entry.title}</a>
 							</li>
 						{/foreach}
 					</ul>

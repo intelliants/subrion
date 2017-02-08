@@ -1,5 +1,5 @@
 {foreach $core.page.info.menu as $item}
-	{if isset($item.items) && $item.items}
+	{if !empty($item.items)}
 	<ul id="nav-sub-{$item.name}" class="nav-sub{if $core.page.info.group == $item.id} active{/if}">
 		{foreach $item.items as $submenu}
 			{if $submenu.name}
@@ -10,14 +10,14 @@
 				{else}
 					<a href="{$submenu.url}"{if isset($submenu.attr)} {$submenu.attr}{/if}>{$submenu.title}</a>
 				{/if}
-				{if isset($submenu.config) && $submenu.config}
+				{if !empty($submenu.config)}
 					<a href="configuration/{$submenu.config}/" class="nav-sub__config{if isset($core.page.info.active_config) && $submenu.config == $core.page.info.active_config} active{/if}" title="{lang key='settings'}"><i class="i-cog"></i></a>
 				{/if}
 			</li>
 			{else}
 			<li class="heading">
 				{$submenu.title}
-				{if isset($submenu.config) && $submenu.config}
+				{if !empty($submenu.config)}
 					<a href="configuration/{$submenu.config}/" class="nav-sub__config{if isset($core.page.info.active_config) && $submenu.config == $core.page.info.active_config} active{/if}" title="{lang key='settings'}"><i class="i-cog"></i></a>
 				{/if}
 			</li>
