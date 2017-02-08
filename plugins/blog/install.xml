@@ -51,7 +51,7 @@
 		<phrase category="common" key="title_alias">Title Alias</phrase>
 
 		<phrase category="frontend" key="blogroll">Blogroll</phrase>
-		<phrase category="frontend" key="no_blog_entries">Administrator has not posted any blogposts yet.</phrase>
+		<phrase category="frontend" key="no_blog_entries">No blogposts done yet. Be the first to post here.</phrase>
 		<phrase category="frontend" key="no_tags">No tags added.</phrase>
 		<phrase category="frontend" key="page_title_tag">Blog Tags</phrase>
 		<phrase category="frontend" key="posted_on">Posted on</phrase>
