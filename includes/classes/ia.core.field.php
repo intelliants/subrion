@@ -820,7 +820,7 @@ SQL;
 	 * @param int $thumbWidth width of thumbnail
 	 * @param int $thumbHeight height of thumbnail
 	 */
-	public function uploadImage(array $file, $width, $height, $thumbWidth, $thumbHeight, $resizeMode)
+	public function uploadImage(array $file, $width, $height, $thumbWidth, $thumbHeight, $resizeMode, $folder = null, $prefix = null)
 	{
 		$field = array(
 			'type' => self::IMAGE,
@@ -828,7 +828,9 @@ SQL;
 			'thumb_height' => $thumbHeight,
 			'image_width' => $width,
 			'image_height' => $height,
-			'resize_mode' => $resizeMode
+			'resize_mode' => $resizeMode,
+			'folder_name' => $folder,
+			'file_prefix' => $prefix
 		);
 
 		$imageEntry = $this->processUploadedFile($file['tmp_name'], $field, $file['name']);
@@ -955,6 +957,8 @@ SQL;
 		// process images according to assigned image types rules
 		foreach ($imageTypes as $imageType)
 		{
+			if (!$imageType['width'] && !$imageType['height']) continue;
+
 			$imageTypeFolder = $path . $imageType['name'] . IA_DS;
 			iaUtil::makeDirCascade($imageTypeFolder);
 
