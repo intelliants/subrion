@@ -723,3 +723,54 @@
 	+ Issue #54: Implement new inclusion of tpl files for templates and hooks enhancement
 	+ Issue #86: Make possible to specify an execution phase for SQL queries in install.xml files enhancement
 	+ Issue #113: Tree field order
+
+>> From 4.0.5 to 4.1.0 <<
+
+	- Bug #772: Images that have large size can't be uploaded
+	- Bug #971: Same names for blocks and menus
+	- Bug #1320: Fields with the same name for different items use the same language phrase
+	- Bug #1340: Pages grid: Items per page does not save its state
+	- Bug #1504: small images are stretched if configuration size is bigger
+	- Bug #1683: Breadcrumb first element issues
+	- Bug #1858: Incorrect fields processing
+	- Bug #2237: There is no way to have only Login and Register links in the Inventory menu
+	- Bug #2434: Featured item expiration functionality is not implemented
+	+ Feature #147: Improve image manipulation class
+	+ Feature #194: Translate some areas of admin panel
+	+ Feature #204: Multilingual metas for pages
+	+ Feature #238: Multilingual fields for listings and categories
+	+ Feature #310: Upgrade Mailer class
+	+ Feature #326: Implement RSS url for blocks
+	+ Feature #330: Implement Saved Results functionality
+	+ Feature #333: Prefix for extras or templates
+	+ Feature #334: Template improvements for admin panel
+	+ Feature #350: Block in multiple positions
+	+ Feature #359: Create class to handle cookies
+	+ Feature #421: Create common RSS class
+	+ Feature #542: Force SSL for specific pages
+	+ Feature #613: Multilingual issues
+	+ Feature #677: Improve Phrase manager
+	+ Feature #733: Attachment manager
+	+ Feature #791: Admin panel: Manage blocks - Show on pages
+	+ Feature #875: Multilingual support
+	+ Feature #921: Add a way to search through plugin generated content
+	+ Feature #1174: Admin Panel: WYSIWYG editors for non-multilingual blocks' content
+	+ Feature #1176: Feature to unpack all the serialized listing values
+	+ Feature #1317: Better display for download actions
+	+ Feature #1449: Implement search by fields with types = DropDown list, Radio Buttons set, Checkboxes set.
+	+ Feature #1692: Implement Multilingual Titles for menus
+	+ Feature #1693: Change the display type of block titles and block contents in Admin Panel
+	+ Feature #1730: New content slider
+	+ Feature #1813: Allow to use friendly values in configuration selects
+	+ Feature #1825: Allow to login under member
+	+ Feature #1853: Send test email
+	+ Feature #1854: Improve mailer class
+	+ Feature #1900: Implement one file installer
+	+ Feature #2103: Different URLs for each language
+	+ Feature #2106: Implement the ability to write site title and slogan in different languages
+	+ Feature #2109: Make posible to set title for blocks in different languages
+	+ Feature #2180: Rest API
+	+ Feature #2194: Add a way to delete transactions
+	+ Feature #2199: Metas should be multi lingual
+	+ Feature #2206: Make it possible to have menu titles for different languages
+	+ Feature #2437: Choose different template for each language especially RTL and LTR
