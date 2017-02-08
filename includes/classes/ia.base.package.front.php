@@ -206,6 +206,8 @@ abstract class abstractPackageFront extends abstractCore
 		$rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt . $order, $start, $limit, self::getTable());
 		$count = $this->iaDb->foundRows();
 
+		$this->_processValues($rows);
+
 		return array($count, $rows);
 	}
 
