@@ -28,7 +28,7 @@ require_once IA_PLUGINS . 'kcaptcha' . IA_DS . 'includes' . IA_DS . 'kcaptcha' .
 
 $captcha = new KCAPTCHA();
 
-$captcha->length = $iaCore->get('captcha_num_chars');
+$captcha->length = $iaCore->get('kcaptcha_num_chars');
 
 $captcha->getImage();
 

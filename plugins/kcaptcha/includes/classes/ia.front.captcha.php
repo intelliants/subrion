@@ -37,7 +37,7 @@ class iaCaptcha extends abstractUtil
 			'<div class="clearfix"></div>'
 		;
 		$html = iaDb::printf($html, array(
-			'length' => (int)$this->iaCore->get('captcha_num_chars'),
+			'length' => (int)$this->iaCore->get('kcaptcha_num_chars'),
 			'url' => IA_URL . 'captcha/',
 			'text' => iaLanguage::get('captcha_tooltip'),
 			'title' => iaLanguage::get('click_to_redraw')
@@ -56,7 +56,7 @@ class iaCaptcha extends abstractUtil
 		$sc1 = isset($_POST['security_code']) ? $_POST['security_code'] : (isset($_GET['security_code']) ? $_GET['security_code'] : '');
 		$sc2 = $_SESSION['pass'];
 
-		$functionName = $this->iaCore->get('captcha_case_sensitive') ? 'strcmp' : 'strcasecmp';
+		$functionName = $this->iaCore->get('kcaptcha_case_sensitive') ? 'strcmp' : 'strcasecmp';
 
 		if (empty($_SESSION['pass']) || $functionName($sc1, $sc2) !== 0)
 		{
