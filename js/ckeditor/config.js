@@ -57,6 +57,8 @@ CKEDITOR.editorConfig = function(config)
 	if (typeof intelli.admin == 'undefined')
 	{
 		config.toolbar = 'simple';
+
+		config.removeDialogTabs = 'link:target;link:advanced;image:Link;image:advanced';
 	}
 	else
 	{
