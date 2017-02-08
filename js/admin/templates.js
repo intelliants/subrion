@@ -88,4 +88,11 @@ Ext.onReady(function()
 			}
 		});
 	});
+
+	$('.js-preview').on('click', function(e)
+	{
+		e.preventDefault();
+
+		$(this).parent().find('.screenshots a:first').trigger('click');
+	});
 });
