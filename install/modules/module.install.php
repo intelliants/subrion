@@ -572,7 +572,7 @@ HTML;
 			}
 			else
 			{
-				$message = 'Could not get the list of plugins.';
+				$message = 'Could not get the list of compatible plugins.';
 			}
 		}
 
