@@ -13,7 +13,7 @@
 								<img src="{$template.logo}" title="{$template.title}" alt="{$template.title}">
 							</a>
 						{/if}
-						{if isset($template.screenshots) && $template.screenshots}
+						{if !empty($template.screenshots)}
 							<div class="screenshots hidden">
 								{foreach $template.screenshots as $screenshot}
 									<a href="{$core.page.nonProtocolUrl}templates/{$template.name}/docs/img/{$screenshot.name}" rel="ia_lightbox[{$template.name}]" title="{$screenshot.title}"></a>
@@ -51,9 +51,11 @@
 									{/if}
 								{/if}
 								<a href="#" rel="{$template.name}" class="btn btn-sm btn-default js-cmd-info" title="{lang key='details'}"><i class="i-info"></i></a>
+								{* @FIXME: this should be processed correctly
 								{if $template.name != $tmpl}
 									<a href="{$smarty.const.IA_URL}index/?preview={$template.name}" class="btn btn-sm btn-default" title="{lang key='preview'}" target="_blank"><i class="i-eye"></i></a>
 								{/if}
+								*}
 							</form>
 						{elseif isset($template.remote)}
 							{if $template.price > 0}

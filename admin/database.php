@@ -311,7 +311,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				else
 				{
 					$this->_error = true;
-					$this->addMessage('<b>Query Failed:</b><br />' . $this->_iaDb->getError());
+					$this->addMessage('<b>Query Failed:</b><br />' . $this->_iaDb->getError(), false);
 				}
 
 				if ($numrows)
