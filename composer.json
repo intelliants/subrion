@@ -1,0 +1,26 @@
+{
+  "name": "intelliants/subrion",
+  "type": "subrion-core",
+  "description": "Powerful opensource content management system written in PHP5 + MySQL.",
+  "keywords": ["subrion","intelliants","cms","framework"],
+  "homepage": "https://github.com/intelliants/subrion",
+  "license": "GPL v3",
+  "authors": [
+    {
+      "name": "The Subrion Community",
+      "email": "tech@subrion.org",
+      "homepage": "https://subrion.org",
+      "role": "Developer"
+    },
+    {
+      "name": "Intelliants LLC",
+      "email": "support@intelliants.com",
+      "homepage": "https://intelliants.com",
+      "role": "Owner"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "composer/installers": "~1.0"
+  }
+}
