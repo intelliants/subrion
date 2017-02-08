@@ -488,15 +488,19 @@ class iaSearch extends abstractCore
 		$iaDb = &$this->iaDb;
 
 		$sql = <<<SQL
-SELECT b.`name`, b.`external`, b.`filename`, b.`title`, 
-	b.`extras`, b.`sticky`, b.`contents`, b.`type`, b.`header`, 
+SELECT
+	b.`name`, b.`external`, b.`filename`, b.`extras`, b.`sticky`, b.`type`, b.`header`, 
+	p1.`value` `title`,
+	IF(b.`external` = 1, '', p2.`value`) `contents`,
 	o.`page_name` `page` 
 	FROM `:prefix:table_blocks` b 
 LEFT JOIN `:prefix:table_objects` o ON (o.`object` = b.`id` AND o.`object_type` = 'blocks' AND o.`access` = 1) 
-WHERE b.`type` IN('plain','smarty','html') 
+LEFT JOIN `:prefix:table_phrases` p1 ON (p1.`key` = CONCAT('block_title_', b.`id`) AND p1.`code` = ':lang')
+LEFT JOIN `:prefix:table_phrases` p2 ON (p2.`key` = CONCAT('block_content_', b.`id`) AND p2.`code` = ':lang')
+WHERE b.`type` IN ('plain','smarty','html') 
 	AND b.`status` = ':status' 
 	AND b.`extras` IN (':extras') 
-	AND (CONCAT(b.`contents`,IF(b.`header` = 1, b.`title`, '')) LIKE ':query' OR b.`external` = 1) 
+	AND (b.`external` = 1 OR p2.`value` LIKE ':query' OR p1.`value` LIKE ':query')
 	AND o.`page_name` IS NOT NULL 
 GROUP BY b.`id`
 SQL;
@@ -505,8 +509,9 @@ SQL;
 			'prefix' => $iaDb->prefix,
 			'table_blocks' => 'blocks',
 			'table_objects' => 'objects_pages',
-			//'table_language' => 'language',
+			'table_phrases' => iaLanguage::getTable(),
 			'status' => iaCore::STATUS_ACTIVE,
+			'lang' => $this->iaView->language,
 			'query' => '%' . iaSanitize::sql($this->_query) . '%',
 			'extras' => implode("','", $iaCore->get('extras'))
 		));
