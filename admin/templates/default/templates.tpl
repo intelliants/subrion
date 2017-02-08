@@ -53,7 +53,7 @@
 								<a href="#" rel="{$template.name}" class="btn btn-sm btn-default js-cmd-info" title="{lang key='details'}"><i class="i-info"></i></a>
 								{* @FIXME: this should be processed correctly
 								{if $template.name != $tmpl}
-									<a href="{$smarty.const.IA_URL}index/?preview={$template.name}" class="btn btn-sm btn-default" title="{lang key='preview'}" target="_blank"><i class="i-eye"></i></a>
+									<a href="{$smarty.const.IA_URL}index/?preview={$template.name}" class="btn btn-sm btn-default js-preview" title="{lang key='preview'}" target="_blank"><i class="i-eye"></i></a>
 								{/if}
 								*}
 							</form>
@@ -81,13 +81,5 @@
 		{/foreach}
 	</div>
 </div>
-
-{ia_add_js}
-$('.preview').on('click', function(e)
-{
-	e.preventDefault();
-	$(this).parent().find('.screenshots a:first').trigger('click');
-});
-{/ia_add_js}
 
 {ia_print_js files='admin/templates'}
