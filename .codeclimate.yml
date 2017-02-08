@@ -1,17 +1,19 @@
 engines:
   duplication:
-    enabled: false
+    enabled: true
     checks:
       Similar code:
-        enabled: false
+        enabled: true
       UnusedFormalParameter:
-        enabled: false
+        enabled: true
       Controversial/CamelCaseClassName:
         enabled: false
     config:
       languages:
       - javascript
+        mass_threshold: 80
       - php
+        mass_threshold: 56
   fixme:
     enabled: false
   phpmd:
@@ -29,6 +31,10 @@ engines:
         enabled: false
       Design/NpathComplexity:
         enabled: false
+    config:
+      file_extensions:
+        - php
+        - inc
 ratings:
   paths:
   - "**.inc"
