@@ -148,7 +148,7 @@
 								</td>
 								<td class="text-right">
 									{if 'complete' != $migration.status}
-										<button class="btn btn-xs btn-primary js-import-migration" data-filename="{$migration.filename}"><i class="i-chevron-right"></i> Run</button>
+										<button class="btn btn-xs btn-primary js-import-migration" data-filename="{$migration.filename}"><i class="i-chevron-right"></i> {lang key='run'}</button>
 									{/if}
 								</td>
 							</tr>
@@ -162,25 +162,29 @@
 			<div class="widget widget-large" id="widget-members">
 				<div class="widget-header"><i class="i-lightning"></i> {lang key=migrations_not_applied}</div>
 				<div class="widget-content">
-					<table class="table table-light table-hover">
-						<thead>
-						<tr>
-							<th>{lang key='title'}</th>
-							<th>&nbsp;</th>
-						</tr>
-						</thead>
-						<tbody>
-						{foreach $dumpFiles.Migrations as $migration}
-							{if $migration.applied}{continue}{/if}
+					{if isset($dumpFiles.Migrations)}
+						<table class="table table-light table-hover">
+							<thead>
 							<tr>
-								<td>{$migration.title}</td>
-								<td class="text-right">
-									<button class="btn btn-xs btn-primary js-import-migration" data-filename="{$migration.filename}"><i class="i-chevron-right"></i> Run</button>
-								</td>
+								<th>{lang key='title'}</th>
+								<th>&nbsp;</th>
 							</tr>
-						{/foreach}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+							{foreach $dumpFiles.Migrations as $migration}
+								{if $migration.applied}{continue}{/if}
+								<tr>
+									<td>{$migration.title}</td>
+									<td class="text-right">
+										<button class="btn btn-xs btn-primary js-import-migration" data-filename="{$migration.filename}"><i class="i-chevron-right"></i> {lang key='run'}</button>
+									</td>
+								</tr>
+							{/foreach}
+							</tbody>
+						</table>
+					{else}
+						<div class="alert alert-info">{lang key='no_migrations'}</div>
+					{/if}
 				</div>
 			</div>
 		</div>
