@@ -41,7 +41,7 @@ $(function()
 		var styles = {
 			colors: {
 				calmy: 'background: #a2dadb; border: 8px solid #3d4c4f;',
-				darkness: 'background: #777; border: 8px solid #333;',
+				// darkness: 'background: #777; border: 8px solid #333;',
 				default: 'background: #47c1a8; border: 8px solid #25272a;',
 				'gebeus-waterfall': 'background: #38b7ea; border: 8px solid #1d1c24;',
 				'radiant-orchid': 'background: #B163A3; border: 8px solid #3d4049;',
