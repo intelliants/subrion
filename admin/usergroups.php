@@ -70,7 +70,7 @@ LEFT JOIN `:table_privileges` p ON (p.`type` = 'group' AND p.`type_id` = u.`id` 
 WHERE :conditions
 LIMIT :start, :limit
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'table_members' => iaUsers::getTable(true),
 			'table_usergroups' => $this->_iaDb->prefix . iaUsers::getUsergroupsTable(),
 			'table_privileges' => $this->_iaDb->prefix . 'acl_privileges',
@@ -78,7 +78,7 @@ SQL;
 			'order' => $order,
 			'start' => $start,
 			'limit' => $limit
-		));
+		]);
 
 		$usergroups = $this->_iaDb->getAll($sql);
 		foreach ($usergroups as &$usergroup)
@@ -107,7 +107,7 @@ SQL;
 				{
 					$this->addMessage('error_usergroup_incorrect');
 				}
-				elseif ($this->_iaDb->exists('`name` = :name', array('name' => $entry['name'])))
+				elseif ($this->_iaDb->exists('`name` = :name', ['name' => $entry['name']]))
 				{
 					$this->addMessage('error_usergroup_exists');
 				}
@@ -118,7 +118,7 @@ SQL;
 		{
 			if (empty($data['title'][$code]))
 			{
-				$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $language['title'])), false);
+				$this->addMessage(iaLanguage::getf('error_lang_title', ['lang' => $language['title']]), false);
 			}
 		}
 
@@ -142,7 +142,7 @@ SQL;
 			$this->_iaDb->setTable('acl_privileges');
 
 			$where = '`type_id` = :id AND `type` = :type';
-			$this->_iaDb->bind($where, array('id' => (int)$data['copy_from'], 'type' => 'group'));
+			$this->_iaDb->bind($where, ['id' => (int)$data['copy_from'], 'type' => 'group']);
 
 			$rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where);
 
@@ -162,16 +162,16 @@ SQL;
 	{
 		iaBreadcrumb::replaceEnd(iaLanguage::get('add_usergroup'), IA_SELF);
 
-		$iaView->assign('groups', $this->_iaDb->keyvalue(array('id', 'name')));
+		$iaView->assign('groups', $this->_iaDb->keyvalue(['id', 'name']));
 	}
 
 	private function _getUsergroups()
 	{
-		$result = array('data' => array());
+		$result = ['data' => []];
 
 		foreach ($this->_iaUsers->getUsergroups() as $id => $name)
 		{
-			$result['data'][] = array('value' => $id, 'title' => iaLanguage::get('usergroup_' . $name));
+			$result['data'][] = ['value' => $id, 'title' => iaLanguage::get('usergroup_' . $name)];
 		}
 
 		return $result;

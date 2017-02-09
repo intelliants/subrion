@@ -35,7 +35,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 	protected $_tableBlogTags = 'blog_tags';
 	protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
-	protected $_gridFilters = array('status' => 'equal');
+	protected $_gridFilters = ['status' => 'equal'];
 	protected $_gridQueryMainTableAlias = 'b';
 
 	protected $_phraseAddSuccess = 'blog_entry_added';
@@ -71,7 +71,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 
 	protected function _setPageTitle(&$iaView, array $entryData, $action)
 	{
-		if (in_array($iaView->get('action'), array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT)))
+		if (in_array($iaView->get('action'), [iaCore::ACTION_ADD, iaCore::ACTION_EDIT]))
 		{
 			$iaView->title(iaLanguage::get($iaView->get('action') . '_blog_entry'));
 		}
@@ -112,7 +112,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		}
 		if (empty($entry['body']))
 		{
-			$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('body'))), false);
+			$this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('body')]), false);
 		}
 
 		if (empty($entry['date_added']))
@@ -158,12 +158,12 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 		$actionCode = (iaCore::ACTION_ADD == $action)
 			? iaLog::ACTION_CREATE
 			: iaLog::ACTION_UPDATE;
-		$params = array(
+		$params = [
 			'module' => 'blog',
 			'item' => 'blog',
 			'name' => $entry['title'],
 			'id' => $this->getEntryId()
-		);
+		];
 
 		$iaLog->write($actionCode, $params);
 
@@ -187,43 +187,43 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 			'GROUP BY 1 ' .
 			'HAVING COUNT(*) = 1)';
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_blog_tags' => $this->_tableBlogTags,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 			'id' => $this->getEntryId()
-		));
+		]);
 
 		$this->_iaDb->query($sql);
 		$sql =
 			'DELETE ' .
 			'FROM :prefix:table_blog_entries_tags ' .
 			'WHERE `blog_id` = :id';
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 			'id' => $this->getEntryId()
-		));
+		]);
 
 		$this->_iaDb->query($sql);
 
-		$allTagTitles = $this->_iaDb->keyvalue(array('title','id'), null, $this->_tableBlogTags);
+		$allTagTitles = $this->_iaDb->keyvalue(['title','id'], null, $this->_tableBlogTags);
 
 		foreach ($tags as $tag)
 		{
 			$tagAlias = iaSanitize::alias(strtolower($tag));
-			$tagEntry = array(
+			$tagEntry = [
 				'title' => $tag,
 				'alias' => $tagAlias
-			);
+			];
 			$tagId = isset($allTagTitles[$tag])
 				? $allTagTitles[$tag]
 				: $this->_iaDb->insert($tagEntry, null, $this->_tableBlogTags);
 
-			$tagBlogIds = array(
+			$tagBlogIds = [
 				'blog_id' => $this->getEntryId(),
 				'tag_id' => $tagId
-			);
+			];
 
 			$this->_iaDb->insert($tagBlogIds);
 		}
@@ -240,7 +240,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 			. 'WHERE :where :order '
 			. 'LIMIT :start, :limit';
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_blog_entries' => $this->getTable(),
 			'table_members' => iaUsers::getTable(),
@@ -248,7 +248,7 @@ class iaBackendController extends iaAbstractControllerPluginBackend
 			'order' => $order,
 			'start' => $start,
 			'limit' => $limit
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}

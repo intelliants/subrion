@@ -38,15 +38,15 @@ class iaSubscription extends abstractCore
 
 	public function create($planId, $item = null, $itemId = null)
 	{
-		$entry = array(
+		$entry = [
 			'member_id' => iaUsers::hasIdentity() ? iaUsers::getIdentity()->id : 0,
 			'plan_id' => (int)$planId,
 			'item' => $item,
 			'item_id' => $itemId,
 			'status' => self::PENDING
-		);
+		];
 
-		if ($id = $this->iaDb->insert($entry, array('date_created' => iaDb::FUNCTION_NOW), self::getTable()))
+		if ($id = $this->iaDb->insert($entry, ['date_created' => iaDb::FUNCTION_NOW], self::getTable()))
 		{
 			$entry['id'] = $id;
 
@@ -58,10 +58,10 @@ class iaSubscription extends abstractCore
 
 	public function activate(array $subscription, $referenceId)
 	{
-		$values = array(
+		$values = [
 			'reference_id' => $referenceId,
 			'status' => self::ACTIVE
-		);
+		];
 
 		return $this->iaDb->update($values, iaDb::convertIds($subscription['id']), null, self::getTable());
 	}

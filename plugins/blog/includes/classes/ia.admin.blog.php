@@ -37,7 +37,7 @@ class iaBlog extends abstractPlugin
 
 	public function getDashboardStatistics()
 	{
-		$statuses = array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE);
+		$statuses = [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE];
 		$rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status`', self::getTable());
 		$total = 0;
 
@@ -47,13 +47,13 @@ class iaBlog extends abstractPlugin
 			$total += $rows[$status];
 		}
 
-		return array(
+		return [
 			'icon' => 'quill',
 			'item' => iaLanguage::get('blogposts'),
 			'rows' => $rows,
 			'total' => $total,
 			'url' => 'blog/'
-		);
+		];
 	}
 
 	public function titleAlias($title)
@@ -80,7 +80,7 @@ class iaBlog extends abstractPlugin
 		$this->iaDb->setTable(self::getTable());
 
 		// if item exists, then remove it
-		if ($row = $this->iaDb->row_bind(array('title', 'image'), '`id` = :id', array('id' => $id)))
+		if ($row = $this->iaDb->row_bind(['title', 'image'], '`id` = :id', ['id' => $id]))
 		{
 			$result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
 
@@ -96,16 +96,16 @@ class iaBlog extends abstractPlugin
 DELETE FROM `:prefix:table_blog_tags` 
 WHERE `id` NOT IN (SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags`)
 SQL;
-			$sql = iaDb::printf($sql, array(
+			$sql = iaDb::printf($sql, [
 				'prefix' => $this->iaDb->prefix,
 				'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 				'table_blog_tags' => $this->_tableBlogTags
-			));
+			]);
 			$result[] = (bool)$this->iaDb->query($sql);
 
 			if ($result)
 			{
-				$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('module' => 'blog', 'item' => 'blog', 'name' => $row['title'], 'id' => (int)$id));
+				$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, ['module' => 'blog', 'item' => 'blog', 'name' => $row['title'], 'id' => (int)$id]);
 			}
 		}
 
@@ -121,23 +121,23 @@ SELECT GROUP_CONCAT(`title`)
 	FROM `:prefix:table_blog_tags` bt 
 WHERE `id` IN (SELECT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id)
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_tags' => $this->_tableBlogTags,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 			'id' => $id
-		));
+		]);
 
 		return $this->iaDb->getOne($sql);
 	}
 
 	public function getSitemapEntries()
 	{
-		$result = array();
+		$result = [];
 
 		$stmt = '`status` = :status';
-		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE));
-		if ($rows = $this->iaDb->all(array('id', 'alias'), $stmt, null, null, self::getTable()))
+		$this->iaDb->bind($stmt, ['status' => iaCore::STATUS_ACTIVE]);
+		if ($rows = $this->iaDb->all(['id', 'alias'], $stmt, null, null, self::getTable()))
 		{
 			foreach ($rows as $row)
 			{

@@ -45,7 +45,7 @@ class iaBlock extends abstractPlugin
 	protected static $_menusTable = 'menus';
 	protected static $_positionsTable = 'positions';
 
-	protected $_types = array(self::TYPE_PLAIN, self::TYPE_MENU, self::TYPE_HTML, self::TYPE_SMARTY, self::TYPE_PHP);
+	protected $_types = [self::TYPE_PLAIN, self::TYPE_MENU, self::TYPE_HTML, self::TYPE_SMARTY, self::TYPE_PHP];
 
 	protected $_positions;
 
@@ -138,14 +138,14 @@ class iaBlock extends abstractPlugin
 			$this->_saveBundle($id, $itemData, $bundle);
 
 			$title = $this->iaDb->one_bind('value', '`code` = :lang AND `key` = :key',
-				array('lang' => $this->iaView->language, 'key' => self::LANG_PATTERN_TITLE . $id), iaLanguage::getTable());
+				['lang' => $this->iaView->language, 'key' => self::LANG_PATTERN_TITLE . $id], iaLanguage::getTable());
 			$type = $this->iaDb->one('`type`', iaDb::convertIds($id), self::getTable());
 
-			$this->iaCore->factory('log')->write(iaLog::ACTION_UPDATE, array(
+			$this->iaCore->factory('log')->write(iaLog::ACTION_UPDATE, [
 				'item' => (self::TYPE_MENU == $type) ? 'menu' : 'block',
 				'name' => $title,
 				'id' => $id
-			));
+			]);
 		}
 
 		return $result;
@@ -153,7 +153,7 @@ class iaBlock extends abstractPlugin
 
 	protected function _fetchBundledData(array &$block)
 	{
-		$result = array();
+		$result = [];
 
 		if (isset($block['pages']))
 		{
@@ -235,29 +235,29 @@ class iaBlock extends abstractPlugin
 		$title = self::LANG_PATTERN_TITLE . $id;
 		$title = iaLanguage::exists($title) ? iaLanguage::get($title) : $row['title'];
 
-		$this->iaCore->startHook('beforeBlockDelete', array('block' => &$row));
+		$this->iaCore->startHook('beforeBlockDelete', ['block' => &$row]);
 
 		$result = parent::delete($id);
 
 		if ($result)
 		{
 			$this->iaDb->delete('`object_type` = :object AND `object` = :id', self::getPagesTable(),
-				array('id' => $id, 'object' => 'blocks'));
+				['id' => $id, 'object' => 'blocks']);
 			$this->iaDb->delete('`key` = :title OR `key` = :content', iaLanguage::getTable(),
-				array('title' => self::LANG_PATTERN_TITLE . $id, 'content' => self::LANG_PATTERN_CONTENT . $id));
+				['title' => self::LANG_PATTERN_TITLE . $id, 'content' => self::LANG_PATTERN_CONTENT . $id]);
 
 			if ($log)
 			{
-				$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'block', 'name' => $title, 'id' => $id));
+				$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, ['item' => 'block', 'name' => $title, 'id' => $id]);
 			}
 		}
 
-		$this->iaCore->startHook('afterBlockDelete', array('block' => &$row));
+		$this->iaCore->startHook('afterBlockDelete', ['block' => &$row]);
 
 		return $result;
 	}
 
-	public function setVisibility($blockId, $visibility, array $pages = array(), $reset = true)
+	public function setVisibility($blockId, $visibility, array $pages = [], $reset = true)
 	{
 		$this->iaDb->setTable(self::getPagesTable());
 
@@ -268,17 +268,17 @@ class iaBlock extends abstractPlugin
 			// set global visibility for non-sticky blocks
 			if (!$visibility)
 			{
-				$this->iaDb->insert(array('object_type' => 'blocks', 'object' => $blockId, 'page_name' => '', 'access' => 0));
+				$this->iaDb->insert(['object_type' => 'blocks', 'object' => $blockId, 'page_name' => '', 'access' => 0]);
 			}
 		}
 
 		if ($pages)
 		{
-			$entry = array(
+			$entry = [
 				'object_type' => 'blocks',
 				'object' => $blockId,
 				'access' => $reset ? !$visibility : $visibility
-			);
+			];
 
 			foreach ($pages as $pageName)
 			{

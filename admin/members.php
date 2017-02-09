@@ -28,9 +28,9 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'members';
 
-	protected $_gridColumns = array('username', 'fullname', 'usergroup_id', 'email', 'status', 'date_reg', 'date_logged');
-	protected $_gridFilters = array('status' => self::EQUAL, 'usergroup_id' => self::EQUAL, 'id' => self::EQUAL);
-	protected $_gridSorting = array('usergroup' => 'usergroup_id');
+	protected $_gridColumns = ['username', 'fullname', 'usergroup_id', 'email', 'status', 'date_reg', 'date_logged'];
+	protected $_gridFilters = ['status' => self::EQUAL, 'usergroup_id' => self::EQUAL, 'id' => self::EQUAL];
+	protected $_gridSorting = ['usergroup' => 'usergroup_id'];
 
 	protected $_phraseAddSuccess = 'member_added';
 	protected $_phraseGridEntryDeleted = 'member_deleted';
@@ -80,7 +80,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _entryDelete($entryId)
 	{
 		$stmt = '`id` = :id AND `id` != :user';
-		$stmt = iaDb::printf($stmt, array('id' => (int)$entryId, 'user' => (int)iaUsers::getIdentity()->id));
+		$stmt = iaDb::printf($stmt, ['id' => (int)$entryId, 'user' => (int)iaUsers::getIdentity()->id]);
 
 		return $this->getHelper()->delete($stmt);
 	}
@@ -112,7 +112,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
-			$adminsCount = $this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status', array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
+			$adminsCount = $this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status', ['group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE]);
 			$iaView->assign('admin_count', $adminsCount);
 
 			if (1 == $adminsCount && iaUsers::MEMBERSHIP_ADMINISTRATOR == $entryData['usergroup_id'])
@@ -121,7 +121,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		$this->_iaCore->startHook('editItemSetSystemDefaults', array('item' => &$entryData));
+		$this->_iaCore->startHook('editItemSetSystemDefaults', ['item' => &$entryData]);
 
 		$iaPlan = $this->_iaCore->factory('plan');
 		$plans = $iaPlan->getPlans($this->_itemName);
@@ -149,14 +149,14 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			$entry = array(
+			$entry = [
 				'featured' => false,
 				'sponsored' => false,
 				'sponsored_plan_id' => 0,
 				'sponsored_end' => '',
 				'status' => iaCore::STATUS_ACTIVE,
 				'usergroup_id' => iaUsers::MEMBERSHIP_REGULAR
-			);
+			];
 		}
 	}
 
@@ -170,7 +170,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		// below is the hacky way to force the script to upload files to the appropriate user's folder
 		// FIXME
 		$activeUser = iaUsers::getIdentity(true);
-		$_SESSION[iaUsers::SESSION_KEY] = array('id' => $this->getEntryId(), 'username' => $data['username']);
+		$_SESSION[iaUsers::SESSION_KEY] = ['id' => $this->getEntryId(), 'username' => $data['username']];
 		list($entry, $error, $this->_messages) = $iaField->parsePost($this->_itemName, $entry);
 		$_SESSION[iaUsers::SESSION_KEY] = $activeUser;
 		//
@@ -208,7 +208,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->addMessage('error_duplicate_email');
 		}
 
-		if ($this->_iaDb->exists('`username` = :username AND `id` != :id', array('username' => $entry['username'], 'id' => $this->getEntryId())))
+		if ($this->_iaDb->exists('`username` = :username AND `id` != :id', ['username' => $entry['username'], 'id' => $this->getEntryId()]))
 		{
 			$this->addMessage('username_already_taken');
 		}
@@ -247,12 +247,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
-		$this->_iaCore->startHook('phpItemSaved', array(
+		$this->_iaCore->startHook('phpItemSaved', [
 			'action' => $action,
 			'itemId' => $this->getEntryId(),
 			'itemData' => $entry,
 			'itemName' => $this->_itemName
-		));
+		]);
 
 		if (iaCore::ACTION_ADD == $action)
 		{
@@ -263,12 +263,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$iaMailer->loadTemplate($action . '_notification');
 				$iaMailer->addAddress($entry['email']);
-				$iaMailer->setReplacements(array(
+				$iaMailer->setReplacements([
 					'fullname' => $entry['fullname'],
 					'username' => $entry['username'],
 					'password' => $this->_password,
 					'email' => $entry['email']
-				));
+				]);
 
 				$iaMailer->send();
 			}
@@ -282,11 +282,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaLog = $this->_iaCore->factory('log');
 
 		$actionCode = (iaCore::ACTION_ADD == $action) ? iaLog::ACTION_CREATE : iaLog::ACTION_UPDATE;
-		$params = array(
+		$params = [
 			'item' => 'member',
 			'name' => $entry['fullname'],
 			'id' => $this->getEntryId()
-		);
+		];
 
 		$iaLog->write($actionCode, $params);
 	}
@@ -298,7 +298,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _entryUpdate(array $entryData, $entryId)
 	{
-		$result = $this->getHelper()->update($entryData, iaDb::convertIds($entryId), array('date_update' => iaDb::FUNCTION_NOW));
+		$result = $this->getHelper()->update($entryData, iaDb::convertIds($entryId), ['date_update' => iaDb::FUNCTION_NOW]);
 
 		if ($result && $entryId == iaUsers::getIdentity()->id)
 		{
@@ -316,14 +316,14 @@ class iaBackendController extends iaAbstractControllerBackend
 			$currentUserId = iaUsers::getIdentity()->id;
 			if (in_array($currentUserId, $params['id']))
 			{
-				$totalAdminsCount = (int)$this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status AND `id` != :id', array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE, 'id' => $currentUserId));
+				$totalAdminsCount = (int)$this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`usergroup_id` = :group AND `status` = :status AND `id` != :id', ['group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE, 'id' => $currentUserId]);
 
 				if (0 == $totalAdminsCount && $params['status'] != iaCore::STATUS_ACTIVE)
 				{
-					return array(
+					return [
 						'result' => false,
 						'message' => iaLanguage::get('action_not_allowed_since_you_only_admin')
-					);
+					];
 				}
 			}
 		}
@@ -333,7 +333,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _resendRegistrationEmail()
 	{
-		$output = array('message' => iaLanguage::get('invalid_params'), 'result' => false);
+		$output = ['message' => iaLanguage::get('invalid_params'), 'result' => false];
 
 		if (isset($_POST['id']) && is_numeric($_POST['id']))
 		{
@@ -344,7 +344,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$password = $this->getHelper()->createPassword();
 				$passwordHash = $this->getHelper()->encodePassword($password);
 
-				if ($this->_iaDb->update(array('password' => $passwordHash), iaDb::convertIds($member['id'])))
+				if ($this->_iaDb->update(['password' => $passwordHash], iaDb::convertIds($member['id'])))
 				{
 					$this->getHelper()->sendRegistrationEmail($member['id'], $password, $member);
 

@@ -53,7 +53,7 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
 		{
 			if ($data['action'] == 'migrate')
 			{
-				return array('result' => $this->applyNewMigrations());
+				return ['result' => $this->applyNewMigrations()];
 			}
 		}
 		throw new Exception("Invalid or missing action", iaApiResponse::BAD_REQUEST);
@@ -61,8 +61,8 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
 
 	private function applyNewMigrations()
 	{
-		$appliedMigrations = array();
-		$newMigrations = array();
+		$appliedMigrations = [];
+		$newMigrations = [];
 
 		$migrations = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, $this->getTable());
 		foreach($migrations as $migration)
@@ -86,12 +86,12 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
 			}
 		}
 
-		$migrationResults = array();
+		$migrationResults = [];
 
 		$masterLangCode = $this->_iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
 		foreach($newMigrations as $name)
 		{
-			$errors = array();
+			$errors = [];
 			$fd = @fopen($migration_dir . IA_DS . $name, 'r');
 
 			if (!$fd)
@@ -104,7 +104,7 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
 			{
 				$s = trim($s);
 
-				if (!$s || in_array($s[0], array('#', '-', '')))
+				if (!$s || in_array($s[0], ['#', '-', '']))
 				{
 					continue;
 				}
@@ -119,8 +119,8 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
 					continue;
 				}
 
-				$result = $this->_iaDb->query(str_replace(array('{prefix}', '{lang}'),
-					array($this->_iaDb->prefix, $masterLangCode), $sql));
+				$result = $this->_iaDb->query(str_replace(['{prefix}', '{lang}'],
+					[$this->_iaDb->prefix, $masterLangCode], $sql));
 
 				$result || $errors[] = $this->_iaDb->getError();
 
@@ -128,12 +128,12 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
 			}
 			fclose($fd);
 
-			$migrationProcessed = array(
+			$migrationProcessed = [
 				'name' => $name,
 				'status' => $errors ? 'incomplete' : 'complete',
 				'data' => $errors ? $errors : null,
 				'date' => date(iaDb::DATETIME_FORMAT),
-			);
+			];
 			$migrationResults[] = $migrationProcessed;
 
 			if ($migrationProcessed['data'])

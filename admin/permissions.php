@@ -28,7 +28,7 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'permissions';
 
-	private $_objects = array();
+	private $_objects = [];
 
 
 	public function __construct()
@@ -43,14 +43,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getSettings()
 	{
-		$settings = array(
+		$settings = [
 			'target' => 'all',
 			'id' => 0,
 			'action' => 2,
 			'user' => 0,
 			'group' => 0,
 			'item' => null
-		);
+		];
 
 		if (isset($_GET['user']))
 		{
@@ -77,7 +77,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
-		$output = array('result' => false, 'message' => iaLanguage::get('invalid_parameters'));
+		$output = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 		$settings = $this->_getSettings();
 
 		if ($settings['action'] != 2 && $_POST)
@@ -87,7 +87,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			if (isset($params['access']))
 			{
 				$result = true;
-				is_array($params['action']) || $params['action'] = array($params['action']);
+				is_array($params['action']) || $params['action'] = [$params['action']];
 				foreach ($params['action'] as $action)
 				{
 					$set = $this->getHelper()->set($params['object'], $params['id'], $settings['target'], $settings['id'], $params['access'], $action);
@@ -115,7 +115,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$settings = $this->_getSettings();
 
-		if (in_array($settings['target'], array(iaAcl::USER, iaAcl::GROUP)))
+		if (in_array($settings['target'], [iaAcl::USER, iaAcl::GROUP]))
 		{
 			if (empty($settings['item']))
 			{
@@ -125,33 +125,33 @@ class iaBackendController extends iaAbstractControllerBackend
 			if (iaAcl::USER == $settings['target'])
 			{
 				iaBreadcrumb::add(iaLanguage::get('members'), IA_ADMIN_URL . 'members/');
-				$iaView->title(iaLanguage::getf('permissions_members', array('member' => '"' . $settings['item']['fullname'] . '"')));
+				$iaView->title(iaLanguage::getf('permissions_members', ['member' => '"' . $settings['item']['fullname'] . '"']));
 			}
 			else
 			{
 				iaBreadcrumb::add(iaLanguage::get('usergroups'), IA_ADMIN_URL . 'usergroups/');
-				$iaView->title(iaLanguage::getf('permissions_usergroups', array('usergroup' => '"' . iaLanguage::get('usergroup_' . $settings['item']['name']) . '"')));
+				$iaView->title(iaLanguage::getf('permissions_usergroups', ['usergroup' => '"' . iaLanguage::get('usergroup_' . $settings['item']['name']) . '"']));
 			}
 
 			$userPermissions = $this->getHelper()->getPermissions($settings['id'], $settings['group']);
-			$custom = array(
+			$custom = [
 				'user' => $settings['user'],
 				'group' => $settings['group'],
 				'perms' => $userPermissions
-			);
+			];
 
 			$actionCode = 'admin_access--read';
 			list($object,) = explode(iaAcl::DELIMITER, $actionCode);
 
-			$adminAccess = array(
+			$adminAccess = [
 				'title' => iaLanguage::get($actionCode, $actionCode),
 				'modified' => isset($userPermissions[$this->getHelper()->encodeAction($object, iaCore::ACTION_READ, '0')][$settings['action']]),
 				'default' => $this->_objects[$actionCode],
 				'access' => (int)$this->getHelper()->checkAccess($object, null, 0, 0, $custom)
-			);
+			];
 
 			$iaView->assign('adminAccess', $adminAccess);
-			$iaView->assign('pageGroupTitles', $this->_iaDb->keyvalue(array('id', 'name'), null, 'admin_pages_groups'));
+			$iaView->assign('pageGroupTitles', $this->_iaDb->keyvalue(['id', 'name'], null, 'admin_pages_groups'));
 			$iaView->assign('permissions', $this->_getPermissionsInfo($settings, $userPermissions, $custom));
 		}
 		else
@@ -166,11 +166,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
 		$actions = $iaAcl->getActions();
-		$groups = array();
+		$groups = [];
 
-		foreach (array(iaAcl::OBJECT_PAGE, iaAcl::OBJECT_ADMIN_PAGE) as $i => $pageType)
+		foreach ([iaAcl::OBJECT_PAGE, iaAcl::OBJECT_ADMIN_PAGE] as $i => $pageType)
 		{
-			$fieldsList = array('name', 'action', 'group', 'parent');
+			$fieldsList = ['name', 'action', 'group', 'parent'];
 			$titles = $iaPage->getTitles(iaAcl::OBJECT_PAGE == $pageType ? iaCore::FRONT : iaCore::ADMIN);
 			$pages = $this->_iaDb->all($fieldsList, '`' . (1 == $i ? 'readonly' : 'service') . "` = 0 AND `name` != '' ORDER BY `parent` DESC, `id`", null, null, $pageType . 's');
 
@@ -179,23 +179,23 @@ class iaBackendController extends iaAbstractControllerBackend
 				if ($page['parent'])
 				{
 					$key = $pageType . '-' . $page['parent'];
-					isset($actions[$key]) || $actions[$key] = array();
+					isset($actions[$key]) || $actions[$key] = [];
 					in_array($page['action'], $actions[$key]) || $actions[$key][] = $page['action'];
 				}
 				else
 				{
-					$list = array();
+					$list = [];
 					$key = $pageType . '-' . $page['name'];
 
 					$page['group'] || $page['group'] = 1;
 					$page['title'] = isset($titles[$page['name']]) ? $titles[$page['name']] : ucfirst($page['name']);
 
-					foreach (array(iaCore::ACTION_READ, iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE) as $action)
+					foreach ([iaCore::ACTION_READ, iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE] as $action)
 					{
 						$actionCode = $key . iaAcl::DELIMITER . $action;
 						if (isset($this->_objects[$actionCode]) || iaCore::ACTION_READ == $action)
 						{
-							isset($actions[$key]) || $actions[$key] = array();
+							isset($actions[$key]) || $actions[$key] = [];
 							in_array($action, $actions[$key]) || array_unshift($actions[$key], $action);
 						}
 					}
@@ -205,23 +205,23 @@ class iaBackendController extends iaAbstractControllerBackend
 						$actionCode = $key . iaAcl::DELIMITER . $action;
 						$param = $pageType . iaAcl::SEPARATOR . $action;
 
-						$list[$action] = array(
-							'title' => iaLanguage::get($actionCode, iaLanguage::getf('action-' . $action, array('page' => $page['title']))),
+						$list[$action] = [
+							'title' => iaLanguage::get($actionCode, iaLanguage::getf('action-' . $action, ['page' => $page['title']])),
 							'modified' => isset($userPermissions[$iaAcl->encodeAction($pageType, $action, $page['name'])][$settings['action']]),
 							'default' => (int)$iaAcl->checkAccess($param, $page['name'], 0, 0, true),
 							'access' => (int)$iaAcl->checkAccess($param, $page['name'], 0, 0, $custom)
-						);
+						];
 					}
 
 					if (!isset($groups[$pageType][$page['group']]))
 					{
-						$groups[$pageType][$page['group']] = array();
+						$groups[$pageType][$page['group']] = [];
 					}
 
-					$groups[$pageType][$page['group']][$page['name']] = array(
+					$groups[$pageType][$page['group']][$page['name']] = [
 						'title' => $page['title'],
 						'list' => $list
-					);
+					];
 				}
 			}
 
@@ -244,11 +244,11 @@ SELECT u.`id`, u.`name`, IF(u.`id` = 1, 1, p.`access`) `admin_access`
 	FROM `:prefix:table_usergroups` u 
 LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = u.`id` AND p.`type` = 'group' AND p.`object` = 'admin_access')
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_usergroups' => iaUsers::getUsergroupsTable(),
 			'table_privileges' => 'acl_privileges'
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}
@@ -262,12 +262,12 @@ LEFT JOIN `:prefix:table_groups` g ON (m.`usergroup_id` = g.`id`)
 LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = m.`id` AND p.`type` = 'user' AND p.`object` = 'admin_access')
 WHERE m.`id` IN (SELECT DISTINCT `type_id` FROM `:prefix:table_privileges` WHERE `type` = 'user')
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_members' => iaUsers::getTable(),
 			'table_groups' => iaUsers::getUsergroupsTable(),
 			'table_privileges' => 'acl_privileges'
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}

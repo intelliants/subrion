@@ -75,7 +75,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$letters['all'] = iaUtil::getLetters();
 	$letters['active'] = (isset($iaCore->requestPath[0]) && in_array($iaCore->requestPath[0], $letters['all'])) ? $iaCore->requestPath[0] : false;
-	$letters['existing'] = array();
+	$letters['existing'] = [];
 
 	$iaDb->setTable(iaUsers::getTable());
 	if ($array = $iaDb->all('DISTINCT UPPER(SUBSTR(`' . $filterBy . '`, 1, 1)) `letter`', $stmt . "`status` = 'active' GROUP BY `username`"))
@@ -94,10 +94,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 
 	// gets current page and defines start position
-	$pagination = array(
+	$pagination = [
 		'limit' => 20,
 		'url' => IA_URL . 'members/' . ($letters['active'] ? $letters['active'] . '/' : '') . '?page={page}'
-	);
+	];
 	$page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
 	$start = (max($page, 1) - 1) * $pagination['limit'];
 

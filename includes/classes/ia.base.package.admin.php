@@ -34,7 +34,7 @@ abstract class abstractPackageAdmin extends abstractCore
 
 	protected $_packageName;
 
-	protected $_statuses = array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE);
+	protected $_statuses = [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE];
 
 	public $dashboardStatistics;
 
@@ -48,7 +48,7 @@ abstract class abstractPackageAdmin extends abstractCore
 
 		if ($this->_activityLog)
 		{
-			is_array($this->_activityLog) || $this->_activityLog = array();
+			is_array($this->_activityLog) || $this->_activityLog = [];
 
 			$this->_activityLog['path'] = trim($this->getModuleUrl(), IA_URL_DELIMITER);
 
@@ -68,7 +68,7 @@ abstract class abstractPackageAdmin extends abstractCore
 
 		if ($this->dashboardStatistics)
 		{
-			is_array($this->dashboardStatistics) || $this->dashboardStatistics = array();
+			is_array($this->dashboardStatistics) || $this->dashboardStatistics = [];
 
 			if (!isset($this->dashboardStatistics['icon']))
 			{
@@ -109,7 +109,7 @@ abstract class abstractPackageAdmin extends abstractCore
 
 		if (is_null($cachedData))
 		{
-			$cachedData = $this->iaDb->row_bind(array('id', 'type', 'title', 'url', 'version'), '`name` = :name', array('name' => $this->getPackageName()), 'extras');
+			$cachedData = $this->iaDb->row_bind(['id', 'type', 'title', 'url', 'version'], '`name` = :name', ['name' => $this->getPackageName()], 'extras');
 
 			$cachedData['url'] = IA_URL . (IA_URL_DELIMITER == $cachedData['url'] ? '' : $cachedData['url']);
 		}
@@ -139,13 +139,13 @@ abstract class abstractPackageAdmin extends abstractCore
 
 		if ($defaultProcessing)
 		{
-			$data = array();
+			$data = [];
 			$max = 0;
 			$weekDay = getdate();
 			$weekDay = $weekDay['wday'];
 			$rows = $this->iaDb->all('DAYOFWEEK(DATE(`date_added`)) `day`, `status`, `date_added`', 'DATE(`date_added`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW())', null, null, self::getTable());
 
-			foreach ($this->getStatuses() as $status) $data[$status] = array();
+			foreach ($this->getStatuses() as $status) $data[$status] = [];
 			foreach ($rows as $row)
 			{
 				isset($data[$row['status']][$row['day']]) || $data[$row['status']][$row['day']] = 0;
@@ -165,15 +165,15 @@ abstract class abstractPackageAdmin extends abstractCore
 			}
 		}
 
-		return array_merge(array(
+		return array_merge([
 			'_format' => 'package',
 			'data' => $defaultProcessing
-				? array('array' => implode('|', $data), 'max' => $max, 'statuses' => implode('|', $stArray))
+				? ['array' => implode('|', $data), 'max' => $max, 'statuses' => implode('|', $stArray)]
 				: implode(',', $statuses),
 			'rows' => $statuses,
 			'item' => $this->getItemName(),
 			'total' => number_format($total)
-		), $this->dashboardStatistics);
+		], $this->dashboardStatistics);
 	}
 
 	public function insert(array $itemData)
@@ -186,11 +186,11 @@ abstract class abstractPackageAdmin extends abstractCore
 
 			$this->updateCounters($itemId, $itemData, iaCore::ACTION_ADD);
 
-			$this->iaCore->startHook('phpListingAdded', array(
+			$this->iaCore->startHook('phpListingAdded', [
 				'itemId' => $itemId,
 				'itemName' => $this->getItemName(),
 				'itemData' => $itemData
-			));
+			]);
 		}
 
 		return $itemId;
@@ -218,12 +218,12 @@ abstract class abstractPackageAdmin extends abstractCore
 
 			$this->updateCounters($id, $itemData, iaCore::ACTION_EDIT, $currentData);
 
-			$this->iaCore->startHook('phpListingUpdated', array(
+			$this->iaCore->startHook('phpListingUpdated', [
 				'itemId' => $id,
 				'itemName' => $this->getItemName(),
 				'itemData' => $itemData,
 				'previousData' => $currentData
-			));
+			]);
 		}
 
 		return $result;
@@ -245,11 +245,11 @@ abstract class abstractPackageAdmin extends abstractCore
 
 				$this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
 
-				$this->iaCore->startHook('phpListingRemoved', array(
+				$this->iaCore->startHook('phpListingRemoved', [
 					'itemId' => $itemId,
 					'itemName' => $this->getItemName(),
 					'itemData' => $entryData
-				));
+				]);
 			}
 		}
 
@@ -258,12 +258,12 @@ abstract class abstractPackageAdmin extends abstractCore
 
 	public function gridUpdate($params)
 	{
-		$result = array(
+		$result = [
 			'result' => false,
 			'message' => iaLanguage::get('invalid_parameters')
-		);
+		];
 
-		$params || $params = array();
+		$params || $params = [];
 
 		if (isset($params['id']) && is_array($params['id']) && count($params) > 1)
 		{
@@ -286,7 +286,7 @@ abstract class abstractPackageAdmin extends abstractCore
 				$result['result'] = true;
 				$result['message'] = ($affected == $total)
 					? iaLanguage::get('saved')
-					: iaLanguage::getf('items_updated_of', array('num' => $affected, 'total' => $total));
+					: iaLanguage::getf('items_updated_of', ['num' => $affected, 'total' => $total]);
 			}
 			else
 			{
@@ -299,10 +299,10 @@ abstract class abstractPackageAdmin extends abstractCore
 
 	public function gridDelete($params, $languagePhraseKey = 'deleted')
 	{
-		$result = array(
+		$result = [
 			'result' => false,
 			'message' => iaLanguage::get('invalid_parameters')
-		);
+		];
 
 		if (isset($params['id']) && is_array($params['id']) && $params['id'])
 		{
@@ -327,8 +327,8 @@ abstract class abstractPackageAdmin extends abstractCore
 				else
 				{
 					$result['message'] = ($affected == $total)
-						? iaLanguage::getf('items_deleted', array('num' => $affected))
-						: iaLanguage::getf('items_deleted_of', array('num' => $affected, 'total' => $total));
+						? iaLanguage::getf('items_deleted', ['num' => $affected])
+						: iaLanguage::getf('items_deleted_of', ['num' => $affected, 'total' => $total]);
 				}
 			}
 			else
@@ -348,7 +348,7 @@ abstract class abstractPackageAdmin extends abstractCore
 	public function getSitemapEntries()
 	{
 		// should return URLs array to be used in sitemap creation
-		return array();
+		return [];
 	}
 
 	protected function _writeLog($action, array $itemData, $itemId)
@@ -357,16 +357,16 @@ abstract class abstractPackageAdmin extends abstractCore
 		{
 			$iaLog = $this->iaCore->factory('log');
 
-			$actionsMap = array(
+			$actionsMap = [
 				iaCore::ACTION_ADD => iaLog::ACTION_CREATE,
 				iaCore::ACTION_EDIT => iaLog::ACTION_UPDATE,
 				iaCore::ACTION_DELETE => iaLog::ACTION_DELETE
-			);
+			];
 
 			$title = (isset($itemData['title']) && $itemData['title'])
 				? $itemData['title']
 				: $this->iaDb->one('title', iaDb::convertIds($itemId), self::getTable());
-			$params = array_merge($this->_activityLog, array('name' => $title, 'id' => $itemId));
+			$params = array_merge($this->_activityLog, ['name' => $title, 'id' => $itemId]);
 
 			$iaLog->write($actionsMap[$action], $params);
 		}
@@ -386,7 +386,7 @@ abstract class abstractPackageAdmin extends abstractCore
 			return;
 		}
 
-		$singleRow && $rows = array($rows);
+		$singleRow && $rows = [$rows];
 
 		$iaField = $this->iaCore->factory('field');
 

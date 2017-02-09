@@ -35,7 +35,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 		$code = isset($_GET['code']) ? trim($_GET['code']) : false;
 		$email = isset($_POST['email']) ? $_POST['email'] : (isset($_GET['email']) ? $_GET['email'] : '');
 		$error = false;
-		$message = array();
+		$message = [];
 
 		if ($email)
 		{
@@ -46,7 +46,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 			}
 			$email = iaSanitize::sql($email);
 
-			$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', array('email' => $email));
+			$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
 			if (empty($member))
 			{
 				$error = true;
@@ -60,7 +60,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 			if (!$error && false === $code)
 			{
-				$mail = array();
+				$mail = [];
 				$token = $iaCore->factory('util')->generateToken();
 				$confirmationUrl = IA_URL . "forgot/?email=$email&code=$token";
 
@@ -68,17 +68,17 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 				$iaMailer->loadTemplate('password_restoration');
 				$iaMailer->addAddress($member['email'], $member['fullname']);
-				$iaMailer->setReplacements(array(
+				$iaMailer->setReplacements([
 					'fullname' => $member['fullname'],
 					'url' => $confirmationUrl,
 					'code' => $token,
 					'email' => $email
-				));
+				]);
 
 				$iaMailer->send();
 
 				$message = iaLanguage::get('restore_pass_confirm');
-				$iaDb->update(array('id' => $member['id'], 'sec_key' => $token), null, null, iaUsers::getTable());
+				$iaDb->update(['id' => $member['id'], 'sec_key' => $token], null, null, iaUsers::getTable());
 			}
 			elseif (!$error && $code)
 			{
@@ -115,8 +115,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$memberId = null;
 	$error = false;
-	$messages = array();
-	$itemData = array();
+	$messages = [];
+	$itemData = [];
 
 	if ('member_password_forgot' == $iaView->name())
 	{
@@ -140,14 +140,14 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if (!$error)
 			{
-				$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', array('email' => $email));
+				$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
 
 				if (empty($member))
 				{
 					$error = true;
 					$messages[] = iaLanguage::get('error_no_member_email');
 				}
-				elseif (in_array($member['status'], array(iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED)))
+				elseif (in_array($member['status'], [iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED]))
 				{
 					$error = true;
 					$messages[] = iaLanguage::get('your_membership_is_inactive');
@@ -168,17 +168,17 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 					$iaMailer->loadTemplate('password_restoration');
 					$iaMailer->addAddress($member['email'], $member['fullname']);
-					$iaMailer->setReplacements(array(
+					$iaMailer->setReplacements([
 						'fullname' => $member['fullname'],
 						'url' => $confirmationUrl,
 						'code' => $token,
 						'email' => $member['email']
-					));
+					]);
 
 					$iaMailer->send();
 
 					$messages[] = iaLanguage::get('restore_pass_confirm');
-					$iaDb->update(array('id' => $member['id'], 'sec_key' => $token), 0, 0, iaUsers::getTable());
+					$iaDb->update(['id' => $member['id'], 'sec_key' => $token], 0, 0, iaUsers::getTable());
 					$form = 'confirm';
 				}
 				elseif (!$error && $code)
@@ -231,7 +231,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if (isset($_POST['username']))
 			{
-				if ($iaDb->exists('`username` = :value', array('value' => $_POST['username']), iaUsers::getTable()))
+				if ($iaDb->exists('`username` = :value', ['value' => $_POST['username']], iaUsers::getTable()))
 				{
 					$error = true;
 					$messages[] = iaLanguage::get('username_already_exists');
@@ -239,7 +239,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			}
 			if (isset($_POST['email']))
 			{
-				if ($iaDb->exists('`email` = :value', array('value' => $_POST['email']), iaUsers::getTable()))
+				if ($iaDb->exists('`email` = :value', ['value' => $_POST['email']], iaUsers::getTable()))
 				{
 					$error = true;
 					$messages[] = iaLanguage::get('error_duplicate_email');
@@ -284,7 +284,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				if ($memberId)
 				{
-					$iaCore->factory('log')->write(iaLog::ACTION_CREATE, array('item' => 'member', 'name' => $itemData['fullname'], 'id' => $memberId, 'type' => iaCore::FRONT));
+					$iaCore->factory('log')->write(iaLog::ACTION_CREATE, ['item' => 'member', 'name' => $itemData['fullname'], 'id' => $memberId, 'type' => iaCore::FRONT]);
 				}
 
 				// process sponsored plan

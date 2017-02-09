@@ -29,7 +29,7 @@ class iaDebug
 	const STATE_OPENED = 'opened';
 	const STATE_CLOSED = 'closed';
 
-	protected static $_data = array();
+	protected static $_data = [];
 
 	protected static $_fileHandle;
 
@@ -108,12 +108,12 @@ class iaDebug
 		self::dump();
 
 		// process blocks
-		$blocks = array();
+		$blocks = [];
 		if ($blocksData = $iaCore->iaView->blocks)
 		{
 			foreach ($blocksData as $position => $blocksList)
 			{
-				$blocks[$position] = array();
+				$blocks[$position] = [];
 				foreach ($blocksList as $block)
 				{
 					$blocks[$position][] = $block['name'];
@@ -166,7 +166,7 @@ class iaDebug
 
 		if ($queries = $iaCore->iaDb->getQueriesList())
 		{
-			$duplicated = array();
+			$duplicated = [];
 			$index = 0;
 
 			foreach ($queries as $query)
@@ -193,8 +193,8 @@ class iaDebug
 						$title = substr($title, 0, - strlen($title) + 80) . ' ... ';
 					}
 					$nbsp = '&nbsp;&nbsp;&nbsp;';
-					$search = array("\t",'FROM','SELECT',' AS ',' LIKE ',' ON ',' AND ',' OR ', 'WHERE', 'INNER JOIN', 'RIGHT JOIN', 'LEFT JOIN', 'LEFT OUTER', ' JOIN', 'ORDER BY', 'GROUP BY', 'LIMIT');
-					$replace = array(
+					$search = ["\t",'FROM','SELECT',' AS ',' LIKE ',' ON ',' AND ',' OR ', 'WHERE', 'INNER JOIN', 'RIGHT JOIN', 'LEFT JOIN', 'LEFT OUTER', ' JOIN', 'ORDER BY', 'GROUP BY', 'LIMIT'];
+					$replace = [
 						$nbsp,
 						"<br>{$nbsp}<b>FROM</b>",
 						"<b>SELECT</b>",
@@ -212,7 +212,7 @@ class iaDebug
 						"<br>{$nbsp}<b>ORDER BY</b>",
 						"<br>{$nbsp}<b>GROUP BY</b>",
 						"<br>{$nbsp}<b>LIMIT</b>",
-					);
+					];
 					$query[0] = str_replace($search, $replace, $query[0]);
 
 					$table .= '<tr><td class="iterator">' . $index . '.</td><td style="width: 15px; color: '.($query[1] > 0.001 ? 'red' : 'green') . ';">'
@@ -252,7 +252,7 @@ class iaDebug
 			{
 				unset($listUnused[$name]);
 
-				$hooksContent = array();
+				$hooksContent = [];
 				$j = 0;
 				foreach ($listLoaded[$name] as $pluginName => $hookData)
 				{
@@ -350,8 +350,8 @@ class iaDebug
 			}
 		}
 
-		$search = array('START', 'END');
-		$replace = array('<b class="d_green">START</b>', '<b class="d_red">END</b>');
+		$search = ['START', 'END'];
+		$replace = ['<b class="d_green">START</b>', '<b class="d_red">END</b>'];
 
 		$text = str_replace($search, $replace, '<b>Real time render:</b> ' . $totalRealTime . '<br />
 			<b>Math time render:</b> ' . $totalTime . '<br />
@@ -500,7 +500,7 @@ class iaDebug
 			{
 				is_array(self::$_data[$type][$key])
 					? self::$_data[$type][$key][] = $value
-					: self::$_data[$type][$key] = array(self::$_data[$type][$key], $value);
+					: self::$_data[$type][$key] = [self::$_data[$type][$key], $value];
 			}
 			else
 			{
@@ -584,18 +584,18 @@ class iaDebug
 		foreach ($context as $key => $value)
 		{
 			$export .= "{$key}: ";
-			$export .= preg_replace(array(
+			$export .= preg_replace([
 				'/=>\s+([a-zA-Z])/im',
 				'/array\(\s+\)/im',
 				'/^  |\G  /m',
-			), array(
+			], [
 				'=> $1',
 				'array()',
 				'    ',
-			), str_replace('array (', 'array(', var_export($value, true)));
+			], str_replace('array (', 'array(', var_export($value, true)));
 			$export .= PHP_EOL;
 		}
-		return str_replace(array('\\\\', '\\\''), array('\\', '\''), rtrim($export));
+		return str_replace(['\\\\', '\\\''], ['\\', '\''], rtrim($export));
 	}
 
 	/**

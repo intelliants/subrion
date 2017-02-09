@@ -55,7 +55,7 @@ class iaApiStorage implements OAuth2\Storage\AccessTokenInterface, OAuth2\Storag
 	protected function _fetch($type, $key)
 	{
 		$where = '`key` = :key AND `type` = :type';
-		$this->_iaDb->bind($where, array('key' => $key, 'type' => $type));
+		$this->_iaDb->bind($where, ['key' => $key, 'type' => $type]);
 
 		$row = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, $where, $this->_table);
 		empty($row) || $row['expires'] = strtotime($row['expires']);
@@ -65,21 +65,21 @@ class iaApiStorage implements OAuth2\Storage\AccessTokenInterface, OAuth2\Storag
 
 	protected function _save($type, $key, $clientId, $userId, $expires, $data = null)
 	{
-		$entry = array(
+		$entry = [
 			'key' => $key,
 			'type' => $type,
 			'client_id' => $clientId,
 			'user_id' => $userId,
 			'expires' => date(iaDb::DATETIME_FORMAT, $expires),
 			'data' => $data
-		);
+		];
 
 		return (bool)$this->_iaDb->insert($entry, null, $this->_table);
 	}
 
 	protected function _delete($type, $key)
 	{
-		return (bool)$this->_iaDb->delete('`key` = :key AND `type` = :type', $this->_table, array('key' => $key, 'type' => $type));
+		return (bool)$this->_iaDb->delete('`key` = :key AND `type` = :type', $this->_table, ['key' => $key, 'type' => $type]);
 	}
 
 	public function getAccessToken($oauth_token)
@@ -96,7 +96,7 @@ class iaApiStorage implements OAuth2\Storage\AccessTokenInterface, OAuth2\Storag
 	{
 		$iaUsers = $this->_iaCore->factory('users');
 
-		$member = $this->_iaDb->row(array('password'), iaDb::convertIds($client_id, 'username'), $iaUsers::getTable());
+		$member = $this->_iaDb->row(['password'], iaDb::convertIds($client_id, 'username'), $iaUsers::getTable());
 
 		return ($member && $member['password'] == $iaUsers->encodePassword($client_secret));
 	}
@@ -155,10 +155,10 @@ class iaApiStorage implements OAuth2\Storage\AccessTokenInterface, OAuth2\Storag
 		{
 			$redirectUrl = empty($_SESSION['oauth_referrer']) ? IA_URL : $_SESSION['oauth_referrer'];
 
-			return array(
+			return [
 				'redirect_uri' => $redirectUrl,
 				'user_id' => $member['id']
-			);
+			];
 		}
 
 		return false;

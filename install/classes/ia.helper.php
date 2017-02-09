@@ -58,7 +58,7 @@ class iaHelper
 
 		return (iaCore::instance()->iaDb->one_bind(iaDb::STMT_COUNT_ROWS,
 				'`usergroup_id` = :group AND `date_logged` IS NOT NULL',
-				array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR), iaUsers::getTable()) > 0);
+				['group' => iaUsers::MEMBERSHIP_ADMINISTRATOR], iaUsers::getTable()) > 0);
 	}
 
 	public static function getIniSetting($name)
@@ -91,7 +91,7 @@ class iaHelper
 			$handle = opendir($directory);
 			while ($item = readdir($handle))
 			{
-				if (!in_array($item, array('.', '..', '.htaccess')))
+				if (!in_array($item, ['.', '..', '.htaccess']))
 				{
 					$path = $directory . IA_DS . $item;
 					if (is_dir($path))
@@ -153,7 +153,7 @@ class iaHelper
 
 			if (function_exists('spl_autoload_register') && function_exists('spl_autoload_unregister'))
 			{
-				spl_autoload_register(array('iaSystem', 'autoload'));
+				spl_autoload_register(['iaSystem', 'autoload']);
 			}
 
 			require_once IA_INCLUDES . 'function.php';
@@ -161,17 +161,17 @@ class iaHelper
 
 			$iaCore = iaCore::instance();
 
-			$iaCore->factory(array('sanitize', 'validate'));
+			$iaCore->factory(['sanitize', 'validate']);
 			$iaCore->iaDb = $iaCore->factory('db');
 			$iaCore->factory('language');
 			$iaCore->iaView = $iaCore->factory('view');
 			$iaCore->iaCache = $iaCore->factory('cache');
 
-			$config = array('baseurl', 'timezone', 'lang');
-			$config = $iaCore->iaDb->keyvalue(array('name', 'value'), "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
+			$config = ['baseurl', 'timezone', 'lang'];
+			$config = $iaCore->iaDb->keyvalue(['name', 'value'], "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
 
-			empty($iaCore->languages) && $iaCore->languages = array(
-				'en' => array('title' => 'English', 'locale' => 'en_US', 'iso' => 'en', 'date_format' => '%b %e, %Y'));
+			empty($iaCore->languages) && $iaCore->languages = [
+				'en' => ['title' => 'English', 'locale' => 'en_US', 'iso' => 'en', 'date_format' => '%b %e, %Y']];
 			$iaCore->iaView->language = empty($config['lang']) ? 'en' : $config['lang'];
 			$iaCore->language = $iaCore->languages[$iaCore->iaView->language];
 
@@ -311,7 +311,7 @@ class iaHelper
 		$list = $iaDb->onefield('name', "type = 'plugin'", 0, null, 'extras');
 
 		return empty($list)
-			? array()
+			? []
 			: $list;
 	}
 
@@ -350,7 +350,7 @@ class iaHelper
 
 		if ($pluginName)
 		{
-			$downloadPath = self::_composePath(array(IA_HOME, 'tmp', 'plugins'));
+			$downloadPath = self::_composePath([IA_HOME, 'tmp', 'plugins']);
 			if (!is_dir($downloadPath))
 			{
 				mkdir($downloadPath);
@@ -364,10 +364,10 @@ class iaHelper
 
 			if (is_file($savePath))
 			{
-				$extrasFolder = self::_composePath(array(IA_HOME, 'plugins'));
+				$extrasFolder = self::_composePath([IA_HOME, 'plugins']);
 				if (is_writable($extrasFolder))
 				{
-					$pluginFolder = self::_composePath(array($extrasFolder, $pluginName));
+					$pluginFolder = self::_composePath([$extrasFolder, $pluginName]);
 					if (is_dir($pluginFolder))
 					{
 						self::cleanUpDirectoryContents($pluginFolder);
@@ -377,7 +377,7 @@ class iaHelper
 						mkdir($pluginFolder);
 					}
 
-					require_once self::_composePath(array(IA_HOME, 'includes', 'utils')) . 'pclzip.lib.php';
+					require_once self::_composePath([IA_HOME, 'includes', 'utils']) . 'pclzip.lib.php';
 					$zipSource = new PclZip($savePath);
 
 					if ($zipSource->extract(PCLZIP_OPT_PATH, $extrasFolder . $pluginName))

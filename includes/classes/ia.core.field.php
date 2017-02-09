@@ -138,10 +138,10 @@ class iaField extends abstractCore
 	 */
 	public function get($itemName)
 	{
-		$fields = array();
+		$fields = [];
 
 		$where = '`status` = :status && `item` = :item' . (!$this->iaCore->get('api_enabled') ? " && `fieldgroup_id` != 3 " : '') . ' ORDER BY `order`';
-		$this->iaDb->bind($where, array('status' => iaCore::STATUS_ACTIVE, 'item' => $itemName));
+		$this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'item' => $itemName]);
 
 		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTable()))
 		{
@@ -167,7 +167,7 @@ GROUP BY f.`id`
 ORDER BY f.`order`
 SQL;
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_fields' => self::getTable(),
 			'table_pages' => self::getTablePages(),
@@ -175,14 +175,14 @@ SQL;
 			'status' => iaCore::STATUS_ACTIVE,
 			'item' => $itemName,
 			'where' => $where
-		));
+		]);
 
 		return $this->iaDb->getAll($sql);
 	}
 
 	public function filter($itemName, array &$itemData, $pageName = null, $where = null)
 	{
-		static $cache = array();
+		static $cache = [];
 
 		is_null($pageName) && $pageName = $this->iaView->name();
 		is_null($where) && $where = iaDb::EMPTY_CONDITION;
@@ -197,7 +197,7 @@ SQL;
 		}
 		else
 		{
-			$result = array();
+			$result = [];
 			$rows = $this->_fetchVisibleFieldsForPage($pageName, $itemName, $where);
 
 			$iaAcl = $this->iaCore->factory('acl');
@@ -266,10 +266,10 @@ SQL;
 			return;
 		}
 
-		$relations = iaCore::instance()->iaDb->all(array('field_id', 'element', 'child'),
+		$relations = iaCore::instance()->iaDb->all(['field_id', 'element', 'child'],
 			'`field_id` IN (' . implode(',', array_keys($fields)) . ')', null, null, self::getTableRelations());
 
-		$relationsMap = array();
+		$relationsMap = [];
 		foreach ($relations as $entry)
 			$relationsMap[$entry['field_id']][$entry['child']][] = $entry['element'];
 
@@ -285,7 +285,7 @@ SQL;
 						$field['default'] = explode(',', $field['default']);
 					}
 
-					$values = array();
+					$values = [];
 					foreach (explode(',', $field['values']) as $v)
 						$values[$v] = self::getLanguageValue($field['item'], $field['name'], $v);
 					$field['values'] = $values;
@@ -317,9 +317,9 @@ SQL;
 	protected function _getGroups($itemName, array $fields)
 	{
 		$where = '`item` = :item ORDER BY `order`';
-		$this->iaDb->bind($where, array('item' => $itemName));
+		$this->iaDb->bind($where, ['item' => $itemName]);
 
-		$groups = array();
+		$groups = [];
 		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTableGroups());
 
 		foreach ($rows as $row)
@@ -341,8 +341,8 @@ SQL;
 
 			if (!isset($groups[$fieldGroupId])) // emulate tab to make TPL code compact
 			{
-				$groups[$fieldGroupId] = array('name' => '___empty___', 'title' => iaLanguage::get('other'),
-					'tabview' => '', 'tabcontainer' => '', 'description' => null, 'collapsible' => false, 'collapsed' => false);
+				$groups[$fieldGroupId] = ['name' => '___empty___', 'title' => iaLanguage::get('other'),
+					'tabview' => '', 'tabcontainer' => '', 'description' => null, 'collapsible' => false, 'collapsed' => false];
 			}
 
 			$groups[$fieldGroupId]['fields'][] = $value;
@@ -365,7 +365,7 @@ SQL;
 	{
 		$fieldGroups = $this->getGroupsFiltered($itemName, $itemData);
 
-		$tabs = array();
+		$tabs = [];
 		foreach ($fieldGroups as $key => $group)
 		{
 			if ($group['tabview'])
@@ -387,9 +387,9 @@ SQL;
 
 	public function parsePost($itemName, array &$itemData)
 	{
-		$errors = array();
+		$errors = [];
 
-		$item = array();
+		$item = [];
 		$data = &$_POST; // access to the data source by link
 
 		if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
@@ -485,8 +485,8 @@ SQL;
 			: $this->get($itemName);
 
 		// the code block below filters fields based on parent/dependent structure
-		$activeFields = array();
-		$parentFields = array();
+		$activeFields = [];
+		$parentFields = [];
 
 		foreach ($fields as $field)
 		{
@@ -537,11 +537,11 @@ SQL;
 				}
 
 				if (!$value && !$field['multilingual']
-					&& in_array($field['type'], array(self::TEXT, self::TEXTAREA, self::NUMBER, self::RADIO, self::CHECKBOX, self::COMBO, self::DATE)))
+					&& in_array($field['type'], [self::TEXT, self::TEXTAREA, self::NUMBER, self::RADIO, self::CHECKBOX, self::COMBO, self::DATE]))
 				{
-					$errors[$fieldName] = in_array($field['type'], array(self::RADIO, self::CHECKBOX, self::COMBO))
-						? iaLanguage::getf('field_is_not_selected', array('field' => self::getFieldTitle($field['item'], $fieldName)))
-						: iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+					$errors[$fieldName] = in_array($field['type'], [self::RADIO, self::CHECKBOX, self::COMBO])
+						? iaLanguage::getf('field_is_not_selected', ['field' => self::getFieldTitle($field['item'], $fieldName)])
+						: iaLanguage::getf('field_is_empty', ['field' => self::getFieldTitle($field['item'], $fieldName)]);
 				}
 			}
 
@@ -561,7 +561,7 @@ SQL;
 
 						if ($field['required'] && !$value)
 						{
-							$errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+							$errors[$fieldName] = iaLanguage::getf('field_is_empty', ['field' => self::getFieldTitle($field['item'], $fieldName)]);
 						}
 						else
 						{
@@ -627,7 +627,7 @@ SQL;
 				case self::IMAGE:
 				case self::STORAGE:
 				case self::PICTURES:
-					$item[$fieldName] = isset($data[$fieldName]) ? $value : array();
+					$item[$fieldName] = isset($data[$fieldName]) ? $value : [];
 
 					if (!is_writable(IA_UPLOADS))
 					{
@@ -643,7 +643,7 @@ SQL;
 							$files = $fieldName . '_dropzone_files';
 							$sizes = $fieldName . '_dropzone_sizes';
 
-							$pictures = empty($data[$paths]) ? array() : $data[$paths];
+							$pictures = empty($data[$paths]) ? [] : $data[$paths];
 
 							// run required field checks
 							if ($field['required'] && $field['required_checks'])
@@ -652,7 +652,7 @@ SQL;
 							}
 							elseif ($field['required'] && 1 > count($pictures) + count($item[$fieldName]))
 							{
-								$errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+								$errors[$fieldName] = iaLanguage::getf('field_is_empty', ['field' => self::getFieldTitle($field['item'], $fieldName)]);
 								$invalidFields[] = $fieldName;
 							}
 							if (count($pictures) + count($item[$fieldName]) > $field['length'])
@@ -663,17 +663,17 @@ SQL;
 							{
 								if (self::PICTURES == $field['type'])
 								{
-									$newPictures = array();
+									$newPictures = [];
 									foreach ($pictures as $i => $picture)
 									{
 										$fileName = empty($data[$files][$i]) ? '' : $data[$files][$i];
 										iaSanitize::filenameEscape($fileName);
-										$newPictures[] = array(
+										$newPictures[] = [
 											//'title' => $data[$titles][$i],
 											'path' => $picture,
 											'file' => $fileName,
 											'size' => empty($data[$sizes][$i]) ? '' : (int)$data[$sizes][$i],
-										);
+										];
 									}
 
 									$item[$fieldName] = (iaCore::ACTION_EDIT == $this->iaView->get('action'))
@@ -682,11 +682,11 @@ SQL;
 								}
 								else
 								{
-									$item[$fieldName] = array(
+									$item[$fieldName] = [
 										'path' => $data[$paths][0],
 										'file' => $data[$files][0],
 										'size' => empty($data[$sizes][0]) ? '' : (int)$data[$sizes][0]
-									);
+									];
 								}
 							}
 						}
@@ -697,7 +697,7 @@ SQL;
 								$existImages = empty($itemData[$fieldName]) ? null : $itemData[$fieldName];
 								$existImages = is_string($existImages) ? unserialize($existImages) : $existImages;
 
-								$existImages || $errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+								$existImages || $errors[$fieldName] = iaLanguage::getf('field_is_empty', ['field' => self::getFieldTitle($field['item'], $fieldName)]);
 							}
 
 							foreach ($_FILES[$fieldName]['tmp_name'] as $i => $tmpName)
@@ -712,11 +712,11 @@ SQL;
 								{
 									$fileEntry = $this->processUploadedFile($tmpName, $field, $_FILES[$fieldName]['name'][$i], $_FILES[$fieldName]['type'][$i]);
 
-									$fieldValue = array(
+									$fieldValue = [
 										'title' => (isset($data[$fieldName . '_title'][$i]) ? substr(trim($data[$fieldName . '_title'][$i]), 0, 100) : ''),
 										'path' => $fileEntry['path'],
 										'file' => $fileEntry['file']
-									);
+									];
 
 									self::STORAGE != $field['type'] && $fieldValue['size'] = $_FILES[$fieldName]['size'][$i];
 
@@ -760,13 +760,13 @@ SQL;
 					break;
 
 				case self::URL:
-					$validProtocols = array('http://', 'https://');
+					$validProtocols = ['http://', 'https://'];
 					$item[$fieldName] = '';
 
 					if ($field['required']
 						&& (empty($value['url']) || in_array($value['url'], $validProtocols)))
 					{
-						$errors[$fieldName] = iaLanguage::getf('field_is_empty', array('field' => self::getFieldTitle($field['item'], $fieldName)));
+						$errors[$fieldName] = iaLanguage::getf('field_is_empty', ['field' => self::getFieldTitle($field['item'], $fieldName)]);
 					}
 					else
 					{
@@ -795,11 +795,11 @@ SQL;
 			if (isset($item[$fieldName]))
 			{
 				// process hook if field value exists
-				$this->iaCore->startHook('phpParsePostAfterCheckField', array(
+				$this->iaCore->startHook('phpParsePostAfterCheckField', [
 					'field' => $field,
 					'value' => $item[$fieldName],
 					'errors' => &$errors
-				));
+				]);
 			}
 		}
 
@@ -807,7 +807,7 @@ SQL;
 		$fields = array_keys($errors);
 		$messages = array_values($errors);
 
-		return array($item, $error, $messages, $fields);
+		return [$item, $error, $messages, $fields];
 	}
 
 	/**
@@ -822,7 +822,7 @@ SQL;
 	 */
 	public function uploadImage(array $file, $width, $height, $thumbWidth, $thumbHeight, $resizeMode, $folder = null, $prefix = null)
 	{
-		$field = array(
+		$field = [
 			'type' => self::IMAGE,
 			'thumb_width' => $thumbWidth,
 			'thumb_height' => $thumbHeight,
@@ -831,7 +831,7 @@ SQL;
 			'resize_mode' => $resizeMode,
 			'folder_name' => $folder,
 			'file_prefix' => $prefix
-		);
+		];
 
 		$imageEntry = $this->processUploadedFile($file['tmp_name'], $field, $file['name']);
 
@@ -861,7 +861,7 @@ SQL;
 			$fileName = $field['file_prefix'] . $fileName;
 		}
 
-		$fileExists = in_array($field['type'], array(self::IMAGE, self::PICTURES))
+		$fileExists = in_array($field['type'], [self::IMAGE, self::PICTURES])
 			? is_file($absUploadPath . self::UPLOAD_FOLDER_ORIGINAL . IA_DS . $fileName)
 			: is_file($absUploadPath . $fileName);
 
@@ -878,26 +878,26 @@ SQL;
 			case self::PICTURES:
 				$this->_processImageField($field, $tmpFile, $absUploadPath, $fileName, $mimeType);
 				$this->iaCore->startHook('phpImageUploaded',
-					array('field' => $field, 'path' => $uploadPath, 'image' => &$fileName));
+					['field' => $field, 'path' => $uploadPath, 'image' => &$fileName]);
 				break;
 			case self::STORAGE:
 				$this->_processStorageField($field, $tmpFile, $absUploadPath, $fileName);
 		}
 
-		return array('path' => $uploadPath, 'file' => $fileName);
+		return ['path' => $uploadPath, 'file' => $fileName];
 	}
 
 	protected function _processStorageField(array $field, $tmpFile, $path, $fileName)
 	{
 		$allowedExtensions = empty($field['file_types'])
-			? array()
+			? []
 			: explode(',', $field['file_types']); // no need to replace spaces, it's done when setting up a field
 
 		$extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
 		if (!$extension || !in_array($extension, $allowedExtensions))
 		{
-			throw new Exception(iaLanguage::getf('file_type_error', array('extension' => $field['file_types'])));
+			throw new Exception(iaLanguage::getf('file_type_error', ['extension' => $field['file_types']]));
 		}
 
 		iaUtil::makeDirCascade($path);
@@ -919,8 +919,8 @@ SQL;
 			$imageTypeIds = $this->getImageTypeIdsByFieldId($field['id']);
 			$ext = pathinfo($fileName, PATHINFO_EXTENSION);
 
-			$imageTypes = array();
-			$allowedFileExtensions = array();
+			$imageTypes = [];
+			$allowedFileExtensions = [];
 			foreach ($this->getImageTypes() as $imageType)
 				in_array($imageType['id'], $imageTypeIds) // check if image type assigned to this field
 				&& in_array($ext, $imageType['extensions']) // check if uploaded file's extension is enabled in settings
@@ -929,10 +929,10 @@ SQL;
 		}
 		else // standard processing (original, thumbnail & large image)
 		{
-			$imageTypes = array(
-				array('name' => self::IMAGE_TYPE_THUMBNAIL, 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode']),
-				array('name' => self::IMAGE_TYPE_LARGE, 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode'])
-			);
+			$imageTypes = [
+				['name' => self::IMAGE_TYPE_THUMBNAIL, 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode']],
+				['name' => self::IMAGE_TYPE_LARGE, 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode']]
+			];
 
 			$allowedFileExtensions = $iaPicture->getSupportedImageTypes();
 		}
@@ -949,7 +949,7 @@ SQL;
 
 		// first, put original file into appropriate folder
 		// here we should manipulate the first argument so the file extension check performed correctly
-		$this->_processStorageField(array_merge($field, array('file_types' => implode(',', $allowedFileExtensions))),
+		$this->_processStorageField(array_merge($field, ['file_types' => implode(',', $allowedFileExtensions)]),
 			$tmpFile, $originalFilePath, $fileName);
 
 		$originalFile = $originalFilePath . $fileName;
@@ -971,12 +971,12 @@ SQL;
 
 	public function getValues($fieldName, $itemName)
 	{
-		$values = $this->iaDb->one_bind(array('values'), '`name` = :field AND `item` = :item',
-			array('field' => $fieldName, 'item' => $itemName), self::getTable());
+		$values = $this->iaDb->one_bind(['values'], '`name` = :field AND `item` = :item',
+			['field' => $fieldName, 'item' => $itemName], self::getTable());
 
 		if ($values)
 		{
-			$result = array();
+			$result = [];
 			foreach (explode(',', $values) as $key)
 				$result[$key] = self::getLanguageValue($itemName, $fieldName, $key);
 
@@ -999,7 +999,7 @@ SQL;
 	public function getUploadFields($itemName = null)
 	{
 		$where = '`type` IN (:image, :pictures, :storage)';
-		$this->iaDb->bind($where, array('image' => self::IMAGE, 'pictures' => self::PICTURES, 'storage' => self::STORAGE));
+		$this->iaDb->bind($where, ['image' => self::IMAGE, 'pictures' => self::PICTURES, 'storage' => self::STORAGE]);
 
 		return $this->_getFieldNames($where, $itemName);
 	}
@@ -1016,16 +1016,16 @@ SQL;
 
 	protected function _getFieldNames($condition, $itemName = null)
 	{
-		static $cache = array();
+		static $cache = [];
 
-		$conditions = array("`status` = 'active'", $condition);
+		$conditions = ["`status` = 'active'", $condition];
 		is_null($itemName) || $conditions[] = iaDb::convertIds($itemName, 'item');
 		$conditions = implode(' AND ', $conditions);
 
 		if (!isset($cache[$conditions]))
 		{
 			$result = $this->iaDb->onefield('name', $conditions, null, null, self::getTable());
-			$cache[$conditions] = $result ? $result : array();
+			$cache[$conditions] = $result ? $result : [];
 		}
 
 		return $cache[$conditions];
@@ -1119,13 +1119,13 @@ SQL;
 			? 'ALTER TABLE `:prefix:table` CHANGE `:column1` `:column2` :scheme'
 			: 'ALTER TABLE `:prefix:table` ADD `:column2` :scheme';
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table' => $dbTable,
 			'column1' => $fieldData['name'],
 			'column2' => $newName,
 			'scheme' => $this->_alterCmdBody($fieldData)
-		));
+		]);
 
 		$this->iaDb->query($sql);
 	}
@@ -1216,7 +1216,7 @@ SQL;
 				}
 		}
 
-		$result.= in_array($fieldData['type'], array(self::COMBO, self::RADIO)) ? 'NULL' : 'NOT NULL';
+		$result.= in_array($fieldData['type'], [self::COMBO, self::RADIO]) ? 'NULL' : 'NOT NULL';
 
 		return $result;
 	}
@@ -1229,7 +1229,7 @@ SQL;
 			null, null, self::getTable());
 
 		$this->iaCore->languages = $this->iaDb->assoc(
-			array('code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'),
+			['code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'],
 			iaDb::EMPTY_CONDITION . ' ORDER BY `order` ASC',
 			iaLanguage::getLanguagesTable()
 		);
@@ -1256,17 +1256,17 @@ SQL;
 	GROUP BY it.`id`
 SQL;
 
-			$sql = iaDb::printf($sql, array(
+			$sql = iaDb::printf($sql, [
 				'prefix' => $this->iaDb->prefix,
 				'table_image_types' => self::$_tableImageTypes,
 				'table_image_type_file_types' => self::$_tableImageTypesFileTypes,
 				'table_file_types' => self::$_tableFileTypes
-			));
+			]);
 
 			if ($cache = $this->iaDb->getAll($sql))
 			{
 				foreach ($cache as &$entry)
-					$entry['extensions'] = empty($entry['extensions']) ? array() : explode(',', $entry['extensions']);
+					$entry['extensions'] = empty($entry['extensions']) ? [] : explode(',', $entry['extensions']);
 			}
 		}
 
@@ -1289,14 +1289,14 @@ SQL;
 	{
 		if ($field['type'] != self::IMAGE && $field['type'] != self::PICTURES)
 		{
-			return array();
+			return [];
 		}
 
-		$result = array(self::IMAGE_TYPE_THUMBNAIL, self::IMAGE_TYPE_LARGE);
+		$result = [self::IMAGE_TYPE_THUMBNAIL, self::IMAGE_TYPE_LARGE];
 
 		if ($field['timepicker'])
 		{
-			$result = array();
+			$result = [];
 
 			if ($ids = $this->getImageTypeIdsByFieldId($field['id']))
 			{
@@ -1320,7 +1320,7 @@ SQL;
 		$this->iaDb->delete(iaDb::convertIds($id, 'field_id'));
 
 		foreach ($imageTypeIds as $imageTypeId)
-			$this->iaDb->insert(array('field_id' => (int)$id, 'image_type_id' => (int)$imageTypeId));
+			$this->iaDb->insert(['field_id' => (int)$id, 'image_type_id' => (int)$imageTypeId]);
 
 		$this->iaDb->resetTable();
 	}
@@ -1339,7 +1339,7 @@ SQL;
 		{
 			$imageTypes[] = self::UPLOAD_FOLDER_ORIGINAL;
 
-			$files = array();
+			$files = [];
 			foreach ($imageTypes as $imageTypeName)
 				iaUtil::deleteFile($files[] = IA_UPLOADS . $path . $imageTypeName . IA_DS . $file);
 
@@ -1389,7 +1389,7 @@ SQL;
 				return $this->deleteFileByPath($filesArray['path'], $filesArray['file'], $this->getImageTypeNamesByField($field));
 			case self::PICTURES:
 			case self::STORAGE:
-				$result = array();
+				$result = [];
 				$imageTypeNames = ($field['type'] == self::PICTURES) ? $this->getImageTypeNamesByField($field) : null;
 				foreach ($filesArray as $fileEntry)
 					$result[] = $this->deleteFileByPath($fileEntry['path'], $fileEntry['file'], $imageTypeNames);
@@ -1411,7 +1411,7 @@ SQL;
 			}
 
 			$memberIdColumn = (iaUsers::getItemName() == $itemName) ? iaDb::ID_COLUMN_SELECTION : 'member_id';
-			$row = $this->iaDb->row(array($memberIdColumn, $fieldName), iaDb::convertIds($itemId), $tableName);
+			$row = $this->iaDb->row([$memberIdColumn, $fieldName], iaDb::convertIds($itemId), $tableName);
 
 			if (!$row || iaUsers::getIdentity()->id != $row[$memberIdColumn])
 			{
@@ -1422,7 +1422,7 @@ SQL;
 		}
 		else
 		{
-			$itemValue = $this->iaDb->one(array($fieldName), iaDb::convertIds($itemId), $tableName);
+			$itemValue = $this->iaDb->one([$fieldName], iaDb::convertIds($itemId), $tableName);
 		}
 
 		if ($itemValue)
@@ -1451,7 +1451,7 @@ SQL;
 						{
 							$path = $files['path'];
 							$file = $files['file'];
-							$files = array();
+							$files = [];
 							break;
 						}
 				}
@@ -1460,7 +1460,7 @@ SQL;
 
 				if ($newValue != $itemValue)
 				{
-					in_array($field['type'], array(self::IMAGE, self::PICTURES))
+					in_array($field['type'], [self::IMAGE, self::PICTURES])
 						? $this->deleteFileByPath($path, $file, $this->getImageTypeNamesByField($field))
 						: $this->deleteFileByPath($path, $file);
 				}
@@ -1472,13 +1472,13 @@ SQL;
 					$newValue = '';
 
 					list($path, $file) = explode('|', $itemValue);
-					$this->deleteFileByPath($path, $file, array(self::IMAGE_TYPE_THUMBNAIL, self::IMAGE_TYPE_LARGE));
+					$this->deleteFileByPath($path, $file, [self::IMAGE_TYPE_THUMBNAIL, self::IMAGE_TYPE_LARGE]);
 				}
 			}
 
 			if ($itemValue != $newValue)
 			{
-				if ($this->iaDb->update(array($fieldName => $newValue), iaDb::convertIds($itemId), null, $tableName))
+				if ($this->iaDb->update([$fieldName => $newValue], iaDb::convertIds($itemId), null, $tableName))
 				{
 					// check if image removed from the entry of currently logged in user
 					// and reload his identity if so
@@ -1496,6 +1496,6 @@ SQL;
 	public function getField($fieldName, $itemName)
 	{
 		return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name AND `item` = :item',
-			array('name' => $fieldName, 'item' => $itemName), self::getTable());
+			['name' => $fieldName, 'item' => $itemName], self::getTable());
 	}
 }

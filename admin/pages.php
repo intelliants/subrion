@@ -31,7 +31,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_tooltipsEnabled = true;
 
 	protected $_gridColumns = "`id`, `name`, `status`, `last_updated`, IF(`custom_url` != '', `custom_url`, IF(`alias` != '', `alias`, CONCAT(`name`, '/'))) `url`, `id` `update`, IF(`readonly` = 0, 1, 0) `delete`";
-	protected $_gridFilters = array('name' => self::LIKE, 'extras' => self::EQUAL);
+	protected $_gridFilters = ['name' => self::LIKE, 'extras' => self::EQUAL];
 
 	protected $_phraseAddSuccess = 'page_added';
 
@@ -81,8 +81,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		$currentLanguage = $this->_iaCore->iaView->language;
 
 		$this->_iaDb->setTable(iaLanguage::getTable());
-		$pageTitles = $this->_iaDb->keyvalue(array('key', 'value'), "`key` LIKE('page_title_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
-		$pageContents = $this->_iaDb->keyvalue(array('key', 'value'), "`key` LIKE('page_content_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
+		$pageTitles = $this->_iaDb->keyvalue(['key', 'value'], "`key` LIKE('page_title_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
+		$pageContents = $this->_iaDb->keyvalue(['key', 'value'], "`key` LIKE('page_content_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
 		$this->_iaDb->resetTable();
 
 		$defaultPage = $this->_iaCore->get('home_page');
@@ -101,7 +101,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		$this->_iaCore->startHook('phpAdminAddPageValidation', array('entry' => &$entry));
+		$this->_iaCore->startHook('phpAdminAddPageValidation', ['entry' => &$entry]);
 
 		iaUtil::loadUTF8Functions('ascii', 'bad', 'utf8_to_ascii', 'validation');
 
@@ -118,7 +118,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if (empty($title))
 			{
-				$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('title') . ' (' . $key . ')')), false);
+				$this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('title') . ' (' . $key . ')']), false);
 				break;
 			}
 		}
@@ -146,7 +146,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$entry['parent'] = '';
 			}
 
-			if ($this->_iaDb->exists('`id` != :id AND `alias` = :alias', array('id' => $this->getEntryId(), 'alias' => $entry['alias'])))
+			if ($this->_iaDb->exists('`id` != :id AND `alias` = :alias', ['id' => $this->getEntryId(), 'alias' => $entry['alias']]))
 			{
 				$this->addMessage('page_alias_exists');
 			}
@@ -186,10 +186,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (empty($entry['name']))
 		{
-			$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('name'))), false);
+			$this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('name')]), false);
 		}
 		elseif (iaCore::ACTION_ADD == $action
-			&& $this->_iaDb->exists('`name` = :name', array('name' => $entry['name'])))
+			&& $this->_iaDb->exists('`name` = :name', ['name' => $entry['name']]))
 		{
 			$this->addMessage('page_name_exists');
 		}
@@ -199,7 +199,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _setDefaultValues(array &$entry)
 	{
-		$entry = array(
+		$entry = [
 			'name' => '',
 			'parent' => '',
 			'filename' => 'page',
@@ -212,7 +212,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'nofollow' => false,
 			'new_window' => false,
 			'status' => iaCore::STATUS_ACTIVE
-		);
+		];
 	}
 
 	protected function _entryAdd(array $entryData)
@@ -247,7 +247,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
 		// saving selected menus
-		$selectedMenus = empty($data['menus']) ? array() : $data['menus'];
+		$selectedMenus = empty($data['menus']) ? [] : $data['menus'];
 		$this->_saveMenus($entry['name'], $selectedMenus);
 
 		// setting as the home page if needed
@@ -266,7 +266,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaLog = $this->_iaCore->factory('log');
 		$actionCode = (iaCore::ACTION_ADD == $action) ? iaLog::ACTION_CREATE : iaLog::ACTION_UPDATE;
-		$iaLog->write($actionCode, array('item' => 'page', 'name' => $pageTitle, 'id' => $this->getEntryId()));
+		$iaLog->write($actionCode, ['item' => 'page', 'name' => $pageTitle, 'id' => $this->getEntryId()]);
 	}
 
 	protected function _entryDelete($entryId)
@@ -281,14 +281,14 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				$pageName = $row['name'];
 
-				$this->_iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('item' => 'page',
-					'name' => $this->_iaCore->factory('page')->getPageTitle($pageName), 'id' => (int)$entryId));
+				$this->_iaCore->factory('log')->write(iaLog::ACTION_DELETE, ['item' => 'page',
+					'name' => $this->_iaCore->factory('page')->getPageTitle($pageName), 'id' => (int)$entryId]);
 
 				// remove associated entries as well
 				$this->_iaDb->delete("`key` IN ('page_title_{$pageName}', 'page_content_{$pageName}')", iaLanguage::getTable());
 
 				$this->_iaCore->factory('block', iaCore::ADMIN);
-				$this->_iaDb->delete('`page_name` = :page', iaBlock::getMenusTable(), array('page' => $pageName));
+				$this->_iaDb->delete('`page_name` = :page', iaBlock::getMenusTable(), ['page' => $pageName]);
 				//
 			}
 		}
@@ -326,7 +326,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$parentPage = $this->getHelper()->getByName($entryData['parent'], false);
-		$groups = $this->getHelper()->getGroups(array($this->_iaCore->get('home_page'), $entryData['name']));
+		$groups = $this->getHelper()->getGroups([$this->_iaCore->get('home_page'), $entryData['name']]);
 		$isHomepage = ($this->_iaCore->get('home_page', iaView::DEFAULT_HOMEPAGE) == $entryData['name']);
 
 		list($title, $content, $metaDescription, $metaKeywords) = $this->_loadMultilingualData($entryData['name']);
@@ -339,7 +339,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->assign('isHomePage', $isHomepage);
 		$iaView->assign('extensions', $this->getHelper()->extendedExtensions);
 		$iaView->assign('menus', $this->_getMenus());
-		$iaView->assign('pages', $this->getHelper()->getNonServicePages(array('index')));
+		$iaView->assign('pages', $this->getHelper()->getNonServicePages(['index']));
 		$iaView->assign('pagesGroup', $groups);
 		$iaView->assign('parentPageId', $parentPage['id']);
 	}
@@ -347,10 +347,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getMenus()
 	{
-		$menus = array(
-			array('title' => iaLanguage::get('core_menus', 'Core menus'), 'items' => array()),
-			array('title' => iaLanguage::get('custom_menus', 'Custom menus'), 'items' => array())
-		);
+		$menus = [
+			['title' => iaLanguage::get('core_menus', 'Core menus'), 'items' => []],
+			['title' => iaLanguage::get('custom_menus', 'Custom menus'), 'items' => []]
+		];
 
 		if ($this->_iaCore->factory('acl')->isAccessible($this->getName(), iaCore::ACTION_ADD))
 		{
@@ -361,12 +361,12 @@ LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT('block_title_', m.`id`)
 WHERE m.`type` = 'menu' 
 ORDER BY `title`
 SQL;
-			$sql = iaDb::printf($sql, array(
+			$sql = iaDb::printf($sql, [
 				'prefix' => $this->_iaDb->prefix,
 				'table_menus' => iaBlock::getTable(),
 				'table_phrases' => iaLanguage::getTable(),
 				'lang' => $this->_iaCore->language['iso']
-			));
+			]);
 
 			$rows = $this->_iaDb->getAssoc($sql);
 
@@ -387,7 +387,7 @@ SQL;
 		{
 			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
-			$newPage = array();
+			$newPage = [];
 			$name = strtolower($_POST['name'] = !utf8_is_ascii($_POST['name']) ? utf8_to_ascii($_POST['name']) : $_POST['name']);
 			if (isset($_POST['content']) && is_array($_POST['content']))
 			{
@@ -407,7 +407,7 @@ SQL;
 			$newPage['title'] = $_POST['title'];
 			$newPage['passw'] = iaSanitize::sql($_POST['passw']);
 
-			isset($_SESSION['preview_pages']) || $_SESSION['preview_pages'] = array();
+			isset($_SESSION['preview_pages']) || $_SESSION['preview_pages'] = [];
 			$_SESSION['preview_pages'][$name] = $newPage;
 
 			$languagesEnabled = $this->_iaCore->get('language_switch') && count($this->_iaCore->languages);
@@ -425,8 +425,8 @@ SQL;
 		$new = iaSanitize::sql($new);
 		$new = (IA_URL_DELIMITER == $new[strlen($new) - 1]) ? substr($new, 0, -1) : $new;
 
-		$cond = iaDb::printf("`alias` LIKE ':alias%' AND `id` != :id", array('alias' => $previous, 'id' => $entryId));
-		$stmt = array('alias' => "REPLACE(`alias`, '$previous', '$new')");
+		$cond = iaDb::printf("`alias` LIKE ':alias%' AND `id` != :id", ['alias' => $previous, 'id' => $entryId]);
+		$stmt = ['alias' => "REPLACE(`alias`, '$previous', '$new')"];
 
 		$this->_iaDb->update(null, $cond, $stmt);
 	}
@@ -440,27 +440,27 @@ SQL;
 
 			$iaDb->setTable($iaBlock::getMenusTable());
 
-			$menusList = $iaDb->all(array('id'), iaDb::convertIds('menu', 'type'), null, null, $iaBlock::getTable());
+			$menusList = $iaDb->all(['id'], iaDb::convertIds('menu', 'type'), null, null, $iaBlock::getTable());
 			foreach ($menusList as $item)
 			{
 				if (in_array($item['id'], $menus))
 				{
-					if (!$iaDb->exists('`menu_id` = :menu AND `page_name` = :page', array('menu' => $item['id'], 'page' => $entryName)))
+					if (!$iaDb->exists('`menu_id` = :menu AND `page_name` = :page', ['menu' => $item['id'], 'page' => $entryName]))
 					{
-						$entry = array(
+						$entry = [
 							'parent_id' => 0,
 							'menu_id' => $item['id'],
 							'el_id' => $this->getEntryId() . '_' . iaUtil::generateToken(5),
 							'level' => 0,
 							'page_name' => $entryName
-						);
+						];
 
 						$iaDb->insert($entry);
 					}
 				}
 				else
 				{
-					$iaDb->delete('`menu_id` = :menu AND `page_name` = :page', null, array('menu' => $item['id'], 'page' => $entryName));
+					$iaDb->delete('`menu_id` = :menu AND `page_name` = :page', null, ['menu' => $item['id'], 'page' => $entryName]);
 				}
 
 				$this->_iaCore->iaCache->remove('menu_' . $item['id']);
@@ -476,33 +476,33 @@ SQL;
 
 		if (isset($_POST['save']))
 		{
-			list($title, $content, $metaDescription, $metaKeywords) = array($_POST['title'],
-				$_POST['content'], $_POST['meta_description'], $_POST['meta_keywords']);
+			list($title, $content, $metaDescription, $metaKeywords) = [$_POST['title'],
+				$_POST['content'], $_POST['meta_description'], $_POST['meta_keywords']];
 		}
 		elseif (iaCore::ACTION_EDIT == $this->_iaCore->iaView->get('action'))
 		{
 			$this->_iaDb->setTable(iaLanguage::getTable());
 
-			$title = $this->_iaDb->keyvalue(array('code', 'value'),
+			$title = $this->_iaDb->keyvalue(['code', 'value'],
 				"`key` = 'page_title_{$pageName}' AND `category` = 'page'");
-			$content = $this->_iaDb->keyvalue(array('code', 'value'),
+			$content = $this->_iaDb->keyvalue(['code', 'value'],
 				"`key` = 'page_content_{$pageName}' AND `category` = 'page'");
-			$metaDescription = $this->_iaDb->keyvalue(array('code', 'value'),
+			$metaDescription = $this->_iaDb->keyvalue(['code', 'value'],
 				"`key` = 'page_meta_description_{$pageName}' AND `category` = 'page'");
-			$metaKeywords = $this->_iaDb->keyvalue(array('code', 'value'),
+			$metaKeywords = $this->_iaDb->keyvalue(['code', 'value'],
 				"`key` = 'page_meta_keywords_{$pageName}' AND `category` = 'page'");
 
 			$this->_iaDb->resetTable();
 		}
 
-		return array($title, $content, $metaDescription, $metaKeywords);
+		return [$title, $content, $metaDescription, $metaKeywords];
 	}
 
 	private function _saveMultilingualData($pageName, $extras)
 	{
 		foreach ($this->_iaCore->languages as $iso => $language)
 		{
-			foreach (array('title', 'content', 'meta_description', 'meta_keywords') as $key)
+			foreach (['title', 'content', 'meta_description', 'meta_keywords'] as $key)
 			{
 				if (isset($_POST[$key][$iso]))
 				{
@@ -541,9 +541,9 @@ SQL;
 
 		$url.= $params['ext'];
 
-		$exists = $this->_iaDb->exists('`alias` = :url AND `name` != :name', array('url' => $url, 'name' => $name));
+		$exists = $this->_iaDb->exists('`alias` = :url AND `name` != :name', ['url' => $url, 'name' => $name]);
 		$url = IA_URL . $url;
 
-		return array('url' => $url, 'exists' => $exists);
+		return ['url' => $url, 'exists' => $exists];
 	}
 }

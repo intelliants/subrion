@@ -28,9 +28,9 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'fieldgroups';
 
-	protected $_gridColumns = array('name', 'extras', 'item', 'collapsible', 'order', 'tabview');
-	protected $_gridFilters = array('id' => 'equal', 'item' => 'equal');
-	protected $_gridSorting = array('title' => array('value', 'pt'), 'item' => array('value', 'pi'));
+	protected $_gridColumns = ['name', 'extras', 'item', 'collapsible', 'order', 'tabview'];
+	protected $_gridFilters = ['id' => 'equal', 'item' => 'equal'];
+	protected $_gridSorting = ['title' => ['value', 'pt'], 'item' => ['value', 'pi']];
 	protected $_gridQueryMainTableAlias = 'fg';
 
 	protected $_phraseAddSuccess = 'fieldgroup_added';
@@ -72,7 +72,7 @@ WHERE :conditions
 GROUP BY fg.`id` :order 
 LIMIT :start, :limit
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_groups' => self::getTable(),
 			'table_phrases' => iaLanguage::getTable(),
@@ -82,7 +82,7 @@ SQL;
 			'order' => $order,
 			'start' => $start,
 			'limit' => $limit
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}
@@ -102,7 +102,7 @@ SQL;
 		// first, check if administrator changed the title
 		if (count($entryData) == 1 && isset($entryData['title']))
 		{
-			if ($name = $this->_iaDb->one(array('name'), iaDb::convertIds($entryId)))
+			if ($name = $this->_iaDb->one(['name'], iaDb::convertIds($entryId)))
 			{
 				$phraseKey = "fieldgroup_{$entryData['item']}_{$name}";
 
@@ -119,7 +119,7 @@ SQL;
 
 	protected function _entryDelete($entryId)
 	{
-		$row = $this->_iaDb->row(array('name', 'item'), iaDb::convertIds($entryId));
+		$row = $this->_iaDb->row(['name', 'item'], iaDb::convertIds($entryId));
 		$result = parent::_entryDelete($entryId);
 
 		if ($result && $row)
@@ -144,8 +144,8 @@ SQL;
 		{
 			$this->_iaDb->setTable(iaLanguage::getTable());
 
-			$entryData['titles'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_{$entryData['item']}_{$entryData['name']}'");
-			$entryData['description'] = $this->_iaDb->keyvalue(array('code', 'value'), "`key` = 'fieldgroup_description_{$entryData['item']}_{$entryData['name']}'");
+			$entryData['titles'] = $this->_iaDb->keyvalue(['code', 'value'], "`key` = 'fieldgroup_{$entryData['item']}_{$entryData['name']}'");
+			$entryData['description'] = $this->_iaDb->keyvalue(['code', 'value'], "`key` = 'fieldgroup_description_{$entryData['item']}_{$entryData['name']}'");
 
 			$this->_iaDb->resetTable();
 		}
@@ -155,14 +155,14 @@ SQL;
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		$entry = array(
+		$entry = [
 			'name' => iaUtil::checkPostParam('name'),
 			'item' => iaUtil::checkPostParam('item'),
 			'collapsible' => iaUtil::checkPostParam('collapsible'),
 			'collapsed' => iaUtil::checkPostParam('collapsed'),
 			'tabview' => iaUtil::checkPostParam('tabview'),
 			'tabcontainer' => iaUtil::checkPostParam('tabcontainer')
-		);
+		];
 
 		iaUtil::loadUTF8Functions('ascii', 'bad', 'validation');
 
@@ -233,17 +233,17 @@ SQL;
 		foreach ($this->_iaCore->languages as $code => $language)
 		{
 			$stmt = '`key` = :phrase AND `code` = :language';
-			$this->_iaDb->bind($stmt, array('phrase' => $phraseKeyTitle, 'language' => $code));
+			$this->_iaDb->bind($stmt, ['phrase' => $phraseKeyTitle, 'language' => $code]);
 
 			$this->_iaDb->exists($stmt)
-				? $this->_iaDb->update(array('value' => iaSanitize::html($data['titles'][$code])), $stmt)
+				? $this->_iaDb->update(['value' => iaSanitize::html($data['titles'][$code])], $stmt)
 				: iaLanguage::addPhrase($phraseKeyTitle, iaSanitize::html($data['titles'][$code]), $code);
 
 			$stmt = '`key` = :phrase && `code` = :language';
-			$this->_iaDb->bind($stmt, array('phrase' => $phraseKeyDescription, 'language' => $code));
+			$this->_iaDb->bind($stmt, ['phrase' => $phraseKeyDescription, 'language' => $code]);
 
 			$this->_iaDb->exists($stmt)
-				? $this->_iaDb->update(array('value' => iaSanitize::html($data['description'][$code])), $stmt)
+				? $this->_iaDb->update(['value' => iaSanitize::html($data['description'][$code])], $stmt)
 				: iaLanguage::addPhrase($phraseKeyDescription, iaSanitize::html($data['description'][$code]), $code);
 		}
 

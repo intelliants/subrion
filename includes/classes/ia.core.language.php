@@ -35,11 +35,11 @@ class iaLanguage
 	protected static $_table = 'language';
 	protected static $_languagesTable = 'languages';
 
-	protected static $_phrases = array();
+	protected static $_phrases = [];
 
-	protected static $_columns = array('code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status');
+	protected static $_columns = ['code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'];
 
-	protected static $_validCategories = array(self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP);
+	protected static $_validCategories = [self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP];
 
 
 	public function __construct(){}
@@ -75,7 +75,7 @@ class iaLanguage
 				$iaCache = iaCore::instance()->iaCache;
 
 				$cache = $iaCache->get('nonexistent_phrases', 0, true);
-				$cache || $cache = array();
+				$cache || $cache = [];
 
 				if (!in_array($key, $cache))
 				{
@@ -101,7 +101,7 @@ class iaLanguage
 			return $phrase;
 		}
 
-		$search = array();
+		$search = [];
 		foreach (array_keys($replaces) as $item)
 		{
 			array_push($search, ':' . $item);
@@ -129,7 +129,7 @@ class iaLanguage
 			: "`code` = '%s' AND `category` NOT IN('tooltip', 'frontend', 'page')";
 		$where = sprintf($where, $languageCode);
 
-		self::$_phrases = $iaCore->iaDb->keyvalue(array('key', 'value'), $where, self::getTable());
+		self::$_phrases = $iaCore->iaDb->keyvalue(['key', 'value'], $where, self::getTable());
 	}
 
 	public static function getPhrases()
@@ -152,11 +152,11 @@ class iaLanguage
 		$iaCore = iaCore::instance();
 
 		$stmt = '`category` = :category AND `code` = :language';
-		$iaCore->iaDb->bind($stmt, array('category' => self::CATEGORY_TOOLTIP, 'language' => $iaCore->iaView->language),1);
+		$iaCore->iaDb->bind($stmt, ['category' => self::CATEGORY_TOOLTIP, 'language' => $iaCore->iaView->language],1);
 
-		$rows = $iaCore->iaDb->keyvalue(array('key', 'value'), $stmt, self::getTable());
+		$rows = $iaCore->iaDb->keyvalue(['key', 'value'], $stmt, self::getTable());
 
-		return is_array($rows) ? $rows : array();
+		return is_array($rows) ? $rows : [];
 	}
 
 	public static function getTable()
@@ -177,30 +177,30 @@ class iaLanguage
 		$languageCode = empty($languageCode) ? iaCore::instance()->iaView->language : $languageCode;
 
 		$stmt = '`key` = :key AND `code` = :language AND `category` = :category AND `extras` = :plugin';
-		$iaDb->bind($stmt, array(
+		$iaDb->bind($stmt, [
 			'key' => $key,
 			'language' => $languageCode,
 			'category' => $category,
 			'plugin' => $plugin
-		));
+		]);
 
-		$phrase = $iaDb->row(array('original', 'value'), $stmt);
+		$phrase = $iaDb->row(['original', 'value'], $stmt);
 
 		if (empty($phrase))
 		{
-			$result = $iaDb->insert(array(
+			$result = $iaDb->insert([
 				'key' => $key,
 				'original' => $value,
 				'value' => $value,
 				'code' => $languageCode,
 				'category' => $category,
 				'extras' => $plugin
-			));
+			]);
 		}
 		else
 		{
 			$result = ($forceReplacement || ($phrase['value'] == $phrase['original']))
-				? $iaDb->update(array('value' => $value), $stmt)
+				? $iaDb->update(['value' => $value], $stmt)
 				: false;
 		}
 

@@ -39,14 +39,14 @@ class iaInvoice extends abstractCore
 
 		$id = $this->generateId();
 
-		$invoice = array(
+		$invoice = [
 			'id' => $id,
 			'transaction_id' => $transaction['id'],
 			'date_created' => date(iaDb::DATETIME_FORMAT),
 			'date_due' => null,
 			'fullname' => empty($transaction['fullname']) ? iaUsers::getIdentity()->fullname : $transaction['fullname'],
 			'member_id' => empty($transaction['fullname']) ? iaUsers::getIdentity()->id : 0,
-		);
+		];
 
 		$this->iaDb->insert($invoice, null, self::getTable());
 
@@ -85,13 +85,13 @@ class iaInvoice extends abstractCore
 		{
 			if ($title)
 			{
-				$entry = array(
+				$entry = [
 					'invoice_id' => $invoiceId,
 					'title' => $title,
 					'price' => (float)$data['price'][$i],
 					'quantity' => (int)$data['quantity'][$i],
 					'tax' => (int)$data['tax'][$i]
-				);
+				];
 
 				$this->iaDb->insert($entry);
 			}
@@ -121,16 +121,16 @@ ORDER BY t.`date_created` DESC
 LIMIT 1
 SQL;
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_transactions' => $iaTransaction::getTable(),
 			'table_invoices' => self::getTable(),
 			'member' => iaUsers::getIdentity()->id
-		));
+		]);
 
 		$row = $this->iaDb->getRow($sql);
 
-		return $row ? $row : array('address1' => '', 'address2' => '', 'zip' => '', 'country' => '');
+		return $row ? $row : ['address1' => '', 'address2' => '', 'zip' => '', 'country' => ''];
 	}
 
 	public function updateAddress($transactionId, $address)
@@ -138,12 +138,12 @@ SQL;
 		// in order to not rewrite the sensitive data (transaction id, id) it's better to set values this way
 		// since it's the data comes directly through $_POST
 
-		$values = array(
+		$values = [
 			'address1' => $address['address1'],
 			'address2' => $address['address2'],
 			'zip' => $address['zip'],
 			'country' => $address['country']
-		);
+		];
 
 		return (bool)$this->iaDb->update($values, iaDb::convertIds($transactionId, 'transaction_id'), null, self::getTable());
 	}
@@ -193,14 +193,14 @@ SQL;
 		$iaMailer->addAddress($member['email']);
 
 		$iaMailer->setReplacements($transaction);
-		$iaMailer->setReplacements(array(
+		$iaMailer->setReplacements([
 			'invoice' => $invoice['id'],
 			'date' => $invoice['date_created'],
 			'gateway' => iaLanguage::get($transaction['gateway'], $transaction['gateway']),
 			'email' => $member['username'],
 			'username' => $member['username'],
 			'fullname' => $member['fullname']
-		));
+		]);
 
 		return $iaMailer->send();
 	}

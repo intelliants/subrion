@@ -64,7 +64,7 @@ define('FOLDER_URL', FOLDER != '' ? trim(str_replace(IA_DS, IA_URL_DELIMITER, FO
 // process stripslashes if magic_quotes is enabled on the server
 if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc())
 {
-	$in = array(&$_GET, &$_POST, &$_COOKIE, &$_SERVER);
+	$in = [&$_GET, &$_POST, &$_COOKIE, &$_SERVER];
 	while (list($k, $v) = each($in))
 	{
 		foreach ($v as $key => $val)
@@ -112,13 +112,13 @@ if (strpos($domain, '.') && !filter_var($domain, FILTER_VALIDATE_IP))
 	$chunks = array_reverse(explode('.', $domain));
 	if (count($chunks) > 2)
 	{
-		if (!in_array($chunks[1], array('co', 'com', 'net', 'org', 'gov', 'ltd', 'ac', 'edu')))
+		if (!in_array($chunks[1], ['co', 'com', 'net', 'org', 'gov', 'ltd', 'ac', 'edu']))
 		{
-			$domain = implode('.', array($chunks[1], $chunks[0]));
+			$domain = implode('.', [$chunks[1], $chunks[0]]);
 
 			if ($chunks[2] != 'www')
 			{
-				$domain = implode('.', array($chunks[2], $chunks[1], $chunks[0]));
+				$domain = implode('.', [$chunks[2], $chunks[1], $chunks[0]]);
 			}
 		}
 	}
@@ -136,22 +136,22 @@ require_once IA_INCLUDES . 'function.php';
 
 if (function_exists('spl_autoload_register'))
 {
-	spl_autoload_register(array('iaSystem', 'autoload'));
+	spl_autoload_register(['iaSystem', 'autoload']);
 }
 
 iaSystem::renderTime('start');
 
 if (INTELLI_DEBUG)
 {
-	register_shutdown_function(array('iaSystem', 'shutdown'));
-	ob_start(array('iaSystem', 'output'));
+	register_shutdown_function(['iaSystem', 'shutdown']);
+	ob_start(['iaSystem', 'output']);
 }
 else
 {
 	error_reporting(0);
 }
 
-set_error_handler(array('iaSystem', 'error'));
+set_error_handler(['iaSystem', 'error']);
 
 iaSystem::renderTime('Core started');
 

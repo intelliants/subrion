@@ -29,7 +29,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_name = 'languages';
 
 	protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `delete`";
-	protected $_gridFilters = array('key' => 'like', 'value' => 'like', 'category' => 'equal', 'extras' => 'equal');
+	protected $_gridFilters = ['key' => 'like', 'value' => 'like', 'category' => 'equal', 'extras' => 'equal'];
 
 	protected $_phraseAddSuccess = 'phrase_added';
 
@@ -45,7 +45,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
-		$output = array();
+		$output = [];
 		$iaDb = &$this->_iaDb;
 
 		switch ($params['get'])
@@ -53,11 +53,11 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'plugins':
 				if ($plugins = $this->_iaDb->onefield('name', null, null, null, 'extras'))
 				{
-					$output['data'][] = array('value' => iaCore::CORE, 'title' => iaLanguage::get('core', 'Core'));
+					$output['data'][] = ['value' => iaCore::CORE, 'title' => iaLanguage::get('core', 'Core')];
 
 					foreach ($plugins as $plugin)
 					{
-						$output['data'][] = array('value' => $plugin, 'title' => iaLanguage::get($plugin, ucfirst($plugin)));
+						$output['data'][] = ['value' => $plugin, 'title' => iaLanguage::get($plugin, ucfirst($plugin))];
 					}
 				}
 
@@ -70,7 +70,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$start = isset($params['start']) ? (int)$params['start'] : 0;
 					$limit = isset($params['limit']) ? (int)$params['limit'] : 15;
 
-					$values = array();
+					$values = [];
 
 					if (!empty($params['key']))
 					{
@@ -98,9 +98,9 @@ class iaBackendController extends iaAbstractControllerBackend
 					$iaDb->bind($where, $values);
 
 					$rows = $iaDb->all('SQL_CALC_FOUND_ROWS DISTINCT `key`, `category`', $where, $start, $limit);
-					$output = array('data' => array(), 'total' => $iaDb->foundRows());
+					$output = ['data' => [], 'total' => $iaDb->foundRows()];
 
-					$keys = array();
+					$keys = [];
 					foreach ($rows as $row)
 					{
 						$keys[] = $row['key'];
@@ -108,18 +108,18 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$stmt = "`code` = ':lang' AND `key` IN('" . implode("','", $keys) . "')";
 
-					$lang1 = $iaDb->keyvalue(array('key', 'value'), iaDb::printf($stmt, array('lang' => $params['lang1'])));
-					$lang2 = $iaDb->keyvalue(array('key', 'value'), iaDb::printf($stmt, array('lang' => $params['lang2'])));
+					$lang1 = $iaDb->keyvalue(['key', 'value'], iaDb::printf($stmt, ['lang' => $params['lang1']]));
+					$lang2 = $iaDb->keyvalue(['key', 'value'], iaDb::printf($stmt, ['lang' => $params['lang2']]));
 
 					foreach ($rows as $row)
 					{
 						$key = $row['key'];
-						$output['data'][] = array(
+						$output['data'][] = [
 							'key' => $key,
 							'lang1' => isset($lang1[$key]) ? $lang1[$key] : null,
 							'lang2' => isset($lang2[$key]) ? $lang2[$key] : null,
 							'category' => $row['category']
-						);
+						];
 					}
 				}
 
@@ -153,7 +153,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _jsonAction(&$iaView)
 	{
 		$error = false;
-		$output = array('message' => iaLanguage::get('invalid_parameters'), 'success' => false);
+		$output = ['message' => iaLanguage::get('invalid_parameters'), 'success' => false];
 
 		if (isset($_POST['sorting']) && 'save' == $_POST['sorting'])
 		{
@@ -162,10 +162,10 @@ class iaBackendController extends iaAbstractControllerBackend
 				$i = 0;
 				foreach ($_POST['langs'] as $code)
 				{
-					$this->_iaDb->update(array('order' => ++$i), iaDb::convertIds($code, 'code'), null, iaLanguage::getLanguagesTable());
+					$this->_iaDb->update(['order' => ++$i], iaDb::convertIds($code, 'code'), null, iaLanguage::getLanguagesTable());
 				}
 
-				$output = array('message' => iaLanguage::get('saved'), 'success' => true);
+				$output = ['message' => iaLanguage::get('saved'), 'success' => true];
 			}
 		}
 		else
@@ -206,7 +206,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				foreach ($this->_iaCore->languages as $code => $language)
 				{
 					$exist = $this->_iaDb->exists('`key` = :key AND `code` = :language AND `category` = :category',
-						array('key' => $key, 'language' => $code, 'category' => $category));
+						['key' => $key, 'language' => $code, 'category' => $category]);
 					if (isset($_POST['force_replacement']) || !$exist)
 					{
 						iaLanguage::addPhrase($key, $value[$code], $code, '', $category);
@@ -237,10 +237,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridUpdate($params)
 	{
-		$output = array(
+		$output = [
 			'result' => false,
 			'message' => iaLanguage::get('invalid_parameters')
-		);
+		];
 
 		$params = $_POST;
 
@@ -257,7 +257,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->_iaDb->bind($stmt, $params);
 
 			if (!$this->_iaDb->exists($stmt)
-				&& ($row = $this->_iaDb->row_bind(array('extras', 'category'), '`key` = :key AND `code` != :lang', $params)))
+				&& ($row = $this->_iaDb->row_bind(['extras', 'category'], '`key` = :key AND `code` != :lang', $params)))
 			{
 				$insertion = iaLanguage::addPhrase($params['key'], $params['value'], $params['lang'], $row['extras'], $row['category'], true);
 			}
@@ -336,11 +336,11 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->_iaCore->factory('field')->syncMultilingualFields();
 			$this->_copyMultilingualConfigs($entry['code']);
 
-			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, array(
+			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, [
 				'item' => 'language',
 				'name' => $entry['title'],
 				'id' => $this->getEntryId()
-			));
+			]);
 
 			$this->_phraseAddSuccess = null;
 		}
@@ -348,14 +348,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _setDefaultValues(array &$entry)
 	{
-		$entry = array(
+		$entry = [
 			'code' => '',
 			'title' => '',
 			'locale' => 'en_US',
 			'date_format' => '%b %e, %Y',
 			'direction' => 'ltr',
 			'status' => iaCore::STATUS_INACTIVE
-		);
+		];
 	}
 
 	protected function _entryAdd(array $entryData)
@@ -368,25 +368,25 @@ class iaBackendController extends iaAbstractControllerBackend
 		// copy phrases
 		$counter = 0;
 		$languageCode = strtolower($entryData['code']);
-		$rows = $this->_iaDb->all(array('key', 'value', 'category', 'extras'), "`code` = '" . $this->_iaCore->iaView->language . "'");
+		$rows = $this->_iaDb->all(['key', 'value', 'category', 'extras'], "`code` = '" . $this->_iaCore->iaView->language . "'");
 		foreach ($rows as $value)
 		{
-			$row = array(
+			$row = [
 				'key' => $value['key'] ,
 				'value' => $value['value'],
 				'extras' => $value['extras'],
 				'code' => $languageCode,
 				'category' => $value['category']
-			);
+			];
 
 			if ($this->_iaDb->insert($row))
 			{
 				$counter++;
 			}
 		}
-		$this->_iaDb->update(null, iaDb::convertIds($languageCode, 'code'), array('original' => '`value`'));
+		$this->_iaDb->update(null, iaDb::convertIds($languageCode, 'code'), ['original' => '`value`']);
 
-		$this->_iaCore->iaView->setMessages(iaLanguage::getf('language_copied', array('count' => $counter)), iaView::SUCCESS);
+		$this->_iaCore->iaView->setMessages(iaLanguage::getf('language_copied', ['count' => $counter]), iaView::SUCCESS);
 
 		// clear language cache
 		$this->getHelper()->clearAll();
@@ -522,7 +522,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	private function _downloadLanguage(&$iaView)
 	{
 		$language = isset($_POST['lang']) ? iaSanitize::paranoid($_POST['lang']) : $this->_iaCore->requestPath[1];
-		$format = isset($_POST['file_format']) && in_array($_POST['file_format'], array('csv', 'sql')) ? $_POST['file_format'] : 'sql';
+		$format = isset($_POST['file_format']) && in_array($_POST['file_format'], ['csv', 'sql']) ? $_POST['file_format'] : 'sql';
 
 		$phrases = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`code` = '" . $language . "'");
 		$fileName = urlencode(isset($_POST['filename']) ? $_POST['filename'] . '.' . $format : 'subrion_' . IA_VERSION . '_' . $this->_iaCore->requestPath[1] . '.' . $format);
@@ -562,8 +562,8 @@ class iaBackendController extends iaAbstractControllerBackend
 				default:
 					unset($entry['id']);
 
-					$entry['value'] = str_replace(array("\r\n", "\r", "\n"), '\n', $entry['value']);
-					$entry['original'] = str_replace(array("\r\n", "\r", "\n"), '\n', $entry['original']);
+					$entry['value'] = str_replace(["\r\n", "\r", "\n"], '\n', $entry['value']);
+					$entry['original'] = str_replace(["\r\n", "\r", "\n"], '\n', $entry['original']);
 
 					fputcsv($stream, $entry, '|', '"');
 			}
@@ -601,10 +601,10 @@ class iaBackendController extends iaAbstractControllerBackend
 	private static function _importDump(&$iaDb)
 	{
 		$filename = $_FILES ? $_FILES['language_file']['tmp_name'] : $_POST['language_file2'];
-		$format = isset($_POST['format']) && in_array($_POST['format'], array('csv', 'sql')) ? $_POST['format'] : 'sql';
+		$format = isset($_POST['format']) && in_array($_POST['format'], ['csv', 'sql']) ? $_POST['format'] : 'sql';
 
 		$error = false;
-		$messages = array();
+		$messages = [];
 
 		if (empty($filename))
 		{
@@ -614,7 +614,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		elseif (!$fh = fopen($filename, 'r'))
 		{
 			$error = true;
-			$messages[] = iaLanguage::getf('cant_open_sql', array('filename' => $filename));
+			$messages[] = iaLanguage::getf('cant_open_sql', ['filename' => $filename]);
 		}
 
 		if ($format == 'csv' && isset($_POST['title']) && trim($_POST['title']) == '')
@@ -643,7 +643,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						$iaDb->query($sql);
 						if (empty($languageCode))
 						{
-							$matches = array();
+							$matches = [];
 							if (preg_match('#, \'([a-z]{2})\', \'#', $sql, $matches) || preg_match('#,\'([a-z]{2})\',\'#', $sql, $matches))
 							{
 								$languageCode = $matches[1];
@@ -709,20 +709,20 @@ class iaBackendController extends iaAbstractControllerBackend
 			$messages[] = iaLanguage::get($error ? 'incorrect_file_format' : 'saved');
 		}
 
-		return array(!$error, $messages, isset($languageCode) ? $languageCode : null);
+		return [!$error, $messages, isset($languageCode) ? $languageCode : null];
 	}
 
 	protected function _copyMultilingualConfigs($langIsoCode)
 	{
 		$this->_iaDb->setTable(iaCore::getConfigTable());
 
-		$rows = $this->_iaDb->all(array('name', 'value', 'options'), "`type` IN ('text', 'textarea')");
+		$rows = $this->_iaDb->all(['name', 'value', 'options'], "`type` IN ('text', 'textarea')");
 
-		$defaultLanguage = $this->_iaDb->row(array('code'), iaDb::convertIds(1, 'default'), iaLanguage::getLanguagesTable());
+		$defaultLanguage = $this->_iaDb->row(['code'], iaDb::convertIds(1, 'default'), iaLanguage::getLanguagesTable());
 
 		foreach ($rows as $row)
 		{
-			$options = $row['options'] ? json_decode($row['options'], true) : array();
+			$options = $row['options'] ? json_decode($row['options'], true) : [];
 
 			if (isset($options['multilingual']) && $options['multilingual'])
 			{
@@ -733,7 +733,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					preg_match('#\{\:' . $defaultLanguage['code'] . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $row['value'], $matches)
 						&& $row['value'].= $id . $matches[1]; // copying value of the 'default' language
 
-					$this->_iaDb->update(array('value' => $row['value']), iaDb::convertIds($row['name'], 'name'));
+					$this->_iaDb->update(['value' => $row['value']], iaDb::convertIds($row['name'], 'name'));
 				}
 			}
 		}

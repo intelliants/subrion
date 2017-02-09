@@ -30,8 +30,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_name = 'fields';
 
-	protected $_gridColumns = array('name', 'item', 'group', 'fieldgroup_id', 'type', 'relation', 'length', 'order', 'status', 'delete' => 'editable');
-	protected $_gridFilters = array('status' => self::EQUAL, 'id' => self::EQUAL, 'item' => self::EQUAL, 'relation' => self::EQUAL);
+	protected $_gridColumns = ['name', 'item', 'group', 'fieldgroup_id', 'type', 'relation', 'length', 'order', 'status', 'delete' => 'editable'];
+	protected $_gridFilters = ['status' => self::EQUAL, 'id' => self::EQUAL, 'item' => self::EQUAL, 'relation' => self::EQUAL];
 
 	protected $_tooltipsEnabled = true;
 
@@ -67,7 +67,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _jsonAction(&$iaView)
 	{
 		$itemName = str_replace('_fields', '', $iaView->get('action'));
-		$params = array_merge($_GET, array('item' => $itemName));
+		$params = array_merge($_GET, ['item' => $itemName]);
 
 		return parent::_gridRead($params);
 	}
@@ -94,7 +94,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _modifyGridResult(array &$entries)
 	{
-		$groups = $this->_iaDb->keyvalue(array('id', 'name'), '1 ORDER BY `item`, `name`', iaField::getTableGroups());
+		$groups = $this->_iaDb->keyvalue(['id', 'name'], '1 ORDER BY `item`, `name`', iaField::getTableGroups());
 
 		foreach ($entries as &$entry)
 		{
@@ -107,7 +107,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _setDefaultValues(array &$entry)
 	{
-		$entry = array(
+		$entry = [
 			'fieldgroup_id' => 0,
 			'name' => '',
 			'item' => null,
@@ -123,15 +123,15 @@ class iaBackendController extends iaAbstractControllerBackend
 			'imagetype_thumbnail' => '',
 			'status' => iaCore::STATUS_ACTIVE,
 			// bundled info
-			'pages' => array()
-		);
+			'pages' => []
+		];
 	}
 
 	protected function _entryDelete($entryId)
 	{
 		$result = false;
 
-		if ($this->_iaDb->exists('`id` = :id AND `editable` = :editable', array('id' => $entryId, 'editable' => 1)))
+		if ($this->_iaDb->exists('`id` = :id AND `editable` = :editable', ['id' => $entryId, 'editable' => 1]))
 		{
 			$field = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($entryId));
 
@@ -155,7 +155,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$this->_iaDb->delete(
 					'`field` = :name && `item` = :item',
 					'fields_tree_nodes',
-					array('name' => $field['name'], 'item' => $field['item'])
+					['name' => $field['name'], 'item' => $field['item']]
 				);
 
 				$this->_iaDb->delete("`key` LIKE 'field_tree_{$field['item']}_{$field['name']}_%' ", iaLanguage::getTable());
@@ -193,7 +193,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if (empty($data['title'][$code]))
 			{
-				$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('title') . ': ' . $language['title'])), false);
+				$this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('title') . ': ' . $language['title']]), false);
 			}
 		}
 
@@ -240,7 +240,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				case iaField::COMBO:
 				case iaField::RADIO:
 				case iaField::CHECKBOX:
-					$values = array();
+					$values = [];
 
 					foreach ($data['keys'] as $idx => $key)
 					{
@@ -267,7 +267,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$entry['values'] = implode(',', array_keys($values));
 
 					// default value
-					$defaultValues = array();
+					$defaultValues = [];
 					foreach (explode('|', $data['multiple_default']) as $idx => $default)
 					{
 						foreach ($values as $key => $phrases)
@@ -366,7 +366,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($entry['searchable'])
 		{
-			if (isset($data['show_as']) && $entry['type'] != iaField::NUMBER && in_array($data['show_as'], array(iaField::COMBO, iaField::RADIO, iaField::CHECKBOX)))
+			if (isset($data['show_as']) && $entry['type'] != iaField::NUMBER && in_array($data['show_as'], [iaField::COMBO, iaField::RADIO, iaField::CHECKBOX]))
 			{
 				$entry['show_as'] = $data['show_as'];
 			}
@@ -376,7 +376,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		$this->_iaCore->startHook('phpAdminFieldsEdit', array('field' => &$entry));
+		$this->_iaCore->startHook('phpAdminFieldsEdit', ['field' => &$entry]);
 
 		return !$this->getMessages();
 	}
@@ -394,7 +394,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			case iaField::IMAGE:
 			case iaField::PICTURES:
-				$imageTypes = array();
+				$imageTypes = [];
 				if ($entry['timepicker'])
 				{
 					$key = (iaField::IMAGE == $entry['type']) ? 'image_types' : 'pic_image_types';
@@ -406,12 +406,12 @@ class iaBackendController extends iaAbstractControllerBackend
 				$this->_saveTreeNodes($fieldName, $this->_nodes, $entry);
 		}
 
-		$this->_iaCore->startHook('phpAdminFieldsSaved', array('field' => &$entry, 'iaField' => $this));
+		$this->_iaCore->startHook('phpAdminFieldsSaved', ['field' => &$entry, 'iaField' => $this]);
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$titles = $values = array();
+		$titles = $values = [];
 
 		if (iaCore::ACTION_EDIT == $iaView->get('action'))
 		{
@@ -481,35 +481,35 @@ class iaBackendController extends iaAbstractControllerBackend
 		elseif (!empty($_GET['item']) || !empty($_POST['item']))
 		{
 			$entryData['item'] = isset($_POST['item']) ? $_POST['item'] : $_GET['item'];
-			$entryData['pages'] = isset($_POST['pages']) ? $_POST['pages'] : array();
+			$entryData['pages'] = isset($_POST['pages']) ? $_POST['pages'] : [];
 		}
 
 		$iaItem = $this->_iaCore->factory('item');
 
 		$fieldTypes = $this->_iaDb->getEnumValues(iaField::getTable(), 'type');
 
-		$parents = array();
-		$fieldsList = $this->_iaDb->all(array('id', 'item', 'name'),
+		$parents = [];
+		$fieldsList = $this->_iaDb->all(['id', 'item', 'name'],
 			(empty($entryData['name']) ? '' : "`name` != '{$entryData['name']}' AND ")
 			. " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox')"
 			. (empty($entryData['item']) ? '' : " AND `item` = '" . iaSanitize::sql($entryData['item']) . "'"));
 		foreach ($fieldsList as $row)
 		{
-			isset($parents[$row['item']]) || $parents[$row['item']] = array();
+			isset($parents[$row['item']]) || $parents[$row['item']] = [];
 			$array = $this->_iaDb->getEnumValues($iaItem->getItemTable($row['item']), $row['name']);
-			$parents[$row['item']][$row['name']] = array($row['id'], $array['values']);
+			$parents[$row['item']][$row['name']] = [$row['id'], $array['values']];
 		}
 
 		isset($_POST['title']) && is_array($_POST['title']) && $entryData['title'] = $_POST['title'];
 		isset($_POST['tooltip']) && is_array($_POST['tooltip']) && $entryData['tooltip'] = $_POST['tooltip'];
 
-		$entryData['pages'] || $entryData['pages'] = array();
+		$entryData['pages'] || $entryData['pages'] = [];
 
-		$this->_iaCore->startHook('phpAdminFieldsAssignValues', array('entry' => &$entryData));
+		$this->_iaCore->startHook('phpAdminFieldsAssignValues', ['entry' => &$entryData]);
 
 		$imageTypes = $this->getHelper()->getImageTypes();
 		empty($imageTypes) && iaLanguage::set('no_image_types', iaLanguage::getf('no_image_types',
-			array('url' => IA_ADMIN_URL . 'image-types/add/')));
+			['url' => IA_ADMIN_URL . 'image-types/add/']));
 
 		$iaView->assign('parents', $parents);
 		$iaView->assign('fieldTypes', $fieldTypes['values']);
@@ -553,17 +553,17 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _insert(array $fieldData)
 	{
-		$fieldData['order'] = $this->_iaDb->getMaxOrder(null, array('item', $fieldData['item'])) + 1;
+		$fieldData['order'] = $this->_iaDb->getMaxOrder(null, ['item', $fieldData['item']]) + 1;
 
 		return $this->_iaDb->insert($fieldData);
 	}
 
 	protected function _setPageTitle(&$iaView, array $entryData, $action)
 	{
-		if (in_array($action, array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT)))
+		if (in_array($action, [iaCore::ACTION_ADD, iaCore::ACTION_EDIT]))
 		{
 			$entryName = empty($entryData['name']) ? '' : iaField::getFieldTitle($entryData['item'], $entryData['name']);
-			$title = iaLanguage::getf($action . '_field', array('field' => $entryName));
+			$title = iaLanguage::getf($action . '_field', ['field' => $entryName]);
 
 			$iaView->title($title);
 		}
@@ -581,7 +581,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				if ($pageName = trim($pageName))
 				{
-					$this->_iaDb->insert(array('page_name' => $pageName, 'field_id' => $this->getEntryId()));
+					$this->_iaDb->insert(['page_name' => $pageName, 'field_id' => $this->getEntryId()]);
 				}
 			}
 		}
@@ -620,7 +620,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getParents($fieldName)
 	{
-		$result = array();
+		$result = [];
 
 		if ($parents = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($fieldName, 'child'), null, null, iaField::getTableRelations()))
 		{
@@ -635,8 +635,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _parseTreeNodes($nodesFlatData)
 	{
-		$nestedIds = array();
-		$preservedKeys = array('id', 'text', 'parent');
+		$nestedIds = [];
+		$preservedKeys = ['id', 'text', 'parent'];
 		$data = json_decode($nodesFlatData, true);
 
 		foreach ($data as $i => $node)
@@ -645,22 +645,22 @@ class iaBackendController extends iaAbstractControllerBackend
 				if (!in_array($key, $preservedKeys)) unset($data[$i][$key]);
 
 			$alias = strtolower(iaSanitize::alias($node['text']));
-			$nestedIds[$node['id']] = array(
+			$nestedIds[$node['id']] = [
 				'node_id' => $node['id'],
 				'text' => $node['text'],
 				'parent_node_id' => '#' != $node['parent'] ? $node['parent'] : '',
 				'alias' => ('#' != $node['parent'] && isset($nestedIds[$node['parent']])) ?
 					$nestedIds[$node['parent']]['alias'] . $alias . IA_URL_DELIMITER :
 					$alias . IA_URL_DELIMITER
-			);
+			];
 		}
 
-		return array(json_encode($data), $nestedIds);
+		return [json_encode($data), $nestedIds];
 	}
 
 	private function _treeActions(array $params)
 	{
-		$output = array();
+		$output = [];
 
 		$key = sprintf(self::TREE_NODE_TITLE, $params['item'], $params['field'], $params['id']);
 
@@ -680,15 +680,15 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			$phrases = $this->_iaDb->keyvalue(array('code', 'value'), iaDb::convertIds($key, 'key'), iaLanguage::getTable());
+			$phrases = $this->_iaDb->keyvalue(['code', 'value'], iaDb::convertIds($key, 'key'), iaLanguage::getTable());
 
 			foreach ($this->_iaCore->languages as $code => $language)
 			{
-				$output[] = array(
+				$output[] = [
 					'fieldLabel' => $language['title'],
 					'name' => $code,
 					'value' => isset($phrases[$code]) ? $phrases[$code] : null
-				);
+				];
 			}
 		}
 
@@ -697,7 +697,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getTree($itemName, $fieldName, $nodes)
 	{
-		$unpackedNodes = is_string($nodes) && $nodes ? json_decode($nodes, true) : array();
+		$unpackedNodes = is_string($nodes) && $nodes ? json_decode($nodes, true) : [];
 
 		foreach ($unpackedNodes as &$node)
 		{
@@ -712,9 +712,9 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->setTable('fields_tree_nodes');
 
 		$this->_iaDb->delete('`field` = :name && `item` = :item', null,
-			array('name' => $fieldName, 'item' => $field['item']));
+			['name' => $fieldName, 'item' => $field['item']]);
 		$this->_iaDb->delete('`key` LIKE :key AND `code` = :lang', iaLanguage::getTable(),
-			array('key' => 'field_' . $field['item'] . '_' . $fieldName . '+%', 'lang' => $this->_iaCore->language['iso']));
+			['key' => 'field_' . $field['item'] . '_' . $fieldName . '+%', 'lang' => $this->_iaCore->language['iso']]);
 
 		if ($nodes)
 		{
@@ -743,42 +743,42 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach ($this->_iaCore->languages as $code => $language)
 		{
 			if ($masterLanguage && $code != $masterLanguage // do not overwrite phrases in other languages if exist
-				&& $this->_iaDb->exists('`key` = :key AND `code` = :code', array('key' => $key, 'code' => $code), iaLanguage::getTable())) continue;
+				&& $this->_iaDb->exists('`key` = :key AND `code` = :code', ['key' => $key, 'code' => $code], iaLanguage::getTable())) continue;
 			iaLanguage::addPhrase($key, $value, $code, $extras, iaLanguage::CATEGORY_COMMON);
 		}
 	}
 
 	private function _fetchFieldGroups($itemName)
 	{
-		$result = array();
+		$result = [];
 
 		$where = '`item` = :item ORDER BY `item`, `name`';
-		$this->_iaDb->bind($where, array('item' => $itemName));
+		$this->_iaDb->bind($where, ['item' => $itemName]);
 
-		$rows = $this->_iaDb->all(array('id', 'name', 'item'), $where, null, null, iaField::getTableGroups());
+		$rows = $this->_iaDb->all(['id', 'name', 'item'], $where, null, null, iaField::getTableGroups());
 		foreach ($rows as $row)
-			$result[] = array('id' => $row['id'], 'title' => iaField::getFieldgroupTitle($row['item'], $row['name']));
+			$result[] = ['id' => $row['id'], 'title' => iaField::getFieldgroupTitle($row['item'], $row['name'])];
 
 		return $result;
 	}
 
 	private function _fetchPages($itemName)
 	{
-		$pages = array();
+		$pages = [];
 
 		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
 		$where = $itemName ? iaDb::convertIds($itemName, 'item') : iaDb::EMPTY_CONDITION;
 
-		$itemPagesList = $this->_iaDb->all(array('id', 'page_name', 'item'),
+		$itemPagesList = $this->_iaDb->all(['id', 'page_name', 'item'],
 			$where . ' ORDER BY `item`, `page_name`', null, null, 'items_pages');
 		foreach ($itemPagesList as $entry)
 		{
-			$pages[$entry['id']] = array(
+			$pages[$entry['id']] = [
 				'name' => $entry['page_name'],
 				'title' => $iaPage->getPageTitle($entry['page_name']),
 				'item' => $entry['item']
-			);
+			];
 		}
 
 		return $pages;
@@ -792,10 +792,10 @@ class iaBackendController extends iaAbstractControllerBackend
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad');
 
 		$this->_iaDb->delete('`key` LIKE :key1 OR `key` LIKE :key2', iaLanguage::getTable(),
-			array(
+			[
 				'key1' => sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName),
 				'key2' => sprintf(iaField::FIELD_TOOLTIP_PHRASE_KEY, $itemName, $fieldName)
-			));
+			]);
 
 		foreach ($this->_iaCore->languages as $code => $language)
 		{
@@ -812,8 +812,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($this->_values)
 		{
-			$this->_iaDb->delete('`key` LIKE :key', iaLanguage::getTable(), array('key' => sprintf(
-					iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName) . '+%'));
+			$this->_iaDb->delete('`key` LIKE :key', iaLanguage::getTable(), ['key' => sprintf(
+					iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName) . '+%']);
 
 			foreach ($this->_values as $key => $phrases)
 			{
@@ -840,7 +840,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	public function setParents($fieldName, array $parents)
 	{
-		$fieldIds = $this->_iaDb->keyvalue(array('name', 'id'));
+		$fieldIds = $this->_iaDb->keyvalue(['name', 'id']);
 
 		$this->_iaDb->setTable(iaField::getTableRelations());
 
@@ -853,11 +853,11 @@ class iaBackendController extends iaAbstractControllerBackend
 			foreach ($list as $parentFieldName => $values)
 			{
 				foreach ($values as $value => $flag)
-					$this->_iaDb->insert(array(
+					$this->_iaDb->insert([
 						'field_id' => $fieldIds[$parentFieldName],
 						'element' => $value,
 						'child' => $fieldName
-					));
+					]);
 			}
 		}
 
@@ -882,16 +882,16 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					if ($field = trim($field))
 					{
-						$this->_iaDb->insert(array(
+						$this->_iaDb->insert([
 							'field_id' => $this->getEntryId(),
 							'element' => $values[$index],
 							'child' => $field
-						));
+						]);
 
 						$where = '`name` = :name AND `item` = :item';
-						$this->_iaDb->bind($where, array('name' => $field, 'item' => $itemName));
+						$this->_iaDb->bind($where, ['name' => $field, 'item' => $itemName]);
 
-						$this->_iaDb->update(array('relation' => iaField::RELATION_DEPENDENT), $where, null, iaField::getTable());
+						$this->_iaDb->update(['relation' => iaField::RELATION_DEPENDENT], $where, null, iaField::getTable());
 					}
 				}
 			}
@@ -910,15 +910,15 @@ class iaBackendController extends iaAbstractControllerBackend
 			foreach ($children as $child)
 			{
 				$where = '`item` = :item AND `name` = :name';
-				$this->_iaDb->bind($where, array('item' => $itemName, 'name' => $child));
+				$this->_iaDb->bind($where, ['item' => $itemName, 'name' => $child]);
 
-				$this->_iaDb->update(array('relation' => iaField::RELATION_REGULAR), $where, null, iaField::getTable());
+				$this->_iaDb->update(['relation' => iaField::RELATION_REGULAR], $where, null, iaField::getTable());
 			}
 		}
 
 		// delete dependent relations
 		$where = '`field_id` = :id OR `child` = :child';
-		$this->_iaDb->bind($where, array('id' => $this->getEntryId(), 'child' => $fieldName));
+		$this->_iaDb->bind($where, ['id' => $this->getEntryId(), 'child' => $fieldName]);
 
 		$this->_iaDb->delete($where, iaField::getTableRelations());
 	}
@@ -936,7 +936,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (empty($data[$imageTypesKey]) || !is_array($data[$imageTypesKey]))
 		{
 			$this->addMessage(iaLanguage::getf('field_is_not_selected',
-				array('field' => iaLanguage::get('image_types'))), false);
+				['field' => iaLanguage::get('image_types')]), false);
 
 			return;
 		}
@@ -944,7 +944,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['imagetype_primary'] = $data[$primary];
 		$entry['imagetype_thumbnail'] = $data[$thumbnail];
 
-		$sizes = array();
+		$sizes = [];
 		foreach ($this->getHelper()->getImageTypes() as $imageType)
 			in_array($imageType['id'], $data[$imageTypesKey])
 			&& $sizes[$imageType['name']] = $imageType['width'] + $imageType['height'];

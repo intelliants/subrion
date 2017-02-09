@@ -91,11 +91,11 @@ class iaApiAuth extends abstractCore
 	{
 		session_regenerate_id(true);
 
-		$entry = array(
+		$entry = [
 			'key' =>  $this->_generateToken($request),
 			'ip' => iaUtil::getIp(),
 			'session' => session_id()
-		);
+		];
 
 		$this->iaDb->insert($entry, null, self::getTable());
 
@@ -117,13 +117,13 @@ class iaApiAuth extends abstractCore
 		$permanentKey = $this->iaCore->get('api_token');
 		if ($permanentKey && $permanentKey == $request->getServer('HTTP_X_AUTH_TOKEN'))
 		{
-			return array(
+			return [
 				'key' => $permanentKey,
 				'member_id' => 0,
 				'expires' => null,
 				'ip' => null,
 				'session' => null,
-			);
+			];
 		}
 
 		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION,

@@ -43,7 +43,7 @@ class iaApiResponse
 	protected $_code = self::OK;
 	protected $_body;
 
-	protected $_headers = array();
+	protected $_headers = [];
 
 	protected $_renderer;
 

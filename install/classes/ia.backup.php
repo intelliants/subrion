@@ -26,7 +26,7 @@
 
 class iaBackup
 {
-	protected $_foldersList = array(
+	protected $_foldersList = [
 		'admin',
 		'front',
 		'includes',
@@ -35,21 +35,21 @@ class iaBackup
 		'packages',
 		'plugins',
 		'templates'
-	);
+	];
 
-	protected $_filesList = array(
+	protected $_filesList = [
 		'.htaccess',
 		'changelog.txt',
 		'favicon.ico',
 		'index.php',
 		'license.txt',
 		'robots.txt'
-	);
+	];
 
 	protected $dumpFilePath;
 
 	public $filePath;
-	public $messages = array();
+	public $messages = [];
 
 
 	public  function __construct()
@@ -119,7 +119,7 @@ class iaBackup
 		}
 
 		$sqlDump = '';
-		$onlyStructureExceptions = array('online');
+		$onlyStructureExceptions = ['online'];
 		foreach ($tablesList as $tableName)
 		{
 			$sqlDump.= $iaDbControl->makeStructureBackup($tableName, true) . PHP_EOL;
@@ -151,14 +151,14 @@ class iaBackup
 
 		if ($zh === true)
 		{
-			$stack = array(IA_HOME);
+			$stack = [IA_HOME];
 			$cutFrom = strrpos(IA_HOME, IA_DS) + 1;
 
 			while ($stack)
 			{
 				$currentDir = array_pop($stack);
 				$localDir = substr($currentDir, $cutFrom);
-				$files = array();
+				$files = [];
 
 				$directory = dir($currentDir);
 				while (false !== ($node = $directory->read()))

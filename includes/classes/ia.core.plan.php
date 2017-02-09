@@ -53,7 +53,7 @@ class iaPlan extends abstractCore
 	protected static $_options;
 
 	protected $_item;
-	protected $_plans = array();
+	protected $_plans = [];
 
 
 	public static function getTableOptions()
@@ -70,12 +70,12 @@ class iaPlan extends abstractCore
 	{
 		$iaItem = $this->iaCore->factory('item');
 
-		$item = $this->iaDb->row(array('sponsored', 'sponsored_plan_id'),
+		$item = $this->iaDb->row(['sponsored', 'sponsored_plan_id'],
 			iaDb::convertIds($itemId), $iaItem->getItemTable($itemName));
 
 		return (!empty($item['sponsored']) && !empty($item['sponsored_plan_id']))
 			? $this->_getOptionValuesByPlanId($item['sponsored_plan_id'])
-			: array();
+			: [];
 	}
 
 	protected function _getOptionValuesByPlanId($planId)
@@ -87,23 +87,23 @@ LEFT JOIN `:prefix:table_options` o ON (v.`option_id` = o.`id`)
 WHERE v.`plan_id` = :plan
 SQL;
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_option_values' => self::getTableOptionValues(),
 			'table_options' => self::getTableOptions(),
 			'plan' => (int)$planId
-		));
+		]);
 
 		$rows = $this->iaDb->getKeyValue($sql);
 
-		return $rows ? $rows : array();
+		return $rows ? $rows : [];
 	}
 
 	public function getPlanOptions($planId)
 	{
-		$result = array();
+		$result = [];
 
-		$values = $this->iaDb->assoc(array('option_id', 'price', 'value'), iaDb::convertIds($planId, 'plan_id'), self::getTableOptionValues());
+		$values = $this->iaDb->assoc(['option_id', 'price', 'value'], iaDb::convertIds($planId, 'plan_id'), self::getTableOptionValues());
 
 		if (is_null(self::$_options))
 		{
@@ -175,7 +175,7 @@ SQL;
 
 		if (!is_array($planId))
 		{
-			$plan = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`status` = :status AND `id` = :id', array('status' => iaCore::STATUS_ACTIVE, 'id' => (int)$planId), self::getTable());
+			$plan = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`status` = :status AND `id` = :id', ['status' => iaCore::STATUS_ACTIVE, 'id' => (int)$planId], self::getTable());
 			if ($plan)
 			{
 				$plan['title'] = iaLanguage::get('plan_title_' . $plan['id']);
@@ -198,12 +198,12 @@ SQL;
 		if (!$this->_item || $this->_item != $itemName)
 		{
 			$this->_item = $itemName;
-			$this->_plans = array();
+			$this->_plans = [];
 
 			$where = '`item` = :item AND `status` = :status ORDER BY `order` ASC';
-			$this->iaDb->bind($where, array('item' => $itemName, 'status' => iaCore::STATUS_ACTIVE));
+			$this->iaDb->bind($where, ['item' => $itemName, 'status' => iaCore::STATUS_ACTIVE]);
 
-			if ($rows = $this->iaDb->all(array('id', 'duration', 'unit', 'cost', 'data'), $where, null, null, self::getTable()))
+			if ($rows = $this->iaDb->all(['id', 'duration', 'unit', 'cost', 'data'], $where, null, null, self::getTable()))
 			{
 				foreach ($rows as $row)
 				{
@@ -241,18 +241,18 @@ SQL;
 		$remainingBalance = $userInfo['funds'] - $transactionData['amount'];
 		if ($remainingBalance >= 0)
 		{
-			$result = (bool)$iaUsers->update(array('funds' => $remainingBalance), iaDb::convertIds($userInfo['id']));
+			$result = (bool)$iaUsers->update(['funds' => $remainingBalance], iaDb::convertIds($userInfo['id']));
 
 			if ($result)
 			{
 				iaUsers::reloadIdentity();
 
-				$updatedValues = array(
+				$updatedValues = [
 					'status' => iaTransaction::PASSED,
 					'gateway' => iaTransaction::TRANSACTION_MEMBER_BALANCE,
 					'reference_id' => date('YmdHis'),
 					'member_id' => iaUsers::getIdentity()->id
-				);
+				];
 
 				$iaTransaction->update($updatedValues, $transactionData['id']);
 			}
@@ -270,7 +270,7 @@ SQL;
 		$tableName = $this->iaCore->factory('item')->getItemTable($itemName);
 		$stmt = iaDb::convertIds($itemId);
 
-		$fields = array(self::SPONSORED, self::SPONSORED_PLAN_ID);
+		$fields = [self::SPONSORED, self::SPONSORED_PLAN_ID];
 		'members' == $itemName || $fields[] = 'member_id';
 
 		$entry = $this->iaDb->row($fields, $stmt, $tableName);
@@ -279,12 +279,12 @@ SQL;
 			return false;
 		}
 
-		$values = array(
+		$values = [
 			self::SPONSORED => 0,
 			self::SPONSORED_PLAN_ID => 0,
 			self::SPONSORED_DATE_START => null,
 			self::SPONSORED_DATE_END => null
-		);
+		];
 
 		$plan = $this->getById($entry[self::SPONSORED_PLAN_ID]);
 
@@ -301,7 +301,7 @@ SQL;
 		}
 
 		// then, try to call class' helper
-		$this->_runClassMethod($itemName, self::METHOD_CANCEL_PLAN, array($itemId));
+		$this->_runClassMethod($itemName, self::METHOD_CANCEL_PLAN, [$itemId]);
 
 		return $result;
 	}
@@ -322,13 +322,13 @@ SQL;
 		{
 			list($dateStarted, $dateFinished) = $this->calculateDates($plan['duration'], $plan['unit']);
 
-			$values = array(
+			$values = [
 				self::SPONSORED => 1,
 				self::SPONSORED_PLAN_ID => $transaction['plan_id'],
 				self::SPONSORED_DATE_START => $dateStarted,
 				self::SPONSORED_DATE_END => $dateFinished,
 				'status' => iaCore::STATUS_ACTIVE
-			);
+			];
 
 			$iaItem = $this->iaCore->factory('item');
 			$result = $this->iaDb->update($values, iaDb::convertIds($transaction['item_id']), null, $iaItem->getItemTable($item));
@@ -337,7 +337,7 @@ SQL;
 		$this->_sendEmailNotification('activated', $plan, $transaction['member_id']);
 
 		// perform item specific actions
-		$this->_runClassMethod($item, self::METHOD_POST_PAYMENT, array($plan, $transaction));
+		$this->_runClassMethod($item, self::METHOD_POST_PAYMENT, [$plan, $transaction]);
 
 		return $result;
 	}
@@ -349,7 +349,7 @@ SQL;
 			case self::UNIT_HOUR:
 			case self::UNIT_DAY:
 			case self::UNIT_WEEK: // use pre-calculated data
-				$unitDurationInSeconds = array(self::UNIT_HOUR => 3600, self::UNIT_DAY => 86400, self::UNIT_WEEK => 604800);
+				$unitDurationInSeconds = [self::UNIT_HOUR => 3600, self::UNIT_DAY => 86400, self::UNIT_WEEK => 604800];
 				$base = $unitDurationInSeconds[$unit];
 
 				break;
@@ -369,10 +369,10 @@ SQL;
 		$dateStarted = time();
 		$dateFinished = $dateStarted + ($base * $duration);
 
-		return array(
+		return [
 			date(iaDb::DATETIME_FORMAT, $dateStarted),
 			date(iaDb::DATETIME_FORMAT, $dateFinished)
-		);
+		];
 	}
 
 	protected function _sendEmailNotification($type, $plan, $memberId)
@@ -399,18 +399,18 @@ SQL;
 		$iaMailer->addAddress($member['email']);
 
 		$iaMailer->setReplacements($plan);
-		$iaMailer->setReplacements(array(
+		$iaMailer->setReplacements([
 			'email' => $member['email'],
 			'username' => $member['username'],
 			'fullname' => $member['fullname'],
 			'plan' => iaLanguage::get('plan_title_' . $plan['id']),
 			'currency' => $this->iaCore->get('currency'),
-		));
+		]);
 
 		return $iaMailer->send();
 	}
 
-	private function _runClassMethod($itemName, $method, array $args = array())
+	private function _runClassMethod($itemName, $method, array $args = [])
 	{
 		$iaItem = $this->iaCore->factory('item');
 
@@ -421,7 +421,7 @@ SQL;
 
 		if ($itemClassInstance && method_exists($itemClassInstance, $method))
 		{
-			return call_user_func_array(array($itemClassInstance, $method), $args);
+			return call_user_func_array([$itemClassInstance, $method], $args);
 		}
 
 		return false;

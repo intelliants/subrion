@@ -53,19 +53,19 @@ class iaView extends abstractUtil
 	const RESOURCE_ORDER_REGULAR = 3;
 
 	protected $_layoutEnabled = true;
-	protected $_existBlocks = array();
-	protected $_menus = array();
-	protected $_messages = array();
-	protected $_params = array();
+	protected $_existBlocks = [];
+	protected $_menus = [];
+	protected $_messages = [];
+	protected $_params = [];
 	protected $_pageName;
 	protected $_requestType = self::REQUEST_HTML;
-	protected $_outputValues = array();
+	protected $_outputValues = [];
 
 	public $resources;
 
-	public $positions = array();
+	public $positions = [];
 
-	public $blocks = array();
+	public $blocks = [];
 
 	public $assetsUrl;
 	public $domain = 'localhost';
@@ -86,7 +86,7 @@ class iaView extends abstractUtil
 	{
 		parent::init();
 
-		$this->resources = $this->_arrayAsObject(array('css' => $this->_arrayAsObject(), 'js' => $this->_arrayAsObject()));
+		$this->resources = $this->_arrayAsObject(['css' => $this->_arrayAsObject(), 'js' => $this->_arrayAsObject()]);
 	}
 
 	public function set($key, $value)
@@ -153,7 +153,7 @@ class iaView extends abstractUtil
 
 			$this->iaSmarty->setCompileDir($compileDir);
 			$this->iaSmarty->setCacheDir(IA_TMP . 'smartycache' . IA_DS);
-			$this->iaSmarty->setPluginsDir(array(IA_SMARTY . 'plugins', IA_SMARTY . 'intelli_plugins'));
+			$this->iaSmarty->setPluginsDir([IA_SMARTY . 'plugins', IA_SMARTY . 'intelli_plugins']);
 
 			$this->iaSmarty->force_compile = $this->iaCore->get('smarty_cache');
 			$this->iaSmarty->cache_modified_check = false;
@@ -181,7 +181,7 @@ class iaView extends abstractUtil
 	{
 		if (self::REQUEST_HTML == $this->getRequestType())
 		{
-			$this->iaSmarty->add_js(array('files' => $files, 'order' => $order));
+			$this->iaSmarty->add_js(['files' => $files, 'order' => $order]);
 		}
 	}
 
@@ -189,7 +189,7 @@ class iaView extends abstractUtil
 	{
 		if (self::REQUEST_HTML == $this->getRequestType())
 		{
-			$this->iaSmarty->add_css(array('files' => $files, 'order' => $order));
+			$this->iaSmarty->add_css(['files' => $files, 'order' => $order]);
 		}
 	}
 
@@ -226,7 +226,7 @@ class iaView extends abstractUtil
 		}
 		else
 		{
-			isset($this->_messages[$type]) || $this->_messages[$type] = array();
+			isset($this->_messages[$type]) || $this->_messages[$type] = [];
 			in_array($message, $this->_messages[$type]) || $this->_messages[$type][] = $message;
 		}
 	}
@@ -251,12 +251,12 @@ class iaView extends abstractUtil
 		$iaDb = &$this->iaCore->iaDb;
 		$this->iaCore->factory('item');
 
-		$result = array();
+		$result = [];
 
 		$extras = implode("','", $this->iaCore->get('extras'));
 		$stmt = "`extras` IN ('', '" . $extras . "')";
 
-		$menuGroups = $iaDb->assoc(array('id', 'name'), $stmt . ' ORDER BY `order`', 'admin_pages_groups');
+		$menuGroups = $iaDb->assoc(['id', 'name'], $stmt . ' ORDER BY `order`', 'admin_pages_groups');
 
 		$sql = <<<SQL
 SELECT g.`name` `config`, e.`type`, p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`extras` 
@@ -271,7 +271,7 @@ WHERE p.`group` IN (:groups)
 	AND p.`extras` IN ('',':extras') 
 ORDER BY p.`order`
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $iaDb->prefix,
 			'table_admin_pages' => 'admin_pages',
 			'table_config_groups' => iaCore::getConfigGroupsTable(),
@@ -279,19 +279,19 @@ SQL;
 			'groups' => implode(',', array_keys($menuGroups)),
 			'status' => iaCore::STATUS_ACTIVE,
 			'extras' => $extras
-		));
+		]);
 
 		foreach ($iaDb->getAll($sql) as $row)
 		{
-			isset($menuGroups[$row['group']]['items']) || $menuGroups[$row['group']]['items'] = array();
+			isset($menuGroups[$row['group']]['items']) || $menuGroups[$row['group']]['items'] = [];
 			$menuGroups[$row['group']]['items'][] = $row;
 		}
 
 		$iaAcl = $this->iaCore->factory('acl');
 
 		// config groups to be included as menu items
-		$rows = $iaDb->all(array('name', 'extras'), "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
-		$configGroups = array();
+		$rows = $iaDb->all(['name', 'extras'], "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
+		$configGroups = [];
 		$templateName = $this->iaCore->get('tmpl');
 
 		foreach ($rows as $row)
@@ -333,24 +333,24 @@ SQL;
 
 			$menuEntry['id'] = $id;
 			$menuEntry['title'] = iaLanguage::get('pages_group_' . $menuEntry['name']);
-			$menuEntry['items'] = array();
+			$menuEntry['items'] = [];
 
 			if (1 == $id) // the group 'System'
 			{
 				$menuEntry['items'] = $configGroups['common'];
 			}
 
-			$duplicates = array();
+			$duplicates = [];
 
 			foreach ($group['items'] as $item)
 			{
 				if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE . iaAcl::SEPARATOR . iaCore::ACTION_READ, $item['name']))
 				{
-					$data = array(
+					$data = [
 						'name' => $item['name'],
 						'parent' => isset($item['parent']) ? $item['parent'] : null,
 						'title' => iaLanguage::get('page_title_' . ($item['name'] ? $item['name'] : $item['attr']))
-					);
+					];
 
 					if ($item['alias'])
 					{
@@ -390,7 +390,7 @@ SQL;
 
 			if (isset($menuEntry['items'][0]['name']) && $menuEntry['items'][0]['name'])
 			{
-				$menuHeading = array('name' => null, 'title' => iaLanguage::get('global'));
+				$menuHeading = ['name' => null, 'title' => iaLanguage::get('global')];
 				if (iaItem::TYPE_PACKAGE == $item['type'])
 				{
 					$menuHeading['config'] = $item['extras'];
@@ -411,9 +411,9 @@ SQL;
 
 	protected function _getAdminHeaderMenu()
 	{
-		$result = array();
+		$result = [];
 
-		if ($rows = $this->iaCore->iaDb->all(array('name', 'alias', 'attr'), "FIND_IN_SET('header', `menus`) AND `status` = 'active' ORDER BY `order`", null, null, 'admin_pages'))
+		if ($rows = $this->iaCore->iaDb->all(['name', 'alias', 'attr'], "FIND_IN_SET('header', `menus`) AND `status` = 'active' ORDER BY `order`", null, null, 'admin_pages'))
 		{
 			$iaAcl = $this->iaCore->factory('acl');
 
@@ -421,12 +421,12 @@ SQL;
 			{
 				if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE . iaAcl::SEPARATOR . iaCore::ACTION_READ, $entry['name']))
 				{
-					$result[] = array(
+					$result[] = [
 						'name' => $entry['name'],
 						'title' => $entry['name'] ? iaLanguage::get('page_title_' . $entry['name']) : '',
 						'url' => IA_ADMIN_URL . ($entry['alias'] ? $entry['alias'] : $entry['name'] . IA_URL_DELIMITER),
 						'attr' => $entry['attr']
-					);
+					];
 				}
 			}
 		}
@@ -440,7 +440,7 @@ SQL;
 		$sql .= "WHERE (`object_type` = 'positions' && `page_name` = '" . $this->name() . "') || (`object_type` = 'positions' && `page_name` = '' && `access` = 0) ORDER BY `access` DESC";
 		$related = $this->iaCore->iaDb->getAssoc($sql, false);
 
-		$return = array();
+		$return = [];
 		foreach ($related as $position => $value)
 		{
 			if (!$value[0]['access'])
@@ -480,7 +480,7 @@ SQL;
 
 	protected function _setBlocks()
 	{
-		$positions = $this->iaCore->iaDb->assoc(array('name', 'menu', 'movable'), null, 'positions');
+		$positions = $this->iaCore->iaDb->assoc(['name', 'menu', 'movable'], null, 'positions');
 		$this->positions = array_keys($positions);
 
 		$disabledPositions = $this->_getDisabledPositions();
@@ -535,7 +535,7 @@ SQL;
 			{
 				if (!in_array($position, array_keys($this->blocks)))
 				{
-					$this->blocks[$position] = array();
+					$this->blocks[$position] = [];
 				}
 
 				$positions[$position]['hidden'] = (int)in_array($position, $disabledPositions);
@@ -544,7 +544,7 @@ SQL;
 			$this->iaSmarty->assign('iaPositions', $positions);
 		}
 
-		$this->iaCore->startHook('phpCoreSmartyAfterBlockGenerated', array('blocks' => &$this->blocks));
+		$this->iaCore->startHook('phpCoreSmartyAfterBlockGenerated', ['blocks' => &$this->blocks]);
 		$this->iaSmarty->assignGlobal('iaBlocks', $this->blocks);
 	}
 
@@ -556,7 +556,7 @@ SQL;
 		{
 			$condition = " AND `extras` IN ('', '" . implode("','", $this->iaCore->get('extras')) . "')";
 
-			$rows = $this->iaCore->iaDb->all(array('alias', 'custom_url', 'name'), "`status` = 'active'" . $condition, null, null, 'pages');
+			$rows = $this->iaCore->iaDb->all(['alias', 'custom_url', 'name'], "`status` = 'active'" . $condition, null, null, 'pages');
 			foreach ($rows as $row)
 			{
 				if ('members' == $row['name'] && !$this->iaCore->get('members_enabled'))
@@ -600,14 +600,14 @@ LEFT JOIN `:prefixpages` p ON (p.`name` = m.`page_name`)
 WHERE m.`menu_id` = :menu
 ORDER BY m.`level`, m.`id`
 SQL;
-				$sql = iaDb::printf($sql, array(
+				$sql = iaDb::printf($sql, [
 					'prefix' => $this->iaCore->iaDb->prefix,
 					'menu' => $menuId
-				));
+				]);
 				$rows = $this->iaCore->iaDb->getAll($sql);
 			}
 
-			$list = array();
+			$list = [];
 			foreach ($rows as $row)
 			{
 				$pageName = $row['page_name'];
@@ -744,7 +744,7 @@ SQL;
 			}
 		}
 
-		$where = iaDb::printf("(p.`name` = ':alias' OR p.`alias` = ':alias:extension' OR p.`alias` LIKE ':alias/%')", array('alias' => $pageName, 'extension' => $this->get('extension')));
+		$where = iaDb::printf("(p.`name` = ':alias' OR p.`alias` = ':alias:extension' OR p.`alias` LIKE ':alias/%')", ['alias' => $pageName, 'extension' => $this->get('extension')]);
 
 		if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 		{
@@ -769,7 +769,7 @@ SQL;
 					$pageName = '';
 				}
 				$where = iaDb::printf("p.`name` = ':name' OR p.`alias` LIKE ':domain:name%'",
-					array('name' => $pageName, 'domain' => $this->domainUrl));
+					['name' => $pageName, 'domain' => $this->domainUrl]);
 			}
 		}
 
@@ -781,13 +781,13 @@ LEFT JOIN `:prefix:table_extras` e ON (e.`name` = p.`extras`)
 WHERE :where AND p.`status` = ':status' AND (e.`status` = ':status' OR e.`status` IS NULL) 
 ORDER BY LENGTH(p.`alias`) DESC, p.`extras` DESC
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaCore->iaDb->prefix,
 			'table_pages' => (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages',
 			'table_extras' => 'extras',
 			'where' => $where,
 			'status' => iaCore::STATUS_ACTIVE
-		));
+		]);
 
 		$pages = $this->iaCore->iaDb->getAll($sql);
 
@@ -814,8 +814,8 @@ SQL;
 				$requestChunks = $requestPath;
 				$index = 0;
 				$url = $this->isHomepage($page['name'])
-					? array($page['name'])
-					: explode(IA_URL_DELIMITER, trim(str_replace(array($this->domainUrl, $baseUrl), 'domain/', $page['alias']), IA_URL_DELIMITER));
+					? [$page['name']]
+					: explode(IA_URL_DELIMITER, trim(str_replace([$this->domainUrl, $baseUrl], 'domain/', $page['alias']), IA_URL_DELIMITER));
 
 				foreach ($url as $urlChunk)
 				{
@@ -834,7 +834,7 @@ SQL;
 					$this->name($page['name']);
 					$pageParams = $page;
 
-					$requestChunks = $requestChunks ? array_values($requestChunks) : array();
+					$requestChunks = $requestChunks ? array_values($requestChunks) : [];
 					empty($requestChunks) || $requestChunks[count($requestChunks) - 1] = str_replace($pageExtension, '', $requestChunks[count($requestChunks) - 1]);
 					$this->iaCore->requestPath = $requestChunks;
 
@@ -866,7 +866,7 @@ SQL;
 		}
 
 		if (isset($this->iaCore->requestPath[0])
-			&& in_array($this->iaCore->requestPath[0], array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE)))
+			&& in_array($this->iaCore->requestPath[0], [iaCore::ACTION_ADD, iaCore::ACTION_EDIT, iaCore::ACTION_DELETE]))
 		{
 			$pageParams['action'] = array_shift($this->iaCore->requestPath);
 		}
@@ -905,7 +905,7 @@ SQL;
 				$installerPath = 'install/modules/module.install.php';
 				if (file_exists(IA_HOME . $installerPath))
 				{
-					$this->setMessages(iaLanguage::getf('install_not_deleted', array('file' => $installerPath)), self::SYSTEM);
+					$this->setMessages(iaLanguage::getf('install_not_deleted', ['file' => $installerPath]), self::SYSTEM);
 				}
 
 				if (version_compare(IA_VERSION, $this->iaCore->get('version'), '>'))
@@ -984,24 +984,24 @@ SQL;
 
 				// set page notifications
 				$messages = $this->getMessages();
-				$notifications = array();
-				foreach (array(self::ERROR, self::SUCCESS, self::ALERT, self::SYSTEM) as $type)
+				$notifications = [];
+				foreach ([self::ERROR, self::SUCCESS, self::ALERT, self::SYSTEM] as $type)
 				{
-					empty($messages[$type]) || $notifications[$type] = (is_array($messages[$type]) ? $messages[$type] : array($messages[$type]));
+					empty($messages[$type]) || $notifications[$type] = (is_array($messages[$type]) ? $messages[$type] : [$messages[$type]]);
 				}
 
 				$pageName = $this->name();
 
 				if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
 				{
-					$adminActions = (self::PAGE_ERROR == $pageName) ? array() : $this->_getAdminToolbarActions();
+					$adminActions = (self::PAGE_ERROR == $pageName) ? [] : $this->_getAdminToolbarActions();
 					$this->set('toolbarActions', $adminActions);
 				}
 
-				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : array());
+				$iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : []);
 
 				// define smarty super global $core
-				$core = array(
+				$core = [
 					'actions' => $this->_setActions(),
 					'config' => $this->iaCore->getConfig(),
 					'customConfig' => $this->iaCore->getCustomConfig(),
@@ -1010,15 +1010,15 @@ SQL;
 					'masterLanguage' => (array)iaLanguage::getMasterLanguage(),
 					'notifications' => $notifications,
 					'packages' => $this->iaCore->packagesData,
-					'page' => array(
+					'page' => [
 						'breadcrumb' => iaBreadcrumb::render(),
 						'info' => $this->getParams(),
 						'nonProtocolUrl' => $this->assetsUrl,
 						'name' => $pageName,
 						'title' => $this->get('caption', $this->get('title', 'Subrion CMS')),
-					),
+					],
 					'providers' => iaUsers::getAuthProviders()
-				);
+				];
 
 				if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 				{
@@ -1128,7 +1128,7 @@ SQL;
 			{
 				if (!isset($this->_outputValues[self::JSON_MAGIC_KEY]))
 				{
-					$this->_outputValues[self::JSON_MAGIC_KEY] = array();
+					$this->_outputValues[self::JSON_MAGIC_KEY] = [];
 				}
 				$this->_outputValues[self::JSON_MAGIC_KEY][] = $value;
 			}
@@ -1139,10 +1139,10 @@ SQL;
 		}
 	}
 
-	public function grid($jsFiles = array())
+	public function grid($jsFiles = [])
 	{
-		$core = array('intelli/intelli.grid');
-		is_array($jsFiles) || $jsFiles = array($jsFiles);
+		$core = ['intelli/intelli.grid'];
+		is_array($jsFiles) || $jsFiles = [$jsFiles];
 		$core = array_merge($core, $jsFiles);
 
 		$this->add_js($core);
@@ -1154,7 +1154,7 @@ SQL;
 
 	public static function errorPage($errorCode, $message = null)
 	{
-		if (!in_array($errorCode, array(self::ERROR_UNAUTHORIZED, self::ERROR_FORBIDDEN, self::ERROR_NOT_FOUND, self::ERROR_INTERNAL)) && is_null($message))
+		if (!in_array($errorCode, [self::ERROR_UNAUTHORIZED, self::ERROR_FORBIDDEN, self::ERROR_NOT_FOUND, self::ERROR_INTERNAL]) && is_null($message))
 		{
 			$message = $errorCode;
 			$errorCode = self::ERROR_FORBIDDEN;
@@ -1168,19 +1168,19 @@ SQL;
 		$iaView = &$iaCore->iaView;
 
 		$iaView->name(self::PAGE_ERROR);
-		$iaView->_setParams(array(
+		$iaView->_setParams([
 			'caption' => iaLanguage::get('error', 'Error page') . ' ' . $errorCode,
 			'filename' => null,
 			'name' => self::PAGE_ERROR,
 			'parent' => '',
 			'title' => $errorCode,
 			'group' => 0
-		));
+		]);
 
 		switch ($iaView->getRequestType())
 		{
 			case self::REQUEST_JSON:
-				$iaView->assign(array('error' => true, 'message' => $message, 'code' => $errorCode));
+				$iaView->assign(['error' => true, 'message' => $message, 'code' => $errorCode]);
 
 				break;
 
@@ -1281,47 +1281,47 @@ SQL;
 
 		$iaDb = &$this->iaCore->iaDb;
 
-		$commonStatistics = array(
-			'members' => array(
-				array(
+		$commonStatistics = [
+			'members' => [
+				[
 					'title' => iaLanguage::get('members'),
-					'value' => (int)$iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`status` = :status', array('status' => iaCore::STATUS_ACTIVE), iaUsers::getTable())
-				)
-			)
-		);
+					'value' => (int)$iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`status` = :status', ['status' => iaCore::STATUS_ACTIVE], iaUsers::getTable())
+				]
+			]
+		];
 
-		$this->iaCore->startHook('populateCommonStatisticsBlock', array('statistics' => &$commonStatistics));
+		$this->iaCore->startHook('populateCommonStatisticsBlock', ['statistics' => &$commonStatistics]);
 
 		$iaDb->setTable('online');
 
-		$commonStatistics['online'] = array();
-		$commonStatistics['online'][] = array(
+		$commonStatistics['online'] = [];
+		$commonStatistics['online'][] = [
 			'title' => iaLanguage::get('active_users'),
 			'value' => (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, "`status` = 'active' AND `is_bot` = 0")
-		);
+		];
 		if ($this->iaCore->get('members_enabled'))
 		{
-			$commonStatistics['online'][] = array(
+			$commonStatistics['online'][] = [
 				'title' => iaLanguage::get('members'),
 				'value' => (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, "`username` != '' AND `status` = 'active' AND `is_bot` = '0'")
-			);
-			$commonStatistics['online'][] = array(
+			];
+			$commonStatistics['online'][] = [
 				'title' => iaLanguage::get('guests'),
 				'value' => $commonStatistics['online'][0]['value'] - $commonStatistics['online'][1]['value']
-			);
+			];
 		}
-		$commonStatistics['online'][] = array(
+		$commonStatistics['online'][] = [
 			'title' => iaLanguage::get('bots'),
 			'value' => (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, "`status` = 'active' AND `is_bot` = 1")
-		);
-		$commonStatistics['online'][] = array(
+		];
+		$commonStatistics['online'][] = [
 			'title' => iaLanguage::get('live_visits'),
 			'value' => (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, '`is_bot` = 0 AND `date` + INTERVAL 1 DAY > NOW()')
-		);
-		$commonStatistics['online'][] = array(
+		];
+		$commonStatistics['online'][] = [
 			'title' => iaLanguage::get('bots_visits'),
 			'value' => (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, '`is_bot` = 1 AND `date` + INTERVAL 1 DAY > NOW()')
-		);
+		];
 
 		if ($this->iaCore->get('members_enabled', true))
 		{
@@ -1330,7 +1330,7 @@ SQL;
 			{
 				foreach ($array as $item)
 				{
-					$outputHtml .= $this->iaSmarty->ia_url(array('item' => iaUsers::getItemName(), 'type' => 'link', 'text' => $item['fullname'], 'data' => $item)) . ', ';
+					$outputHtml .= $this->iaSmarty->ia_url(['item' => iaUsers::getItemName(), 'type' => 'link', 'text' => $item['fullname'], 'data' => $item]) . ', ';
 				}
 				$outputHtml = substr($outputHtml, 0, -2);
 				$commonStatistics['online'][count($commonStatistics['online']) - 1]['html'] = $outputHtml;
@@ -1344,7 +1344,7 @@ SQL;
 
 	private function _setActions()
 	{
-		$result = array();
+		$result = [];
 
 		if (self::REQUEST_HTML != $this->getRequestType())
 		{
@@ -1359,14 +1359,14 @@ SQL;
 
 			$iaCore->startHook('smartyItemTools');
 
-			$iaItem->setItemTools(array(
+			$iaItem->setItemTools([
 				'id' => 'action-print',
 				'title' => iaLanguage::get('print_preview'),
-				'attributes' => array(
+				'attributes' => [
 					'href' => '#',
 					'class' => 'js-print-page'
-				)
-			));
+				]
+			]);
 
 			if ($itemData = $iaCore->iaView->iaSmarty->getTemplateVars('item'))
 			{
@@ -1377,17 +1377,17 @@ SQL;
 				{
 					$isAlreadyFavorited = isset($itemData['favorite']) && $itemData['favorite'] == 1;
 
-					$iaItem->setItemTools(array(
+					$iaItem->setItemTools([
 						'id' => 'action-favorites',
 						'title' => iaLanguage::get($isAlreadyFavorited ? 'favorites_action_delete' : 'favorites_action_add'),
-						'attributes' => array(
+						'attributes' => [
 							'href' => '#',
 							'class' => 'js-favorites',
 							'data-id' => $itemData['id'],
 							'data-item' => $itemData['item'],
 							'data-action' => ($isAlreadyFavorited ? iaCore::ACTION_DELETE : iaCore::ACTION_ADD)
-						)
-					));
+						]
+					]);
 				}
 			}
 
@@ -1421,7 +1421,7 @@ SQL;
 		switch ($this->iaCore->getAccessType())
 		{
 			case iaCore::ACCESS_FRONT:
-				$parents = array();
+				$parents = [];
 
 				$iaPage = $this->iaCore->factory('page', iaCore::FRONT);
 				$iaPage->getParents($this->get('parent'), $parents);
@@ -1464,7 +1464,7 @@ SQL;
 				$url = $iaPage->getUrlByName($this->name());
 				iaBreadcrumb::add($this->get('title', $this->name()), $url);
 
-				if (in_array($this->get('action'), array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT)))
+				if (in_array($this->get('action'), [iaCore::ACTION_ADD, iaCore::ACTION_EDIT]))
 				{
 					iaBreadcrumb::toEnd(iaLanguage::get($this->get('action')), IA_SELF);
 				}
@@ -1473,26 +1473,26 @@ SQL;
 
 	private function _getAdminToolbarActions()
 	{
-		$result = array();
+		$result = [];
 
 		$stmt = "`pages` REGEXP('[[:<:]]:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
-		$stmt = iaDb::printf($stmt, array(
+		$stmt = iaDb::printf($stmt, [
 			'page' => $this->name(),
 			'action' => $this->get('action')
-		));
+		]);
 
 		$iaAcl = $this->iaCore->factory('acl');
-		$rows = $this->iaCore->iaDb->all(array('attributes', 'name', 'icon', 'text', 'url'), $stmt, null, null, 'admin_actions');
+		$rows = $this->iaCore->iaDb->all(['attributes', 'name', 'icon', 'text', 'url'], $stmt, null, null, 'admin_actions');
 		foreach ($rows as $entry)
 		{
 			if ($iaAcl->checkAccess(iaAcl::OBJECT_ADMIN_PAGE, $entry['name']))
 			{
-				$result[] = array(
+				$result[] = [
 					'attributes' => $entry['attributes'],
 					'icon' => empty($entry['icon']) ? '' : 'i-' . $entry['icon'],
 					'title' => iaLanguage::get($entry['name'], $entry['text']),
-					'url' => iaDb::printf($entry['url'], $this->iaCore->iaView->get('toolbarActionsReplacements', array()))
-				);
+					'url' => iaDb::printf($entry['url'], $this->iaCore->iaView->get('toolbarActionsReplacements', []))
+				];
 			}
 		}
 
@@ -1552,7 +1552,7 @@ SQL;
 		return $resourceName;
 	}
 
-	private function _arrayAsObject(array $params = array())
+	private function _arrayAsObject(array $params = [])
 	{
 		return new ArrayObject($params, ArrayObject::ARRAY_AS_PROPS);
 	}

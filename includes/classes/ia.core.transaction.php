@@ -69,7 +69,7 @@ class iaTransaction extends abstractCore
 		if (is_null($this->_gateways))
 		{
 			$stmt = "`name` IN ('" . implode("','", $this->iaCore->get('extras')) . "')";
-			$this->_gateways = $this->iaDb->keyvalue(array('name', 'title'), $stmt, $this->getTableGateways());
+			$this->_gateways = $this->iaDb->keyvalue(['name', 'title'], $stmt, $this->getTableGateways());
 		}
 
 		return $this->_gateways;
@@ -84,7 +84,7 @@ class iaTransaction extends abstractCore
 	 */
 	public function isPaymentGateway($gatewayName)
 	{
-		return $this->iaDb->exists('`name` = :name', array('name' => $gatewayName), $this->getTableGateways());
+		return $this->iaDb->exists('`name` = :name', ['name' => $gatewayName], $this->getTableGateways());
 	}
 
 	/**
@@ -117,11 +117,11 @@ class iaTransaction extends abstractCore
 
 					if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
 					{
-						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), array('funds' => '`funds` + ' . $amount), iaUsers::getTable());
+						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), ['funds' => '`funds` + ' . $amount], iaUsers::getTable());
 					}
 					elseif (self::PASSED != $transactionData['status'] && self::PASSED == $transaction['status'])
 					{
-						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), array('funds' => '`funds` - ' . $amount), iaUsers::getTable());
+						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), ['funds' => '`funds` - ' . $amount], iaUsers::getTable());
 					}
 				}
 
@@ -152,7 +152,7 @@ class iaTransaction extends abstractCore
 		$result = false;
 		if ($transactionId)
 		{
-			$result = (bool)$this->iaDb->delete('`id` = :id AND `status` != :status', self::getTable(), array('id' => (int)$transactionId, 'status' => self::PASSED));
+			$result = (bool)$this->iaDb->delete('`id` = :id AND `status` != :status', self::getTable(), ['id' => (int)$transactionId, 'status' => self::PASSED]);
 			empty($result) || $this->iaCore->factory('invoice')->deleteCorrespondingInvoice($transactionId);
 		}
 
@@ -181,11 +181,11 @@ class iaTransaction extends abstractCore
 		empty($transaction['status']) || $status = $transaction['status'];
 		unset($transaction['id'], $transaction['date_created'], $transaction['status']);
 
-		$id = $this->iaDb->insert($transaction, array('date_created' => iaDb::FUNCTION_NOW), self::getTable());
+		$id = $this->iaDb->insert($transaction, ['date_created' => iaDb::FUNCTION_NOW], self::getTable());
 
 		if ($id && isset($status))
 		{
-			$this->update(array('status' => $status), $id);
+			$this->update(['status' => $status], $id);
 		}
 
 		return $id;
@@ -204,7 +204,7 @@ class iaTransaction extends abstractCore
 	 *
 	 * @return string
 	 */
-	public function create($title, $cost, $itemName = 'members', $itemData = array(), $returnUrl = '', $planId = 0, $return = false)
+	public function create($title, $cost, $itemName = 'members', $itemData = [], $returnUrl = '', $planId = 0, $return = false)
 	{
 		if (!isset($itemData['id']))
 		{
@@ -215,7 +215,7 @@ class iaTransaction extends abstractCore
 		$title .= ($itemData['id']) ? ' - #' . $itemData['id'] : '';
 
 		$transactionId = uniqid('t');
-		$transaction = array(
+		$transaction = [
 			'member_id' => (int)(isset($itemData['member_id']) && $itemData['member_id'] ? $itemData['member_id'] : iaUsers::getIdentity()->id),
 			'item' => $itemName,
 			'item_id' => $itemData['id'],
@@ -227,10 +227,10 @@ class iaTransaction extends abstractCore
 			'return_url' => $returnUrl,
 			'operation' => $title,
 			'date_created' => date(iaDb::DATETIME_FORMAT)
-		);
+		];
 
 		$result = $this->iaDb->insert($transaction, null, $this->getTable());
-		$result && $this->iaCore->startHook('phpTransactionCreated', array('id' => $result, 'transaction' => $transaction));
+		$result && $this->iaCore->startHook('phpTransactionCreated', ['id' => $result, 'transaction' => $transaction]);
 		$return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 
 		return $result ? $transactionId : false;
@@ -252,24 +252,24 @@ class iaTransaction extends abstractCore
 	{
 		$this->iaDb->setTable(self::getTable());
 
-		$currenciesToSymbolMap = array('USD' => '$', 'EUR' => '€', 'RMB' => '¥', 'CNY' => '¥');
+		$currenciesToSymbolMap = ['USD' => '$', 'EUR' => '€', 'RMB' => '¥', 'CNY' => '¥'];
 
 		$currency = strtoupper($this->iaCore->get('currency'));
 		$currency = isset($currenciesToSymbolMap[$currency]) ? $currenciesToSymbolMap[$currency] : '';
 
 
-		$data = array();
+		$data = [];
 		$weekDay = getdate();
 		$weekDay = $weekDay['wday'];
 		$stmt = '`status` = :status AND DATE(`date_paid`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date_paid`)';
-		$this->iaDb->bind($stmt, array('status' => self::PASSED));
+		$this->iaDb->bind($stmt, ['status' => self::PASSED]);
 		$rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date_paid`)), SUM(`amount`)', $stmt);
 		for ($i = 0; $i < 7; $i++)
 		{
 			$data[$i] = isset($rows[$i]) ? $rows[$i] : 0;
 		}
 
-		$statuses = array(self::PASSED, self::PENDING, self::REFUNDED, self::FAILED);
+		$statuses = [self::PASSED, self::PENDING, self::REFUNDED, self::FAILED];
 		$rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status`');
 
 		foreach ($statuses as $status)
@@ -277,32 +277,32 @@ class iaTransaction extends abstractCore
 			isset($rows[$status]) || $rows[$status] = 0;
 		}
 
-		$total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', "`status` = :status && (`item` = 'funds' || (`item` != 'funds' && `gateway` != 'funds'))", array('status' => self::PASSED));
+		$total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', "`status` = :status && (`item` = 'funds' || (`item` != 'funds' && `gateway` != 'funds'))", ['status' => self::PASSED]);
 		$total || $total = 0;
 
 		$this->iaDb->resetTable();
 
 
-		return array(
+		return [
 			'_format' => 'medium',
-			'data' => array('array' => implode(',', $data)),
+			'data' => ['array' => implode(',', $data)],
 			'icon' => 'banknote',
 			'item' => iaLanguage::get('total_income'),
 			'rows' => $rows,
 			'total' => $currency . $total,
 			'url' => 'transactions/'
-		);
+		];
 	}
 
 	public function addIpnLogEntry($gateway, $data, $result)
 	{
-		$entry = array(
+		$entry = [
 			'gateway' => $gateway,
 			'data' => var_export($data, true),
 			'result' => $result
-		);
+		];
 
-		return (bool)$this->iaDb->insert($entry, array('date' => iaDb::FUNCTION_NOW), $this->getTableIpnLog());
+		return (bool)$this->iaDb->insert($entry, ['date' => iaDb::FUNCTION_NOW], $this->getTableIpnLog());
 	}
 
 	protected function _sendEmailNotification(array $transaction)
@@ -333,11 +333,11 @@ class iaTransaction extends abstractCore
 			$iaMailer->addAddress($member['email']);
 
 			$iaMailer->setReplacements($transaction);
-			$iaMailer->setReplacements(array(
+			$iaMailer->setReplacements([
 				'email' => $member['username'],
 				'username' => $member['username'],
 				'fullname' => $member['fullname']
-			));
+			]);
 
 			$result1 = $iaMailer->send();
 		}
@@ -350,11 +350,11 @@ class iaTransaction extends abstractCore
 		{
 			$iaMailer->loadTemplate($notification);
 			$iaMailer->addAddress($this->iaCore->get('site_email'));
-			$iaMailer->setReplacements(array(
+			$iaMailer->setReplacements([
 				'username' => iaUsers::getIdentity()->username,
 				'amount' => $transaction['amount'],
 				'operation' => $transaction['operation']
-			));
+			]);
 
 			$result2 = $iaMailer->send();
 		}
@@ -373,7 +373,7 @@ class iaTransaction extends abstractCore
 
 		if ($gatewayInstance && method_exists($gatewayInstance, self::GATEWAY_CALLBACK_NAME))
 		{
-			return call_user_func(array($gatewayInstance, self::GATEWAY_CALLBACK_NAME), $transaction);
+			return call_user_func([$gatewayInstance, self::GATEWAY_CALLBACK_NAME], $transaction);
 		}
 
 		return false;
@@ -396,7 +396,7 @@ class iaTransaction extends abstractCore
 		{
 			try
 			{
-				return call_user_func(array($gatewayInstance, 'refund'), $transaction);
+				return call_user_func([$gatewayInstance, 'refund'], $transaction);
 			}
 			catch (Exception $e) {}
 		}

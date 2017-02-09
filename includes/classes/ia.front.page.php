@@ -35,7 +35,7 @@ class iaPage extends abstractCore
 
 		if (is_null($pagesToUrlMap))
 		{
-			$pagesToUrlMap = $this->iaDb->keyvalue(array('name', 'alias'), null, self::getTable());
+			$pagesToUrlMap = $this->iaDb->keyvalue(['name', 'alias'], null, self::getTable());
 		}
 
 		return isset($pagesToUrlMap[$pageName])
@@ -48,13 +48,13 @@ class iaPage extends abstractCore
 		$row = $this->iaDb->row_bind(
 			iaDb::ALL_COLUMNS_SELECTION,
 			'`name` = :name AND `status` = :status AND `service` != 1',
-			array('name' => $name, 'status' => $status),
+			['name' => $name, 'status' => $status],
 			self::getTable()
 		);
 
 		if ($row)
 		{
-			foreach (array('meta_description', 'meta_keywords') as $key)
+			foreach (['meta_description', 'meta_keywords'] as $key)
 			{
 				$phraseKey = sprintf('page_%s_%s', $key, $row['name']);
 				$row[$key] = iaLanguage::exists($phraseKey) ? iaLanguage::get($phraseKey) : null;
@@ -68,11 +68,11 @@ class iaPage extends abstractCore
 	{
 		$pageParams = $this->getByName($name);
 
-		return array(
+		return [
 			'parent' => $pageParams['parent'],
 			'title' => iaLanguage::get(sprintf('page_title_%s', $pageParams['name'])),
 			'url' => $pageParams['alias'] ? $this->getUrlByName($pageParams['name']) : $pageParams['name'] . IA_URL_DELIMITER
-		);
+		];
 	}
 
 	public function getParents($parentPageName, array &$chain)

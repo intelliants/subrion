@@ -28,7 +28,7 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'transactions';
 
-	protected $_gridFilters = array('email' => self::EQUAL, 'reference_id' => self::LIKE, 'status' => self::EQUAL, 'gateway' => self::EQUAL);
+	protected $_gridFilters = ['email' => self::EQUAL, 'reference_id' => self::LIKE, 'status' => self::EQUAL, 'gateway' => self::EQUAL];
 	protected $_gridQueryMainTableAlias = 't';
 
 	protected $_processAdd = false;
@@ -54,27 +54,27 @@ class iaBackendController extends iaAbstractControllerBackend
 		switch ($action)
 		{
 			case 'items':
-				$output = array('data' => null);
+				$output = ['data' => null];
 
 				if ($items = $this->_iaCore->factory('item')->getItems(true))
 				{
 					foreach ($items as $key => $item)
 					{
-						$output['data'][] = array('title' => iaLanguage::get($item), 'value' => $item);
+						$output['data'][] = ['title' => iaLanguage::get($item), 'value' => $item];
 					}
 				}
 
 				break;
 
 			case 'plans':
-				$output = array('data' => null);
+				$output = ['data' => null];
 
 				$stmt = '';
 				if (!isset($params['itemname']) || (isset($params['itemname']) && iaUsers::getItemName() == $params['itemname']))
 				{
 					$stmt = iaDb::convertIds(iaUsers::getItemName(), 'item');
 
-					$output['data'][] = array('title' => iaLanguage::get('funds'), 'value' => 0);
+					$output['data'][] = ['title' => iaLanguage::get('funds'), 'value' => 0];
 				}
 				elseif (!empty($params['itemname']))
 				{
@@ -87,27 +87,27 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					foreach ($planIds as $planId)
 					{
-						$output['data'][] = array('title' => iaLanguage::get('plan_title_' . $planId), 'value' => $planId);
+						$output['data'][] = ['title' => iaLanguage::get('plan_title_' . $planId), 'value' => $planId];
 					}
 				}
 
 				break;
 
 			case 'gateways':
-				$output = array('data' => null);
+				$output = ['data' => null];
 
 				if ($items = $this->getHelper()->getPaymentGateways())
 				{
 					foreach ($items as $name => $title)
 					{
-						$output['data'][] = array('value' => $name, 'title' => $title);
+						$output['data'][] = ['value' => $name, 'title' => $title];
 					}
 				}
 
 				break;
 
 			case 'members':
-				$output = array('data' => null);
+				$output = ['data' => null];
 
 				if (!empty($params['query']))
 				{
@@ -119,11 +119,11 @@ class iaBackendController extends iaAbstractControllerBackend
 				$where = implode(' AND ', $where);
 				$this->_iaDb->bind($where, $values);
 
-				if ($members = $this->_iaDb->all(array('id', 'username', 'fullname'), $where, null, null, iaUsers::getTable()))
+				if ($members = $this->_iaDb->all(['id', 'username', 'fullname'], $where, null, null, iaUsers::getTable()))
 				{
 					foreach ($members as $member)
 					{
-						$output['data'][] = array('title' => $member['username'], 'value' => $member['id']);
+						$output['data'][] = ['title' => $member['username'], 'value' => $member['id']];
 					}
 				}
 
@@ -134,7 +134,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					$order = $this->_gridGetSorting($params);
 
-					$conditions = $values = array();
+					$conditions = $values = [];
 					foreach ($this->_gridFilters as $name => $type)
 					{
 						if (isset($params[$name]) && $params[$name])
@@ -170,7 +170,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 						$exportExcel->initialize();
 
-						$titles = array('username', 'plan', 'item', 'item_id', 'reference_id', 'total', 'gateway', 'status', 'date');
+						$titles = ['username', 'plan', 'item', 'item_id', 'reference_id', 'total', 'gateway', 'status', 'date'];
 						$exportExcel->addRow(array_map(function($key) {
 							return iaLanguage::get($key);
 						}, $titles));
@@ -216,13 +216,13 @@ class iaBackendController extends iaAbstractControllerBackend
 			'LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`) ' .
 			($where ? 'WHERE ' . $where . ' ' : '') . str_replace('t.`user`', '`user`', $order) . ' ' .
 			'LIMIT :start, :limit';
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_members' => iaUsers::getTable(),
 			'table_transactions' => $this->getTable(),
 			'start' => $start,
 			'limit' => $limit
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}
@@ -243,9 +243,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _jsonAction(&$iaView) // ADD action is handled here
 	{
-		$output = array('error' => false, 'message' => array());
+		$output = ['error' => false, 'message' => []];
 
-		$transaction = array(
+		$transaction = [
 			'member_id' => (int)$_POST['member'],
 			'plan_id' => (int)$_POST['plan'],
 			'email' => $_POST['email'],
@@ -256,7 +256,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'amount' => (float)$_POST['amount'],
 			'currency' => $this->_iaCore->get('currency'),
 			'date_created' => $_POST['date'] . ' ' . $_POST['time']
-		);
+		];
 
 		if ($transaction['plan_id'])
 		{
@@ -281,7 +281,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (isset($_POST['username']) && $_POST['username'])
 		{
-			if ($memberId = $this->_iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`username` = :user', array('user' => $_POST['username']), iaUsers::getTable()))
+			if ($memberId = $this->_iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`username` = :user', ['user' => $_POST['username']], iaUsers::getTable()))
 			{
 				$transaction['member_id'] = $memberId;
 			}
@@ -298,7 +298,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$output['message'][] = iaLanguage::get('error_email_incorrect');
 		}
 
-		if (isset($transaction['item']) && in_array($transaction['item'], array(iaTransaction::TRANSACTION_MEMBER_BALANCE, 'members')))
+		if (isset($transaction['item']) && in_array($transaction['item'], [iaTransaction::TRANSACTION_MEMBER_BALANCE, 'members']))
 		{
 			$transaction['item_id'] = $transaction['member_id'];
 		}
@@ -313,7 +313,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (isset($output['success']) && $output['success'])
 		{
-			$this->_iaCore->startHook('phpTransactionCreated', array('id' => $output['success'], 'transaction' => $transaction));
+			$this->_iaCore->startHook('phpTransactionCreated', ['id' => $output['success'], 'transaction' => $transaction]);
 			$output['success'] = (bool)$output['success'];
 		}
 

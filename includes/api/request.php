@@ -42,7 +42,7 @@ class iaApiRequest
 
 	protected $_content;
 
-	protected $_params = array();
+	protected $_params = [];
 
 
 	public function __construct(array $requestPath)
@@ -112,7 +112,7 @@ class iaApiRequest
 				{
 					case 'multipart/form-data':
 					case 'application/x-www-form-urlencoded':
-						$array = array();
+						$array = [];
 						parse_str($content, $array);
 						$content = $array;
 

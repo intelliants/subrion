@@ -53,7 +53,7 @@ abstract class iaAbstractControllerBackend
 	protected $_permissionsEdit = false;
 	protected $_tooltipsEnabled = false;
 
-	protected $_messages = array();
+	protected $_messages = [];
 
 	protected $_phraseAddSuccess = 'saved';
 	protected $_phraseEditSuccess = 'saved';
@@ -121,7 +121,7 @@ abstract class iaAbstractControllerBackend
 						return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 					}
 
-					$entry = array();
+					$entry = [];
 					$this->_setDefaultValues($entry);
 
 					// intentionally missing BREAK stmt
@@ -327,13 +327,13 @@ abstract class iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
-		$params || $params = array();
+		$params || $params = [];
 
 		$start = isset($params['start']) ? (int)$params['start'] : 0;
 		$limit = isset($params['limit']) ? (int)$params['limit'] : 15;
 		$order = $this->_gridGetSorting($params);
 
-		$conditions = $values = array();
+		$conditions = $values = [];
 
 		$this->_gridApplyFilters($conditions, $values, $params);
 		$this->_modifyGridParams($conditions, $values, $params);
@@ -344,10 +344,10 @@ abstract class iaAbstractControllerBackend
 
 		$columns = $this->_unpackGridColumnsArray();
 
-		$output = array(
+		$output = [
 			'data' => $this->_gridQuery($columns, $conditions, $order, $start, $limit),
 			'total' => $this->_iaDb->foundRows()
-		);
+		];
 
 		if ($output['data'])
 		{
@@ -364,7 +364,7 @@ abstract class iaAbstractControllerBackend
 			return '';
 		}
 
-		$direction = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC))
+		$direction = in_array($params['dir'], [iaDb::ORDER_ASC, iaDb::ORDER_DESC])
 			? $params['dir']
 			: iaDb::ORDER_ASC;
 		$column = isset($this->_gridSorting[$params['sort']]) ? (is_array($this->_gridSorting[$params['sort']])
@@ -407,12 +407,12 @@ abstract class iaAbstractControllerBackend
 
 	protected function _gridUpdate($params)
 	{
-		$output = array(
+		$output = [
 			'result' => false,
 			'message' => iaLanguage::get('invalid_parameters')
-		);
+		];
 
-		$params || $params = array();
+		$params || $params = [];
 
 		if (isset($params['id']) && is_array($params['id']) && count($params) > 1)
 		{
@@ -435,7 +435,7 @@ abstract class iaAbstractControllerBackend
 				$output['result'] = true;
 				$output['message'] = ($affected == $total)
 					? iaLanguage::get('saved')
-					: iaLanguage::getf('items_updated_of', array('num' => $affected, 'total' => $total));
+					: iaLanguage::getf('items_updated_of', ['num' => $affected, 'total' => $total]);
 			}
 			else
 			{
@@ -448,10 +448,10 @@ abstract class iaAbstractControllerBackend
 
 	protected function _gridDelete($params)
 	{
-		$output = array(
+		$output = [
 			'result' => false,
 			'message' => iaLanguage::get('invalid_parameters')
-		);
+		];
 
 		if (isset($params['id']) && is_array($params['id']) && $params['id'])
 		{
@@ -475,8 +475,8 @@ abstract class iaAbstractControllerBackend
 			else
 			{
 				$output['message'] = $output['result']
-					? iaLanguage::getf($this->_phraseGridEntriesDeleted, array('num' => $affected))
-					: iaLanguage::getf('items_deleted_of', array('num' => $affected, 'total' => $total));
+					? iaLanguage::getf($this->_phraseGridEntriesDeleted, ['num' => $affected])
+					: iaLanguage::getf('items_deleted_of', ['num' => $affected, 'total' => $total]);
 			}
 		}
 
@@ -489,7 +489,7 @@ abstract class iaAbstractControllerBackend
 
 		if (is_array($this->_gridColumns))
 		{
-			$this->_gridColumns = array_merge(array('id', 'update' => 1, 'delete' => 1), $this->_gridColumns);
+			$this->_gridColumns = array_merge(['id', 'update' => 1, 'delete' => 1], $this->_gridColumns);
 
 			foreach ($this->_gridColumns as $key => $field)
 			{
@@ -541,11 +541,11 @@ abstract class iaAbstractControllerBackend
 
 	protected function _reopen($option, $action)
 	{
-		$options = array(
+		$options = [
 			'add' => $this->getPath() . 'add/',
 			'list' => $this->getPath(),
 			'stay' => $this->getPath() . 'edit/' . $this->getEntryId() . '/',
-		);
+		];
 		$option = isset($options[$option]) ? $option : 'list';
 
 		if ((iaCore::ACTION_EDIT == $action && 'stay' != $option)
@@ -564,9 +564,9 @@ abstract class iaAbstractControllerBackend
 		$objectId = empty($entryData['name']) ? '' : $entryData['name'];
 		$objectName = substr($this->getName(), 0, -1);
 		$actionCode = $iaAcl->encodeAction($objectName, iaCore::ACTION_READ, $objectId);
-		$data = array();
+		$data = [];
 		$modified = false;
-		$usergroups = $this->_iaDb->all(array('id', 'name', 'system'), null, null, null, iaUsers::getUsergroupsTable());
+		$usergroups = $this->_iaDb->all(['id', 'name', 'system'], null, null, null, iaUsers::getUsergroupsTable());
 
 		foreach ($usergroups as $entry)
 		{
@@ -575,18 +575,18 @@ abstract class iaAbstractControllerBackend
 				continue;
 			}
 
-			$custom = array(
+			$custom = [
 				'group' => $entry['id'],
 				'perms' => $iaAcl->getPermissions(0, $entry['id'])
-			);
+			];
 
-			$data[] = array(
+			$data[] = [
 				'id' => $entry['id'],
 				'title' => iaLanguage::get('usergroup_' . $entry['name']),
 				'default' => $iaAcl->checkAccess($objectName, $objectId, 0, 0, true),
 				'access' => (int)$iaAcl->checkAccess($objectName, $objectId, 0, 0, $custom),
 				'system' => $entry['system']
-			);
+			];
 
 			if (isset($custom['perms'][$actionCode]) && !$modified)
 			{
@@ -622,7 +622,7 @@ abstract class iaAbstractControllerBackend
 
 	protected function _assignGoto(&$iaView)
 	{
-		$options = array('list' => 'go_to_list');
+		$options = ['list' => 'go_to_list'];
 		empty($this->_processAdd) || $options['add'] = 'add_another_one';
 		empty($this->_processEdit) || $options['stay'] = 'stay_here';
 
@@ -638,7 +638,7 @@ abstract class iaAbstractControllerBackend
 
 	protected function _jsonAction(&$iaView)
 	{
-		return array('code' => 501, 'error' => true); // reply with "Not implemented" HTTP response code
+		return ['code' => 501, 'error' => true]; // reply with "Not implemented" HTTP response code
 	}
 
 	protected function _htmlAction(&$iaView)

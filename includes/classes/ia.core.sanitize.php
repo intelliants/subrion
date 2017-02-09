@@ -147,7 +147,7 @@ class iaSanitize extends abstractUtil
 		iaCore::instance()->factory('util')->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
 		$string = html_entity_decode($string);
-		$string = str_replace(array('&', "'"), array('and', ''), $string);
+		$string = str_replace(['&', "'"], ['and', ''], $string);
 
 		$urlEncoded = false;
 
@@ -180,7 +180,7 @@ class iaSanitize extends abstractUtil
 	 */
 	public static function htmlInjectionFilter($url)
 	{
-		return str_replace(array('<', '>', '"', "'", '&'), '', $url);
+		return str_replace(['<', '>', '"', "'", '&'], '', $url);
 	}
 
 	/**
@@ -192,7 +192,7 @@ class iaSanitize extends abstractUtil
 	 */
 	public static function stripslashes_deep($value)
 	{
-		$value = is_array($value) ? array_map(array(__CLASS__, __METHOD__), $value) : stripslashes($value);
+		$value = is_array($value) ? array_map([__CLASS__, __METHOD__], $value) : stripslashes($value);
 
 		return $value;
 	}
@@ -207,6 +207,6 @@ class iaSanitize extends abstractUtil
 	 */
 	public static function filenameEscape(&$item)
 	{
-		$item = str_replace(array('`', '~', '/', "\\"), '', $item);
+		$item = str_replace(['`', '~', '/', "\\"], '', $item);
 	}
 }

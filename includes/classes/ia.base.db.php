@@ -209,7 +209,7 @@ interface iaInterfaceDbAdapter
 	 *
 	 * @return bool
 	 */
-	public function exists($where, $values = array(), $tableName = null);
+	public function exists($where, $values = [], $tableName = null);
 
 	/**
 	 * Provides information about the columns in a table
@@ -350,7 +350,7 @@ interface iaInterfaceDbAdapter
 	 *
 	 * @return int
 	 */
-	public function delete($condition, $tableName = null, $values = array());
+	public function delete($condition, $tableName = null, $values = []);
 
 	/**
 	 * Replaces a record in a table

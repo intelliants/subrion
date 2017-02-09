@@ -48,7 +48,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 		if ($this->_activityLog)
 		{
-			is_array($this->_activityLog) || $this->_activityLog = array();
+			is_array($this->_activityLog) || $this->_activityLog = [];
 
 			$this->_activityLog['path'] = $this->getPackageName() . IA_URL_DELIMITER . $this->getName();
 			isset($this->_activityLog['item']) || $this->_activityLog['item'] = substr($this->getItemName(), 0, -1);
@@ -93,9 +93,9 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		if (!is_null($action))
 		{
 			$methodName = '_getJson' . ucfirst($action);
-			if (is_callable(array($this, $methodName)))
+			if (is_callable([$this, $methodName]))
 			{
-				return call_user_func(array($this, $methodName), $params);
+				return call_user_func([$this, $methodName], $params);
 			}
 		}
 
@@ -190,11 +190,11 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 			$this->_writeLog(iaCore::ACTION_ADD, $entryData, $entryId);
 			$this->updateCounters($entryId, $entryData, iaCore::ACTION_ADD);
 
-			$this->_iaCore->startHook('phpListingAdded', array(
+			$this->_iaCore->startHook('phpListingAdded', [
 				'itemId' => $entryId,
 				'itemName' => $this->getItemName(),
 				'itemData' => $entryData
-			));
+			]);
 		}
 
 		return $entryId;
@@ -221,12 +221,12 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 			$this->_writeLog(iaCore::ACTION_EDIT, $entryData, $entryId);
 			$this->updateCounters($entryId, $entryData, iaCore::ACTION_EDIT, $currentData);
 
-			$this->_iaCore->startHook('phpListingUpdated', array(
+			$this->_iaCore->startHook('phpListingUpdated', [
 				'itemId' => $entryId,
 				'itemName' => $this->getItemName(),
 				'itemData' => $entryData,
 				'previousData' => $currentData
-			));
+			]);
 		}
 
 		return $result;
@@ -248,11 +248,11 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 				$this->updateCounters($entryId, $entryData, iaCore::ACTION_DELETE);
 
-				$this->_iaCore->startHook('phpListingRemoved', array(
+				$this->_iaCore->startHook('phpListingRemoved', [
 					'itemId' => $entryId,
 					'itemName' => $this->getItemName(),
 					'itemData' => $entryData
-				));
+				]);
 			}
 		}
 
@@ -270,12 +270,12 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 	{
 		if ($this->getItemName())
 		{
-			$this->_iaCore->startHook('phpItemSaved', array(
+			$this->_iaCore->startHook('phpItemSaved', [
 				'action' => $action,
 				'itemId' => $this->getEntryId(),
 				'itemData' => $entry,
 				'itemName' => $this->getItemName()
-			));
+			]);
 		}
 	}
 
@@ -285,11 +285,11 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		{
 			$iaLog = $this->_iaCore->factory('log');
 
-			$actionsMap = array(
+			$actionsMap = [
 				iaCore::ACTION_ADD => iaLog::ACTION_CREATE,
 				iaCore::ACTION_EDIT => iaLog::ACTION_UPDATE,
 				iaCore::ACTION_DELETE => iaLog::ACTION_DELETE
-			);
+			];
 
 			$titleKey = empty($this->_activityLog['title_field']) ? 'title' : $this->_activityLog['title_field'];
 			in_array($titleKey, $this->_iaField->getMultilingualFields($this->getItemName()))
@@ -299,7 +299,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 				? $this->_iaDb->one($titleKey, iaDb::convertIds($entryId), self::getTable())
 				: $entryData[$titleKey];
 
-			$params = array_merge($this->_activityLog, array('name' => $title, 'id' => $entryId));
+			$params = array_merge($this->_activityLog, ['name' => $title, 'id' => $entryId]);
 
 			$iaLog->write($actionsMap[$action], $params);
 		}
@@ -345,7 +345,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 	protected function _getJsonTree(array $data)
 	{
-		$output = array();
+		$output = [];
 
 		$rowsCount = $this->_iaDb->one(iaDb::STMT_COUNT_ROWS);
 		$dynamicLoadMode = ($rowsCount > 500);
@@ -353,11 +353,11 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 		$where = $dynamicLoadMode ? sprintf('`parent_id` = %d', (int)$data['id']) : iaDb::EMPTY_CONDITION;
 		$where.= ' ORDER BY `title`';
 
-		$rows = $this->_iaDb->all(array('id', 'title', 'parent_id', 'child'), $where);
+		$rows = $this->_iaDb->all(['id', 'title', 'parent_id', 'child'], $where);
 
 		foreach ($rows as $row)
 		{
-			$entry = array('id' => $row['id'], 'text' => $row['title']);
+			$entry = ['id' => $row['id'], 'text' => $row['title']];
 
 			$dynamicLoadMode
 				? $entry['children'] = $row['child'] && $row['child'] != $row['id']

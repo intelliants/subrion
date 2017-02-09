@@ -31,12 +31,12 @@ final class iaSystem
 
 	private static $_halt = false;
 
-	public static $timer = array();
+	public static $timer = [];
 
 
 	public static function autoload($className)
 	{
-		$systemClasses = array(
+		$systemClasses = [
 			'abstractCore' => 'ia.interfaces',
 			'abstractUtil' => 'ia.interfaces',
 			// interfaces
@@ -53,7 +53,7 @@ final class iaSystem
 			'iaAbstractControllerBackend' => 'ia.base.controller.admin',
 			'iaAbstractControllerPluginBackend' => 'ia.base.controller.plugin.admin',
 			'iaAbstractControllerPackageBackend' => 'ia.base.controller.package.admin'
-		);
+		];
 
 		if (isset($systemClasses[$className]))
 		{
@@ -72,7 +72,7 @@ final class iaSystem
 	public static function output($output)
 	{
 		$escapedScriptPath = str_replace('/', '\/', preg_quote(IA_HOME));
-		$matches = array();
+		$matches = [];
 		$filteredContent = strip_tags($output);
 
 		preg_match('#Parse error\: (.+) in ' . $escapedScriptPath . '(.+?) on line (\d+)#i', $filteredContent, $matches);
@@ -107,7 +107,7 @@ final class iaSystem
 	{
 		$exit = false;
 		$errfile = str_replace(IA_HOME, '', $errfile);
-		$errortype = array (
+		$errortype = [
 			0 => 'Parsing Error',
 			E_ERROR => 'Fatal Error',
 			2048 => 'Error', // E_STRICT
@@ -121,7 +121,7 @@ final class iaSystem
 			E_USER_ERROR => 'User Error',
 			E_USER_WARNING => 'User Warning',
 			E_USER_NOTICE => 'User Notice'
-		);
+		];
 		$error = ' ' . $errstr . ' <i><br> ' . ($errline != 0 ? 'on line <b>' . $errline . '</b>' : '')
 			. ' in file <span style="font-weight:bold; text-shadow: 1px 1px 1px white; text-decoration: underline;">' . $errfile . '</span></i>';
 		switch ($errno)
@@ -152,7 +152,7 @@ final class iaSystem
 				$text = (!isset($errortype[$errno]) ? 'Unknown error type [' . $errno . ']:' : $errortype[$errno]) . ' ' . $error;
 		}
 		$backTrace = debug_backtrace();
-		$traceList = array();
+		$traceList = [];
 
 		if ($errno == 0)
 		{
@@ -248,13 +248,13 @@ final class iaSystem
 			$size = memory_get_usage(1);
 		}
 
-		self::$timer[] = array(
+		self::$timer[] = [
 			'time' => explode(' ', microtime()),
 			'description' => is_null($description)
 				? $section
 				: sprintf('<b>%s</b> - %s', $section, $description),
 			'bytes' => $size
-		);
+		];
 	}
 
 	protected static function _getArgument($argument)
@@ -296,14 +296,14 @@ final class iaSystem
 				$iaPatchParser = new iaPatchParser($contents);
 				$patch = $iaPatchParser->patch;
 
-				$iaPatchApplier = new iaPatchApplier(IA_HOME, array(
+				$iaPatchApplier = new iaPatchApplier(IA_HOME, [
 					'host' => INTELLI_DBHOST,
 					'port' => INTELLI_DBPORT,
 					'database' => INTELLI_DBNAME,
 					'user' => INTELLI_DBUSER,
 					'password' => INTELLI_DBPASS,
 					'prefix' => INTELLI_DBPREFIX
-				), true);
+				], true);
 
 				$result = $iaPatchApplier->process($patch, $version);
 
@@ -314,7 +314,7 @@ final class iaSystem
 					fclose($fh);
 				}
 
-				$logParams = array('type' => 'app-forced', 'from' => IA_VERSION, 'to' => $version, 'file' => $logFile);
+				$logParams = ['type' => 'app-forced', 'from' => IA_VERSION, 'to' => $version, 'file' => $logFile];
 
 				$iaLog = iaCore::instance()->factory('log');
 				$iaLog->write(iaLog::ACTION_UPGRADE, $logParams);
@@ -334,7 +334,7 @@ final class iaSystem
 	{
 		$text = '';
 		$num = (int)$num;
-		$list = array('Kb', 'Mb', 'Gb', 'Pb');
+		$list = ['Kb', 'Mb', 'Gb', 'Pb'];
 
 		$i = 0;
 		while ($num > 0 && $i < 10)

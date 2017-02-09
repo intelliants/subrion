@@ -28,9 +28,9 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'menus';
 
-	protected $_gridColumns = array('name', 'status', 'order', 'position', 'delete' => 'removable');
-	protected $_gridFilters = array('position' => 'equal', 'status' => 'equal');
-	protected $_gridSorting = array('title' => array('value', 'p'));
+	protected $_gridColumns = ['name', 'status', 'order', 'position', 'delete' => 'removable'];
+	protected $_gridFilters = ['position' => 'equal', 'status' => 'equal'];
+	protected $_gridSorting = ['title' => ['value', 'p']];
 	protected $_gridQueryMainTableAlias = 'm';
 
 	protected $_phraseGridEntryDeleted = 'menu_deleted';
@@ -47,7 +47,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
-		$output = array();
+		$output = [];
 
 		$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
@@ -56,19 +56,19 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'pages':
 				foreach ($iaPage->getGroups() as $groupId => $group)
 				{
-					$children = array();
+					$children = [];
 					foreach ($group['children'] as $pageId => $pageTitle)
 					{
-						$children[] = array('text' => $pageTitle, 'leaf' => true, 'id' => $pageId);
+						$children[] = ['text' => $pageTitle, 'leaf' => true, 'id' => $pageId];
 					}
 
-					$output[] = array(
+					$output[] = [
 						'text' => $group['title'],
 						'id' => 'group_' . $groupId,
 						'cls' => 'folder',
 						'draggable' => false,
 						'children' => $children
-					);
+					];
 				}
 
 				$output[0]['expanded'] = true;
@@ -78,7 +78,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'menus':
 				function recursiveRead($list, $pid, array $titles)
 				{
-					$result = array();
+					$result = [];
 
 					if (isset($list[$pid]))
 					{
@@ -99,19 +99,19 @@ class iaBackendController extends iaAbstractControllerBackend
 									: ' (no link)';
 							}
 
-							$result[] = array(
+							$result[] = [
 								'text' => $title,
 								'id' => $child['el_id'],
 								'expanded' => true,
 								'children' => recursiveRead($list, $child['el_id'], $titles)
-							);
+							];
 						}
 					}
 
 					return $result;
 				}
 
-				$output = array();
+				$output = [];
 
 				if ($id = (int)$params['id'])
 				{
@@ -127,7 +127,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				break;
 
 			case 'titles':
-				$output['languages'] = array();
+				$output['languages'] = [];
 
 				$languagesList = $this->_iaCore->languages;
 				$node = isset($params['id']) ? iaSanitize::sql($params['id']) : false;
@@ -138,7 +138,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					ksort($languagesList);
 					foreach ($languagesList as $code => $language)
 					{
-						$output['languages'][] = array('fieldLabel' => $language['title'], 'name' => $code, 'value' => '');
+						$output['languages'][] = ['fieldLabel' => $language['title'], 'name' => $code, 'value' => ''];
 					}
 				}
 				elseif ($node && $entry)
@@ -162,7 +162,7 @@ class iaBackendController extends iaAbstractControllerBackend
 							ksort($languagesList);
 							foreach ($languagesList as $code => $language)
 							{
-								$output['languages'][] = array('fieldLabel' => $language['title'], 'name' => $code, 'value' => $current);
+								$output['languages'][] = ['fieldLabel' => $language['title'], 'name' => $code, 'value' => $current];
 							}
 						}
 					}
@@ -174,11 +174,11 @@ class iaBackendController extends iaAbstractControllerBackend
 						{
 							if (isset($languagesList[$row['code']]))
 							{
-								$output['languages'][] = array(
+								$output['languages'][] = [
 									'fieldLabel' => $languagesList[$row['code']]['title'],
 									'name' => $row['code'],
 									'value' => $row['value']
-								);
+								];
 							}
 						}
 					}
@@ -196,20 +196,20 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				if ($menu && $node)
 				{
-					$rows = array();
+					$rows = [];
 					foreach ($_POST as $code => $value)
 					{
-						$rows[] = array(
+						$rows[] = [
 							'code' => $code,
 							'value' => $value,
 							'extras' => $menu,
 							'key' => 'page_title_' . $node,
 							'category' => iaLanguage::CATEGORY_PAGE
-						);
+						];
 					}
 
 					$this->_iaDb->setTable(iaLanguage::getTable());
-					$this->_iaDb->delete('`key` = :key', null, array('key' => 'page_title_' . $node));
+					$this->_iaDb->delete('`key` = :key', null, ['key' => 'page_title_' . $node]);
 					$this->_iaDb->insert($rows);
 					$this->_iaDb->resetTable();
 
@@ -259,7 +259,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	LIMIT :start, :limit
 SQL;
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_menus' => $this->getTable(),
 			'table_phrases' => iaLanguage::getTable(),
@@ -269,14 +269,14 @@ SQL;
 			'order' => $order,
 			'start' => (int)$start,
 			'limit' => (int)$limit
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}
 
 	protected function _setDefaultValues(array &$entry)
 	{
-		$entry = array(
+		$entry = [
 			'name' => 'menu_' . iaUtil::generateToken(5),
 			'position' => '',
 			'classname' => '',
@@ -284,7 +284,7 @@ SQL;
 			'sticky' => false,
 			'tpl' => iaBlock::DEFAULT_MENU_TEMPLATE,
 			'type' => iaBlock::TYPE_MENU
-		);
+		];
 
 		$entry['header'] = $entry['collapsible'] = $entry['collapsed'] = false;
 	}
@@ -300,7 +300,7 @@ SQL;
 
 		// bundled data
 		$entry['title'] = $data['title'];
-		$entry['pages'] = isset($data['pages']) ? $data['pages'] : array();
+		$entry['pages'] = isset($data['pages']) ? $data['pages'] : [];
 
 		if ($data['name'])
 		{
@@ -339,13 +339,13 @@ SQL;
 				$pageId = explode('_', $menu['id']);
 				$pageId = reset($pageId);
 
-				$list[] = array(
+				$list[] = [
 					'parent_id' => ('root' == $menu['parentId']) ? 0 : $menu['parentId'],
 					'menu_id' => $menuId,
 					'el_id' => $menu['id'],
 					'level' => $menu['depth'] - 1,
 					'page_name' => ($pageId > 0 && isset($pages[$pageId])) ? $pages[$pageId] : 'node',
-				);
+				];
 			}
 		}
 
@@ -353,8 +353,8 @@ SQL;
 		$menus = json_decode($menus, true);
 		array_shift($menus);
 
-		$rows = array();
-		$pages = $this->_iaDb->keyvalue(array('id', 'name'), null, 'pages');
+		$rows = [];
+		$pages = $this->_iaDb->keyvalue(['id', 'name'], null, 'pages');
 		recursive_read_menu($menus, $pages, $rows, $this->getEntryId());
 
 		$this->_iaDb->setTable(iaBlock::getMenusTable());
@@ -370,12 +370,12 @@ SQL;
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$pageGroups = array();
-		$visibleOn = array();
+		$pageGroups = [];
+		$visibleOn = [];
 
 		// get groups
 		$groups = $this->_iaDb->onefield('`group`', '1 GROUP BY `group`', null, null, 'pages');
-		$rows = $this->_iaDb->all(array('id', 'name'), null, null, null, 'admin_pages_groups');
+		$rows = $this->_iaDb->all(['id', 'name'], null, null, null, 'admin_pages_groups');
 		foreach ($rows as $row)
 		{
 			if (in_array($row['id'], $groups))
@@ -392,7 +392,7 @@ SQL;
 				$visibleOn = $array;
 			}
 
-			$entryData['title'] = $this->_iaDb->keyvalue(array('code', 'value'),
+			$entryData['title'] = $this->_iaDb->keyvalue(['code', 'value'],
 				iaDb::convertIds(iaBlock::LANG_PATTERN_TITLE . $this->getEntryId(), 'key'), iaLanguage::getTable());
 		}
 		elseif (!empty($_POST['pages']))
@@ -421,12 +421,12 @@ LEFT JOIN `:prefix:table_language` t ON (`key` = CONCAT('page_title_', p.`name`)
 WHERE p.`status` = ':status' AND p.`service` = 0 
 ORDER BY t.`value`
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_language' => iaLanguage::getTable(),
 			'language' => $this->_iaCore->iaView->language,
 			'status' => iaCore::STATUS_ACTIVE
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}

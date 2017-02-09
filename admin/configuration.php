@@ -35,17 +35,17 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_name = 'configuration';
 
-	protected $_customConfigParams = array('admin_page', 'https');
+	protected $_customConfigParams = ['admin_page', 'https'];
 
 	protected $_redirectUrl;
 
-	private $_imageTypes = array(
+	private $_imageTypes = [
 		'image/gif' => 'gif',
 		'image/jpeg' => 'jpg',
 		'image/pjpeg' => 'jpg',
 		'image/png' => 'png',
 		'image/x-icon' => 'ico'
-	);
+	];
 
 	private $_type;
 	private $_typeId;
@@ -91,15 +91,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
-		$output = array();
+		$output = [];
 
 		switch ($params['action'])
 		{
 			case 'update':
-				$output = array(
+				$output = [
 					'result' => false,
 					'message' => iaLanguage::get('invalid_parameters')
-				);
+				];
 
 				if ($this->_iaCore->set($_POST['name'], $_POST['value'], true))
 				{
@@ -132,7 +132,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						if (!array_key_exists($_FILES[$paramName]['type'], $this->_imageTypes) || !in_array($ext, $this->_imageTypes))
 						{
 							$output['error'] = true;
-							$output['msg'] = iaLanguage::getf('file_type_error', array('extension' => implode(', ', array_unique($this->_imageTypes))));
+							$output['msg'] = iaLanguage::getf('file_type_error', ['extension' => implode(', ', array_unique($this->_imageTypes))]);
 						}
 						else
 						{
@@ -147,7 +147,7 @@ class iaBackendController extends iaAbstractControllerBackend
 							if (@move_uploaded_file($_FILES[$paramName]['tmp_name'], $fname))
 							{
 								$output['error'] = false;
-								$output['msg'] = iaLanguage::getf('image_uploaded', array('name' => $_FILES[$paramName]['name']));
+								$output['msg'] = iaLanguage::getf('image_uploaded', ['name' => $_FILES[$paramName]['name']]);
 								$output['file_name'] = $fileName;
 
 								$this->_iaCore->set($paramName, $fileName, true);
@@ -170,7 +170,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$entity = ('user' == $this->_type)
 				? $this->_iaCore->factory('users')->getInfo($this->_typeId)
-				: $this->_iaDb->row(array('name'), iaDb::convertIds($this->_typeId), iaUsers::getUsergroupsTable());
+				: $this->_iaDb->row(['name'], iaDb::convertIds($this->_typeId), iaUsers::getUsergroupsTable());
 
 			if (!$entity)
 			{
@@ -181,11 +181,11 @@ class iaBackendController extends iaAbstractControllerBackend
 				? $entity['fullname']
 				: iaLanguage::get('usergroup_' . $entity['name']);
 
-			$title = iaLanguage::getf('custom_configuration_title', array(
+			$title = iaLanguage::getf('custom_configuration_title', [
 				'settings' => $groupData['title'],
 				'title' => $title,
 				'type' => strtolower(iaLanguage::get('user' == $this->_type ? 'member' : 'usergroup'))
-			));
+			]);
 		}
 		else
 		{
@@ -210,7 +210,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				iaBreadcrumb::add($page['title'], IA_ADMIN_URL . $page['alias']);
 			}
-			elseif ($pluginPage = $this->_iaDb->row(array('alias', 'group'), iaDb::printf("`name` = ':name' || `name` = ':name_stats'", array('name' => $groupData['extras'])), iaPage::getAdminTable()))
+			elseif ($pluginPage = $this->_iaDb->row(['alias', 'group'], iaDb::printf("`name` = ':name' || `name` = ':name_stats'", ['name' => $groupData['extras']]), iaPage::getAdminTable()))
 			{
 				// it is a package
 				$iaView->set('group', $pluginPage['group']);
@@ -246,53 +246,53 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$where = "`type` != 'hidden' " . ($this->_type ? '&& `custom` = 1' : '');
-		$rows = $this->_iaDb->all(array('name', 'type', 'options'), $where, null, null, iaCore::getConfigTable());
+		$rows = $this->_iaDb->all(['name', 'type', 'options'], $where, null, null, iaCore::getConfigTable());
 
-		$params = array();
+		$params = [];
 		foreach ($rows as $row)
 			$params[$row['name']] = $row;
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
-		$messages = array();
+		$messages = [];
 		$error = false;
 
 		if ($_POST['v'] && is_array($_POST['v']))
 		{
 			$values = $_POST['v'];
 
-			$this->_iaCore->startHook('phpConfigurationChange', array('configurationValues' => &$values));
+			$this->_iaCore->startHook('phpConfigurationChange', ['configurationValues' => &$values]);
 
 			$this->_iaDb->setTable(iaCore::getConfigTable());
 
 			foreach ($values as $key => $value)
 			{
-				$options = $params[$key]['options'] ? json_decode($params[$key]['options'], true) : array();
+				$options = $params[$key]['options'] ? json_decode($params[$key]['options'], true) : [];
 
 				if (false !== ($s = strpos($key, '_items_enabled')))
 				{
 					$p = $this->_iaCore->get($key, '', !is_null($this->_type));
-					$array = $p ? explode(',', $p) : array();
+					$array = $p ? explode(',', $p) : [];
 
-					$data = array();
+					$data = [];
 
 					array_shift($value);
 
 					if ($diff = array_diff($value, $array))
 					{
 						foreach ($diff as $item)
-							array_push($data, array('action' => '+', 'item' => $item));
+							array_push($data, ['action' => '+', 'item' => $item]);
 					}
 
 					if ($diff = array_diff($array, $value))
 					{
 						foreach ($diff as $item)
-							array_push($data, array('action' => '-', 'item' => $item));
+							array_push($data, ['action' => '-', 'item' => $item]);
 					}
 
 					$extra = substr($key, 0, $s);
 
-					$this->_iaCore->startHook('phpPackageItemChangedForPlugin', array('data' => $data), $extra);
+					$this->_iaCore->startHook('phpPackageItemChangedForPlugin', ['data' => $data], $extra);
 				}
 
 				if (is_array($value))
@@ -331,7 +331,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								if (!array_key_exists(strtolower($_FILES[$key]['type']), $this->_imageTypes) || !in_array($ext, $this->_imageTypes, true) || !getimagesize($_FILES[$key]['tmp_name']))
 								{
 									$error = true;
-									$messages[] = iaLanguage::getf('file_type_error', array('extension' => implode(', ', array_unique($this->_imageTypes))));
+									$messages[] = iaLanguage::getf('file_type_error', ['extension' => implode(', ', array_unique($this->_imageTypes))]);
 								}
 								else
 								{
@@ -361,13 +361,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					if ($_POST['c'][$key])
 					{
-						$array = array('name' => $key, 'value' => $value, 'type' => $this->_type, 'type_id' => $this->_typeId);
+						$array = ['name' => $key, 'value' => $value, 'type' => $this->_type, 'type_id' => $this->_typeId];
 
 						if ($this->_iaDb->exists($where))
 						{
 							unset($array['value']);
 							$this->_iaDb->bind($where, $array);
-							$this->_iaDb->update(array('value' => $value), $where);
+							$this->_iaDb->update(['value' => $value], $where);
 						}
 						else
 						{
@@ -411,19 +411,19 @@ SELECT c.`name`, c.`value`
 	FROM `:prefix:table_custom_config` c, `:prefix:table_members` m 
 WHERE c.`type` = ':type' && c.`type_id` = m.`usergroup_id` && m.`id` = :id
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_custom_config' => iaCore::getCustomConfigTable(),
 			'table_members' => iaUsers::getTable(),
 			'id' => $this->_typeId
-		));
+		]);
 
-		return ($rows = $this->_iaDb->getKeyValue($sql)) ? $rows : array();
+		return ($rows = $this->_iaDb->getKeyValue($sql)) ? $rows : [];
 	}
 
 	protected function _getGroupByName($groupName)
 	{
-		$result = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $groupName), iaCore::getConfigGroupsTable());
+		$result = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', ['name' => $groupName], iaCore::getConfigGroupsTable());
 		empty($result) || $result['title'] = iaLanguage::get('config_group_' . $result['name']);
 
 		return $result;
@@ -439,7 +439,7 @@ SQL;
 			}
 		}
 
-		$this->_iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'));
+		$this->_iaDb->update(['value' => $value], iaDb::convertIds($key, 'name'));
 	}
 
 	protected function _updateCustomParam($key, $value)
@@ -470,7 +470,7 @@ SQL;
 			$custom = ('user' == $this->_type)
 				? $this->_iaCore->getCustomConfig($this->_typeId)
 				: $this->_iaCore->getCustomConfig(null, $this->_typeId);
-			$custom2 = ('user' == $this->_type) ? $this->_getUsersSpecificConfig() : array();
+			$custom2 = ('user' == $this->_type) ? $this->_getUsersSpecificConfig() : [];
 		}
 
 		$iaItem = $this->_iaCore->factory('item');
@@ -478,7 +478,7 @@ SQL;
 
 		foreach ($params as &$entry)
 		{
-			$entry['options'] = $entry['options'] ? json_decode($entry['options'], true) : array();
+			$entry['options'] = $entry['options'] ? json_decode($entry['options'], true) : [];
 			$entry['description'] = iaLanguage::get('config_' . $entry['name']);
 
 			$className = 'default';
@@ -513,7 +513,7 @@ SQL;
 				case self::TYPE_TEXTAREA: // 'multilingual' option enabled types
 					if (isset($entry['options']['multilingual']) && $entry['options']['multilingual'])
 					{
-						$value = array();
+						$value = [];
 						foreach ($this->_iaCore->languages as $iso => $language)
 							$value[$iso] = preg_match('#\{\:' . $iso . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $entry['value'], $matches)
 								? $matches[1]
@@ -526,7 +526,7 @@ SQL;
 
 				case self::TYPE_ITEMSCHECKBOX:
 					$array = $this->_iaCore->get($entry['extras'] . '_items_implemented');
-					$array = $array ? explode(',', $array) : array();
+					$array = $array ? explode(',', $array) : [];
 					$array = array_values(array_intersect($array, $itemsList));
 
 					if ($array)
@@ -536,11 +536,11 @@ SQL;
 						for ($i = 0; $i < count($array); $i++)
 						{
 							$array[$i] = trim($array[$i]);
-							$entry['items'][] = array(
+							$entry['items'][] = [
 								'name' => $array[$i],
 								'title' => iaLanguage::get($array[$i]),
 								'checked' => (int)in_array($array[$i], $enabledItems)
-							);
+							];
 						}
 					}
 			}
@@ -557,7 +557,7 @@ SQL;
 						break;
 					default:
 						$array = explode(',', trim($entry['multiple_values'], ','));
-						$values = array();
+						$values = [];
 
 						foreach ($array as $a)
 						{

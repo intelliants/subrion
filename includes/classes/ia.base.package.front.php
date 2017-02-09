@@ -30,10 +30,10 @@ abstract class abstractPackageFront extends abstractCore
 
 	protected $_packageName;
 
-	protected $_statuses = array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE);
+	protected $_statuses = [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE];
 
 	public $coreSearchEnabled = false;
-	public $coreSearchOptions = array();
+	public $coreSearchOptions = [];
 
 
 	public function getPackageName()
@@ -70,7 +70,7 @@ abstract class abstractPackageFront extends abstractCore
 
 	public function accountActions($params)
 	{
-		return array('', '');
+		return ['', ''];
 	}
 
 	public function getById($id, $decorate = true)
@@ -109,11 +109,11 @@ abstract class abstractPackageFront extends abstractCore
 			$this->updateCounters($itemId, $itemData, iaCore::ACTION_ADD);
 
 			// finally, notify plugins
-			$this->iaCore->startHook('phpListingAdded', array(
+			$this->iaCore->startHook('phpListingAdded', [
 				'itemId' => $itemId,
 				'itemName' => $this->getItemName(),
 				'itemData' => $itemData
-			));
+			]);
 		}
 
 		return $itemId;
@@ -133,12 +133,12 @@ abstract class abstractPackageFront extends abstractCore
 		{
 			$this->updateCounters($id, $itemData, iaCore::ACTION_EDIT, $currentData);
 
-			$this->iaCore->startHook('phpListingUpdated', array(
+			$this->iaCore->startHook('phpListingUpdated', [
 				'itemId' => $id,
 				'itemName' => $this->getItemName(),
 				'itemData' => $itemData,
 				'previousData' => $currentData
-			));
+			]);
 		}
 
 		return $result;
@@ -158,11 +158,11 @@ abstract class abstractPackageFront extends abstractCore
 
 				$this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
 
-				$this->iaCore->startHook('phpListingRemoved', array(
+				$this->iaCore->startHook('phpListingRemoved', [
 					'itemId' => $itemId,
 					'itemName' => $this->getItemName(),
 					'itemData' => $entryData
-				));
+				]);
 			}
 		}
 
@@ -188,13 +188,13 @@ abstract class abstractPackageFront extends abstractCore
 		$ipAddress = $this->iaCore->util()->getIp();
 		$date = date(iaDb::DATE_FORMAT);
 
-		if ($this->iaDb->exists('`item` = :item AND `item_id` = :id AND `ip` = :ip AND `date` = :date', array('item' => $itemName, 'id' => $itemId, 'ip' => $ipAddress, 'date' => $date), $viewsTable))
+		if ($this->iaDb->exists('`item` = :item AND `item_id` = :id AND `ip` = :ip AND `date` = :date', ['item' => $itemName, 'id' => $itemId, 'ip' => $ipAddress, 'date' => $date], $viewsTable))
 		{
 			return false;
 		}
 
-		$this->iaDb->insert(array('item' => $itemName, 'item_id' => $itemId, 'ip' => $ipAddress, 'date' => $date), null, $viewsTable);
-		$result = $this->iaDb->update(null, iaDb::convertIds($itemId), array($columnName => '`' . $columnName . '` + 1'), self::getTable());
+		$this->iaDb->insert(['item' => $itemName, 'item_id' => $itemId, 'ip' => $ipAddress, 'date' => $date], null, $viewsTable);
+		$result = $this->iaDb->update(null, iaDb::convertIds($itemId), [$columnName => '`' . $columnName . '` + 1'], self::getTable());
 
 		return (bool)$result;
 	}
@@ -208,7 +208,7 @@ abstract class abstractPackageFront extends abstractCore
 
 		$this->_processValues($rows);
 
-		return array($count, $rows);
+		return [$count, $rows];
 	}
 
 	public function coreSearchTranslateColumn($column, $value)
@@ -223,14 +223,14 @@ abstract class abstractPackageFront extends abstractCore
 	 * @param boolean $singleRow true when item is passed as one row
 	 * @param array $fieldNames list of custom serialized fields
 	 */
-	protected function _processValues(&$rows, $singleRow = false, $fieldNames = array())
+	protected function _processValues(&$rows, $singleRow = false, $fieldNames = [])
 	{
 		if (!$rows)
 		{
 			return;
 		}
 
-		$singleRow && $rows = array($rows);
+		$singleRow && $rows = [$rows];
 
 		// process favorites
 		$rows = $this->iaCore->factory('item')->updateItemsFavorites($rows, $this->getItemName());
@@ -257,7 +257,7 @@ abstract class abstractPackageFront extends abstractCore
 				{
 					if (isset($row[$fieldName]))
 					{
-						$row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : array();
+						$row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
 					}
 				}
 

@@ -73,17 +73,17 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType())
 
 	// Documentation for connector options:
 	// https://github.com/Studio-42/elFinder/wiki/Connector-configuration-options
-	$opts = array(
+	$opts = [
 		// 'debug' => true,
-		'roots' => array(
-			array(
+		'roots' => [
+			[
 				'driver'        => 'LocalFileSystem',   // driver for accessing file system (REQUIRED)
 				'path'          => $path,         // path to files (REQUIRED)
 				'URL'           => $url, // URL to files (REQUIRED)
 				'accessControl' => 'access'             // disable and hide dot starting files (OPTIONAL)
-			)
-		)
-	);
+			]
+		]
+	];
 
 	// run elFinder
 	$connector = new elFinderConnector(new elFinder($opts));

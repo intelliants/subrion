@@ -56,7 +56,7 @@ final class iaCore
 
 	private static $_instance;
 
-	private $_classInstances = array();
+	private $_classInstances = [];
 
 	protected static $_configDbTable = 'config';
 	protected static $_configGroupsDbTable = 'config_groups';
@@ -64,8 +64,8 @@ final class iaCore
 
 	protected $_accessType = self::ACCESS_FRONT;
 
-	protected $_hooks = array();
-	protected $_config = array();
+	protected $_hooks = [];
+	protected $_config = [];
 	protected $_customConfig;
 
 	protected $_checkDomain;
@@ -74,11 +74,11 @@ final class iaCore
 	public $iaView;
 	public $iaCache;
 
-	public $languages = array();
-	public $language = array();
+	public $languages = [];
+	public $language = [];
 
-	public $packagesData = array();
-	public $requestPath = array();
+	public $packagesData = [];
+	public $requestPath = [];
 
 
 	protected function __construct(){}
@@ -97,7 +97,7 @@ final class iaCore
 	public function init()
 	{
 		$this->iaDb = $this->factory('db');
-		$this->factory(array('sanitize', 'validate', 'language', 'users'));
+		$this->factory(['sanitize', 'validate', 'language', 'users']);
 		$this->iaView = $this->factory('view');
 		$this->iaCache = $this->factory('cache');
 		iaSystem::renderTime('core', 'Basic Classes Initialized');
@@ -178,7 +178,7 @@ final class iaCore
 	{
 		$iaView = &$this->iaView;
 
-		$params = $this->iaDb->keyvalue(array('name', 'value'),
+		$params = $this->iaDb->keyvalue(['name', 'value'],
 			"`name` IN('baseurl', 'admin_page', 'home_page', 'lang')", self::getConfigTable());
 
 		$domain = preg_replace('#[^a-z_0-9-.:]#i', '', $_SERVER['HTTP_HOST']);
@@ -247,7 +247,7 @@ final class iaCore
 		}
 
 		$isSystemChunk = true;
-		$array = array();
+		$array = [];
 		foreach ($url as $value)
 		{
 			if (!$isSystemChunk)
@@ -285,7 +285,7 @@ final class iaCore
 			}
 		}
 
-		$iaView->url = empty($url[0]) ? array() : $url;
+		$iaView->url = empty($url[0]) ? [] : $url;
 		$this->requestPath = $array;
 
 		// set system language
@@ -470,8 +470,8 @@ final class iaCore
 			return $this->_customConfig;
 		}
 
-		$result = array();
-		$stmt = array();
+		$result = [];
+		$stmt = [];
 
 		if ($user)
 		{
@@ -482,14 +482,14 @@ final class iaCore
 			$stmt[] = "(`type` = 'group' AND `type_id` = $group) ";
 		}
 
-		$rows = $this->iaDb->all(array('type', 'name', 'value'), implode(' OR ', $stmt), null, null, self::getCustomConfigTable());
+		$rows = $this->iaDb->all(['type', 'name', 'value'], implode(' OR ', $stmt), null, null, self::getCustomConfigTable());
 
 		if (empty($rows))
 		{
 			return $result;
 		}
 
-		$result = array('group' => array(), 'user' => array(), 'plan' => array());
+		$result = ['group' => [], 'user' => [], 'plan' => []];
 
 		foreach ($rows as $row)
 		{
@@ -566,7 +566,7 @@ final class iaCore
 
 		if ($permanent)
 		{
-			$result = (bool)$this->iaDb->update(array('value' => $value), iaDb::convertIds($key, 'name'), null, self::getConfigTable());
+			$result = (bool)$this->iaDb->update(['value' => $value], iaDb::convertIds($key, 'name'), null, self::getConfigTable());
 
 			$this->iaCache->clearConfigCache();
 		}
@@ -589,23 +589,23 @@ final class iaCore
 	 */
 	protected function _fetchHooks()
 	{
-		$columns = array('name', 'code', 'type', 'extras', 'filename', 'pages');
+		$columns = ['name', 'code', 'type', 'extras', 'filename', 'pages'];
 		$stmt = "`extras` IN('', '" . implode("','", $this->get('extras')) . "') AND `status` = :status AND `page_type` IN ('both', :type) ORDER BY `order`";
-		$this->iaDb->bind($stmt, array(
+		$this->iaDb->bind($stmt, [
 			'status' => iaCore::STATUS_ACTIVE,
 			'type' => (self::ACCESS_FRONT == $this->getAccessType()) ? iaCore::FRONT : iaCore::ADMIN
-		));
+		]);
 
 		if ($rows = $this->iaDb->all($columns, $stmt, null, null, 'hooks'))
 		{
 			foreach ($rows as $row)
 			{
-				$this->_hooks[$row['name']][$row['extras']] = array(
-					'pages' => empty($row['pages']) ? array() : explode(',', $row['pages']),
+				$this->_hooks[$row['name']][$row['extras']] = [
+					'pages' => empty($row['pages']) ? [] : explode(',', $row['pages']),
 					'code' => $row['code'],
 					'type' => $row['type'],
 					'filename' => $row['filename']
-				);
+				];
 			}
 		}
 	}
@@ -655,8 +655,8 @@ final class iaCore
 	{
 		if (is_null($this->_checkDomain))
 		{
-			$dbUrl = str_replace(array('http://www.', 'http://'), '', $this->get('baseurl'));
-			$codeUrl = str_replace(array('http://www.', 'http://'), '', $this->iaView->domainUrl);
+			$dbUrl = str_replace(['http://www.', 'http://'], '', $this->get('baseurl'));
+			$codeUrl = str_replace(['http://www.', 'http://'], '', $this->iaView->domainUrl);
 
 			$this->_checkDomain = ($dbUrl == $codeUrl);
 		}
@@ -671,9 +671,9 @@ final class iaCore
 			return $this->packagesData;
 		}
 
-		$rows = $this->iaDb->all(array('name', 'url', 'title'), "`type` = 'package' AND `status` = 'active'", null, null, 'extras');
+		$rows = $this->iaDb->all(['name', 'url', 'title'], "`type` = 'package' AND `status` = 'active'", null, null, 'extras');
 
-		$packages = array();
+		$packages = [];
 		foreach ($rows as $entry)
 		{
 			$entry['url'] = (parse_url($entry['url'], PHP_URL_SCHEME) ? '' : IA_URL)
@@ -689,9 +689,9 @@ final class iaCore
 	public function getExtras($package)
 	{
 		$rows = $this->iaDb->row_bind(
-			array('name', 'url', 'title'),
+			['name', 'url', 'title'],
 			'`status` = :status AND `name` = :package',
-			array('status' => iaCore::STATUS_ACTIVE, 'package' => $package),
+			['status' => iaCore::STATUS_ACTIVE, 'package' => $package],
 			'extras'
 		);
 
@@ -703,7 +703,7 @@ final class iaCore
 		return self::instance()->factory('util');
 	}
 
-	public function startHook($name, array $params = array())
+	public function startHook($name, array $params = [])
 	{
 		if (empty($name))
 		{
@@ -754,7 +754,7 @@ final class iaCore
 						}
 						else
 						{
-							iaDebug::debug(array('name' => $name, 'code' => '<textarea style="width:80%;height:100px;">' . $hook['code'] . '</textarea>'), '<b style="color:red;">Syntax error in hook "' . $name . '" of "' . $extras . '"</b>', 'error');
+							iaDebug::debug(['name' => $name, 'code' => '<textarea style="width:80%;height:100px;">' . $hook['code'] . '</textarea>'], '<b style="color:red;">Syntax error in hook "' . $name . '" of "' . $extras . '"</b>', 'error');
 						}
 						iaSystem::renderTime('END TIME ' . $name . ' ' . $extras);
 					}
@@ -798,7 +798,7 @@ final class iaCore
 		}
 		elseif (is_array($name))
 		{
-			$result = array();
+			$result = [];
 			foreach ($name as $className)
 			{
 				$result[] = $this->factory($className, $type);
@@ -857,7 +857,7 @@ final class iaCore
 
 	protected static function _toSingular($name)
 	{
-		return 's' == $name[strlen($name) - 1] && !in_array($name, array('news'))
+		return 's' == $name[strlen($name) - 1] && !in_array($name, ['news'])
 			? substr($name, 0, -1)
 			: $name;
 	}
@@ -993,12 +993,12 @@ final class iaCore
 
 	public function fetchConfig($where = null)
 	{
-		$result = array();
+		$result = [];
 
 		is_null($where) && $where = iaDb::EMPTY_CONDITION;
 		$where.= " AND `type` != ':divider'";
 
-		$rows = $this->iaDb->all(array('name', 'type', 'value', 'options'), $where, null, null, self::getConfigTable());
+		$rows = $this->iaDb->all(['name', 'type', 'value', 'options'], $where, null, null, self::getConfigTable());
 
 		if ($rows)
 		{
@@ -1010,7 +1010,7 @@ final class iaCore
 
 				if ('text' == $row['type'] || 'textarea' == $row['type'])
 				{
-					$options = empty($row['options']) ? array() : json_decode($row['options'], true);
+					$options = empty($row['options']) ? [] : json_decode($row['options'], true);
 
 					if (isset($options['multilingual']) && $options['multilingual'])
 					{

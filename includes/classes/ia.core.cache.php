@@ -227,11 +227,11 @@ class iaCache extends abstractUtil
 	{
 		$currentLanguage = $this->iaCore->iaView->language;
 
-		$fileList = array(
+		$fileList = [
 			'lang' => "intelli.lang.{$currentLanguage}.js",
 			'admin_lang' => "intelli.admin.lang.{$currentLanguage}.js",
 			'config' => "intelli.config.{$currentLanguage}.js",
-		);
+		];
 
 		foreach ($fileList as $type => $file)
 		{
@@ -268,12 +268,12 @@ class iaCache extends abstractUtil
 			case 'admin_lang':
 				// get phrases
 				$stmt = "`code` = :lang AND `category` NOT IN ('tooltip', 'page', :category)";
-				$iaDb->bind($stmt, array('lang' => $this->iaCore->iaView->language, 'category' => $type == 'admin_lang' ? 'frontend' : iaCore::ADMIN));
-				$phrases = $iaDb->keyvalue(array('key', 'value'), $stmt, iaLanguage::getTable());
+				$iaDb->bind($stmt, ['lang' => $this->iaCore->iaView->language, 'category' => $type == 'admin_lang' ? 'frontend' : iaCore::ADMIN]);
+				$phrases = $iaDb->keyvalue(['key', 'value'], $stmt, iaLanguage::getTable());
 
 				// get list of languages
 				$languagesList = $iaDb->assoc(
-					array('code', 'title', 'direction', 'flagicon', 'iso' => 'code'),
+					['code', 'title', 'direction', 'flagicon', 'iso' => 'code'],
 					('admin_lang' == $type ? null : "`status` = 'active'"),
 					'languages'
 				);
@@ -287,17 +287,17 @@ class iaCache extends abstractUtil
 				$config = $this->iaCore->fetchConfig("`private` = 0 AND `config_group` != 'email_templates'");
 				$config['ia_url'] = IA_CLEAR_URL;
 				$config['packages'] = $this->iaCore->setPackagesData();
-				$config['items'] = array();
-				$config['extras'] = array(array('core', iaLanguage::get('core', 'Core')));
+				$config['items'] = [];
+				$config['extras'] = [['core', iaLanguage::get('core', 'Core')]];
 				$config['lang'] = $this->iaCore->iaView->language;
 
-				$array = $iaDb->all(array('name', 'title'), "`status` = 'active' ORDER BY `type`", null, null, 'extras');
+				$array = $iaDb->all(['name', 'title'], "`status` = 'active' ORDER BY `type`", null, null, 'extras');
 				foreach ($array as $item)
-					$config['extras'][] = array($item['name'], $item['title']);
+					$config['extras'][] = [$item['name'], $item['title']];
 
 				$array = $iaDb->onefield('`item`', "`item` != 'transactions'", null, null, 'items');
 				foreach ($array as $item)
-					$config['items'][] = array($item, iaLanguage::get($item, $item));
+					$config['items'][] = [$item, iaLanguage::get($item, $item)];
 
 				$fileContent = 'intelli.config = ' . json_encode($config) . ';';
 		}

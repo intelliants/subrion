@@ -30,8 +30,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_table = 'image_types';
 
-	protected $_gridColumns = array('name', 'width', 'height', 'resize_mode');
-	protected $_gridFilters = array('name' => self::LIKE, 'id' => self::EQUAL);
+	protected $_gridColumns = ['name', 'width', 'height', 'resize_mode'];
+	protected $_gridFilters = ['name' => self::LIKE, 'id' => self::EQUAL];
 
 
 	public function __construct()
@@ -82,15 +82,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _postSaveEntry(array &$entry, array $data, $action)
 	{
-		$this->_saveFileTypes(isset($data['fileTypes']) ? $data['fileTypes'] : array());
+		$this->_saveFileTypes(isset($data['fileTypes']) ? $data['fileTypes'] : []);
 
 		if (iaCore::ACTION_ADD == $action)
 		{
-			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, array(
+			$this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, [
 				'item' => 'image-type',
 				'name' => $entry['name'],
 				'id' => $this->getEntryId()
-			));
+			]);
 		}
 	}
 
@@ -101,7 +101,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->delete(iaDb::convertIds($this->getEntryId(), 'image_type_id'));
 
 		foreach ($fileTypes as $typeId)
-			$this->_iaDb->insert(array('image_type_id' => $this->getEntryId(), 'file_type_id' => (int)$typeId));
+			$this->_iaDb->insert(['image_type_id' => $this->getEntryId(), 'file_type_id' => (int)$typeId]);
 
 		$this->_iaDb->resetTable();
 	}

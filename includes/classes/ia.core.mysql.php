@@ -32,9 +32,9 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
 	protected $_lastQuery = '';
 
-	protected $_queryList = array();
+	protected $_queryList = [];
 
-	protected $_tableList = array();
+	protected $_tableList = [];
 
 	protected $_table;
 
@@ -74,7 +74,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	public function setTimezoneOffset($offset)
 	{
 		$query = 'SET time_zone = :offset';
-		$this->bind($query, array('offset' => $offset));
+		$this->bind($query, ['offset' => $offset]);
 
 		$this->query($query);
 	}
@@ -116,7 +116,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		if (empty($this->_tableList) || 1 == count($this->_tableList))
 		{
 			$this->_table = '';
-			$this->_tableList = array();
+			$this->_tableList = [];
 		}
 		else
 		{
@@ -196,7 +196,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		$this->_lastQuery = $sql;
 		if (INTELLI_DEBUG)
 		{
-			$this->_queryList[] = array($sql, $times);
+			$this->_queryList[] = [$sql, $times];
 		}
 
 		// 2013 - lost connection during the execution
@@ -251,7 +251,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			$sql .= sprintf(' LIMIT %d, %d', $start, $limit);
 		}
 
-		$result = array();
+		$result = [];
 
 		$query = $this->query($sql);
 		if ($this->getNumRows($query) > 0)
@@ -267,7 +267,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
 	public function getAssoc($sql, $singleRow = false)
 	{
-		$result = array();
+		$result = [];
 
 		$query = $this->query($sql);
 		if ($this->getNumRows($query))
@@ -291,7 +291,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
 	public function getKeyValue($sql)
 	{
-		$result = array();
+		$result = [];
 
 		$query = $this->query($sql);
 		if ($this->getNumRows($query) > 0)
@@ -343,8 +343,8 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	{
 		if ($replacements)
 		{
-			$keys = array();
-			$values = array();
+			$keys = [];
+			$values = [];
 			foreach ($replacements as $key => $value)
 			{
 				$keys[] = ':' . $key;
@@ -356,7 +356,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $pattern;
 	}
 
-	public function exists($where, $values = array(), $tableName = null)
+	public function exists($where, $values = [], $tableName = null)
 	{
 		$this->bind($where, $values);
 		if ($tableName)
@@ -434,7 +434,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	{
 		$fieldsNumber = $this->getNumFields($result);
 
-		$output = array();
+		$output = [];
 		for ($i = 0; $i < $fieldsNumber; $i++)
 		{
 			$output[$i]->name = mysql_field_name($result, $i);
@@ -507,7 +507,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			$rows = $this->_get('all', $field, $condition, $start, $limit);
 		}
 
-		$result = array();
+		$result = [];
 
 		if (empty($rows))
 		{
@@ -590,7 +590,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	public function insert(array $values, $rawValues = null, $tableName = null)
 	{
 		$table = $tableName ? $this->prefix . $tableName : $this->_table;
-		$queue = is_array(current($values)) ? $values : array($values);
+		$queue = is_array(current($values)) ? $values : [$values];
 
 		foreach ($queue as $entryValues)
 		{
@@ -641,7 +641,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		return $this->getAffected();
 	}
 
-	public function delete($condition, $tableName = null, $values = array())
+	public function delete($condition, $tableName = null, $values = [])
 	{
 		if (empty($condition))
 		{
@@ -662,7 +662,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 	public function replace(array $values, $rawValues = null, $tableName = null)
 	{
 		$table = $tableName ? $this->prefix . $tableName : $this->_table;
-		$queue = is_array(current($values)) ? $values : array($values);
+		$queue = is_array(current($values)) ? $values : [$values];
 
 		foreach ($queue as $entryValues)
 		{
@@ -714,7 +714,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 				return sprintf('`%s` ' . ($equal ? '=' : '!=') . ' %s', $columnName, $ids);
 
 			case is_array($ids):
-				$array = array();
+				$array = [];
 				foreach ($ids as $id)
 				{
 					$array[] = (int)$id;
@@ -764,7 +764,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			if (preg_match('#^(set|enum)\((.*?)\)$#i', $result['Type'], $enumArray))
 			{
 				$values = explode(',', $enumArray[2]);
-				$enumFields = array();
+				$enumFields = [];
 				if ($values)
 				{
 					foreach ($values as $val)
@@ -773,11 +773,11 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 					}
 				}
 
-				return array(
+				return [
 					'values' => $enumFields,
 					'type' => $enumArray[1],
 					'default' => $result['Default']
-				);
+				];
 			}
 		}
 
@@ -812,7 +812,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		{
 			$piece_first = ceil($max / $pieces);
 			$piece_second = ceil($piece_first / $delimiter);
-			$where = array();
+			$where = [];
 			for($i = 0; $i < $pieces; $i++)
 			{
 				$start = mt_rand(0, $piece_second) * $delimiter + $piece_first * $i;
@@ -843,7 +843,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			return $result;
 		}
 
-		$array = array();
+		$array = [];
 		if (is_array($values))
 		{
 			foreach ($values as $columnName => $value)

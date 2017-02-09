@@ -39,11 +39,11 @@ class iaSmarty extends Smarty
 	const EXTENSION_CSS = '.css';
 	const EXTENSION_JS = '.js';
 
-	protected static $_positionsContent = array();
+	protected static $_positionsContent = [];
 
 	public $iaCore;
 
-	public $resources = array(
+	public $resources = [
 		'jquery' => 'text:Loading jQuery API..., js:jquery/jquery',
 		'manage_mode' => 'css:_IA_URL_js/visual/css/visual, js:visual/js/slidebars.min, js:visual/js/jqueryui.min, js:visual/js/visual',
 		'tree' => 'js:jquery/plugins/jstree/jstree.min, js:intelli/intelli.tree, css:_IA_URL_js/jquery/plugins/jstree/themes/default/style',
@@ -55,7 +55,7 @@ class iaSmarty extends Smarty
 		'select2' => 'js:jquery/plugins/select2/select2.min, css:_IA_URL_js/jquery/plugins/select2/select2.min',
 		'flexslider' => 'js:jquery/plugins/flexslider/jquery.flexslider.min, css:_IA_URL_js/jquery/plugins/flexslider/flexslider',
 		'fotorama' => 'js:jquery/plugins/fotorama/fotorama, css:_IA_URL_js/jquery/plugins/fotorama/fotorama'
-	);
+	];
 
 
 	public function init()
@@ -66,51 +66,51 @@ class iaSmarty extends Smarty
 
 		$this->iaCore = iaCore::instance();
 
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'captcha', array(__CLASS__, 'captcha'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_wysiwyg', array(__CLASS__, 'ia_wysiwyg'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_add_media', array(__CLASS__, 'ia_add_media'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_css', array(__CLASS__, 'ia_print_css'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_js', array(__CLASS__, 'ia_print_js'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_title', array(__CLASS__, 'ia_print_title'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_page_url', array(__CLASS__, 'ia_page_url'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'lang', array(__CLASS__, 'lang'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'preventCsrf', array(__CLASS__, 'preventCsrf'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'printImage', array(__CLASS__, 'printImage'));
-		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_image', array(__CLASS__, 'ia_image'));
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'captcha', [__CLASS__, 'captcha']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_wysiwyg', [__CLASS__, 'ia_wysiwyg']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_add_media', [__CLASS__, 'ia_add_media']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_css', [__CLASS__, 'ia_print_css']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_js', [__CLASS__, 'ia_print_js']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_print_title', [__CLASS__, 'ia_print_title']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_page_url', [__CLASS__, 'ia_page_url']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'lang', [__CLASS__, 'lang']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'preventCsrf', [__CLASS__, 'preventCsrf']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'printImage', [__CLASS__, 'printImage']);
+		$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_image', [__CLASS__, 'ia_image']);
 
-		$this->registerPlugin(self::PLUGIN_BLOCK, 'access', array(__CLASS__, 'access'));
-		$this->registerPlugin(self::PLUGIN_BLOCK, 'ia_add_js', array(__CLASS__, 'ia_add_js'));
+		$this->registerPlugin(self::PLUGIN_BLOCK, 'access', [__CLASS__, 'access']);
+		$this->registerPlugin(self::PLUGIN_BLOCK, 'ia_add_js', [__CLASS__, 'ia_add_js']);
 
 		if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
 		{
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'accountActions', array(__CLASS__, 'accountActions'));
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'arrayToLang', array(__CLASS__, 'arrayToLang'));
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_blocks', array(__CLASS__, 'ia_blocks'));
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_block_view', array(__CLASS__, 'ia_block_view'));
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_url', array(__CLASS__, 'ia_url'));
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'navigation', array(__CLASS__, 'pagination'));
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'printFavorites', array(__CLASS__, 'printFavorites'));
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'width', array(__CLASS__, 'width'));
-			$this->registerPlugin(self::PLUGIN_FUNCTION, 'displayTreeNodes', array(__CLASS__, 'displayTreeNodes'));
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'accountActions', [__CLASS__, 'accountActions']);
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'arrayToLang', [__CLASS__, 'arrayToLang']);
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_blocks', [__CLASS__, 'ia_blocks']);
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_block_view', [__CLASS__, 'ia_block_view']);
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_url', [__CLASS__, 'ia_url']);
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'navigation', [__CLASS__, 'pagination']);
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'printFavorites', [__CLASS__, 'printFavorites']);
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'width', [__CLASS__, 'width']);
+			$this->registerPlugin(self::PLUGIN_FUNCTION, 'displayTreeNodes', [__CLASS__, 'displayTreeNodes']);
 
-			$this->registerPlugin(self::PLUGIN_BLOCK, 'ia_block', array(__CLASS__, 'ia_block'));
+			$this->registerPlugin(self::PLUGIN_BLOCK, 'ia_block', [__CLASS__, 'ia_block']);
 		}
 
 		// uncomment this to get rid of useless whitespaces in html
 		// $this->loadFilter('output', 'trimwhitespace');
 
-		$this->iaCore->startHook('phpSmartyAfterFuncInit', array('iaSmarty' => &$this));
+		$this->iaCore->startHook('phpSmartyAfterFuncInit', ['iaSmarty' => &$this]);
 
 		iaSystem::renderTime('main', 'afterSmartyFuncInit');
 
-		$this->assign('tabs_content', array());
-		$this->assign('tabs_before', array());
-		$this->assign('tabs_after', array());
+		$this->assign('tabs_content', []);
+		$this->assign('tabs_before', []);
+		$this->assign('tabs_after', []);
 
-		$this->assign('fieldset_before', array());
-		$this->assign('fieldset_after', array());
-		$this->assign('field_before', array());
-		$this->assign('field_after', array());
+		$this->assign('fieldset_before', []);
+		$this->assign('fieldset_after', []);
+		$this->assign('field_before', []);
+		$this->assign('field_after', []);
 
 		$this->resources['subrion'] = 'text:Loading Subrion Awesome Stuff..., js:intelli/intelli, js:_IA_URL_tmp/cache/intelli.config.' . $this->iaCore->iaView->language . ', '
 			. (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType()
@@ -121,7 +121,7 @@ class iaSmarty extends Smarty
 		$this->resources['moment'] = 'js:utils/moment-with-locales.min';
 		$this->resources['datepicker'] = 'js:bootstrap/js/bootstrap-datetimepicker.min, css:_IA_URL_js/bootstrap/css/bootstrap-datetimepicker';
 
-		$this->iaCore->startHook('phpSmartyAfterMediaInit', array('iaSmarty' => &$this));
+		$this->iaCore->startHook('phpSmartyAfterMediaInit', ['iaSmarty' => &$this]);
 	}
 
 	public static function lang($params)
@@ -156,7 +156,7 @@ class iaSmarty extends Smarty
 		$name = $params['name'];
 		$id = isset($params['id']) ? $params['id'] : $name;
 		$value = isset($params['value']) ? iaSanitize::html($params['value']) : '';
-		$toolbar = (isset($params['toolbar']) && in_array($params['toolbar'], array('simple', 'dashboard', 'extended')))
+		$toolbar = (isset($params['toolbar']) && in_array($params['toolbar'], ['simple', 'dashboard', 'extended']))
 			? ",{toolbar:'{$params['toolbar']}'}"
 			: '';
 
@@ -205,10 +205,10 @@ class iaSmarty extends Smarty
 					}
 					else
 					{
-						iaDebug::debug(array(
+						iaDebug::debug([
 							'name' => $block['name'],
 							'code' => '<textarea style="width:80%;height:100px;">' . $block['contents'] . '</textarea>'
-						), '<b style="color:red;">PHP syntax error in the block "' . $block['name'] . '"</b>', 'error');
+						], '<b style="color:red;">PHP syntax error in the block "' . $block['name'] . '"</b>', 'error');
 					}
 				}
 				else
@@ -247,15 +247,15 @@ class iaSmarty extends Smarty
 
 		$result = '';
 
-		$defaults = array(
+		$defaults = [
 			'url' => '',
 			'action' => 'view',
 			'item' => '',
 			'attr' => '',
 			'text' => 'details',
 			'type' => 'link',
-			'data' => array()
-		);
+			'data' => []
+		];
 		$params = array_merge($defaults, $params);
 		$params['text'] = iaLanguage::get($params['text'], $params['text']);
 		$classname = isset($params['classname']) ? $params['classname'] : '';
@@ -327,7 +327,7 @@ class iaSmarty extends Smarty
 			}
 			if (isset($smarty->resources[$file]))
 			{
-				self::ia_add_media(array('files' => $smarty->resources[$file], 'order' => $order), $smarty);
+				self::ia_add_media(['files' => $smarty->resources[$file], 'order' => $order], $smarty);
 			}
 			else
 			{
@@ -335,13 +335,13 @@ class iaSmarty extends Smarty
 				switch ($type)
 				{
 					case 'js':
-						self::add_js(array('files' => $file, 'order' => $order));
+						self::add_js(['files' => $file, 'order' => $order]);
 						break;
 					case 'css':
-						self::ia_print_css(array('files' => $file, 'order' => $order));
+						self::ia_print_css(['files' => $file, 'order' => $order]);
 						break;
 					case 'text':
-						self::add_js(array('text' => $file, 'order' => $order));
+						self::add_js(['text' => $file, 'order' => $order]);
 				}
 			}
 		}
@@ -375,7 +375,7 @@ class iaSmarty extends Smarty
 		{
 			if ($iaView->manageMode)
 			{
-				self::ia_add_media(array('files' => 'manage_mode'), $iaView->iaSmarty);
+				self::ia_add_media(['files' => 'manage_mode'], $iaView->iaSmarty);
 			}
 
 			foreach (self::_arrayCopyKeysSorted($iaView->resources->css) as $resource)
@@ -444,7 +444,7 @@ class iaSmarty extends Smarty
 
 				if ($compress)
 				{
-					$excludedFiles = array('ckeditor/ckeditor', 'jquery/jquery', 'extjs/ext-all', '_IA_TPL_bootstrap.min');
+					$excludedFiles = ['ckeditor/ckeditor', 'jquery/jquery', 'extjs/ext-all', '_IA_TPL_bootstrap.min'];
 
 					// lang cache
 					if (file_exists($file))
@@ -582,7 +582,7 @@ class iaSmarty extends Smarty
 	 */
 	public static function arrayToLang($params)
 	{
-		$list = array();
+		$list = [];
 
 		foreach (explode(',', $params['values']) as $value)
 			($title = iaField::getFieldValue($params['item'], $params['name'], trim($value)))
@@ -699,13 +699,13 @@ class iaSmarty extends Smarty
 		}
 
 		// generate replacements array
-		$_replace = array(
+		$_replace = [
 			'id' => (int)$params['item']['id'],
 			'item' => $params['itemtype'],
 			'class' => isset($params['classname']) ? $params['classname'] : '',
 			'guests' => isset($params['guests']) ? (bool)$params['guests'] : false,
 			'action' => (isset($params['item']['favorite']) && $params['item']['favorite'] == '1') ? 'delete' : 'add'
-		);
+		];
 		$_replace['text'] = 'favorites_action_' . $_replace['action'];
 		$smarty->assign('replace', $_replace);
 
@@ -764,7 +764,7 @@ class iaSmarty extends Smarty
 			}
 		}
 		$iaCore->startHook('phpSmartyAccountActionsBeforeShow',
-			array('params' => &$params, 'type' => $params['itemtype'], 'upgrade_url' => &$upgradeUrl, 'edit_url' => &$editUrl, 'output' => &$output));
+			['params' => &$params, 'type' => $params['itemtype'], 'upgrade_url' => &$upgradeUrl, 'edit_url' => &$editUrl, 'output' => &$output]);
 
 		if ($editUrl)
 		{
@@ -783,7 +783,7 @@ class iaSmarty extends Smarty
 			$smarty->assign('collapsible', isset($params['collapsible']) ? $params['collapsible'] : false);
 			$smarty->assign('collapsed', isset($params['collapsed']) ? $params['collapsed'] : false);
 			$smarty->assign('hidden', isset($params['hidden']) ? $params['hidden'] : false);
-			$smarty->assign('icons', isset($params['icons']) ? $params['icons'] : array());
+			$smarty->assign('icons', isset($params['icons']) ? $params['icons'] : []);
 			$smarty->assign('id', isset($params['id']) ? $params['id'] : null);
 			$smarty->assign('header', isset($params['header']) ? $params['header'] : true);
 			$smarty->assign('name', isset($params['name']) ? $params['name'] : '');
@@ -943,7 +943,7 @@ class iaSmarty extends Smarty
 		$iaCore = iaCore::instance();
 
 		$layoutData = $iaCore->get('tmpl_layout_data');
-		$layoutData = empty($layoutData) ? array() : unserialize($layoutData);
+		$layoutData = empty($layoutData) ? [] : unserialize($layoutData);
 
 		// pre-compilation of section's positions
 		if (isset($layoutData[$section]))
@@ -952,7 +952,7 @@ class iaSmarty extends Smarty
 			{
 				if (!isset(self::$_positionsContent[$positionName]))
 				{
-					self::ia_blocks(array('block' => $positionName, self::DIRECT_CALL_MARKER => true), $smarty);
+					self::ia_blocks(['block' => $positionName, self::DIRECT_CALL_MARKER => true], $smarty);
 				}
 			}
 		}
@@ -980,8 +980,8 @@ class iaSmarty extends Smarty
 				else
 				{
 					$unitsToDistribute = 0;
-					$positionWidth = array();
-					$flexiblePositions = array();
+					$positionWidth = [];
+					$flexiblePositions = [];
 
 					// composing initial data
 					foreach ($sectionPositions as $positionName => $options)
@@ -1050,7 +1050,7 @@ class iaSmarty extends Smarty
 			$last = min($first + $buttonsNumber - 1, $pagesCount);
 			$first = max(1, $last - $buttonsNumber + 1);
 
-			$pages = array();
+			$pages = [];
 			$urlPattern = $params['aTemplate'];
 			foreach (range($first, $last) as $pageNumber)
 			{
@@ -1072,13 +1072,13 @@ class iaSmarty extends Smarty
 				$pages[$pageNumber] = $url;
 			}
 
-			$params = array(
+			$params = [
 				'current_page' => $currentPage,
 				'first_page' => $ignoreParams ? $urlPattern : preg_replace('#(\?|&|_)(.*?)({page})#', '', $urlPattern),
 				'last_page' => str_replace('{page}', $pagesCount, $urlPattern),
 				'pages_count' => $pagesCount,
 				'pages_range' => $pages
-			);
+			];
 
 			if ($ignoreParams)
 			{
@@ -1096,14 +1096,14 @@ class iaSmarty extends Smarty
 
 	private static function _arrayCopyKeysSorted(ArrayObject $array)
 	{
-		$a = array();
+		$a = [];
 		foreach ($array as $key => $value)
 		{
-			isset($a[$value]) || $a[$value] = array();
+			isset($a[$value]) || $a[$value] = [];
 			$a[$value][] = $key;
 		}
 		ksort($a, SORT_NUMERIC);
-		$result = array();
+		$result = [];
 		foreach ($a as $values)
 		{
 			foreach ($values as $value)
@@ -1128,7 +1128,7 @@ class iaSmarty extends Smarty
 		$ids = explode(',', $params['ids']);
 		$nodes = json_decode($params['nodes'], true);
 
-		$result = array();
+		$result = [];
 
 		foreach ($nodes as $node)
 		{

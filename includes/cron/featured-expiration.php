@@ -30,7 +30,7 @@ $where = '`featured` = 1 AND `featured_end` < NOW()';
 
 foreach ($iaItem->getItems() as $itemName)
 {
-	$values = array('featured' => false, 'featured_start' => null, 'featured_end' => null);
+	$values = ['featured' => false, 'featured_start' => null, 'featured_end' => null];
 
 	$iaDb->update($values, $where, null, $iaItem->getItemTable($itemName));
 }

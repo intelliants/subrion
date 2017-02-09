@@ -31,7 +31,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_processAdd = false;
 	protected $_processEdit = false;
 
-	private $_actions = array('sql', 'export', 'import', 'consistency', 'reset');
+	private $_actions = ['sql', 'export', 'import', 'consistency', 'reset'];
 
 	private $_error = false;
 
@@ -48,7 +48,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
-		$output = array();
+		$output = [];
 
 		if (!empty($params['table']))
 		{
@@ -126,7 +126,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (!is_writable($dirname))
 		{
 			$iaView->assign('unable_to_save', true);
-			$iaView->setMessages(iaLanguage::getf('directory_not_writable', array('directory' => $dirname)), iaView::ALERT);
+			$iaView->setMessages(iaLanguage::getf('directory_not_writable', ['directory' => $dirname]), iaView::ALERT);
 		}
 
 		if (isset($_POST['export']))
@@ -208,14 +208,14 @@ class iaBackendController extends iaAbstractControllerBackend
 							@chmod($dumpFile, 0775);
 
 							$this->_error = true;
-							$this->addMessage(iaLanguage::getf('cant_open_sql', array('filename' => $fileName)), false);
+							$this->addMessage(iaLanguage::getf('cant_open_sql', ['filename' => $fileName]), false);
 						}
 						elseif (false === fwrite($fd, $sql))
 						{
 							fclose($fd);
 
 							$this->_error = true;
-							$this->addMessage(iaLanguage::getf('cant_write_sql', array('filename' => $fileName)), false);
+							$this->addMessage(iaLanguage::getf('cant_write_sql', ['filename' => $fileName]), false);
 						}
 						else
 						{
@@ -227,7 +227,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 							fclose($fd);
 
-							$this->addMessage(iaLanguage::getf('table_dumped', array('table' => $tbls, 'filename' => $fileName)), false);
+							$this->addMessage(iaLanguage::getf('table_dumped', ['table' => $tbls, 'filename' => $fileName]), false);
 						}
 					}
 					elseif ('client' == $_POST['savetype'])
@@ -270,14 +270,14 @@ class iaBackendController extends iaAbstractControllerBackend
 			utf8_is_valid($sql) || $sql = utf8_bad_replace($sql);
 
 			$queries = (false === strpos($sql, ';' . PHP_EOL))
-				? array($sql)
+				? [$sql]
 				: explode(";\r\n", $sql);
 
 			foreach ($queries as $key => $sqlQuery)
 			{
 				$sql = trim(str_replace('{prefix}', $this->_iaDb->prefix, $sqlQuery));
 
-				$this->_iaCore->startHook('phpAdminBeforeRunSqlQuery', array('query' => $sql));
+				$this->_iaCore->startHook('phpAdminBeforeRunSqlQuery', ['query' => $sql]);
 
 				$result = $this->_iaDb->query($sql);
 
@@ -286,7 +286,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$numrows = 0;
 				if ($result)
 				{
-					isset($_SESSION['queries']) || $_SESSION['queries'] = array();
+					isset($_SESSION['queries']) || $_SESSION['queries'] = [];
 
 					if (!in_array($sqlQuery, $_SESSION['queries']))
 					{
@@ -369,7 +369,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		if (isset($_POST['reset']))
 		{
-			if ($options = iaUtil::checkPostParam('options', array()))
+			if ($options = iaUtil::checkPostParam('options', []))
 			{
 				if (in_array(iaUsers::getItemName(), $options))
 				{
@@ -379,12 +379,12 @@ class iaBackendController extends iaAbstractControllerBackend
 					$this->getHelper()->truncate(iaUsers::getTable());
 					$this->_iaDb->insert($currentMember, null, iaUsers::getTable());
 
-					$options = array_diff($options, array($iaUsers->getItemName()));
+					$options = array_diff($options, [$iaUsers->getItemName()]);
 				}
 
 				foreach ($options as $option)
 				{
-					$this->_iaCore->startHook('phpDbControlBeforeReset', array('option' => $option));
+					$this->_iaCore->startHook('phpDbControlBeforeReset', ['option' => $option]);
 				}
 
 				$this->addMessage('reset_success');
@@ -400,10 +400,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			$iaView->setMessages(iaLanguage::get('reset_backup_alert'), iaView::ALERT);
 		}
 
-		$resetOptions = array(
+		$resetOptions = [
 			'members' => iaLanguage::get('reset') . ' ' . iaLanguage::get('members')
-		);
-		$this->_iaCore->startHook('phpAdminDatabaseBeforeAll', array('reset_options' => &$resetOptions));
+		];
+		$this->_iaCore->startHook('phpAdminDatabaseBeforeAll', ['reset_options' => &$resetOptions]);
 
 		$iaView->assign('options', $resetOptions);
 	}
@@ -443,7 +443,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					break;
 
 				default:
-					$this->_iaCore->startHook('phpAdminDatabaseConsistencyType', array('type' => $_GET['type']));
+					$this->_iaCore->startHook('phpAdminDatabaseConsistencyType', ['type' => $_GET['type']]);
 			}
 		}
 	}
@@ -470,29 +470,29 @@ class iaBackendController extends iaAbstractControllerBackend
 			elseif ($extension && 'sql' != $extension)
 			{
 				$this->_error = true;
-				$this->addMessage(iaLanguage::getf('cant_open_incorrect_format', array('filename' => $filename)), false);
+				$this->addMessage(iaLanguage::getf('cant_open_incorrect_format', ['filename' => $filename]), false);
 			}
 			elseif ($filename && in_array($filename, array_keys($appliedMigrations)))
 			{
 				$this->_error = true;
-				$this->addMessage(iaLanguage::getf('migration_already_applied', array('filename' => $filename)), false);
+				$this->addMessage(iaLanguage::getf('migration_already_applied', ['filename' => $filename]), false);
 			}
 			elseif (!$f = fopen($filename, 'r'))
 			{
 				$this->_error = true;
-				$this->addMessage(iaLanguage::getf('cant_open_sql', array('filename' => $filename)), false);
+				$this->addMessage(iaLanguage::getf('cant_open_sql', ['filename' => $filename]), false);
 			}
 			else
 			{
 				$masterLangCode = $this->_iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
-				$errors = array();
+				$errors = [];
 				$sql = '';
 
 				while ($s = fgets($f, 10240))
 				{
 					$s = trim($s);
 
-					if (!$s || in_array($s[0], array('#', '-', '')))
+					if (!$s || in_array($s[0], ['#', '-', '']))
 					{
 						continue;
 					}
@@ -507,8 +507,8 @@ class iaBackendController extends iaAbstractControllerBackend
 						continue;
 					}
 
-					$result = $this->_iaDb->query(str_replace(array('{prefix}', '{lang}'),
-						array($this->_iaDb->prefix, $masterLangCode), $sql));
+					$result = $this->_iaDb->query(str_replace(['{prefix}', '{lang}'],
+						[$this->_iaDb->prefix, $masterLangCode], $sql));
 
 					$result || $this->addMessage($this->_iaDb->getError(), false);
 
@@ -519,11 +519,11 @@ class iaBackendController extends iaAbstractControllerBackend
 				// process migrations
 				if (strpos($filename, 'updates' . IA_DS . 'migrations'))
 				{
-					$migrationProcessed = array(
+					$migrationProcessed = [
 						'name' => str_replace(IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS, '', $filename),
 						'status' => 'complete',
 						'date' => date(iaDb::DATETIME_FORMAT)
-					);
+					];
 
 					if ($errors)
 					{
@@ -541,10 +541,10 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		// generate list of available folders for dump files
-		$dumpFolders = array(
+		$dumpFolders = [
 			'Migrations' => IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS,
 			'Updates' => IA_HOME . 'updates' . IA_DS
-		);
+		];
 		$packages = $this->_iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, 'extras');
 		foreach ($packages as $package)
 		{
@@ -554,7 +554,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		list($migrations, $appliedMigrations) = $this->_getMigrations();
 
 		// generate list of available dump files
-		$dumpFiles = array();
+		$dumpFiles = [];
 		foreach ($dumpFolders as $name => $path)
 		{
 			if (is_dir($path))
@@ -564,11 +564,11 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					if (substr($file, 0, 1) != '.' && is_file($path . $file))
 					{
-						$dumpFiles[$name][] = array(
+						$dumpFiles[$name][] = [
 							'filename' => $path . $file,
 							'title' => substr($file, 0, count($file) - 5),
 							'applied' => (boolean)(strpos($path, 'updates' . IA_DS . 'migrations') && in_array($file, $appliedMigrations))
-						);
+						];
 					}
 				}
 			}
@@ -582,7 +582,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$migrations = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, 'migrations');
 
-		$appliedMigrations = array();
+		$appliedMigrations = [];
 		foreach ($migrations as &$migration)
 		{
 			$migration['filename'] = IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS . $migration['name'];
@@ -593,6 +593,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		return array($migrations, $appliedMigrations);
+		return [$migrations, $appliedMigrations];
 	}
 }

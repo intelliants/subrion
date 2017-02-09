@@ -29,8 +29,8 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 	protected $_request;
 	protected $_response;
 
-	public $apiFilters = array();
-	public $apiSorters = array();
+	public $apiFilters = [];
+	public $apiSorters = [];
 
 
 	public function setRequest(iaApiRequest $request)
@@ -56,7 +56,7 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 
 		if ($row)
 		{
-			$row = $this->_unpackImageFields(array($row));
+			$row = $this->_unpackImageFields([$row]);
 			$row = array_shift($row);
 		}
 
@@ -116,7 +116,7 @@ abstract class abstractPackageFrontApiResponder extends abstractPackageFront
 	{
 		if (!$rows || !is_array($rows))
 		{
-			return array();
+			return [];
 		}
 
 		$fields = $this->iaCore->factory('field')->getImageFields($this->getItemName());

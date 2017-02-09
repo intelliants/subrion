@@ -54,18 +54,18 @@ class iaSearch extends abstractCore
 	protected $_caption = '';
 
 	protected $_extrasName;
-	protected $_options = array();
+	protected $_options = [];
 
 	protected $_itemInstance;
 
-	private $_fieldTypes = array();
+	private $_fieldTypes = [];
 	private $_smartyVarsAssigned = false;
 
 
 	public function init()
 	{
 		parent::init();
-		$this->iaCore->factory(array('field', 'item'));
+		$this->iaCore->factory(['field', 'item']);
 	}
 
 	public function doRegularSearch($query, $limit)
@@ -75,7 +75,7 @@ class iaSearch extends abstractCore
 		$this->_start = 0;
 		$this->_limit = $limit;
 
-		$results = array('pages' => $this->_searchByPages());
+		$results = ['pages' => $this->_searchByPages()];
 		$results = array_merge($results, $this->_searchByItems());
 		$results[iaUsers::getItemName()] = $this->_searchByMembers();
 		$results = array_merge($results, $this->_searchByPlugins());
@@ -106,7 +106,7 @@ class iaSearch extends abstractCore
 
 		if ($search = $this->_callInstanceMethod($fieldsSearch))
 		{
-			return array($search[0], $this->_renderResults($search[1]));
+			return [$search[0], $this->_renderResults($search[1])];
 		}
 
 		return false;
@@ -115,14 +115,14 @@ class iaSearch extends abstractCore
 	public function doAjaxItemSearch($itemName, array $params)
 	{
 		$page = isset($params[self::GET_PARAM_PAGE]) ? max((int)$params[self::GET_PARAM_PAGE], 1) : 1;
-		$sorting = array(
+		$sorting = [
 			isset($params[self::GET_PARAM_SORTING_FIELD]) ? $params[self::GET_PARAM_SORTING_FIELD] : null,
 			isset($params[self::GET_PARAM_SORTING_ORDER]) ? $params[self::GET_PARAM_SORTING_ORDER] : null
-		);
+		];
 
-		$result = array(
+		$result = [
 			'hash' => $this->httpBuildQuery($params)
-		);
+		];
 
 		unset($params[self::GET_PARAM_PAGE], $params[self::GET_PARAM_SORTING_FIELD], $params[self::GET_PARAM_SORTING_ORDER]);
 
@@ -137,7 +137,7 @@ class iaSearch extends abstractCore
 			if ($search = $this->_callInstanceMethod())
 			{
 				$p = empty($_GET['page']) ? null : $_GET['page']; $_GET['page'] = $page; // dirty hack to make this work correctly
-				$result['pagination'] = iaSmarty::pagination(array('aTotal' => $search[0], 'aItemsPerPage' => $this->_limit, 'aTemplate' => '#'), $this->iaView->iaSmarty);
+				$result['pagination'] = iaSmarty::pagination(['aTotal' => $search[0], 'aItemsPerPage' => $this->_limit, 'aTemplate' => '#'], $this->iaView->iaSmarty);
 				is_null($p) || $_GET['page'] = $p;
 
 				$result['total'] = $search[0];
@@ -150,11 +150,11 @@ class iaSearch extends abstractCore
 
 	public function getFilters($itemName)
 	{
-		$result = array(
+		$result = [
 			'fields' => $this->getItemFields($itemName),
-			'params' => $this->iaView->get('filtersParams') ? $this->iaView->get('filtersParams') : array(),
+			'params' => $this->iaView->get('filtersParams') ? $this->iaView->get('filtersParams') : [],
 			'item' => $itemName
-		);
+		];
 
 		return $result;
 	}
@@ -163,13 +163,13 @@ class iaSearch extends abstractCore
 	{
 		if (is_string($item) && is_string($params))
 		{
-			$entry = array(
+			$entry = [
 				'member_id' => (int)iaUsers::getIdentity()->id,
 				'date' => date(iaDb::DATETIME_FORMAT),
 				'item' => trim($item),
 				'params' => ltrim($params, IA_URL_DELIMITER),
 				'title' => iaSanitize::tags((string)$name)
-			);
+			];
 
 			return (bool)$this->iaDb->insert($entry, null, self::getTable());
 		}
@@ -182,7 +182,7 @@ class iaSearch extends abstractCore
 		if (iaUsers::hasIdentity())
 		{
 			$stmt = '`member_id` = :member ORDER BY `date` DESC';
-			$this->iaDb->bind($stmt, array('member' => (int)iaUsers::getIdentity()->id));
+			$this->iaDb->bind($stmt, ['member' => (int)iaUsers::getIdentity()->id]);
 
 			return $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt, null, null, self::getTable());
 		}
@@ -221,19 +221,19 @@ class iaSearch extends abstractCore
 
 		if (!$this->_smartyVarsAssigned)
 		{
-			$core = array(
+			$core = [
 				'config' => $this->iaCore->getConfig(),
 				'customConfig' => $this->iaCore->getCustomConfig(),
 				'language' => $this->iaCore->languages[$iaView->language],
 				'languages' => $this->iaCore->languages,
 				'packages' => $this->iaCore->packagesData,
-				'page' => array(
+				'page' => [
 					'info' => $iaView->getParams(),
 					'name' => $iaView->name(),
 					'nonProtocolUrl' => $iaView->assetsUrl,
 					'title' => $iaView->get('caption', $iaView->get('title')),
-				)
-			);
+				]
+			];
 
 			$iaSmarty->assign('core', $core);
 			$iaSmarty->assign('img', IA_TPL_URL . 'img/');
@@ -247,20 +247,20 @@ class iaSearch extends abstractCore
 		if (self::SEARCH_PACKAGE == $this->_type)
 		{
 			$result = $this->_render(sprintf('extra:%s/search.%s', $this->_extrasName, $this->_itemName),
-				array('listings' => $rows));
+				['listings' => $rows]);
 		}
 		elseif (self::SEARCH_PLUGIN == $this->_type)
 		{
 			$result = $this->_render(sprintf('extra:%s/search', $this->_extrasName),
-				array('entries' => $rows));
+				['entries' => $rows]);
 		}
 		elseif (iaUsers::getItemName() == $this->_itemName)
 		{
-			$array = array();
+			$array = [];
 			$fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, 'members');
 
 			$result = $this->_render('search.members' . iaView::TEMPLATE_FILENAME_EXT,
-				array('fields' => $fields, 'listings' => $rows));
+				['fields' => $fields, 'listings' => $rows]);
 		}
 
 		return $result;
@@ -271,15 +271,15 @@ class iaSearch extends abstractCore
 		$this->iaCore->factory('field');
 
 		$stmt = '`status` = :status AND `item` = :item AND `adminonly` = 0 AND `searchable` = 1 ORDER BY `order`';
-		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'item' => $itemName));
+		$this->iaDb->bind($stmt, ['status' => iaCore::STATUS_ACTIVE, 'item' => $itemName]);
 
 		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt, null, null, iaField::getTable());
 
-		$result = array();
+		$result = [];
 
 		if ($rows && $unpackValues)
 		{
-			$numberFields = array();
+			$numberFields = [];
 
 			foreach ($rows as &$row)
 			{
@@ -294,7 +294,7 @@ class iaSearch extends abstractCore
 						}
 
 						$array = explode(',', $row['values']);
-						$row['values'] = array();
+						$row['values'] = [];
 						foreach ($array as $value)
 						{
 							$row['values'][$value] = iaField::getLanguageValue($row['item'], $row['name'], $value);
@@ -326,7 +326,7 @@ class iaSearch extends abstractCore
 
 				foreach ($numberFields as $fieldName)
 				{
-					$stmt.= iaDb::printf('MIN(`:field`) `:field_min`,MAX(`:field`) `:field_max`,', array('field' => $fieldName));
+					$stmt.= iaDb::printf('MIN(`:field`) `:field_min`,MAX(`:field`) `:field_max`,', ['field' => $fieldName]);
 				}
 				$stmt = substr($stmt, 0, -1);
 
@@ -334,7 +334,7 @@ class iaSearch extends abstractCore
 
 				foreach ($numberFields as $fieldName)
 				{
-					$result[$fieldName]['range'] = array($ranges[$fieldName . '_min'], $ranges[$fieldName . '_max']);
+					$result[$fieldName]['range'] = [$ranges[$fieldName . '_min'], $ranges[$fieldName . '_max']];
 				}
 			}
 		}
@@ -349,24 +349,24 @@ class iaSearch extends abstractCore
 		$iaPage = $iaCore->factory('page', iaCore::FRONT);
 
 		$stmt = '`value` LIKE :query AND `category` = :category AND `code` = :language ORDER BY `key`';
-		$iaDb->bind($stmt, array(
+		$iaDb->bind($stmt, [
 			'query' => '%' . iaSanitize::sql($this->_query) . '%',
 			'category' => iaLanguage::CATEGORY_PAGE,
 			'language' => $iaCore->iaView->language
-		));
+		]);
 
-		$result = array();
+		$result = [];
 
-		if ($rows = $iaDb->all(array('key', 'value'), $stmt, null, null, iaLanguage::getTable()))
+		if ($rows = $iaDb->all(['key', 'value'], $stmt, null, null, iaLanguage::getTable()))
 		{
 			foreach ($rows as $row)
 			{
-				$pageName = str_replace(array('page_title_', 'page_content_'), '', $row['key']);
+				$pageName = str_replace(['page_title_', 'page_content_'], '', $row['key']);
 
 				$key = (false === stripos($row['key'], 'page_content_')) ? 'title' : 'content';
 				$value = iaSanitize::tags($row['value']);
 
-				isset($result[$pageName]) || $result[$pageName] = array();
+				isset($result[$pageName]) || $result[$pageName] = [];
 
 				if ('content' == $key)
 				{
@@ -393,29 +393,29 @@ class iaSearch extends abstractCore
 				}
 				else
 				{
-					$result[$pageName] = array(
+					$result[$pageName] = [
 						'url' => $iaPage->getUrlByName($pageName),
 						'title' => iaLanguage::get('page_title_' . $pageName),
 						'content' => '',
 						'extraItems' => $blocksData
-					);
+					];
 				}
 			}
 		}
 
 		$count = count($result);
-		$html = $this->_render('search-list-pages' . iaView::TEMPLATE_FILENAME_EXT, array('pages' => $result));
+		$html = $this->_render('search-list-pages' . iaView::TEMPLATE_FILENAME_EXT, ['pages' => $result]);
 
-		return array($count, $html);
+		return [$count, $html];
 	}
 
 	protected function _searchByItems()
 	{
 		$this->iaCore->factory('item');
 
-		$extras = $this->iaDb->all(array('name', 'type', 'items'), "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, iaItem::getExtrasTable());
+		$extras = $this->iaDb->all(['name', 'type', 'items'], "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, iaItem::getExtrasTable());
 
-		$results = array();
+		$results = [];
 		foreach ($extras as $extra)
 		{
 			if ($extra['items'])
@@ -444,7 +444,7 @@ class iaSearch extends abstractCore
 		{
 			if ($search = $this->_callInstanceMethod(false))
 			{
-				return array($search[0], $this->_renderResults($search[1]));
+				return [$search[0], $this->_renderResults($search[1])];
 			}
 		}
 
@@ -456,22 +456,22 @@ class iaSearch extends abstractCore
 		$iaItem = $this->iaCore->factory('item');
 
 		$where = '`type` = :type AND `status` = :status';
-		$this->iaDb->bind($where, array('type' => 'plugin', 'status' => iaCore::STATUS_ACTIVE));
+		$this->iaDb->bind($where, ['type' => 'plugin', 'status' => iaCore::STATUS_ACTIVE]);
 
-		$result = array();
+		$result = [];
 		$plugins = $this->iaDb->onefield('name', $where, null, null, $iaItem::getExtrasTable());
 
 		foreach ($plugins as $pluginName)
 		{
 			if ($this->_loadPluginInstance($pluginName))
 			{
-				$search = call_user_func_array(array($this->_itemInstance, self::ITEM_SEARCH_METHOD), array(
+				$search = call_user_func_array([$this->_itemInstance, self::ITEM_SEARCH_METHOD], [
 					$this->_query,
 					$this->_start,
 					$this->_limit
-				));
+				]);
 
-				$result[$pluginName] = array($search[0], $this->_renderResults($search[1]));
+				$result[$pluginName] = [$search[0], $this->_renderResults($search[1])];
 			}
 
 		}
@@ -505,7 +505,7 @@ WHERE b.`type` IN ('plain','smarty','html')
 GROUP BY b.`id`
 SQL;
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $iaDb->prefix,
 			'table_blocks' => 'blocks',
 			'table_objects' => 'objects_pages',
@@ -514,14 +514,14 @@ SQL;
 			'lang' => $this->iaView->language,
 			'query' => '%' . iaSanitize::sql($this->_query) . '%',
 			'extras' => implode("','", $iaCore->get('extras'))
-		));
+		]);
 
 
-		$blocks = array();
+		$blocks = [];
 
 		if ($rows = $iaDb->getAll($sql))
 		{
-			$extras = $iaDb->keyvalue(array('name', 'type'), iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'extras');
+			$extras = $iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'extras');
 
 			foreach ($rows as $row)
 			{
@@ -586,12 +586,12 @@ SQL;
 					}
 				}
 
-				isset($blocks[$pageName]) || $blocks[$pageName] = array();
+				isset($blocks[$pageName]) || $blocks[$pageName] = [];
 
-				$blocks[$pageName][] = array(
+				$blocks[$pageName][] = [
 					'title' => $row['header'] ? $row['title'] : null,
 					'content' => $this->_extractSnippet($content)
-				);
+				];
 			}
 		}
 
@@ -602,7 +602,7 @@ SQL;
 	{
 		$this->iaCore->factory('field');
 
-		$statements = array();
+		$statements = [];
 
 		foreach ($this->_params as $fieldName => $value)
 		{
@@ -622,29 +622,29 @@ SQL;
 					foreach ($value as $v)
 					{
 						$expr = sprintf("FIND_IN_SET('%s', :column)", iaSanitize::sql($v));
-						$statements[] = array('col' => $expr, 'cond' => '>', 'val' => 0, 'field' => $fieldName);
+						$statements[] = ['col' => $expr, 'cond' => '>', 'val' => 0, 'field' => $fieldName];
 					}
 
 					continue 2;
 
 				case iaField::NUMBER:
-					empty($value['f']) || $statements[] = array('col' => $column, 'cond' => '>=', 'val' => (float)$value['f'], 'field' => $fieldName);
-					empty($value['t']) || $statements[] = array('col' => $column, 'cond' => '<=', 'val' => (float)$value['t'], 'field' => $fieldName);
+					empty($value['f']) || $statements[] = ['col' => $column, 'cond' => '>=', 'val' => (float)$value['f'], 'field' => $fieldName];
+					empty($value['t']) || $statements[] = ['col' => $column, 'cond' => '<=', 'val' => (float)$value['t'], 'field' => $fieldName];
 
 					continue 2;
 
 				case iaField::RADIO:
 				case iaField::COMBO:
 				case iaField::TREE:
-					$array = array();
-					$value = is_array($value) ? $value : array($value);
+					$array = [];
+					$value = is_array($value) ? $value : [$value];
 
 					foreach ($value as $v)
 					{
 						if (trim($v))
 						{
 							$v = "'" . iaSanitize::sql($v) . "'";
-							$array[] = array('col' => $column, 'cond' => $condition, 'val' => $v, 'field' => $fieldName);
+							$array[] = ['col' => $column, 'cond' => $condition, 'val' => $v, 'field' => $fieldName];
 						}
 					}
 
@@ -672,12 +672,12 @@ SQL;
 
 			}
 
-			$statements[] = array(
+			$statements[] = [
 				'col' => $column,
 				'cond' => $condition,
 				'val' => $val,
 				'field' => $fieldName
-			);
+			];
 		}
 
 		if (!$statements)
@@ -691,22 +691,22 @@ SQL;
 		{
 			if (isset($stmt['field']))
 			{
-				$stmt = iaDb::printf(':column :condition :value', array(
+				$stmt = iaDb::printf(':column :condition :value', [
 					'column' => str_replace(':column', sprintf('%s`%s`', $tableAlias, $stmt['field']), $stmt['col']),
 					'condition' => $stmt['cond'],
 					'value' => $stmt['val']
-				));
+				]);
 			}
 			else
 			{
-				$s = array();
+				$s = [];
 				foreach ($stmt as $innerStmt)
 				{
-					$s[] = iaDb::printf(':column :condition :value', array(
+					$s[] = iaDb::printf(':column :condition :value', [
 						'column' => str_replace(':column', sprintf('%s`%s`', $tableAlias, $innerStmt['field']), $innerStmt['col']),
 						'condition' => $innerStmt['cond'],
 						'value' => $innerStmt['val']
-					));
+					]);
 				}
 
 				$stmt = '(' . implode(' OR ', $s) . ')';
@@ -718,7 +718,7 @@ SQL;
 
 	protected function _getQueryStmtByString()
 	{
-		$statements = array();
+		$statements = [];
 
 		$tableAlias = $this->getOption('tableAlias') ? $this->getOption('tableAlias') . '.' : '';
 		$escapedQuery = iaSanitize::sql($this->_query);
@@ -744,7 +744,7 @@ SQL;
 
 		// multilingual fields support
 		$fieldsToSearchBy = $this->getOption('regularSearchFields');
-		$fieldsToSearchBy || $fieldsToSearchBy = array();
+		$fieldsToSearchBy || $fieldsToSearchBy = [];
 
 		$multilingualFields = $this->iaCore->factory('field')->getMultilingualFields($this->_itemName);
 
@@ -766,7 +766,7 @@ SQL;
 		return '(' . implode(' OR ', $statements) . ')';
 	}
 
-	protected function _render($template, array $params = array())
+	protected function _render($template, array $params = [])
 	{
 		$iaSmarty = &$this->iaView->iaSmarty;
 
@@ -799,7 +799,7 @@ SQL;
 			$field = $this->getOption('columnAlias')->{$sorting[0]}
 				? $this->getOption('columnAlias')->{$sorting[0]}
 				: iaSanitize::sql($sorting[0]);
-			$order = (empty($sorting[1]) || !in_array($sorting[1], array('asc', 'desc')))
+			$order = (empty($sorting[1]) || !in_array($sorting[1], ['asc', 'desc']))
 				? iaDb::ORDER_ASC
 				: strtoupper($sorting[1]);
 
@@ -814,12 +814,12 @@ SQL;
 
 	private function _processParams($params, $processRequestUri = false)
 	{
-		$data = array();
+		$data = [];
 
 		$stmt = '`item` = :item AND `searchable` = 1';
-		$this->iaDb->bind($stmt, array('item' => $this->_itemName));
+		$this->iaDb->bind($stmt, ['item' => $this->_itemName]);
 
-		$this->_fieldTypes = $this->iaDb->keyvalue(array('name', 'type'), $stmt, iaField::getTable());
+		$this->_fieldTypes = $this->iaDb->keyvalue(['name', 'type'], $stmt, iaField::getTable());
 
 		if ($params && is_array($params))
 		{
@@ -840,7 +840,7 @@ SQL;
 		// support for custom parameters field:value within request URL
 		if ($processRequestUri)
 		{
-			$captions = array();
+			$captions = [];
 
 			foreach ($this->iaCore->requestPath as $chunk)
 			{
@@ -861,12 +861,12 @@ SQL;
 						case iaField::NUMBER:
 							if (count($value) > 1)
 							{
-								$data[$key] = array('f' => (int)$value[0], 't' => (int)$value[1]);
+								$data[$key] = ['f' => (int)$value[0], 't' => (int)$value[1]];
 								$captions[] = sprintf('%d-%d', $value[0], $value[1]);
 							}
 							else
 							{
-								$data[$key] = array('f' => (int)$value[0], 't' => (int)$value[0]);
+								$data[$key] = ['f' => (int)$value[0], 't' => (int)$value[0]];
 								$captions[] = $value[0];
 							}
 							break;
@@ -910,7 +910,7 @@ SQL;
 			$this->_type = self::SEARCH_PLUGIN;
 			$this->_itemInstance = &$instance;
 			$this->_extrasName = $pluginName;
-			$this->_options = array();
+			$this->_options = [];
 
 			return true;
 		}
@@ -932,7 +932,7 @@ SQL;
 			return true;
 		}
 
-		$itemData = $this->iaDb->row(array('package'), iaDb::convertIds($this->_itemName, 'item'), iaItem::getTable());
+		$itemData = $this->iaDb->row(['package'], iaDb::convertIds($this->_itemName, 'item'), iaItem::getTable());
 
 		if ($itemData && iaCore::CORE != $itemData['package'])
 		{
@@ -943,7 +943,7 @@ SQL;
 				$this->_type = self::SEARCH_PACKAGE;
 				$this->_itemInstance = &$instance;
 				$this->_extrasName = $itemData['package'];
-				$this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : array();
+				$this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : [];
 
 				return true;
 			}
@@ -954,27 +954,27 @@ SQL;
 
 	protected function _callInstanceMethod($fieldsSearch = true)
 	{
-		return call_user_func_array(array($this->_itemInstance, self::ITEM_SEARCH_METHOD), array(
+		return call_user_func_array([$this->_itemInstance, self::ITEM_SEARCH_METHOD], [
 			$fieldsSearch ? $this->_getQueryStmtByParams() : $this->_getQueryStmtByString(),
 			$this->_start,
 			$this->_limit,
 			$this->_sorting
-		));
+		]);
 	}
 
 	protected function _performCustomColumnTranslation($column, $value)
 	{
-		return call_user_func_array(array($this->_itemInstance, self::ITEM_COLUMN_TRANSLATION_METHOD), array(
+		return call_user_func_array([$this->_itemInstance, self::ITEM_COLUMN_TRANSLATION_METHOD], [
 			$column,
 			$value
-		));
+		]);
 	}
 
 	private function _getTreeNodes($packedNodes)
 	{
 		if (!$packedNodes)
 		{
-			return array();
+			return [];
 		}
 
 		$key = 'filter_tree_' . md5($packedNodes);
@@ -994,10 +994,10 @@ SQL;
 
 	protected function _parseTreeNodes($packedNodes)
 	{
-		$result = array();
+		$result = [];
 		$nodes = json_decode($packedNodes, true);
 
-		$indent = array();
+		$indent = [];
 		foreach ($nodes as $node)
 		{
 			$id = $node['id'];
@@ -1020,7 +1020,7 @@ SQL;
 	{
 		$defaultLimit = 10;
 
-		$itemsMap = array(
+		$itemsMap = [
 			'autos' => 'autos_number_perpage',
 			'boats' => 'boats_number_perpage',
 			'products' => 'commerce_products_per_page',
@@ -1029,7 +1029,7 @@ SQL;
 			'articles' > 'art_perpage',
 			'estates' => 'realestate_num_per_page',
 			'venues' => 'yp_listings_perpage'
-		);
+		];
 
 		return isset($itemsMap[$itemName])
 			? (int)$this->iaCore->get($itemsMap[$itemName], $defaultLimit)

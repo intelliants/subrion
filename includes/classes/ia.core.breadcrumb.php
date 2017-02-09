@@ -34,7 +34,7 @@ class iaBreadcrumb extends abstractUtil
 	const BEHAVE_INSERT_AFTER = false;
 	const BEHAVE_APPEND = 2;
 
-	protected static $_list = array();
+	protected static $_list = [];
 
 	/**
 	 * Set root breadcrumb
@@ -122,7 +122,7 @@ class iaBreadcrumb extends abstractUtil
 	 */
 	public static function clear()
 	{
-		self::$_list = array();
+		self::$_list = [];
 	}
 
 	/**
@@ -139,7 +139,7 @@ class iaBreadcrumb extends abstractUtil
 	{
 		$items = self::$_list;
 		ksort($items);
-		$list = array();
+		$list = [];
 		foreach ($items as $val)
 		{
 			if (!isset($val['caption']))
@@ -173,7 +173,7 @@ class iaBreadcrumb extends abstractUtil
 		{
 			$index = count(self::$_list) + 1;
 		}
-		$item = array('caption' => $caption, 'url' => $url);
+		$item = ['caption' => $caption, 'url' => $url];
 
 		if ($replace === self::BEHAVE_REPLACE)
 		{
@@ -184,7 +184,7 @@ class iaBreadcrumb extends abstractUtil
 			$next = 1;
 			if (isset(self::$_list[$index]['caption']))
 			{
-				self::$_list[$index] = array(self::$_list[$index]);
+				self::$_list[$index] = [self::$_list[$index]];
 			}
 			while (isset(self::$_list[$index][$next]))
 			{

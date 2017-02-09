@@ -26,12 +26,12 @@
 
 $iaOutput->layout()->title = 'Upgrade Wizard';
 
-$iaOutput->steps = array(
+$iaOutput->steps = [
 	'check' => 'Pre-Upgrade Check',
 	'download' => 'Download Patch',
 	'backup' => 'Backup',
 	'finish' => 'Upgrade'
-);
+];
 
 if (!isset($iaOutput->steps[$iaOutput->step]) && $iaOutput->step != 'rollback')
 {
@@ -40,7 +40,7 @@ if (!isset($iaOutput->steps[$iaOutput->step]) && $iaOutput->step != 'rollback')
 
 if (!iaUsers::hasIdentity() || iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id)
 {
-	$iaOutput->steps = array('check' => $iaOutput->layout()->title);
+	$iaOutput->steps = ['check' => $iaOutput->layout()->title];
 	$iaOutput->errorCode = 'authorization';
 
 	$step = 'check';
@@ -123,9 +123,9 @@ switch ($step)
 		require_once IA_INSTALL . 'classes/ia.patch.parser.php';
 		require_once IA_INSTALL . 'classes/ia.patch.applier.php';
 
-		$iaOutput->adminPath = iaCore::instance()->iaDb->one_bind('value', '`name` = :name', array('name' => 'admin_page'), iaCore::getConfigTable());
+		$iaOutput->adminPath = iaCore::instance()->iaDb->one_bind('value', '`name` = :name', ['name' => 'admin_page'], iaCore::getConfigTable());
 
-		$options = isset($_GET['options']) && is_array($_GET['options']) ? $_GET['options'] : array();
+		$options = isset($_GET['options']) && is_array($_GET['options']) ? $_GET['options'] : [];
 
 		try
 		{
@@ -143,14 +143,14 @@ switch ($step)
 				throw new Exception('Patch is not applicable to your version of Subrion CMS.');
 			}
 
-			$patchApplier = new iaPatchApplier(IA_HOME, array(
+			$patchApplier = new iaPatchApplier(IA_HOME, [
 				'host' => INTELLI_DBHOST,
 				'port' => INTELLI_DBPORT,
 				'database' => INTELLI_DBNAME,
 				'user' => INTELLI_DBUSER,
 				'password' => INTELLI_DBPASS,
 				'prefix' => INTELLI_DBPREFIX
-			), in_array('force-mode', $options));
+			], in_array('force-mode', $options));
 			$patchApplier->process($patch, $_SESSION['upgrade_to']);
 
 			$textLog = $patchApplier->getLog();
@@ -164,24 +164,24 @@ switch ($step)
 
 			// log this event
 			$iaLog = iaHelper::loadCoreClass('log', 'core');
-			$iaLog->write(iaLog::ACTION_UPGRADE, array(
+			$iaLog->write(iaLog::ACTION_UPGRADE, [
 				'type' => 'app',
 				'from' => IA_VERSION,
 				'to' => $_SESSION['upgrade_to'],
 				'file' => $logFile
-			));
+			]);
 			//
 
 			// processing the upgrade log to show nicely
 			$textLog = htmlspecialchars($textLog);
 			$textLog = str_replace(
-				array(PHP_EOL, 'INFO', 'SUCCESS', 'ERROR', 'ALERT'),
-				array('',
+				[PHP_EOL, 'INFO', 'SUCCESS', 'ERROR', 'ALERT'],
+				['',
 					'<p>',
 					'<p><span class="label label-success">SUCCESS</span>',
 					'<p><span class="label label-danger">ERROR</span>',
 					'<p><span class="label label-warning">ALERT</span>'
-				), $textLog
+				], $textLog
 			);
 			//
 
@@ -203,13 +203,13 @@ switch ($step)
 		break;
 
 	case 'rollback':
-		$iaOutput->steps = array(
+		$iaOutput->steps = [
 			'check' => 'Upgrade Wizard',
 			'rollback' => 'Rollback'
-		);
+		];
 
 		$fileList = glob(IA_HOME . 'backup/backup_*_*.zip');
-		$backups = array();
+		$backups = [];
 
 		if ($fileList)
 		{

@@ -35,9 +35,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaUsers = $iaCore->factory('users');
 
 	$itemName = $tableName = iaUsers::getTable();
-	$messages = array();
+	$messages = [];
 
-	$assignableGroups = $iaDb->keyvalue(array('id', 'name'), '`assignable` = 1', iaUsers::getUsergroupsTable());
+	$assignableGroups = $iaDb->keyvalue(['id', 'name'], '`assignable` = 1', iaUsers::getUsergroupsTable());
 
 	$iaPlan = $iaCore->factory('plan');
 	$plans = $iaPlan->getPlans($iaUsers->getItemName());
@@ -96,7 +96,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				if (0 == $iaDb->getErrorNumber())
 				{
-					$iaCore->startHook('phpUserProfileUpdate', array('userInfo' => iaUsers::getIdentity(true), 'data' => $item));
+					$iaCore->startHook('phpUserProfileUpdate', ['userInfo' => iaUsers::getIdentity(true), 'data' => $item]);
 					iaUsers::reloadIdentity();
 
 					$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
@@ -123,8 +123,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				}
 				else
 				{
-					$iaPlan->setPaid(array('item' => $itemName, 'plan_id' => $plan['id'],
-						'item_id' => iaUsers::getIdentity()->id, 'member_id' => iaUsers::getIdentity()->id));
+					$iaPlan->setPaid(['item' => $itemName, 'plan_id' => $plan['id'],
+						'item_id' => iaUsers::getIdentity()->id, 'member_id' => iaUsers::getIdentity()->id]);
 				}
 			}
 			else
@@ -140,8 +140,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$sections = $iaField->getTabs($itemName, $item);
 
-	$extraTabs = array();
-	$iaCore->startHook('phpFrontEditProfileExtraTabs', array('tabs' => &$extraTabs, 'item' => &$item));
+	$extraTabs = [];
+	$iaCore->startHook('phpFrontEditProfileExtraTabs', ['tabs' => &$extraTabs, 'item' => &$item]);
 	$sections = array_merge($sections, $extraTabs);
 
 	if (iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id)

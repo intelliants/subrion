@@ -45,12 +45,12 @@ class iaLog extends abstractCore
 
 	protected static $_table = 'logs';
 
-	protected $_validActions = array(
+	protected $_validActions = [
 		self::ACTION_CREATE, self::ACTION_READ, self::ACTION_UPDATE, self::ACTION_DELETE,
 		self::ACTION_LOGIN, self::ACTION_LOGOUT,
 		self::ACTION_INSTALL, self::ACTION_UPGRADE, self::ACTION_UNINSTALL,
 		self::ACTION_ENABLE, self::ACTION_DISABLE
-	);
+	];
 
 
 	public function write($actionCode, $params = null, $pluginName = null)
@@ -67,12 +67,12 @@ class iaLog extends abstractCore
 
 		empty($params['title']) || $params['title'] = iaSanitize::html($params['title']);
 
-		$row = array(
+		$row = [
 			'date' => date(iaDb::DATETIME_FORMAT),
 			'action' => $actionCode,
 			'user_id' => iaUsers::hasIdentity() ? iaUsers::getIdentity()->id : null,
 			'params' => serialize($params)
-		);
+		];
 
 		if ($pluginName)
 		{
@@ -92,11 +92,11 @@ class iaLog extends abstractCore
 
 	public function get($extra = null)
 	{
-		$result = array();
+		$result = [];
 
 		$stmt = iaDb::EMPTY_CONDITION;
 		$stmt.= $extra ? ' AND `extras` = :plugin' : '';
-		$this->iaDb->bind($stmt, array('plugin' => $extra));
+		$this->iaDb->bind($stmt, ['plugin' => $extra]);
 
 		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt . ' ORDER BY `date` DESC', 0, 20, self::getTable()))
 		{
@@ -104,12 +104,12 @@ class iaLog extends abstractCore
 			{
 				if ($array = $this->_humanize($row))
 				{
-					$result[] = array(
+					$result[] = [
 						'description' => $array[0],
 						'icon' => $array[1],
 						'style' => $array[2],
 						'date' => self::_humanFriendlyDate($row['date'])
-					);
+					];
 				}
 			}
 		}
@@ -138,19 +138,19 @@ class iaLog extends abstractCore
 			case self::ACTION_CREATE:
 			case self::ACTION_UPDATE:
 			case self::ACTION_DELETE:
-				$actionsMap = array(
+				$actionsMap = [
 					self::ACTION_CREATE => 'create',
 					self::ACTION_UPDATE => 'update',
 					self::ACTION_DELETE => 'remove'
-				);
-				$iconsMap = array(
+				];
+				$iconsMap = [
 					'block' => 'grid',
 					'page' => 'copy',
 					'member' => 'members',
 					'blog' => 'quill',
 					'listing' => 'link',
 					'menu' => 'menu'
-				);
+				];
 
 				if (isset($params['item']) && isset($params['id']) && isset($params['name']) && self::ACTION_DELETE != $logEntry['action'])
 				{
@@ -170,63 +170,63 @@ class iaLog extends abstractCore
 					switch (true)
 					{
 						case self::ACTION_CREATE == $logEntry['action'] && isset($params['type']) && iaCore::FRONT == $params['type']:
-							return array(
+							return [
 								'New member signed up: ' . sprintf(self::LINK_PATTERN, IA_ADMIN_URL . 'members/edit/' . $params['id'] . '/', $params['name']) . '.',
 								$iconsMap[$params['item']],
 								'default'
-							);
+							];
 						case self::ACTION_UPDATE == $logEntry['action'] && iaUsers::getIdentity()->id == $params['id']:
-							return array(
+							return [
 								sprintf('You updated ' . self::LINK_PATTERN . '.', IA_ADMIN_URL . 'members/edit/' . iaUsers::getIdentity()->id . '/', 'profile of yourself'),
 								$iconsMap[$params['item']],
 								$style
-							);
+							];
 					}
 				}
 
-				return array(
-					iaDb::printf(':item :name :actiond by :user.', array_merge($params, array('action' => $actionsMap[$logEntry['action']], 'item' => ucfirst(iaLanguage::get($params['item'], $params['item']))))),
+				return [
+					iaDb::printf(':item :name :actiond by :user.', array_merge($params, ['action' => $actionsMap[$logEntry['action']], 'item' => ucfirst(iaLanguage::get($params['item'], $params['item']))])),
 					isset($iconsMap[$params['item']]) ? $iconsMap[$params['item']] : 'copy',
 					$style
-				);
+				];
 
 			case self::ACTION_LOGIN:
 				$text = ':user logged in <small class="text-muted"><em>from :ip.</em></small>';
 				$text.= ($logEntry['user_id'] == iaUsers::getIdentity()->id) ? ' — you' : '';
 				$text.= '.';
 
-				return array(
+				return [
 					iaDb::printf($text, $params),
 					'user',
 					$style
-				);
+				];
 
 			case self::ACTION_INSTALL:
 				switch ($params['type'])
 				{
 					case 'app':
-						return array('Subrion version ' . IA_VERSION . ' installed. Cheers!', 'subrion', 'default');
+						return ['Subrion version ' . IA_VERSION . ' installed. Cheers!', 'subrion', 'default'];
 					case 'template':
 						$text = iaDb::printf(':user activated the ":name" template.', $params);
-						return array($text, 'eye', 'default');
+						return [$text, 'eye', 'default'];
 				}
 
 				$params['name'] = ucfirst($params['name']);
 
-				return array(
+				return [
 					iaDb::printf(':user installed ":name" :type.', $params),
 					'extensions',
 					$style
-				);
+				];
 
 			case self::ACTION_UNINSTALL:
 				$params['name'] = ucfirst($params['name']);
 
-				return array(
+				return [
 					iaDb::printf(':user uninstalled ":name" :type.', $params),
 					'extensions',
 					'removed'
-				);
+				];
 
 			case self::ACTION_ENABLE:
 			case self::ACTION_DISABLE:
@@ -237,16 +237,16 @@ class iaLog extends abstractCore
 					$style = 'removed';
 				}
 
-				$actionsMap = array(
+				$actionsMap = [
 					self::ACTION_ENABLE => 'activated',
 					self::ACTION_DISABLE => 'deactivated'
-				);
+				];
 
-				return array(
-					iaDb::printf('The ":name" :type :action by :user.', array_merge($params, array('action' => $actionsMap[$logEntry['action']]))),
+				return [
+					iaDb::printf('The ":name" :type :action by :user.', array_merge($params, ['action' => $actionsMap[$logEntry['action']]])),
 					'extensions',
 					$style
-				);
+				];
 
 			case self::ACTION_UPGRADE:
 				$icon = 'extensions';
@@ -271,7 +271,7 @@ class iaLog extends abstractCore
 
 				$message = iaDb::printf($message, array_merge($params));
 
-				return array($message, $icon, 'default');
+				return [$message, $icon, 'default'];
 		}
 	}
 
@@ -282,11 +282,11 @@ class iaLog extends abstractCore
 		switch (true)
 		{
 			case (1 == $minutes): return iaLanguage::get('just_now');
-			case (60 > $minutes): return iaLanguage::getf('minutes_ago', array('minutes' => $minutes));
+			case (60 > $minutes): return iaLanguage::getf('minutes_ago', ['minutes' => $minutes]);
 			case (59 < $minutes && $minutes < 121): return iaLanguage::get('one_hour_ago');
-			case ((60 * 24) > $minutes): return iaLanguage::getf('hours_ago', array('hours' => floor($minutes / 60)));
+			case ((60 * 24) > $minutes): return iaLanguage::getf('hours_ago', ['hours' => floor($minutes / 60)]);
 			case ($minutes > 1439 && $minutes < 2881): return iaLanguage::get('one_day_ago');
-			default: return iaLanguage::getf('days_ago', array('days' => floor($minutes / (60 * 24))));
+			default: return iaLanguage::getf('days_ago', ['days' => floor($minutes / (60 * 24))]);
 		}
 	}
 
@@ -296,7 +296,7 @@ class iaLog extends abstractCore
 
 		if ($startingRowTimestamp = $this->iaDb->one('date', '1 ORDER BY `date` DESC', null, 20))
 		{
-			$this->iaDb->delete('`date` < :date', null, array('date' => $startingRowTimestamp));
+			$this->iaDb->delete('`date` < :date', null, ['date' => $startingRowTimestamp]);
 		}
 
 		$this->iaDb->resetTable();

@@ -53,18 +53,18 @@ class iaBackendController extends iaAbstractControllerBackend
 		$options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
 		$signature = empty($options->signature) ? false : true;
 
-		$result = array(
+		$result = [
 			'config' => (bool)$this->_iaCore->get($template, null, false, true),
 			'signature' => $signature,
 			'subject' => $this->_iaCore->get($template . '_subject', null, false, true),
 			'body' => $this->_iaCore->get($template . '_body', null, false, true)
-		);
+		];
 
 		// composing the patterns description
-		if ($array = $this->_iaDb->one_bind('multiple_values', '`name` = :name', array('name' => $template . '_body')))
+		if ($array = $this->_iaDb->one_bind('multiple_values', '`name` = :name', ['name' => $template . '_body']))
 		{
 			$array = array_filter(explode(',', $array));
-			$patterns = array();
+			$patterns = [];
 
 			foreach ($array as $entry)
 			{
@@ -88,8 +88,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
 		$options->signature = $params['enable_signature'] ? true : false;
-		$this->_iaDb->update(array('options' => json_encode($options)), iaDb::convertIds($template, 'name'));
+		$this->_iaDb->update(['options' => json_encode($options)], iaDb::convertIds($template, 'name'));
 
-		return array('result' => (0 == $this->_iaDb->getErrorNumber()));
+		return ['result' => (0 == $this->_iaDb->getErrorNumber())];
 	}
 }

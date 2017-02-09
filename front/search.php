@@ -115,12 +115,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$regular = false;
 	$query = isset($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : null;
 
-	$pagination = array(
+	$pagination = [
 		'limit' => 10,
 		'start' => 0,
 		'total' => 0,
 		'url' => IA_SELF . '?q=' . urlencode($query) . '&page={page}'
-	);
+	];
 
 	$page = isset($_GET['page']) && is_numeric($_GET['page']) ? max($_GET['page'], 1) : 1;
 	$pagination['start'] = ($page - 1) * $pagination['limit'];
@@ -163,7 +163,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		$regular = true;
 
-		$iaCore->startHook('phpSearchAfterGetQuery', array('query' => &$query));
+		$iaCore->startHook('phpSearchAfterGetQuery', ['query' => &$query]);
 
 		empty($query) || $results = $iaSearch->doRegularSearch($query, $pagination['limit']);
 	}
