@@ -157,8 +157,8 @@ abstract class iaApiEntityAbstract
 	{
 		$iaField = $this->_iaCore->factory('field');
 
-		$fieldParams = $this->_iaDb->row_bind(array('type', 'required', 'image_width', 'image_height', 'thumb_width', 'thumb_height', 'resize_mode'),
-			'`name` = :field AND `item` = :item', array('field' => $fieldName, 'item' => $this->getName()), $iaField::getTable());
+		$fieldParams = $this->_iaDb->row_bind(['type', 'required', 'image_width', 'image_height', 'thumb_width', 'thumb_height', 'resize_mode'],
+			'`name` = :field AND `item` = :item', ['field' => $fieldName, 'item' => $this->getName()], $iaField::getTable());
 
 		if (!$fieldParams)
 		{
@@ -186,7 +186,7 @@ abstract class iaApiEntityAbstract
 				$value = $content;
 		}
 
-		$this->_iaDb->update(array($fieldName => $value), iaDb::convertIds($entryId), null, $this->getTable());
+		$this->_iaDb->update([$fieldName => $value], iaDb::convertIds($entryId), null, $this->getTable());
 
 		if (0 !== $this->_iaDb->getErrorNumber())
 		{
@@ -204,10 +204,10 @@ abstract class iaApiEntityAbstract
 		// image processing
 		$iaPicture = $this->_iaCore->factory('picture');
 
-		$file = array(
+		$file = [
 			'type' => $_SERVER['CONTENT_TYPE'],
 			'tmp_name' => $tempFile
-		);
+		];
 
 		$path = iaUtil::getAccountDir();
 		$name = self::_generateFileName();
@@ -219,12 +219,12 @@ abstract class iaApiEntityAbstract
 			throw new Exception('Error processing image: ' . $iaPicture->getMessage(), iaApiResponse::INTERNAL_ERROR);
 		}
 
-		$result = array('path' => $imagePath, 'title' => '');
+		$result = ['path' => $imagePath, 'title' => ''];
 		$result = serialize($result);
 
 		// TODO: implement previous image removal
 
-		return array(IA_CLEAR_URL . 'uploads/' . $imagePath, $result);
+		return [IA_CLEAR_URL . 'uploads/' . $imagePath, $result];
 	}
 
 	protected function _processPicturesField($content, array $field)
@@ -252,7 +252,7 @@ abstract class iaApiEntityAbstract
 
 			if (false !== strpos($filename, '.'))
 			{
-				$filename = str_replace(array('.', '~'), '-', $filename);
+				$filename = str_replace(['.', '~'], '-', $filename);
 			}
 		}
 

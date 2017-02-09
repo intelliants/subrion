@@ -28,7 +28,7 @@ class iaOutput
 {
 	const TEMPLATE_FILE_EXTENSION = '.tpl';
 
-	protected $_values = array();
+	protected $_values = [];
 
 	protected $_layout; // object to store layout variables
 

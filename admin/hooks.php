@@ -32,21 +32,21 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_processEdit = false;
 
 	protected $_gridColumns = "`id`, `name`, `extras`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`";
-	protected $_gridFilters = array('name' => 'like', 'type' => 'equal');
+	protected $_gridFilters = ['name' => 'like', 'type' => 'equal'];
 
 
 	protected function _gridRead($params)
 	{
-		$output = array();
+		$output = [];
 
 		switch ($this->_iaCore->requestPath[0])
 		{
 			case 'get':
-				$output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_GET['id']), array());
+				$output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_GET['id']), []);
 				break;
 
 			case 'set':
-				$this->_iaDb->update(array('code' => $_POST['code']), iaDb::convertIds($_POST['id']));
+				$this->_iaDb->update(['code' => $_POST['code']], iaDb::convertIds($_POST['id']));
 
 				$output['result'] = (0 == $this->_iaDb->getErrorNumber());
 				$output['message'] = iaLanguage::get($output['result'] ? 'saved' : 'db_error');

@@ -28,13 +28,13 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'invoices';
 
-	protected $_gridFilters = array('fullname' => self::LIKE, 'status' => self::EQUAL);
+	protected $_gridFilters = ['fullname' => self::LIKE, 'status' => self::EQUAL];
 	protected $_gridQueryMainTableAlias = 'i';
-	protected $_gridSorting = array(
-		'amount' => array('amount', 't'),
-		'gateway' => array('gateway', 't'),
-		'status' => array('status', 't')
-	);
+	protected $_gridSorting = [
+		'amount' => ['amount', 't'],
+		'gateway' => ['gateway', 't'],
+		'status' => ['status', 't']
+	];
 
 
 	public function __construct()
@@ -70,14 +70,14 @@ class iaBackendController extends iaAbstractControllerBackend
 			'LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`) ' .
 			($where ? 'WHERE ' . $where . ' ' : '') . $order . ' ' .
 			'LIMIT :start, :limit';
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_invoices' => self::getTable(),
 			'table_members' => iaUsers::getTable(),
 			'table_transactions' => 'payment_transactions',
 			'start' => $start,
 			'limit' => $limit
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}
@@ -132,9 +132,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _assignValues(&$iaView, array &$entryData)
 	{
-		$iaView->set('toolbarActionsReplacements', array('id' => $this->getEntryId()));
+		$iaView->set('toolbarActionsReplacements', ['id' => $this->getEntryId()]);
 
-		$items = isset($_POST['items']) ? $this->_normalizeItems($_POST['items']) : array();
+		$items = isset($_POST['items']) ? $this->_normalizeItems($_POST['items']) : [];
 		$items || $items = $this->getHelper()->getItemsByInvoiceId($this->getEntryId());
 
 		$iaView->assign('items', $items);
@@ -158,7 +158,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			if (empty($entry['id']))
 			{
-				$this->addMessage(iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('invoice_id'))), false);
+				$this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('invoice_id')]), false);
 			}
 		}
 
@@ -179,11 +179,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _normalizeItems(array $items)
 	{
-		$result = array();
+		$result = [];
 
 		foreach ($items['title'] as $i => $title)
-			$result[] = array('title' => $title, 'price' => $items['price'][$i],
-				'quantity' => $items['quantity'][$i], 'tax' => $items['tax'][$i]);
+			$result[] = ['title' => $title, 'price' => $items['price'][$i],
+				'quantity' => $items['quantity'][$i], 'tax' => $items['tax'][$i]];
 
 		return $result;
 	}

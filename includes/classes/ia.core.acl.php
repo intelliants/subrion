@@ -39,9 +39,9 @@ class iaAcl extends abstractUtil
 	protected $_dbTableObjects = 'acl_objects';
 	protected $_dbTablePrivileges = 'acl_privileges';
 
-	protected $_permissions = array();
-	protected $_objects = array();
-	protected $_actions = array();
+	protected $_permissions = [];
+	protected $_objects = [];
+	protected $_actions = [];
 
 	protected $_lastStep = 0;
 
@@ -60,8 +60,8 @@ class iaAcl extends abstractUtil
 		$user = iaUsers::hasIdentity() ? iaUsers::getIdentity()->id : 0;
 		$group = iaUsers::hasIdentity() ? iaUsers::getIdentity()->usergroup_id : 4;
 
-		$objects = array();
-		$actions = array();
+		$objects = [];
+		$actions = [];
 
 		$rows = $this->iaCore->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, $this->_dbTableObjects);
 		foreach ($rows as $row)
@@ -71,7 +71,7 @@ class iaAcl extends abstractUtil
 				$row['object'] = $row['pre_object'] . '-' . $row['object'];
 			}
 			$key = $row['object'];
-			isset($actions[$key]) || $actions[$key] = array();
+			isset($actions[$key]) || $actions[$key] = [];
 			$actions[$key][] = $row['action'];
 
 			$objects[$row['object'] . self::DELIMITER . $row['action']] = (int)$row['access'];
@@ -133,7 +133,7 @@ class iaAcl extends abstractUtil
 			}
 			elseif ($custom)
 			{
-				$perms = array();
+				$perms = [];
 			}
 			else
 			{
@@ -232,9 +232,9 @@ class iaAcl extends abstractUtil
 			$object = (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType()) ? self::OBJECT_ADMIN_PAGE : self::OBJECT_PAGE;
 		}
 
-		if (in_array($object, array(self::OBJECT_PAGE, self::OBJECT_ADMIN_PAGE)))
+		if (in_array($object, [self::OBJECT_PAGE, self::OBJECT_ADMIN_PAGE]))
 		{
-			static $parentPagesMap = array();
+			static $parentPagesMap = [];
 
 			if (!isset($parentPagesMap[$object]))
 			{
@@ -251,7 +251,7 @@ class iaAcl extends abstractUtil
 
 	private function _getPagesParents($side)
 	{
-		$rows = $this->iaCore->iaDb->keyvalue(array('name', 'parent'), null, $side . 's');
+		$rows = $this->iaCore->iaDb->keyvalue(['name', 'parent'], null, $side . 's');
 
 		function recursiveFindFirstParent($rows, $page)
 		{
@@ -277,7 +277,7 @@ class iaAcl extends abstractUtil
 	 */
 	public function getLastStep()
 	{
-		$messages = array(
+		$messages = [
 			'none',
 			'Administrators',
 			'Owner (user)',
@@ -290,7 +290,7 @@ class iaAcl extends abstractUtil
 			'All privileges check (plan = 2)',
 			'Default object value',
 			'Default core value'
-		);
+		];
 
 		return '(' . $this->_lastStep . ') ' . $messages[$this->_lastStep];
 	}
@@ -303,7 +303,7 @@ class iaAcl extends abstractUtil
 	 */
 	public function getPermissions($user, $group)
 	{
-		$permissions = array();
+		$permissions = [];
 
 		// get permissions
 		$stmt = sprintf("(`type` = '%s' AND `type_id` = '%d') OR (`type` = '%s' AND `type_id` = '%d')",
@@ -336,11 +336,11 @@ class iaAcl extends abstractUtil
 
 			$name = $this->encodeAction($entry['object'], $entry['action'], $entry['object_id']);
 
-			isset($permissions[$name]) || $permissions[$name] = array();
-			$permissions[$name][$entry['type']] = array(
+			isset($permissions[$name]) || $permissions[$name] = [];
+			$permissions[$name][$entry['type']] = [
 				'access' => (int)$entry['access'],
 				'type_id' => $entry['type_id']
-			);
+			];
 		}
 
 		return $permissions;
@@ -412,13 +412,13 @@ class iaAcl extends abstractUtil
 		is_null($typeId) || $stmt .= ' AND `type_id` = :tid';
 		is_null($action) || $stmt .= ' AND `action` = :action';
 
-		$params = array(
+		$params = [
 			'type' => $type,
 			'tid' => (int)$typeId,
 			'object' => $object,
 			'oid' => $objectId,
 			'action' => $action
-		);
+		];
 
 		$iaDb->delete($stmt, $this->_dbTablePrivileges, $params);
 
@@ -430,16 +430,16 @@ class iaAcl extends abstractUtil
 		$iaDb = &$this->iaCore->iaDb;
 
 		$stmt = '`object` = :object AND `object_id` = :oid AND `type` = :type AND `type_id` = :tid AND `action` = :action';
-		$iaDb->bind($stmt, array('object' => $object, 'oid' => $objectId, 'type' => $type, 'tid' => (int)$typeId, 'action' => $action));
+		$iaDb->bind($stmt, ['object' => $object, 'oid' => $objectId, 'type' => $type, 'tid' => (int)$typeId, 'action' => $action]);
 
-		$row = $iaDb->row(array('access'), $stmt, $this->_dbTablePrivileges);
+		$row = $iaDb->row(['access'], $stmt, $this->_dbTablePrivileges);
 		if ($row && $row['access'] == $access)
 		{
 			return true;
 		}
 
 		return $row
-			? (bool)$iaDb->update(array('access' => (int)$access), $stmt, null, $this->_dbTablePrivileges)
-			: (bool)$iaDb->insert(array('object' => $object, 'object_id' => $objectId, 'type' => $type, 'type_id' => (int)$typeId, 'action' => $action, 'access' => (int)$access, 'extras' => $extras), null, $this->_dbTablePrivileges);
+			? (bool)$iaDb->update(['access' => (int)$access], $stmt, null, $this->_dbTablePrivileges)
+			: (bool)$iaDb->insert(['object' => $object, 'object_id' => $objectId, 'type' => $type, 'type_id' => (int)$typeId, 'action' => $action, 'access' => (int)$access, 'extras' => $extras], null, $this->_dbTablePrivileges);
 	}
 }

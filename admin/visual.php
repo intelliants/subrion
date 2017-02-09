@@ -36,7 +36,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_iaCore->factory('validate');
 
-		$output = array('result' => false, 'message' => iaLanguage::get('invalid_parameters'));
+		$output = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 
 		if (isset($_POST['action']) && 'save' == $_POST['action'])
 		{
@@ -57,7 +57,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$name = $this->_iaDb->one('id', "`name` = '{$name}'");
 			}
 
-			if (in_array($type, array('positions', 'blocks')))
+			if (in_array($type, ['positions', 'blocks']))
 			{
 				$this->_iaDb->setTable('objects_pages');
 				if (!$global)
@@ -69,22 +69,22 @@ class iaBackendController extends iaAbstractControllerBackend
 						$this->_iaDb->delete("`object_type` = '{$type}' && `object` = '{$name}'");
 
 						// hide for all pages
-						$this->_iaDb->insert(array(
+						$this->_iaDb->insert([
 							'object_type' => $type,
 							'page_name' => '',
 							'object' => $name,
 							'access' => 0
-						));
+						]);
 					}
 
 					if ($page)
 					{
-						$this->_iaDb->insert(array(
+						$this->_iaDb->insert([
 							'object_type' => $type,
 							'page_name' => $pagename,
 							'object' => $name,
 							'access' => $page
-						));
+						]);
 					}
 					else
 					{
@@ -101,12 +101,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					if (!$page)
 					{
-						$this->_iaDb->insert(array(
+						$this->_iaDb->insert([
 							'object_type' => $type,
 							'page_name' => $pagename,
 							'object' => $name,
 							'access' => $page
-						));
+						]);
 					}
 					else
 					{
@@ -138,7 +138,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$sql .= "WHERE `object_type` = '{$type}' && `object` = '{$object}' && `page_name` IN ('', '{$page}')";
 			if ($access = $this->_iaDb->getKeyValue($sql))
 			{
-				$output['result'] = array_merge(array('global' => 1, 'page' => isset($access['page']) ? $access['page'] : $access['global']), $access);
+				$output['result'] = array_merge(['global' => 1, 'page' => isset($access['page']) ? $access['page'] : $access['global']], $access);
 			}
 			else
 			{
@@ -149,7 +149,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		elseif ($_GET)
 		{
 			$params = $_GET;
-			$positions = array_keys($this->_iaDb->assoc(array('name', 'menu', 'movable'), null, 'positions'));
+			$positions = array_keys($this->_iaDb->assoc(['name', 'menu', 'movable'], null, 'positions'));
 
 			foreach ($positions as $p)
 			{
@@ -159,11 +159,11 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						$blockName = str_replace('start_block_', '', 'start_' . $v);
 
-						$this->_iaCore->startHook('phpOrderChangeBeforeUpdate', array('block' => &$blockName, 'position' => &$p));
+						$this->_iaCore->startHook('phpOrderChangeBeforeUpdate', ['block' => &$blockName, 'position' => &$p]);
 
 						is_numeric($blockName)
-							? $this->_iaDb->update(array('id' => $blockName, 'position' => $p, 'order' => $k + 1))
-							: $this->_iaDb->update(array('position' => $p, 'order' => $k + 1), iaDb::convertIds($blockName, 'name'));
+							? $this->_iaDb->update(['id' => $blockName, 'position' => $p, 'order' => $k + 1])
+							: $this->_iaDb->update(['position' => $p, 'order' => $k + 1], iaDb::convertIds($blockName, 'name'));
 					}
 				}
 			}

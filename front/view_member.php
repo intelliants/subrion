@@ -59,17 +59,17 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	$member['item'] = $iaUsers->getItemName();
 
-	$iaCore->startHook('phpViewListingBeforeStart', array(
+	$iaCore->startHook('phpViewListingBeforeStart', [
 		'listing' => $member['id'],
 		'item' => $member['item'],
 		'title' => $member['fullname'],
-		'url' => $iaView->iaSmarty->ia_url(array(
+		'url' => $iaView->iaSmarty->ia_url([
 			'data' => $member,
 			'item' => $member['item'],
 			'type' => 'url'
-		)),
+		]),
 		'desc' => $member['fullname']
-	));
+	]);
 
 	$iaField = $iaCore->factory('field');
 	$iaItem = $iaCore->factory('item');
@@ -82,20 +82,20 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	if (iaUsers::hasIdentity() && iaUsers::getIdentity()->id == $member['id'])
 	{
-		$iaItem->setItemTools(array(
+		$iaItem->setItemTools([
 			'id' => 'action-edit',
 			'title' => iaLanguage::get('edit'),
-			'attributes' => array('href' => $iaPage->getUrlByName('profile'))
-		));
+			'attributes' => ['href' => $iaPage->getUrlByName('profile')]
+		]);
 	}
 
-	$members = $iaItem->updateItemsFavorites(array($member), $member['item']);
+	$members = $iaItem->updateItemsFavorites([$member], $member['item']);
 	$member = array_shift($members);
-	$member['items'] = array();
+	$member['items'] = [];
 
 	// get all items added by this account
 	$itemsList = $iaItem->getPackageItems();
-	$itemsFlat = array();
+	$itemsFlat = [];
 
 	if ($array = $iaItem->getItemsInfo(true))
 	{
@@ -161,10 +161,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaView->display('view-member');
 
 	// add open graph data
-	$openGraph = array(
+	$openGraph = [
 		'title' => $title,
 		'url' => IA_SELF,
 		'image' => isset($member['avatar']) && $member['avatar']['path'] ? IA_CLEAR_URL . 'uploads/' . $member['avatar']['path'] : ''
-	);
+	];
 	$iaView->set('og', $openGraph);
 }

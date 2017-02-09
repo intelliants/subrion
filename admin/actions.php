@@ -44,10 +44,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			case 'remove-installer':
 				$result = iaUtil::deleteFile(IA_HOME . 'install/modules/module.install.php');
 
-				return array(
+				return [
 					'error' => !$result,
 					'message' => iaLanguage::get($result ? 'deleted' : 'error')
-				);
+				];
 
 			case 'send-test-email':
 				return $this->_sendTestEmail();
@@ -59,8 +59,8 @@ class iaBackendController extends iaAbstractControllerBackend
 				return $this->_dropzoneDelete();
 
 			default:
-				$result = array();
-				$this->_iaCore->startHook('phpAdminActionsJsonHandle', array('action' => $_POST['action'], 'output' => &$result));
+				$result = [];
+				$this->_iaCore->startHook('phpAdminActionsJsonHandle', ['action' => $_POST['action'], 'output' => &$result]);
 
 				return $result;
 		}
@@ -73,7 +73,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _dropzoneUpload()
 	{
-		$result = array('error' => true, 'message' => 'invalid_parameters');
+		$result = ['error' => true, 'message' => 'invalid_parameters'];
 
 		is_writable(IA_UPLOADS) || $result['message'] = 'error_directory_readonly';
 
@@ -88,7 +88,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$fieldName = 'file';
 
-			if (in_array($field['type'], array(iaField::IMAGE, iaField::PICTURES))
+			if (in_array($field['type'], [iaField::IMAGE, iaField::PICTURES])
 				&& iaCore::STATUS_ACTIVE == $field['status']
 				&& isset($_FILES[$fieldName]['error']) && !$_FILES[$fieldName]['error'])
 			{
@@ -113,7 +113,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _dropzoneDelete()
 	{
-		$result = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+		$result = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
 
 		if (empty($_POST['field']) || empty($_POST['item']) || empty($_POST['path']) || empty($_POST['file']))
 		{
@@ -140,7 +140,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _deleteUploadedFile($params)
 	{
-		$result = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+		$result = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
 
 		$item = isset($params['item']) ? $params['item'] : null;
 		$itemId = isset($params['itemid']) ? (int)$params['itemid'] : null;
@@ -150,8 +150,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		if ($itemId && $item && $field)
 		{
 			$result = $this->_iaCore->factory('field')->deleteUploadedFile($field, $item, $itemId, $file)
-				? array('error' => false, 'message' => iaLanguage::get('deleted'))
-				: array('error' => true, 'message' => iaLanguage::get('error'));
+				? ['error' => false, 'message' => iaLanguage::get('deleted')]
+				: ['error' => true, 'message' => iaLanguage::get('error')];
 		}
 
 		return $result;
@@ -168,12 +168,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$result = $iaMailer->send();
 
-		$output = array(
+		$output = [
 			'result' => $result,
 			'message' => $result
-				? iaLanguage::getf('test_email_sent', array('email' => iaUsers::getIdentity()->email))
+				? iaLanguage::getf('test_email_sent', ['email' => iaUsers::getIdentity()->email])
 				: iaLanguage::get('error') . ': ' . $iaMailer->getError()
-		);
+		];
 
 		return $output;
 	}
@@ -193,15 +193,15 @@ SELECT IF(p.`extras` = '', 'core', p.`extras`) `value`,
 LEFT JOIN `:prefix:table_extras` g ON (g.`name` = p.`extras`) 
 GROUP BY p.`extras`
 SQL;
-				$sql = iaDb::printf($sql, array(
+				$sql = iaDb::printf($sql, [
 					'prefix' => $this->_iaDb->prefix,
 					'table_pages' => iaPage::getTable(),
 					'table_extras' => iaItem::getExtrasTable()
-				));
+				]);
 
-				return array('data' => $this->_iaDb->getAll($sql));
+				return ['data' => $this->_iaDb->getAll($sql)];
 		}
 
-		return array();
+		return [];
 	}
 }

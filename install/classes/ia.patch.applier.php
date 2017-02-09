@@ -47,8 +47,8 @@ class iaPatchApplier
 	protected $_forceMode;
 	protected $_scriptRoot;
 
-	private $_signatures = array(
-		999 => array(
+	private $_signatures = [
+		999 => [
 			'Subrion - open source content management system',
 			'This file is part of Subrion.',
 			'Subrion is free software: you can redistribute it and/or modify',
@@ -56,8 +56,8 @@ class iaPatchApplier
 			'the Free Software Foundation, either version 3 of the License, or',
 			'(at your option) any later version.',
 			'@link https://subrion.org/'
-		),
-		765 => array(
+		],
+		765 => [
 			'COMPANY: Intelliants LLC',
 			'PROJECT: Subrion Content Management System',
 			'LICENSE: https://subrion.pro/license.html',
@@ -66,11 +66,11 @@ class iaPatchApplier
 			'Link to Subrion.com may not be removed from the software pages',
 			'PHP code copyright notice may not be removed from source code',
 			'https://intelliants.com/'
-		),
-		22 => array('//##copyright##')
-	);
+		],
+		22 => ['//##copyright##']
+	];
 
-	private $_log = array();
+	private $_log = [];
 
 
 	public function __construct($scriptRoot, $dbConnectionParams = null, $forceMode = false)
@@ -84,7 +84,7 @@ class iaPatchApplier
 	{
 		if (!$this->_dbConnect())
 		{
-			$this->_logInfo('Unable to connect to the database :database.', self::LOG_INFO, array('database' => $this->_dbConnectionParams['database']));
+			$this->_logInfo('Unable to connect to the database :database.', self::LOG_INFO, ['database' => $this->_dbConnectionParams['database']]);
 			return false;
 		}
 
@@ -104,7 +104,7 @@ class iaPatchApplier
 
 		if ($patch['info']['num_files'] > 0)
 		{
-			$this->_logInfo('Starting to process files in :mode mode...', self::LOG_INFO, array('mode' => $this->_forceMode ? 'forced' : 'regular'));
+			$this->_logInfo('Starting to process files in :mode mode...', self::LOG_INFO, ['mode' => $this->_forceMode ? 'forced' : 'regular']);
 			chdir($this->_scriptRoot);
 			foreach ($patch['files'] as $entry)
 			{
@@ -141,7 +141,7 @@ class iaPatchApplier
 		return true;
 	}
 
-	protected function _logInfo($message, $type = self::LOG_ALERT, $params = array())
+	protected function _logInfo($message, $type = self::LOG_ALERT, $params = [])
 	{
 		if (is_array($params) && $params)
 		{
@@ -150,7 +150,7 @@ class iaPatchApplier
 				$message = str_replace(':' . $key, $value, $message);
 			}
 		}
-		$this->_log[] = array('type' => $type, 'message' => $message);
+		$this->_log[] = ['type' => $type, 'message' => $message];
 	}
 
 	protected function _processQuery($query, $log = true)
@@ -158,8 +158,8 @@ class iaPatchApplier
 		$options = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
 
 		$query = str_replace(
-			array('{prefix}', '{db.options}'),
-			array($this->_dbConnectionParams['prefix'], $options),
+			['{prefix}', '{db.options}'],
+			[$this->_dbConnectionParams['prefix'], $options],
 			$query);
 
 		$result = mysqli_query($this->_dbConnectionParams['link'], $query);
@@ -167,8 +167,8 @@ class iaPatchApplier
 		if ($log)
 		{
 			$result
-				? $this->_logInfo('Query executed: :query (affected: :num)', self::LOG_SUCCESS, array('query' => $query, 'num' => mysqli_affected_rows($this->_dbConnectionParams['link'])))
-				: $this->_logInfo('Query failed: :query (:error)', self::LOG_ERROR, array('query' => $query, 'error' => mysqli_error($this->_dbConnectionParams['link'])));
+				? $this->_logInfo('Query executed: :query (affected: :num)', self::LOG_SUCCESS, ['query' => $query, 'num' => mysqli_affected_rows($this->_dbConnectionParams['link'])])
+				: $this->_logInfo('Query failed: :query (:error)', self::LOG_ERROR, ['query' => $query, 'error' => mysqli_error($this->_dbConnectionParams['link'])]);
 		}
 	}
 
@@ -183,7 +183,7 @@ class iaPatchApplier
 
 				if (!file_exists($pathName))
 				{
-					$this->_logInfo('File/folder to be removed does already not exist: :file', self::LOG_SUCCESS, array('file' => $pathName));
+					$this->_logInfo('File/folder to be removed does already not exist: :file', self::LOG_SUCCESS, ['file' => $pathName]);
 					break;
 				}
 				if (is_dir($pathName))
@@ -191,14 +191,14 @@ class iaPatchApplier
 					$this->_recursivelyRemoveDirectory($pathName);
 					clearstatcache();
 					is_dir($pathName)
-						? $this->_logInfo('Removal of directory :directory', self::LOG_SUCCESS, array('directory' => $pathName))
-						: $this->_logInfo('Unable to remove the directory: :directory', self::LOG_ERROR, array('directory' => $pathName));
+						? $this->_logInfo('Removal of directory :directory', self::LOG_SUCCESS, ['directory' => $pathName])
+						: $this->_logInfo('Unable to remove the directory: :directory', self::LOG_ERROR, ['directory' => $pathName]);
 				}
 				else
 				{
 					@unlink($pathName)
-						? $this->_logInfo('Removal of single file: :file', self::LOG_SUCCESS, array('file' => $pathName))
-						: $this->_logInfo('Unable to remove the file: :file', self::LOG_ERROR, array('file' => $pathName));
+						? $this->_logInfo('Removal of single file: :file', self::LOG_SUCCESS, ['file' => $pathName])
+						: $this->_logInfo('Unable to remove the file: :file', self::LOG_ERROR, ['file' => $pathName]);
 				}
 
 				break;
@@ -218,13 +218,13 @@ class iaPatchApplier
 
 								if (false === $content)
 								{
-									$this->_logInfo('Unable to get contents of the file to calculate the checksum: :file. Skipped', self::LOG_ERROR, array('file' => $pathName));
+									$this->_logInfo('Unable to get contents of the file to calculate the checksum: :file. Skipped', self::LOG_ERROR, ['file' => $pathName]);
 									return;
 								}
 
 								if (!$this->_checkTokenValidity($content, $entry['hash']))
 								{
-									$this->_logInfo('The checksum is not equal: :file (seems modified). Skipped', self::LOG_ERROR, array('file' => $pathName));
+									$this->_logInfo('The checksum is not equal: :file (seems modified). Skipped', self::LOG_ERROR, ['file' => $pathName]);
 									return;
 								}
 							}
@@ -243,13 +243,13 @@ class iaPatchApplier
 					// because of mkdir with recursive param set to true does always return false
 					if (!is_dir($folder))
 					{
-						$this->_logInfo('Could not create a directory :directory to write the file: :file', self::LOG_ALERT, array('directory' => $folder, 'file' => $pathName));
+						$this->_logInfo('Could not create a directory :directory to write the file: :file', self::LOG_ALERT, ['directory' => $folder, 'file' => $pathName]);
 					}
 				}
 
 				is_writable($folder)
 					? $this->_writeFile($pathName, $entry['contents'], $entry['flags'] & self::FILE_FORMAT_BINARY)
-					: $this->_logInfo('File is non-writable: :file. Skipped', self::LOG_ERROR, array('file' => $pathName));
+					: $this->_logInfo('File is non-writable: :file. Skipped', self::LOG_ERROR, ['file' => $pathName]);
 		}
 	}
 
@@ -261,12 +261,12 @@ class iaPatchApplier
 			if ($entry['type'] == self::EXTRA_TYPE_PLUGIN)
 			{
 				iaHelper::installRemotePlugin($entry['name'])
-					? $this->_logInfo('Installation of :name is successfully completed.', self::LOG_SUCCESS, array('name' => $friendlyName))
-					: $this->_logInfo('Unable to install :name due to errors.', self::LOG_ERROR, array('name' => $friendlyName));
+					? $this->_logInfo('Installation of :name is successfully completed.', self::LOG_SUCCESS, ['name' => $friendlyName])
+					: $this->_logInfo('Unable to install :name due to errors.', self::LOG_ERROR, ['name' => $friendlyName]);
 			}
 			else
 			{
-				$this->_logInfo('Installation of ":name" requested. Ignored since installation of this type is not currently implemented.', self::LOG_ALERT, array('name' => $friendlyName));
+				$this->_logInfo('Installation of ":name" requested. Ignored since installation of this type is not currently implemented.', self::LOG_ALERT, ['name' => $friendlyName]);
 			}
 		}
 	}
@@ -283,7 +283,7 @@ class iaPatchApplier
 			}
 		}
 
-		$this->_logInfo(':num phrases added.', self::LOG_SUCCESS, array('num' => count($entries)));
+		$this->_logInfo(':num phrases added.', self::LOG_SUCCESS, ['num' => count($entries)]);
 	}
 
 	protected function _writeFile($filename, $content, $isBinary)
@@ -297,11 +297,11 @@ class iaPatchApplier
 			fwrite($file, $content);
 			fclose($file);
 
-			$this->_logInfo('File successfully written: :file', self::LOG_SUCCESS, array('file' => $filename));
+			$this->_logInfo('File successfully written: :file', self::LOG_SUCCESS, ['file' => $filename]);
 			return;
 		}
 
-		$this->_logInfo('Unable to write the file: :file', self::LOG_ERROR, array('file' => $filename));
+		$this->_logInfo('Unable to write the file: :file', self::LOG_ERROR, ['file' => $filename]);
 	}
 
 	protected function _runPhpCode($phpCode)

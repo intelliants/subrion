@@ -55,14 +55,14 @@ class iaUtil extends abstractUtil
 		if (extension_loaded('curl'))
 		{
 			$ch = curl_init();
-			curl_setopt_array($ch, array(
+			curl_setopt_array($ch, [
 				CURLOPT_URL => $url,
 				CURLOPT_HEADER => false,
 				CURLOPT_REFERER => IA_CLEAR_URL,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_CONNECTTIMEOUT => (int)$timeout,
 				CURLOPT_USERAGENT => $userAgent
-			));
+			]);
 
 			$result = curl_exec($ch);
 
@@ -101,7 +101,7 @@ class iaUtil extends abstractUtil
 
 		$config->set('HTML.Doctype', 'XHTML 1.0 Transitional');
 		$config->set('Cache.SerializerPath', $cacheDirectory);
-		$config->set('Attr.AllowedFrameTargets', array('_blank'));
+		$config->set('Attr.AllowedFrameTargets', ['_blank']);
 		$config->set('Attr.AllowedRel', 'facebox,nofollow,print,ia_lightbox');
 
 		// allow YouTube and Vimeo
@@ -180,7 +180,7 @@ class iaUtil extends abstractUtil
 		$message = is_array($message) ? implode('<br>', $message) : $message;
 		unset($_SESSION['redir']);
 
-		$_SESSION['redir'] = array('caption' => $title, 'msg' => $message, 'url' => $url);
+		$_SESSION['redir'] = ['caption' => $title, 'msg' => $message, 'url' => $url];
 
 		if (!$isAjax)
 		{
@@ -327,8 +327,8 @@ class iaUtil extends abstractUtil
 
 	public static function getFormattedTimezones()
 	{
-		$result = array();
-		$regions = array('Africa', 'America', 'Antarctica', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific');
+		$result = [];
+		$regions = ['Africa', 'America', 'Antarctica', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific'];
 		$timezones = DateTimeZone::listIdentifiers();
 		foreach ($timezones as $timezone)
 		{
@@ -364,10 +364,10 @@ class iaUtil extends abstractUtil
 
 	public static function getLetters()
 	{
-		return array(
+		return [
 			'0-9','A','B','C','D','E','F','G','H','I','J','K','L',
 			'M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
-		);
+		];
 	}
 
 	public static function getMetaKeywords($text)

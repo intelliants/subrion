@@ -83,12 +83,12 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		$output = array();
+		$output = [];
 
 		$start = isset($params['start']) ? (int)$params['start'] : 0;
 		$limit = isset($params['limit']) ? (int)$params['limit'] : 15;
 		$sort = isset($params['sort']) ? $params['sort'] : '';
-		$dir = in_array($params['dir'], array(iaDb::ORDER_ASC, iaDb::ORDER_DESC)) ? $params['dir'] : iaDb::ORDER_ASC;
+		$dir = in_array($params['dir'], [iaDb::ORDER_ASC, iaDb::ORDER_DESC]) ? $params['dir'] : iaDb::ORDER_ASC;
 		$filter = empty($params['filter']) ? '' : $params['filter'];
 
 		switch ($params['type'])
@@ -111,7 +111,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected function _entryUpdate(array $entryData, $entryId)
 	{
 		$stmt = '`removable` = 1 AND `id` = :id';
-		$this->_iaDb->bind($stmt, array('id' => (int)$entryId));
+		$this->_iaDb->bind($stmt, ['id' => (int)$entryId]);
 
 		$result = (bool)$this->_iaDb->update($entryData, $stmt);
 
@@ -123,7 +123,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getRemotePlugins($start, $limit, $sort, $dir, $filter)
 	{
-		$pluginsData = array();
+		$pluginsData = [];
 
 		if ($cachedData = $this->_iaCore->iaCache->get('subrion_plugins', 3600, true))
 		{
@@ -142,8 +142,8 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					if (isset($response['extensions']) && is_array($response['extensions']))
 					{
-						$pluginsData = array();
-						$installedPlugins = $this->_iaDb->keyvalue(array('name', 'version'), iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
+						$pluginsData = [];
+						$installedPlugins = $this->_iaDb->keyvalue(['name', 'version'], iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
 
 						foreach ($response['extensions'] as $entry)
 						{
@@ -187,15 +187,15 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		return $this->getMessages()
-			? array('result' => false, 'message' => $this->getMessages())
+			? ['result' => false, 'message' => $this->getMessages()]
 			: $this->_sortPlugins($pluginsData, $start, $limit, $dir, $filter, $sort);
 	}
 
 	private function _getLocalPlugins($start, $limit, $sort, $dir, $filter)
 	{
 		$total = 0;
-		$pluginsData = array();
-		$installedPlugins = $this->_iaDb->keyvalue(array('name', 'version'), iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
+		$pluginsData = [];
+		$installedPlugins = $this->_iaDb->keyvalue(['name', 'version'], iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
 
 		$directory = opendir($this->_folder);
 		while ($file = readdir($directory))
@@ -240,7 +240,7 @@ class iaBackendController extends iaAbstractControllerBackend
 							}
 
 							$pluginsData['pluginsList'][$this->getHelper()->itemData['name']] = $this->getHelper()->itemData['info']['title'];
-							$pluginsData['plugins'][$this->getHelper()->itemData['name']] = array(
+							$pluginsData['plugins'][$this->getHelper()->itemData['name']] = [
 								'title' => $this->getHelper()->itemData['info']['title'],
 								'version' => $this->getHelper()->itemData['info']['version'],
 								'compatibility' => $this->getHelper()->itemData['compatibility'],
@@ -252,7 +252,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								'notes' => $notes,
 								'info' => true,
 								'install' => true
-							);
+							];
 
 							$total++;
 						}
@@ -270,21 +270,21 @@ class iaBackendController extends iaAbstractControllerBackend
 		$where = "`type` = '" . iaExtra::TYPE_PLUGIN . "'" . (empty($filter) ? '' : " AND `title` LIKE '%{$filter}%'");
 		$order = ($sort && $dir) ? " ORDER BY `{$sort}` {$dir}" : '';
 
-		$result = array(
-			'data' => $this->_iaDb->all(array('id', 'name', 'title', 'version', 'status', 'author', 'summary', 'removable', 'date'), $where . $order, $start, $limit),
+		$result = [
+			'data' => $this->_iaDb->all(['id', 'name', 'title', 'version', 'status', 'author', 'summary', 'removable', 'date'], $where . $order, $start, $limit),
 			'total' => $this->_iaDb->one(iaDb::STMT_COUNT_ROWS, $where)
-		);
+		];
 
 		if ($result['data'])
 		{
 			foreach ($result['data'] as &$entry)
 			{
-				if ($row = $this->_iaDb->row_bind(array('name', 'config_group'), '`extras` = :plugin ORDER BY `order` ASC', array('plugin' => $entry['name']), iaCore::getConfigTable()))
+				if ($row = $this->_iaDb->row_bind(['name', 'config_group'], '`extras` = :plugin ORDER BY `order` ASC', ['plugin' => $entry['name']], iaCore::getConfigTable()))
 				{
 					$entry['config'] = $row['config_group'] . '/#' . $row['name'] . '';
 				}
 
-				if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', array('name' => $entry['name']), 'admin_pages'))
+				if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', ['name' => $entry['name']], 'admin_pages'))
 				{
 					$entry['manage'] = $alias;
 				}
@@ -323,7 +323,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	private function _sortPlugins(array $pluginsData, $start, $limit, $dir = iaDb::ORDER_DESC, $filter = '', $column = 'date')
 	{
 		$plugins = $pluginsData['plugins'];
-		$output = array('data' => array(), 'total' => count($plugins));
+		$output = ['data' => [], 'total' => count($plugins)];
 
 		if ($plugins)
 		{
@@ -384,7 +384,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getDocumentation($pluginName)
 	{
-		$result = array();
+		$result = [];
 
 		if (file_exists($documentationPath = IA_PLUGINS . $pluginName . IA_DS . 'docs' . IA_DS))
 		{
@@ -398,11 +398,11 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						$contents = str_replace('{IA_URL}', IA_CLEAR_URL, $contents);
 						$tab = substr($doc, 0, count($doc) - 6);
-						$result['tabs'][] = array(
+						$result['tabs'][] = [
 							'title' => iaLanguage::get('extra_' . $tab, $tab),
 							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 							'cls' => 'extension-docs' . ' extension-docs--' . $tab
-						);
+						];
 					}
 				}
 			}
@@ -410,7 +410,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->getHelper()->setXml(file_get_contents($this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME));
 			$this->getHelper()->parse();
 
-			$search = array(
+			$search = [
 				'{icon}',
 				'{link}',
 				'{name}',
@@ -419,7 +419,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				'{version}',
 				'{date}',
 				'{compatibility}'
-			);
+			];
 
 			$data = $this->getHelper()->itemData;
 			$icon = file_exists(IA_PLUGINS . $pluginName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
@@ -427,7 +427,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				: '';
 			$link = '<tr><td><a href="https://subrion.org/plugin/' . $pluginName . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>';
 
-			$replace = array(
+			$replace = [
 				$icon,
 				$link,
 				$data['info']['title'],
@@ -436,7 +436,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$data['info']['version'],
 				$data['info']['date'],
 				$data['compatibility']
-			);
+			];
 
 			$template = file_get_contents(IA_ADMIN . 'templates' . IA_DS . $this->_iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl');
 
@@ -448,7 +448,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _install($pluginName, $action)
 	{
-		$result = array('error' => true);
+		$result = ['error' => true];
 
 		if (isset($_POST['mode']) && 'remote' == $_POST['mode'])
 		{
@@ -540,16 +540,16 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					$result['message'] = iaLanguage::get('plugin_updated');
 
-					$iaLog->write(iaLog::ACTION_UPGRADE, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title'], 'to' => $iaExtra->itemData['info']['version']));
+					$iaLog->write(iaLog::ACTION_UPGRADE, ['type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title'], 'to' => $iaExtra->itemData['info']['version']]);
 				}
 				else
 				{
 					$result['groups'] = $iaExtra->getMenuGroups();
 					$result['message'] = (iaExtra::ACTION_INSTALL == $action)
-						? iaLanguage::getf('plugin_installed', array('name' => $iaExtra->itemData['info']['title']))
-						: iaLanguage::getf('plugin_reinstalled', array('name' => $iaExtra->itemData['info']['title']));
+						? iaLanguage::getf('plugin_installed', ['name' => $iaExtra->itemData['info']['title']])
+						: iaLanguage::getf('plugin_reinstalled', ['name' => $iaExtra->itemData['info']['title']]);
 
-					$iaLog->write(iaLog::ACTION_INSTALL, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title']));
+					$iaLog->write(iaLog::ACTION_INSTALL, ['type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title']]);
 				}
 
 				empty($iaExtra->itemData['notes']) || $result['message'][] = $iaExtra->itemData['notes'];
@@ -566,15 +566,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _uninstall($pluginName)
 	{
-		$result = array('result' => false, 'message' => iaLanguage::get('invalid_parameters'));
+		$result = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 
-		if ($this->_iaDb->exists('`name` = :plugin AND `type` = :type AND `removable` = 1', array('plugin' => $pluginName, 'type' => iaExtra::TYPE_PLUGIN)))
+		if ($this->_iaDb->exists('`name` = :plugin AND `type` = :type AND `removable` = 1', ['plugin' => $pluginName, 'type' => iaExtra::TYPE_PLUGIN]))
 		{
 			$installationFile = $this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME;
 
 			if (!file_exists($installationFile))
 			{
-				$result['message'] = array(iaLanguage::get('plugin_files_physically_missed'));
+				$result['message'] = [iaLanguage::get('plugin_files_physically_missed')];
 			}
 
 			$this->getHelper()->uninstall($pluginName);
@@ -587,7 +587,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			// log this event
 			$iaLog = $this->_iaCore->factory('log');
-			$iaLog->write(iaLog::ACTION_UNINSTALL, array('type' => iaExtra::TYPE_PLUGIN, 'name' => $pluginName));
+			$iaLog->write(iaLog::ACTION_UNINSTALL, ['type' => iaExtra::TYPE_PLUGIN, 'name' => $pluginName]);
 			//
 
 			$this->_iaCore->getConfig(true);

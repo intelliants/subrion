@@ -47,7 +47,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (isset($_GET['reset']) || isset($_GET['save']))
 		{
 			$data = isset($_GET['list']) ? $_GET['list'] : '';
-			if ($iaDb->update(array('admin_columns' => $data), iaDb::convertIds(iaUsers::getIdentity()->id), null, iaUsers::getTable()))
+			if ($iaDb->update(['admin_columns' => $data], iaDb::convertIds(iaUsers::getIdentity()->id), null, iaUsers::getTable()))
 			{
 				iaUsers::reloadIdentity();
 			}
@@ -58,7 +58,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		$disabledWidgets = iaUsers::getIdentity()->admin_columns;
-		$disabledWidgets = empty($disabledWidgets) ? array() : explode(',', trim($disabledWidgets, ','));
+		$disabledWidgets = empty($disabledWidgets) ? [] : explode(',', trim($disabledWidgets, ','));
 
 		$iaView->assign('disabled_widgets', $disabledWidgets);
 
@@ -71,15 +71,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		// populate statistics
 		$itemsList = $iaCore->factory('item')->getPackageItems();
-		$validSizes = array('small', 'medium', 'package');
+		$validSizes = ['small', 'medium', 'package'];
 
-		$iaCore->startHook('adminDashboardStatistics', array('items' => &$itemsList));
+		$iaCore->startHook('adminDashboardStatistics', ['items' => &$itemsList]);
 
 		natcasesort($itemsList);
 
-		$statistics = array();
+		$statistics = [];
 		foreach ($validSizes as $size)
-			$statistics[$size] = array();
+			$statistics[$size] = [];
 
 		foreach ($itemsList as $name => $package)
 		{
@@ -108,7 +108,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				if ($classInstance->dashboardStatistics)
 				{
-					$data = call_user_func(array($classInstance, self::STATISTICS_GETTER_METHOD));
+					$data = call_user_func([$classInstance, self::STATISTICS_GETTER_METHOD]);
 
 					isset($data['icon']) || $data['icon'] = $name;
 					isset($data['caption']) || $data['caption'] = $name;
@@ -129,8 +129,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (($customizationMode || !in_array('changelog', $disabledWidgets)) && $iaCore->get('display_changelog') && is_file(IA_HOME . 'changelog.txt'))
 		{
 			$index = 0;
-			$log = array();
-			$titles = array();
+			$log = [];
+			$titles = [];
 			$lines = file(IA_HOME . 'changelog.txt');
 
 			foreach ($lines as $line_num => $line)
@@ -141,13 +141,13 @@ class iaBackendController extends iaAbstractControllerBackend
 					if ($line[0] == '>')
 					{
 						$index++;
-						$log[$index] = array(
+						$log[$index] = [
 							'title' => trim($line, '<> '),
 							'added' => '',
 							'modified' => '',
 							'bugfixes' => '',
 							'other' => '',
-						);
+						];
 						$titles[trim($line, '<> ')] = $index;
 					}
 					elseif ($index > 0)
@@ -254,10 +254,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$result = (bool)mail('support@subrion.org', $this->_iaCore->get('site') . ' - ' . $_POST['feedback_subject'], $_POST['feedback_body'] . $footer, 'From: ' . $email);
 
-				return array(
+				return [
 					'result' => $result,
 					'message' => iaLanguage::get($result ? 'request_submitted' : 'failed')
-				);
+				];
 
 				break;
 
@@ -268,16 +268,16 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$page = $this->_iaCore->factory('page', iaCore::ADMIN)->getByName($_POST['page']);
 
-				$core = array('page' => array(
-					'info' => array(
+				$core = ['page' => [
+					'info' => [
 						'active_menu' => $page['name'],
 						'group' => $page['group'], // trick to get the specified page marked as active
 						'menu' => $iaView->getAdminMenu()
-					)
-				));
+					]
+				]];
 				$iaView->iaSmarty->assign('core', $core);
 
-				return array('menus' => $iaView->iaSmarty->fetch('menu.tpl'));
+				return ['menus' => $iaView->iaSmarty->fetch('menu.tpl')];
 		}
 	}
 
@@ -290,7 +290,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$content = preg_replace('#.*<body>(.*)</body>.*#ms', '$1', $content);
 
-		$search = array(
+		$search = [
 			'<td class="e">',
 			'<td class="v">',
 			'<th colspan="2">',
@@ -298,9 +298,9 @@ class iaBackendController extends iaAbstractControllerBackend
 			'</body></html>',
 			'<table border="0" cellpadding="3" width="600">',
 			'<table>',
-		);
+		];
 
-		$replace = array(
+		$replace = [
 			'<td style="text-align: right; width: 20%;">',
 			'<td style="overflow: visible; width: 80%; word-wrap: break-word;">',
 			'<th colspan="2" style="text-align: center; font-weight: bold;">',
@@ -308,7 +308,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'<!-- </body></html> -->',
 			'<table class="table table-bordered table-condensed table-striped">',
 			'<table class="table table-bordered table-condensed table-striped">',
-		);
+		];
 
 		$content = str_replace($search, $replace, $content);
 		$content = preg_replace('#<h2><a name="module_.+?">(.*?)<\/a><\/h2>#i', '<h3>$1</h3>', $content);
@@ -355,7 +355,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$iaSitemap = $this->_iaCore->factory('sitemap', iaCore::ADMIN);
 		$iaSitemap->generate()
-			? $iaView->setMessages(iaLanguage::getf('sitemap_regenerated', array('url' => IA_CLEAR_URL . iaSitemap::FILENAME)), iaView::SUCCESS)
+			? $iaView->setMessages(iaLanguage::getf('sitemap_regenerated', ['url' => IA_CLEAR_URL . iaSitemap::FILENAME]), iaView::SUCCESS)
 			: $iaView->setMessages(iaLanguage::get('sitemap_error'));
 
 		if (isset($_SERVER['HTTP_REFERER']))
@@ -378,14 +378,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (is_array($content) && $content)
 		{
-			$messages = array();
+			$messages = [];
 
 			foreach ($content as $entry)
 			{
 				switch ($entry['type'])
 				{
 					case self::UPDATE_TYPE_INFO:
-						$messages[] = array($entry['id'], $entry['message']);
+						$messages[] = [$entry['id'], $entry['message']];
 						break;
 					case self::UPDATE_TYPE_PATCH:
 						$version = explode('.', $entry['version']);
@@ -398,7 +398,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								{
 									$this->_iaCore->factory('cache')->clearGlobalCache();
 
-									$message = iaLanguage::getf('script_upgraded', array('version' => $entry['version']));
+									$message = iaLanguage::getf('script_upgraded', ['version' => $entry['version']]);
 									$this->_iaCore->iaView->setMessages($message, iaView::SUCCESS);
 
 									iaUtil::go_to(IA_SELF);
@@ -412,7 +412,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						else
 						{
 							$url = sprintf('%sinstall/upgrade/check/%s/', IA_CLEAR_URL, $entry['version']);
-							$this->_iaCore->iaView->setMessages(iaLanguage::getf('upgrade_available', array('url' => $url, 'version' => $entry['version'])), iaView::SYSTEM);
+							$this->_iaCore->iaView->setMessages(iaLanguage::getf('upgrade_available', ['url' => $url, 'version' => $entry['version']]), iaView::SYSTEM);
 						}
 				}
 			}

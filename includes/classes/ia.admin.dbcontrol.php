@@ -36,12 +36,12 @@ class iaDbControl extends abstractCore
 	public function getTables()
 	{
 		$where = '`table_schema` = :schema && `table_name` LIKE :name';
-		$this->iaDb->bind($where, array('schema' => INTELLI_DBNAME, 'name' => INTELLI_DBPREFIX . '%'));
+		$this->iaDb->bind($where, ['schema' => INTELLI_DBNAME, 'name' => INTELLI_DBPREFIX . '%']);
 
 		$sql = "SELECT `table_name` FROM `information_schema`.`tables` WHERE " . $where;
 		$tables = $this->iaDb->getAssoc($sql);
 
-		return $tables ? array_keys($tables) : array();
+		return $tables ? array_keys($tables) : [];
 	}
 
 	/**
@@ -82,7 +82,7 @@ class iaDbControl extends abstractCore
 			if (is_resource($file))
 			{
 				set_time_limit(0);
-				$query = array();
+				$query = [];
 
 				while (!feof($file))
 				{
@@ -92,8 +92,8 @@ class iaDbControl extends abstractCore
 					{
 						$query = trim(implode('', $query));
 						$query = str_replace(
-							array('{prefix}', '{mysql_version}', '{db_options}'),
-							array($this->iaDb->prefix, $this->iaDb->tableOptions, $this->iaDb->tableOptions),
+							['{prefix}', '{mysql_version}', '{db_options}'],
+							[$this->iaDb->prefix, $this->iaDb->tableOptions, $this->iaDb->tableOptions],
 							$query
 						);
 
@@ -102,7 +102,7 @@ class iaDbControl extends abstractCore
 
 					if (is_string($query))
 					{
-						$query = array();
+						$query = [];
 					}
 				}
 
@@ -156,12 +156,12 @@ class iaDbControl extends abstractCore
 		// compose table's indices
 		if ($indices = $this->iaDb->getAll('SHOW INDEXES FROM ' . $tableName))
 		{
-			$compositeIndices = array();
+			$compositeIndices = [];
 
 			// assemble composite indices for further usage
 			foreach ($indices as $key => $index)
 			{
-				isset($compositeIndices[$index['Key_name']]) || $compositeIndices[$index['Key_name']] = array();
+				isset($compositeIndices[$index['Key_name']]) || $compositeIndices[$index['Key_name']] = [];
 				$compositeIndices[$index['Key_name']][] = $index['Column_name'];
 				if (1 < count($compositeIndices[$index['Key_name']]))
 				{
@@ -376,7 +376,7 @@ class iaDbControl extends abstractCore
 
 		$result = '';
 
-		$matches = array();
+		$matches = [];
 		if (preg_match('/DEFAULT CHARSET=([a-z0-9]+)/i', $structure, $matches))
 		{
 			$result = $matches[1];

@@ -35,11 +35,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('tag');
 
-		$pagination = array(
+		$pagination = [
 			'start' => ($page - 1) * $iaCore->get('blog_number'),
 			'limit' => (int)$iaCore->get('blog_number'),
 			'template' => $pageUrl . $tag . '?page={page}'
-		);
+		];
 
 		$sql =
 			'SELECT SQL_CALC_FOUND_ROWS ' .
@@ -51,7 +51,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			'WHERE bt.`alias` = \':tag\' AND bet.`tag_id` = bt.`id` ' .
 			'AND b.`status` = \':status\' LIMIT :start, :limit';
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $iaDb->prefix,
 			'table_blog_entries' => 'blog_entries',
 			'table_blog_entries_tags' => 'blog_entries_tags',
@@ -61,7 +61,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			'status' => iaCore::STATUS_ACTIVE,
 			'start' => $pagination['start'],
 			'limit' => $pagination['limit']
-		));
+		]);
 
 		$blogEntries = $iaDb->getAll($sql);
 
@@ -87,11 +87,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		$pageUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('tag');
 
-		$pagination = array(
+		$pagination = [
 			'start' => ($page - 1) * $iaCore->get('blog_tag_number'),
 			'limit' => (int)$iaCore->get('blog_tag_number'),
 			'template' => $pageUrl . '?page={page}'
-		);
+		];
 
 		$prefix = $iaDb->prefix;
 		$sql =
@@ -104,7 +104,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			'ORDER BY bt.`title` ' .
 			'LIMIT :start, :limit';
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $iaDb->prefix,
 			'table_blog_entries' => 'blog_entries',
 			'table_blog_entries_tags' => 'blog_entries_tags',
@@ -112,7 +112,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			'status' => iaCore::STATUS_ACTIVE,
 			'start' => $pagination['start'],
 			'limit' => $pagination['limit']
-		));
+		]);
 
 		$tags = $iaDb->getAll($sql);
 		$pagination['total'] = $iaDb->foundRows();

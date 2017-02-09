@@ -105,10 +105,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		if (!$preview)
 		{
-			$page = array(
+			$page = [
 				'meta_description' => $page['meta_description'],
 				'meta_keywords' => $page['meta_keywords'],
-			);
+			];
 			$iaView->assign('protect', true);
 		}
 	}

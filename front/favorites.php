@@ -32,7 +32,7 @@ $itemsList = $iaItem->getPackageItems();
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
 {
-	$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+	$output = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
 
 	if (isset($_GET['item']) && $_GET['item_id'])
 	{
@@ -46,11 +46,11 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
 				if ($iaUsers->hasIdentity())
 				{
 					$iaDb->query(iaDb::printf("INSERT IGNORE `:prefix:table` (`id`, `member_id`, `item`) VALUES (:id, :user, ':item')",
-						array('prefix' => $iaDb->prefix,
+						['prefix' => $iaDb->prefix,
 							'table' => $iaItem->getFavoritesTable(),
 							'id' => $itemId,
 							'user' => iaUsers::getIdentity()->id,
-							'item' => $itemName)
+							'item' => $itemName]
 					));
 
 					// $output['error'] = !(bool)$iaDb->getAffected();
@@ -86,7 +86,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
 				{
 					$iaDb->delete('`id` = :item_id AND `member_id` = :user AND `item` = :item',
 							$iaItem->getFavoritesTable(),
-							array('item_id' => $itemId, 'user' => iaUsers::getIdentity()->id, 'item' => $itemName)
+							['item_id' => $itemId, 'user' => iaUsers::getIdentity()->id, 'item' => $itemName]
 					);
 				}
 				else
@@ -104,7 +104,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
-	$itemInfo = $fields = array();
+	$itemInfo = $fields = [];
 	$iaField = $iaCore->factory('field');
 
 	if ($iaUsers->hasIdentity())
@@ -113,7 +113,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		{
 			foreach ($favorites as $itemName => $ids)
 			{
-				$fields = array('id');
+				$fields = ['id'];
 
 				$class = (iaCore::CORE != $itemsList[$itemName])
 						? $iaCore->factoryPackage('item', $itemsList[$itemName], iaCore::FRONT, $itemName)
@@ -137,7 +137,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 						$fields[] = 'member_id';
 					}
 
-					$stmt = iaDb::printf("`id` IN (:ids) && `status` = ':status'", array('ids' => implode(',', $ids), 'status' => iaCore::STATUS_ACTIVE));
+					$stmt = iaDb::printf("`id` IN (:ids) && `status` = ':status'", ['ids' => implode(',', $ids), 'status' => iaCore::STATUS_ACTIVE]);
 					$favorites[$itemName]['items'] = $iaDb->all('*, 1 `favorite`', $stmt, null, null, $iaItem->getItemTable($itemName));
 				}
 
@@ -151,7 +151,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 	else
 	{
-		$favorites = isset($_SESSION[iaUsers::SESSION_FAVORITES_KEY]) ? (array)$_SESSION[iaUsers::SESSION_FAVORITES_KEY] : array();
+		$favorites = isset($_SESSION[iaUsers::SESSION_FAVORITES_KEY]) ? (array)$_SESSION[iaUsers::SESSION_FAVORITES_KEY] : [];
 
 		// populate visible fields
 		foreach ($favorites as $itemName => &$items)
@@ -164,7 +164,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				// generate correct template filename
 				$favorites[$itemName]['package'] = iaCore::CORE == $itemsList[$itemName] ? '' : $itemsList[$itemName];
 
-				$iaCore->startHook('phpFavoritesAfterGetExtraItems', array('favorites' => &$items, 'item' => $itemName));
+				$iaCore->startHook('phpFavoritesAfterGetExtraItems', ['favorites' => &$items, 'item' => $itemName]);
 			}
 			else
 			{

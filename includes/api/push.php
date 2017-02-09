@@ -30,46 +30,46 @@ class iaApiPush
 
 
 	// shortcuts
-	public function sendMembers($title, $message = '', array $params = array())
+	public function sendMembers($title, $message = '', array $params = [])
 	{
 		return $this->send($this->_fetchTokens(), $title, $message, $params);
 	}
 
-	public function sendUsergroup($usergroupId, $title, $message = '', array $params = array())
+	public function sendUsergroup($usergroupId, $title, $message = '', array $params = [])
 	{
 		return $this->send($this->_fetchTokens(iaDb::convertIds($usergroupId, 'usergroup_id')), $title, $message, $params);
 	}
 
-	public function sendAdministrators($title, $message = '', array $params = array())
+	public function sendAdministrators($title, $message = '', array $params = [])
 	{
 		return $this->sendUsergroup(iaUsers::MEMBERSHIP_ADMINISTRATOR, $title, $message, $params);
 	}
 	//
 
-	public function send(array $receivers, $title, $message = '', array $params = array())
+	public function send(array $receivers, $title, $message = '', array $params = [])
 	{
 		if (!$receivers || !iaCore::instance()->get('api_push_access_key'))
 		{
 			return false;
 		}
 
-		$data = array('title' => $title, 'message' => $message);
+		$data = ['title' => $title, 'message' => $message];
 		$data = array_merge($data, $params);
 
-		$postData = array(
+		$postData = [
 			'registration_ids' => $receivers,
 			'data' => $data
-		);
+		];
 
-		$headers = array(
+		$headers = [
 			'Authorization: key=' . iaCore::instance()->get('api_push_access_key'),
 			'Content-Type: application/json'
-		);
+		];
 
 		return $this->_httpRequest(self::PUSH_ENDPOINT_URL, $postData, $headers);
 	}
 
-	private function _httpRequest($url, $postData, array $headers = array())
+	private function _httpRequest($url, $postData, array $headers = [])
 	{
 		$ch = curl_init();
 

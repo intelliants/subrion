@@ -33,7 +33,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_tooltipsEnabled = true;
 
-	protected $_gridColumns = array('item', 'cost', 'duration', 'recurring', 'cycles', 'unit', 'order', 'status');
+	protected $_gridColumns = ['item', 'cost', 'duration', 'recurring', 'cycles', 'unit', 'order', 'status'];
 
 	protected $_phraseAddSuccess = 'plan_added';
 	protected $_phraseGridEntryDeleted = 'plan_deleted';
@@ -75,7 +75,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _setDefaultValues(array &$entry)
 	{
-		$entry = array(
+		$entry = [
 			'item' => '',
 			'cost' => '0.00',
 			'duration' => 30,
@@ -86,7 +86,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'cycles' => 0,
 			'type' => iaPlan::TYPE_FEE,
 			'listings_limit' => 0
-		);
+		];
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
@@ -108,7 +108,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (isset($this->_fields[$entry['item']]))
 		{
-			$entry['data'] = array();
+			$entry['data'] = [];
 
 			if (!empty($data['fields']) && !$this->getMessages())
 			{
@@ -128,8 +128,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				if (isset($update))
 				{
-					$fieldsNames = array_map(array('iaSanitize', 'sql'), $entry['data']['fields']);
-					$this->_iaDb->update(array('for_plan' => 1), "`name` IN ('" . implode("','", $fieldsNames) . "')", null, iaField::getTable());
+					$fieldsNames = array_map(['iaSanitize', 'sql'], $entry['data']['fields']);
+					$this->_iaDb->update(['for_plan' => 1], "`name` IN ('" . implode("','", $fieldsNames) . "')", null, iaField::getTable());
 				}
 			}
 
@@ -140,10 +140,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
-		$lang = array(
+		$lang = [
 			'title' => $data['title'],
 			'description' => $data['description']
-		);
+		];
 
 		foreach ($this->_iaCore->languages as $code => $language)
 		{
@@ -151,7 +151,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				if (empty($lang['title'][$code]))
 				{
-					$this->addMessage(iaLanguage::getf('error_lang_title', array('lang' => $language['title'])), false);
+					$this->addMessage(iaLanguage::getf('error_lang_title', ['lang' => $language['title']]), false);
 				}
 				elseif (!utf8_is_valid($lang['title'][$code]))
 				{
@@ -163,7 +163,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				if (empty($lang['description'][$code]))
 				{
-					$this->addMessage(iaLanguage::getf('error_lang_description', array('lang' => $language['title'])), false);
+					$this->addMessage(iaLanguage::getf('error_lang_description', ['lang' => $language['title']]), false);
 				}
 				elseif (!utf8_is_valid($lang['description'][$code]))
 				{
@@ -189,7 +189,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$entry['type'] = $data['type'];
 		$entry['listings_limit'] = $data['listings_limit'];
 
-		$this->_iaCore->startHook('phpAdminPlanCommonFieldFilled', array('item' => &$entry));
+		$this->_iaCore->startHook('phpAdminPlanCommonFieldFilled', ['item' => &$entry]);
 
 		$entry['cost'] || $this->_phraseAddSuccess = 'free_plan_added';
 
@@ -205,7 +205,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 
 		// save plan options
-		$optionItems = $this->_iaDb->keyvalue(array('id', 'item'), null, iaPlan::getTableOptions());
+		$optionItems = $this->_iaDb->keyvalue(['id', 'item'], null, iaPlan::getTableOptions());
 
 		$this->_iaDb->setTable(iaPlan::getTableOptionValues());
 
@@ -214,12 +214,12 @@ class iaBackendController extends iaAbstractControllerBackend
 			if (!isset($optionItems[$optionId]) || $optionItems[$optionId] != $entry['item']) continue;
 
 			$where = sprintf('`plan_id` = %d AND `option_id` = %d', $this->getEntryId(), $optionId);
-			$values = array(
+			$values = [
 				'plan_id' => $this->getEntryId(),
 				'option_id' => (int)$optionId,
 				'price' => isset($values['price']) ? $values['price'] : 0,
 				'value' => $values['value']
-			);
+			];
 
 			$this->_iaDb->exists($where)
 				? $this->_iaDb->update($values, $where)
@@ -239,7 +239,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _entryDelete($entryId)
 	{
-		$this->_iaCore->startHook('phpAdminBeforePlanDelete', array('entryId' => $entryId));
+		$this->_iaCore->startHook('phpAdminBeforePlanDelete', ['entryId' => $entryId]);
 
 		$result = parent::_entryDelete($entryId);
 
@@ -249,7 +249,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			// if there are no more plans exist
 			if (0 === (int)$this->_iaDb->one(iaDb::STMT_COUNT_ROWS))
 			{
-				$this->_iaDb->update(array('for_plan' => 0), iaDb::convertIds(1, 'for_plan'), null, iaField::getTable());
+				$this->_iaDb->update(['for_plan' => 0], iaDb::convertIds(1, 'for_plan'), null, iaField::getTable());
 			}
 
 			iaLanguage::delete(self::PATTERN_TITLE . $entryId);
@@ -268,7 +268,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		else
 		{
-			$entryData['data'] = array();
+			$entryData['data'] = [];
 		}
 
 		// populating titles & descriptions
@@ -277,21 +277,21 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->_iaDb->setTable(iaLanguage::getTable());
 
 			$stmt = "`key` = 'plan_title_" . $this->getEntryId() . "'";
-			$entryData['title'] = $this->_iaDb->keyvalue(array('code', 'value'), $stmt);
+			$entryData['title'] = $this->_iaDb->keyvalue(['code', 'value'], $stmt);
 
 			$stmt = "`key` = 'plan_description_" . $this->getEntryId() . "'";
-			$entryData['description'] = $this->_iaDb->keyvalue(array('code', 'value'), $stmt);
+			$entryData['description'] = $this->_iaDb->keyvalue(['code', 'value'], $stmt);
 
 			$this->_iaDb->resetTable();
 		}
 		else
 		{
-			list($entryData['title'], $entryData['description']) = array($_POST['title'], $_POST['description']);
+			list($entryData['title'], $entryData['description']) = [$_POST['title'], $_POST['description']];
 		}
 		//
 
 		$units = $this->_iaDb->getEnumValues($this->getTable(), 'unit');
-		$units = $units ? array_values($units['values']) : array();
+		$units = $units ? array_values($units['values']) : [];
 
 		$usergroups = $this->_iaCore->factory('users')->getUsergroups();
 		unset($usergroups[iaUsers::MEMBERSHIP_ADMINISTRATOR], $usergroups[iaUsers::MEMBERSHIP_GUEST]);
@@ -308,15 +308,15 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_iaCore->factory('field');
 
-		$fields = array();
+		$fields = [];
 
-		$rows = $this->_iaDb->all(array('name', 'item', 'for_plan', 'required'), ' 1=1 ORDER BY `for_plan` DESC', null, null, iaField::getTable());
+		$rows = $this->_iaDb->all(['name', 'item', 'for_plan', 'required'], ' 1=1 ORDER BY `for_plan` DESC', null, null, iaField::getTable());
 		foreach ($rows as $row)
 		{
 			$type = $row['for_plan'];
 			$row['required'] && $type = 2;
 
-			isset($fields[$row['item']]) || $fields[$row['item']] = array(2 => array(), 1 => array(), 0 => array());
+			isset($fields[$row['item']]) || $fields[$row['item']] = [2 => [], 1 => [], 0 => []];
 
 			$fields[$row['item']][$type][$row['name']] = iaField::getFieldTitle($row['item'], $row['name']);
 		}
@@ -326,13 +326,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getItemsStatuses()
 	{
-		$result = array();
+		$result = [];
 
 		$iaItem = $this->_iaCore->factory('item');
 
 		foreach ($this->_items as $itemName)
 		{
-			$statuses = array();
+			$statuses = [];
 
 			$className = ucfirst(substr($itemName, 0, -1));
 			$itemClassInstance = (iaUsers::getItemName() == $itemName)
@@ -351,16 +351,16 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _getOptions()
 	{
-		$result = array();
+		$result = [];
 
-		$values = $this->_iaDb->assoc(array('option_id', 'price', 'value'), iaDb::convertIds($this->getEntryId(), 'plan_id'), iaPlan::getTableOptionValues());
+		$values = $this->_iaDb->assoc(['option_id', 'price', 'value'], iaDb::convertIds($this->getEntryId(), 'plan_id'), iaPlan::getTableOptionValues());
 		$options = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, null, null, null, iaPlan::getTableOptions());
 
 		foreach ($options as $option)
 		{
 			$option['values'] = isset($values[$option['id']])
 				? $values[$option['id']]
-				: array('price' => 0, 'value' => $option['default_value']);
+				: ['price' => 0, 'value' => $option['default_value']];
 			$result[$option['item']][] = $option;
 		}
 

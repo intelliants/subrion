@@ -39,9 +39,9 @@ class iaBackendController extends iaAbstractControllerBackend
 		$packageName = explode('_stats', $iaView->name());
 		$packageName = array_shift($packageName);
 
-		$this->_iaCore->startHook('phpAdminPackageStatistics', array('package' => $packageName));
+		$this->_iaCore->startHook('phpAdminPackageStatistics', ['package' => $packageName]);
 
-		$statistics = array();
+		$statistics = [];
 
 		$iaItem = $this->_iaCore->factory('item');
 		if ($packageItems = $iaItem->getItemsByPackage($packageName))
@@ -54,7 +54,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					if ($itemClass->dashboardStatistics)
 					{
-						if ($data = call_user_func(array($itemClass, self::GETTER_METHOD_NAME), array(false)))
+						if ($data = call_user_func([$itemClass, self::GETTER_METHOD_NAME], [false]))
 						{
 							$statistics[$itemName] = $data;
 						}

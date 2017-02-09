@@ -47,8 +47,8 @@ class KCAPTCHA{
 	var $credits = ''; # if empty, HTTP_HOST will be shown
 
 	# CAPTCHA image colors (RGB, 0-255)
-	var $foreground_color = array(0, 0, 0);
-	var $background_color = array(220, 230, 255);
+	var $foreground_color = [0, 0, 0];
+	var $background_color = [220, 230, 255];
 	//var $foreground_color = array(mt_rand(0,100), mt_rand(0,100), mt_rand(0,100));
 	//var $background_color = array(mt_rand(200,255), mt_rand(200,255), mt_rand(200,255));
 
@@ -58,7 +58,7 @@ class KCAPTCHA{
 
 	public function getImage()
 	{
-		$fonts=array();
+		$fonts= [];
 		$fontsdir_absolute = dirname(__FILE__).'/'.$this->fontsdir;
 		if ($handle = opendir($fontsdir_absolute)) {
 			while (false !== ($file = readdir($handle))) {
@@ -86,7 +86,7 @@ class KCAPTCHA{
 			imagealphablending($font, true);
 			$fontfile_width=imagesx($font);
 			$fontfile_height=imagesy($font)-1;
-			$font_metrics=array();
+			$font_metrics= [];
 			$symbol=0;
 			$reading_symbol=false;
 
@@ -95,7 +95,7 @@ class KCAPTCHA{
 				$transparent = (imagecolorat($font, $i, 0) >> 24) == 127;
 
 				if(!$reading_symbol && !$transparent){
-					$font_metrics[$this->alphabet{$symbol}]=array('start'=>$i);
+					$font_metrics[$this->alphabet{$symbol}]= ['start'=>$i];
 					$reading_symbol=true;
 					continue;
 				}

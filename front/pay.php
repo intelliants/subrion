@@ -62,7 +62,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		if (iaTransaction::FAILED != $transaction['status'])
 		{
-			$iaTransaction->update(array('status' => iaTransaction::FAILED), $transaction['id']);
+			$iaTransaction->update(['status' => iaTransaction::FAILED], $transaction['id']);
 		}
 
 		$iaView->setMessages(iaLanguage::get('payment_canceled'), iaView::SUCCESS);
@@ -76,16 +76,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	}
 
 	$gateways = $iaTransaction->getPaymentGateways();
-	$order = array();
+	$order = [];
 	$tplFile = 'pay';
 
 	$error = false;
-	$messages = array();
+	$messages = [];
 
 	$iaPlan = $iaCore->factory('plan');
 	$iaUsers = $iaCore->factory('users');
 
-	$iaCore->startHook('phpFrontBeforePaymentProcessing', array('transaction' => $transaction));
+	$iaCore->startHook('phpFrontBeforePaymentProcessing', ['transaction' => $transaction]);
 
 	switch ($transaction['status'])
 	{
@@ -126,7 +126,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					$gate = $_POST['payment_type'];
 
-					$iaDb->update(array('gateway' => $gate, 'date_updated' => date(iaDb::DATETIME_FORMAT)), iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
+					$iaDb->update(['gateway' => $gate, 'date_updated' => date(iaDb::DATETIME_FORMAT)], iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
 					empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
 
 					// include pre form send files
@@ -140,11 +140,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 					if (is_file($form))
 					{
-						$data = array(
+						$data = [
 							'caption' => 'Redirect to ' . $gate . '',
 							'msg' => 'You will be redirected to ' . $gate . '',
 							'form' => $form
-						);
+						];
 
 						$iaView->assign('redir', $data);
 
@@ -163,7 +163,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				{
 					$temp_transaction = $transaction;
 
-					$transaction = array();
+					$transaction = [];
 
 					// include post form send files
 					$paymentGatewayHandler = IA_PLUGINS . $gate . IA_DS . 'includes' . IA_DS . 'post-processing' . iaSystem::EXECUTABLE_FILE_EXT;
@@ -172,11 +172,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					{
 						// set to true if custom transaction handling needed
 						$replaceHandler = false;
-						$iaCore->startHook('phpPayBeforeIncludePostGate', array('gateway' => $gate));
+						$iaCore->startHook('phpPayBeforeIncludePostGate', ['gateway' => $gate]);
 
 						include $paymentGatewayHandler;
 
-						$iaCore->startHook('phpPayAfterIncludePostGate', array('gateway' => $gate));
+						$iaCore->startHook('phpPayAfterIncludePostGate', ['gateway' => $gate]);
 
 						// print transaction information
 						if (INTELLI_DEBUG)
@@ -192,7 +192,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 								return iaView::errorPage(iaView::ERROR_FORBIDDEN, $messages);
 							}
 
-							if (in_array($transaction['status'], array(iaTransaction::PASSED, iaTransaction::PENDING)))
+							if (in_array($transaction['status'], [iaTransaction::PASSED, iaTransaction::PENDING]))
 							{
 								// update transaction record
 								$iaTransaction->update($transaction, $transaction['id']);
@@ -218,7 +218,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			}
 			else
 			{
-				$iaView->assign('pay_message', iaLanguage::getf('wait_for_gateway_answer', array('url' => IA_SELF . '?repay')));
+				$iaView->assign('pay_message', iaLanguage::getf('wait_for_gateway_answer', ['url' => IA_SELF . '?repay']));
 			}
 
 			break;
@@ -251,7 +251,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
 
 	$memberBalance = iaUsers::hasIdentity() ? iaUsers::getIdentity()->funds : 0;
-	iaLanguage::set('funds_in_your_account', iaLanguage::getf('funds_in_your_account', array('sum' => $memberBalance, 'currency' => $iaCore->get('currency'))));
+	iaLanguage::set('funds_in_your_account', iaLanguage::getf('funds_in_your_account', ['sum' => $memberBalance, 'currency' => $iaCore->get('currency')]));
 
 	$isBalancePayment = (iaUsers::hasIdentity() && iaTransaction::TRANSACTION_MEMBER_BALANCE == $transaction['item'] && iaUsers::getIdentity()->id == $transaction['item_id']);
 	$isFundsEnough = (bool)(!$isBalancePayment && iaUsers::hasIdentity() && iaUsers::getIdentity()->funds >= $transaction['amount']);
@@ -275,7 +275,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if ($referrerDomain !== $domain)
 			{
-				$_POST = array();
+				$_POST = [];
 			}
 		}
 	}

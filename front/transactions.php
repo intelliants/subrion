@@ -34,7 +34,7 @@ $profilePageUrl = IA_URL . 'profile/';
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 {
-	$output = array('error' => false);
+	$output = ['error' => false];
 	$amount = (float)$_GET['amount'];
 
 	if ($amount >= (float)$iaCore->get('funds_min_deposit')
@@ -47,10 +47,10 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 	}
 	else
 	{
-		$output['error'] = iaLanguage::getf('amount_incorrect', array(
+		$output['error'] = iaLanguage::getf('amount_incorrect', [
 			'min' => $iaCore->get('funds_min_deposit'),
 			'max' => $iaCore->get('funds_max_deposit'),
-			'currency' => $iaCore->get('currency'))
+			'currency' => $iaCore->get('currency')]
 		);
 	}
 
@@ -108,20 +108,20 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		}
 		else
 		{
-			$iaView->setMessages(iaLanguage::getf('amount_incorrect', array(
+			$iaView->setMessages(iaLanguage::getf('amount_incorrect', [
 				'min' => $iaCore->get('funds_min_deposit'),
 				'max' => $iaCore->get('funds_max_deposit'),
-				'currency' => $iaCore->get('currency'))
+				'currency' => $iaCore->get('currency')]
 			));
 		}
 	}
 
-	$pagination = array(
+	$pagination = [
 		'page' => 1,
 		'limit' => 10,
 		'total' => 0,
 		'template' => $profilePageUrl . 'funds/?page={page}'
-	);
+	];
 
 	$pagination['page'] = (isset($_GET['page']) && 1 < $_GET['page']) ? (int)$_GET['page'] : $pagination['page'];
 	$pagination['page'] = ($pagination['page'] - 1) * $pagination['limit'];

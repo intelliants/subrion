@@ -55,11 +55,11 @@ class iaBlog extends abstractPlugin
 	public function coreSearch($query, $start, $limit)
 	{
 		$where = '(b.`title` LIKE :query OR b.`body` LIKE :query)';
-		$this->iaDb->bind($where, array('query' => '%' . iaSanitize::sql($query) . '%'));
+		$this->iaDb->bind($where, ['query' => '%' . iaSanitize::sql($query) . '%']);
 
 		$rows = $this->get($start, $limit, $where);
 
-		return array($this->iaDb->foundRows(), $rows);
+		return [$this->iaDb->foundRows(), $rows];
 	}
 
 	public function get($start, $limit, $conditions = null)
@@ -68,7 +68,7 @@ class iaBlog extends abstractPlugin
 
 		$where = 'b.`status` = :status AND b.`lang` = :language';
 		empty($conditions) || $where.= ' AND ' . $conditions;
-		$this->iaDb->bind($where, array('status' => iaCore::STATUS_ACTIVE, 'language' => $this->iaView->language));
+		$this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'language' => $this->iaView->language]);
 
 		$sql = <<<SQL
 SELECT SQL_CALC_FOUND_ROWS b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname` 
@@ -79,7 +79,7 @@ GROUP BY b.`id`
 ORDER BY :order 
 LIMIT :start, :limit
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries' => self::getTable(),
 			'table_members' => iaUsers::getTable(),
@@ -87,7 +87,7 @@ SQL;
 			'order' => $order,
 			'start' => (int)$start,
 			'limit' => (int)$limit
-		));
+		]);
 
 		return $this->iaDb->getAll($sql);
 	}
@@ -100,13 +100,13 @@ SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`ful
 LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
 WHERE b.`id` = :id AND b.`status` = ':status'
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries' => self::getTable(),
 			'table_members' => iaUsers::getTable(),
 			'id' => (int)$id,
 			'status' => iaCore::STATUS_ACTIVE
-		));
+		]);
 
 		return $this->iaDb->getRow($sql);
 	}
@@ -118,7 +118,7 @@ SQL;
 		$this->iaDb->setTable(self::getTable());
 
 		// if item exists, then remove it
-		if ($row = $this->iaDb->row_bind(array('title', 'image'), '`id` = :id', array('id' => $id)))
+		if ($row = $this->iaDb->row_bind(['title', 'image'], '`id` = :id', ['id' => $id]))
 		{
 			$result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
 
@@ -134,16 +134,16 @@ SQL;
 DELETE FROM `:prefix:table_blog_tags` 
 WHERE `id` NOT IN (SELECT DISTINCT `tag_id`	FROM `:prefix:table_blog_entries_tags`)
 SQL;
-			$sql = iaDb::printf($sql, array(
+			$sql = iaDb::printf($sql, [
 				'prefix' => $this->iaDb->prefix,
 				'table_blog_entries_tags' => 'blog_entries_tags',
 				'table_blog_tags' => 'blog_tags'
-			));
+			]);
 			$result[] = (bool)$this->iaDb->query($sql);
 
 			if ($result)
 			{
-				$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, array('module' => 'blog', 'item' => 'blog', 'name' => $row['title'], 'id' => (int)$id));
+				$this->iaCore->factory('log')->write(iaLog::ACTION_DELETE, ['module' => 'blog', 'item' => 'blog', 'name' => $row['title'], 'id' => (int)$id]);
 			}
 		}
 
@@ -160,12 +160,12 @@ SELECT DISTINCT bt.`title`, bt.`alias`
 LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) 
 WHERE bet.`blog_id` = :id
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 			'table_blog_tags' => $this->_tableBlogTags,
 			'id' => (int)$blogEntryId
-		));
+		]);
 
 		return $this->iaDb->getAll($sql);
 	}
@@ -177,12 +177,12 @@ SELECT GROUP_CONCAT(`title`)
 	FROM `:prefix:table_blog_tags` bt 
 WHERE `id` IN (SELECT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id)
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_tags' => $this->_tableBlogTags,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 			'id' => $blogEntryId
-		));
+		]);
 
 		return $this->iaDb->getOne($sql);
 	}
@@ -195,11 +195,11 @@ SELECT bt.`title`, bt.`alias`, bet.`blog_id`
 LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) 
 ORDER BY bt.`title`
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 			'table_blog_tags' => $this->_tableBlogTags
-		));
+		]);
 
 		return $this->iaDb->getAll($sql);
 	}
@@ -218,33 +218,33 @@ WHERE `id` IN (
 	GROUP BY 1 
 	HAVING COUNT(*) = 1)
 SQL;
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_tags' => $this->_tableBlogTags,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 			'id' => $id
-		));
+		]);
 		$this->iaDb->query($sql);
 
 		$this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
 
-		$allTagTitles = $this->iaDb->keyvalue(array('title','id'), null,$this->_tableBlogTags);
+		$allTagTitles = $this->iaDb->keyvalue(['title','id'], null,$this->_tableBlogTags);
 
 		foreach ($tags as $tag)
 		{
 			$tagAlias = iaSanitize::alias(strtolower($tag));
-			$tagEntry = array(
+			$tagEntry = [
 				'title' => $tag,
 				'alias' => $tagAlias
-			);
+			];
 			$tagId = isset($allTagTitles[$tag])
 				? $allTagTitles[$tag]
 				: $this->iaDb->insert($tagEntry, null, $this->_tableBlogTags);
 
-			$tagBlogIds = array(
+			$tagBlogIds = [
 				'blog_id' => $id,
 				'tag_id' => $tagId
-			);
+			];
 
 			$this->iaDb->insert($tagBlogIds);
 		}

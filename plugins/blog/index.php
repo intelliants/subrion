@@ -56,7 +56,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if (iaCore::ACTION_ADD == $pageAction)
 			{
-				$entry = array(
+				$entry = [
 					'lang' => $iaView->language,
 					'date_added' => date(iaDb::DATETIME_FORMAT),
 					'status' => iaCore::STATUS_ACTIVE,
@@ -64,7 +64,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					'title' => '',
 					'body' => '',
 					'image' => ''
-				);
+				];
 			}
 			else
 			{
@@ -90,7 +90,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			if (isset($_POST['data-blog-entry']))
 			{
 				$result = false;
-				$messages = array();
+				$messages = [];
 
 				iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
@@ -107,7 +107,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 				if (empty($entry['body']))
 				{
-					$messages[] = iaLanguage::getf('field_is_empty', array('field' => iaLanguage::get('body')));
+					$messages[] = iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('body')]);
 				}
 
 				$entry['alias'] = $iaBlog->titleAlias(empty($_POST['alias']) ? $entry['title'] : $_POST['alias']);
@@ -195,7 +195,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		default:
 			$iaView->display('index');
 
-			$pageActions = array();
+			$pageActions = [];
 
 			if (isset($iaCore->requestPath[0]))
 			{
@@ -218,11 +218,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$iaView->title($title);
 
 				// add open graph data
-				$openGraph = array(
+				$openGraph = [
 					'title' => $title,
 					'url' => IA_SELF,
 					'description' => $entry['body']
-				);
+				];
 				empty($entry['image']) || $openGraph['image'] = IA_CLEAR_URL . 'uploads/' . $entry['image'];
 
 				$iaView->set('og', $openGraph);
@@ -233,18 +233,18 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				if ($iaAcl->isAccessible(iaBlog::PAGE_NAME, iaCore::ACTION_EDIT) && iaUsers::hasIdentity()
 					&& iaUsers::getIdentity()->id == $entry['member_id'])
 				{
-					$pageActions[] = array(
+					$pageActions[] = [
 						'icon' => 'pencil',
 						'title' => iaLanguage::get('edit_blog_entry'),
 						'url' => $baseUrl . 'edit/' . $id . '/',
 						'classes' => 'btn-info'
-					);
-					$pageActions[] = array(
+					];
+					$pageActions[] = [
 						'icon' => 'remove',
 						'title' => iaLanguage::get('delete'),
 						'url' => $baseUrl . 'delete/' . $id . '/',
 						'classes' => 'btn-danger'
-					);
+					];
 				}
 			}
 			else
@@ -252,11 +252,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$page = empty($_GET['page']) ? 0 : (int)$_GET['page'];
 				$page = ($page < 1) ? 1 : $page;
 
-				$pagination = array(
+				$pagination = [
 					'start' => ($page - 1) * $iaCore->get('blog_number'),
 					'limit' => (int)$iaCore->get('blog_number'),
 					'template' => $baseUrl . '?page={page}'
-				);
+				];
 
 				$entries = $iaBlog->get($pagination['start'], $pagination['limit']);
 				$pagination['total'] = $iaDb->foundRows();
@@ -268,20 +268,20 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 			if ($iaAcl->isAccessible('blog', iaCore::ACTION_ADD))
 			{
-				$pageActions[] = array(
+				$pageActions[] = [
 					'icon' => 'plus',
 					'title' => iaLanguage::get('add_blog_entry'),
 					'url' => $baseUrl . 'add/',
 					'classes' => 'btn-success'
-				);
+				];
 			}
 
-			$pageActions[] = array(
+			$pageActions[] = [
 				'icon' => 'rss',
 				'title' => iaLanguage::get('rss'),
 				'url' => IA_URL . 'blog.xml',
 				'classes' => 'btn-warning'
-			);
+			];
 
 			$iaView->set('actions', $pageActions);
 	}
@@ -289,20 +289,20 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 if (iaView::REQUEST_XML == $iaView->getRequestType())
 {
-	$output = array(
+	$output = [
 		'title' => $iaCore->get('site') . ' :: ' . $iaView->title(),
 		'description' => '',
 		'link' => IA_URL . 'blog',
-		'item' => array()
-	);
+		'item' => []
+	];
 
 	//Add default Feed Image displayed in RSS Readers
 	//You can add your own by replacing rss.png in "/plugins/blog/templates/front/img" folder
-	$output['image'][] = array(
+	$output['image'][] = [
 		'title' => $iaCore->get('site') . ' :: ' . $iaView->title(),
 		'url' => IA_CLEAR_URL . 'plugins/blog/templates/front/img/rss.png',
 		'link' => $baseUrl
-	);
+	];
 
 	$entries = $iaBlog->get(0, 20);
 
@@ -315,12 +315,12 @@ if (iaView::REQUEST_XML == $iaView->getRequestType())
 		}
 		$blogbody.= iaSanitize::tags($entry['body']);
 
-		$output['item'][] = array(
+		$output['item'][] = [
 			'title' => $entry['title'],
 			'guid' => $baseUrl . $entry['id'] . '-' . $entry['alias'],
 			'pubDate' => date('D, d M Y H:i:s O', strtotime($entry['date_added'])),
 			'description' => $blogbody
-		);
+		];
 	}
 
 	$iaView->assign('channel', $output);

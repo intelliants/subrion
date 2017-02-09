@@ -27,7 +27,7 @@
 define('INSTALL', 'install');
 define('IA_DS', '/');
 define('IA_URL_DELIMITER', '/');
-define('IA_HOME', str_replace(array(INSTALL . IA_DS, '\\'), array('', IA_DS), dirname(__FILE__) . IA_DS));
+define('IA_HOME', str_replace([INSTALL . IA_DS, '\\'], ['', IA_DS], dirname(__FILE__) . IA_DS));
 define('IA_INSTALL', IA_HOME . INSTALL . IA_DS);
 
 // installation files can only be in 'install' directory!
@@ -66,7 +66,7 @@ unset($_GET['_p']);
 
 $module = empty($url[0]) ? 'welcome' : $url[0];
 $step = empty($url[1]) ? 'check' : $url[1];
-$modules = array();
+$modules = [];
 
 set_include_path(IA_INSTALL . 'classes');
 require_once 'ia.helper.php';
@@ -130,7 +130,7 @@ if ('welcome' == $module)
 if (!file_exists(IA_HOME . 'includes' . IA_DS . 'config.inc.php'))
 {
 	// disallow upgrade module if no config file exists
-	$modules = array_diff($modules, array('upgrade'));
+	$modules = array_diff($modules, ['upgrade']);
 
 	// set active module
 	$module = 'install';

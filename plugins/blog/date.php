@@ -34,8 +34,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 		if ($dates = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`status` = 'active' ORDER BY `date_added`", 0, null))
 		{
-			$years = array();
-			$months = array();
+			$years = [];
+			$months = [];
 
 			$months['01']['name'] = 'month1';
 			$months['02']['name'] = 'month2';
@@ -54,7 +54,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			{
 				$fullDate = substr($date['date_added'], 0, strpos($date['date_added'], ' '));
 				$fullDate = explode('-', $fullDate);
-				$years[$fullDate[0]] = array();
+				$years[$fullDate[0]] = [];
 			}
 
 			foreach ($years as $y => $year)
@@ -112,11 +112,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$month = iaLanguage::get('month' . $monthNumber);
 		$year = (int)$iaCore->requestPath[0];
 
-		$pagination = array(
+		$pagination = [
 			'start' => ($page - 1) * $iaCore->get('blog_number'),
 			'limit' => (int)$iaCore->get('blog_number'),
 			'template' => $pageUrl . $year . IA_URL_DELIMITER . $monthNumber . '?page={page}'
-		);
+		];
 
 		$stmt = "`status` = 'active' AND MONTH(b.`date_added`) = '" . $monthNumber . "' AND YEAR(b.`date_added`) = '" . $year . "' ";
 		$order = ('date' == $iaCore->get('blog_order')) ? 'ORDER BY b.`date_added` DESC' : 'ORDER BY b.`title` ASC';
@@ -128,13 +128,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 			'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) ' .
 			'WHERE b.' . $stmt . $order . ' LIMIT :start, :limit';
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $iaDb->prefix,
 			'table_blog_entries' => 'blog_entries',
 			'table_members' => 'members',
 			'start' => $pagination['start'],
 			'limit' => $pagination['limit']
-		));
+		]);
 
 		$blogs  = $iaDb->getAll($sql);
 

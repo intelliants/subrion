@@ -28,7 +28,7 @@ require_once IA_INCLUDES . 'phpmailer' . IA_DS . 'class.phpmailer.php';
 
 class iaMailer extends PHPMailer
 {
-	protected $_replacements = array();
+	protected $_replacements = [];
 
 	protected $_iaCore;
 
@@ -44,7 +44,7 @@ class iaMailer extends PHPMailer
 	 */
 	public function setReplacements()
 	{
-		$replacements = array();
+		$replacements = [];
 
 		switch (func_num_args())
 		{
@@ -123,11 +123,11 @@ class iaMailer extends PHPMailer
 		}
 
 		// global patterns
-		$this->setReplacements(array(
+		$this->setReplacements([
 			'site_url' => IA_URL,
 			'site_name' => $this->_iaCore->get('site'),
 			'site_email' => $this->_iaCore->get('site_email')
-		));
+		]);
 	}
 
 	/*
@@ -148,9 +148,9 @@ class iaMailer extends PHPMailer
 	public function sendToAdministrators()
 	{
 		$where = '`usergroup_id` = :group AND `status` = :status';
-		$this->_iaCore->iaDb->bind($where, array('group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE));
+		$this->_iaCore->iaDb->bind($where, ['group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE]);
 
-		$administrators = $this->_iaCore->iaDb->all(array('email', 'fullname'), $where, null, null, iaUsers::getTable());
+		$administrators = $this->_iaCore->iaDb->all(['email', 'fullname'], $where, null, null, iaUsers::getTable());
 
 		if (!$administrators)
 		{

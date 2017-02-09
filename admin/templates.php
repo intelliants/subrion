@@ -46,11 +46,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($this->_installTemplate())
 			{
-				$iaView->setMessages(iaLanguage::getf('template_installed', array('name' => $this->getHelper()->title)), iaView::SUCCESS);
+				$iaView->setMessages(iaLanguage::getf('template_installed', ['name' => $this->getHelper()->title]), iaView::SUCCESS);
 
 				$this->_iaCore->iaCache->clearAll();
 
-				$this->_iaCore->factory('log')->write(iaLog::ACTION_INSTALL, array('type' => 'template', 'name' => $this->getHelper()->title));
+				$this->_iaCore->factory('log')->write(iaLog::ACTION_INSTALL, ['type' => 'template', 'name' => $this->getHelper()->title]);
 
 				iaUtil::go_to(IA_SELF);
 			}
@@ -78,11 +78,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _gridRead($params)
 	{
-		$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+		$output = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
 
 		if (isset($_POST['get']) && 'info' == $_POST['get'])
 		{
-			$output = array('tabs' => array());
+			$output = ['tabs' => []];
 			$template = $_POST['name'];
 
 			$documentationPath = IA_FRONT_TEMPLATES . $template . IA_DS . 'docs' . IA_DS;
@@ -100,11 +100,11 @@ class iaBackendController extends iaAbstractControllerBackend
 						{
 							$tab = substr($doc, 0, count($doc) - 6);
 							$contents = file_get_contents($documentationPath . $doc);
-							$output['tabs'][] = array(
+							$output['tabs'][] = [
 								'title' => iaLanguage::get('extra_' . $tab, $tab),
 								'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 								'cls' => 'extension-docs'
-							);
+							];
 						}
 					}
 				}
@@ -114,7 +114,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$iaTemplate->getFromPath(IA_FRONT_TEMPLATES . $template . IA_DS . iaTemplate::INSTALL_FILE_NAME);
 				$iaTemplate->parse();
 
-				$replacements = array(
+				$replacements = [
 					'{icon}' => file_exists(IA_FRONT_TEMPLATES . $template . IA_DS . 'docs' . IA_DS . 'img/icon.png') ? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'templates/' . $template . '/docs/img/icon.png" alt=""></td></tr>' : '',
 					'{link}' => '<tr><td><a href="https://subrion.org/template/' . $template . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>',
 					'{name}' => $iaTemplate->title,
@@ -123,7 +123,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					'{version}' => $iaTemplate->version,
 					'{date}' => $iaTemplate->date,
 					'{compatibility}' => $iaTemplate->compatibility,
-				);
+				];
 
 				$output['info'] = str_replace(array_keys($replacements), array_values($replacements),
 					file_get_contents(IA_ADMIN . 'templates' . IA_DS . $this->_iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl'));
@@ -136,7 +136,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	private function _getList()
 	{
 		$templates = $this->getHelper()->getList(); // get list of available local templates
-		$remoteTemplates = array();
+		$remoteTemplates = [];
 
 		if ($this->_iaCore->get('allow_remote_templates'))
 		{
@@ -167,7 +167,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								{
 									$templateInfo['date'] = gmdate(iaDb::DATE_FORMAT, $templateInfo['date']);
 									$templateInfo['buttons'] = '';
-									$templateInfo['notes'] = array();
+									$templateInfo['notes'] = [];
 									$templateInfo['remote'] = true;
 
 									$remoteTemplates[] = $templateInfo;
@@ -197,7 +197,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$activeTemplate = $_templates[$templateName];
 		unset($_templates[$templateName]);
 
-		return array($templateName => $activeTemplate) + $_templates;
+		return [$templateName => $activeTemplate] + $_templates;
 	}
 
 	private function _installTemplate()
@@ -221,7 +221,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (!file_exists($infoXmlFile) && !$this->_error)
 		{
 			$this->_error = true;
-			$this->_messages[] = iaLanguage::getf('template_file_error', array('file' => $templateName));
+			$this->_messages[] = iaLanguage::getf('template_file_error', ['file' => $templateName]);
 		}
 
 		if (!$this->_error)
@@ -276,7 +276,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$pclZip = new PclZip($fileName);
 				$pclZip->extract(PCLZIP_OPT_PATH, IA_FRONT_TEMPLATES . $templateName);
 
-				$this->addMessage(iaLanguage::getf('template_downloaded', array('name' => $templateName)), false);
+				$this->addMessage(iaLanguage::getf('template_downloaded', ['name' => $templateName]), false);
 
 				return true;
 			}

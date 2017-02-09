@@ -36,12 +36,12 @@ class iaCaptcha extends abstractUtil
 			'</p>' .
 			'<div class="clearfix"></div>'
 		;
-		$html = iaDb::printf($html, array(
+		$html = iaDb::printf($html, [
 			'length' => (int)$this->iaCore->get('kcaptcha_num_chars'),
 			'url' => IA_URL . 'captcha/',
 			'text' => iaLanguage::get('captcha_tooltip'),
 			'title' => iaLanguage::get('click_to_redraw')
-		));
+		]);
 
 		return $html;
 	}
@@ -71,9 +71,9 @@ class iaCaptcha extends abstractUtil
 	public function getPreview()
 	{
 		$html = '<img src=":url" onclick="$(this).attr(\'src\', \':url?\'+Math.random())" alt="captcha" style="cursor:pointer; margin-right: 10px;" align="left" />';
-		$html = iaDb::printf($html, array(
+		$html = iaDb::printf($html, [
 			'url' => IA_URL . 'captcha/'
-		));
+		]);
 
 		return $html;
 	}

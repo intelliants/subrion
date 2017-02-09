@@ -48,9 +48,9 @@ class iaTemplate extends abstractCore
 
 	public $error;
 
-	protected $_notes = array();
+	protected $_notes = [];
 
-	protected $_requiredFields = array('name', 'title', 'version', 'summary', 'author', 'contributor');
+	protected $_requiredFields = ['name', 'title', 'version', 'summary', 'author', 'contributor'];
 
 	protected $_changeset;
 	protected $_config;
@@ -78,7 +78,7 @@ class iaTemplate extends abstractCore
 
 	public function getList()
 	{
-		$templates = array();
+		$templates = [];
 
 		$path = IA_FRONT_TEMPLATES;
 		$directory = opendir($path);
@@ -122,7 +122,7 @@ class iaTemplate extends abstractCore
 								}
 							}
 
-							$templates[$this->name] = array(
+							$templates[$this->name] = [
 								'name' => $this->name,
 								'title' => $this->title,
 								'author' => $this->author,
@@ -137,7 +137,7 @@ class iaTemplate extends abstractCore
 								'config' => $this->_config,
 								'config_groups' => $this->_configGroups,
 								'url' => 'https://subrion.org/template/' . $this->name . '.html'
-							);
+							];
 
 							$templates[$this->name]['logo'] = file_exists(IA_FRONT_TEMPLATES . $this->name . '/docs/img/icon.png')
 								? $this->iaView->assetsUrl . 'templates/' . $this->name . '/docs/img/icon.png'
@@ -163,17 +163,17 @@ class iaTemplate extends abstractCore
 
 	protected function _resetValues()
 	{
-		$this->_changeset = array();
-		$this->_config = array();
-		$this->_configGroups = array();
+		$this->_changeset = [];
+		$this->_config = [];
+		$this->_configGroups = [];
 		$this->_dependencies = null;
-		$this->_hooks = array();
-		$this->_notes = array();
+		$this->_hooks = [];
+		$this->_notes = [];
 		$this->_layout = null;
 		$this->_message = null;
-		$this->_phrases = array();
+		$this->_phrases = [];
 		$this->_requires = null;
-		$this->_screenshots = array();
+		$this->_screenshots = [];
 
 		$this->error = false;
 	}
@@ -184,8 +184,8 @@ class iaTemplate extends abstractCore
 
 		$xmlParser = new SAXY_Parser();
 
-		$xmlParser->xml_set_element_handler(array(&$this, 'startElement'), array(&$this, 'endElement'));
-		$xmlParser->xml_set_character_data_handler(array(&$this, 'charData'));
+		$xmlParser->xml_set_element_handler([&$this, 'startElement'], [&$this, 'endElement']);
+		$xmlParser->xml_set_character_data_handler([&$this, 'charData']);
 
 		$this->_resetValues();
 
@@ -202,7 +202,7 @@ class iaTemplate extends abstractCore
 	 */
 	public function check()
 	{
-		$missingFields = array();
+		$missingFields = [];
 
 		$vars = get_object_vars($this);
 
@@ -255,7 +255,7 @@ class iaTemplate extends abstractCore
 					}
 					if (isset($message))
 					{
-						$this->_notes[] = iaDb::printf($message, array('extra' => ucfirst($extrasName), 'type' => $dependency['type']));
+						$this->_notes[] = iaDb::printf($message, ['extra' => ucfirst($extrasName), 'type' => $dependency['type']]);
 					}
 				}
 				else {
@@ -280,7 +280,7 @@ class iaTemplate extends abstractCore
 
 		if (isset($rollbackData['blocks']))
 		{
-			$existPositions = array();
+			$existPositions = [];
 			if ($this->_positions)
 			{
 				foreach ($this->_positions as $entry)
@@ -298,7 +298,7 @@ class iaTemplate extends abstractCore
 				{
 					case 'fields':
 						list($fieldName, $itemName) = explode('-', $name);
-						$stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", array('name' => $fieldName, 'item' => $itemName));
+						$stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", ['name' => $fieldName, 'item' => $itemName]);
 						break;
 					case 'blocks': // menus are handled here as well
 						if (isset($itemData['position']))
@@ -311,7 +311,7 @@ class iaTemplate extends abstractCore
 						}
 						// BREAK stmt missed intentionally
 					default:
-						$stmt = iaDb::printf("`name` = ':name'", array('name' => $name));
+						$stmt = iaDb::printf("`name` = ':name'", ['name' => $name]);
 				}
 				$this->iaDb->update($itemData, $stmt, null, $dbTable);
 			}
@@ -325,7 +325,7 @@ class iaTemplate extends abstractCore
 		// TODO: check for relations and deactivate all needed extras
 		if ($this->_requires)
 		{
-			$messages = array();
+			$messages = [];
 			foreach ($this->_requires as $require)
 			{
 				if ($require['min'] || $require['max'])
@@ -353,11 +353,11 @@ class iaTemplate extends abstractCore
 							$ver .= $require['max'];
 						}
 
-						$replace = array(
+						$replace = [
 							':extra' => $require['type'],
 							':name' => $require['name'],
 							':version' => $ver
-						);
+						];
 						$messages[] = iaLanguage::getf('required_template_error', $replace);
 						$this->error = true;
 					}
@@ -380,14 +380,14 @@ class iaTemplate extends abstractCore
 		{
 			$template = $iaDb->one('value', "`name` = 'tmpl'", iaCore::getConfigTable());
 
-			$tablesList = array('hooks', 'blocks', iaLanguage::getTable(), 'pages', iaCore::getConfigTable(),
-				iaCore::getConfigGroupsTable(), iaCore::getCustomConfigTable());
+			$tablesList = ['hooks', 'blocks', iaLanguage::getTable(), 'pages', iaCore::getConfigTable(),
+				iaCore::getConfigGroupsTable(), iaCore::getCustomConfigTable()];
 
 			$iaDb->cascadeDelete($tablesList, "`extras` = '{$template}'");
 			$iaDb->cascadeDelete($tablesList, "`extras` = '{$this->name}'");
 		}
 
-		$iaDb->update(array('value' => $this->name), "`name` = 'tmpl'", null, iaCore::getConfigTable());
+		$iaDb->update(['value' => $this->name], "`name` = 'tmpl'", null, iaCore::getConfigTable());
 
 		$this->_phrases && $this->_processPhrases();
 
@@ -395,7 +395,7 @@ class iaTemplate extends abstractCore
 		{
 			$iaDb->setTable(iaCore::getConfigTable());
 
-			$maxOrder = $iaDb->one_bind('MAX(`order`) + 1', '`extras` = :extras', array('extras' => $this->name));
+			$maxOrder = $iaDb->one_bind('MAX(`order`) + 1', '`extras` = :extras', ['extras' => $this->name]);
 			$maxOrder = $maxOrder ? (int)$maxOrder : 1;
 
 			foreach ($this->_config as $entry)
@@ -434,7 +434,7 @@ class iaTemplate extends abstractCore
 
 			foreach ($this->_configGroups as $title => $entry)
 			{
-				$iaDb->insert($entry, array('order' => $maxOrder));
+				$iaDb->insert($entry, ['order' => $maxOrder]);
 				$this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 
 				$maxOrder++;
@@ -462,7 +462,7 @@ class iaTemplate extends abstractCore
 						{
 							$hook['code'] = str_replace('{extras}', $this->name, $hook['code']);
 						}
-						$iaDb->insert($hook, array('order' => $maxOrder));
+						$iaDb->insert($hook, ['order' => $maxOrder]);
 						$maxOrder++;
 					}
 				}
@@ -470,10 +470,10 @@ class iaTemplate extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		$positionsList = array();
+		$positionsList = [];
 		if ($this->_positions)
 		{
-			$positionPages = array();
+			$positionPages = [];
 
 			$iaDb->setTable('positions');
 			$iaDb->truncate();
@@ -481,18 +481,18 @@ class iaTemplate extends abstractCore
 			{
 				$positionsList[] = $position['name'];
 
-				$iaDb->insert(array('name' => $position['name'], 'menu' => (int)$position['menu'], 'movable' => (int)$position['movable']));
+				$iaDb->insert(['name' => $position['name'], 'menu' => (int)$position['menu'], 'movable' => (int)$position['movable']]);
 
 				if (null != $position['default_access'])
 				{
-					$positionPages[] = array('object_type' => 'positions', 'page_name' => '', 'object' => $position['name'], 'access' => (int)$position['default_access']);
+					$positionPages[] = ['object_type' => 'positions', 'page_name' => '', 'object' => $position['name'], 'access' => (int)$position['default_access']];
 				}
 
 				if ($position['pages'])
 				{
 					foreach (explode(',', $position['pages']) as $pageName)
-						$positionPages[] = array('object_type' => 'positions', 'page_name' => $pageName,
-							'object' => $position['name'], 'access' => (int)$position['access']);
+						$positionPages[] = ['object_type' => 'positions', 'page_name' => $pageName,
+							'object' => $position['name'], 'access' => (int)$position['access']];
 				}
 			}
 			$iaDb->resetTable();
@@ -513,15 +513,15 @@ class iaTemplate extends abstractCore
 				$iaBlock->insert($block);
 		}
 
-		$rollbackData = array();
+		$rollbackData = [];
 		if ($this->_changeset)
 		{
-			$tablesMapping = array(
+			$tablesMapping = [
 				'block' => 'blocks',
 				'field' => 'fields',
 				'menu' => 'blocks',
 				'page' => 'pages'
-			);
+			];
 
 			foreach ($this->_changeset as $changeset)
 			{
@@ -543,15 +543,15 @@ class iaTemplate extends abstractCore
 						{
 							continue;
 						}
-						$stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", array('name' => $fieldName, 'item' => $itemName));
+						$stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", ['name' => $fieldName, 'item' => $itemName]);
 						break;
 					case 'block':
 					case 'menu':
-						$pagesList = isset($changeset['pages']) ? explode(',', $changeset['pages']) : array();
+						$pagesList = isset($changeset['pages']) ? explode(',', $changeset['pages']) : [];
 						unset($changeset['pages']);
 						// intentionally missing break stmt
 					default:
-						$stmt = iaDb::printf("`name` = ':name'", array('name' => $name));
+						$stmt = iaDb::printf("`name` = ':name'", ['name' => $name]);
 				}
 
 				$tableName = $tablesMapping[$entity];
@@ -669,10 +669,10 @@ class iaTemplate extends abstractCore
 				break;
 
 			case 'dependency':
-				$this->_dependencies[$text] = array(
+				$this->_dependencies[$text] = [
 					'type' => $this->attr('type'),
 					'exist' => $this->attr('exist', true)
-				);
+				];
 				break;
 
 			case 'phrase':
@@ -680,7 +680,7 @@ class iaTemplate extends abstractCore
 				{
 					if ($key = trim($this->attr('key')))
 					{
-						isset($this->_phrases[$key]) || $this->_phrases[$key] = array('values' => array(), 'category' => $this->attr('category', iaLanguage::CATEGORY_COMMON));
+						isset($this->_phrases[$key]) || $this->_phrases[$key] = ['values' => [], 'category' => $this->attr('category', iaLanguage::CATEGORY_COMMON)];
 						$this->_phrases[$key]['values'][$this->attr('code', $this->iaView->language)] = $text;
 					}
 				}
@@ -689,66 +689,66 @@ class iaTemplate extends abstractCore
 			case 'screenshot':
 				if (in_array('screenshots', $this->_path))
 				{
-					$this->_screenshots[] = array(
+					$this->_screenshots[] = [
 						'name' => $this->attr('name'),
 						'title' => $text,
 						'type' => $this->attr('type', false)
-					);
+					];
 				}
 				break;
 
 			case 'config':
-				$this->_config[] = array(
+				$this->_config[] = [
 					'name' => $this->attr('name'),
 					'value' => $text,
-					'config_group' => $this->attr(array('group','configgroup')),
+					'config_group' => $this->attr(['group','configgroup']),
 					'multiple_values' => $this->attr('values'),
 					'type' => $this->attr('type'),
 					'description' => $this->attr('description'),
 					'private' => $this->attr('private', false),
 					'order' => $this->attr('order', false),
 					'extras' => $this->name,
-					'options' => json_encode(array(
+					'options' => json_encode([
 						'wysiwyg' => $this->attr('wysiwyg', false),
 						'code_editor' => $this->attr('code_editor', false),
 						'show' => $this->attr('show'),
 						'multilingual' => $this->attr('multilingual', false)
-					))
-				);
+					])
+				];
 				break;
 
 			case 'configgroup':
-				$this->_configGroups[$text] = array(
+				$this->_configGroups[$text] = [
 					'name' => $this->attr('name'),
 					'extras' => $this->name
-				);
+				];
 				break;
 
 			case 'extension':
-				$this->_requires[] = array(
+				$this->_requires[] = [
 					'name' => $text,
-					'type' => $this->attr('type', 'package', array('package', 'plugin')),
-					'min' => $this->attr(array('min_version', 'min'), false),
-					'max' => $this->attr(array('max_version', 'max'), false)
-				);
+					'type' => $this->attr('type', 'package', ['package', 'plugin']),
+					'min' => $this->attr(['min_version', 'min'], false),
+					'max' => $this->attr(['max_version', 'max'], false)
+				];
 				break;
 
 			case 'hook':
-				$this->_hooks[] = array(
+				$this->_hooks[] = [
 					'name' => $this->attr('name'),
-					'type' => $this->attr('type', 'php', array('php', 'html', 'smarty', 'plain')),
+					'type' => $this->attr('type', 'php', ['php', 'html', 'smarty', 'plain']),
 					'filename' => $this->attr('filename'),
 					'extras' => $this->name,
 					'code' => $text,
 					'status' => $this->attr('status', iaCore::STATUS_ACTIVE),
 					'page_type' => $this->attr('page_type')
-				);
+				];
 				break;
 
 			case 'block':
 				if (in_array('blocks', $this->_path))
 				{
-					$this->blocks[] = array(
+					$this->blocks[] = [
 						'name' => $this->attr('name', 'block_' . mt_rand(1000, 9999)),
 						'title' => $this->attr('title'),
 						'content' => $text,
@@ -756,7 +756,7 @@ class iaTemplate extends abstractCore
 						'type' => $this->attr('type'),
 						'order' => $this->attr('order', false),
 						'extras' => $this->name,
-						'status' => $this->attr('status', iaCore::STATUS_ACTIVE, array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)),
+						'status' => $this->attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
 						'header' => $this->attr('header', true),
 						'collapsible' => $this->attr('collapsible', false),
 						'sticky' => $this->attr('sticky', false),
@@ -765,7 +765,7 @@ class iaTemplate extends abstractCore
 						'rss' => $this->attr('rss'),
 						'filename' => $this->attr('filename'),
 						'classname' => $this->attr('classname')
-					);
+					];
 				}
 				// intentionally missing break stmt
 			case 'field':
@@ -773,27 +773,27 @@ class iaTemplate extends abstractCore
 			case 'page':
 				if (in_array('changeset', $this->_path))
 				{
-					$this->_changeset[] = array_merge($this->_attributes, array('type' => $this->_inTag, 'name' => $text));
+					$this->_changeset[] = array_merge($this->_attributes, ['type' => $this->_inTag, 'name' => $text]);
 				}
 				break;
 
 			case 'position':
 				if (in_array('section', $this->_path))
 				{
-					$this->_layout[$this->_section][$text] = array(
+					$this->_layout[$this->_section][$text] = [
 						'width' => (int)$this->attr('width', 3),
 						'fixed' => (bool)$this->attr('fixed', false)
-					);
+					];
 				}
 
-				$this->_positions[] = array(
+				$this->_positions[] = [
 					'name' => $text,
 					'menu' => $this->attr('menu', false),
 					'movable' => $this->attr('movable', true),
 					'pages' => $this->attr('pages', ''),
 					'access' => $this->attr('access', null),
 					'default_access' => $this->attr('default_access', null)
-				);
+				];
 		}
 	}
 

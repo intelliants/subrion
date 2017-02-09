@@ -66,13 +66,13 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		return (1 == count($this->_iaCore->requestPath) && 'documentation' == $this->_iaCore->requestPath[0])
 			? $this->_getDocumentation($params['name'], $this->_iaCore->iaView)
-			: array();
+			: [];
 	}
 
 
 	private function _getDocumentation($packageName, &$iaView)
 	{
-		$result = array();
+		$result = [];
 
 		if (file_exists($documentationPath = $this->_folder . $packageName . IA_DS . 'docs' . IA_DS))
 		{
@@ -86,11 +86,11 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						$tab = substr($doc, 0, count($doc) - 6);
 						$contents = file_get_contents($documentationPath . $doc);
-						$result['tabs'][] = array(
+						$result['tabs'][] = [
 							'title' => iaLanguage::get('extra_' . $tab, ucfirst($tab)),
 							'html' => ('changelog' == $tab ? preg_replace('/#(\d+)/', '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>', $contents) : $contents),
 							'cls' => 'extension-docs'
-						);
+						];
 					}
 				}
 			}
@@ -98,7 +98,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->getHelper()->setXml(file_get_contents($this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME));
 			$this->getHelper()->parse();
 
-			$search = array(
+			$search = [
 				'{icon}',
 				'{link}',
 				'{name}',
@@ -107,7 +107,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				'{version}',
 				'{date}',
 				'{compatibility}',
-			);
+			];
 
 			$icon = '';
 			if (file_exists($this->_folder . $packageName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png'))
@@ -116,7 +116,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 			$data = &$this->getHelper()->itemData;
 
-			$replacement = array(
+			$replacement = [
 				$icon,
 				'',
 				$data['info']['title'],
@@ -125,7 +125,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$data['info']['version'],
 				$data['info']['date'],
 				$data['compatibility']
-			);
+			];
 
 			$result['info'] = str_replace($search, $replacement,
 				file_get_contents(IA_ADMIN . 'templates' . IA_DS . $this->_iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl'));
@@ -157,9 +157,9 @@ class iaBackendController extends iaAbstractControllerBackend
 				if ($this->_activate($package, $deactivate))
 				{
 					$this->_iaCore->startHook($deactivate ? 'phpPackageDeactivated' : 'phpPackageActivated',
-						array('extra' => $package));
+						['extra' => $package]);
 					$iaLog->write($deactivate ? iaLog::ACTION_DISABLE : iaLog::ACTION_ENABLE,
-						array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
+						['type' => iaExtra::TYPE_PACKAGE, 'name' => $package], $package);
 				}
 				else
 				{
@@ -199,7 +199,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					// log this event
 					$action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
-					$iaLog->write($action, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package, 'to' => $this->getHelper()->itemData['info']['version']), $package);
+					$iaLog->write($action, ['type' => iaExtra::TYPE_PACKAGE, 'name' => $package, 'to' => $this->getHelper()->itemData['info']['version']], $package);
 					//
 
 					$iaSitemap = $this->_iaCore->factory('sitemap', iaCore::ADMIN);
@@ -220,7 +220,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				if ($this->_uninstall($package))
 				{
-					$iaLog->write(iaLog::ACTION_UNINSTALL, array('type' => iaExtra::TYPE_PACKAGE, 'name' => $package), $package);
+					$iaLog->write(iaLog::ACTION_UNINSTALL, ['type' => iaExtra::TYPE_PACKAGE, 'name' => $package], $package);
 				}
 				else
 				{
@@ -288,7 +288,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _uninstall($packageName)
 	{
-		if ($this->_iaDb->exists('`name` = :name AND `type` = :type', array('name' => $packageName, 'type' => iaExtra::TYPE_PACKAGE)))
+		if ($this->_iaDb->exists('`name` = :name AND `type` = :type', ['name' => $packageName, 'type' => iaExtra::TYPE_PACKAGE]))
 		{
 			$extraInstallFile = $this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME;
 
@@ -313,11 +313,11 @@ class iaBackendController extends iaAbstractControllerBackend
 	private function _activate($packageName, $deactivate)
 	{
 		$stmt = '`name` = :name AND `type` = :type';
-		$this->_iaDb->bind($stmt, array('name' => $packageName, 'type' => iaExtra::TYPE_PACKAGE));
+		$this->_iaDb->bind($stmt, ['name' => $packageName, 'type' => iaExtra::TYPE_PACKAGE]);
 
 		$status = $deactivate ? iaCore::STATUS_INACTIVE : iaCore::STATUS_ACTIVE;
 
-		return (bool)$this->_iaDb->update(array('status' => $status), $stmt);
+		return (bool)$this->_iaDb->update(['status' => $status], $stmt);
 	}
 
 	private function _reset($domain)
@@ -369,7 +369,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$pages = $this->getHelper()->itemData['pages']['front'];
 		foreach ($pages as $page)
 		{
-			$this->_iaDb->update(array('alias' => $page['alias']), "`name` = '{$page['name']}' AND `extras` = '$packageName'", null, 'pages');
+			$this->_iaDb->update(['alias' => $page['alias']], "`name` = '{$page['name']}' AND `extras` = '$packageName'", null, 'pages');
 		}
 
 		$this->addMessage('set_default_success');
@@ -399,25 +399,25 @@ class iaBackendController extends iaAbstractControllerBackend
 				$oldExtras->parse();
 				$oldExtras->checkValidity();
 
-				$iaDb->update(array('url' => $oldExtras->getUrl()), iaDb::convertIds($defaultPackage, 'name'));
+				$iaDb->update(['url' => $oldExtras->getUrl()], iaDb::convertIds($defaultPackage, 'name'));
 
 				if ($oldExtras->itemData['pages']['front'])
 				{
 					$iaDb->setTable('pages');
 					foreach ($oldExtras->itemData['pages']['front'] as $page)
 					{
-						$iaDb->update(array('alias' => $page['alias']), "`name` = '{$page['name']}' AND `extras` = '$defaultPackage'");
+						$iaDb->update(['alias' => $page['alias']], "`name` = '{$page['name']}' AND `extras` = '$defaultPackage'");
 					}
 					$iaDb->resetTable();
 				}
 			}
 
-			$iaDb->update(array('url' => IA_URL_DELIMITER), iaDb::convertIds($package, 'name'));
+			$iaDb->update(['url' => IA_URL_DELIMITER], iaDb::convertIds($package, 'name'));
 			$this->_iaCore->set('default_package', $package, true);
 
 			$iaDb->setTable('hooks');
-			$iaDb->update(array('status' => iaCore::STATUS_INACTIVE), "`name` = 'phpCoreUrlRewrite'");
-			$iaDb->update(array('status' => iaCore::STATUS_ACTIVE), "`name` = 'phpCoreUrlRewrite' AND `extras` = '$package'");
+			$iaDb->update(['status' => iaCore::STATUS_INACTIVE], "`name` = 'phpCoreUrlRewrite'");
+			$iaDb->update(['status' => iaCore::STATUS_ACTIVE], "`name` = 'phpCoreUrlRewrite' AND `extras` = '$package'");
 			$iaDb->resetTable();
 		}
 	}
@@ -426,13 +426,13 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$stmt = iaDb::convertIds(iaExtra::TYPE_PACKAGE, 'type');
 
-		$existPackages = $this->_iaDb->keyvalue(array('name', 'version'), $stmt);
-		$existPackages || $existPackages = array();
-		$statuses = $this->_iaDb->keyvalue(array('name', 'status'), $stmt);
-		$dates = $this->_iaDb->keyvalue(array('name', 'date'), $stmt);
+		$existPackages = $this->_iaDb->keyvalue(['name', 'version'], $stmt);
+		$existPackages || $existPackages = [];
+		$statuses = $this->_iaDb->keyvalue(['name', 'status'], $stmt);
+		$dates = $this->_iaDb->keyvalue(['name', 'date'], $stmt);
 
 		$directory = opendir($this->_folder);
-		$result = $packageNames = array();
+		$result = $packageNames = [];
 
 		while ($file = readdir($directory))
 		{
@@ -441,7 +441,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				if ($fileContents = file_get_contents($installationFile))
 				{
-					$this->getHelper()->itemData['screenshots'] = array();
+					$this->getHelper()->itemData['screenshots'] = [];
 					$this->getHelper()->itemData['url'] = '';
 
 					$this->getHelper()->setXml($fileContents);
@@ -473,9 +473,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$data = &$this->getHelper()->itemData;
 					$status = 'notinstall';
-					$preview = array();
-					$screenshots = array();
-					$items = array(
+					$preview = [];
+					$screenshots = [];
+					$items = [
 						'readme' => true,
 						'activate' => false,
 						'set_default' => false,
@@ -486,7 +486,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						'config' => false,
 						'manage' => false,
 						'import' => false
-					);
+					];
 					if (isset($existPackages[$data['name']]))
 					{
 						$status = $statuses[$data['name']];
@@ -514,15 +514,15 @@ class iaBackendController extends iaAbstractControllerBackend
 								$items['import'] = true;
 							}
 
-							if ($extraConfig = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`extras` = :name ORDER BY `order` ASC', array('name' => $data['name']), iaCore::getConfigTable()))
+							if ($extraConfig = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`extras` = :name ORDER BY `order` ASC', ['name' => $data['name']], iaCore::getConfigTable()))
 							{
-								$items['config'] = array(
+								$items['config'] = [
 									'url' => $extraConfig['config_group'],
 									'anchor' => $extraConfig['name']
-								);
+								];
 							}
 
-							if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', array('name' => $data['name'] . '_manage'), 'admin_pages'))
+							if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', ['name' => $data['name'] . '_manage'], 'admin_pages'))
 							{
 								$items['manage'] = $alias;
 							}
@@ -547,7 +547,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$packageNames[] = $data['name'];
 
-					$result[] = array(
+					$result[] = [
 						'title' => $data['info']['title'],
 						'version' => $data['info']['version'],
 						'description' => $data['info']['title'],
@@ -569,17 +569,17 @@ class iaBackendController extends iaAbstractControllerBackend
 						'date_updated' => ($status != 'notinstall') ? $dates[$data['name']] : false,
 						'install' => true,
 						'remote' => false
-					);
+					];
 				}
 			}
 		}
 
-		return array($result, $packageNames);
+		return [$result, $packageNames];
 	}
 
 	private function getRemoteList($localPackages)
 	{
-		$remotePackages = array();
+		$remotePackages = [];
 
 		if ($cachedData = $this->_iaCore->iaCache->get('subrion_packages', 3600 * 24 * 7, true))
 		{

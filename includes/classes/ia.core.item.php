@@ -49,16 +49,16 @@ class iaItem extends abstractCore
 	public function getFavoritesByMemberId($memberId)
 	{
 		$stmt = "`item` IN (':items') AND `member_id` = :user";
-		$stmt = iaDb::printf($stmt, array('items' => implode("','", $this->getItems()), 'user' => (int)$memberId));
+		$stmt = iaDb::printf($stmt, ['items' => implode("','", $this->getItems()), 'user' => (int)$memberId]);
 
-		$result = array();
+		$result = [];
 
-		if ($rows = $this->iaDb->all(array('item', 'id'), $stmt, null, null, self::getFavoritesTable()))
+		if ($rows = $this->iaDb->all(['item', 'id'], $stmt, null, null, self::getFavoritesTable()))
 		{
 			foreach ($rows as $row)
 			{
 				$key = $row['item'];
-				isset($result[$key]) || $result[$key] = array();
+				isset($result[$key]) || $result[$key] = [];
 
 				$result[$key][] = $row['id'];
 			}
@@ -76,7 +76,7 @@ class iaItem extends abstractCore
 	*/
 	public function getPackageItems($payableOnly = false)
 	{
-		$result = array();
+		$result = [];
 
 		$itemsInfo = $this->getItemsInfo($payableOnly);
 		foreach ($itemsInfo as $itemInfo)
@@ -101,7 +101,7 @@ class iaItem extends abstractCore
 		if (is_null($itemsInfo))
 		{
 			$itemsInfo = $this->iaDb->all('`item`, `package`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
-			$itemsInfo = is_array($itemsInfo) ? $itemsInfo : array();
+			$itemsInfo = is_array($itemsInfo) ? $itemsInfo : [];
 
 			// get active packages
 			$packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getExtrasTable());
@@ -133,7 +133,7 @@ class iaItem extends abstractCore
 	protected function _searchItems($search, $type = 'item')
 	{
 		$items = $this->getPackageItems();
-		$result = array();
+		$result = [];
 
 		foreach ($items as $item => $package)
 		{
@@ -184,7 +184,7 @@ class iaItem extends abstractCore
 	 */
 	public function getItemTable($item)
 	{
-		$result = $this->iaDb->one_bind('table_name', '`item` = :item', array('item' => $item), self::getTable());
+		$result = $this->iaDb->one_bind('table_name', '`item` = :item', ['item' => $item], self::getTable());
 		$result || $result = $item;
 
 		return $result;
@@ -197,7 +197,7 @@ class iaItem extends abstractCore
 	 */
 	public function getEnabledItemsForPlugin($plugin)
 	{
-		$result = array();
+		$result = [];
 		if ($plugin)
 		{
 			$items = $this->iaCore->get($plugin . '_items_enabled');
@@ -248,7 +248,7 @@ class iaItem extends abstractCore
 		}
 		else
 		{
-			$itemsList = array();
+			$itemsList = [];
 			foreach ($listings as $entry)
 			{
 				if (
@@ -285,14 +285,14 @@ class iaItem extends abstractCore
 
 	public function isExtrasExist($extrasName, $type = null)
 	{
-		$stmt = iaDb::printf("`name` = ':name' AND `status` = ':status'", array(
+		$stmt = iaDb::printf("`name` = ':name' AND `status` = ':status'", [
 			'name' => $extrasName,
 			'status' => iaCore::STATUS_ACTIVE
-		));
+		]);
 
 		if ($type)
 		{
-			$stmt .= iaDb::printf(" AND `type` = ':type'", array('type' => $type));
+			$stmt .= iaDb::printf(" AND `type` = ':type'", ['type' => $type]);
 		}
 
 		return (bool)$this->iaDb->exists($stmt, null, self::getExtrasTable());

@@ -63,14 +63,14 @@ class iaCron extends abstractCore
 
 		if (is_file(IA_HOME . $data[self::C_CMD]))
 		{
-			if ($this->iaDb->update(array('date_next_launch' => $data['lastScheduled']), iaDb::convertIds($job['id']), array('date_prev_launch' => 'UNIX_TIMESTAMP()')))
+			if ($this->iaDb->update(['date_next_launch' => $data['lastScheduled']], iaDb::convertIds($job['id']), ['date_prev_launch' => 'UNIX_TIMESTAMP()']))
 			{
 				$this->_launchFile($data[self::C_CMD]);
 			}
 		}
 		else
 		{
-			$this->iaDb->update(array('active' => false), iaDb::convertIds($job['id']));
+			$this->iaDb->update(['active' => false], iaDb::convertIds($job['id']));
 		}
 
 		$this->iaDb->resetTable();
@@ -91,8 +91,8 @@ class iaCron extends abstractCore
 			if ($job[self::C_DOW][0] != self::ASTERISK && !is_numeric($job[self::C_DOW]))
 			{
 				$job[self::C_DOW] = str_replace(
-					array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'),
-					array(0, 1, 2, 3, 4, 5, 6),
+					['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+					[0, 1, 2, 3, 4, 5, 6],
 					$job[self::C_DOW]);
 			}
 			$job[self::C_CMD] = trim($job[self::C_CMD]);
@@ -119,7 +119,7 @@ class iaCron extends abstractCore
 
 	protected function _getLastScheduledRunTime($job)
 	{
-		$extjob = array();
+		$extjob = [];
 		$this->_parseElement($job[self::C_MINUTE], $extjob[self::C_MINUTE], 60);
 		$this->_parseElement($job[self::C_HOUR], $extjob[self::C_HOUR], 24);
 		$this->_parseElement($job[self::C_DOM], $extjob[self::C_DOM], 31);
@@ -220,9 +220,9 @@ class iaCron extends abstractCore
 				$dateArr['wday'] -= 7;
 			}
 
-			$months28 = array(2);
-			$months30 = array(4,6,9,11);
-			$months31 = array(1,3,5,7,8,10,12);
+			$months28 = [2];
+			$months30 = [4,6,9,11];
+			$months31 = [1,3,5,7,8,10,12];
 
 			if (
 				(in_array($dateArr['mon'], $months28) && $dateArr['mday'] == 28) ||

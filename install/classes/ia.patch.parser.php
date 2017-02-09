@@ -48,15 +48,15 @@ class iaPatchParser
 	const PHRASE_CATEGORY_PAGE = 'page';
 	const PHRASE_CATEGORY_TOOLTIP = 'tooltip';
 
-	protected $_extraTypesMap = array(self::EXTRA_TYPE_PLUGIN => 'plugin', self::EXTRA_TYPE_PACKAGE => 'package');
+	protected $_extraTypesMap = [self::EXTRA_TYPE_PLUGIN => 'plugin', self::EXTRA_TYPE_PACKAGE => 'package'];
 
-	protected $_phraseCategoriesMap = array(
+	protected $_phraseCategoriesMap = [
 		1 => self::PHRASE_CATEGORY_ADMIN,
 		2 => self::PHRASE_CATEGORY_FRONTEND,
 		3 => self::PHRASE_CATEGORY_COMMON,
 		4 => self::PHRASE_CATEGORY_PAGE,
 		5 => self::PHRASE_CATEGORY_TOOLTIP
-	);
+	];
 
 	protected $_data = '';
 	protected $_offset = 0;
@@ -91,7 +91,7 @@ class iaPatchParser
 		$hash = substr($data, self::LENGTH_SIGNATURE, self::LENGTH_SALT);
 		$crypted = substr($data, self::LENGTH_SIGNATURE + self::LENGTH_SALT);
 
-		return array($header, $this->_decrypt($crypted, $hash));
+		return [$header, $this->_decrypt($crypted, $hash)];
 	}
 
 	private function _decrypt($data, $hash)
@@ -115,14 +115,14 @@ class iaPatchParser
 
 	protected function _read($format = self::FORMAT_RAW, $size = false)
 	{
-		$map = array( // code => bytes number
+		$map = [ // code => bytes number
 			'c' => 1,
 			'C' => 1,
 			's' => 2,
 			'S' => 2,
 			'l' => 4,
 			'L' => 4
-		);
+		];
 
 		$length = (int)0;
 
@@ -178,10 +178,10 @@ class iaPatchParser
 
 	protected function _parseSectionInfo()
 	{
-		$infoHeaderFormats = array(
+		$infoHeaderFormats = [
 			'3.0' => 'Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_extras/lcompilation_date/a34author/Smagic',
 			'4.0' => 'Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_extras/Snum_phrases/lcompilation_date/a34author/Smagic'
-		);
+		];
 
 		$info = $this->_read($infoHeaderFormats[$this->_version]);
 
@@ -208,7 +208,7 @@ class iaPatchParser
 		}
 
 		$index = (int)0;
-		$items = array();
+		$items = [];
 		$versionFileExists = false;
 
 		while ($index < $this->patch['info']['num_files'])
@@ -272,7 +272,7 @@ class iaPatchParser
 		}
 
 		$index = (int)0;
-		$items = array();
+		$items = [];
 
 		while ($index < $this->patch['info']['num_queries'])
 		{
@@ -290,18 +290,18 @@ class iaPatchParser
 	protected function _parseSectionExtras()
 	{
 		$index = (int)0;
-		$items = array();
+		$items = [];
 
 		while ($index < $this->patch['info']['num_extras'])
 		{
-			list($l, $type) = array($this->_read('C'), $this->_read('C'));
+			list($l, $type) = [$this->_read('C'), $this->_read('C')];
 
 			if ($name = $this->_read(self::FORMAT_RAW, $l))
 			{
-				$items[] = array(
+				$items[] = [
 					'type' => $this->_extraTypesMap[(bool)$type],
 					'name' => $name
-				);
+				];
 			}
 
 			$index++;
@@ -314,10 +314,10 @@ class iaPatchParser
 	{
 		$lengths = $this->_read('Spre/Spost');
 
-		return array(
+		return [
 			'pre' => $this->_read(self::FORMAT_RAW, $lengths['pre']),
 			'post' => $this->_read(self::FORMAT_RAW, $lengths['post'])
-		);
+		];
 	}
 
 	protected function _parseSectionPhrases()
@@ -328,17 +328,17 @@ class iaPatchParser
 		}
 
 		$index = (int)0;
-		$items = array();
+		$items = [];
 
 		while ($index < $this->patch['info']['num_phrases'])
 		{
-			list($type, $l1, $l2) = array($this->_read('C'), $this->_read('C'), $this->_read('S'));
+			list($type, $l1, $l2) = [$this->_read('C'), $this->_read('C'), $this->_read('S')];
 
-			$items[] = array(
+			$items[] = [
 				'category' => $this->_phraseCategoriesMap[$type],
 				'key' => $this->_read(self::FORMAT_RAW, $l1),
 				'value' => $this->_read(self::FORMAT_RAW, $l2)
-			);
+			];
 
 			$index++;
 		}

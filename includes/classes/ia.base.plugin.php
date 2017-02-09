@@ -47,12 +47,12 @@ abstract class abstractPlugin extends abstractCore
 
 	public function gridUpdate($params)
 	{
-		$result = array(
+		$result = [
 			'result' => false,
 			'message' => iaLanguage::get('invalid_parameters')
-		);
+		];
 
-		$params || $params = array();
+		$params || $params = [];
 
 		if (isset($params['id']) && is_array($params['id']) && count($params) > 1)
 		{
@@ -75,7 +75,7 @@ abstract class abstractPlugin extends abstractCore
 				$result['result'] = true;
 				$result['message'] = ($affected == $total)
 					? iaLanguage::get('saved')
-					: iaLanguage::getf('items_updated_of', array('num' => $affected, 'total' => $total));
+					: iaLanguage::getf('items_updated_of', ['num' => $affected, 'total' => $total]);
 			}
 			else
 			{
@@ -88,10 +88,10 @@ abstract class abstractPlugin extends abstractCore
 
 	public function gridDelete($params, $languagePhraseKey = 'deleted')
 	{
-		$result = array(
+		$result = [
 			'result' => false,
 			'message' => iaLanguage::get('invalid_parameters')
-		);
+		];
 
 		if (isset($params['id']) && is_array($params['id']) && $params['id'])
 		{
@@ -116,8 +116,8 @@ abstract class abstractPlugin extends abstractCore
 				else
 				{
 					$result['message'] = ($affected == $total)
-						? iaLanguage::getf('items_deleted', array('num' => $affected))
-						: iaLanguage::getf('items_deleted_of', array('num' => $affected, 'total' => $total));
+						? iaLanguage::getf('items_deleted', ['num' => $affected])
+						: iaLanguage::getf('items_deleted_of', ['num' => $affected, 'total' => $total]);
 				}
 			}
 			else

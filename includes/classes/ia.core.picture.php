@@ -32,12 +32,12 @@ class iaPicture extends abstractCore
 	const FIT = 'fit';
 	const CROP = 'crop';
 
-	protected $_typesMap = array(
+	protected $_typesMap = [
 		'image/gif' => 'gif',
 		'image/jpeg' => 'jpg',
 		'image/pjpeg' => 'jpeg',
 		'image/png' => 'png'
-	);
+	];
 
 	protected $_allowAnimatedGifs = false;
 
@@ -56,7 +56,7 @@ class iaPicture extends abstractCore
 			return;
 		}
 
-		$watermark_positions = array(
+		$watermark_positions = [
 			'top_left' => 'TL',
 			'top_center' => 'MT',
 			'top_right' => 'RT',
@@ -66,7 +66,7 @@ class iaPicture extends abstractCore
 			'bottom_left' => 'LB',
 			'bottom_center' => 'MB',
 			'bottom_right' => 'RB'
-		);
+		];
 
 		$opacity = $iaCore->get('watermark_opacity', 75);
 		$position = $iaCore->get('watermark_position');
@@ -116,7 +116,7 @@ class iaPicture extends abstractCore
 			$gfe = new GifFrameExtractor\GifFrameExtractor();
 
 			// For each frame, we add a watermark and we resize it
-			$frames = array();
+			$frames = [];
 			foreach ($gfe->extract($sourceFile) as $frame)
 			{
 				$frameLayer = ImageWorkshop::initFromResourceVar($frame['image']);

@@ -31,9 +31,9 @@ class iaPage extends abstractPlugin
 	protected static $_adminTable = 'admin_pages';
 	protected static $_adminGroupsTable = 'admin_pages_groups';
 
-	public $extendedExtensions = array('htm', 'html', 'php');
+	public $extendedExtensions = ['htm', 'html', 'php'];
 
-	protected static $_pageTitles = array();
+	protected static $_pageTitles = [];
 
 
 	public static function getAdminTable()
@@ -56,13 +56,13 @@ WHERE p.`status` = ':status' AND p.`service` = 0 :extra_where
 ORDER BY l.`value`
 SQL;
 
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'table_pages' => self::getTable(true),
 			'table_phrases' => $this->iaDb->prefix . iaLanguage::getTable(),
 			'lang' => $this->iaCore->language['iso'],
 			'status' => iaCore::STATUS_ACTIVE,
 			'extra_where' => $exclude ? "AND !FIND_IN_SET(p.`name`, '" . implode(',', $exclude) . "') " : ''
-		));
+		]);
 
 		return $this->iaDb->getAll($sql);
 	}
@@ -74,7 +74,7 @@ SQL;
 			$category = iaCore::FRONT == $side ? iaLanguage::CATEGORY_PAGE : iaLanguage::CATEGORY_ADMIN;
 
 			$where = '`key` LIKE :key AND `category` = :category AND `code` = :code';
-			$this->iaDb->bind($where, array('key' => 'page_title_%', 'category' => $category, 'code' => $this->iaView->language));
+			$this->iaDb->bind($where, ['key' => 'page_title_%', 'category' => $category, 'code' => $this->iaView->language]);
 
 			self::$_pageTitles[$side] = $this->iaDb->keyvalue("REPLACE(`key`, 'page_title_', '') `key`, `value`", $where, iaLanguage::getTable());
 		}
@@ -94,19 +94,19 @@ SQL;
 		return self::$_pageTitles[iaCore::FRONT][$pageName];
 	}
 
-	public function getGroups(array $exclusions = array())
+	public function getGroups(array $exclusions = [])
 	{
 		$stmt = '`status` = :status AND `service` = 0';
 		if ($exclusions)
 		{
-			$stmt.= " AND `name` NOT IN ('" . implode("','", array_map(array('iaSanitize', 'sql'), $exclusions)) . "')";
+			$stmt.= " AND `name` NOT IN ('" . implode("','", array_map(['iaSanitize', 'sql'], $exclusions)) . "')";
 		}
-		$this->iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE));
+		$this->iaDb->bind($stmt, ['status' => iaCore::STATUS_ACTIVE]);
 
-		$pages = array();
-		$result = array();
+		$pages = [];
+		$result = [];
 
-		$rows = $this->iaDb->all(array('id', 'name', 'group'), $stmt, null, null, self::getTable());
+		$rows = $this->iaDb->all(['id', 'name', 'group'], $stmt, null, null, self::getTable());
 		$titles = $this->getTitles();
 		foreach ($rows as $page)
 		{
@@ -114,15 +114,15 @@ SQL;
 			$pages[$page['group']][$page['id']] = isset($titles[$page['name']]) ? $titles[$page['name']] : $page['name'];
 		}
 
-		$rows = $this->iaDb->all(array('id', 'name'), null, null, null, self::getAdminGroupsTable());
+		$rows = $this->iaDb->all(['id', 'name'], null, null, null, self::getAdminGroupsTable());
 		foreach ($rows as $row)
 		{
 			if (isset($pages[$row['id']]))
 			{
-				$result[$row['id']] = array(
+				$result[$row['id']] = [
 					'title' => iaLanguage::get('pages_group_' . $row['name']),
 					'children' => $pages[$row['id']]
-				);
+				];
 			}
 		}
 
@@ -135,7 +135,7 @@ SQL;
 
 		if (is_null($pagesToUrlMap))
 		{
-			$pagesToUrlMap = $this->iaDb->keyvalue(array('name', 'alias'), null, self::getAdminTable());
+			$pagesToUrlMap = $this->iaDb->keyvalue(['name', 'alias'], null, self::getAdminTable());
 		}
 
 		if (isset($pagesToUrlMap[$pageName]))
@@ -148,14 +148,14 @@ SQL;
 
 	public function getByName($pageName, $lookupThroughBackend = true)
 	{
-		$result = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', array('name' => $pageName),
+		$result = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', ['name' => $pageName],
 			$lookupThroughBackend ? self::getAdminTable() : self::getTable());
 
 		if ($result)
 		{
-			$result['title'] = $this->iaDb->one_bind(array('value'), '`key` = :key AND `category` = :category AND `code` = :lang',
-				array('key' => 'page_title_' . $pageName, 'category' => $lookupThroughBackend ? iaLanguage::CATEGORY_ADMIN : iaLanguage::CATEGORY_PAGE,
-					'lang' => $this->iaView->language), iaLanguage::getTable());
+			$result['title'] = $this->iaDb->one_bind(['value'], '`key` = :key AND `category` = :category AND `code` = :lang',
+				['key' => 'page_title_' . $pageName, 'category' => $lookupThroughBackend ? iaLanguage::CATEGORY_ADMIN : iaLanguage::CATEGORY_PAGE,
+					'lang' => $this->iaView->language], iaLanguage::getTable());
 		}
 
 		return $result;

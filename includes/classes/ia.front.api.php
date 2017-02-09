@@ -40,7 +40,7 @@ class iaApi
 
 	const ENDPOINT_AUTH = 'auth';
 
-	protected $_authEndpoints = array('token', 'auth');
+	protected $_authEndpoints = ['token', 'auth'];
 
 	protected $_authServer;
 
@@ -49,7 +49,7 @@ class iaApi
 
 	protected $_mobilePush;
 
-	protected $_systemEntities = array('migrations');
+	protected $_systemEntities = ['migrations'];
 
 
 	public function init() {}
@@ -85,7 +85,7 @@ class iaApi
 		catch (Exception $e)
 		{
 			$this->_getResponse()->setCode($e->getCode());
-			$this->_getResponse()->setBody(array('error' => $e->getMessage()));
+			$this->_getResponse()->setBody(['error' => $e->getMessage()]);
 		}
 
 		$this->_getResponse()->emit();
@@ -240,7 +240,7 @@ class iaApi
 			$start = ($page - 1) * ($limit ? $limit : 20);
 		}
 
-		return array($start, $limit);
+		return [$start, $limit];
 	}
 
 	protected function _filter(array $params, $entity)
@@ -265,14 +265,14 @@ class iaApi
 			$sorting = iaSanitize::paranoid($params['sorting']);
 		}
 
-		if (isset($params['order']) && in_array($params['order'], array('asc', 'desc')))
+		if (isset($params['order']) && in_array($params['order'], ['asc', 'desc']))
 		{
 			$order = strtoupper($params['order']);
 		}
 
 		$order = sprintf(' ORDER BY `%s` %s', $sorting, $order);
 
-		return array($where, $order);
+		return [$where, $order];
 	}
 
 	// oauth2
@@ -447,17 +447,17 @@ class iaApi
 		return $this->_mobilePush;
 	}
 
-	public function pushSendMembers($title, $message = '', array $params = array())
+	public function pushSendMembers($title, $message = '', array $params = [])
 	{
 		$this->getMobilePush()->sendMembers($title, $message, $params);
 	}
 
-	public function pushSendUsergroup($usergroupId, $title, $message = '', array $params = array())
+	public function pushSendUsergroup($usergroupId, $title, $message = '', array $params = [])
 	{
 		$this->getMobilePush()->sendUsergroup($usergroupId, $title, $message, $params);
 	}
 
-	public function pushSendAdministrators($title, $message = '', array $params = array())
+	public function pushSendAdministrators($title, $message = '', array $params = [])
 	{
 		$this->getMobilePush()->sendAdministrators($title, $message, $params);
 	}

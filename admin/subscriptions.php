@@ -50,13 +50,13 @@ class iaBackendController extends iaAbstractControllerBackend
 			. 'LEFT JOIN `:prefix:table_members` m ON (s.`member_id` = m.`id`) '
 			. ($where ? 'WHERE ' . $where . ' ' : '') . $order . ' '
 			. 'LIMIT :start, :limit';
-		$sql = iaDb::printf($sql, array(
+		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_subscriptions' => $this->getTable(),
 			'table_members' => iaUsers::getTable(),
 			'start' => $start,
 			'limit' => $limit
-		));
+		]);
 
 		return $this->_iaDb->getAll($sql);
 	}

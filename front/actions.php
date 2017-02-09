@@ -26,7 +26,7 @@
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action']))
 {
-	$output = array('error' => true, 'message' => iaLanguage::get('invalid_parameters'));
+	$output = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
 
 	switch ($_POST['action'])
 	{
@@ -93,7 +93,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 						}
 
 						$newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
-						$iaDb->update(array($field => $newValue), iaDb::convertIds($itemId), null, $tableName);
+						$iaDb->update([$field => $newValue], iaDb::convertIds($itemId), null, $tableName);
 
 						if (0 == $iaDb->getErrorNumber())
 						{
@@ -123,14 +123,14 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 			if (!empty($_POST['item']) && !empty($_POST['itemid']) && !empty($_POST['field']) && !empty($_POST['file']))
 			{
 				$output = $iaCore->factory('field')->deleteUploadedFile($_POST['field'], $_POST['item'], $_POST['itemid'], $_POST['file'], true)
-					? array('error' => false, 'message' => iaLanguage::get('deleted'))
-					: array('error' => true, 'message' => iaLanguage::get('error'));
+					? ['error' => false, 'message' => iaLanguage::get('deleted')]
+					: ['error' => true, 'message' => iaLanguage::get('error')];
 			}
 
 			break;
 
 		case 'send_email':
-			$output['message'] = array();
+			$output['message'] = [];
 			$memberInfo = $iaCore->factory('users')->getInfo((int)$_POST['author_id']);
 
 			if (empty($memberInfo) || $memberInfo['status'] != iaCore::STATUS_ACTIVE)
@@ -166,7 +166,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 			{
 				$iaMailer = $iaCore->factory('mailer');
 
-				$subject = iaLanguage::getf('author_contact_request', array('title' => $_POST['regarding']));
+				$subject = iaLanguage::getf('author_contact_request', ['title' => $_POST['regarding']]);
 
 				$iaMailer->FromName = $_POST['from_name'];
 				$iaMailer->From = $_POST['from_email'];
@@ -181,8 +181,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 			break;
 
 		default:
-			$output = array();
-			$iaCore->startHook('phpActionsJsonHandle', array('action' => $_POST['action'], 'output' => &$output));
+			$output = [];
+			$iaCore->startHook('phpActionsJsonHandle', ['action' => $_POST['action'], 'output' => &$output]);
 	}
 
 	$iaView->assign($output);
@@ -237,16 +237,16 @@ if (isset($_GET) && isset($_GET['action']))
 				if (isset($_GET['q']) && $_GET['q'])
 				{
 					$stmt = '(`username` LIKE :name OR `email` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
-					$iaDb->bind($stmt, array('name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE));
+					$iaDb->bind($stmt, ['name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE]);
 
 					$sql = 'SELECT `id`, CONCAT (`fullname`, \' (\',`email`, \')\') `fullname` ' .
 						'FROM :table_members ' .
 						'WHERE :conditions ' .
 						'LIMIT 0, 20';
-					$sql = iaDb::printf($sql, array(
+					$sql = iaDb::printf($sql, [
 						'table_members' => iaUsers::getTable(true),
 						'conditions' => $stmt,
-					));
+					]);
 
 					$output = $iaDb->getAll($sql);
 

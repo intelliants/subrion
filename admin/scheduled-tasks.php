@@ -31,7 +31,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_processAdd = false;
 	protected $_processEdit = false;
 
-	protected $_gridColumns = array('id', 'name', 'description', 'date_prev_launch', 'date_next_launch', 'active', 'extras');
+	protected $_gridColumns = ['id', 'name', 'description', 'date_prev_launch', 'date_next_launch', 'active', 'extras'];
 
 
 	public function __construct()
