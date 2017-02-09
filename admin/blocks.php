@@ -150,6 +150,7 @@ SQL;
 		$entry = array(
 			'name' => 'block_' . mt_rand(1000, 9999),
 			'type' => iaBlock::TYPE_HTML,
+			'contents' => '',
 			'collapsible' => true,
 			'collapsed' => false,
 			'header' => true,
