@@ -70,17 +70,15 @@ class iaBlog extends abstractPlugin
 		empty($conditions) || $where.= ' AND ' . $conditions;
 		$this->iaDb->bind($where, array('status' => iaCore::STATUS_ACTIVE, 'language' => $this->iaView->language));
 
-		$sql =
-			'SELECT SQL_CALC_FOUND_ROWS '
-				. 'b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, '
-				. 'm.`fullname` '
-			. 'FROM `:prefix:table_blog_entries` b '
-			. 'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) '
-			. 'WHERE :where '
-			. 'GROUP BY b.`id` '
-			. 'ORDER BY :order '
-			. 'LIMIT :start, :limit';
-
+		$sql = <<<SQL
+SELECT SQL_CALC_FOUND_ROWS b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname` 
+	FROM `:prefix:table_blog_entries` b 
+LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
+WHERE :where 
+GROUP BY b.`id` 
+ORDER BY :order 
+LIMIT :start, :limit
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries' => self::getTable(),
@@ -96,12 +94,12 @@ class iaBlog extends abstractPlugin
 
 	public function getById($id)
 	{
-		$sql =
-			'SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname`, b.`member_id` ' .
-			'FROM `:prefix:table_blog_entries` b ' .
-			'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) ' .
-			"WHERE b.`id` = :id AND b.`status` = ':status'";
-
+		$sql = <<<SQL
+SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname`, b.`member_id` 
+	FROM `:prefix:table_blog_entries` b 
+LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
+WHERE b.`id` = :id AND b.`status` = ':status'
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries' => self::getTable(),
@@ -132,13 +130,10 @@ class iaBlog extends abstractPlugin
 
 			$result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
 
-			$sql =
-				'DELETE ' .
-				'FROM `:prefix:table_blog_tags` ' .
-				'WHERE `id` NOT IN (' .
-					'SELECT DISTINCT `tag_id` ' .
-					'FROM `:prefix:table_blog_entries_tags`)';
-
+			$sql = <<<SQL
+DELETE FROM `:prefix:table_blog_tags` 
+WHERE `id` NOT IN (SELECT DISTINCT `tag_id`	FROM `:prefix:table_blog_entries_tags`)
+SQL;
 			$sql = iaDb::printf($sql, array(
 				'prefix' => $this->iaDb->prefix,
 				'table_blog_entries_tags' => 'blog_entries_tags',
@@ -159,12 +154,12 @@ class iaBlog extends abstractPlugin
 
 	public function getTags($blogEntryId)
 	{
-		$sql =
-			'SELECT DISTINCT bt.`title`, bt.`alias` ' .
-			'FROM `:prefix:table_blog_tags` bt ' .
-			'LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) ' .
-			'WHERE bet.`blog_id` = :id';
-
+		$sql = <<<SQL
+SELECT DISTINCT bt.`title`, bt.`alias`
+	FROM `:prefix:table_blog_tags` bt 
+LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) 
+WHERE bet.`blog_id` = :id
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
@@ -177,14 +172,11 @@ class iaBlog extends abstractPlugin
 
 	public function getTagsString($blogEntryId)
 	{
-		$sql =
-			'SELECT GROUP_CONCAT(`title`) ' .
-			'FROM `:prefix:table_blog_tags` bt ' .
-			'WHERE `id` IN (' .
-				'SELECT `tag_id` ' .
-				'FROM `:prefix:table_blog_entries_tags` ' .
-				'WHERE `blog_id` = :id)';
-
+		$sql = <<<SQL
+SELECT GROUP_CONCAT(`title`) 
+	FROM `:prefix:table_blog_tags` bt 
+WHERE `id` IN (SELECT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id)
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_tags' => $this->_tableBlogTags,
@@ -197,12 +189,12 @@ class iaBlog extends abstractPlugin
 
 	public function getAllTags()
 	{
-		$sql =
-			'SELECT bt.`title`, bt.`alias`, bet.`blog_id` ' .
-			'FROM `:prefix:table_blog_tags` bt ' .
-			'LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) ' .
-			'ORDER BY bt.`title`';
-
+		$sql = <<<SQL
+SELECT bt.`title`, bt.`alias`, bet.`blog_id` 
+	FROM `:prefix:table_blog_tags` bt 
+LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) 
+ORDER BY bt.`title`
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
@@ -218,37 +210,23 @@ class iaBlog extends abstractPlugin
 
 		$this->iaDb->setTable($this->_tableBlogEntriesTags);
 
-		$sql =
-			'DELETE ' .
-			'FROM `:prefix:table_blog_tags` ' .
-			'WHERE `id` IN (' .
-				'SELECT DISTINCT `tag_id` ' .
-				'FROM `:prefix:table_blog_entries_tags` ' .
-				'WHERE `tag_id` IN (' .
-					'SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` ' .
-					'WHERE `blog_id` = :id) ' .
-				'GROUP BY 1 ' .
-				'HAVING COUNT(*) = 1)';
-
+		$sql = <<<SQL
+DELETE FROM `:prefix:table_blog_tags` 
+WHERE `id` IN (
+	SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` 
+	WHERE `tag_id` IN (SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id) 
+	GROUP BY 1 
+	HAVING COUNT(*) = 1)
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_tags' => $this->_tableBlogTags,
 			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
 			'id' => $id
 		));
-
 		$this->iaDb->query($sql);
-		$sql =
-			'DELETE ' .
-			'FROM :prefix:table_blog_entries_tags ' .
-			'WHERE `blog_id` = :id';
-		$sql = iaDb::printf($sql, array(
-			'prefix' => $this->iaDb->prefix,
-			'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
-			'id' => $id
-		));
 
-		$this->iaDb->query($sql);
+		$this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
 
 		$allTagTitles = $this->iaDb->keyvalue(array('title','id'), null,$this->_tableBlogTags);
 

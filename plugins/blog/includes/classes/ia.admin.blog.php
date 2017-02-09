@@ -92,13 +92,10 @@ class iaBlog extends abstractPlugin
 
 			$result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
 
-			$sql =
-				'DELETE ' .
-				'FROM `:prefix:table_blog_tags` ' .
-				'WHERE `id` NOT IN (' .
-					'SELECT DISTINCT `tag_id` ' .
-					'FROM `:prefix:table_blog_entries_tags`)';
-
+			$sql = <<<SQL
+DELETE FROM `:prefix:table_blog_tags` 
+WHERE `id` NOT IN (SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags`)
+SQL;
 			$sql = iaDb::printf($sql, array(
 				'prefix' => $this->iaDb->prefix,
 				'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
@@ -119,14 +116,11 @@ class iaBlog extends abstractPlugin
 
 	public function getTags($id)
 	{
-		$sql =
-			'SELECT GROUP_CONCAT(`title`) ' .
-			'FROM `:prefix:table_blog_tags` bt ' .
-			'WHERE `id` IN (' .
-			'SELECT `tag_id` ' .
-			'FROM `:prefix:table_blog_entries_tags` ' .
-			'WHERE `blog_id` = :id)';
-
+		$sql = <<<SQL
+SELECT GROUP_CONCAT(`title`) 
+	FROM `:prefix:table_blog_tags` bt 
+WHERE `id` IN (SELECT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id)
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $this->iaDb->prefix,
 			'table_blog_tags' => $this->_tableBlogTags,

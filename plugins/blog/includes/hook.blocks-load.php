@@ -28,20 +28,20 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
 	if ($iaView->blockExists('blogroll') || $iaView->blockExists('new_blog_posts'))
 	{
-		$stmt = 'b.`status` = :status AND `lang` = :language ORDER BY b.`date_added` DESC';
-		$iaDb->bind($stmt, array('status' => iaCore::STATUS_ACTIVE, 'language' => $iaView->language));
-
-		$sql =
-			'SELECT b.`id`, b.`title`, b.`date_added`, b.`alias`, b.`body`, b.`image`, m.`fullname` ' .
-			'FROM `:prefix:table_blog_entries` b ' .
-			'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) ' .
-			'WHERE :condition ' .
-			'LIMIT :start, :limit';
+		$sql = <<<SQL
+SELECT b.`id`, b.`title`, b.`date_added`, b.`alias`, b.`body`, b.`image`, m.`fullname` 
+	FROM `:prefix:table_blog_entries` b 
+LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
+WHERE b.`status` = ':status' && `lang` = ':language'
+ORDER BY b.`date_added` DESC
+LIMIT :start, :limit
+SQL;
 		$sql = iaDb::printf($sql, array(
 			'prefix' => $iaDb->prefix,
 			'table_blog_entries' => 'blog_entries',
 			'table_members' => 'members',
-			'condition' => $stmt,
+			'status' => iaCore::STATUS_ACTIVE,
+			'language' => $iaView->language,
 			'start' => 0,
 			'limit' => $iaCore->get('blog_number_block')
 		));
