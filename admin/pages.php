@@ -316,7 +316,8 @@ class iaBackendController extends iaAbstractControllerBackend
 			$parentAlias = empty($parentAlias['alias']) ? $parentAlias['name'] . IA_URL_DELIMITER : $parentAlias['alias'];
 		}
 
-		$entryData['extension'] = (false === strpos($entryData['alias'], '.')) ? '' : end(explode('.', $entryData['alias']));
+		$last = explode('.', $entryData['alias']);
+		$entryData['extension'] = (false === strpos($entryData['alias'], '.')) ? '' : end($last);
 		$entryData['alias'] = substr($entryData['alias'], strlen($parentAlias), -1 - strlen($entryData['extension']));
 
 		if ($entryData['name'] == $entryData['alias'])
