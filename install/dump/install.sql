@@ -1940,6 +1940,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('select_none','Select None','admin'),
 ('send_confirm','Are you sure you wish to send this feedback to the Subrion Team?','admin'),
 ('send_test_email','Send test email','admin'),
+('sending','Sending','admin'),
 ('seo','SEO','admin'),
 ('server_info','Server Info','admin'),
 ('set_as_default_value','Set as default value','admin'),
