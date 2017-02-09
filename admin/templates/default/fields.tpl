@@ -596,7 +596,7 @@
 				<label class="col col-lg-2 control-label">{lang key='required_checks'} <a href="#" class="js-tooltip" title="{$tooltips.required_checks}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-8">
-					<textarea name="required_checks" class="js-code-editor">{if isset($item.required_checks)}{$item.required_checks|escape:'html'}{/if}</textarea>
+					<textarea name="required_checks" id="required_checks" class="js-code-editor">{if isset($item.required_checks)}{$item.required_checks|escape:'html'}{/if}</textarea>
 				</div>
 			</div>
 
@@ -604,7 +604,7 @@
 				<label class="col col-lg-2 control-label">{lang key='extra_actions'} <a href="#" class="js-tooltip" title="{$tooltips.extra_actions}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-8">
-					<textarea name="extra_actions" class="js-code-editor">{if isset($item.extra_actions)}{$item.extra_actions|escape:'html'}{/if}</textarea>
+					<textarea name="extra_actions" id="extra_actions" class="js-code-editor">{if isset($item.extra_actions)}{$item.extra_actions|escape:'html'}{/if}</textarea>
 				</div>
 			</div>
 
