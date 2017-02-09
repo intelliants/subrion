@@ -129,9 +129,11 @@ $(function()
 		editAreaLoader.init(
 		{
 			id : $(this).attr('id'),
+			display: 'later',
+			min_height: 200,
 			syntax: 'php',
 			start_highlight: true,
-			toolbar: 'search, go_to_line, |, undo, redo'
+			toolbar: 'undo, redo'
 		});
 	});
 
