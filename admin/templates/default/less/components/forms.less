@@ -229,3 +229,40 @@
   position: relative;
   z-index: 30;
 }
+
+
+
+//
+// Image type controls
+// --------------------------------------------------
+
+.image-type-control {
+
+  .input-group-addon:first-child {
+    background: #f8f8f8;
+  }
+
+  .input-group-addon input[type="checkbox"], 
+  .input-group-addon input[type="radio"] {
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  .form-control-static {
+    background: #f8f8f8;
+    border-top: 1px solid @input-border;
+    border-bottom: 1px solid @input-border;
+    padding: 6px 12px 6px 0;
+    overflow: hidden;
+
+    span:not(.label) {
+      color: fade(@text-color, 50%);
+    }
+
+    .label {
+      float: right;
+      margin-top: 3px;
+      display: none;
+    }
+  }
+}

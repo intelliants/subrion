@@ -606,40 +606,41 @@ $(function()
 
 	var $imgFieldImageTypesSetup = $('#js-image-field-setup-by-imgtypes, #js-gallery-field-setup-by-imgtypes');
 
-	$('.checkbox', $imgFieldImageTypesSetup).hover(
-	function()
+	$('input[type="checkbox"]', $imgFieldImageTypesSetup).on('change', function()
 	{
-		var $checkbox = $('input[type="checkbox"]:checked', this);
-		if (!$checkbox.length) return;
-		$('.label', this).not('.js-image-type-' + $checkbox.data('type')).removeClass('hide');
-	},
-	function()
-	{
-		$('.label', this).addClass('hide')
+		var $this = $(this),
+			$btns = $this.closest('.image-type-control').find('.dropdown-toggle');
+
+		$this.is(':checked')
+			? $btns.prop('disabled', false)
+			: $btns.prop('disabled', true)
 	});
 
-	$('input[type="checkbox"]', $imgFieldImageTypesSetup).on('click', function()
-	{
-		var $o = $(this).closest('.checkbox').find('a');
-		$(this).is(':checked')
-			? $o.not('.js-image-type-' + $(this).data('type')).removeClass('hide')
-			: $o.addClass('hide')
-	});
-
-	$('.checkbox a', $imgFieldImageTypesSetup).on('click', function(e)
-	{
+	$('.js-set-image-type').click(function(e) {
 		e.preventDefault();
 
-		var type = $(this).data('type'),
-			$checkbox = $(this).closest('.checkbox').find('input[type="checkbox"]');
+		if ($(this).parent().hasClass('disabled')) {
+			return;
+		}
+
+		var $this = $(this),
+			type = $this.data('type')
+			$checkbox = $this.closest('.image-type-control').find('input[type="checkbox"]')
+			$label = $this.closest('.image-type-control').find('span[data-type="' + type + '"]');
 
 		$checkbox.data('type', type);
 
 		var inputName = ('primary' == type) ? 'imagetype_primary' : 'imagetype_thumbnail';
-		'pictures' == $(this).closest('.field_type').attr('id') && (inputName = 'pic_' + inputName);
+
+		if ($this.closest('#pictures')) {
+			inputName = 'pic_' + inputName;
+		}
 
 		$('input[name="' + inputName + '"]').val($checkbox.data('name'));
 
-		$(this).fadeOut('fast');
+		$this.parent().addClass('disabled').siblings().removeClass('disabled');
+		$label.show().siblings('.label').hide();
+		$this.closest('.image-type-control').siblings().find('.label[data-type="' + type + '"]').hide();
+		$this.closest('.image-type-control').siblings().find('.js-set-image-type[data-type="' + type + '"]').parent().removeClass('disabled');
 	});
 });
