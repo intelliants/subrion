@@ -31,9 +31,9 @@ if (isset($ia_version))
 	return IA_VERSION;
 }
 
-if (version_compare('5.3', PHP_VERSION, '>'))
+if (version_compare(PHP_VERSION, '5.4', '<'))
 {
-	exit('Subrion ' . IA_VERSION . ' requires PHP 5.3 or higher to run properly.');
+	exit('Subrion ' . IA_VERSION . ' requires PHP 5.4 or higher to run properly.');
 }
 if (function_exists('apache_get_modules') && !in_array('mod_rewrite', apache_get_modules()))
 {
