@@ -9,7 +9,7 @@ modules/*
 !modules/kcaptcha
 *node_modules
 templates/*
-!templates/common
+!templates/_common
 !templates/kickstart
 tmp/*
 !tmp/.htaccess
