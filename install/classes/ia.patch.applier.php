@@ -112,7 +112,7 @@ class iaPatchApplier
 			}
 		}
 
-		empty($patch['extras']) || $this->_processExtras($patch['extras']);
+		empty($patch['extras']) || $this->_processModules($patch['extras']);
 
 		$patchVersion = $patch['header']['major'] . '.' . $patch['header']['minor'];
 
@@ -253,7 +253,7 @@ class iaPatchApplier
 		}
 	}
 
-	protected function _processExtras(array $entries)
+	protected function _processModules(array $entries)
 	{
 		foreach ($entries as $entry)
 		{

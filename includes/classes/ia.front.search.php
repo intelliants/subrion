@@ -413,7 +413,7 @@ class iaSearch extends abstractCore
 	{
 		$this->iaCore->factory('item');
 
-		$extras = $this->iaDb->all(['name', 'type', 'items'], "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, iaItem::getExtrasTable());
+		$extras = $this->iaDb->all(['name', 'type', 'items'], "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, iaItem::getModulesTable());
 
 		$results = [];
 		foreach ($extras as $extra)
@@ -459,7 +459,7 @@ class iaSearch extends abstractCore
 		$this->iaDb->bind($where, ['type' => 'plugin', 'status' => iaCore::STATUS_ACTIVE]);
 
 		$result = [];
-		$plugins = $this->iaDb->onefield('name', $where, null, null, $iaItem::getExtrasTable());
+		$plugins = $this->iaDb->onefield('name', $where, null, null, $iaItem::getModulesTable());
 
 		foreach ($plugins as $pluginName)
 		{

@@ -276,7 +276,7 @@ SQL;
 			'prefix' => $iaDb->prefix,
 			'table_admin_pages' => 'admin_pages',
 			'table_config_groups' => iaCore::getConfigGroupsTable(),
-			'table_extras' => iaItem::getExtrasTable(),
+			'table_extras' => iaItem::getModulesTable(),
 			'groups' => implode(',', array_keys($menuGroups)),
 			'status' => iaCore::STATUS_ACTIVE,
 			'extras' => $extras

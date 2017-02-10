@@ -392,19 +392,19 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($defaultPackage)
 			{
-				$oldExtras = $this->_iaCore->factory('module', iaCore::ADMIN);
+				$oldModule = $this->_iaCore->factory('module', iaCore::ADMIN);
 
-				$oldExtras->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
-				$oldExtras->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME));
-				$oldExtras->parse();
-				$oldExtras->checkValidity();
+				$oldModule->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
+				$oldModule->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME));
+				$oldModule->parse();
+				$oldModule->checkValidity();
 
-				$iaDb->update(['url' => $oldExtras->getUrl()], iaDb::convertIds($defaultPackage, 'name'));
+				$iaDb->update(['url' => $oldModule->getUrl()], iaDb::convertIds($defaultPackage, 'name'));
 
-				if ($oldExtras->itemData['pages']['front'])
+				if ($oldModule->itemData['pages']['front'])
 				{
 					$iaDb->setTable('pages');
-					foreach ($oldExtras->itemData['pages']['front'] as $page)
+					foreach ($oldModule->itemData['pages']['front'] as $page)
 					{
 						$iaDb->update(['alias' => $page['alias']], "`name` = '{$page['name']}' AND `extras` = '$defaultPackage'");
 					}

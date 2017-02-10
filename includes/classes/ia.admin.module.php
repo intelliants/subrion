@@ -72,17 +72,12 @@ class iaModule extends abstractCore
 	public $isUpgrade = false;
 	public $isUpdate = false;
 
-	protected $_extrasTypePaths = [];
-
 
 	public function init()
 	{
 		parent::init();
 
 		$this->iaCore->factory(['acl', 'util']);
-
-		$this->_extrasTypePaths[self::TYPE_PLUGIN] = IA_MODULES;
-		$this->_extrasTypePaths[self::TYPE_PACKAGE] = IA_MODULES;
 	}
 
 	protected function _resetValues()
@@ -236,7 +231,7 @@ class iaModule extends abstractCore
 				{
 					case self::DEPENDENCY_TYPE_PACKAGE:
 					case self::DEPENDENCY_TYPE_PLUGIN:
-						$exists = $iaItem->isExtrasExist($moduleName, $dependency['type']);
+						$exists = $iaItem->isModuleExist($moduleName, $dependency['type']);
 						break;
 					case self::DEPENDENCY_TYPE_TEMPLATE:
 						$exists = $moduleName == $currentTemplate;
@@ -370,7 +365,7 @@ class iaModule extends abstractCore
 		$this->isUpgrade = true;
 		$iaDb = &$this->iaDb;
 
-		$this->iaCore->startHook('phpExtrasUpgradeBefore', ['extra' => $this->itemData['name']]);
+		$this->iaCore->startHook('phpModuleUpgradeBefore', ['extra' => $this->itemData['name']]);
 
 		$this->_processQueries('install', self::SQL_STAGE_START, true);
 		$this->_processQueries('upgrade', self::SQL_STAGE_START);
@@ -684,12 +679,12 @@ class iaModule extends abstractCore
 			$this->_runPhpCode($this->itemData['code']['upgrade']);
 		}
 
-		$this->iaCore->startHook('phpExtrasUpgradeBeforeSql', ['extra' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
+		$this->iaCore->startHook('phpModuleUpgradeBeforeSql', ['extra' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
 
 		$iaDb->update($this->itemData['info'], "`name` = '{$this->itemData['name']}' AND `type` = '{$this->itemData['type']}'",
 			['date' => iaDb::FUNCTION_NOW], self::getTable());
 
-		$this->iaCore->startHook('phpExtrasUpgradeAfter', ['extra' => $this->itemData['name']]);
+		$this->iaCore->startHook('phpModuleUpgradeAfter', ['extra' => $this->itemData['name']]);
 
 		$this->iaCore->iaCache->clearAll();
 	}
@@ -704,7 +699,7 @@ class iaModule extends abstractCore
 			return false;
 		}
 
-		$this->iaCore->startHook('phpExtrasUninstallBefore', ['extra' => $extraName]);
+		$this->iaCore->startHook('phpModuleUninstallBefore', ['extra' => $extraName]);
 
 		if ($this->iaCore->get('default_package') == $extraName)
 		{
@@ -871,7 +866,7 @@ class iaModule extends abstractCore
 			}
 		}
 
-		$this->iaCore->startHook('phpExtrasUninstallAfter', ['extra' => $extraName]);
+		$this->iaCore->startHook('phpModuleUninstallAfter', ['extra' => $extraName]);
 
 		$this->iaCore->iaCache->clearAll();
 
@@ -881,7 +876,7 @@ class iaModule extends abstractCore
 	public function install()
 	{
 		$iaDb = &$this->iaDb;
-		$this->iaCore->startHook('phpExtrasInstallBefore', ['extra' => $this->itemData['name']]);
+		$this->iaCore->startHook('phpModuleInstallBefore', ['extra' => $this->itemData['name']]);
 
 		$extrasList = [];
 		$array = $iaDb->all(['id', 'name', 'version'], "`status` = 'active'", null, null, self::getTable());
@@ -1463,7 +1458,7 @@ class iaModule extends abstractCore
 
 		if (!$this->isUpdate)
 		{
-			$this->iaCore->startHook('phpExtrasInstallBeforeSql', ['extra' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
+			$this->iaCore->startHook('phpModuleInstallBeforeSql', ['extra' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
 			$iaDb->insert($extraEntry, ['date' => iaDb::FUNCTION_NOW], self::getTable());
 		}
 
@@ -1476,7 +1471,7 @@ class iaModule extends abstractCore
 			$this->_runPhpCode($this->itemData['code']['install']);
 		}
 
-		$this->iaCore->startHook('phpExtrasInstallAfter', ['extra' => $this->itemData['name']]);
+		$this->iaCore->startHook('phpModuleInstallAfter', ['extra' => $this->itemData['name']]);
 
 		$this->iaCore->factory('cache')->clearAll();
 
@@ -2144,7 +2139,6 @@ class iaModule extends abstractCore
 		$mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
 		$masterLanguageCode = $this->iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
 
-		$path = isset($this->_extrasTypePaths[$this->itemData['type']]) ? $this->_extrasTypePaths[$this->itemData['type']] : IA_HOME;
 		$extrasVersion = $this->itemData['info']['version'];
 
 		foreach ($this->itemData['sql'][$type][$stage] as $version => $entries)
@@ -2164,7 +2158,7 @@ class iaModule extends abstractCore
 				if ($entry['external'])
 				{
 					$filePath = str_replace('{DS}', IA_DS, $entry['query']);
-					$fileFullPath = $path . $this->itemData['name'] . IA_DS . $filePath;
+					$fileFullPath = IA_MODULES . $this->itemData['name'] . IA_DS . $filePath;
 
 					if (iaUtil::isZip($fileFullPath))
 					{

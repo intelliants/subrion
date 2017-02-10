@@ -196,7 +196,7 @@ SQL;
 				$sql = iaDb::printf($sql, [
 					'prefix' => $this->_iaDb->prefix,
 					'table_pages' => iaPage::getTable(),
-					'table_extras' => iaItem::getExtrasTable()
+					'table_extras' => iaItem::getModulesTable()
 				]);
 
 				return ['data' => $this->_iaDb->getAll($sql)];

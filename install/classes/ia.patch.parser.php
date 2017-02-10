@@ -73,7 +73,7 @@ class iaPatchParser
 		$this->patch['info'] = $this->_parseSectionInfo();
 		$this->patch['files'] = $this->_parseSectionFiles();
 		$this->patch['queries'] = $this->_parseSectionQueries();
-		$this->patch['extras'] = $this->_parseSectionExtras();
+		$this->patch['extras'] = $this->_parseSectionModules();
 		$this->patch['executables'] = $this->_parseSectionExecutables();
 		$this->patch['phrases'] = $this->_parseSectionPhrases();
 	}
@@ -287,7 +287,7 @@ class iaPatchParser
 		return $items;
 	}
 
-	protected function _parseSectionExtras()
+	protected function _parseSectionModules()
 	{
 		$index = (int)0;
 		$items = [];
