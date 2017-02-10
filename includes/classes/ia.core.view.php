@@ -227,7 +227,7 @@ class iaView extends abstractUtil
 		else
 		{
 			isset($this->_messages[$type]) || $this->_messages[$type] = [];
-			in_array($message, $this->_messages[$type]) || $this->_messages[$type][] = $message;
+			in_array($message, $this->_messages[$type]) || ($this->_messages[$type][] = $message);
 		}
 	}
 

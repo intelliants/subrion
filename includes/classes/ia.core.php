@@ -301,12 +301,7 @@ final class iaCore
 		$moduleName = $iaView->get('extras');
 		$fileName = $iaView->get('filename');
 
-		if ('template' == $iaView->get('type'))
-		{
-			$module = empty($fileName) ? $iaView->name() : $fileName;
-			$module = (self::ACCESS_ADMIN == $this->getAccessType() ? IA_ADMIN : IA_FRONT) . $module . iaSystem::EXECUTABLE_FILE_EXT;
-		}
-		else
+		if (in_array($iaView->get('type'), ['plugin', 'package']))
 		{
 			define('IA_CURRENT_MODULE', $moduleName);
 			define('IA_MODULE_URL', ($iaView->packageUrl ? $iaView->packageUrl . IA_URL_LANG : $iaView->domainUrl . IA_URL_LANG . $iaView->extrasUrl));
@@ -316,6 +311,11 @@ final class iaCore
 			$module = IA_MODULES . $moduleName . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . $module . iaSystem::EXECUTABLE_FILE_EXT;
 
 			file_exists($module) || $module = (self::ACCESS_ADMIN == $this->getAccessType() ? IA_ADMIN : IA_FRONT) . $fileName . iaSystem::EXECUTABLE_FILE_EXT;
+		}
+		else
+		{
+			$module = empty($fileName) ? $iaView->name() : $fileName;
+			$module = (self::ACCESS_ADMIN == $this->getAccessType() ? IA_ADMIN : IA_FRONT) . $module . iaSystem::EXECUTABLE_FILE_EXT;
 		}
 
 		$iaView->set('filename', $module);
