@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<plugin name="fancybox">
+<module type="plugin" name="fancybox">
 	<title>fancyBox</title>
 	<summary>Plugin will add lightbox effect to images based on Fancybox javascript library</summary>
 	<author>Intelliants LLC</author>
@@ -53,4 +53,4 @@ $(function()
 			]]>
 		</hook>
 	</hooks>
-</plugin>
+</module>
