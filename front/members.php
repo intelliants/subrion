@@ -31,6 +31,7 @@ if (!$iaCore->get('members_enabled'))
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType())
 {
+
 	$iaUsers = $iaCore->factory('users');
 
 	// filter by usergroups
