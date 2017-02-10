@@ -1633,6 +1633,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_type_checkbox','Checkboxes Set','admin'),
 ('field_type_combo','Dropdown List','admin'),
 ('field_type_date','Date Input Field','admin'),
+('field_type_iconpicker','Iconpicker','admin'),
 ('field_type_image','Single Image Upload','admin'),
 ('field_type_number','Number Input','admin'),
 ('field_type_pictures','Multiple Images Upload','admin'),

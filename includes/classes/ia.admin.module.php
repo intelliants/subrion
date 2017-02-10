@@ -1511,9 +1511,10 @@ class iaModule extends abstractCore
 		if ('module' == $this->_inTag && isset($this->_attributes['name']))
 		{
 			$this->itemData['name'] = $this->_attributes['name'];
-			$this->itemData['type'] = ($name == self::TYPE_PLUGIN) ? self::TYPE_PLUGIN : self::TYPE_PACKAGE;
+			$this->itemData['type'] = $this->_attributes['type'] == self::TYPE_PLUGIN ? self::TYPE_PLUGIN : self::TYPE_PACKAGE;
 		}
-		elseif (in_array($this->_inTag, [self::TYPE_PACKAGE, self::TYPE_PLUGIN]) && isset($attributes['name'])) // used for < 4.1.x compatibility
+		// FIXME: used for < 4.1.x compatibility, get rid of it once all plugins are updated
+		elseif (in_array($this->_inTag, [self::TYPE_PACKAGE, self::TYPE_PLUGIN]) && isset($attributes['name']))
 		{
 			$this->itemData['name'] = $attributes['name'];
 			$this->itemData['type'] = ($name == self::TYPE_PLUGIN) ? self::TYPE_PLUGIN : self::TYPE_PACKAGE;
