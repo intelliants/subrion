@@ -238,7 +238,7 @@ class iaTemplate extends abstractCore
 				{
 					case self::DEPENDENCY_TYPE_PACKAGE:
 					case self::DEPENDENCY_TYPE_PLUGIN:
-						$exists = $iaItem->isExtrasExist($moduleName, $dependency['type']);
+						$exists = $iaItem->isModuleExist($moduleName, $dependency['type']);
 						break;
 					case self::DEPENDENCY_TYPE_TEMPLATE:
 						$exists = ($moduleName == $currentTemplate);

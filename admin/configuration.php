@@ -221,7 +221,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				iaBreadcrumb::insert(iaLanguage::get('config_group_' . $groupData['name']), IA_ADMIN_URL
 					. $pluginPage['alias'], iaBreadcrumb::POSITION_FIRST);
 			}
-			elseif ($iaItem->isExtrasExist($groupData['extras'], iaItem::TYPE_PLUGIN))
+			elseif ($iaItem->isModuleExist($groupData['extras'], iaItem::TYPE_PLUGIN))
 			{
 				// plugin with no admin pages
 				$iaView->set('group', 5);

@@ -101,7 +101,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	{
 		foreach ($array as $itemData)
 		{
-			if ($itemData['item'] != $member['item'] && ($iaItem->isExtrasExist($itemsList[$itemData['item']])))
+			if ($itemData['item'] != $member['item'] && ($iaItem->isModuleExist($itemsList[$itemData['item']])))
 			{
 				$itemsFlat[] = $itemData['item'];
 			}

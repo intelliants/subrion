@@ -674,7 +674,7 @@ final class iaCore
 		return $this->packagesData = $packages;
 	}
 
-	public function getExtras($package)
+	public function getModules($package)
 	{
 		$rows = $this->iaDb->row_bind(
 			['name', 'url', 'title'],

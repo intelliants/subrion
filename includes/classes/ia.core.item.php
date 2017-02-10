@@ -41,7 +41,7 @@ class iaItem extends abstractCore
 		return self::$_favoritesTable;
 	}
 
-	public static function getExtrasTable()
+	public static function getModulesTable()
 	{
 		return self::$_extrasTable;
 	}
@@ -104,7 +104,7 @@ class iaItem extends abstractCore
 			$itemsInfo = is_array($itemsInfo) ? $itemsInfo : [];
 
 			// get active packages
-			$packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getExtrasTable());
+			$packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getModulesTable());
 			foreach($itemsInfo as $key => $itemInfo)
 			{
 				if ('core' != $itemInfo['package'] && !in_array($itemInfo['package'], $packages))
@@ -283,7 +283,7 @@ class iaItem extends abstractCore
 		return $listings;
 	}
 
-	public function isExtrasExist($moduleName, $type = null)
+	public function isModuleExist($moduleName, $type = null)
 	{
 		$stmt = iaDb::printf("`name` = ':name' AND `status` = ':status'", [
 			'name' => $moduleName,
@@ -295,7 +295,7 @@ class iaItem extends abstractCore
 			$stmt .= iaDb::printf(" AND `type` = ':type'", ['type' => $type]);
 		}
 
-		return (bool)$this->iaDb->exists($stmt, null, self::getExtrasTable());
+		return (bool)$this->iaDb->exists($stmt, null, self::getModulesTable());
 	}
 
 	public function setItemTools($params = null)
