@@ -19,7 +19,7 @@ Ext.onReady(function()
 					displayField: 'title',
 					valueField: 'value'
 				})},
-				{name: 'extras', title: _t('extras'), width: 150},
+				{name: 'module', title: _t('module'), width: 150},
 				{name: 'type', title: _t('type'), width: 85},
 				'status',
 				{name: 'order', title: _t('order'), width: 50, editor: 'number'},
@@ -74,13 +74,13 @@ Ext.onReady(function()
 			valueField: 'value',
 			width: 110
 		},{
-			emptyText: _t('extras'),
+			emptyText: _t('module'),
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
 			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/actions/options/extras.json'),
 			displayField: 'title',
-			name: 'extras',
+			name: 'module',
 			valueField: 'value',
 				width: 120
 		},{

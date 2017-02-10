@@ -9,7 +9,7 @@ Ext.onReady(function()
 				{name: 'name', title: _t('name'), width: 1},
 				{name: 'title', title: _t('title'), width: 1, editor: 'text'},
 				{name: 'item', title: _t('item'), width: 130},
-				{name: 'extras', title: _t('extras'), width: 110},
+				{name: 'module', title: _t('module'), width: 110},
 				{name: 'tabview', title: _t('view_as_tab'), width: 60, align: intelli.gridHelper.constants.ALIGN_CENTER, renderer: intelli.gridHelper.renderer.check},
 				{name: 'collapsible', title: _t('collapsible'), width: 60, align: intelli.gridHelper.constants.ALIGN_CENTER, renderer: intelli.gridHelper.renderer.check},
 				{name: 'order', title: _t('order'), width: 70, editor: 'number'},

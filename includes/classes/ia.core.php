@@ -298,7 +298,7 @@ final class iaCore
 	{
 		$iaView = &$this->iaView;
 
-		$moduleName = $iaView->get('extras');
+		$moduleName = $iaView->get('module');
 		$fileName = $iaView->get('filename');
 
 		if (in_array($iaView->get('type'), ['plugin', 'package']))
@@ -404,10 +404,10 @@ final class iaCore
 				$this->_config = $this->fetchConfig();
 				iaSystem::renderTime('config', 'Configuration loaded from DB');
 
-				$extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'extras');
+				$extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'modules');
 				$extras[] = $this->_config['tmpl'];
 
-				$this->_config['extras'] = $extras;
+				$this->_config['module'] = $extras;
 				$this->_config['block_positions'] = $this->iaView->positions;
 
 				$this->iaCache->write($key, $this->_config);
@@ -578,8 +578,8 @@ final class iaCore
 	 */
 	protected function _fetchHooks()
 	{
-		$columns = ['name', 'code', 'type', 'extras', 'filename', 'pages'];
-		$stmt = "`extras` IN('', '" . implode("','", $this->get('extras')) . "') AND `status` = :status AND `page_type` IN ('both', :type) ORDER BY `order`";
+		$columns = ['name', 'code', 'type', 'module', 'filename', 'pages'];
+		$stmt = "`module` IN('', '" . implode("','", $this->get('module')) . "') AND `status` = :status AND `page_type` IN ('both', :type) ORDER BY `order`";
 		$this->iaDb->bind($stmt, [
 			'status' => iaCore::STATUS_ACTIVE,
 			'type' => (self::ACCESS_FRONT == $this->getAccessType()) ? iaCore::FRONT : iaCore::ADMIN
@@ -589,7 +589,7 @@ final class iaCore
 		{
 			foreach ($rows as $row)
 			{
-				$this->_hooks[$row['name']][$row['extras']] = [
+				$this->_hooks[$row['name']][$row['module']] = [
 					'pages' => empty($row['pages']) ? [] : explode(',', $row['pages']),
 					'code' => $row['code'],
 					'type' => $row['type'],
@@ -660,7 +660,7 @@ final class iaCore
 			return $this->packagesData;
 		}
 
-		$rows = $this->iaDb->all(['name', 'url', 'title'], "`type` = 'package' AND `status` = 'active'", null, null, 'extras');
+		$rows = $this->iaDb->all(['name', 'url', 'title'], "`type` = 'package' AND `status` = 'active'", null, null, 'modules');
 
 		$packages = [];
 		foreach ($rows as $entry)
@@ -680,7 +680,7 @@ final class iaCore
 			['name', 'url', 'title'],
 			'`status` = :status AND `name` = :package',
 			['status' => iaCore::STATUS_ACTIVE, 'package' => $package],
-			'extras'
+			'module'
 		);
 
 		return $rows;

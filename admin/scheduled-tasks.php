@@ -31,7 +31,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_processAdd = false;
 	protected $_processEdit = false;
 
-	protected $_gridColumns = ['id', 'name', 'description', 'date_prev_launch', 'date_next_launch', 'active', 'extras'];
+	protected $_gridColumns = ['id', 'name', 'description', 'date_prev_launch', 'date_next_launch', 'active', 'module'];
 
 
 	public function __construct()
@@ -55,7 +55,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$entry['date_next_launch'] = $entry['date_next_launch'] ? strftime($format, $entry['date_next_launch']) : '';
 
 			$entry['run'] = $this->getPath() . 'launch' . IA_URL_DELIMITER . $entry['id'] . IA_URL_DELIMITER;
-			$entry['extras'] = empty($entry['extras']) ? iaLanguage::get('core', 'Core') : iaLanguage::get($entry['extras'], $entry['extras']);
+			$entry['module'] = empty($entry['module']) ? iaLanguage::get('core', 'Core') : iaLanguage::get($entry['module'], $entry['module']);
 		}
 	}
 

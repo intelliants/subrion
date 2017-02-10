@@ -6,7 +6,7 @@ Ext.onReady(function()
 		[
 			'numberer',
 			{name: 'name', title: _t('name'), width: 1, editor: 'text'},
-			{name: 'extras', title: _t('extras'), width: 130, editor: 'text'},
+			{name: 'module', title: _t('module'), width: 130, editor: 'text'},
 			{name: 'type', title: _t('type'), width: 100, editor: Ext.create('Ext.form.ComboBox',
 			{
 				typeAhead: true,
@@ -29,7 +29,7 @@ Ext.onReady(function()
 					success: function(response)
 					{
 						$('.wrap-list').show();
-						editAreaLoader.openFile('codeContainer', {id: record.get('id'), text: response.code, syntax: record.get('type'), title: record.get('name') + ' | ' + record.get('extras')});
+						editAreaLoader.openFile('codeContainer', {id: record.get('id'), text: response.code, syntax: record.get('type'), title: record.get('name') + ' | ' + record.get('module')});
 					}
 				});
 			}},
@@ -44,7 +44,7 @@ Ext.onReady(function()
 		name: 'name',
 		listeners: intelli.gridHelper.listener.specialKey
 	},{
-		emptyText: _t('extras'),
+		emptyText: _t('module'),
 		xtype: 'combo',
 		typeAhead: true,
 		editable: false,

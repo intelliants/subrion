@@ -28,7 +28,7 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'fieldgroups';
 
-	protected $_gridColumns = ['name', 'extras', 'item', 'collapsible', 'order', 'tabview'];
+	protected $_gridColumns = ['name', 'module', 'item', 'collapsible', 'order', 'tabview'];
 	protected $_gridFilters = ['id' => 'equal', 'item' => 'equal'];
 	protected $_gridSorting = ['title' => ['value', 'pt'], 'item' => ['value', 'pi']];
 	protected $_gridQueryMainTableAlias = 'fg';

@@ -19,7 +19,7 @@ Ext.onReady(function()
 				valueField: 'value'
 			})},
 			//{name: 'interval', title: _t('interval'), width: 100},
-			{name: 'extras', title: _t('extras'), width: 105},
+			{name: 'module', title: _t('module'), width: 105},
 			{name: 'run', title: _t('launch_manually'), icon: 'lightning', click: function(record, field)
 			{
 				window.location = record.get(field);

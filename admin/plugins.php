@@ -284,7 +284,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			foreach ($result['data'] as &$entry)
 			{
-				if ($row = $this->_iaDb->row_bind(['name', 'config_group'], '`extras` = :plugin ORDER BY `order` ASC', ['plugin' => $entry['name']], iaCore::getConfigTable()))
+				if ($row = $this->_iaDb->row_bind(['name', 'config_group'], '`module` = :plugin ORDER BY `order` ASC', ['plugin' => $entry['name']], iaCore::getConfigTable()))
 				{
 					$entry['config'] = $row['config_group'] . '/#' . $row['name'] . '';
 				}

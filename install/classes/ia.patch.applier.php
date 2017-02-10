@@ -112,7 +112,7 @@ class iaPatchApplier
 			}
 		}
 
-		empty($patch['extras']) || $this->_processModules($patch['extras']);
+		empty($patch['module']) || $this->_processModules($patch['module']);
 
 		$patchVersion = $patch['header']['major'] . '.' . $patch['header']['minor'];
 

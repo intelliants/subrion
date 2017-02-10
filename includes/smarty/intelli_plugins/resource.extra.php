@@ -46,17 +46,17 @@ class Smarty_Resource_Extra extends Smarty_Resource_Custom
 	{
 		$array = explode('/', $name);
 
-		$extraName = array_shift($array);
+		$moduleName = array_shift($array);
 		$templateName = implode('.', $array) . iaView::TEMPLATE_FILENAME_EXT;
 
 		if (iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType())
 		{
-			$filePath = sprintf('modules/%s/templates/admin/%s', $extraName, $templateName);
+			$filePath = sprintf('modules/%s/templates/admin/%s', $moduleName, $templateName);
 			return IA_HOME . $filePath;
 		}
 
-		$filePath = sprintf('templates/%s/modules/%s/%s', iaCore::instance()->get('tmpl'), $extraName, $templateName);
-		is_file($filePath) || $filePath = sprintf('modules/%s/templates/front/%s', $extraName, $templateName);
+		$filePath = sprintf('templates/%s/modules/%s/%s', iaCore::instance()->get('tmpl'), $moduleName, $templateName);
+		is_file($filePath) || $filePath = sprintf('modules/%s/templates/front/%s', $moduleName, $templateName);
 
 		return IA_HOME . $filePath;
 	}

@@ -125,7 +125,7 @@ class iaLanguage
 		$iaCore = iaCore::instance();
 
 		$where = (iaCore::ACCESS_FRONT == $iaCore->getAccessType())
-			? "`code` = '%s' AND `category` NOT IN('tooltip', 'admin') ORDER BY `extras`"
+			? "`code` = '%s' AND `category` NOT IN('tooltip', 'admin') ORDER BY `module`"
 			: "`code` = '%s' AND `category` NOT IN('tooltip', 'frontend', 'page')";
 		$where = sprintf($where, $languageCode);
 
@@ -176,7 +176,7 @@ class iaLanguage
 
 		$languageCode = empty($languageCode) ? iaCore::instance()->iaView->language : $languageCode;
 
-		$stmt = '`key` = :key AND `code` = :language AND `category` = :category AND `extras` = :plugin';
+		$stmt = '`key` = :key AND `code` = :language AND `category` = :category AND `module` = :plugin';
 		$iaDb->bind($stmt, [
 			'key' => $key,
 			'language' => $languageCode,
@@ -194,7 +194,7 @@ class iaLanguage
 				'value' => $value,
 				'code' => $languageCode,
 				'category' => $category,
-				'extras' => $plugin
+				'module' => $plugin
 			]);
 		}
 		else

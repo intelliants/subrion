@@ -194,13 +194,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaView->title($title);
 
-		if ($groupData['extras']) // special cases
+		if ($groupData['module']) // special cases
 		{
 			$iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
 			$activeMenu = $groupData['name'];
 
-			if ($groupData['extras'] == $this->_iaCore->get('tmpl'))
+			if ($groupData['module'] == $this->_iaCore->get('tmpl'))
 			{
 				// template configuration options
 				$page = $iaPage->getByName('templates');
@@ -210,7 +210,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				iaBreadcrumb::add($page['title'], IA_ADMIN_URL . $page['alias']);
 			}
-			elseif ($pluginPage = $this->_iaDb->row(['alias', 'group'], iaDb::printf("`name` = ':name' || `name` = ':name_stats'", ['name' => $groupData['extras']]), iaPage::getAdminTable()))
+			elseif ($pluginPage = $this->_iaDb->row(['alias', 'group'], iaDb::printf("`name` = ':name' || `name` = ':name_stats'", ['name' => $groupData['module']]), iaPage::getAdminTable()))
 			{
 				// it is a package
 				$iaView->set('group', $pluginPage['group']);
@@ -221,11 +221,11 @@ class iaBackendController extends iaAbstractControllerBackend
 				iaBreadcrumb::insert(iaLanguage::get('config_group_' . $groupData['name']), IA_ADMIN_URL
 					. $pluginPage['alias'], iaBreadcrumb::POSITION_FIRST);
 			}
-			elseif ($iaItem->isModuleExist($groupData['extras'], iaItem::TYPE_PLUGIN))
+			elseif ($iaItem->isModuleExist($groupData['module'], iaItem::TYPE_PLUGIN))
 			{
 				// plugin with no admin pages
 				$iaView->set('group', 5);
-				$iaView->set('active_config', $groupData['extras']);
+				$iaView->set('active_config', $groupData['module']);
 			}
 		}
 		else
@@ -525,13 +525,13 @@ SQL;
 					break;
 
 				case self::TYPE_ITEMSCHECKBOX:
-					$array = $this->_iaCore->get($entry['extras'] . '_items_implemented');
+					$array = $this->_iaCore->get($entry['module'] . '_items_implemented');
 					$array = $array ? explode(',', $array) : [];
 					$array = array_values(array_intersect($array, $itemsList));
 
 					if ($array)
 					{
-						$enabledItems = $iaItem->getEnabledItemsForPlugin($entry['extras']);
+						$enabledItems = $iaItem->getEnabledItemsForPlugin($entry['module']);
 
 						for ($i = 0; $i < count($array); $i++)
 						{

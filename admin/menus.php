@@ -202,7 +202,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						$rows[] = [
 							'code' => $code,
 							'value' => $value,
-							'extras' => $menu,
+							'module' => $menu,
 							'key' => 'page_title_' . $node,
 							'category' => iaLanguage::CATEGORY_PAGE
 						];

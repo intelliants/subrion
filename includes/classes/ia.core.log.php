@@ -76,14 +76,14 @@ class iaLog extends abstractCore
 
 		if ($pluginName)
 		{
-			$row['extras'] = $pluginName;
+			$row['module'] = $pluginName;
 		}
 		else
 		{
 			$iaView = &iaCore::instance()->iaView;
-			if ($value = $iaView->get('extras'))
+			if ($value = $iaView->get('module'))
 			{
-				$row['extras'] = $value;
+				$row['module'] = $value;
 			}
 		}
 
@@ -95,7 +95,7 @@ class iaLog extends abstractCore
 		$result = [];
 
 		$stmt = iaDb::EMPTY_CONDITION;
-		$stmt.= $extra ? ' AND `extras` = :plugin' : '';
+		$stmt.= $extra ? ' AND `module` = :plugin' : '';
 		$this->iaDb->bind($stmt, ['plugin' => $extra]);
 
 		if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt . ' ORDER BY `date` DESC', 0, 20, self::getTable()))

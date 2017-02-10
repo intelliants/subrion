@@ -29,7 +29,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_name = 'languages';
 
 	protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `delete`";
-	protected $_gridFilters = ['key' => 'like', 'value' => 'like', 'category' => 'equal', 'extras' => 'equal'];
+	protected $_gridFilters = ['key' => 'like', 'value' => 'like', 'category' => 'equal', 'module' => 'equal'];
 
 	protected $_phraseAddSuccess = 'phrase_added';
 
@@ -51,7 +51,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		switch ($params['get'])
 		{
 			case 'plugins':
-				if ($plugins = $this->_iaDb->onefield('name', null, null, null, 'extras'))
+				if ($plugins = $this->_iaDb->onefield('name', null, null, null, 'module'))
 				{
 					$output['data'][] = ['value' => iaCore::CORE, 'title' => iaLanguage::get('core', 'Core')];
 
@@ -90,7 +90,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						{
 							$params['plugin'] = '';
 						}
-						$conditions[] = '`extras` = :plugin';
+						$conditions[] = '`module` = :plugin';
 						$values['plugin'] = $params['plugin'];
 					}
 
@@ -144,9 +144,9 @@ class iaBackendController extends iaAbstractControllerBackend
 			$values['language'] = $params['lang'];
 		}
 
-		if (isset($values['extras']) && iaCore::CORE == $values['extras'])
+		if (isset($values['module']) && iaCore::CORE == $values['module'])
 		{
-			$values['extras'] = '';
+			$values['module'] = '';
 		}
 	}
 
@@ -257,9 +257,9 @@ class iaBackendController extends iaAbstractControllerBackend
 			$this->_iaDb->bind($stmt, $params);
 
 			if (!$this->_iaDb->exists($stmt)
-				&& ($row = $this->_iaDb->row_bind(['extras', 'category'], '`key` = :key AND `code` != :lang', $params)))
+				&& ($row = $this->_iaDb->row_bind(['module', 'category'], '`key` = :key AND `code` != :lang', $params)))
 			{
-				$insertion = iaLanguage::addPhrase($params['key'], $params['value'], $params['lang'], $row['extras'], $row['category'], true);
+				$insertion = iaLanguage::addPhrase($params['key'], $params['value'], $params['lang'], $row['module'], $row['category'], true);
 			}
 
 			unset($params['key'], $params['lang']);
@@ -368,13 +368,13 @@ class iaBackendController extends iaAbstractControllerBackend
 		// copy phrases
 		$counter = 0;
 		$languageCode = strtolower($entryData['code']);
-		$rows = $this->_iaDb->all(['key', 'value', 'category', 'extras'], "`code` = '" . $this->_iaCore->iaView->language . "'");
+		$rows = $this->_iaDb->all(['key', 'value', 'category', 'module'], "`code` = '" . $this->_iaCore->iaView->language . "'");
 		foreach ($rows as $value)
 		{
 			$row = [
 				'key' => $value['key'] ,
 				'value' => $value['value'],
-				'extras' => $value['extras'],
+				'module' => $value['module'],
 				'code' => $languageCode,
 				'category' => $value['category']
 			];
@@ -534,7 +534,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ('sql' == $format)
 		{
-			fwrite($stream, 'INSERT INTO `{prefix}language` (`id`, `key`, `original`, `value`, `category`, `code`, `extras`) VALUES' . PHP_EOL);
+			fwrite($stream, 'INSERT INTO `{prefix}language` (`id`, `key`, `original`, `value`, `category`, `code`, `module`) VALUES' . PHP_EOL);
 		}
 
 		foreach ($phrases as $i => $entry)
@@ -697,7 +697,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						$error = false;
 
-						$sql = "INSERT INTO `{$iaDb->prefix}language` (`key`, `original`, `value`, `category`, `code`, `extras`) VALUES ";
+						$sql = "INSERT INTO `{$iaDb->prefix}language` (`key`, `original`, `value`, `category`, `code`, `module`) VALUES ";
 						$sql .= implode(',', $array);
 						$sql .= ';';
 

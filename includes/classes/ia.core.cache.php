@@ -288,12 +288,12 @@ class iaCache extends abstractUtil
 				$config['ia_url'] = IA_CLEAR_URL;
 				$config['packages'] = $this->iaCore->setPackagesData();
 				$config['items'] = [];
-				$config['extras'] = [['core', iaLanguage::get('core', 'Core')]];
+				$config['module'] = [['core', iaLanguage::get('core', 'Core')]];
 				$config['lang'] = $this->iaCore->iaView->language;
 
-				$array = $iaDb->all(['name', 'title'], "`status` = 'active' ORDER BY `type`", null, null, 'extras');
+				$array = $iaDb->all(['name', 'title'], "`status` = 'active' ORDER BY `type`", null, null, 'modules');
 				foreach ($array as $item)
-					$config['extras'][] = [$item['name'], $item['title']];
+					$config['module'][] = [$item['name'], $item['title']];
 
 				$array = $iaDb->onefield('`item`', "`item` != 'transactions'", null, null, 'items');
 				foreach ($array as $item)
