@@ -817,7 +817,7 @@ final class iaCore
 				require_once $packageInterface;
 			}
 
-			$fileSize = $this->loadClass($type, $name, null, $package);
+			$fileSize = $this->loadClass($type, $name, $package);
 			if (false === $fileSize)
 			{
 				return false;
@@ -874,18 +874,14 @@ final class iaCore
 		return $this->_classInstances[$class];
 	}
 
-	public function loadClass($type = self::CORE, $className = '', $pluginName = null, $packageName = null)
+	public function loadClass($type = self::CORE, $className = '', $moduleName = null)
 	{
 		$name = strtolower($className);
 		$filename = iaSystem::CLASSES_PREFIX . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT;
 
-		if ($packageName)
+		if ($moduleName)
 		{
-			$classFile = IA_MODULES . $packageName . IA_DS . 'includes' . IA_DS . 'classes' . IA_DS . $filename;
-		}
-		elseif ($pluginName)
-		{
-			$classFile = IA_MODULES . $pluginName . IA_DS . 'includes' . IA_DS . 'classes' . IA_DS . $filename;
+			$classFile = IA_MODULES . $moduleName . IA_DS . 'includes' . IA_DS . 'classes' . IA_DS . $filename;
 		}
 		else
 		{
