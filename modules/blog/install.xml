@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<plugin name="blog">
+<module type="plugin" name="blog">
 	<title>Blog</title>
 	<summary>Adds blog functionality to Subrion powered website</summary>
 	<author>Intelliants LLC</author>
@@ -142,4 +142,4 @@ DROP TABLE IF EXISTS `{prefix}blog_entries`, `{prefix}blog_tags`, `{prefix}blog_
 			]]>
 		</sql>
 	</uninstall>
-</plugin>
+</module>
