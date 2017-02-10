@@ -291,7 +291,7 @@ class iaCache extends abstractUtil
 				$config['module'] = [['core', iaLanguage::get('core', 'Core')]];
 				$config['lang'] = $this->iaCore->iaView->language;
 
-				$array = $iaDb->all(['name', 'title'], "`status` = 'active' ORDER BY `type`", null, null, iaItem::getModulesTable());
+				$array = $iaDb->all(['name', 'title'], "`status` = 'active' ORDER BY `type`", null, null, 'modules');
 				foreach ($array as $item)
 					$config['modules'][] = [$item['name'], $item['title']];
 
