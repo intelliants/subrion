@@ -157,6 +157,18 @@
 									<li><a href="https://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
 								</ul>
 							</li>
+							{if count($core.languages) > 1}
+								<li class="dropdown">
+									<a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="fa fa-flag"></i></a>
+									<ul class="dropdown-menu pull-right">
+										{foreach $core.languages as $code => $language}
+											{$language_url = str_replace("/{$smarty.const.IA_LANGUAGE}/", "/{$code}/", $smarty.const.IA_SELF)}
+
+											<li><a href="{$language_url}">{$language.title}{if $code == $smarty.const.IA_LANGUAGE} <span class="label label-success">{lang key='active'}</span>{/if}</a></li>
+										{/foreach}
+									</ul>
+								</li>
+							{/if}
 							<li class="navbar-nav__user">
 								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/" title="{lang key='edit'}">
 									{ia_image file=$member.avatar alt=$member.fullname|default:$member.username gravatar=true email=$member.email}
