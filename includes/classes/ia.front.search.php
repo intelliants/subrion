@@ -504,7 +504,6 @@ WHERE b.`type` IN ('plain','smarty','html')
 	AND o.`page_name` IS NOT NULL 
 GROUP BY b.`id`
 SQL;
-
 		$sql = iaDb::printf($sql, [
 			'prefix' => $iaDb->prefix,
 			'table_blocks' => 'blocks',
@@ -515,7 +514,6 @@ SQL;
 			'query' => '%' . iaSanitize::sql($this->_query) . '%',
 			'module' => implode("','", $iaCore->get('module'))
 		]);
-
 
 		$blocks = [];
 
@@ -544,7 +542,6 @@ SQL;
 							array_shift($fileName);
 
 							$fileName = $fileName[0] . iaView::TEMPLATE_FILENAME_EXT;
-							$type = $extras[$row['module']] . 's';
 
 							$tpl = IA_HOME . sprintf('templates/%s/modules/%s/%s',
 									iaCore::instance()->get('tmpl'),$row['module'], $fileName);
