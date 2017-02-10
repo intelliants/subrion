@@ -518,14 +518,14 @@ HTML;
 						$installationFile = file_get_contents($pluginsFolder . $pluginName . IA_DS . iaHelper::INSTALLATION_FILE_NAME);
 						if ($installationFile !== false)
 						{
-							$iaExtrasInstaller = iaHelper::loadCoreClass('extra');
+							$iaModuleInstaller = iaHelper::loadCoreClass('module');
 
-							$iaExtrasInstaller->setXml($installationFile);
-							$iaExtrasInstaller->parse();
+							$iaModuleInstaller->setXml($installationFile);
+							$iaModuleInstaller->parse();
 
-							if (!$iaExtrasInstaller->getNotes())
+							if (!$iaModuleInstaller->getNotes())
 							{
-								$result = $iaExtrasInstaller->install();
+								$result = $iaModuleInstaller->install();
 							}
 						}
 					}

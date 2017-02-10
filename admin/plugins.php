@@ -40,10 +40,10 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		parent::__construct();
 
-		$iaExtra = $this->_iaCore->factory('extra', iaCore::ADMIN);
+		$iaModule = $this->_iaCore->factory('module', iaCore::ADMIN);
 
-		$this->setHelper($iaExtra);
-		$this->setTable(iaExtra::getTable());
+		$this->setHelper($iaModule);
+		$this->setTable(iaModule::getTable());
 
 		$this->_folder = IA_PLUGINS;
 	}
@@ -143,7 +143,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					if (isset($response['extensions']) && is_array($response['extensions']))
 					{
 						$pluginsData = [];
-						$installedPlugins = $this->_iaDb->keyvalue(['name', 'version'], iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
+						$installedPlugins = $this->_iaDb->keyvalue(['name', 'version'], iaDb::convertIds(iaModule::TYPE_PLUGIN, 'type'));
 
 						foreach ($response['extensions'] as $entry)
 						{
@@ -195,14 +195,14 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$total = 0;
 		$pluginsData = [];
-		$installedPlugins = $this->_iaDb->keyvalue(['name', 'version'], iaDb::convertIds(iaExtra::TYPE_PLUGIN, 'type'));
+		$installedPlugins = $this->_iaDb->keyvalue(['name', 'version'], iaDb::convertIds(iaModule::TYPE_PLUGIN, 'type'));
 
 		$directory = opendir($this->_folder);
 		while ($file = readdir($directory))
 		{
 			if (substr($file, 0, 1) != '.' && is_dir($this->_folder . $file))
 			{
-				if (is_file($installationFile = $this->_folder . $file . IA_DS . iaExtra::INSTALL_FILE_NAME))
+				if (is_file($installationFile = $this->_folder . $file . IA_DS . iaModule::INSTALL_FILE_NAME))
 				{
 					if ($fileContent = file_get_contents($installationFile))
 					{
@@ -267,7 +267,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getInstalledPlugins($start, $limit, $sort, $dir, $filter)
 	{
-		$where = "`type` = '" . iaExtra::TYPE_PLUGIN . "'" . (empty($filter) ? '' : " AND `title` LIKE '%{$filter}%'");
+		$where = "`type` = '" . iaModule::TYPE_PLUGIN . "'" . (empty($filter) ? '' : " AND `title` LIKE '%{$filter}%'");
 		$order = ($sort && $dir) ? " ORDER BY `{$sort}` {$dir}" : '';
 
 		$result = [
@@ -297,7 +297,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				if (is_dir(IA_PLUGINS . $entry['name']))
 				{
-					$installationFile = IA_PLUGINS . $entry['name'] . IA_DS . iaExtra::INSTALL_FILE_NAME;
+					$installationFile = IA_PLUGINS . $entry['name'] . IA_DS . iaModule::INSTALL_FILE_NAME;
 
 					if (file_exists($installationFile))
 					{
@@ -407,7 +407,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 
-			$this->getHelper()->setXml(file_get_contents($this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME));
+			$this->getHelper()->setXml(file_get_contents($this->_folder . $pluginName . IA_DS . iaModule::INSTALL_FILE_NAME));
 			$this->getHelper()->parse();
 
 			$search = [
@@ -485,23 +485,23 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		$iaExtra = $this->getHelper();
+		$iaModule = $this->getHelper();
 
-		$installationFile = $this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME;
+		$installationFile = $this->_folder . $pluginName . IA_DS . iaModule::INSTALL_FILE_NAME;
 		if (!file_exists($installationFile))
 		{
 			$result['message'] = iaLanguage::get('file_doesnt_exist');
 		}
 		else
 		{
-			$iaExtra->setXml(file_get_contents($installationFile));
+			$iaModule->setXml(file_get_contents($installationFile));
 			$result['error'] = false;
 		}
 
-		$iaExtra->parse();
+		$iaModule->parse();
 
 		$installationPossible = false;
-		$version = explode('-', $iaExtra->itemData['compatibility']);
+		$version = explode('-', $iaModule->itemData['compatibility']);
 		if (!isset($version[1]))
 		{
 			if (version_compare($version[0], IA_VERSION, '<='))
@@ -526,33 +526,33 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if (!$result['error'])
 		{
-			$iaExtra->doAction(iaExtra::ACTION_INSTALL);
-			if ($iaExtra->error)
+			$iaModule->doAction(iaModule::ACTION_INSTALL);
+			if ($iaModule->error)
 			{
-				$result['message'] = $iaExtra->getMessage();
+				$result['message'] = $iaModule->getMessage();
 				$result['error'] = true;
 			}
 			else
 			{
 				$iaLog = $this->_iaCore->factory('log');
 
-				if ($iaExtra->isUpgrade)
+				if ($iaModule->isUpgrade)
 				{
 					$result['message'] = iaLanguage::get('plugin_updated');
 
-					$iaLog->write(iaLog::ACTION_UPGRADE, ['type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title'], 'to' => $iaExtra->itemData['info']['version']]);
+					$iaLog->write(iaLog::ACTION_UPGRADE, ['type' => iaModule::TYPE_PLUGIN, 'name' => $iaModule->itemData['info']['title'], 'to' => $iaModule->itemData['info']['version']]);
 				}
 				else
 				{
-					$result['groups'] = $iaExtra->getMenuGroups();
-					$result['message'] = (iaExtra::ACTION_INSTALL == $action)
-						? iaLanguage::getf('plugin_installed', ['name' => $iaExtra->itemData['info']['title']])
-						: iaLanguage::getf('plugin_reinstalled', ['name' => $iaExtra->itemData['info']['title']]);
+					$result['groups'] = $iaModule->getMenuGroups();
+					$result['message'] = (iaModule::ACTION_INSTALL == $action)
+						? iaLanguage::getf('plugin_installed', ['name' => $iaModule->itemData['info']['title']])
+						: iaLanguage::getf('plugin_reinstalled', ['name' => $iaModule->itemData['info']['title']]);
 
-					$iaLog->write(iaLog::ACTION_INSTALL, ['type' => iaExtra::TYPE_PLUGIN, 'name' => $iaExtra->itemData['info']['title']]);
+					$iaLog->write(iaLog::ACTION_INSTALL, ['type' => iaModule::TYPE_PLUGIN, 'name' => $iaModule->itemData['info']['title']]);
 				}
 
-				empty($iaExtra->itemData['notes']) || $result['message'][] = $iaExtra->itemData['notes'];
+				empty($iaModule->itemData['notes']) || $result['message'][] = $iaModule->itemData['notes'];
 
 				$this->_iaCore->getConfig(true);
 			}
@@ -568,9 +568,9 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$result = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 
-		if ($this->_iaDb->exists('`name` = :plugin AND `type` = :type AND `removable` = 1', ['plugin' => $pluginName, 'type' => iaExtra::TYPE_PLUGIN]))
+		if ($this->_iaDb->exists('`name` = :plugin AND `type` = :type AND `removable` = 1', ['plugin' => $pluginName, 'type' => iaModule::TYPE_PLUGIN]))
 		{
-			$installationFile = $this->_folder . $pluginName . IA_DS . iaExtra::INSTALL_FILE_NAME;
+			$installationFile = $this->_folder . $pluginName . IA_DS . iaModule::INSTALL_FILE_NAME;
 
 			if (!file_exists($installationFile))
 			{
@@ -587,7 +587,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			// log this event
 			$iaLog = $this->_iaCore->factory('log');
-			$iaLog->write(iaLog::ACTION_UNINSTALL, ['type' => iaExtra::TYPE_PLUGIN, 'name' => $pluginName]);
+			$iaLog->write(iaLog::ACTION_UNINSTALL, ['type' => iaModule::TYPE_PLUGIN, 'name' => $pluginName]);
 			//
 
 			$this->_iaCore->getConfig(true);

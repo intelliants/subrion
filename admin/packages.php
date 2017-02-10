@@ -38,10 +38,10 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		parent::__construct();
 
-		$iaExtra = $this->_iaCore->factory('extra', iaCore::ADMIN);
+		$iaModule = $this->_iaCore->factory('module', iaCore::ADMIN);
 
-		$this->setHelper($iaExtra);
-		$this->setTable(iaExtra::getTable());
+		$this->setHelper($iaModule);
+		$this->setTable(iaModule::getTable());
 
 		$this->_folder = IA_PACKAGES;
 	}
@@ -95,7 +95,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 
-			$this->getHelper()->setXml(file_get_contents($this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME));
+			$this->getHelper()->setXml(file_get_contents($this->_folder . $packageName . IA_DS . iaModule::INSTALL_FILE_NAME));
 			$this->getHelper()->parse();
 
 			$search = [
@@ -159,7 +159,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$this->_iaCore->startHook($deactivate ? 'phpPackageDeactivated' : 'phpPackageActivated',
 						['extra' => $package]);
 					$iaLog->write($deactivate ? iaLog::ACTION_DISABLE : iaLog::ACTION_ENABLE,
-						['type' => iaExtra::TYPE_PACKAGE, 'name' => $package], $package);
+						['type' => iaModule::TYPE_PACKAGE, 'name' => $package], $package);
 				}
 				else
 				{
@@ -188,8 +188,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				break;
 
-			case iaExtra::ACTION_INSTALL:
-			case iaExtra::ACTION_UPGRADE:
+			case iaModule::ACTION_INSTALL:
+			case iaModule::ACTION_UPGRADE:
 				if (!$iaAcl->isAccessible($this->getName(), $action))
 				{
 					return iaView::accessDenied();
@@ -199,7 +199,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					// log this event
 					$action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
-					$iaLog->write($action, ['type' => iaExtra::TYPE_PACKAGE, 'name' => $package, 'to' => $this->getHelper()->itemData['info']['version']], $package);
+					$iaLog->write($action, ['type' => iaModule::TYPE_PACKAGE, 'name' => $package, 'to' => $this->getHelper()->itemData['info']['version']], $package);
 					//
 
 					$iaSitemap = $this->_iaCore->factory('sitemap', iaCore::ADMIN);
@@ -212,7 +212,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				break;
 
-			case iaExtra::ACTION_UNINSTALL:
+			case iaModule::ACTION_UNINSTALL:
 				if (!$iaAcl->isAccessible($this->getName(), $action))
 				{
 					return iaView::accessDenied();
@@ -220,7 +220,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				if ($this->_uninstall($package))
 				{
-					$iaLog->write(iaLog::ACTION_UNINSTALL, ['type' => iaExtra::TYPE_PACKAGE, 'name' => $package], $package);
+					$iaLog->write(iaLog::ACTION_UNINSTALL, ['type' => iaModule::TYPE_PACKAGE, 'name' => $package], $package);
 				}
 				else
 				{
@@ -237,7 +237,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _install($packageName, $action, $domain)
 	{
-		$extraInstallFile = $this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME;
+		$extraInstallFile = $this->_folder . $packageName . IA_DS . iaModule::INSTALL_FILE_NAME;
 
 		if (file_exists($extraInstallFile))
 		{
@@ -252,14 +252,14 @@ class iaBackendController extends iaAbstractControllerBackend
 					$url = 'http://' . iaSanitize::sql(str_replace('www.', '', $_GET['url'][1])) . '.' . $domain . IA_URL_DELIMITER;
 					break;
 				case 2:
-					$url = ($action == iaExtra::ACTION_UPGRADE)
+					$url = ($action == iaModule::ACTION_UPGRADE)
 						? $this->_iaDb->one('url', "`name` = '{$packageName}' AND `type` = 'package'")
 						: $_GET['url'][2];
 			}
 
 			$url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
 
-			$this->getHelper()->doAction(iaExtra::ACTION_INSTALL, $url);
+			$this->getHelper()->doAction(iaModule::ACTION_INSTALL, $url);
 
 			if ($this->getHelper()->error)
 			{
@@ -288,9 +288,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _uninstall($packageName)
 	{
-		if ($this->_iaDb->exists('`name` = :name AND `type` = :type', ['name' => $packageName, 'type' => iaExtra::TYPE_PACKAGE]))
+		if ($this->_iaDb->exists('`name` = :name AND `type` = :type', ['name' => $packageName, 'type' => iaModule::TYPE_PACKAGE]))
 		{
-			$extraInstallFile = $this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME;
+			$extraInstallFile = $this->_folder . $packageName . IA_DS . iaModule::INSTALL_FILE_NAME;
 
 			if (!file_exists($extraInstallFile))
 			{
@@ -313,7 +313,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	private function _activate($packageName, $deactivate)
 	{
 		$stmt = '`name` = :name AND `type` = :type';
-		$this->_iaDb->bind($stmt, ['name' => $packageName, 'type' => iaExtra::TYPE_PACKAGE]);
+		$this->_iaDb->bind($stmt, ['name' => $packageName, 'type' => iaModule::TYPE_PACKAGE]);
 
 		$status = $deactivate ? iaCore::STATUS_INACTIVE : iaCore::STATUS_ACTIVE;
 
@@ -353,7 +353,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$this->_changeDefault((isset($_GET['url']) ? $_GET['url'][0] : ''), $packageName);
 
-		$extraInstallFile = $this->_folder . $packageName . IA_DS . iaExtra::INSTALL_FILE_NAME;
+		$extraInstallFile = $this->_folder . $packageName . IA_DS . iaModule::INSTALL_FILE_NAME;
 		if (!file_exists($extraInstallFile))
 		{
 			$this->addMessage('file_doesnt_exist');
@@ -392,10 +392,10 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			if ($defaultPackage)
 			{
-				$oldExtras = $this->_iaCore->factory('extra', iaCore::ADMIN);
+				$oldExtras = $this->_iaCore->factory('module', iaCore::ADMIN);
 
 				$oldExtras->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
-				$oldExtras->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaExtra::INSTALL_FILE_NAME));
+				$oldExtras->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME));
 				$oldExtras->parse();
 				$oldExtras->checkValidity();
 
@@ -424,7 +424,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getList()
 	{
-		$stmt = iaDb::convertIds(iaExtra::TYPE_PACKAGE, 'type');
+		$stmt = iaDb::convertIds(iaModule::TYPE_PACKAGE, 'type');
 
 		$existPackages = $this->_iaDb->keyvalue(['name', 'version'], $stmt);
 		$existPackages || $existPackages = [];
@@ -436,7 +436,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		while ($file = readdir($directory))
 		{
-			$installationFile = $this->_folder . $file . IA_DS . iaExtra::INSTALL_FILE_NAME;
+			$installationFile = $this->_folder . $file . IA_DS . iaModule::INSTALL_FILE_NAME;
 			if (substr($file, 0, 1) != '.' && is_dir($this->_folder . $file) && file_exists($installationFile))
 			{
 				if ($fileContents = file_get_contents($installationFile))

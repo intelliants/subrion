@@ -385,14 +385,14 @@ class iaHelper
 						$installationFile = file_get_contents($pluginFolder . self::INSTALLATION_FILE_NAME);
 						if ($installationFile !== false)
 						{
-							$iaExtra = self::loadCoreClass('extra');
+							$iaModule = self::loadCoreClass('module');
 
-							$iaExtra->setXml($installationFile);
-							$iaExtra->parse();
+							$iaModule->setXml($installationFile);
+							$iaModule->parse();
 
-							if (!$iaExtra->getNotes())
+							if (!$iaModule->getNotes())
 							{
-								$result = $iaExtra->install();
+								$result = $iaModule->install();
 
 							}
 						}
