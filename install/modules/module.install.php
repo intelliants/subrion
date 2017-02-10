@@ -512,7 +512,7 @@ HTML;
 
 				if (!$error && $builtinPlugins)
 				{
-					$pluginsFolder = IA_HOME . 'plugins' . IA_DS;
+					$pluginsFolder = IA_HOME . 'modules' . IA_DS;
 					foreach ($builtinPlugins as $pluginName)
 					{
 						$installationFile = file_get_contents($pluginsFolder . $pluginName . IA_DS . iaHelper::INSTALLATION_FILE_NAME);

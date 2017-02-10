@@ -231,17 +231,17 @@ class iaTemplate extends abstractCore
 			$currentTemplate = $this->iaCore->get('tmpl');
 			$iaItem = $this->iaCore->factory('item');
 
-			foreach ($this->_dependencies as $extrasName => $dependency)
+			foreach ($this->_dependencies as $moduleName => $dependency)
 			{
 				$shouldBeExist = (bool)$dependency['exist'];
 				switch ($dependency['type'])
 				{
 					case self::DEPENDENCY_TYPE_PACKAGE:
 					case self::DEPENDENCY_TYPE_PLUGIN:
-						$exists = $iaItem->isExtrasExist($extrasName, $dependency['type']);
+						$exists = $iaItem->isExtrasExist($moduleName, $dependency['type']);
 						break;
 					case self::DEPENDENCY_TYPE_TEMPLATE:
-						$exists = ($extrasName == $currentTemplate);
+						$exists = ($moduleName == $currentTemplate);
 				}
 				if (isset($exists))
 				{
@@ -255,7 +255,7 @@ class iaTemplate extends abstractCore
 					}
 					if (isset($message))
 					{
-						$this->_notes[] = iaDb::printf($message, ['extra' => ucfirst($extrasName), 'type' => $dependency['type']]);
+						$this->_notes[] = iaDb::printf($message, ['extra' => ucfirst($moduleName), 'type' => $dependency['type']]);
 					}
 				}
 				else {

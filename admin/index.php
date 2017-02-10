@@ -96,7 +96,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$classInstance = $iaCore->factoryPlugin($array[0], iaCore::ADMIN, isset($array[1]) ? $array[1] : null);
 					break;
 				default:
-					$classInstance = $iaCore->factoryPackage($itemName, $package, iaCore::ADMIN);
+					$classInstance = $iaCore->factoryModule($itemName, $package, iaCore::ADMIN);
 			}
 
 			if (!$customizationMode && in_array($itemName, $disabledWidgets))

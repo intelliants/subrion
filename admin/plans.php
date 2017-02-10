@@ -337,7 +337,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$className = ucfirst(substr($itemName, 0, -1));
 			$itemClassInstance = (iaUsers::getItemName() == $itemName)
 				? $this->_iaCore->factory('users')
-				: $this->_iaCore->factoryPackage($className, $iaItem->getPackageByItem($itemName));
+				: $this->_iaCore->factoryModule($className, $iaItem->getPackageByItem($itemName));
 			if ($itemClassInstance && method_exists($itemClassInstance, 'getStatuses'))
 			{
 				$statuses = $itemClassInstance->getStatuses();

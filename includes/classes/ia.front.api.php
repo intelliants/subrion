@@ -216,7 +216,7 @@ class iaApi
 	{
 		require_once IA_CLASSES . iaSystem::CLASSES_PREFIX . 'base.package.front.api' . iaSystem::EXECUTABLE_FILE_EXT;
 
-		return iaCore::instance()->factoryPackage('item', $packageName, iaCore::FRONT, $name);
+		return iaCore::instance()->factoryModule('item', $packageName, iaCore::FRONT, $name);
 	}
 
 	protected function _paginate(array $params)

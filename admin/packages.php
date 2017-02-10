@@ -43,7 +43,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->setHelper($iaModule);
 		$this->setTable(iaModule::getTable());
 
-		$this->_folder = IA_PACKAGES;
+		$this->_folder = IA_MODULES;
 	}
 
 	protected function _indexPage(&$iaView)
@@ -112,7 +112,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$icon = '';
 			if (file_exists($this->_folder . $packageName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png'))
 			{
-				$icon = '<tr><td class="plugin-icon"><img src="' . $iaView->assetsUrl . 'packages/' . $packageName . '/docs/img/icon.png" alt=""></td></tr>';
+				$icon = '<tr><td class="plugin-icon"><img src="' . $iaView->assetsUrl . 'modules/' . $packageName . '/docs/img/icon.png" alt=""></td></tr>';
 			}
 			$data = &$this->getHelper()->itemData;
 
@@ -441,11 +441,16 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				if ($fileContents = file_get_contents($installationFile))
 				{
-					$this->getHelper()->itemData['screenshots'] = [];
-					$this->getHelper()->itemData['url'] = '';
-
 					$this->getHelper()->setXml($fileContents);
 					$this->getHelper()->parse();
+
+					if (iaModule::TYPE_PACKAGE != $this->getHelper()->itemData['type'])
+					{
+						continue;
+					}
+
+					$this->getHelper()->itemData['screenshots'] = [];
+					$this->getHelper()->itemData['url'] = '';
 
 					$buttons = false;
 
@@ -560,7 +565,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						'buttons' => $buttons,
 						'url' => $data['url'],
 						'preview' => $preview,
-						'logo' => IA_CLEAR_URL . 'packages/' . $data['name'] . '/docs/img/icon.png',
+						'logo' => IA_CLEAR_URL . 'modules/' . $data['name'] . '/docs/img/icon.png',
 						'screenshots' => $screenshots,
 						'file' => $file,
 						'items' => $items,

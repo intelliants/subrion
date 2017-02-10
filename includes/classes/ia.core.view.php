@@ -1434,7 +1434,7 @@ SQL;
 				{
 					if ($this->iaCore->get('default_package') != $pluginName)
 					{
-						iaBreadcrumb::add(iaLanguage::get($pluginName), IA_PACKAGE_URL);
+						iaBreadcrumb::add(iaLanguage::get($pluginName), IA_MODULE_URL);
 					}
 				}
 
@@ -1511,36 +1511,34 @@ SQL;
 		$default = ($resourceName.= self::TEMPLATE_FILENAME_EXT);
 		$templateName = $this->theme;
 
-		if (defined('IA_CURRENT_PACKAGE'))
+		if (defined('IA_CURRENT_MODULE'))
 		{
 			if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType())
 			{
-				$path = IA_PACKAGE_TEMPLATE . 'admin' . IA_DS . $resourceName;
+				$path = IA_MODULE_TEMPLATE . $resourceName;
 				is_file($path) && $resourceName = $path;
 			}
-			elseif (is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS . 'packages' . IA_DS . IA_CURRENT_PACKAGE . IA_DS . $resourceName))
+			elseif (is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName))
 			{
-				$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS . 'packages' . IA_DS . IA_CURRENT_PACKAGE . IA_DS . $resourceName;
+				$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName;
 			}
-			elseif (is_file(IA_PACKAGE_TEMPLATE . 'common' . IA_DS . $resourceName))
+			elseif (is_file(IA_MODULE_TEMPLATE . 'common' . IA_DS . $resourceName))
 			{
-				$resourceName = IA_PACKAGE_TEMPLATE . 'common' . IA_DS . $resourceName;
-			}
-		}
-		elseif (defined('IA_CURRENT_PLUGIN'))
-		{
-			if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()
-				&& is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS
-					. 'plugins' . IA_DS . IA_CURRENT_PLUGIN . IA_DS . $resourceName))
-			{
-				$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS
-					. 'plugins' . IA_DS . IA_CURRENT_PLUGIN . IA_DS . $resourceName;
-			}
-			else
-			{
-				$resourceName = IA_PLUGIN_TEMPLATE . $resourceName;
+				$resourceName = IA_MODULE_TEMPLATE . 'common' . IA_DS . $resourceName;
 			}
 		}
+//		if (defined('IA_CURRENT_MODULE'))
+//		{
+//			if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()
+//				&& is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName))
+//			{
+//				$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName;
+//			}
+//			else
+//			{
+//				$resourceName = IA_MODULE_TEMPLATE . $resourceName;
+//			}
+//		}
 
 		$resourceName = ($resourceName == $default)
 			? IA_TEMPLATES . $templateName . IA_DS . $resourceName

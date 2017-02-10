@@ -113,7 +113,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 		$limit = $iaCore->get('num_items_perpage');
 		foreach ($itemsFlat as $itemName)
 		{
-			if ($class = $iaCore->factoryPackage('item', $itemsList[$itemName], iaCore::FRONT, $itemName))
+			if ($class = $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName))
 			{
 				$result = method_exists($class, iaUsers::METHOD_NAME_GET_LISTINGS)
 					? $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit)

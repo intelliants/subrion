@@ -42,7 +42,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 		$this->_iaField = $this->_iaCore->factory('field');
 
-		$this->_packageName = IA_CURRENT_PACKAGE;
+		$this->_packageName = IA_CURRENT_MODULE;
 		$this->_path = IA_ADMIN_URL . $this->getPackageName() . IA_URL_DELIMITER . $this->getName() . IA_URL_DELIMITER;
 		$this->_template = 'form-' . $this->getName();
 
@@ -56,7 +56,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 		if ($this->_helperName)
 		{
-			$helperClass = $this->_iaCore->factoryPackage($this->_helperName, $this->getPackageName(), iaCore::ADMIN);
+			$helperClass = $this->_iaCore->factoryModule($this->_helperName, $this->getPackageName(), iaCore::ADMIN);
 			$this->setHelper($helperClass);
 
 			$this->getItemName() || $this->_setItemName($helperClass->getItemName());
@@ -151,7 +151,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 	protected function _indexPage(&$iaView)
 	{
-		$iaView->grid('_IA_URL_packages/' . $this->getPackageName() . '/js/admin/' . $this->getName());
+		$iaView->grid('_IA_URL_modules/' . $this->getPackageName() . '/js/admin/' . $this->getName());
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)

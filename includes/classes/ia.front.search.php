@@ -936,7 +936,7 @@ SQL;
 
 		if ($itemData && iaCore::CORE != $itemData['package'])
 		{
-			$instance = $this->iaCore->factoryPackage('item', $itemData['package'], iaCore::FRONT, $this->_itemName);
+			$instance = $this->iaCore->factoryModule('item', $itemData['package'], iaCore::FRONT, $this->_itemName);
 
 			if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED})
 			{

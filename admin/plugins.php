@@ -45,7 +45,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->setHelper($iaModule);
 		$this->setTable(iaModule::getTable());
 
-		$this->_folder = IA_PLUGINS;
+		$this->_folder = IA_MODULES;
 	}
 
 	protected function _indexPage(&$iaView)
@@ -208,6 +208,11 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						$this->getHelper()->setXml($fileContent);
 						$this->getHelper()->parse(true);
+
+						if (iaModule::TYPE_PLUGIN != $this->getHelper()->itemData['type'])
+						{
+							continue;
+						}
 /*
 						$installationPossible = false;
 						if (!$this->getHelper()->getNotes())
@@ -295,9 +300,9 @@ class iaBackendController extends iaAbstractControllerBackend
 				$entry['uninstall'] = $entry['removable'];
 				$entry['remove'] = $entry['removable'];
 
-				if (is_dir(IA_PLUGINS . $entry['name']))
+				if (is_dir(IA_MODULES . $entry['name']))
 				{
-					$installationFile = IA_PLUGINS . $entry['name'] . IA_DS . iaModule::INSTALL_FILE_NAME;
+					$installationFile = IA_MODULES . $entry['name'] . IA_DS . iaModule::INSTALL_FILE_NAME;
 
 					if (file_exists($installationFile))
 					{
@@ -386,7 +391,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$result = [];
 
-		if (file_exists($documentationPath = IA_PLUGINS . $pluginName . IA_DS . 'docs' . IA_DS))
+		if (file_exists($documentationPath = IA_MODULES . $pluginName . IA_DS . 'docs' . IA_DS))
 		{
 			$docs = scandir($documentationPath);
 
@@ -422,7 +427,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			];
 
 			$data = $this->getHelper()->itemData;
-			$icon = file_exists(IA_PLUGINS . $pluginName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
+			$icon = file_exists(IA_MODULES . $pluginName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
 				? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'plugins/' . $pluginName . '/docs/img/icon.png" alt="' . $data['info']['title'] . '"></td></tr>'
 				: '';
 			$link = '<tr><td><a href="https://subrion.org/plugin/' . $pluginName . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>';
@@ -474,7 +479,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
 
 					$pclZip = new PclZip($fileName);
-					$pclZip->extract(PCLZIP_OPT_PATH, IA_PLUGINS . $pluginName);
+					$pclZip->extract(PCLZIP_OPT_PATH, IA_MODULES . $pluginName);
 
 					$this->_iaCore->iaCache->remove('subrion_plugins');
 				}
