@@ -1646,6 +1646,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_type_tip_checkbox','This field allows multiple values selection.','admin'),
 ('field_type_tip_combo','This field will be displayed as dropdown select box.','admin'),
 ('field_type_tip_date','This field adds calendar control to set the date.','admin'),
+('field_type_tip_iconpicker','Allows to assign icon from Font Awesome.','admin'),
 ('field_type_tip_image','This field value will be displayed as an image.','admin'),
 ('field_type_tip_number','This field can be searched by interval on Advanced Search page. Two inputs are created to set start and end values.','admin'),
 ('field_type_tip_pictures','This field is displayed as a gallery of images. Lightbox display is used on View Item page.','admin'),
