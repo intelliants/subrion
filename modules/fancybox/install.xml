@@ -23,7 +23,7 @@
 		<hook name="smartyFrontAfterHeadSection,smartyAdminAfterHeadSection" type="smarty">
 			<![CDATA[
 {if 'fancybox' == $core.config.lightbox_name}
-	{ia_add_media files='css:_IA_URL_plugins/fancybox/js/jquery.fancybox, js:_IA_URL_plugins/fancybox/js/jquery.fancybox.pack'}
+	{ia_add_media files='css:_IA_URL_modules/fancybox/js/jquery.fancybox, js:_IA_URL_modules/fancybox/js/jquery.fancybox.pack'}
 	{ia_add_js}
 $(function()
 {

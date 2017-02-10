@@ -73,4 +73,4 @@
 		{include 'fields-system.tpl' datetime=true}
 	</div>
 </form>
-{ia_add_media files='tagsinput, js:_IA_URL_plugins/blog/js/manage'}
+{ia_add_media files='tagsinput, js:_IA_URL_modules/blog/js/manage'}

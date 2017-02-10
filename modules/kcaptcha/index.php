@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-require_once IA_PLUGINS . 'kcaptcha' . IA_DS . 'includes' . IA_DS . 'kcaptcha' . IA_DS . 'captcha.php';
+require_once IA_MODULES . 'kcaptcha' . IA_DS . 'includes' . IA_DS . 'kcaptcha' . IA_DS . 'captcha.php';
 
 $captcha = new KCAPTCHA();
 
