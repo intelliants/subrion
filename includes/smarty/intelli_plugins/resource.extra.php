@@ -26,7 +26,6 @@
 
 class Smarty_Resource_Extra extends Smarty_Resource_Custom
 {
-	private static $_extraTypes;
 
 
 	protected function fetch($name, &$source, &$modifiedTime)

@@ -546,10 +546,10 @@ SQL;
 							$fileName = $fileName[0] . iaView::TEMPLATE_FILENAME_EXT;
 							$type = $extras[$row['extras']] . 's';
 
-							$tpl = IA_HOME . sprintf('templates/%s/%s/%s/%s', iaCore::instance()->get('tmpl'),
-									$type, $row['extras'], $fileName);
-							is_file($tpl) || $tpl = IA_HOME . sprintf('%s/%s/templates/%s/%s', $type,
-									$row['extras'], ('plugins' == $type ? 'front' : 'common'), $fileName);
+							$tpl = IA_HOME . sprintf('templates/%s/modules/%s/%s',
+									iaCore::instance()->get('tmpl'),$row['extras'], $fileName);
+							is_file($tpl) || $tpl = IA_HOME . sprintf('modules/%s/templates/front/%s',
+									$row['extras'], $fileName);
 
 							break;
 
