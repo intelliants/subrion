@@ -1898,38 +1898,12 @@ class iaModule extends abstractCore
 					switch ($type)
 					{
 						case 'php':
-							$filename = $this->itemData['type'] . 's' . IA_DS . $this->itemData['name']
-								. IA_DS . 'includes' . IA_DS . $filename . iaSystem::EXECUTABLE_FILE_EXT;
-
-							// compatibility layer
-							// todo: remove in v5
-							if (false !== strpos($this->_attr('filename'), '/'))
-							{
-								$filename = $this->_attr('filename');
-							}
-							//
+							$filename = 'modules' . IA_DS . $this->itemData['name'] . IA_DS . 'includes' . IA_DS . $filename . iaSystem::EXECUTABLE_FILE_EXT;
 
 							break;
 
 						case 'smarty':
-							//$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-
-							// compatibility layer for v4.0 plugins
-							// todo: remove in v5
-							if (false !== stripos($filename, '.tpl'))
-							{
-								if ('payments' != @$this->itemData['info']['category']
-									&& false !== stripos($filename, '/templates/front/'))
-								{
-									$filename = str_replace('.tpl', '', basename($filename));
-									$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-								}
-							}
-							else
-							{
-								$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-							}
-						//
+							$filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
 					}
 
 				}

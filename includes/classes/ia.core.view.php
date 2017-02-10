@@ -1526,19 +1526,11 @@ SQL;
 			{
 				$resourceName = IA_MODULE_TEMPLATE . 'common' . IA_DS . $resourceName;
 			}
+			else
+			{
+				$resourceName = IA_MODULE_TEMPLATE . $resourceName;
+			}
 		}
-//		if (defined('IA_CURRENT_MODULE'))
-//		{
-//			if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()
-//				&& is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName))
-//			{
-//				$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName;
-//			}
-//			else
-//			{
-//				$resourceName = IA_MODULE_TEMPLATE . $resourceName;
-//			}
-//		}
 
 		$resourceName = ($resourceName == $default)
 			? IA_TEMPLATES . $templateName . IA_DS . $resourceName

@@ -26,14 +26,14 @@
 
 abstract class iaAbstractControllerPluginBackend extends iaAbstractControllerBackend
 {
-	protected $_pluginName;
+	protected $_moduleName;
 
 
 	public function __construct()
 	{
 		parent::__construct();
 
-		$this->_pluginName = IA_CURRENT_MODULE;
+		$this->_moduleName = IA_CURRENT_MODULE;
 		$this->_template = 'manage';
 
 		$this->init();
@@ -44,13 +44,13 @@ abstract class iaAbstractControllerPluginBackend extends iaAbstractControllerBac
 
 	}
 
-	public function getPluginName()
+	public function getModuleName()
 	{
-		return $this->_pluginName;
+		return $this->_moduleName;
 	}
 
 	protected function _indexPage(&$iaView)
 	{
-		$iaView->grid('_IA_URL_modules/' . $this->getPluginName() . '/js/admin/' . $this->getName());
+		$iaView->grid('_IA_URL_modules/' . $this->getModuleName() . '/js/admin/' . $this->getName());
 	}
 }
