@@ -22,7 +22,7 @@
 			<li{if 'registration' == $core.page.name} class="active"{/if}><a href="{$smarty.const.IA_URL}registration/">{lang key='register'}</a></li>
 		</ul>
 	{/if}
-{elseif in_array($position, array('left', 'right', 'user1', 'user2', 'top'))}
+{elseif in_array($position, ['left', 'right', 'user1', 'user2', 'top'])}
 	{if !empty($menu.contents[0]) && 'account' != $menu.name}
 		{ia_block header=$menu.header title=$menu.title movable=true id=$menu.id name=$menu.name collapsible=$menu.collapsible classname=$menu.classname}
 			{ia_menu menus=$menu.contents class="list-group {$menu.classname}"}

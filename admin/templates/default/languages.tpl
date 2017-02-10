@@ -51,7 +51,7 @@
 
 					<div class="col col-lg-4">
 						<select name="direction">
-							{foreach array('ltr', 'rtl') as $direction}
+							{foreach ['ltr', 'rtl'] as $direction}
 								<option value="{$direction}"{if $direction == $item.direction} selected{/if}>{lang key="language_direction_{$direction}"}</option>
 							{/foreach}
 						</select>
