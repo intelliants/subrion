@@ -30,6 +30,7 @@ class iaView extends abstractUtil
 	const DEFAULT_HOMEPAGE = 'index';
 	const PAGE_ERROR = 'error';
 
+	const COMMON_TEMPLATE_FOLDER = '_common';
 	const TEMPLATE_FILENAME_EXT = '.tpl';
 
 	const SUCCESS = 'success';
@@ -146,7 +147,7 @@ class iaView extends abstractUtil
 			else
 			{
 				$this->iaSmarty->setTemplateDir(IA_HOME . 'templates' . IA_DS . $this->theme . IA_DS);
-				$this->iaSmarty->addTemplateDir(IA_HOME . 'templates' . IA_DS . 'common' . IA_DS);
+				$this->iaSmarty->addTemplateDir(IA_HOME . 'templates' . IA_DS . self::COMMON_TEMPLATE_FOLDER . IA_DS);
 			}
 
 			Smarty::$_CHARSET = 'UTF-8';
@@ -754,7 +755,7 @@ SQL;
 				&& (!iaUsers::hasIdentity() || iaUsers::getIdentity()->usergroup_id != iaUsers::MEMBERSHIP_ADMINISTRATOR))
 			{
 				$this->set('nodebug', true);
-				require_once IA_FRONT_TEMPLATES . 'common' . IA_DS . 'offline.tpl';
+				require_once IA_FRONT_TEMPLATES . self::COMMON_TEMPLATE_FOLDER . IA_DS . 'offline.tpl';
 				die();
 			}
 			elseif (!$this->iaCore->get('frontend'))
@@ -1522,9 +1523,9 @@ SQL;
 			{
 				$resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName;
 			}
-			elseif (is_file(IA_MODULE_TEMPLATE . 'common' . IA_DS . $resourceName))
+			elseif (is_file(IA_MODULE_TEMPLATE . 'front' . IA_DS . $resourceName))
 			{
-				$resourceName = IA_MODULE_TEMPLATE . 'common' . IA_DS . $resourceName;
+				$resourceName = IA_MODULE_TEMPLATE . 'front' . IA_DS . $resourceName;
 			}
 			else
 			{
@@ -1537,7 +1538,7 @@ SQL;
 			: $resourceName;
 
 		is_file($resourceName) || $resourceName = IA_TEMPLATES . $templateName . IA_DS . $default;
-		is_file($resourceName) || $resourceName = IA_TEMPLATES . 'common' . IA_DS . $default;
+		is_file($resourceName) || $resourceName = IA_TEMPLATES . self::COMMON_TEMPLATE_FOLDER . IA_DS . $default;
 
 		return $resourceName;
 	}

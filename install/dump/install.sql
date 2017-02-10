@@ -1157,7 +1157,7 @@ INSERT INTO `{install:prefix}file_types` (`id`, `extension`, `maxsize`, `image`)
 (29, 'pptx', 0, 0);
 
 INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`, `extras`) VALUES
-('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/common/hook.header-code.tpl',''),
+('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/_common/hook.header-code.tpl',''),
 ('smartyFrontFinalize','{$core.config.frontend_footer_code}','active',2,'smarty','front','',''),
 ('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''] . '' ('' . $ownerInfo[''email''] . '')'';\r\n		}\r\n	}\r\n}','active',1,'php','admin','',''),
 ('smartyFrontSearchSortingMembers','','active',1,'smarty','front','search.members.sorting-header.tpl','');
