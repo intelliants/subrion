@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-class iaExtra extends abstractCore
+class iaModule extends abstractCore
 {
 	const TYPE_CORE = 'core';
 	const TYPE_PACKAGE = 'package';
