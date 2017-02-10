@@ -72,7 +72,7 @@
 			{/if}
 
 		{case iaField::DATE break}
-			{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
+			{assign var='default_date' value=($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape:'html'} : ''}
 
 			<div class="input-group date" id="field_date_{$fieldName}">
 				<input type="text" class="js-datepicker" name="{$fieldName}" id="{$name}" value="{$default_date}" {if $field.timepicker}data-date-format="YYYY-MM-DD HH:mm:ss"{else}data-date-format="YYYY-MM-DD"{/if}>

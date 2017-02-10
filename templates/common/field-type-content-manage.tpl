@@ -69,7 +69,7 @@ $(function()
 			</div>
 
 		{case iaField::DATE break}
-			{$default_date = ($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
+			{$default_date = ($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape:'html'} : ''}
 
 			<div class="row">
 				<div class="col-md-6">

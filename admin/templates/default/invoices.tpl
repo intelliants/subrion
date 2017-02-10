@@ -30,7 +30,7 @@
 				<label class="col col-lg-2 control-label">{lang key='date_due'} {lang key='field_required'}</label>
 				<div class="col col-lg-4">
 					{$value = $item.date_due}
-					{assign var='default_date' value=($value && !in_array($value, array('0000-00-00', '0000-00-00 00:00:00'))) ? {$value|escape:'html'} : ''}
+					{assign var='default_date' value=($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape:'html'} : ''}
 
 					<div class="input-group date">
 						<input type="text" class="js-datepicker" name="date_due" id="field_date_due" value="{$default_date}" data-date-format="YYYY-MM-DD HH:mm:ss">
