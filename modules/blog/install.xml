@@ -85,7 +85,7 @@
 	</blocks>
 
 	<hooks>
-		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="plugins/blog/includes/hook.blocks-load.php"><![CDATA[]]></hook>
+		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="modules/blog/includes/hook.blocks-load.php"><![CDATA[]]></hook>
 		<hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['blog'] = 'plugin';]]></hook>
 		<hook name="sitemapGeneration" page_type="admin" pages="index,sitemap"><![CDATA[$items[] = 'blog:blog';]]></hook>
 	</hooks>

@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-$iaBlog = $iaCore->factoryPlugin(IA_CURRENT_PLUGIN);
+$iaBlog = $iaCore->factoryPlugin(IA_CURRENT_MODULE);
 
 $baseUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
 
