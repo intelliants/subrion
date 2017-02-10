@@ -49,7 +49,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			foreach ($packageItems as $itemName)
 			{
 				$itemName = substr($itemName, 0, -1);
-				$itemClass = $this->_iaCore->factoryPackage($itemName, $packageName, iaCore::ADMIN);
+				$itemClass = $this->_iaCore->factoryModule($itemName, $packageName, iaCore::ADMIN);
 				if (method_exists($itemClass, self::GETTER_METHOD_NAME))
 				{
 					if ($itemClass->dashboardStatistics)

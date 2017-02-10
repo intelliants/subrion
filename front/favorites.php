@@ -59,7 +59,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
 				{
 					// initialize necessary class
 					$class = (iaCore::CORE != $itemsList[$itemName])
-							? $iaCore->factoryPackage('item', $itemsList[$itemName], iaCore::FRONT, $itemName)
+							? $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName)
 							: $iaCore->factory($iaUsers->getItemName() == $itemName ? 'users' : $itemName);
 
 					// get listing information
@@ -116,7 +116,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 				$fields = ['id'];
 
 				$class = (iaCore::CORE != $itemsList[$itemName])
-						? $iaCore->factoryPackage('item', $itemsList[$itemName], iaCore::FRONT, $itemName)
+						? $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName)
 						: $iaCore->factory('members' == $itemName ? 'users' : $itemName);
 
 				if ($class && method_exists($class, iaUsers::METHOD_NAME_GET_FAVORITES))

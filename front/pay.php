@@ -130,13 +130,13 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
 
 					// include pre form send files
-					$paymentGatewayHandler = IA_PLUGINS . $gate . IA_DS . 'includes' . IA_DS . 'pre-processing' . iaSystem::EXECUTABLE_FILE_EXT;
+					$paymentGatewayHandler = IA_MODULES . $gate . IA_DS . 'includes' . IA_DS . 'pre-processing' . iaSystem::EXECUTABLE_FILE_EXT;
 					if (is_file($paymentGatewayHandler))
 					{
 						include $paymentGatewayHandler;
 					}
 
-					$form = IA_PLUGINS . $gate . IA_DS . 'templates' . IA_DS . 'front' . IA_DS . 'form.tpl';
+					$form = IA_MODULES . $gate . IA_DS . 'templates' . IA_DS . 'front' . IA_DS . 'form.tpl';
 
 					if (is_file($form))
 					{
@@ -166,7 +166,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					$transaction = [];
 
 					// include post form send files
-					$paymentGatewayHandler = IA_PLUGINS . $gate . IA_DS . 'includes' . IA_DS . 'post-processing' . iaSystem::EXECUTABLE_FILE_EXT;
+					$paymentGatewayHandler = IA_MODULES . $gate . IA_DS . 'includes' . IA_DS . 'post-processing' . iaSystem::EXECUTABLE_FILE_EXT;
 
 					if (file_exists($paymentGatewayHandler))
 					{

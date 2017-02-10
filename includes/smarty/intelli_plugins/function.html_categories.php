@@ -15,9 +15,9 @@ function smarty_function_html_categories($params)
 		$iaCore = iaCore::instance();
 		$urlPrefix = $iaCore->packagesData[$params['package']]['url'];
 	}
-	elseif (defined('IA_PACKAGE_URL'))
+	elseif (defined('IA_MODULE_URL'))
 	{
-		$urlPrefix = IA_PACKAGE_URL;
+		$urlPrefix = IA_MODULE_URL;
 	}
 
 	if ($categories)

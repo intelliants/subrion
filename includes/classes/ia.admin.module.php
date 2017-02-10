@@ -81,8 +81,8 @@ class iaModule extends abstractCore
 
 		$this->iaCore->factory(['acl', 'util']);
 
-		$this->_extrasTypePaths[self::TYPE_PLUGIN] = IA_PLUGINS;
-		$this->_extrasTypePaths[self::TYPE_PACKAGE] = IA_PACKAGES;
+		$this->_extrasTypePaths[self::TYPE_PLUGIN] = IA_MODULES;
+		$this->_extrasTypePaths[self::TYPE_PACKAGE] = IA_MODULES;
 	}
 
 	protected function _resetValues()
@@ -229,17 +229,17 @@ class iaModule extends abstractCore
 			$currentTemplate = $iaCore->get('tmpl');
 			$iaItem = $iaCore->factory('item');
 
-			foreach ($this->itemData['dependencies'] as $extrasName => $dependency)
+			foreach ($this->itemData['dependencies'] as $moduleName => $dependency)
 			{
 				$shouldBeExist = (bool)$dependency['exist'];
 				switch ($dependency['type'])
 				{
 					case self::DEPENDENCY_TYPE_PACKAGE:
 					case self::DEPENDENCY_TYPE_PLUGIN:
-						$exists = $iaItem->isExtrasExist($extrasName, $dependency['type']);
+						$exists = $iaItem->isExtrasExist($moduleName, $dependency['type']);
 						break;
 					case self::DEPENDENCY_TYPE_TEMPLATE:
-						$exists = $extrasName == $currentTemplate;
+						$exists = $moduleName == $currentTemplate;
 						break;
 				}
 				if (isset($exists))
@@ -254,7 +254,7 @@ class iaModule extends abstractCore
 					}
 					if (isset($messageCode))
 					{
-						$this->_notes[] = iaDb::printf(iaLanguage::get($messageCode), ['extra' => ucfirst($extrasName), 'type' => $dependency['type']]);
+						$this->_notes[] = iaDb::printf(iaLanguage::get($messageCode), ['extra' => ucfirst($moduleName), 'type' => $dependency['type']]);
 						$this->error = true;
 					}
 				}
@@ -1508,7 +1508,12 @@ class iaModule extends abstractCore
 		$this->_attributes = $attributes;
 		$this->_currentPath[] = $name;
 
-		if (in_array($this->_inTag, [self::TYPE_PACKAGE, self::TYPE_PLUGIN]) && isset($attributes['name']))
+		if ('module' == $this->_inTag && isset($this->_attributes['name']))
+		{
+			$this->itemData['name'] = $this->_attributes['name'];
+			$this->itemData['type'] = ($name == self::TYPE_PLUGIN) ? self::TYPE_PLUGIN : self::TYPE_PACKAGE;
+		}
+		elseif (in_array($this->_inTag, [self::TYPE_PACKAGE, self::TYPE_PLUGIN]) && isset($attributes['name'])) // used for < 4.1.x compatibility
 		{
 			$this->itemData['name'] = $attributes['name'];
 			$this->itemData['type'] = ($name == self::TYPE_PLUGIN) ? self::TYPE_PLUGIN : self::TYPE_PACKAGE;

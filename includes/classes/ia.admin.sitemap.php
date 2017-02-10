@@ -143,10 +143,10 @@ class iaSitemap extends abstractCore
 				{
 					if (iaCore::CORE != $package)
 					{
-						$itemClassInstance = $this->iaCore->factoryPackage('item', $package, iaCore::ADMIN, $itemName);
+						$itemClassInstance = $this->iaCore->factoryModule('item', $package, iaCore::ADMIN, $itemName);
 						if (empty($itemClassInstance))
 						{
-							$itemClassInstance = $this->iaCore->factoryPackage('item', $package, 'common', $itemName);
+							$itemClassInstance = $this->iaCore->factoryModule('item', $package, 'common', $itemName);
 						}
 
 						if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME))

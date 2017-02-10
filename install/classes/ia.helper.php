@@ -124,8 +124,7 @@ class iaHelper
 			define('IA_INCLUDES', IA_HOME . 'includes' . IA_DS);
 			define('IA_SMARTY', IA_INCLUDES . 'smarty' . IA_DS);
 			define('IA_CLASSES', IA_INCLUDES . 'classes' . IA_DS);
-			define('IA_PACKAGES', IA_HOME . 'packages' . IA_DS);
-			define('IA_PLUGINS', IA_HOME . 'plugins' . IA_DS);
+			define('IA_MODULES', IA_HOME . 'modules' . IA_DS);
 			define('IA_TMP', IA_HOME . 'tmp' . IA_DS);
 			define('IA_CACHEDIR', IA_TMP . 'cache' . IA_DS);
 
@@ -350,7 +349,7 @@ class iaHelper
 
 		if ($pluginName)
 		{
-			$downloadPath = self::_composePath([IA_HOME, 'tmp', 'plugins']);
+			$downloadPath = self::_composePath([IA_HOME, 'tmp', 'modules']);
 			if (!is_dir($downloadPath))
 			{
 				mkdir($downloadPath);
@@ -364,7 +363,7 @@ class iaHelper
 
 			if (is_file($savePath))
 			{
-				$extrasFolder = self::_composePath([IA_HOME, 'plugins']);
+				$extrasFolder = self::_composePath([IA_HOME, 'modules']);
 				if (is_writable($extrasFolder))
 				{
 					$pluginFolder = self::_composePath([$extrasFolder, $pluginName]);

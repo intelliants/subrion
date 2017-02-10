@@ -30,4 +30,4 @@
 	<div class="alert alert-info">{lang key='pf_no_entries'}</div>
 {/if}
 
-{ia_add_media files='css: _IA_URL_plugins/portfolio/templates/front/css/style'}
+{ia_add_media files='css: _IA_URL_modules/portfolio/templates/front/css/style'}

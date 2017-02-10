@@ -137,7 +137,7 @@
 	- Bug #1280: Unable to install remote plugins
 	- Bug #1282: Admin Panel: fields are not saved for plans
 	- Bug #1283: Admin Panel: when saving a plan it doesn't consider "go to" option
-	- Bug #1284: Incorrect IA_PLUGIN_URL define
+	- Bug #1284: Incorrect IA_MODULE_URL define
 	- Bug #1289: Multiple Images upload: can't remove additional images
 	- Bug #1294: Unable to create inactive block from template install.xml file
 	- Bug #1296: Incorrect data for template layout being inserted into database config

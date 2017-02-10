@@ -548,7 +548,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$packages = $this->_iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, 'extras');
 		foreach ($packages as $package)
 		{
-			$dumpFolders[iaLanguage::get($package)] = IA_PACKAGES . $package . IA_DS . 'includes' . IA_DS . 'dumps' . IA_DS;
+			$dumpFolders[iaLanguage::get($package)] = IA_MODULES . $package . IA_DS . 'includes' . IA_DS . 'dumps' . IA_DS;
 		}
 
 		list($migrations, $appliedMigrations) = $this->_getMigrations();

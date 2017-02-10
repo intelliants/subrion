@@ -417,7 +417,7 @@ SQL;
 		$className = ucfirst(substr($itemName, 0, -1));
 		$itemClassInstance = ($itemName == 'members')
 			? $this->iaCore->factory('users')
-			: $this->iaCore->factoryPackage($className, $iaItem->getPackageByItem($itemName));
+			: $this->iaCore->factoryModule($className, $iaItem->getPackageByItem($itemName));
 
 		if ($itemClassInstance && method_exists($itemClassInstance, $method))
 		{

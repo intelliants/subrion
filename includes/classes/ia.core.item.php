@@ -283,10 +283,10 @@ class iaItem extends abstractCore
 		return $listings;
 	}
 
-	public function isExtrasExist($extrasName, $type = null)
+	public function isExtrasExist($moduleName, $type = null)
 	{
 		$stmt = iaDb::printf("`name` = ':name' AND `status` = ':status'", [
-			'name' => $extrasName,
+			'name' => $moduleName,
 			'status' => iaCore::STATUS_ACTIVE
 		]);
 
