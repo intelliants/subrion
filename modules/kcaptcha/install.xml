@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<plugin name="kcaptcha">
+<module type="plugin" name="kcaptcha">
 	<title>KCaptcha</title>
 	<summary>Plugin adds the CAPTCHA to all pages where it is needed to prevents automatic bot form submission</summary>
 	<author>Intelliants LLC</author>
@@ -17,4 +17,4 @@
 		<phrase key="click_to_redraw" category="frontend">Click here to redraw</phrase>
 		<phrase key="captcha_tooltip" category="frontend">Please input letters you see on the image.&lt;br /&gt;Click on image to redraw.</phrase>
 	</phrases>
-</plugin>
+</module>
