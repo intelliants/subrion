@@ -254,32 +254,32 @@ class iaView extends abstractUtil
 
 		$result = [];
 
-		$extras = implode("','", $this->iaCore->get('extras'));
-		$stmt = "`extras` IN ('', '" . $extras . "')";
+		$extras = implode("','", $this->iaCore->get('module'));
+		$stmt = "`module` IN ('', '" . $extras . "')";
 
 		$menuGroups = $iaDb->assoc(['id', 'name'], $stmt . ' ORDER BY `order`', 'admin_pages_groups');
 
 		$sql = <<<SQL
-SELECT g.`name` `config`, e.`type`, p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`extras` 
+SELECT g.`name` `config`, e.`type`, p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`module` 
 	FROM `:prefix:table_admin_pages` p 
 LEFT JOIN `:prefix:table_config_groups` g ON 
-	(p.`extras` IN (':extras') AND p.`extras` = g.`extras`) 
-LEFT JOIN `:prefix:table_extras` e ON 
-	(p.`extras` = e.`name`) 
+	(p.`module` IN (':module') AND p.`module` = g.`module`) 
+LEFT JOIN `:prefix:table_modules` e ON 
+	(p.`module` = e.`name`) 
 WHERE p.`group` IN (:groups) 
 	AND FIND_IN_SET('menu', p.`menus`) 
 	AND p.`status` = ':status' 
-	AND p.`extras` IN ('',':extras') 
+	AND p.`module` IN ('',':module') 
 ORDER BY p.`order`
 SQL;
 		$sql = iaDb::printf($sql, [
 			'prefix' => $iaDb->prefix,
 			'table_admin_pages' => 'admin_pages',
 			'table_config_groups' => iaCore::getConfigGroupsTable(),
-			'table_extras' => iaItem::getModulesTable(),
+			'table_modules' => iaItem::getModulesTable(),
 			'groups' => implode(',', array_keys($menuGroups)),
 			'status' => iaCore::STATUS_ACTIVE,
-			'extras' => $extras
+			'module' => $extras
 		]);
 
 		foreach ($iaDb->getAll($sql) as $row)
@@ -291,7 +291,7 @@ SQL;
 		$iaAcl = $this->iaCore->factory('acl');
 
 		// config groups to be included as menu items
-		$rows = $iaDb->all(['name', 'extras'], "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
+		$rows = $iaDb->all(['name', 'module'], "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
 		$configGroups = [];
 		$templateName = $this->iaCore->get('tmpl');
 
@@ -301,15 +301,15 @@ SQL;
 
 			switch (true)
 			{
-				case ($templateName == $row['extras']):
+				case ($templateName == $row['module']):
 					$configGroups['template'] = $row['name'];
 
 					break;
 
-				case ($row['extras']):
+				case ($row['module']):
 					$row['config'] = $row['name'];
 
-					$configGroups['plugins'][$row['extras']] = $row;
+					$configGroups['plugins'][$row['module']] = $row;
 
 					break;
 
@@ -372,9 +372,9 @@ SQL;
 						$data['config'] = $configGroups['template'];
 					}
 
-					if (isset($configGroups['plugins'][$item['extras']]))
+					if (isset($configGroups['plugins'][$item['module']]))
 					{
-						unset($configGroups['plugins'][$item['extras']]);
+						unset($configGroups['plugins'][$item['module']]);
 					}
 
 					$menuEntry['items'][] = $data;
@@ -394,7 +394,7 @@ SQL;
 				$menuHeading = ['name' => null, 'title' => iaLanguage::get('global')];
 				if (iaItem::TYPE_PACKAGE == $item['type'])
 				{
-					$menuHeading['config'] = $item['extras'];
+					$menuHeading['config'] = $item['module'];
 				}
 				array_unshift($menuEntry['items'], $menuHeading);
 			}
@@ -487,7 +487,7 @@ SQL;
 		$disabledPositions = $this->_getDisabledPositions();
 
 		$blocks = $this->iaCore->iaDb->all(iaDb::ALL_COLUMNS_SELECTION,
-			"`status` = 'active' AND `extras` IN ('', '" . implode("','", $this->iaCore->get('extras')) . "') ORDER BY `order`",
+			"`status` = 'active' AND `module` IN ('', '" . implode("','", $this->iaCore->get('module')) . "') ORDER BY `order`",
 			null, null, 'blocks');
 		$disabledBlocks = $this->_getDisabledBlocks();
 
@@ -555,7 +555,7 @@ SQL;
 
 		if (is_null($pages))
 		{
-			$condition = " AND `extras` IN ('', '" . implode("','", $this->iaCore->get('extras')) . "')";
+			$condition = " AND `module` IN ('', '" . implode("','", $this->iaCore->get('module')) . "')";
 
 			$rows = $this->iaCore->iaDb->all(['alias', 'custom_url', 'name'], "`status` = 'active'" . $condition, null, null, 'pages');
 			foreach ($rows as $row)
@@ -775,17 +775,17 @@ SQL;
 		}
 
 		$sql = <<<SQL
-SELECT p.`id`, p.`name`, p.`alias`, p.`action`, p.`extras`, p.`filename`, p.`parent`, p.`group`, 
+SELECT p.`id`, p.`name`, p.`alias`, p.`action`, p.`module`, p.`filename`, p.`parent`, p.`group`, 
 	e.`type`, e.`url` 
 FROM `:prefix:table_pages` p 
-LEFT JOIN `:prefix:table_extras` e ON (e.`name` = p.`extras`) 
+LEFT JOIN `:prefix:table_modules` e ON (e.`name` = p.`module`) 
 WHERE :where AND p.`status` = ':status' AND (e.`status` = ':status' OR e.`status` IS NULL) 
-ORDER BY LENGTH(p.`alias`) DESC, p.`extras` DESC
+ORDER BY LENGTH(p.`alias`) DESC, p.`module` DESC
 SQL;
 		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaCore->iaDb->prefix,
 			'table_pages' => (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : '') . 'pages',
-			'table_extras' => 'extras',
+			'table_modules' => 'modules',
 			'where' => $where,
 			'status' => iaCore::STATUS_ACTIVE
 		]);
@@ -1417,7 +1417,7 @@ SQL;
 			? iaBreadcrumb::root($this->iaCore->get('bc_home'), IA_URL)
 			: iaBreadcrumb::root(iaLanguage::get('dashboard'), IA_ADMIN_URL);
 
-		$pluginName = $this->get('extras');
+		$pluginName = $this->get('module');
 
 		switch ($this->iaCore->getAccessType())
 		{

@@ -31,7 +31,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_processAdd = false;
 	protected $_processEdit = false;
 
-	protected $_gridColumns = "`id`, `name`, `extras`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`";
+	protected $_gridColumns = "`id`, `name`, `module`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`";
 	protected $_gridFilters = ['name' => 'like', 'type' => 'equal'];
 
 
@@ -65,8 +65,8 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$value = ('core' == strtolower($_GET['item']) ? '' : iaSanitize::sql($_GET['item']));
 
-			$conditions[] = '`extras` = :extras';
-			$values['extras'] = $value;
+			$conditions[] = '`module` = :module';
+			$values['module'] = $value;
 		}
 	}
 

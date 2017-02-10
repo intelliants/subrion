@@ -369,7 +369,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		$pages = $this->getHelper()->itemData['pages']['front'];
 		foreach ($pages as $page)
 		{
-			$this->_iaDb->update(['alias' => $page['alias']], "`name` = '{$page['name']}' AND `extras` = '$packageName'", null, 'pages');
+			$this->_iaDb->update(['alias' => $page['alias']], "`name` = '{$page['name']}' AND `module` = '$packageName'", null, 'pages');
 		}
 
 		$this->addMessage('set_default_success');
@@ -406,7 +406,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$iaDb->setTable('pages');
 					foreach ($oldModule->itemData['pages']['front'] as $page)
 					{
-						$iaDb->update(['alias' => $page['alias']], "`name` = '{$page['name']}' AND `extras` = '$defaultPackage'");
+						$iaDb->update(['alias' => $page['alias']], "`name` = '{$page['name']}' AND `module` = '$defaultPackage'");
 					}
 					$iaDb->resetTable();
 				}
@@ -417,7 +417,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			$iaDb->setTable('hooks');
 			$iaDb->update(['status' => iaCore::STATUS_INACTIVE], "`name` = 'phpCoreUrlRewrite'");
-			$iaDb->update(['status' => iaCore::STATUS_ACTIVE], "`name` = 'phpCoreUrlRewrite' AND `extras` = '$package'");
+			$iaDb->update(['status' => iaCore::STATUS_ACTIVE], "`name` = 'phpCoreUrlRewrite' AND `module` = '$package'");
 			$iaDb->resetTable();
 		}
 	}
@@ -519,7 +519,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								$items['import'] = true;
 							}
 
-							if ($extraConfig = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`extras` = :name ORDER BY `order` ASC', ['name' => $data['name']], iaCore::getConfigTable()))
+							if ($extraConfig = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`module` = :name ORDER BY `order` ASC', ['name' => $data['name']], iaCore::getConfigTable()))
 							{
 								$items['config'] = [
 									'url' => $extraConfig['config_group'],

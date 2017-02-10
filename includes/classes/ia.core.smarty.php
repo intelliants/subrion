@@ -551,7 +551,7 @@ class iaSmarty extends Smarty
 					$url = IA_TPL_URL . 'css/' . $file;
 					if (defined('IA_CURRENT_MODULE'))
 					{
-						$suffix = 'templates' . IA_DS . $iaView->theme . IA_DS . 'modules' . IA_DS . $iaView->get('extras') . IA_DS . 'css/' . $file;
+						$suffix = 'templates' . IA_DS . $iaView->theme . IA_DS . 'modules' . IA_DS . $iaView->get('module') . IA_DS . 'css/' . $file;
 						if (is_file(IA_HOME . $suffix . self::EXTENSION_CSS) && iaCore::ACCESS_FRONT == $iaCore->getAccessType())
 						{
 							$url = IA_CLEAR_URL . $suffix;

@@ -235,8 +235,8 @@ Ext.onReady(function()
 		}, {
 			displayField: 'title',
 			editable: false,
-			emptyText: _t('extras'),
-			name: 'extras',
+			emptyText: _t('module'),
+			name: 'module',
 			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/languages.json?get=plugins'),
 			typeAhead: true,
 			valueField: 'value',
@@ -462,7 +462,7 @@ Ext.onReady(function()
 		},{
 			displayField: 'title',
 			editable: false,
-			emptyText: _t('extras'),
+			emptyText: _t('module'),
 			id: 'plugin',
 			name: 'plugin',
 			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/languages.json?get=plugins'),

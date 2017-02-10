@@ -31,7 +31,7 @@ class iaItem extends abstractCore
 
 	protected static $_table = 'items';
 	protected static $_favoritesTable = 'favorites';
-	protected static $_extrasTable = 'extras';
+	protected static $_modulesTable = 'modules';
 
 	private $_itemTools;
 
@@ -43,7 +43,7 @@ class iaItem extends abstractCore
 
 	public static function getModulesTable()
 	{
-		return self::$_extrasTable;
+		return self::$_modulesTable;
 	}
 
 	public function getFavoritesByMemberId($memberId)

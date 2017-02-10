@@ -48,7 +48,7 @@ class iaModule extends abstractCore
 
 	const BLOCK_FILENAME_PATTERN = 'extra:%s/%s';
 
-	protected static $_table = 'extras';
+	protected static $_table = 'modules';
 
 	private $_builtinPlugins = ['kcaptcha', 'fancybox'];
 
@@ -249,7 +249,7 @@ class iaModule extends abstractCore
 					}
 					if (isset($messageCode))
 					{
-						$this->_notes[] = iaDb::printf(iaLanguage::get($messageCode), ['extra' => ucfirst($moduleName), 'type' => $dependency['type']]);
+						$this->_notes[] = iaDb::printf(iaLanguage::get($messageCode), ['module' => ucfirst($moduleName), 'type' => $dependency['type']]);
 						$this->error = true;
 					}
 				}
@@ -365,7 +365,7 @@ class iaModule extends abstractCore
 		$this->isUpgrade = true;
 		$iaDb = &$this->iaDb;
 
-		$this->iaCore->startHook('phpModuleUpgradeBefore', ['extra' => $this->itemData['name']]);
+		$this->iaCore->startHook('phpModuleUpgradeBefore', ['module' => $this->itemData['name']]);
 
 		$this->_processQueries('install', self::SQL_STAGE_START, true);
 		$this->_processQueries('upgrade', self::SQL_STAGE_START);
@@ -377,8 +377,8 @@ class iaModule extends abstractCore
 			$maxOrder = $iaDb->getMaxOrder();
 			foreach ($this->itemData['groups'] as $title => $entry)
 			{
-				$iaDb->exists("`extras` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
-					? $iaDb->update($entry, "`extras` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
+				$iaDb->exists("`module` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
+					? $iaDb->update($entry, "`module` = '{$this->itemData['name']}' AND `name` = '{$entry['name']}'")
 					: $iaDb->insert($entry, ['order' => ++$maxOrder]);
 				$this->_addPhrase('pages_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
 			}
@@ -403,8 +403,8 @@ class iaModule extends abstractCore
 						? $iaDb->getMaxOrder() + 1
 						: $action['order'];
 
-					$iaDb->exists('`name` = :name && `extras` = :extras', ['name' => $action['name'], 'extras' => $this->itemData['name']])
-						? $iaDb->update($action, "`name` = '{$action['name']}' && `extras` = '{$this->itemData['name']}'")
+					$iaDb->exists('`name` = :name && `module` = :module', ['name' => $action['name'], 'module' => $this->itemData['name']])
+						? $iaDb->update($action, "`name` = '{$action['name']}' && `module` = '{$this->itemData['name']}'")
 						: $iaDb->insert($action);
 				}
 			}
@@ -420,7 +420,7 @@ class iaModule extends abstractCore
 		if ($this->itemData['config_groups'])
 		{
 			$iaDb->setTable(iaCore::getConfigGroupsTable());
-			$iaDb->delete(iaDb::convertIds($this->itemData['name'], 'extras'));
+			$iaDb->delete(iaDb::convertIds($this->itemData['name'], 'module'));
 
 			$maxOrder = $iaDb->getMaxOrder();
 
@@ -511,7 +511,7 @@ class iaModule extends abstractCore
 		{
 			foreach ($this->itemData['blocks'] as $block)
 			{
-				$blockId = $iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`extras` = :plugin AND `name` = :block',
+				$blockId = $iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`module` = :plugin AND `name` = :block',
 					['plugin' => $this->itemData['name'], 'block' => $block['name']], iaBlock::getTable());
 
 				if ($blockId && in_array($block['type'], [iaBlock::TYPE_PHP, iaBlock::TYPE_SMARTY]))
@@ -538,7 +538,7 @@ class iaModule extends abstractCore
 					{
 						$hook['name'] = $hookName;
 
-						$stmt = '`extras` = :plugin AND `name` = :hook';
+						$stmt = '`module` = :plugin AND `name` = :hook';
 						$iaDb->bind($stmt, ['plugin' => $this->itemData['name'], 'hook' => $hook['name']]);
 
 						$iaDb->exists($stmt)
@@ -562,7 +562,7 @@ class iaModule extends abstractCore
 					$configs = $item['configs'];
 					$permissions = $item['permissions'];
 					$usergroupId = $iaDb->insert([
-						'extras' => $item['extras'],
+						'module' => $item['module'],
 						'name' => $item['name'],
 						'system' => true,
 						'assignable' => $item['assignable'],
@@ -580,7 +580,7 @@ class iaModule extends abstractCore
 							'value' => $config['value'],
 							'type' => iaAcl::GROUP,
 							'type_id' => $usergroupId,
-							'extras' => $this->itemData['name']
+							'module' => $this->itemData['name']
 						]); // add custom config
 					}
 					$iaDb->resetTable();
@@ -596,7 +596,7 @@ class iaModule extends abstractCore
 							'access' => $permission['access'],
 							'type' => iaAcl::GROUP,
 							'type_id' => $usergroupId,
-							'extras' => $permission['extras']
+							'module' => $permission['module']
 						];
 
 						$iaDb->insert($data); // add privileges for usergroup
@@ -679,54 +679,54 @@ class iaModule extends abstractCore
 			$this->_runPhpCode($this->itemData['code']['upgrade']);
 		}
 
-		$this->iaCore->startHook('phpModuleUpgradeBeforeSql', ['extra' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
+		$this->iaCore->startHook('phpModuleUpgradeBeforeSql', ['module' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
 
 		$iaDb->update($this->itemData['info'], "`name` = '{$this->itemData['name']}' AND `type` = '{$this->itemData['type']}'",
 			['date' => iaDb::FUNCTION_NOW], self::getTable());
 
-		$this->iaCore->startHook('phpModuleUpgradeAfter', ['extra' => $this->itemData['name']]);
+		$this->iaCore->startHook('phpModuleUpgradeAfter', ['module' => $this->itemData['name']]);
 
 		$this->iaCore->iaCache->clearAll();
 	}
 
-	public function uninstall($extraName)
+	public function uninstall($moduleName)
 	{
-		if (empty($extraName))
+		if (empty($moduleName))
 		{
 			$this->error = true;
-			$this->setMessage('Extra name is empty.');
+			$this->setMessage('Module name is empty.');
 
 			return false;
 		}
 
-		$this->iaCore->startHook('phpModuleUninstallBefore', ['extra' => $extraName]);
+		$this->iaCore->startHook('phpModuleUninstallBefore', ['module' => $moduleName]);
 
-		if ($this->iaCore->get('default_package') == $extraName)
+		if ($this->iaCore->get('default_package') == $moduleName)
 		{
 			$this->iaCore->set('default_package', '', true);
 		}
 		$this->checkValidity();
 
-		$extraName = iaSanitize::sql($extraName);
+		$moduleName = iaSanitize::sql($moduleName);
 
 		$iaDb = &$this->iaDb;
 
 		$this->iaCore->factory('field');
 
-		$code = $iaDb->row_bind(['uninstall_code', 'uninstall_sql', 'rollback_data'], '`name` = :name', ['name' => $extraName], self::getTable());
+		$code = $iaDb->row_bind(['uninstall_code', 'uninstall_sql', 'rollback_data'], '`name` = :name', ['name' => $moduleName], self::getTable());
 
-		if ($itemsList = $iaDb->onefield('item', "`package` = '{$extraName}'", null, null, 'items'))
+		if ($itemsList = $iaDb->onefield('item', "`package` = '{$moduleName}'", null, null, 'items'))
 		{
 			$where = "`item` IN ('" . implode("','", $itemsList) . "')";
 			$iaDb->cascadeDelete(['items_pages', 'favorites', 'views_log'], $where);
 		}
 
-		if ($imageTypeIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($extraName, 'extras'), null, null, iaField::getTableImageTypes()))
+		if ($imageTypeIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($moduleName, 'module'), null, null, iaField::getTableImageTypes()))
 		{
 			$iaDb->cascadeDelete([iaField::getTableImageTypesFileTypes(), iaField::getTableFieldsImageTypes()], iaDb::convertIds($imageTypeIds, 'image_type_id'));
 		}
 
-		if ($pagesList = $iaDb->onefield('`name`', "`extras` = '{$extraName}'", null, null, 'pages'))
+		if ($pagesList = $iaDb->onefield('`name`', "`module` = '{$moduleName}'", null, null, 'pages'))
 		{
 			if (in_array($this->iaCore->get('home_page'), $pagesList))
 			{
@@ -762,28 +762,28 @@ class iaModule extends abstractCore
 			iaField::getTableImageTypes(),
 			'cron'
 		];
-		$iaDb->cascadeDelete($tableList, "`extras` = '{$extraName}'");
+		$iaDb->cascadeDelete($tableList, iaDb::convertIds($moduleName, 'module'));
 
 		$iaDb->setTable(iaField::getTable());
 
-		$stmt = '`extras` LIKE :extras';
-		$this->iaDb->bind($stmt, ['extras' => '%' . $extraName . '%']);
+		$stmt = '`module` LIKE :module';
+		$this->iaDb->bind($stmt, ['module' => '%' . $moduleName . '%']);
 		if ($itemsList)
 		{
 			$stmt.= " OR `item` IN ('" . implode("','", $itemsList) . "')";
 		}
 
-		if ($fields = $iaDb->all(['id', 'extras'], $stmt))
+		if ($fields = $iaDb->all(['id', 'module'], $stmt))
 		{
 			$fieldIds = [];
 
 			foreach ($fields as $field)
 			{
-				$pluginsList = explode(',', $field['extras']);
+				$pluginsList = explode(',', $field['module']);
 				if (count($pluginsList) > 1)
 				{
-					unset($pluginsList[array_search($extraName, $pluginsList)]);
-					$iaDb->update(['extras' => implode(',', $pluginsList), 'id' => $field['id']]);
+					unset($pluginsList[array_search($moduleName, $pluginsList)]);
+					$iaDb->update(['module' => implode(',', $pluginsList), 'id' => $field['id']]);
 				}
 				else
 				{
@@ -802,7 +802,7 @@ class iaModule extends abstractCore
 		$iaDb->resetTable();
 
 		$iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
-		if ($blockIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, "`extras` = '{$extraName}'", null, null, iaBlock::getTable()))
+		if ($blockIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, "`module` = '{$moduleName}'", null, null, iaBlock::getTable()))
 		{
 			foreach ($blockIds as $blockId) $iaBlock->delete($blockId, false);
 		}
@@ -819,10 +819,10 @@ class iaModule extends abstractCore
 			}
 		}
 
-		$entry = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', ['name' => $extraName], self::getTable());
+		$entry = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', ['name' => $moduleName], self::getTable());
 
-		$iaDb->delete('`name` = :plugin', self::getTable(), ['plugin' => $extraName]);
-		$iaDb->delete('`package` = :plugin', 'items', ['plugin' => $extraName]);
+		$iaDb->delete('`name` = :plugin', self::getTable(), ['plugin' => $moduleName]);
+		$iaDb->delete('`package` = :plugin', 'items', ['plugin' => $moduleName]);
 
 		empty($entry) || $this->_processCategory($entry, self::ACTION_UNINSTALL);
 
@@ -857,7 +857,7 @@ class iaModule extends abstractCore
 		}
 
 		// clear usergroups
-		if ($usergroups = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($extraName, 'extras'), 0, null, iaUsers::getUsergroupsTable()))
+		if ($usergroups = $iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($moduleName, 'module'), 0, null, iaUsers::getUsergroupsTable()))
 		{
 			$iaUsers = $this->iaCore->factory('users');
 			foreach ($usergroups as $usergroup)
@@ -866,7 +866,7 @@ class iaModule extends abstractCore
 			}
 		}
 
-		$this->iaCore->startHook('phpModuleUninstallAfter', ['extra' => $extraName]);
+		$this->iaCore->startHook('phpModuleUninstallAfter', ['module' => $moduleName]);
 
 		$this->iaCore->iaCache->clearAll();
 
@@ -876,16 +876,16 @@ class iaModule extends abstractCore
 	public function install()
 	{
 		$iaDb = &$this->iaDb;
-		$this->iaCore->startHook('phpModuleInstallBefore', ['extra' => $this->itemData['name']]);
+		$this->iaCore->startHook('phpModuleInstallBefore', ['module' => $this->itemData['name']]);
 
-		$extrasList = [];
+		$modulesList = [];
 		$array = $iaDb->all(['id', 'name', 'version'], "`status` = 'active'", null, null, self::getTable());
 		foreach ($array as $item)
 		{
-			$extrasList[$item['name']] = $item;
+			$modulesList[$item['name']] = $item;
 		}
 
-		// TODO: check for relations and deactivate all needed extras
+		// TODO: check for relations and deactivate all needed modules
 		if ($this->itemData['requirements'])
 		{
 			$messages = [];
@@ -894,9 +894,9 @@ class iaModule extends abstractCore
 				if ($requirement['min'] || $requirement['max'])
 				{
 					$min = $max = false;
-					if (isset($extrasList[$requirement['name']]))
+					if (isset($modulesList[$requirement['name']]))
 					{
-						$info = $extrasList[$requirement['name']];
+						$info = $modulesList[$requirement['name']];
 						$min = $requirement['min'] ? version_compare($requirement['min'], $info['version'], '<=') : true;
 						$max = $requirement['max'] ? version_compare($requirement['max'], $info['version'], '>=') : true;
 					}
@@ -917,11 +917,11 @@ class iaModule extends abstractCore
 						}
 
 						$values = [
-							':extra' => $requirement['type'],
+							':module' => $requirement['type'],
 							':name' => $requirement['name'],
 							':version' => $ver
 						];
-						$messages[] = iaLanguage::getf('required_extras_error', $values);
+						$messages[] = iaLanguage::getf('required_module_error', $values);
 						$this->error = true;
 					}
 					else
@@ -1008,8 +1008,8 @@ class iaModule extends abstractCore
 			foreach ($this->itemData['actions'] as $action)
 			{
 				$action['name'] = strtolower(str_replace(' ', '_', $action['name']));
-				if ($action['name'] && !$iaDb->exists('`name` = :name && `extras` = :extras',
-						['name' => $action['name'], 'extras' => $this->itemData['name']]))
+				if ($action['name'] && !$iaDb->exists('`name` = :name && `module` = :module',
+						['name' => $action['name'], 'module' => $this->itemData['name']]))
 				{
 					$action['order'] = (empty($action['order']) || !is_numeric($action['order']))
 						? $iaDb->getMaxOrder() + 1
@@ -1166,7 +1166,7 @@ class iaModule extends abstractCore
 									'position' => 'left',
 									'collapsible' => true,
 									'title' => $this->itemData['info']['title'],
-									'extras' => $this->itemData['name'],
+									'module' => $this->itemData['name'],
 									'name' => $this->itemData['name'],
 									'sticky' => true,
 									'removable' => false
@@ -1273,7 +1273,7 @@ class iaModule extends abstractCore
 					$permissions = $item['permissions'];
 
 					$groupId = $iaDb->insert([
-						'extras' => $item['extras'],
+						'module' => $item['module'],
 						'name' => $item['name'],
 						'system' => true,
 						'assignable' => $item['assignable'],
@@ -1292,7 +1292,7 @@ class iaModule extends abstractCore
 							'value' => $config['value'],
 							'type' => iaAcl::GROUP,
 							'type_id' => $groupId,
-							'extras' => $this->itemData['name']
+							'module' => $this->itemData['name']
 						];
 						$iaDb->insert($data);
 					}
@@ -1309,7 +1309,7 @@ class iaModule extends abstractCore
 							'access' => $permission['access'],
 							'type' => iaAcl::GROUP,
 							'type_id' => $groupId,
-							'extras' => $permission['extras']
+							'module' => $permission['module']
 						];
 
 						$iaDb->insert($data);
@@ -1394,7 +1394,7 @@ class iaModule extends abstractCore
 
 			foreach ($this->itemData['cron_jobs'] as $job)
 			{
-				$job['extras'] = $this->itemData['name'];
+				$job['module'] = $this->itemData['name'];
 				$iaDb->insert($job, null, iaCron::getTable());
 			}
 		}
@@ -1458,7 +1458,7 @@ class iaModule extends abstractCore
 
 		if (!$this->isUpdate)
 		{
-			$this->iaCore->startHook('phpModuleInstallBeforeSql', ['extra' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
+			$this->iaCore->startHook('phpModuleInstallBeforeSql', ['module' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
 			$iaDb->insert($extraEntry, ['date' => iaDb::FUNCTION_NOW], self::getTable());
 		}
 
@@ -1471,7 +1471,7 @@ class iaModule extends abstractCore
 			$this->_runPhpCode($this->itemData['code']['install']);
 		}
 
-		$this->iaCore->startHook('phpModuleInstallAfter', ['extra' => $this->itemData['name']]);
+		$this->iaCore->startHook('phpModuleInstallAfter', ['module' => $this->itemData['name']]);
 
 		$this->iaCore->factory('cache')->clearAll();
 
@@ -1518,7 +1518,7 @@ class iaModule extends abstractCore
 		if ('usergroup' == $name)
 		{
 			$this->itemData['usergroups'][] = [
-				'extras' => $this->itemData['name'],
+				'module' => $this->itemData['name'],
 				'name' => $this->itemData['name'] . '_' . ($this->_attr('name', iaUtil::generateToken())),
 				'title' => $attributes['title'],
 				'assignable' => $this->_attr('assignable', false),
@@ -1625,7 +1625,7 @@ class iaModule extends abstractCore
 				{
 					$this->itemData['actions'][] = [
 						'attributes' => $this->_attr('attributes'),
-						'extras' => $this->itemData['name'],
+						'module' => $this->itemData['name'],
 						'icon' => $this->_attr('icon'),
 						'name' => $this->_attr('name'),
 						'pages' => $this->_attr('pages'),
@@ -1655,7 +1655,7 @@ class iaModule extends abstractCore
 						'menus' => $this->_attr('menus'),
 						'action' => $this->_attr('action', iaCore::ACTION_READ),
 						'parent' => $this->_attr('parent'),
-						'extras' => $this->itemData['name']
+						'module' => $this->itemData['name']
 					];
 				}
 				elseif ($this->_checkPath('pages'))
@@ -1682,7 +1682,7 @@ class iaModule extends abstractCore
 						'nofollow' => $this->_attr('nofollow', false),
 						'new_window' => $this->_attr('new_window', false),
 						'readonly' => $this->_attr('readonly', true),
-						'extras' => $this->itemData['name'],
+						'module' => $this->itemData['name'],
 						'group' => $this->_attr('group', ($this->itemData['type'] == self::TYPE_PLUGIN) ? 'extensions' : $this->itemData['type']),
 						'action' => $this->_attr('action', iaCore::ACTION_READ),
 						'parent' => $this->_attr('parent'),
@@ -1695,7 +1695,7 @@ class iaModule extends abstractCore
 			case 'configgroup':
 				$this->itemData['config_groups'][$text] = [
 					'name' => $this->_attr('name'),
-					'extras' => $this->itemData['name']
+					'module' => $this->itemData['name']
 				];
 				break;
 
@@ -1718,7 +1718,7 @@ class iaModule extends abstractCore
 						'description' => $this->_attr('description'),
 						'private' => $this->_attr('private', true),
 						'custom' => $this->_attr('custom', true),
-						'extras' => $this->itemData['name'],
+						'module' => $this->itemData['name'],
 						'options' => [
 							'wysiwyg' => $this->_attr('wysiwyg', false),
 							'code_editor' => $this->_attr('code_editor', false),
@@ -1735,7 +1735,7 @@ class iaModule extends abstractCore
 					'action' => $this->_attr('action', iaCore::ACTION_READ),
 					'object' => $this->_attr('object', iaAcl::OBJECT_PAGE),
 					'object_id' => $text,
-					'extras' => $this->itemData['name']
+					'module' => $this->itemData['name']
 				];
 
 				if ($this->_checkPath('permissions'))
@@ -1758,7 +1758,7 @@ class iaModule extends abstractCore
 					'pre_object' => $this->_attr('meta_object', iaAcl::OBJECT_PAGE),
 					'action' => $this->_attr('action', iaCore::ACTION_READ),
 					'access' => $this->_attr('access', '0', [0, 1]),
-					'extras' => $this->itemData['name'],
+					'module' => $this->itemData['name'],
 					'title' => $text
 				];
 				break;
@@ -1768,7 +1768,7 @@ class iaModule extends abstractCore
 				{
 					case $this->_checkPath('fields_groups'):
 						$this->itemData['item_field_groups'][] = [
-							'extras' => $this->itemData['name'],
+							'module' => $this->itemData['name'],
 							'item' => $this->_attr('item'),
 							'name' => $this->_attr('name'),
 							'collapsible' => $this->_attr('collapsible', false),
@@ -1783,7 +1783,7 @@ class iaModule extends abstractCore
 					case $this->_checkPath('groups'):
 						$this->itemData['groups'][$text] = [
 							'name' => $this->_attr('name'),
-							'extras' => $this->itemData['name']
+							'module' => $this->itemData['name']
 						];
 				}
 				break;
@@ -1820,7 +1820,7 @@ class iaModule extends abstractCore
 						: $this->itemData['items'][$this->_attr('item')]['class_name'];
 
 					$this->itemData['item_fields'][] = [
-						'extras' => $this->itemData['name'],
+						'module' => $this->itemData['name'],
 						'table_name' => $itemTable,
 						'class_name' => $itemClass,
 						'title' => $text,
@@ -1910,7 +1910,7 @@ class iaModule extends abstractCore
 					'page_type' => $this->_attr('page_type', 'both', ['both', iaCore::ADMIN, iaCore::FRONT]),
 					'filename' => $filename,
 					'pages' => $this->_attr('pages'),
-					'extras' => $this->itemData['name'],
+					'module' => $this->itemData['name'],
 					'code' => $text,
 					'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
 					'order' => $this->_attr('order', 0)
@@ -1933,7 +1933,7 @@ class iaModule extends abstractCore
 						'position' => $this->_attr('position'),
 						'type' => $this->_attr('type'),
 						'order' => $this->_attr('order', false),
-						'extras' => $this->itemData['name'],
+						'module' => $this->itemData['name'],
 						'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
 						'header' => $this->_attr('header', true),
 						'collapsible' => $this->_attr('collapsible', false),
@@ -2017,7 +2017,7 @@ class iaModule extends abstractCore
 						'height' => $this->_attr('height'),
 						'resize_mode' => $this->_attr('resize_mode', 'crop', ['crop', 'fit']),
 						'cropper' => $this->_attr('cropper', false),
-						'extras' => $this->itemData['name'],
+						'module' => $this->itemData['name'],
 						'name' => $text,
 						'extensions' => $this->_attr('extensions')
 					];
@@ -2239,14 +2239,14 @@ class iaModule extends abstractCore
 			$stmt = '`item` = :item AND `name` = :name';
 			$this->iaDb->bind($stmt, ['item' => $entry['item'], 'name' => $entry['name']]);
 
-			if ($row = $this->iaDb->row(['id', 'extras'], $stmt))
+			if ($row = $this->iaDb->row(['id', 'module'], $stmt))
 			{
-				if (false === stripos($row['extras'], $this->itemData['name']))
+				if (false === stripos($row['module'], $this->itemData['name']))
 				{
-					$value = ($row['extras'] ? ',' : '') . $this->itemData['name'];
-					$value = sprintf("CONCAT(`extras`, '%s')", $value);
+					$value = ($row['module'] ? ',' : '') . $this->itemData['name'];
+					$value = sprintf("CONCAT(`module`, '%s')", $value);
 
-					$this->iaDb->update(null, iaDb::convertIds($row['id']), ['extras' => $value]);
+					$this->iaDb->update(null, iaDb::convertIds($row['id']), ['module' => $value]);
 				}
 
 				continue;
@@ -2343,7 +2343,7 @@ class iaModule extends abstractCore
 		// setup fields dependencies
 		if ($dependencies)
 		{
-			$fieldIds = $this->iaDb->keyvalue(['name', 'id'], iaDb::convertIds($this->itemData['name'], 'extras'));
+			$fieldIds = $this->iaDb->keyvalue(['name', 'id'], iaDb::convertIds($this->itemData['name'], 'module'));
 
 			$this->iaDb->setTable(iaField::getTableRelations());
 
@@ -2378,7 +2378,7 @@ class iaModule extends abstractCore
 	{
 		$this->iaDb->setTable('admin_pages');
 
-		$this->iaDb->delete(iaDb::convertIds($this->itemData['name'], 'extras'));
+		$this->iaDb->delete(iaDb::convertIds($this->itemData['name'], 'module'));
 
 		foreach ($entries as $title => $entry)
 		{

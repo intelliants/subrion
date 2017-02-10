@@ -8,7 +8,7 @@ CREATE TABLE `{install:prefix}acl_objects` (
 	`object` char(30) NOT NULL,
 	`action` char(15) NOT NULL default 'read',
 	`access` tinyint(1) unsigned NOT NULL default 1,
-	`extras` char(40) NOT NULL,
+	`module` char(40) NOT NULL,
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -21,7 +21,7 @@ CREATE TABLE `{install:prefix}acl_privileges` (
 	`action` varchar(15) NOT NULL default 'read',
 	`object` varchar(50) NOT NULL,
 	`object_id` varchar(150) NOT NULL default '0',
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `UNIQUE` (`type`,`type_id`,`action`,`object`,`object_id`)
 ) {install:db_options};
@@ -33,7 +33,7 @@ CREATE TABLE `{install:prefix}admin_actions` (
 	`url` varchar(100) NOT NULL,
 	`icon` varchar(50) default null,
 	`attributes` tinytext NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`pages` tinytext NOT NULL,
 	`text` varchar(50) default null,
 	`type` enum('regular','dashboard') default 'regular',
@@ -49,7 +49,7 @@ CREATE TABLE `{install:prefix}admin_pages` (
 	`name` varchar(50) NOT NULL,
 	`order` smallint(5) unsigned NOT NULL,
 	`alias` varchar(150) NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`filename` varchar(50) NOT NULL,
 	`attr` varchar(150) default null,
 	`menus` set('menu','header') NOT NULL default 'menu',
@@ -69,7 +69,7 @@ CREATE TABLE `{install:prefix}admin_pages_groups` (
 	`id` smallint(4) unsigned NOT NULL auto_increment,
 	`order` smallint(4) unsigned NOT NULL,
 	`name` varchar(50) NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -91,7 +91,7 @@ CREATE TABLE `{install:prefix}blocks` (
 	`order` smallint(5) unsigned NOT NULL,
 	`position` varchar(30) NOT NULL default 'left',
 	`type` enum('plain','smarty','php','html','menu') NOT NULL default 'plain',
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`status` enum('active','inactive') NOT NULL default 'active',
 	`header` tinyint(1) unsigned NOT NULL default 1,
 	`collapsible` tinyint(1) unsigned NOT NULL default 1,
@@ -105,7 +105,7 @@ CREATE TABLE `{install:prefix}blocks` (
 	`subpages` text,
 	`classname` varchar(50) NOT NULL,
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `UNIQUE` (`name`,`extras`),
+	UNIQUE KEY `UNIQUE` (`name`,`module`),
 	KEY `STATUS` (`status`)
 ) {install:db_options};
 
@@ -118,7 +118,7 @@ CREATE TABLE `{install:prefix}config` (
 	`multiple_values` text,
 	`type` enum('text','textarea','checkbox','radio','select','combo','divider','hidden','password','image','itemscheckbox','tpl','colorpicker') NOT NULL default 'text',
 	`order` smallint(5) unsigned NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`private` tinyint(1) unsigned NOT NULL,
 	`custom` tinyint(1) unsigned NOT NULL default 0,
 	`options` text,
@@ -133,7 +133,7 @@ CREATE TABLE `{install:prefix}config_custom` (
 	`value` text NOT NULL,
 	`type` enum('user','group','plan') NOT NULL default 'group',
 	`type_id` mediumint(8) unsigned NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	PRIMARY KEY (`id`),
 	KEY `NAME` (`name`)
 ) {install:db_options};
@@ -142,9 +142,9 @@ CREATE TABLE `{install:prefix}config_custom` (
 CREATE TABLE `{install:prefix}config_groups` (
 	`name` varchar(50) NOT NULL,
 	`order` smallint(4) unsigned NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	PRIMARY KEY (`name`),
-	KEY `EXTRAS` (`extras`)
+	KEY `EXTRAS` (`module`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}cron`;
@@ -156,13 +156,13 @@ CREATE TABLE `{install:prefix}cron` (
 	`date_next_launch` int(10) unsigned NOT NULL,
 	`data` tinytext NOT NULL,
 	`active` tinyint(1) unsigned NOT NULL default 1,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	PRIMARY KEY (`id`),
 	KEY `ACTIVE` (`active`)
 ) {install:db_options};
 
-{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}extras`;
-CREATE TABLE `{install:prefix}extras` (
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}modules`;
+CREATE TABLE `{install:prefix}modules` (
 	`id` smallint(4) unsigned NOT NULL auto_increment,
 	`name` varchar(40) NOT NULL,
 	`type` enum('plugin','package','core') NOT NULL default 'plugin',
@@ -196,7 +196,7 @@ CREATE TABLE `{install:prefix}favorites` (
 CREATE TABLE `{install:prefix}fields` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
 	`group` smallint(5) unsigned NOT NULL default 1,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`name` varchar(60) NOT NULL,
 	`item` varchar(50) NOT NULL default 'members',
 	`fieldgroup_id` smallint(5) unsigned NOT NULL,
@@ -243,7 +243,7 @@ CREATE TABLE `{install:prefix}fields_groups` (
 	`name` varchar(50) NOT NULL,
 	`item` varchar(50) NOT NULL default 'members',
 	`order` smallint(5) unsigned NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`collapsible` tinyint(1) unsigned NOT NULL,
 	`collapsed` tinyint(1) unsigned NOT NULL default 1,
 	`tabview` tinyint(1) unsigned NOT NULL,
@@ -281,7 +281,7 @@ CREATE TABLE `{install:prefix}fields_tree_nodes` (
 	`id` mediumint(8) unsigned NOT NULL auto_increment,
 	`field` varchar(50) NOT NULL,
 	`item` varchar(30) NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`node_id` varchar(30) NOT NULL,
 	`parent_node_id` varchar(30) NOT NULL,
 	`alias` varchar(150) NOT NULL,
@@ -303,7 +303,7 @@ CREATE TABLE `{install:prefix}file_types` (
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}hooks`;
 CREATE TABLE `{install:prefix}hooks` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`name` varchar(100) NOT NULL,
 	`code` text,
 	`status` enum('active','inactive') NOT NULL default 'active',
@@ -313,7 +313,7 @@ CREATE TABLE `{install:prefix}hooks` (
 	`page_type` enum('admin','front','both') NOT NULL default 'both',
 	`filename` tinytext NOT NULL,
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `UNIQUE` (`name`,`extras`),
+	UNIQUE KEY `UNIQUE` (`name`,`module`),
 	KEY `STATUS` (`status`)
 ) {install:db_options};
 
@@ -325,7 +325,7 @@ CREATE TABLE `{install:prefix}image_types` (
 	`height` int(11) unsigned NOT NULL,
 	`resize_mode` enum('crop','fit') NOT NULL default 'crop',
 	`cropper` tinyint(1) NOT NULL default 0,
-  `extras` varchar(40) NOT NULL default '',
+  `module` varchar(40) NOT NULL default '',
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -413,9 +413,9 @@ CREATE TABLE `{install:prefix}language` (
 	`value` text NOT NULL,
 	`category` enum('admin','frontend','common','page','tooltip') NOT NULL default 'frontend',
 	`code` char(2) NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `UNIQUE` (`key`,`category`,`code`,`extras`),
+	UNIQUE KEY `UNIQUE` (`key`,`category`,`code`,`module`),
 	KEY `LANG` (`code`)
 ) {install:db_options};
 
@@ -425,10 +425,10 @@ CREATE TABLE `{install:prefix}logs` (
 	`date` datetime NOT NULL,
 	`action` tinyint(3) unsigned NOT NULL,
 	`user_id` int(11) unsigned default null,
-	`extras` varchar(40) NOT NULL default '',
+	`module` varchar(40) NOT NULL default '',
 	`params` text null,
 	PRIMARY KEY (`id`),
-	KEY `PLUGIN` (`extras`)
+	KEY `PLUGIN` (`module`)
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}members`;
@@ -550,7 +550,7 @@ CREATE TABLE `{install:prefix}pages` (
 	`alias` varchar(150) NOT NULL,
 	`nofollow` tinyint(1) unsigned NOT NULL,
 	`new_window` tinyint(1) unsigned NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`passw` char(32) NOT NULL default '',
 	`filename` varchar(50) NOT NULL,
 	`custom_tpl` tinyint(1) NOT NULL,
@@ -690,7 +690,7 @@ CREATE TABLE `{install:prefix}search` (
 CREATE TABLE `{install:prefix}usergroups` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
 	`name` varchar(100) NOT NULL,
-	`extras` varchar(40) NOT NULL,
+	`module` varchar(40) NOT NULL,
 	`system` tinyint(1) unsigned NOT NULL,
 	`assignable` tinyint(1) unsigned NOT NULL default 0,
 	`visible` tinyint(1) unsigned NOT NULL default 0,
@@ -886,7 +886,7 @@ INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`private`) VALUES
 ('tmpl_rollback_data','','hidden',1),
 ('tmpl_layout_data','','hidden',1);
 
-INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple_values`, `type`, `order`, `extras`, `private`, `custom`, `options`) VALUES
+INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple_values`, `type`, `order`, `module`, `private`, `custom`, `options`) VALUES
 ('general', '', 'General', '1', 'divider', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":false}'),
 ('general', 'site', '{:en:}Subrion CMS', '1', 'text', 2, '', 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":true}'),
 ('general', 'bc_home', '{:en:}Home', NULL, 'text', 3, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":true}'),
@@ -1156,7 +1156,7 @@ INSERT INTO `{install:prefix}file_types` (`id`, `extension`, `maxsize`, `image`)
 (28, 'ppt', 0, 0),
 (29, 'pptx', 0, 0);
 
-INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`, `extras`) VALUES
+INSERT INTO `{install:prefix}hooks` (`name`,`code`,`status`,`order`,`type`,`page_type`,`filename`, `module`) VALUES
 ('smartyFrontAfterHeadSection','','active',1,'smarty','front','templates/_common/hook.header-code.tpl',''),
 ('smartyFrontFinalize','{$core.config.frontend_footer_code}','active',2,'smarty','front','',''),
 ('editItemSetSystemDefaults','if (isset($item[''featured'']) && $item[''featured''])\r\n{\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''featured_end'']));\r\n}\r\nelse\r\n{\r\n	$date = getdate();\r\n	$date = mktime($date[''hours''], $date[''minutes''] + 1,0,$date[''mon''] + 1,$date[''mday''], $date[''year'']);\r\n	$item[''featured_end''] = date(iaDb::DATETIME_SHORT_FORMAT, $date);\r\n}\r\n\r\nif (isset($item[''sponsored'']) && $item[''sponsored''])\r\n{\r\n	$item[''sponsored_end''] = date(iaDb::DATETIME_SHORT_FORMAT, strtotime($item[''sponsored_end'']));\r\n}\r\n\r\nif (isset($item[''member_id'']))\r\n{\r\n	$item[''owner''] = '''';\r\n	if ($item[''member_id''] > 0)\r\n	{\r\n		$iaUsers = $iaCore->factory(''users'');\r\n		if ($ownerInfo = $iaUsers->getInfo((int)$item[''member_id'']))\r\n		{\r\n			$item[''owner''] = $ownerInfo[''fullname''] . '' ('' . $ownerInfo[''email''] . '')'';\r\n		}\r\n	}\r\n}','active',1,'php','admin','',''),
@@ -1708,8 +1708,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('install','Install','admin'),
 ('install_not_deleted','Warning! For safety purposes, please remove the file :file','admin'),
 ('install_upgrade','Install or upgrade','admin'),
-('installation_extra_requirement_doesnot_exist','The currently installed :type &ldquo;:extra&rdquo; is not compatible with the module.','admin'),
-('installation_extra_requirement_exist','Requires the &ldquo;:extra&rdquo; :type to be installed.','admin'),
+('installation_extra_requirement_doesnot_exist','The currently installed :type &ldquo;:module&rdquo; is not compatible with the module.','admin'),
+('installation_extra_requirement_exist','Requires the &ldquo;:module&rdquo; :type to be installed.','admin'),
 ('installation_extra_requirement_incorrect','Invalid dependencies specified. Ignored.','admin'),
 ('installation_impossible','Installation is currently impossible.','admin'),
 ('interval','Interval','admin'),
@@ -1919,10 +1919,10 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('result','Result','admin'),
 ('request_submitted','Thanks. Your request has been submitted.','admin'),
 ('required_checks','Validation PHP code','admin'),
-('required_extras_error','The extras you are trying to install requires the following :extras to be installed: :name (:version)','admin'),
+('required_module_error','The module you are trying to install requires the following :module to be installed: :name (:version)','admin'),
 ('required_field','Required field','admin'),
 ('required_fields','Required fields','admin'),
-('required_template_error','The template you are trying to install requires the following :extras to be installed: :name (:version)','admin'),
+('required_template_error','The template you are trying to install requires the following :module to be installed: :name (:version)','admin'),
 ('root_about','No additional prefixes will be added to package URL. This way is highly recommended for sites with one package installed. See more details in our <a href="https://subrion.org/forums/">User Forums</a>.','admin'),
 ('root_title','Script Root Installation','admin'),
 ('root_old','You currently have the ":name" package installed in your Script Root location. You can not have two packages installed in root simultaneously. If you still want to install in Root location please set the URL value for the ":name" package.','admin'),
@@ -2136,7 +2136,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('edit_position','Edit position','common'),
 ('enabled','Enabled','common'),
 ('exit','Exit','common'),
-('extras','Extras','common'),
+('module','Extras','common'),
 ('empty_login','Either login or password is empty.','common'),
 ('err_message','Message cannot be empty.','common'),
 ('error','Error','common'),

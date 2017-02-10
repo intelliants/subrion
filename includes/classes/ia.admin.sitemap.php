@@ -104,16 +104,16 @@ class iaSitemap extends abstractCore
 		switch ($setType)
 		{
 			case self::LINKS_SET_CORE:
-				$extrasList = $this->iaDb->keyvalue(['name', 'type'], "`status` = 'active'", 'extras');
+				$modulesList = $this->iaDb->keyvalue(['name', 'type'], "`status` = 'active'", 'module');
 				$homePageName = $this->iaCore->get('home_page');
 
 				$stmt = '`nofollow` = 0 AND `service` = 0 AND `status` = :status AND `passw` = :password ORDER BY `order`';
 				$this->iaDb->bind($stmt, ['status' => iaCore::STATUS_ACTIVE, 'password' => '']);
 
-				$pages = $this->iaDb->all(['name', 'alias', 'custom_url', 'extras'], $stmt, null, null, 'pages');
+				$pages = $this->iaDb->all(['name', 'alias', 'custom_url', 'module'], $stmt, null, null, 'pages');
 				foreach ($pages as $page)
 				{
-					if (empty($page['extras']) || isset($extrasList[$page['extras']]))
+					if (empty($page['module']) || isset($modulesList[$page['module']]))
 					{
 						switch (true)
 						{

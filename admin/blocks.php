@@ -28,8 +28,8 @@ class iaBackendController extends iaAbstractControllerBackend
 {
 	protected $_name = 'blocks';
 
-	protected $_gridColumns = ['contents', 'position', 'extras', 'type', 'status', 'order', 'delete' => 'removable'];
-	protected $_gridFilters = ['status' => self::EQUAL, 'type' => self::EQUAL, 'position' => self::EQUAL, 'extras' => self::EQUAL];
+	protected $_gridColumns = ['contents', 'position', 'module', 'type', 'status', 'order', 'delete' => 'removable'];
+	protected $_gridFilters = ['status' => self::EQUAL, 'type' => self::EQUAL, 'position' => self::EQUAL, 'module' => self::EQUAL];
 	protected $_gridSorting = ['title' => ['value', 'p']];
 	protected $_gridQueryMainTableAlias = 'b';
 
@@ -89,9 +89,9 @@ class iaBackendController extends iaAbstractControllerBackend
 			$values['title'] = '%' . iaSanitize::sql($params['title']) . '%';
 		}
 
-		if (isset($values['extras']) && iaCore::CORE == strtolower($values['extras']))
+		if (isset($values['module']) && iaCore::CORE == strtolower($values['module']))
 		{
-			$values['extras'] = '';
+			$values['module'] = '';
 		}
 
 		$conditions[] = "b.`type` != 'menu'";

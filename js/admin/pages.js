@@ -79,13 +79,13 @@ Ext.onReady(function()
 			name: 'name',
 			listeners: intelli.gridHelper.listener.specialKey
 		}, {
-			emptyText: _t('extras'),
+			emptyText: _t('module'),
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
 			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/actions/options/extras.json'),
 			displayField: 'title',
-			name: 'extras',
+			name: 'module',
 			valueField: 'value'
 		}, {
 			handler: function(){intelli.gridHelper.search(grid)},

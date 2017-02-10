@@ -725,12 +725,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$node['field'] = $fieldName;
 				$node['item'] = $field['item'];
-				$node['extras'] = $field['extras'];
+				$node['module'] = $field['module'];
 
 				if ($this->_iaDb->insert($node))
 				{
 					$key = sprintf(self::TREE_NODE_TITLE, $field['item'], $fieldName, $node['node_id']);
-					$this->_addPhrase($key, $caption, $field['extras'], $this->_iaCore->language['iso']);
+					$this->_addPhrase($key, $caption, $field['module'], $this->_iaCore->language['iso']);
 				}
 			}
 		}
@@ -786,7 +786,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _savePhrases($fieldName, array $fieldData, array $data)
 	{
-		$extras = empty($this->_data['extras']) ? '' : $this->_data['extras'];
+		$extras = empty($this->_data['module']) ? '' : $this->_data['module'];
 		$itemName = $fieldData['item'];
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad');

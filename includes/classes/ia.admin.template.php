@@ -255,7 +255,7 @@ class iaTemplate extends abstractCore
 					}
 					if (isset($message))
 					{
-						$this->_notes[] = iaDb::printf($message, ['extra' => ucfirst($moduleName), 'type' => $dependency['type']]);
+						$this->_notes[] = iaDb::printf($message, ['module' => ucfirst($moduleName), 'type' => $dependency['type']]);
 					}
 				}
 				else {
@@ -331,9 +331,9 @@ class iaTemplate extends abstractCore
 				if ($require['min'] || $require['max'])
 				{
 					$min = $max = false;
-					if (isset($extrasList[$require['name']]))
+					if (isset($modulesList[$require['name']]))
 					{
-						$info = $extrasList[$require['name']];
+						$info = $modulesList[$require['name']];
 						$min = $require['min'] ? version_compare($require['min'], $info['version'], '<=') : true;
 						$max = $require['max'] ? version_compare($require['max'], $info['version'], '>=') : true;
 					}
@@ -383,8 +383,8 @@ class iaTemplate extends abstractCore
 			$tablesList = ['hooks', 'blocks', iaLanguage::getTable(), 'pages', iaCore::getConfigTable(),
 				iaCore::getConfigGroupsTable(), iaCore::getCustomConfigTable()];
 
-			$iaDb->cascadeDelete($tablesList, "`extras` = '{$template}'");
-			$iaDb->cascadeDelete($tablesList, "`extras` = '{$this->name}'");
+			$iaDb->cascadeDelete($tablesList, "`module` = '{$template}'");
+			$iaDb->cascadeDelete($tablesList, "`module` = '{$this->name}'");
 		}
 
 		$iaDb->update(['value' => $this->name], "`name` = 'tmpl'", null, iaCore::getConfigTable());
@@ -395,7 +395,7 @@ class iaTemplate extends abstractCore
 		{
 			$iaDb->setTable(iaCore::getConfigTable());
 
-			$maxOrder = $iaDb->one_bind('MAX(`order`) + 1', '`extras` = :extras', ['extras' => $this->name]);
+			$maxOrder = $iaDb->one_bind('MAX(`order`) + 1', '`module` = :module', ['module' => $this->name]);
 			$maxOrder = $maxOrder ? (int)$maxOrder : 1;
 
 			foreach ($this->_config as $entry)
@@ -707,7 +707,7 @@ class iaTemplate extends abstractCore
 					'description' => $this->attr('description'),
 					'private' => $this->attr('private', false),
 					'order' => $this->attr('order', false),
-					'extras' => $this->name,
+					'module' => $this->name,
 					'options' => json_encode([
 						'wysiwyg' => $this->attr('wysiwyg', false),
 						'code_editor' => $this->attr('code_editor', false),
@@ -720,7 +720,7 @@ class iaTemplate extends abstractCore
 			case 'configgroup':
 				$this->_configGroups[$text] = [
 					'name' => $this->attr('name'),
-					'extras' => $this->name
+					'module' => $this->name
 				];
 				break;
 
@@ -738,7 +738,7 @@ class iaTemplate extends abstractCore
 					'name' => $this->attr('name'),
 					'type' => $this->attr('type', 'php', ['php', 'html', 'smarty', 'plain']),
 					'filename' => $this->attr('filename'),
-					'extras' => $this->name,
+					'module' => $this->name,
 					'code' => $text,
 					'status' => $this->attr('status', iaCore::STATUS_ACTIVE),
 					'page_type' => $this->attr('page_type')
@@ -755,7 +755,7 @@ class iaTemplate extends abstractCore
 						'position' => $this->attr('position'),
 						'type' => $this->attr('type'),
 						'order' => $this->attr('order', false),
-						'extras' => $this->name,
+						'module' => $this->name,
 						'status' => $this->attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
 						'header' => $this->attr('header', true),
 						'collapsible' => $this->attr('collapsible', false),

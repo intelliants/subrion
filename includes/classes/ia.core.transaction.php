@@ -68,7 +68,7 @@ class iaTransaction extends abstractCore
 	{
 		if (is_null($this->_gateways))
 		{
-			$stmt = "`name` IN ('" . implode("','", $this->iaCore->get('extras')) . "')";
+			$stmt = "`name` IN ('" . implode("','", $this->iaCore->get('module')) . "')";
 			$this->_gateways = $this->iaDb->keyvalue(['name', 'title'], $stmt, $this->getTableGateways());
 		}
 

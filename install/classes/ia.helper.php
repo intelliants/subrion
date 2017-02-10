@@ -307,7 +307,7 @@ class iaHelper
 		self::loadCoreClass('db', 'core');
 		$iaDb = iaCore::instance()->iaDb;
 
-		$list = $iaDb->onefield('name', "type = 'plugin'", 0, null, 'extras');
+		$list = $iaDb->onefield('name', "type = 'plugin'", 0, null, 'module');
 
 		return empty($list)
 			? []

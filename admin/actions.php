@@ -182,21 +182,21 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		switch ($entityName)
 		{
-			case 'extras':
+			case 'module':
 				$this->_iaCore->factory('item');
 				$this->_iaCore->factory('page', iaCore::ADMIN);
 
 				$sql = <<<SQL
-SELECT IF(p.`extras` = '', 'core', p.`extras`) `value`, 
-	IF(p.`extras` = '', 'Core', g.`title`) `title` 
+SELECT IF(p.`module` = '', 'core', p.`module`) `value`, 
+	IF(p.`module` = '', 'Core', g.`title`) `title` 
 	FROM `:prefix:table_pages` p 
-LEFT JOIN `:prefix:table_extras` g ON (g.`name` = p.`extras`) 
-GROUP BY p.`extras`
+LEFT JOIN `:prefix:table_modules` g ON (g.`name` = p.`module`) 
+GROUP BY p.`module`
 SQL;
 				$sql = iaDb::printf($sql, [
 					'prefix' => $this->_iaDb->prefix,
 					'table_pages' => iaPage::getTable(),
-					'table_extras' => iaItem::getModulesTable()
+					'table_modules' => iaItem::getModulesTable()
 				]);
 
 				return ['data' => $this->_iaDb->getAll($sql)];

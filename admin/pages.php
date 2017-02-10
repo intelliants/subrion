@@ -31,7 +31,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_tooltipsEnabled = true;
 
 	protected $_gridColumns = "`id`, `name`, `status`, `last_updated`, IF(`custom_url` != '', `custom_url`, IF(`alias` != '', `alias`, CONCAT(`name`, '/'))) `url`, `id` `update`, IF(`readonly` = 0, 1, 0) `delete`";
-	protected $_gridFilters = ['name' => self::LIKE, 'extras' => self::EQUAL];
+	protected $_gridFilters = ['name' => self::LIKE, 'module' => self::EQUAL];
 
 	protected $_phraseAddSuccess = 'page_added';
 
@@ -68,9 +68,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _modifyGridParams(&$conditions, &$values, array $params)
 	{
-		if (isset($values['extras']) && iaCore::CORE == strtolower($values['extras']))
+		if (isset($values['module']) && iaCore::CORE == strtolower($values['module']))
 		{
-			$values['extras'] = '';
+			$values['module'] = '';
 		}
 
 		$conditions[] = '`service` = 0';
@@ -206,7 +206,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			'custom_tpl' => 0,
 			'template_filename' => '',
 			'alias' => '',
-			'extras' => '',
+			'module' => '',
 			'readonly' => false,
 			'service' => false,
 			'nofollow' => false,
@@ -259,7 +259,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		$this->_saveMultilingualData($entry['name'], $data['extras']);
+		$this->_saveMultilingualData($entry['name'], $data['module']);
 
 		// writing to log
 		$pageTitle = $data['title'][$this->_iaCore->iaView->language];

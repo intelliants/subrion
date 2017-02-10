@@ -109,7 +109,7 @@ abstract class abstractPackageAdmin extends abstractCore
 
 		if (is_null($cachedData))
 		{
-			$cachedData = $this->iaDb->row_bind(['id', 'type', 'title', 'url', 'version'], '`name` = :name', ['name' => $this->getPackageName()], 'extras');
+			$cachedData = $this->iaDb->row_bind(['id', 'type', 'title', 'url', 'version'], '`name` = :name', ['name' => $this->getPackageName()], 'module');
 
 			$cachedData['url'] = IA_URL . (IA_URL_DELIMITER == $cachedData['url'] ? '' : $cachedData['url']);
 		}
