@@ -2590,7 +2590,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_content_about',"<p>Page 'About Us' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
 ('page_content_advertise',"<p>Page 'Advertise Us' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
 ('page_content_help','<p>Help page content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>','page'),
-('page_content_index','<p>Subrion is a new PHP content management system and it can be used for building both simple and enterprise-level sites. It includes an extensive plugin system that makes Subrion CMS extremely flexible and easy to use. There are several packages that can be used separately or together on one site. They are: article publishing script, auto classifieds package, realty classifieds script, and web directory package.</p><p>Subrion CMS is constantly being improved. If you have any feature requests you are welcome to post them in <a href=\"https://subrion.org/forums/\">Subrion CMS Support Forums</a>. Thanks for choosing Subrion Content Management System!</p>','page'),
+('page_content_index','','page'),
 ('page_content_policy',"<p>Page 'Privacy Policy' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
 ('page_content_terms',"<p>Page 'Terms Of Use' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
 
