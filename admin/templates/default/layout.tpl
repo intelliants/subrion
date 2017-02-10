@@ -106,6 +106,16 @@
 										<a href="{if $manageMode}{$smarty.const.IA_URL}?manage_exit=y{else}{$smarty.const.IA_ADMIN_URL}visual-mode/{/if}" target="_blank"><i class="fa fa-sliders"></i> {lang key='visual_mode'} {if $manageMode} <span class="label label-warning">{lang key='active'}</span>{/if}</a>
 									</li>
 									<li><a href="{$smarty.const.IA_ADMIN_URL}debug-mode/" title=""><i class="fa fa-bug"></i> {lang key='debug_mode'}{if $smarty.const.INTELLI_DEBUG}<span class="label label-warning">{lang key='global'}</span>{elseif $smarty.const.INTELLI_QDEBUG}<span class="label label-warning">{lang key='active'}</span>{/if}</a></li>
+
+									{if count($core.languages) > 1}
+										<li class="divider"></li>
+										<li class="dropdown-header">{lang key="language"}</li>
+										{foreach $core.languages as $code => $language}
+											{$language_url = str_replace("/{$smarty.const.IA_LANGUAGE}/", "/{$code}/", $smarty.const.IA_SELF)}
+
+											<li><a href="{$language_url}">{$language.title}{if $code == $smarty.const.IA_LANGUAGE} <span class="label label-success">{lang key='active'}</span>{/if}</a></li>
+										{/foreach}
+									{/if}
 								</ul>
 							</li>
 							<li class="dropdown">
@@ -117,7 +127,7 @@
 										{if empty($entry.name)}
 											<li class="divider"></li>
 										{else}
-											<li{if $core.page.info.name == $entry.name} class="active"{/if}><a href="{$entry.url}"{if $entry.attr} {$entry.attr}{/if}>{$entry.title}</a></li>
+											<li{if $core.page.info.name == $entry.name} class="active"{/if}><a href="{$entry.url}"{if $entry.attr} {$entry.attr}{/if}><span class="fa fa-{$entry.name}"></span> {$entry.title}</a></li>
 										{/if}
 									{/foreach}
 								</ul>
@@ -148,27 +158,15 @@
 								<ul class="dropdown-menu pull-right">
 									{if !empty($core.config.display_feedbacks)}
 										<li>
-											<a data-toggle="modal" href="#feedback-modal">Submit feedback</a>
+											<a data-toggle="modal" href="#feedback-modal"><span class="fa fa-commenting-o"></span> Submit feedback</a>
 										</li>
 									{/if}
-									<li><a href="https://www.subrion.com/desk/" target="_blank">Helpdesk</a></li>
-									<li><a href="https://subrion.org/forums/" target="_blank">User forums</a></li>
-									<li><a href="https://github.com/intelliants/subrion" target="_blank">Github</a></li>
-									<li><a href="https://dev.subrion.org/projects/subrion-cms/wiki" target="_blank">Wiki</a></li>
+									<li><a href="https://www.subrion.com/desk/" target="_blank"><span class="fa fa-support"></span> Helpdesk</a></li>
+									<li><a href="https://subrion.org/forums/" target="_blank"><span class="fa fa-comments-o"></span> User forums</a></li>
+									<li><a href="https://github.com/intelliants/subrion" target="_blank"><span class="fa fa-github"></span> Github</a></li>
+									<li><a href="https://dev.subrion.org/projects/subrion-cms/wiki" target="_blank"><span class="fa fa-wikipedia-w"></span> Wiki</a></li>
 								</ul>
 							</li>
-							{if count($core.languages) > 1}
-								<li class="dropdown">
-									<a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="fa fa-flag"></i></a>
-									<ul class="dropdown-menu pull-right">
-										{foreach $core.languages as $code => $language}
-											{$language_url = str_replace("/{$smarty.const.IA_LANGUAGE}/", "/{$code}/", $smarty.const.IA_SELF)}
-
-											<li><a href="{$language_url}">{$language.title}{if $code == $smarty.const.IA_LANGUAGE} <span class="label label-success">{lang key='active'}</span>{/if}</a></li>
-										{/foreach}
-									</ul>
-								</li>
-							{/if}
 							<li class="navbar-nav__user">
 								<a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/" title="{lang key='edit'}">
 									{ia_image file=$member.avatar alt=$member.fullname|default:$member.username gravatar=true email=$member.email}
