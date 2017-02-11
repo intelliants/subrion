@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-class iaBlog extends abstractPlugin
+class iaBlog extends abstractModuleAdmin
 {
 	const ALIAS_SUFFIX = '.html';
 
@@ -35,7 +35,7 @@ class iaBlog extends abstractPlugin
 	public $dashboardStatistics = true;
 
 
-	public function getDashboardStatistics()
+	public function getDashboardStatistics($defaultProcessing = true)
 	{
 		$statuses = [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE];
 		$rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status`', self::getTable());

@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-abstract class abstractPackageAdmin extends abstractCore
+abstract class abstractModuleAdmin extends abstractCore
 {
 	protected $_activityLog;
 
@@ -32,7 +32,7 @@ abstract class abstractPackageAdmin extends abstractCore
 
 	protected $_moduleUrl = '';
 
-	protected $_packageName;
+	protected $_moduleName;
 
 	protected $_statuses = [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE];
 
@@ -43,7 +43,7 @@ abstract class abstractPackageAdmin extends abstractCore
 	{
 		if (empty($this->_moduleUrl))
 		{
-			$this->_moduleUrl = $this->getPackageName() . IA_URL_DELIMITER . $this->getItemName() . IA_URL_DELIMITER;
+			$this->_moduleUrl = $this->getModuleName() . IA_URL_DELIMITER . $this->getItemName() . IA_URL_DELIMITER;
 		}
 
 		if ($this->_activityLog)
@@ -83,9 +83,9 @@ abstract class abstractPackageAdmin extends abstractCore
 		parent::init();
 	}
 
-	public function getPackageName()
+	public function getModuleName()
 	{
-		return $this->_packageName;
+		return $this->_moduleName;
 	}
 
 	public function getItemName()
@@ -109,7 +109,7 @@ abstract class abstractPackageAdmin extends abstractCore
 
 		if (is_null($cachedData))
 		{
-			$cachedData = $this->iaDb->row_bind(['id', 'type', 'title', 'url', 'version'], '`name` = :name', ['name' => $this->getPackageName()], 'module');
+			$cachedData = $this->iaDb->row_bind(['id', 'type', 'title', 'url', 'version'], '`name` = :name', ['name' => $this->getModuleName()], 'module');
 
 			$cachedData['url'] = IA_URL . (IA_URL_DELIMITER == $cachedData['url'] ? '' : $cachedData['url']);
 		}

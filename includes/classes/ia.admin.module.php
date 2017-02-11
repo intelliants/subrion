@@ -1570,7 +1570,7 @@ class iaModule extends abstractCore
 				break;
 
 			case 'item':
-				if ($this->_checkPath('packageitems'))
+				if ($this->_checkPath('items'))
 				{
 					$this->itemData['items'][$text] = [
 						'item' => $text,
