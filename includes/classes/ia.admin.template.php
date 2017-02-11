@@ -247,11 +247,11 @@ class iaTemplate extends abstractCore
 				{
 					if (!$exists && $shouldBeExist)
 					{
-						$message = 'Requires the «:extra» :type to be installed. Currently installation is impossible.';
+						$message = 'Requires the «:module» :type to be installed. Currently installation is impossible.';
 					}
 					elseif ($exists && !$shouldBeExist)
 					{
-						$message = 'The currently installed :type «:extra» is not compatible with the template. Installation impossible.';
+						$message = 'The currently installed :type «:module» is not compatible with the template. Installation impossible.';
 					}
 					if (isset($message))
 					{
