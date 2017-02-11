@@ -498,7 +498,7 @@ SQL;
 		return [$title, $content, $metaDescription, $metaKeywords];
 	}
 
-	private function _saveMultilingualData($pageName, $extras)
+	private function _saveMultilingualData($pageName, $module)
 	{
 		foreach ($this->_iaCore->languages as $iso => $language)
 		{
@@ -511,7 +511,7 @@ SQL;
 					$value = $_POST[$key][$iso];
 					utf8_is_valid($value) || $value = utf8_bad_replace($value);
 
-					iaLanguage::addPhrase($phraseKey, $value, $iso, $extras, iaLanguage::CATEGORY_PAGE, true);
+					iaLanguage::addPhrase($phraseKey, $value, $iso, $module, iaLanguage::CATEGORY_PAGE, true);
 				}
 			}
 		}

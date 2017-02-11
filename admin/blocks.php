@@ -109,7 +109,6 @@ class iaBackendController extends iaAbstractControllerBackend
 	WHERE :where :order
 	LIMIT :start, :limit
 SQL;
-
 		$sql = iaDb::printf($sql, [
 			'prefix' => $this->_iaDb->prefix,
 			'table_blocks' => $this->getTable(),

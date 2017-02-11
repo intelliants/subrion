@@ -2656,6 +2656,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('suffix','This text is added to Title on every page.','tooltip'),
 
 ('timezone','Select your server timezone.','tooltip'),
+('slug_literal','It\s recommended to start your slug with letters.','tooltip'),
 
 ('underconstruction','This message is shown in case &quot;Display Frontend&quot; option is disabled.','tooltip'),
 ('upgrade_available','Upgrade patch to version :version is available. In order to upgrade please <a href=":url">follow this link</a>.','admin'),
