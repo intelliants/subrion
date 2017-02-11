@@ -75,11 +75,11 @@ class iaBackendController extends iaAbstractControllerBackend
 						return iaView::accessDenied();
 					}
 
-					$pluginName = $_POST['name'];
+					$moduleName = $_POST['name'];
 
 					return ('uninstall' == $action)
-						? $this->_uninstall($pluginName)
-						: $this->_install($pluginName, $action);
+						? $this->_uninstall($moduleName)
+						: $this->_install($moduleName, $action);
 			}
 		}
 
@@ -387,11 +387,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $output;
 	}
 
-	private function _getDocumentation($pluginName)
+	private function _getDocumentation($moduleName)
 	{
 		$result = [];
 
-		if (file_exists($documentationPath = IA_MODULES . $pluginName . IA_DS . 'docs' . IA_DS))
+		if (file_exists($documentationPath = IA_MODULES . $moduleName . IA_DS . 'docs' . IA_DS))
 		{
 			$docs = scandir($documentationPath);
 
@@ -412,7 +412,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 
-			$this->getHelper()->setXml(file_get_contents($this->_folder . $pluginName . IA_DS . iaModule::INSTALL_FILE_NAME));
+			$this->getHelper()->setXml(file_get_contents($this->_folder . $moduleName . IA_DS . iaModule::INSTALL_FILE_NAME));
 			$this->getHelper()->parse();
 
 			$search = [
@@ -427,10 +427,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			];
 
 			$data = $this->getHelper()->itemData;
-			$icon = file_exists(IA_MODULES . $pluginName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
-				? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'plugins/' . $pluginName . '/docs/img/icon.png" alt="' . $data['info']['title'] . '"></td></tr>'
+			$icon = file_exists(IA_MODULES . $moduleName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')
+				? '<tr><td class="plugin-icon"><img src="' . $this->_iaCore->iaView->assetsUrl . 'modules/' . $moduleName . '/docs/img/icon.png" alt="' . $data['info']['title'] . '"></td></tr>'
 				: '';
-			$link = '<tr><td><a href="https://subrion.org/plugin/' . $pluginName . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>';
+			$link = '<tr><td><a href="https://subrion.org/plugin/' . $moduleName . '.html" class="btn btn-block btn-info" target="_blank">Additional info</a><br></td></tr>';
 
 			$replace = [
 				$icon,
@@ -451,35 +451,35 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $result;
 	}
 
-	private function _install($pluginName, $action)
+	private function _install($moduleName, $action)
 	{
 		$result = ['error' => true];
 
 		if (isset($_POST['mode']) && 'remote' == $_POST['mode'])
 		{
-			$pluginsTempFolder = IA_TMP . 'plugins' . IA_DS;
-			is_dir($pluginsTempFolder) || mkdir($pluginsTempFolder);
+			$modulesTempFolder = IA_TMP . 'modules' . IA_DS;
+			is_dir($modulesTempFolder) || mkdir($modulesTempFolder);
 
-			$filePath = $pluginsTempFolder . $pluginName;
+			$filePath = $modulesTempFolder . $moduleName;
 			$fileName = $filePath . '.zip';
 
 			// save remote plugin file
-			iaUtil::downloadRemoteContent(iaUtil::REMOTE_TOOLS_URL . 'install/' . $pluginName . IA_URL_DELIMITER . IA_VERSION, $fileName);
+			iaUtil::downloadRemoteContent(iaUtil::REMOTE_TOOLS_URL . 'install/' . $moduleName . IA_URL_DELIMITER . IA_VERSION, $fileName);
 
 			if (file_exists($fileName))
 			{
 				if (is_writable($this->_folder))
 				{
 					// delete previous folder
-					if (is_dir($this->_folder . $pluginName))
+					if (is_dir($this->_folder . $moduleName))
 					{
-						unlink($this->_folder . $pluginName);
+						unlink($this->_folder . $moduleName);
 					}
 
 					include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
 
 					$pclZip = new PclZip($fileName);
-					$pclZip->extract(PCLZIP_OPT_PATH, IA_MODULES . $pluginName);
+					$pclZip->extract(PCLZIP_OPT_PATH, IA_MODULES . $moduleName);
 
 					$this->_iaCore->iaCache->remove('subrion_plugins');
 				}
@@ -492,7 +492,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaModule = $this->getHelper();
 
-		$installationFile = $this->_folder . $pluginName . IA_DS . iaModule::INSTALL_FILE_NAME;
+		$installationFile = $this->_folder . $moduleName . IA_DS . iaModule::INSTALL_FILE_NAME;
 		if (!file_exists($installationFile))
 		{
 			$result['message'] = iaLanguage::get('file_doesnt_exist');
@@ -569,20 +569,20 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $result;
 	}
 
-	private function _uninstall($pluginName)
+	private function _uninstall($moduleName)
 	{
 		$result = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 
-		if ($this->_iaDb->exists('`name` = :plugin AND `type` = :type AND `removable` = 1', ['plugin' => $pluginName, 'type' => iaModule::TYPE_PLUGIN]))
+		if ($this->_iaDb->exists('`name` = :plugin AND `type` = :type AND `removable` = 1', ['plugin' => $moduleName, 'type' => iaModule::TYPE_PLUGIN]))
 		{
-			$installationFile = $this->_folder . $pluginName . IA_DS . iaModule::INSTALL_FILE_NAME;
+			$installationFile = $this->_folder . $moduleName . IA_DS . iaModule::INSTALL_FILE_NAME;
 
 			if (!file_exists($installationFile))
 			{
 				$result['message'] = [iaLanguage::get('plugin_files_physically_missed')];
 			}
 
-			$this->getHelper()->uninstall($pluginName);
+			$this->getHelper()->uninstall($moduleName);
 
 			is_array($result['message'])
 				? $result['message'][] = iaLanguage::get('plugin_uninstalled')
@@ -592,7 +592,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 			// log this event
 			$iaLog = $this->_iaCore->factory('log');
-			$iaLog->write(iaLog::ACTION_UNINSTALL, ['type' => iaModule::TYPE_PLUGIN, 'name' => $pluginName]);
+			$iaLog->write(iaLog::ACTION_UNINSTALL, ['type' => iaModule::TYPE_PLUGIN, 'name' => $moduleName]);
 			//
 
 			$this->_iaCore->getConfig(true);
