@@ -449,7 +449,6 @@ class iaBackendController extends iaAbstractControllerBackend
 						continue;
 					}
 
-					$this->getHelper()->itemData['screenshots'] = [];
 					$this->getHelper()->itemData['url'] = '';
 
 					$buttons = false;
@@ -478,8 +477,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$data = &$this->getHelper()->itemData;
 					$status = 'notinstall';
-					$preview = [];
-					$screenshots = [];
 					$items = [
 						'readme' => true,
 						'activate' => false,
@@ -495,16 +492,6 @@ class iaBackendController extends iaAbstractControllerBackend
 					if (isset($existPackages[$data['name']]))
 					{
 						$status = $statuses[$data['name']];
-					}
-
-					if ($array = $data['screenshots'])
-					{
-						foreach ($array as $key => $value)
-						{
-							('preview' == $value['type'])
-								? $preview[] = $value
-								: $screenshots[] = $value;
-						}
 					}
 
 					switch ($status)
@@ -564,9 +551,7 @@ class iaBackendController extends iaAbstractControllerBackend
 						'name' => $data['name'],
 						'buttons' => $buttons,
 						'url' => $data['url'],
-						'preview' => $preview,
 						'logo' => IA_CLEAR_URL . 'modules/' . $data['name'] . '/docs/img/icon.png',
-						'screenshots' => $screenshots,
 						'file' => $file,
 						'items' => $items,
 						'price' => 0,
