@@ -661,9 +661,9 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						if (6 == count($line))
 						{
-							list($key, , $value, $category, $iso, $extras) = $line;
+							list($key, , $value, $category, $iso, $module) = $line;
 							if (empty($key) || 2 != strlen($iso)) continue;
-							iaLanguage::addPhrase($key, $value, $iso, $extras, $category);
+							iaLanguage::addPhrase($key, $value, $iso, $module, $category);
 						}
 					}
 
@@ -672,39 +672,6 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 
 			fclose($fh);
-
-			/*if ('csv' == $format)
-			{
-				if ($csvContent = file($filename))
-				{
-					$array = array();
-
-					foreach ($csvContent as $i=>$row)
-					{
-						if (empty($row)) break;
-
-						$fields = explode('|', trim($row));
-
-						if (count($fields) != 6) break;
-
-						$fields = array_map(array('iaSanitize', 'sql'), $fields);
-
-						$languageCode = isset($fields[4]) ? $fields[4] : null;
-						$array[] = "('" . implode("','", $fields) . "')";
-					}
-
-					if (count($fields) == 6 && strlen($languageCode) == 2)
-					{
-						$error = false;
-
-						$sql = "INSERT INTO `{$iaDb->prefix}language` (`key`, `original`, `value`, `category`, `code`, `module`) VALUES ";
-						$sql .= implode(',', $array);
-						$sql .= ';';
-
-						$iaDb->query($sql);
-					}
-				}
-			}*/
 
 			$messages[] = iaLanguage::get($error ? 'incorrect_file_format' : 'saved');
 		}

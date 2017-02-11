@@ -738,13 +738,13 @@ class iaBackendController extends iaAbstractControllerBackend
 		$this->_iaDb->resetTable();
 	}
 
-	protected function _addPhrase($key, $value, $extras = '', $masterLanguage = null)
+	protected function _addPhrase($key, $value, $module = '', $masterLanguage = null)
 	{
 		foreach ($this->_iaCore->languages as $code => $language)
 		{
 			if ($masterLanguage && $code != $masterLanguage // do not overwrite phrases in other languages if exist
 				&& $this->_iaDb->exists('`key` = :key AND `code` = :code', ['key' => $key, 'code' => $code], iaLanguage::getTable())) continue;
-			iaLanguage::addPhrase($key, $value, $code, $extras, iaLanguage::CATEGORY_COMMON);
+			iaLanguage::addPhrase($key, $value, $code, $module, iaLanguage::CATEGORY_COMMON);
 		}
 	}
 
@@ -786,7 +786,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected function _savePhrases($fieldName, array $fieldData, array $data)
 	{
-		$extras = empty($this->_data['module']) ? '' : $this->_data['module'];
+		$module = empty($this->_data['module']) ? '' : $this->_data['module'];
 		$itemName = $fieldData['item'];
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad');
@@ -802,12 +802,12 @@ class iaBackendController extends iaAbstractControllerBackend
 			$key = sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName);
 			$title = $data['title'][$code];
 			utf8_is_valid($title) || $title = utf8_bad_replace($title);
-			iaLanguage::addPhrase($key, $title, $code, $extras);
+			iaLanguage::addPhrase($key, $title, $code, $module);
 
 			$key = sprintf(iaField::FIELD_TOOLTIP_PHRASE_KEY, $itemName, $fieldName);
 			$tooltip = $data['tooltip'][$code];
 			utf8_is_valid($tooltip) || $tooltip = utf8_bad_replace($tooltip);
-			iaLanguage::addPhrase($key, $tooltip, $code, $extras);
+			iaLanguage::addPhrase($key, $tooltip, $code, $module);
 		}
 
 		if ($this->_values)
@@ -818,7 +818,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			foreach ($this->_values as $key => $phrases)
 			{
 				foreach ($phrases as $iso => $phrase)
-					iaLanguage::addPhrase(sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $key), $phrase, $iso, $extras);
+					iaLanguage::addPhrase(sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $key), $phrase, $iso, $module);
 			}
 		}
 	}
