@@ -293,6 +293,13 @@
       font-size: 12px;
       line-height: 22px;
     }
+
+    .btn {
+
+      &.pull-right {
+        margin-left: 5px;
+      }
+    }
   }
 
   // modifiers
@@ -305,6 +312,6 @@
   }
 
   &--active {
-    border-color: @brand-success;
+    outline: 3px solid fade(@brand-warning, 2%);
   }
 }
