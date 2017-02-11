@@ -80,7 +80,7 @@
 									{access object='admin_page' id='packages' action='install'}
 										<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/install/" href="javascript:;" onclick="installPackage(this,'{$package.name}')" title="{lang key='install'}" class="btn btn-success btn-xs pull-right">{lang key='install'}</a>
 									{/access}
-								{else}
+								{elseif iaCore::STATUS_ACTIVE == $package.status}
 									<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
 								{/if}
 							{elseif $package.remote}
