@@ -24,11 +24,11 @@
  *
  ******************************************************************************/
 
-abstract class abstractPackageFront extends abstractCore
+abstract class abstractModuleFront extends abstractCore
 {
 	protected $_itemName;
 
-	protected $_packageName;
+	protected $_moduleName;
 
 	protected $_statuses = [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE];
 
@@ -36,9 +36,9 @@ abstract class abstractPackageFront extends abstractCore
 	public $coreSearchOptions = [];
 
 
-	public function getPackageName()
+	public function getModuleName()
 	{
-		return $this->_packageName;
+		return $this->_moduleName;
 	}
 
 	public function getItemName()
@@ -58,12 +58,12 @@ abstract class abstractPackageFront extends abstractCore
 
 	public function makeUrl(array $itemData)
 	{
-		return $this->getInfo($this->getPackageName()) . '#';
+		return $this->getInfo($this->getModuleName()) . '#';
 	}
 
 	public function getInfo($key)
 	{
-		$values = &$this->iaCore->packagesData[$this->getPackageName()];
+		$values = &$this->iaCore->packagesData[$this->getModuleName()];
 
 		return isset($values[$key]) ? $values[$key] : null;
 	}
