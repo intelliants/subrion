@@ -45,7 +45,7 @@ final class iaSystem
 			'iaCore' => 'ia.core',
 			'iaDebug' => 'ia.debug',
 			// plugins/packages
-			'abstractPlugin' => 'ia.base.plugin',
+			'abstractAdmin' => 'ia.base.admin',
 			'abstractModuleAdmin' => 'ia.base.module.admin',
 			'abstractModuleFront' => 'ia.base.module.front',
 			'abstractModuleFrontApiResponder' => 'ia.base.package.front.api',

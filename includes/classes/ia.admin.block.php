@@ -27,7 +27,7 @@
  *
  ******************************************************************************/
 
-class iaBlock extends abstractPlugin
+class iaBlock extends abstractAdmin
 {
 	const TYPE_MENU = 'menu';
 	const TYPE_PHP = 'php';
