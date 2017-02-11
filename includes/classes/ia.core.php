@@ -680,7 +680,7 @@ final class iaCore
 			['name', 'url', 'title'],
 			'`status` = :status AND `name` = :package',
 			['status' => iaCore::STATUS_ACTIVE, 'package' => $package],
-			'module'
+			'modules'
 		);
 
 		return $rows;
