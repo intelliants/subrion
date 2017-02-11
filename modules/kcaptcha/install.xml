@@ -6,7 +6,7 @@
 	<contributor>Intelliants LLC</contributor>
 	<version>4.1.0</version>
 	<date>2017-02-13</date>
-	<category>captchas</category>
+	<category>captcha</category>
 	<compatibility>4.1</compatibility>
 
 	<config group="miscellaneous" name="kcaptcha_divider" type="divider" description="KCAPTCHA">KCAPTCHA</config>

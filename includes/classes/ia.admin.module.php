@@ -2075,7 +2075,7 @@ class iaModule extends abstractCore
 				break;
 
 			case 'lightbox':
-			case 'captchas':
+			case 'captcha':
 				$configName = ('lightbox' == $entryData['category']) ? 'lightbox_name' : 'captcha_name';
 
 				$stmt = iaDb::convertIds($configName, 'name');
