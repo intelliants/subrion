@@ -26,11 +26,24 @@
 
 abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBackend
 {
+	/**
+	 * @var smarty/javascript controller files
+	 */
 	protected $_moduleName;
+
+	/**
+	 * @var php class helper
+	 */
 	protected $_helperName;
 
+	/**
+	 * @var set this value to process $_POST through fields parse
+	 */
 	protected $_itemName;
 
+	/**
+	 * @var array activity log specific settings
+	 */
 	protected $_activityLog;
 
 	protected $_iaField;
@@ -46,7 +59,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
 		if ($this->_itemName)
 		{
-			$this->_path || $this->_path = IA_ADMIN_URL . $this->getModuleName() . IA_URL_DELIMITER . $this->getName() . IA_URL_DELIMITER;
+			$this->_path = IA_ADMIN_URL . $this->getModuleName() . IA_URL_DELIMITER . $this->getName() . IA_URL_DELIMITER;
 			$this->_template = 'form-' . $this->getName();
 		}
 
