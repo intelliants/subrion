@@ -1010,7 +1010,7 @@ SQL;
 					'languages' => $this->iaCore->languages,
 					'masterLanguage' => (array)iaLanguage::getMasterLanguage(),
 					'notifications' => $notifications,
-					'packages' => $this->iaCore->packagesData,
+					'packages' => $this->iaCore->modulesData,
 					'page' => [
 						'breadcrumb' => iaBreadcrumb::render(),
 						'info' => $this->getParams(),

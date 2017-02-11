@@ -133,7 +133,7 @@ class iaDebug
 
 		self::dump($iaCore->requestPath, 'URL Params');
 		self::dump($blocks, 'Blocks List');
-		self::dump($iaCore->packagesData, 'Installed Packages');
+		self::dump($iaCore->modulesData, 'Installed Packages');
 		self::dump($iaCore->getConfig(), 'Configuration Params');
 		self::dump($constants, 'Constants List');
 

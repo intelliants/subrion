@@ -22,7 +22,7 @@ function smarty_function_ia_print_img($params, &$smarty)
 	elseif(isset($params['package']) && $params['package'])
 	{
 		$iaCore = iaCore::instance();
-		$packages = $iaCore->packagesData;
+		$packages = $iaCore->modulesData;
 		$template = $iaCore->iaView->theme;
 		$admin = (isset($params['admin']) && $params['admin']);
 		$design = ($admin ? 'admin/' : $template . '/');

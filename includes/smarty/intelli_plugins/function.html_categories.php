@@ -13,7 +13,7 @@ function smarty_function_html_categories($params)
 	if (isset($params['package']))
 	{
 		$iaCore = iaCore::instance();
-		$urlPrefix = $iaCore->packagesData[$params['package']]['url'];
+		$urlPrefix = $iaCore->modulesData[$params['package']]['url'];
 	}
 	elseif (defined('IA_MODULE_URL'))
 	{

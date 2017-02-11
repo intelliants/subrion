@@ -77,7 +77,7 @@ final class iaCore
 	public $languages = [];
 	public $language = [];
 
-	public $packagesData = [];
+	public $modulesData = [];
 	public $requestPath = [];
 
 
@@ -655,31 +655,31 @@ final class iaCore
 
 	public function setPackagesData($regenerate = false)
 	{
-		if ($this->packagesData && !$regenerate)
+		if ($this->modulesData && !$regenerate)
 		{
-			return $this->packagesData;
+			return $this->modulesData;
 		}
 
 		$rows = $this->iaDb->all(['name', 'url', 'title'], "`type` = 'package' AND `status` = 'active'", null, null, 'modules');
 
-		$packages = [];
+		$modules = [];
 		foreach ($rows as $entry)
 		{
 			$entry['url'] = (parse_url($entry['url'], PHP_URL_SCHEME) ? '' : IA_URL)
 				. ($entry['url'] == IA_URL_DELIMITER ? '' : $entry['url']);
 			$entry['tpl_url'] = IA_CLEAR_URL . 'modules' . IA_URL_DELIMITER . $entry['name'] . IA_URL_DELIMITER . 'templates' . IA_URL_DELIMITER;
-			$packages[$entry['name']] = $entry;
+			$modules[$entry['name']] = $entry;
 		}
 
-		return $this->packagesData = $packages;
+		return $this->modulesData = $modules;
 	}
 
-	public function getModules($package)
+	public function getModules($module)
 	{
 		$rows = $this->iaDb->row_bind(
 			['name', 'url', 'title'],
 			'`status` = :status AND `name` = :package',
-			['status' => iaCore::STATUS_ACTIVE, 'package' => $package],
+			['status' => iaCore::STATUS_ACTIVE, 'package' => $module],
 			'modules'
 		);
 
@@ -796,7 +796,7 @@ final class iaCore
 		return $result;
 	}
 
-	public function factoryModule($name, $package, $type = self::FRONT, $params = null)
+	public function factoryModule($name, $module, $type = self::FRONT, $params = null)
 	{
 		if ('item' == $name && $params)
 		{
@@ -811,13 +811,13 @@ final class iaCore
 
 		if (!isset($this->_classInstances[$class]))
 		{
-			$packageInterface = IA_MODULES . $package . IA_DS . 'includes/classes/ia.base.package' . iaSystem::EXECUTABLE_FILE_EXT;
-			if (is_file($packageInterface))
+			$moduleInterface = IA_MODULES . $module . IA_DS . 'includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
+			if (is_file($moduleInterface))
 			{
-				require_once $packageInterface;
+				require_once $moduleInterface;
 			}
 
-			$fileSize = $this->loadClass($type, $name, $package);
+			$fileSize = $this->loadClass($type, $name, $module);
 			if (false === $fileSize)
 			{
 				return false;
