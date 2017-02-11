@@ -271,6 +271,8 @@ class iaUsers extends abstractCore
 
 	public static function reloadIdentity()
 	{
+		$iaDb = iaCore::instance()->iaDb;
+
 		$sql = <<<SQL
 SELECT u.*, g.`name` `usergroup` 
 	FROM `:prefix_:table_users` u 
@@ -278,8 +280,6 @@ LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`)
 WHERE u.`id` = :id AND u.`status` = ':status' 
 LIMIT 1
 SQL;
-
-		$iaDb = iaCore::instance()->iaDb;
 		$sql = iaDb::printf($sql, [
 			'prefix_' => $iaDb->prefix,
 			'table_users' => self::getTable(),
@@ -564,14 +564,6 @@ SQL;
 
 	public function getAuth($userId, $user = null, $password = null, $remember = false)
 	{
-		$sql = <<<SQL
-SELECT u.*, g.`name` `usergroup` 
-	FROM `:prefix_:table_users` u 
-LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) 
-WHERE :condition 
-LIMIT 1
-SQL;
-
 		if ((int)$userId)
 		{
 			$condition = sprintf('u.`id` = %d', $userId);
@@ -586,6 +578,13 @@ SQL;
 			]);
 		}
 
+		$sql = <<<SQL
+SELECT u.*, g.`name` `usergroup` 
+	FROM `:prefix_:table_users` u 
+LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) 
+WHERE :condition 
+LIMIT 1
+SQL;
 		$sql = iaDb::printf($sql, [
 			'prefix_' => $this->iaDb->prefix,
 			'table_users' => self::getTable(),

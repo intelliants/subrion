@@ -55,7 +55,6 @@ LEFT JOIN `:table_phrases` l ON (`key` = CONCAT('page_title_', p.`name`) AND l.`
 WHERE p.`status` = ':status' AND p.`service` = 0 :extra_where
 ORDER BY l.`value`
 SQL;
-
 		$sql = iaDb::printf($sql, [
 			'table_pages' => self::getTable(true),
 			'table_phrases' => $this->iaDb->prefix . iaLanguage::getTable(),

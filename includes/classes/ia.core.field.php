@@ -166,7 +166,6 @@ WHERE fp.`page_name` = ':page'
 GROUP BY f.`id` 
 ORDER BY f.`order`
 SQL;
-
 		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_fields' => self::getTable(),
@@ -1255,7 +1254,6 @@ SQL;
 	LEFT JOIN `:prefix:table_file_types` ft ON (ft.`id` IN (itft.`file_type_id`))
 	GROUP BY it.`id`
 SQL;
-
 			$sql = iaDb::printf($sql, [
 				'prefix' => $this->iaDb->prefix,
 				'table_image_types' => self::$_tableImageTypes,

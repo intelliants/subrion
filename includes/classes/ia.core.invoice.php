@@ -120,7 +120,6 @@ WHERE t.`member_id` = :member AND i.`address1` != ""
 ORDER BY t.`date_created` DESC 
 LIMIT 1
 SQL;
-
 		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_transactions' => $iaTransaction::getTable(),
