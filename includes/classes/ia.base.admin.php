@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-abstract class abstractPlugin extends abstractCore
+abstract class abstractAdmin extends abstractCore
 {
 
 

@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-class iaBlog extends abstractPlugin
+class iaBlog extends abstractModuleFront
 {
 	const ALIAS_SUFFIX = '.html';
 
@@ -52,7 +52,7 @@ class iaBlog extends abstractPlugin
 		return $result;
 	}
 
-	public function coreSearch($query, $start, $limit)
+	public function coreSearch($stmt, $start, $limit, $order)
 	{
 		$where = '(b.`title` LIKE :query OR b.`body` LIKE :query)';
 		$this->iaDb->bind($where, ['query' => '%' . iaSanitize::sql($query) . '%']);
@@ -92,7 +92,7 @@ SQL;
 		return $this->iaDb->getAll($sql);
 	}
 
-	public function getById($id)
+	public function getById($id, $decorate = true)
 	{
 		$sql = <<<SQL
 SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname`, b.`member_id` 

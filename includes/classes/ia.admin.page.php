@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-class iaPage extends abstractPlugin
+class iaPage extends abstractAdmin
 {
 	protected static $_table = 'pages';
 
