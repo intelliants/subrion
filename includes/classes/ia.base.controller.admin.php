@@ -32,11 +32,29 @@ abstract class iaAbstractControllerBackend
 	protected $_iaCore;
 	protected $_iaDb;
 
+	/**
+	 * @var string smarty/javascript controller files
+	 */
 	protected $_name;
+
+	/**
+	 * @var string table to work with
+	 */
 	protected $_table;
+
+	/**
+	 * @var string URL to be used
+	 */
 	protected $_path;
+
+	/**
+	 * @var string custom smarty template controller
+	 */
 	protected $_template;
 
+	/**
+	 * @var object php class helper
+	 */
 	protected $_helper;
 
 	protected $_gridColumns;
