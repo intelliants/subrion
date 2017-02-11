@@ -63,7 +63,7 @@ abstract class abstractModuleFront extends abstractCore
 
 	public function getInfo($key)
 	{
-		$values = &$this->iaCore->packagesData[$this->getModuleName()];
+		$values = &$this->iaCore->modulesData[$this->getModuleName()];
 
 		return isset($values[$key]) ? $values[$key] : null;
 	}

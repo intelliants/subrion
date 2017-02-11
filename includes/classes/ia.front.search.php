@@ -226,7 +226,7 @@ class iaSearch extends abstractCore
 				'customConfig' => $this->iaCore->getCustomConfig(),
 				'language' => $this->iaCore->languages[$iaView->language],
 				'languages' => $this->iaCore->languages,
-				'packages' => $this->iaCore->packagesData,
+				'packages' => $this->iaCore->modulesData,
 				'page' => [
 					'info' => $iaView->getParams(),
 					'name' => $iaView->name(),
