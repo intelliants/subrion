@@ -213,7 +213,7 @@ switch ($step)
 		$directory = opendir($templatesFolder);
 		while ($file = readdir($directory))
 		{
-			if (substr($file, 0, 1) != '.' && 'common' != $file)
+			if (substr($file, 0, 1) != '.' && '_common' != $file)
 			{
 				if (is_dir($templatesFolder . $file))
 				{
