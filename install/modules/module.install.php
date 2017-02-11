@@ -136,7 +136,7 @@ switch ($step)
 			['tmp' . IA_DS, '', true],
 			['uploads' . IA_DS, '', true],
 			['backup' . IA_DS, ' (optional)', false],
-			['plugins' . IA_DS, ' (optional)', false],
+			['modules' . IA_DS, ' (optional)', false],
 			['includes' . IA_DS . 'config.inc.php', ' (optional)', false],
 		];
 
@@ -512,10 +512,10 @@ HTML;
 
 				if (!$error && $builtinPlugins)
 				{
-					$pluginsFolder = IA_HOME . 'modules' . IA_DS;
+					$modulesFolder = IA_HOME . 'modules' . IA_DS;
 					foreach ($builtinPlugins as $pluginName)
 					{
-						$installationFile = file_get_contents($pluginsFolder . $pluginName . IA_DS . iaHelper::INSTALLATION_FILE_NAME);
+						$installationFile = file_get_contents($modulesFolder . $pluginName . IA_DS . iaHelper::INSTALLATION_FILE_NAME);
 						if ($installationFile !== false)
 						{
 							$iaModuleInstaller = iaHelper::loadCoreClass('module');
