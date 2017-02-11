@@ -89,6 +89,7 @@ class iaBlock extends abstractCore
 	/**
 	 * Insert block
 	 * @param array $blockData
+	 *
 	 * @return bool|int
 	 */
 	public function insert(array $blockData)
