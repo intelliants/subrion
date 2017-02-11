@@ -132,7 +132,6 @@ class iaTemplate extends abstractCore
 								'version' => $this->version,
 								'compatibility' => $this->compatibility,
 								'buttons' => $buttons,
-								'screenshots' => $this->_screenshots,
 								'notes' => $this->getNotes(),
 								'config' => $this->_config,
 								'config_groups' => $this->_configGroups,
@@ -141,6 +140,10 @@ class iaTemplate extends abstractCore
 
 							$templates[$this->name]['logo'] = file_exists(IA_FRONT_TEMPLATES . $this->name . '/docs/img/icon.png')
 								? $this->iaView->assetsUrl . 'templates/' . $this->name . '/docs/img/icon.png'
+								: $this->iaView->assetsUrl . 'admin/templates/default/img/not_available.png';
+
+							$templates[$this->name]['preview'] = file_exists(IA_FRONT_TEMPLATES . $this->name . '/docs/img/preview.jpg')
+								? $this->iaView->assetsUrl . 'templates/' . $this->name . '/docs/img/preview.jpg'
 								: $this->iaView->assetsUrl . 'admin/templates/default/img/not_available.png';
 						}
 						elseif ($file != $this->name)
