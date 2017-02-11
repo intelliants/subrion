@@ -84,7 +84,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		foreach ($itemsList as $name => $package)
 		{
 			$itemName = substr($name, 0, -1);
-
 			switch ($package)
 			{
 				case 'core':
