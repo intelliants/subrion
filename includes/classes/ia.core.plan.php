@@ -86,7 +86,6 @@ SELECT o.`name`, v.`value`
 LEFT JOIN `:prefix:table_options` o ON (v.`option_id` = o.`id`) 
 WHERE v.`plan_id` = :plan
 SQL;
-
 		$sql = iaDb::printf($sql, [
 			'prefix' => $this->iaDb->prefix,
 			'table_option_values' => self::getTableOptionValues(),

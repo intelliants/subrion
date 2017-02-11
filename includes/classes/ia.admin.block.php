@@ -27,7 +27,7 @@
  *
  ******************************************************************************/
 
-class iaBlock extends abstractAdmin
+class iaBlock extends abstractCore
 {
 	const TYPE_MENU = 'menu';
 	const TYPE_PHP = 'php';
@@ -116,7 +116,7 @@ class iaBlock extends abstractAdmin
 
 		$bundle = $this->_fetchBundledData($blockData);
 
-		if ($id = parent::insert($blockData))
+		if ($id = $this->iaDb->insert($blockData, null, self::getTable()))
 		{
 			$this->_saveBundle($id, $blockData, $bundle);
 		}
@@ -133,7 +133,9 @@ class iaBlock extends abstractAdmin
 			unset($itemData['name']);
 		}
 
-		if ($result = parent::update($itemData, $id))
+		$this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
+		$result = (0 == $this->iaDb->getErrorNumber());
+		if ($result)
 		{
 			$this->_saveBundle($id, $itemData, $bundle);
 
@@ -237,8 +239,7 @@ class iaBlock extends abstractAdmin
 
 		$this->iaCore->startHook('beforeBlockDelete', ['block' => &$row]);
 
-		$result = parent::delete($id);
-
+		$result = (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
 		if ($result)
 		{
 			$this->iaDb->delete('`object_type` = :object AND `object` = :id', self::getPagesTable(),
