@@ -1507,7 +1507,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('configuration','Configuration','admin'),
 ('contents','Contents','admin'),
 ('compare','Compare','admin'),
-('compatibility','Min Core Version','admin'),
+('compatibility','Min core','admin'),
 ('complete_inserts','Complete Inserts','admin'),
 ('copy_master_language_to','Copy master language [<b>:lang</b>] to ','admin'),
 ('copy_language','Copy Language','admin'),
