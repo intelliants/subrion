@@ -4,7 +4,7 @@
 		<div class="row">
 			{foreach $packages as $package}
 				<div class="col-md-4">
-					<div class="card card--module{if $package.remote} card--remote{/if}{if iaCore::STATUS_ACTIVE == $package.status} card--active{/if}">
+					<div class="card card--module{if $package.remote} card--remote{/if} card--{$package.status}">
 						<div class="card__item">
 							{if $package.buttons}
 								<div class="card__item__actions">
