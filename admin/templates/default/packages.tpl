@@ -70,9 +70,12 @@
 						</div>
 
 						<div class="card__actions">
-							<span class="card__actions__info"><b>v{$package.version}</b> &middot; {$package.date|date_format:$core.config.date_format}</span>
+							<span class="card__actions__info"><span class="fa fa-tag"></span> <b>v{$package.version}</b> &middot; {$package.date|date_format:$core.config.date_format}</span>
 
 							{if $package.buttons}
+								{if $package.items.activate}
+									<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='deactivated'}</span>
+								{/if}
 								{if $package.items.install}
 									{access object='admin_page' id='packages' action='install'}
 										<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/install/" href="javascript:;" onclick="installPackage(this,'{$package.name}')" title="{lang key='install'}" class="btn btn-success btn-xs pull-right">{lang key='install'}</a>
@@ -81,7 +84,7 @@
 									<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
 								{/if}
 							{elseif $package.remote}
-								<a href="{$package.url}" target="_blank" class="btn btn-success btn-xs pull-right">{lang key='buy'} &mdash; ${$package.price}</a>
+								<a href="{$package.url}" target="_blank" class="btn btn-success btn-xs pull-right">{lang key='buy'} ${$package.price}</a>
 								<a href="{$package.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
 							{/if}
 						</div>

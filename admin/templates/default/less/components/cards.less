@@ -200,7 +200,7 @@
   position: relative;
   margin-bottom: 30px;
   background-color: @widget-bg;
-  padding: 15px;
+  padding: 20px;
   .box-shadow(0 1px 5px rgba(0,0,0,.1));
   border-radius: 3px;
   .transition(@card-transition);
@@ -210,8 +210,8 @@
 
     &__actions {
       position: absolute;
-      right: 15px;
-      top: 15px;
+      right: 20px;
+      top: 20px;
 
       > .dropdown-toggle {
         font-size: 16px;
@@ -234,6 +234,24 @@
       &.open > .dropdown-toggle {
         background: #f5f5f5;
         border-radius: 50%;
+      }
+
+      .dropdown-menu {
+        margin-top: 10px;
+        right: -6px;
+
+        &::before {
+          display: block;
+          content: '';
+          position: absolute;
+          right: 10px;
+          bottom: 100%;
+          width: 0;
+          height: 0;
+          border-style: solid;
+          border-width: 0 6px 7px 6px;
+          border-color: transparent transparent #fff transparent;
+        }
       }
     }
 
@@ -276,8 +294,8 @@
 
   &__actions {
     .clearfix();
-    padding: 15px 15px 0;
-    margin: 15px -15px 0;
+    padding: 20px 20px 0;
+    margin: 20px -20px 0;
     border-top: 1px solid @widget-header-border;
 
     &__info {
@@ -292,6 +310,11 @@
       float: right;
       font-size: 12px;
       line-height: 22px;
+      margin-left: 5px;
+
+      &--inactive {
+        color: fade(@brand-danger, 50%);
+      }
     }
 
     .btn {
@@ -304,14 +327,10 @@
 
   // modifiers
   &--remote {
-    .opacity(.6);
-
-    &:hover {
-      .opacity(1);
-    }
+    
   }
 
   &--active {
-    outline: 3px solid fade(@brand-warning, 2%);
+    .box-shadow(0 0 0 4px fade(@brand-warning, 20%));
   }
 }

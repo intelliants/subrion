@@ -1363,6 +1363,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('block_visibility_exceptions_hidden','Choose where block will be explicitly <b>hidden</b>','admin'),
 ('blocks','Blocks','admin'),
 ('bug_report','Bug Report','admin'),
+('buy','Buy','admin'),
 ('buy_before_install','You need to purchase this plugin in order to install it.','admin'),
 
 ('cache_dropped','Cache has been dropped.','admin'),
@@ -1541,6 +1542,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('days','days','admin'),
 ('days_ago',':days days ago','admin'),
 ('deactivate','Deactivate package','admin'),
+('deactivated','Deactivated','admin'),
 ('debug_mode','Debug Mode','admin'),
 ('debug_mode_activated','Debug mode activated for you.','admin'),
 ('default_language','Default Language','admin'),
@@ -1706,6 +1708,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('insert','Insert','admin'),
 ('installed_plugins','Installed plugins','admin'),
 ('install','Install','admin'),
+('installed','Installed','admin'),
 ('install_not_deleted','Warning! For safety purposes, please remove the file :file','admin'),
 ('install_upgrade','Install or upgrade','admin'),
 ('installation_extra_requirement_doesnot_exist','The currently installed :type &ldquo;:module&rdquo; is not compatible with the module.','admin'),
