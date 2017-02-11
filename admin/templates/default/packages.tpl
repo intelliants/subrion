@@ -62,7 +62,7 @@
 								<p>{$package.summary}</p>
 								<div class="card__item__chips">
 									{if isset($package.remote) && $package.price > 0}
-										<span class="chip chip--sm chip--accent"><span class="fa fa-star"></span> Premium &mdash; ${$package.price}</span>
+										<span class="chip chip--sm chip--accent"><span class="fa fa-star"></span> Premium</span>
 									{/if}
 									<span class="chip chip--sm chip--default">{lang key='compatibility'}: v{$package.compatibility}</span>
 								</div>
@@ -81,7 +81,8 @@
 									<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
 								{/if}
 							{elseif $package.remote}
-								<a href="{$package.url}" target="_blank" class="btn btn-default btn-xs pull-right" title="{lang key='view'}">{lang key='view'}</a>
+								<a href="{$package.url}" target="_blank" class="btn btn-success btn-xs pull-right">{lang key='buy'} &mdash; ${$package.price}</a>
+								<a href="{$package.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
 							{/if}
 						</div>
 					</div>
