@@ -46,13 +46,12 @@ final class iaSystem
 			'iaDebug' => 'ia.debug',
 			// plugins/packages
 			'abstractPlugin' => 'ia.base.plugin',
-			'abstractPackageAdmin' => 'ia.base.package.admin',
-			'abstractPackageFront' => 'ia.base.package.front',
-			'abstractPackageFrontApiResponder' => 'ia.base.package.front.api',
+			'abstractModuleAdmin' => 'ia.base.module.admin',
+			'abstractModuleFront' => 'ia.base.module.front',
+			'abstractModuleFrontApiResponder' => 'ia.base.package.front.api',
 			// backend controllers
 			'iaAbstractControllerBackend' => 'ia.base.controller.admin',
-			'iaAbstractControllerPluginBackend' => 'ia.base.controller.plugin.admin',
-			'iaAbstractControllerPackageBackend' => 'ia.base.controller.package.admin'
+			'iaAbstractControllerModuleBackend' => 'ia.base.controller.module.admin'
 		];
 
 		if (isset($systemClasses[$className]))

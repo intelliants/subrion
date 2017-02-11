@@ -24,13 +24,26 @@
  *
  ******************************************************************************/
 
-abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBackend
+abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBackend
 {
-	protected $_packageName;
+	/**
+	 * @var smarty/javascript controller files
+	 */
+	protected $_moduleName;
+
+	/**
+	 * @var php class helper
+	 */
 	protected $_helperName;
 
+	/**
+	 * @var set this value to process $_POST through fields parse
+	 */
 	protected $_itemName;
 
+	/**
+	 * @var array activity log specific settings
+	 */
 	protected $_activityLog;
 
 	protected $_iaField;
@@ -42,21 +55,25 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 		$this->_iaField = $this->_iaCore->factory('field');
 
-		$this->_packageName = IA_CURRENT_MODULE;
-		$this->_path = IA_ADMIN_URL . $this->getPackageName() . IA_URL_DELIMITER . $this->getName() . IA_URL_DELIMITER;
-		$this->_template = 'form-' . $this->getName();
+		$this->_moduleName = IA_CURRENT_MODULE;
+
+		if ($this->_itemName)
+		{
+			$this->_path = IA_ADMIN_URL . $this->getModuleName() . IA_URL_DELIMITER . $this->getName() . IA_URL_DELIMITER;
+			$this->_template = 'form-' . $this->getName();
+		}
 
 		if ($this->_activityLog)
 		{
 			is_array($this->_activityLog) || $this->_activityLog = [];
 
-			$this->_activityLog['path'] = $this->getPackageName() . IA_URL_DELIMITER . $this->getName();
+			$this->_activityLog['path'] = $this->getModuleName() . IA_URL_DELIMITER . $this->getName();
 			isset($this->_activityLog['item']) || $this->_activityLog['item'] = substr($this->getItemName(), 0, -1);
 		}
 
 		if ($this->_helperName)
 		{
-			$helperClass = $this->_iaCore->factoryModule($this->_helperName, $this->getPackageName(), iaCore::ADMIN);
+			$helperClass = $this->_iaCore->factoryModule($this->_helperName, $this->getModuleName(), iaCore::ADMIN);
 			$this->setHelper($helperClass);
 
 			$this->getItemName() || $this->_setItemName($helperClass->getItemName());
@@ -68,12 +85,11 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 	public function init()
 	{
-
 	}
 
-	public function getPackageName()
+	public function getModuleName()
 	{
-		return $this->_packageName;
+		return $this->_moduleName;
 	}
 
 	public function getItemName()
@@ -151,7 +167,7 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 	protected function _indexPage(&$iaView)
 	{
-		$iaView->grid('_IA_URL_modules/' . $this->getPackageName() . '/js/admin/' . $this->getName());
+		$iaView->grid('_IA_URL_modules/' . $this->getModuleName() . '/js/admin/' . $this->getName());
 	}
 
 	protected function _assignValues(&$iaView, array &$entryData)
@@ -261,7 +277,14 @@ abstract class iaAbstractControllerPackageBackend extends iaAbstractControllerBa
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
 	{
-		list($entry, , $this->_messages) = $this->_iaField->parsePost($this->getItemName(), $entry);
+		if ($this->_itemName)
+		{
+			list($entry, , $this->_messages) = $this->_iaField->parsePost($this->getItemName(), $entry);
+		}
+		else
+		{
+			$entry = array_merge($entry, $data);
+		}
 
 		return empty($this->_messages);
 	}

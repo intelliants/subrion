@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-abstract class abstractPackageFrontApiResponder extends abstractPackageFront
+abstract class abstractModuleFrontApiResponder extends abstractModuleFront
 {
 	protected $_request;
 	protected $_response;
