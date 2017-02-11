@@ -2024,6 +2024,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('uninstall','Uninstall','admin'),
 ('unique_name','Name value should be unique. Only latin letters, underscores, and digits are allowed.','admin'),
+('update_available','Update available','admin'),
 ('upgrade_completed','MySQL dump file has been imported.','admin'),
 ('upload_plugin_error','Plugins directory is not writable.','admin'),
 ('upload_template_error','Templates directory is not writable.','admin'),

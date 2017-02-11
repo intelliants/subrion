@@ -1,4 +1,80 @@
-<div class="plates plates--templates">
+<div class="cards">
+	<div class="row">
+		{foreach $templates as $template}
+			<div class="col-md-4">
+				<div class="card card--template{if isset($template.remote)} card--remote{/if}{if $template.name == $tmpl} card--active{/if}">
+					<div class="card__image">
+						
+					</div>
+					<div class="card__item">
+						<div class="card__item__image">
+							{if !isset($template.remote)}
+								<img src="{$template.logo}" alt="{$template.title}">
+							{else}
+								<img src="{$template.logo}" alt="{$template.title}">
+							{/if}
+						</div>
+						<div class="card__item__body">
+							<h4>{$template.title}</h4>
+							<p>{$template.description}</p>
+							<div class="card__item__chips">
+								{if isset($template.remote) && $template.price > 0}
+									<span class="chip chip--warning"><span class="fa fa-star"></span> Premium</span>
+								{/if}
+								<span class="chip chip--default">{lang key='compatibility'}: v{$template.compatibility}</span>
+							</div>
+						</div>
+					</div>
+					<div class="card__actions">
+						<span class="card__actions__info">
+							<span class="fa fa-tag"></span> <b>v{$template.version}</b> &middot; {$template.date|date_format:$core.config.date_format}
+						</span>
+
+						{if $template.buttons}
+							<form method="post" class="pull-right">
+								{preventCsrf}
+								<input type="hidden" name="template" value="{$template.name}">
+								{if $template.name != $tmpl}
+									<button type="submit" name="install" class="btn btn-success btn-xs"><i class="i-checkmark"></i> {lang key='set_as_default_template'}</button>
+								{else}
+									<button type="button" class="btn btn-warning btn-xs js-reinstall"><i class="i-loop"></i></button>
+									{if $template.config_groups}
+										<a href="{$smarty.const.IA_ADMIN_URL}configuration/{$template.config_groups['Template'].name}/" class="btn btn-xs btn-default" title="{lang key='go_to_config'}"><i class="i-cog"></i></a>
+									{/if}
+								{/if}
+								<a href="#" rel="{$template.name}" class="btn btn-xs btn-default js-cmd-info" title="{lang key='details'}"><i class="i-info"></i></a>
+								{* @FIXME: this should be processed correctly
+								{if $template.name != $tmpl}
+									<a href="{$smarty.const.IA_URL}index/?preview={$template.name}" class="btn btn-xs btn-default js-preview" title="{lang key='preview'}" target="_blank"><i class="i-eye"></i></a>
+								{/if}
+								*}
+							</form>
+						{elseif isset($template.remote)}
+							{if $template.price > 0}
+								<a href="{$template.url}" class="btn btn-default btn-xs" target="_blank" title="{lang key='view'}"><i class="i-eye"></i> {lang key='view'}</a>
+							{else}
+								<form method="post" class="clearfix">
+									{preventCsrf}
+									<button type="submit" name="download" value="{$template.name}" class="btn btn-success btn-xs"><i class="i-box-add"></i> {lang key='download'}</button>
+									<a href="{$template.url}" class="btn btn-default btn-xs" target="_blank" title="{lang key='preview'}"><i class="i-eye"></i></a>
+								</form>
+							{/if}
+						{else}
+							<a href="#" rel="{$template.name}" class="btn btn-default btn-xs js-cmd-info pull-right" title="{lang key='details'}"><i class="i-info"></i></a>
+						{/if}
+					</div>
+				</div>
+			</div>
+
+			{if $template@iteration % 3 == 0}
+				</div>
+				<div class="row">
+			{/if}
+		{/foreach}
+	</div>
+</div>
+
+<div class="plates plates--templates hidden">
 	<div class="row">
 		{foreach $templates as $template}
 			<div class="col col-lg-3">

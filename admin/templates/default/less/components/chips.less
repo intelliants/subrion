@@ -7,8 +7,13 @@
   color: fade(@text-color, 50%);
   border-radius: 12px;
 
-  &--accent {
-    background: @brand-warning;
-    color: #fff;
+  &--warning {
+    background: fade(@brand-warning, 20%);
+    color: @brand-warning;
+  }
+
+  &--success {
+    background: fade(@brand-success, 20%);
+    color: @brand-success;
   }
 }

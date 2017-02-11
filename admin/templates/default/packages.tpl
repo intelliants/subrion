@@ -1,6 +1,6 @@
 {if $packages}
 	<input type="hidden" id="js-default-package-value" value="{$core.config.default_package}">
-	<div class="cards cards--templates">
+	<div class="cards">
 		<div class="row">
 			{foreach $packages as $package}
 				<div class="col-md-4">
@@ -61,16 +61,23 @@
 								<h4>{$package.title}</h4>
 								<p>{$package.summary}</p>
 								<div class="card__item__chips">
-									{if isset($package.remote) && $package.price > 0}
-										<span class="chip chip--sm chip--accent"><span class="fa fa-star"></span> Premium</span>
+									{if $package.buttons}
+										{if $package.items.upgrade}
+											<span class="chip chip--success"><span class="fa fa-arrow-circle-o-up"></span> {lang key='update_available'}</span>
+										{/if}
 									{/if}
-									<span class="chip chip--sm chip--default">{lang key='compatibility'}: v{$package.compatibility}</span>
+									{if isset($package.remote) && $package.price > 0}
+										<span class="chip chip--warning"><span class="fa fa-star"></span> Premium</span>
+									{/if}
+									<span class="chip chip--default">{lang key='compatibility'}: v{$package.compatibility}</span>
 								</div>
 							</div>
 						</div>
 
 						<div class="card__actions">
-							<span class="card__actions__info"><span class="fa fa-tag"></span> <b>v{$package.version}</b> &middot; {$package.date|date_format:$core.config.date_format}</span>
+							<span class="card__actions__info">
+								<span class="fa fa-tag"></span> <b>v{$package.version}</b> &middot; {$package.date|date_format:$core.config.date_format}
+							</span>
 
 							{if $package.buttons}
 								{if $package.items.activate}
