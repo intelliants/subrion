@@ -9,7 +9,7 @@
 							{if $package.buttons}
 								<div class="card__item__actions">
 									<a href="#" class="dropdown-toggle" type="button" data-toggle="dropdown"><span class="fa fa-ellipsis-v"></span></a>
-									<ul class="dropdown-menu dropdown-menu-right has-icons" aria-labelledby="dropdownMenu2">
+									<ul class="dropdown-menu dropdown-menu-right has-icons">
 										{if $package.items.readme}
 											<li><a href="javascript:;" onclick="readme('{$package.name}')"><span class="fa fa-info-circle"></span> {lang key='documentation'}</a></li>
 										{/if}

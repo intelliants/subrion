@@ -1855,6 +1855,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('package_activated','Package activated.','admin'),
 ('package_deactivated','Package deactivated.','admin'),
 ('package_error','You have to choose at least one package.','admin'),
+('package_required','Package required','admin'),
 ('package_updated','Package updated.','admin'),
 ('package_version','Package Version','admin'),
 ('packages_avail','Available Packages','admin'),
@@ -1902,6 +1903,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('recurring_options','Recurring Options','admin'),
 ('registration_email_resent','Registration email has been re-sent.','admin'),
 ('regular_field','Regular field','admin'),
+('reinstall','Reinstall','admin'),
 ('reinstall_plugin','Reinstall plugin','admin'),
 ('remote','Remote','admin'),
 ('removed','Removed.','admin'),
@@ -2022,6 +2024,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('type_here_to_search','Type here to search','admin'),
 ('type_of_field','Field type','admin'),
 
+('unable_to_install','Unable to install','admin'),
 ('uninstall','Uninstall','admin'),
 ('unique_name','Name value should be unique. Only latin letters, underscores, and digits are allowed.','admin'),
 ('update_available','Update available','admin'),

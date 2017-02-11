@@ -81,7 +81,7 @@ Ext.onReady(function()
 				if ('yes' == btn) {
 					// fake input emulation for simplicity
 					var input = $("<input>").attr("type", "hidden").attr("name", 'reinstall').val("reinstall"),
-						form = $this.closest('form');
+						form = $this.prev('form');
 					form.append($(input));
 					form.submit();
 				}
