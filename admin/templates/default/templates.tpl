@@ -2,13 +2,15 @@
 	<div class="row">
 		{foreach $modules as $module}
 			<div class="col-md-4">
-				<div class="card card--template{if isset($module.remote)} card--remote{/if}{if $module.name == $core.config.tmpl} card--active{/if}">
+				<div class="card card--template{if !empty($module.remote)} card--remote{/if} card--{$module.status}">
 					<div class="card__item">
 						<div class="card__item__actions">
 							<a href="#" class="dropdown-toggle" type="button" data-toggle="dropdown"><span class="fa fa-ellipsis-v"></span></a>
 							<ul class="dropdown-menu dropdown-menu-right has-icons">
-								<li><a href="{$module.url}" target="_blank"><span class="fa fa-info-circle"></span> {lang key='documentation'}</a></li>
-								{if $module.buttons && $module.name == $core.config.tmpl}
+								{if !empty($module.buttons.docs)}
+									<li><a href="{$module.buttons.docs}" target="_blank"><span class="fa fa-info-circle"></span> {lang key='documentation'}</a></li>
+								{/if}
+								{if !empty($module.buttons.reinstall)}
 									<li>
 										<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/reinstall/" class="js-reinstall"><span class="fa fa-refresh"></span> {lang key='reinstall'}</a>
 									</li>
@@ -37,21 +39,17 @@
 							<span class="fa fa-tag"></span> <b>v{$module.version}</b> &middot; {$module.date|date_format:$core.config.date_format}
 						</span>
 
-						{if $module.buttons}
-							{if $module.name != $core.config.tmpl}
-								<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/install/" class="btn btn-success btn-xs pull-right">{lang key='install'}</a>
-							{else}
-								<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
-							{/if}
-						{elseif isset($module.remote)}
-							{if $module.price > 0}
-								<a href="{$module.url}" target="_blank" class="btn btn-success btn-xs pull-right">{lang key='buy'} ${$module.price}</a>
-								<a href="{$module.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
-							{else}
-								<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
-							{/if}
-						{else}
+						{if !empty($module.buttons.install)}
+							<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/install/" class="btn btn-success btn-xs pull-right">{lang key='install'}</a>
+						{elseif !empty($module.buttons.reinstall)}
+							<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
+						{elseif empty($module.buttons.download)}
 							<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='unable_to_install'}</span>
+						{elseif $module.price > 0}
+							<a href="{$module.url}" target="_blank" class="btn btn-success btn-xs pull-right">{lang key='buy'} ${$module.price}</a>
+							<a href="{$module.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
+						{elseif !empty($module.buttons.download)}
+							<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
 						{/if}
 					</div>
 				</div>

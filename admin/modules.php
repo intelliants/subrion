@@ -535,33 +535,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$this->getHelper()->itemData['url'] = '';
 
-					$buttons = false;
-
-					$version = explode('-', $this->getHelper()->itemData['compatibility']);
-					if (!isset($version[1]))
-					{
-						if (version_compare($version[0], IA_VERSION, '<='))
-						{
-							$buttons = true;
-						}
-					}
-					else
-					{
-						if (version_compare($version[0], IA_VERSION, '<=')
-							&& version_compare($version[1], IA_VERSION, '>='))
-						{
-							$buttons = true;
-						}
-					}
-
-					if (false === $buttons)
-					{
-						$this->getHelper()->itemData['compatibility'] = $this->getHelper()->itemData['compatibility'] . ' ' . iaLanguage::get('incompatible');
-					}
-
 					$data = &$this->getHelper()->itemData;
+
+					$compatible = $this->_checkCompatibiltiy($this->getHelper()->itemData['compatibility']);
+
 					$status = 'notinstall';
-					$items = [
+					$buttons = [
 						'readme' => true,
 						'activate' => false,
 						'set_default' => false,
@@ -582,17 +561,17 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						case 'install':
 						case 'active':
-							$items['deactivate'] = true;
-							$items['set_default'] = true;
+							$buttons['deactivate'] = true;
+							$buttons['set_default'] = true;
 
 							if (is_dir($this->_folder . $file . IA_DS . 'includes' . IA_DS . 'dumps'))
 							{
-								$items['import'] = true;
+								$buttons['import'] = true;
 							}
 
 							if ($extraConfig = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`module` = :name ORDER BY `order` ASC', ['name' => $data['name']], iaCore::getConfigTable()))
 							{
-								$items['config'] = [
+								$buttons['config'] = [
 									'url' => $extraConfig['config_group'],
 									'anchor' => $extraConfig['name']
 								];
@@ -600,25 +579,27 @@ class iaBackendController extends iaAbstractControllerBackend
 
 							if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', ['name' => $data['name'] . '_manage'], 'admin_pages'))
 							{
-								$items['manage'] = $alias;
+								$buttons['manage'] = $alias;
 							}
 
-							if ($buttons && version_compare($data['info']['version'], $existPackages[$data['name']], '>')
-							)
+							if ($compatible && version_compare($data['info']['version'], $existPackages[$data['name']], '>'))
 							{
-								$items['upgrade'] = true;
+								$buttons['upgrade'] = true;
 							}
+
+							$buttons['reinstall'] = true;
 
 							break;
 
 						case 'inactive':
-							$items['activate'] = true;
-							$items['uninstall'] = true;
+
+							$buttons['activate'] = true;
+							$buttons['uninstall'] = true;
 
 							break;
 
 						case 'notinstall':
-							$items['install'] = true;
+							$buttons['install'] = true;
 					}
 
 					$moduleNames[] = $data['name'];
@@ -637,7 +618,6 @@ class iaBackendController extends iaAbstractControllerBackend
 						'url' => $data['url'],
 						'logo' => IA_CLEAR_URL . 'modules/' . $data['name'] . '/docs/img/icon.png',
 						'file' => $file,
-						'items' => $items,
 						'price' => 0,
 						'status' => $status,
 						'date_updated' => ($status != 'notinstall') ? $dates[$data['name']] : false,
@@ -1204,9 +1184,14 @@ class iaBackendController extends iaAbstractControllerBackend
 								// exclude installed templates
 								if (!array_key_exists($templateInfo['name'], $templates))
 								{
+									$buttons['docs'] = 'https://subrion.org/template/' . $templateInfo['name'] . '.html';
+									$buttons['download'] = true;
+
 									$templateInfo['date'] = gmdate(iaDb::DATE_FORMAT, $templateInfo['date']);
-									$templateInfo['buttons'] = '';
+									$templateInfo['buttons'] = $buttons;
 									$templateInfo['notes'] = [];
+									$templateInfo['price'] = '';
+									$templateInfo['status'] = 'notinstall';
 									$templateInfo['remote'] = true;
 
 									$remoteTemplates[] = $templateInfo;
@@ -1241,7 +1226,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _getLocalTemplates()
 	{
-		$templates = [];
+		$modules = [];
 
 		$directory = opendir(IA_FRONT_TEMPLATES);
 		while ($file = readdir($directory))
@@ -1261,24 +1246,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
 						if ($file == $moduleData['name'])
 						{
-							$buttons = [];
-							if (!$this->getHelper()->getNotes())
-							{
-								$version = explode('-', $moduleData['compatibility']);
+							$compatible = $this->_checkCompatibiltiy($moduleData['compatibility']);
 
-								if (!isset($version[1]))
-								{
-									$buttons = (bool)version_compare($version[0], IA_VERSION, '>=');
-								}
-								else
-								{
-									if (version_compare($version[0], IA_VERSION, '>=') && version_compare($version[1], IA_VERSION, '<='))
-									{
-										$buttons = true;
-									}
-								}
-							}
-							$module['compatible'] = false;
+							$buttons['reinstall'] = $this->_iaCore->get('tmpl') == $file;
+							$buttons['install'] = $compatible && !$buttons['reinstall'];
+							$buttons['docs'] = 'https://subrion.org/template/' . $moduleData['name'] . '.html';
 
 							$module = [
 								'name' => $moduleData['name'],
@@ -1289,12 +1261,14 @@ class iaBackendController extends iaAbstractControllerBackend
 								'summary' => $moduleData['info']['summary'],
 								'version' => $moduleData['info']['version'],
 								'compatibility' => $moduleData['compatibility'],
-								'compatible' => (bool)($buttons === []),
+								'compatible' => $compatible,
 								'buttons' => $buttons,
+								'status' => $buttons['reinstall'] ? iaCore::STATUS_ACTIVE : '',
+								'remote' => false,
+								'price' => '',
 								'notes' => $this->getHelper()->getNotes(),
 								'config' => $moduleData['config'],
 								'config_groups' => $moduleData['config_groups'],
-								'url' => 'https://subrion.org/template/' . $moduleData['name'] . '.html',
 								'logo' => IA_CLEAR_URL . 'templates/' . $moduleData['name'] . '/docs/img/icon.png',
 							];
 
@@ -1311,5 +1285,22 @@ class iaBackendController extends iaAbstractControllerBackend
 		closedir($directory);
 
 		return $modules;
+	}
+
+	private function _checkCompatibiltiy($compatibility)
+	{
+		$result = false;
+
+		$version = explode('-', $compatibility);
+		if (!isset($version[1]))
+		{
+			$result = (bool)version_compare($version[0], IA_VERSION, '<=');
+		}
+		elseif (version_compare($version[0], IA_VERSION, '<=') && version_compare($version[1], IA_VERSION, '>='))
+		{
+			$result = true;
+		}
+
+		return $result;
 	}
 }

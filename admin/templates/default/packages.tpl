@@ -79,6 +79,19 @@
 								<span class="fa fa-tag"></span> <b>v{$package.version}</b> &middot; {$package.date|date_format:$core.config.date_format}
 							</span>
 
+							{if !empty($module.buttons.install)}
+								<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/install/" class="btn btn-success btn-xs pull-right">{lang key='install'}</a>
+							{elseif !empty($module.buttons.reinstall)}
+								<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
+							{elseif empty($module.buttons.download)}
+								<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='unable_to_install'}</span>
+							{elseif $module.price > 0}
+								<a href="{$module.url}" target="_blank" class="btn btn-success btn-xs pull-right">{lang key='buy'} ${$module.price}</a>
+								<a href="{$module.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
+							{elseif !empty($module.buttons.download)}
+								<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
+							{/if}
+
 							{if $package.buttons}
 								{if $package.items.activate}
 									<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='deactivated'}</span>

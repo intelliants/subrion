@@ -102,73 +102,77 @@ function resetUrl(item, packageName)
 {
 	dialog_package('reset', item, packageName);
 }
-function readme(packageName)
-{
-	Ext.Ajax.request(
-	{
-		url: window.location.href + 'documentation.json',
-		method: 'GET',
-		params: {name: packageName},
-		failure: function()
-		{
-			Ext.MessageBox.alert(_t('error_while_doc_tabs'));
-		},
-		success: function(response)
-		{
-			response = Ext.decode(response.responseText);
-			var tabs = response.tabs;
-			var info = response.info;
-
-			if (null != tabs)
-			{
-				var packageTabs = new Ext.TabPanel(
-				{
-					region: 'center',
-					bodyStyle: 'padding: 5px;',
-					activeTab: 0,
-					defaults: {autoScroll: true},
-					items: tabs
-				});
-
-				var packageInfo = new Ext.Panel(
-				{
-					region: 'east',
-					split: true,
-					minWidth: 200,
-					collapsible: true,
-					html: info,
-					bodyStyle: 'padding: 5px;'
-				});
-
-				var win = new Ext.Window(
-				{
-					title: _t('module_documentation'),
-					closable: true,
-					width: 800,
-					height: 550,
-					border: false,
-					plain: true,
-					layout: 'border',
-					items: [packageTabs, packageInfo]
-				});
-
-				win.show();
-			}
-			else
-			{
-				Ext.Msg.show(
-				{
-					title: _t('error'),
-					msg: _t('doc_extra_not_available'),
-					buttons: Ext.Msg.OK,
-					icon: Ext.Msg.ERROR
-				});
-			}
-		}
-	});
-}
 
 Ext.onReady(function() {
+	$('.js-readme').on('click', function(e) {
+		e.preventDefault();
+
+		var module = $(this).data('module');
+
+		Ext.Ajax.request(
+		{
+			url: window.location.href + 'documentation.json',
+			method: 'GET',
+			params: {name: module},
+			failure: function()
+			{
+				Ext.MessageBox.alert(_t('error_while_doc_tabs'));
+			},
+			success: function(response)
+			{
+				response = Ext.decode(response.responseText);
+				var tabs = response.tabs;
+				var info = response.info;
+
+				if (null != tabs)
+				{
+					var packageTabs = new Ext.TabPanel(
+						{
+							region: 'center',
+							bodyStyle: 'padding: 5px;',
+							activeTab: 0,
+							defaults: {autoScroll: true},
+							items: tabs
+						});
+
+					var packageInfo = new Ext.Panel(
+						{
+							region: 'east',
+							split: true,
+							minWidth: 200,
+							collapsible: true,
+							html: info,
+							bodyStyle: 'padding: 5px;'
+						});
+
+					var win = new Ext.Window(
+						{
+							title: _t('module_documentation'),
+							closable: true,
+							width: 800,
+							height: 550,
+							border: false,
+							plain: true,
+							layout: 'border',
+							items: [packageTabs, packageInfo]
+						});
+
+					win.show();
+				}
+				else
+				{
+					Ext.Msg.show(
+						{
+							title: _t('error'),
+							msg: _t('documentation_not_available'),
+							buttons: Ext.Msg.OK,
+							icon: Ext.Msg.ERROR
+						});
+				}
+			}
+		});
+	});
+
 	$('.js-uninstall').click(function(e)
 	{
 		e.preventDefault();
