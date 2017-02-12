@@ -11,46 +11,63 @@
 								<div class="card__item__actions">
 									<a href="#" class="dropdown-toggle" type="button" data-toggle="dropdown"><span class="fa fa-ellipsis-v"></span></a>
 									<ul class="dropdown-menu dropdown-menu-right has-icons">
+										{if !empty($module.buttons.docs)}
+											<li><a href="{$module.buttons.docs}" target="_blank"><span class="fa fa-info-circle"></span> {lang key='documentation'}</a></li>
+										{/if}
+
 										{if !empty($module.buttons.readme)}
 											<li><a href="#" class="js-readme" data-module="{$module.name}"><span class="fa fa-info-circle"></span> {lang key='documentation'}</a></li>
 										{/if}
 
-										{if $module.buttons.config}
+										{if !empty($module.buttons.reinstall)}
+											<li>
+												<a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/reinstall/" class="js-reinstall"><span class="fa fa-refresh"></span> {lang key='reinstall'}</a>
+											</li>
+										{/if}
+
+										{if !empty($module.buttons.config)}
 											<li><a href="{$smarty.const.IA_ADMIN_URL}configuration/{$module.buttons.config.url}/#{$module.buttons.config.anchor}"><span class="fa fa-cog"></span> {lang key='go_to_config'}</a></li>
 										{/if}
-										{if $module.buttons.manage}
+
+										{if !empty($module.buttons.manage)}
 											<li><a href="{$smarty.const.IA_ADMIN_URL}{$module.buttons.manage}"><span class="fa fa-list"></span> {lang key='manage'}</a></li>
 										{/if}
-										{if $module.buttons.import}
+
+										{if !empty($module.buttons.import)}
 											<li><a href="{$smarty.const.IA_ADMIN_URL}database/import/"><span class="fa fa-database"></span> {lang key='import'}</a></li>
 										{/if}
-										{if $module.buttons.set_default}
-											{access object='admin_page' id='packages' action='set_default'}
+
+										{if !empty($module.buttons.set_default)}
+											{access object='admin_page' id=$core.page.name action='set_default'}
 												{if $core.config.default_package != $module.name}
-													<li><a data-url="{$smarty.const.IA_ADMIN_URL}modules/packages/{$module.name}/set_default/" href="javascript:;" onclick="setDefault(this)"><span class="fa fa-refresh"></span> {lang key='set_as_default_package'}</a></li>
+													<li><a data-url="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/set_default/" href="javascript:;" onclick="setDefault(this)"><span class="fa fa-refresh"></span> {lang key='set_as_default_package'}</a></li>
 												{else}
-													<li><a data-url="{$smarty.const.IA_ADMIN_URL}modules/packages/{$module.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$module.name}')"><span class="fa fa-refresh"></span> {lang key='reset_default'}</a></li>
+													<li><a data-url="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$module.name}')"><span class="fa fa-refresh"></span> {lang key='reset_default'}</a></li>
 												{/if}
 											{/access}
 										{/if}
-										{if $module.buttons.upgrade}
-											{access object='admin_page' id='packages' action='upgrade'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$module.name}/upgrade/"><span class="fa fa-arrow-circle-o-up"></span> {lang key='upgrade'}</a></li>
+
+										{if !empty($module.buttons.upgrade)}
+											{access object='admin_page' id=$core.page.name action='upgrade'}
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/upgrade/"><span class="fa fa-arrow-circle-o-up"></span> {lang key='upgrade'}</a></li>
 											{/access}
 										{/if}
-										{if $module.buttons.deactivate}
-											{access object='admin_page' id='packages' action='activate'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$module.name}/deactivate/"><span class="fa fa-power-off"></span> {lang key='deactivate'}</a></li>
+
+										{if !empty($module.buttons.deactivate)}
+											{access object='admin_page' id=$core.page.name action='activate'}
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/deactivate/"><span class="fa fa-power-off"></span> {lang key='deactivate'}</a></li>
 											{/access}
 										{/if}
-										{if $module.buttons.activate}
-											{access object='admin_page' id='packages' action='activate'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$module.name}/activate/"><span class="fa fa-check-circle"></span> {lang key='activate'}</a></li>
+
+										{if !empty($module.buttons.activate)}
+											{access object='admin_page' id=$core.page.name action='activate'}
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/activate/"><span class="fa fa-check-circle"></span> {lang key='activate'}</a></li>
 											{/access}
 										{/if}
-										{if $module.buttons.uninstall}
-											{access object='admin_page' id='packages' action='uninstall'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$module.name}/uninstall/" class="js-uninstall"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
+
+										{if !empty($module.buttons.uninstall)}
+											{access object='admin_page' id=$core.page.name action='uninstall'}
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/uninstall/" class="js-uninstall"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
 											{/access}
 										{/if}
 									</ul>
@@ -64,21 +81,24 @@
 								<p>{$module.summary}</p>
 								<div class="card__item__chips">
 									{if $module.buttons}
-										{if $module.buttons.upgrade}
+										{if !empty($module.buttons.upgrade)}
 											<span class="chip chip--success"><span class="fa fa-arrow-circle-o-up"></span> {lang key='update_available'}</span>
 										{/if}
 									{/if}
+									{foreach $module.notes as $note}
+										<span class="chip chip--danger js-tooltip" data-toggle="tooltip" title="{$note}"><span class="fa fa-warning"></span> {lang key='package_required'}</span>
+									{/foreach}
 									{if isset($module.remote) && $module.price > 0}
 										<span class="chip chip--warning"><span class="fa fa-star"></span> Premium</span>
 									{/if}
-									<span class="chip chip--default">{lang key='compatibility'}: v{$module.compatibility}</span>
+									<span class="chip chip--default">{lang key='compatibility'}: {$module.compatibility}</span>
 								</div>
 							</div>
 						</div>
 
 						<div class="card__actions">
 							<span class="card__actions__info">
-								<span class="fa fa-tag"></span> <b>v{$module.version}</b> &middot; {$module.date|date_format:$core.config.date_format}
+								<span class="fa fa-tag"></span> <b>{$module.version}</b> &middot; {$module.date|date_format:$core.config.date_format}
 							</span>
 
 							{if !empty($module.buttons.install)}
@@ -96,10 +116,6 @@
 								<a href="{$module.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
 							{elseif !empty($module.buttons.download)}
 								<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
-							{/if}
-
-							{if $module.buttons.activate}
-
 							{/if}
 						</div>
 					</div>
