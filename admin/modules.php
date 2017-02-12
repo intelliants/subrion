@@ -1310,8 +1310,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		closedir($directory);
 
-		_v($modules);
-
 		return $modules;
 	}
 }
