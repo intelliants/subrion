@@ -1551,7 +1551,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('display','Display','admin'),
 ('do','Do','admin'),
 ('documentation','Documentation','admin'),
-('doc_extra_not_available','Data for this package is not available.','admin'),
+('documentation_not_available','Data for this module is not available.','admin'),
 ('drag_to_reorder','Drag to re-order','admin'),
 ('dropdown','Dropdown','admin'),
 ('duration','Duration','admin'),

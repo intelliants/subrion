@@ -209,7 +209,7 @@ var helpClick = function(record)
 			}
 			else
 			{
-				intelli.notifFloatBox({msg: _t('doc_extra_not_available'), type: 'error', autohide: true});
+				intelli.notifFloatBox({msg: _t('documentation_not_available'), type: 'error', autohide: true});
 			}
 		}
 	});
