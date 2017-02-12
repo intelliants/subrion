@@ -1,4 +1,14 @@
-function dialog_package(type, item, packageUrl)
+$(function() {
+	$('.js-install-package').on('click', function(e) {
+		e.preventDefault();
+
+		var module = $(this).data('module'),
+			url = $(this).attr('href');
+
+		dialog_package('install', module, url);
+	})
+});
+function dialog_package(type, module, url)
 {
 	intelli.config.default_package = $('#js-default-package-value').val();
 
@@ -8,11 +18,11 @@ function dialog_package(type, item, packageUrl)
 	var formText =
 		'<div class="url_type">' +
 			'<label for="subdomain_type"><input type="radio" value="1" name="type" id="subdomain_type"> '+_t('subdomain_title')+'</label>' +
-			'<div class="url_type_info"><p>' + _t('subdomain_about') + '</p><code>http://</code> <input type="text" value="'+packageUrl+'" name="url[1]" class="common"> <code>.' + location.hostname + '/</code></div>' +
+			'<div class="url_type_info"><p>' + _t('subdomain_about') + '</p><code>http://</code> <input type="text" value="'+module+'" name="url[1]" class="common"> <code>.' + location.hostname + '/</code></div>' +
 		'</div>' +
 		'<div class="url_type">' +
 			'<label for="subdirectory_type"><input type="radio" value="2" name="type"' + (intelli.config.default_package ? ' checked' : '') + ' id="subdirectory_type"> ' + _t('subdirectory_title') + '</label>' +
-			'<div class="url_type_info"><p>' + _t('subdirectory_about') + '</p><code>' + intelli.config.ia_url+'</code> <input type="text" value="'+packageUrl+'" name="url[2]" class="common"> <code>/</code></div>' +
+			'<div class="url_type_info"><p>' + _t('subdirectory_about') + '</p><code>' + intelli.config.ia_url+'</code> <input type="text" value="'+module+'" name="url[2]" class="common"> <code>/</code></div>' +
 		'</div>';
 
 	if (intelli.setupDialog)
@@ -36,7 +46,6 @@ function dialog_package(type, item, packageUrl)
 		}
 		else
 		{
-			window.location = $(item).data('url');
 			return false;
 		}
 	}
@@ -44,11 +53,11 @@ function dialog_package(type, item, packageUrl)
 	{
 		html = '<div class="url_type">' + _t('reset_default_package') + '</div>' + formText;
 	}
-	html = '<form action="' + $(item).data('url') + '" id="package_form">' + html + '</form>';
+	html = '<form action="' + url + '" id="package_form">' + html + '</form>';
 
 	intelli.setupDialog = new Ext.Window(
 	{
-		title: _t('extra_installation'),
+		title: _t('module_installation'),
 		closable: true,
 		html: html,
 		maxWidth: 600,
@@ -84,10 +93,6 @@ function dialog_package(type, item, packageUrl)
 			$('input[type="radio"]:checked', '#package_form').parent().addClass('selected');
 		}
 	});
-}
-function installPackage(item, packageName)
-{
-	dialog_package('install', item, packageName);
 }
 function setDefault(item)
 {
@@ -137,7 +142,7 @@ function readme(packageName)
 
 				var win = new Ext.Window(
 				{
-					title: _t('extra_documentation'),
+					title: _t('module_documentation'),
 					closable: true,
 					width: 800,
 					height: 550,
@@ -164,7 +169,8 @@ function readme(packageName)
 }
 
 Ext.onReady(function() {
-	$('.js-uninstall').click(function(e) {
+	$('.js-uninstall').click(function(e)
+	{
 		e.preventDefault();
 
 		var $this = $(this);

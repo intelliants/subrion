@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<template name="kickstart">
+<module type="template" name="kickstart">
 	<title>Kickstart</title>
 	<summary>Bootstrap 3 developer template</summary>
 	<author>Gleb Surinov</author>
 	<contributor>Intelliants LLC</contributor>
 	<version>1.1.0</version>
 	<date>2016-08-10</date>
-	<compatibility>4.0</compatibility>
+	<compatibility>4.1.0</compatibility>
 
 	<layout>
 		<position menu="1" movable="0">account</position>
@@ -557,4 +557,4 @@ that allows you to build websites for any purpose. Yes, from blog to corporate m
 		<phrase category="frontend" key="back_to_top">Back to top</phrase>
 		<phrase category="frontend" key="admin_dashboard">Admin Dashboard</phrase>
 	</phrases>
-</template>
+</module>

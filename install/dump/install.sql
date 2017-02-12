@@ -847,9 +847,9 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`fil
 (4,'invoices','read','','invoices','invoices/','menu',null,20),
 
 -- EXTENSIONS
-(5,'templates','read','','templates','templates/','menu',null,5),
-(5,'plugins','read','','plugins','plugins/','menu',null,10),
-(5,'packages','read','','packages','packages/','menu',null,15),
+(5,'templates','read','','modules','modules/templates/','menu',null,5),
+(5,'plugins','read','','modules','modules/plugins/','menu',null,10),
+(5,'packages','read','','modules','modules/packages/','menu',null,15),
 (5,'','','','','','menu','xtns_empt',20);
 
 UPDATE `{install:prefix}admin_pages` SET `readonly` = 1 WHERE `name` IN('actions','visual_mode');
@@ -1582,7 +1582,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_contents','Content field is empty.','admin'),
 ('error_filename','Filename field is empty.','admin'),
 ('error_incorrect_dimensions','Set correct image dimensions.','admin'),
-('error_incorrect_format_from_subrion','The plugins are in the incorrect format. Please contact the Subrion team.','admin'),
+('error_incorrect_format_from_subrion','The module files are in the incorrect format. Please contact the Subrion team.','admin'),
 ('error_file_type','You need to set allowed file extensions.','admin'),
 ('error_incorrect_response_from_subrion','No response from subrion.org website. Please try again later or contact the Subrion team.','admin'),
 ('error_install_plugin','There is a problem while installing :plugin plugin. Please contact support team.','admin'),
@@ -1602,11 +1602,11 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('export_tables_incorrect','Incorrect export tables.','admin'),
 ('export_to_excel','Export to Excel','admin'),
 ('extra_actions','Extra actions','admin'),
-('extra_changelog','Changelog','admin'),
-('extra_description','Description','admin'),
-('extra_documentation','Documentation','admin'),
-('extra_installation','Installation','admin'),
-('extra_screenshots','Screenshots','admin'),
+('module_changelog','Changelog','admin'),
+('module_description','Description','admin'),
+('module_documentation','Documentation','admin'),
+('module_installation','Installation','admin'),
+('module_screenshots','Screenshots','admin'),
 
 ('feature_request','New Feature Request','admin'),
 ('featured_end','Featured end','admin'),
@@ -2029,7 +2029,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('unique_name','Name value should be unique. Only latin letters, underscores, and digits are allowed.','admin'),
 ('update_available','Update available','admin'),
 ('upgrade_completed','MySQL dump file has been imported.','admin'),
-('upload_plugin_error','Plugins directory is not writable.','admin'),
+('upload_module_error','Modules directory is not writable.','admin'),
 ('upload_template_error','Templates directory is not writable.','admin'),
 ('upload_writable_permission','Upload folder has no writable permissions.','admin'),
 ('use_real_prefix','Use real tables prefix','admin'),

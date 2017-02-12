@@ -29,14 +29,18 @@ class iaModule extends abstractCore
 	const TYPE_CORE = 'core';
 	const TYPE_PACKAGE = 'package';
 	const TYPE_PLUGIN = 'plugin';
+	const TYPE_TEMPLATE = 'template';
 
 	const ACTION_INSTALL = 'install';
+	const ACTION_REINSTALL = 'reinstall';
 	const ACTION_UNINSTALL = 'uninstall';
 	const ACTION_UPGRADE = 'upgrade';
 
-	const DEPENDENCY_TYPE_PACKAGE = 'package';
-	const DEPENDENCY_TYPE_PLUGIN = 'plugin';
-	const DEPENDENCY_TYPE_TEMPLATE = 'template';
+	const CONFIG_ROLLBACK_DATA = 'tmpl_rollback_data';
+	const CONFIG_LAYOUT_DATA = 'tmpl_layout_data';
+
+	const SETUP_INITIAL = 1;
+	const SETUP_REPLACE = 2;
 
 	const SQL_STAGE_START = 'start';
 	const SQL_STAGE_MIDDLE = 'middle';
@@ -55,6 +59,7 @@ class iaModule extends abstractCore
 	protected $_inTag;
 	protected $_currentPath;
 	protected $_attributes;
+	protected $_section;
 
 	protected $_url;
 	protected $_menuGroups = [];
@@ -82,6 +87,8 @@ class iaModule extends abstractCore
 
 	protected function _resetValues()
 	{
+		$this->error = false;
+
 		$this->itemData = [
 			'type' => self::TYPE_PLUGIN,
 			'name' => '',
@@ -117,6 +124,8 @@ class iaModule extends abstractCore
 			'item_fields' => null,
 			'item_field_groups' => null,
 			'image_types' => null,
+			'layout' => null,
+			'module' => '',
 			'objects' => null,
 			'pages' => [
 				'admin' => null,
@@ -229,11 +238,11 @@ class iaModule extends abstractCore
 				$shouldBeExist = (bool)$dependency['exist'];
 				switch ($dependency['type'])
 				{
-					case self::DEPENDENCY_TYPE_PACKAGE:
-					case self::DEPENDENCY_TYPE_PLUGIN:
+					case self::TYPE_PACKAGE:
+					case self::TYPE_PLUGIN:
 						$exists = $iaItem->isModuleExist($moduleName, $dependency['type']);
 						break;
-					case self::DEPENDENCY_TYPE_TEMPLATE:
+					case self::TYPE_TEMPLATE:
 						$exists = $moduleName == $currentTemplate;
 						break;
 				}
@@ -260,7 +269,7 @@ class iaModule extends abstractCore
 		}
 	}
 
-	public function checkValidity()
+	public function checkValidity($moduleFolder = '')
 	{
 		$requiredFields = ['title', 'version', 'summary', 'author', 'contributor'];
 		$missingFields = [];
@@ -269,6 +278,12 @@ class iaModule extends abstractCore
 		{
 			$this->error = true;
 			$missingFields[] = 'name';
+		}
+		elseif ($moduleFolder && $moduleFolder != $this->itemData['name'])
+		{
+			$this->error = true;
+			$this->_notes[] = sprintf("Folder name does not match module name in install.xml for '%s' module.",
+				!empty($this->itemData['info']['title']) ? $this->itemData['info']['title'] : $moduleFolder);
 		}
 		else
 		{
@@ -290,7 +305,7 @@ class iaModule extends abstractCore
 			}
 			elseif (empty($missingFields))
 			{
-				$this->setMessage('Fatal error: Probably specified file is not XML file or is not acceptable');
+				$this->setMessage('Fatal error: Probably specified file is not XML file or is not acceptable.');
 			}
 			else
 			{
@@ -873,7 +888,7 @@ class iaModule extends abstractCore
 		return true;
 	}
 
-	public function install()
+	public function install($type = self::SETUP_REPLACE)
 	{
 		$iaDb = &$this->iaDb;
 		$this->iaCore->startHook('phpModuleInstallBefore', ['module' => $this->itemData['name']]);
@@ -940,6 +955,26 @@ class iaModule extends abstractCore
 
 		$this->uninstall($this->itemData['name']);
 
+		if (self::TYPE_TEMPLATE == $this->itemData['type'])
+		{
+			if (self::SETUP_REPLACE == $type)
+			{
+				// $templateName = $iaDb->one('value', "`name` = 'tmpl'", iaCore::getConfigTable());
+				$templateName = $this->iaCore->get('tmpl');
+
+				$tablesList = ['hooks', 'blocks', iaLanguage::getTable(), 'pages', iaCore::getConfigTable(),
+					iaCore::getConfigGroupsTable(), iaCore::getCustomConfigTable()];
+
+				$iaDb->cascadeDelete($tablesList, iaDb::convertIds($templateName, 'module'));
+				$iaDb->cascadeDelete($tablesList, iaDb::convertIds($this->itemData['name'], 'module'));
+			}
+
+			$iaDb->update(['value' => $this->itemData['name']], "`name` = 'tmpl'", null, iaCore::getConfigTable());
+			$this->iaCore->set('tmpl', $this->itemData['name'], true);
+
+			$this->iaCore->set(self::CONFIG_LAYOUT_DATA, serialize($this->itemData['layout']), true);
+		}
+
 		if (false !== stristr('update', $this->itemData['name']))
 		{
 			$this->isUpdate = true;
@@ -961,65 +996,16 @@ class iaModule extends abstractCore
 			$iaDb->resetTable();
 		}
 
-		if ($this->itemData['image_types'])
-		{
-			$this->iaCore->factory('field');
+		!empty($this->itemData['positions']) && $this->_processPositions($this->itemData['positions']);
 
-			$iaDb->setTable(iaField::getTableImageTypes());
-
-			foreach ($this->itemData['image_types'] as $entry)
-			{
-				if (!trim($entry['name'])) continue;
-
-				$entry['name'] = strtolower(iaSanitize::paranoid($entry['name']));
-
-				$extensions = explode(',', $entry['extensions']);
-				unset($entry['extensions']);
-
-				if ($id = $iaDb->insert($entry))
-				{
-					foreach ($extensions as $ext)
-					{
-						if (!$ext = trim($ext)) continue;
-
-						$fileTypeId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION,
-							iaDb::convertIds($ext, 'extension'), iaField::getTableFileTypes());
-
-						if ($fileTypeId)
-						{
-							$this->iaDb->insert(['image_type_id' => $id, 'file_type_id' => $fileTypeId],
-								null, iaField::getTableImageTypesFileTypes());
-						}
-					}
-				}
-			}
-
-			$iaDb->resetTable();
-		}
+		!empty($this->itemData['image_types']) && $this->_processImageTypes($this->itemData['image_types']);
 
 		if ($this->itemData['pages']['admin'])
 		{
 			$this->_processAdminPages($this->itemData['pages']['admin']);
 		}
 
-		if ($this->itemData['actions'])
-		{
-			$iaDb->setTable('admin_actions');
-			foreach ($this->itemData['actions'] as $action)
-			{
-				$action['name'] = strtolower(str_replace(' ', '_', $action['name']));
-				if ($action['name'] && !$iaDb->exists('`name` = :name && `module` = :module',
-						['name' => $action['name'], 'module' => $this->itemData['name']]))
-				{
-					$action['order'] = (empty($action['order']) || !is_numeric($action['order']))
-						? $iaDb->getMaxOrder() + 1
-						: $action['order'];
-
-					$iaDb->insert($action);
-				}
-			}
-			$iaDb->resetTable();
-		}
+		!empty($this->itemData['actions']) && $this->_processActions($this->itemData['actions']);
 
 		if ($this->itemData['phrases'])
 		{
@@ -1431,6 +1417,7 @@ class iaModule extends abstractCore
 
 				$tableName = $tablesMapping[$entry['type']];
 				$name = $entry['name'];
+				$type = $entry['type'];
 				$pages = isset($entry['pages']) ? explode(',', $entry['pages']) : [];
 
 				unset($entry['type'], $entry['name'], $entry['pages']);
@@ -1439,7 +1426,7 @@ class iaModule extends abstractCore
 
 				if ($iaDb->update($entry, $stmt, null, $tableName))
 				{
-					if ('field' != $entry['type'] && isset($entry['sticky']))
+					if ('field' != $type && isset($entry['sticky']))
 					{
 						$iaBlock->setVisibility($entryData['id'], $entry['sticky'], $pages);
 					}
@@ -1503,16 +1490,21 @@ class iaModule extends abstractCore
 		$this->_attributes = $attributes;
 		$this->_currentPath[] = $name;
 
+		if ('section' == $this->_inTag && isset($attributes['name']))
+		{
+			$this->_section = $attributes['name'];
+		}
+
 		if ('module' == $this->_inTag && isset($this->_attributes['name']))
 		{
+			$this->itemData['type'] = $this->_attributes['type'];
 			$this->itemData['name'] = $this->_attributes['name'];
-			$this->itemData['type'] = $this->_attributes['type'] == self::TYPE_PLUGIN ? self::TYPE_PLUGIN : self::TYPE_PACKAGE;
 		}
 		// FIXME: used for < 4.1.x compatibility, get rid of it once all plugins are updated
-		elseif (in_array($this->_inTag, [self::TYPE_PACKAGE, self::TYPE_PLUGIN]) && isset($attributes['name']))
+		elseif (in_array($this->_inTag, [self::TYPE_PACKAGE, self::TYPE_PLUGIN, self::TYPE_TEMPLATE]) && isset($attributes['name']))
 		{
+			$this->itemData['type'] = $name;
 			$this->itemData['name'] = $attributes['name'];
-			$this->itemData['type'] = ($name == self::TYPE_PLUGIN) ? self::TYPE_PLUGIN : self::TYPE_PACKAGE;
 		}
 
 		if ('usergroup' == $name)
@@ -1535,10 +1527,12 @@ class iaModule extends abstractCore
 		{
 			$this->itemData['info'][$this->_inTag] = trim($text);
 		}
+
 		if ('compatibility' == $this->_inTag)
 		{
 			$this->itemData[$this->_inTag] = $text;
 		}
+
 		if ('dependency' == $this->_inTag)
 		{
 			$this->itemData['dependencies'][$text] = [
@@ -2022,7 +2016,25 @@ class iaModule extends abstractCore
 						'extensions' => $this->_attr('extensions')
 					];
 				}
+				break;
 
+			case 'position':
+				if ($this->_checkPath('section'))
+				{
+					$this->itemData['layout'][$this->_section][$text] = [
+						'width' => (int)$this->_attr('width', 3),
+						'fixed' => (bool)$this->_attr('fixed', false)
+					];
+				}
+
+				$this->itemData['positions'][] = [
+					'name' => $text,
+					'menu' => $this->_attr('menu', false),
+					'movable' => $this->_attr('movable', true),
+					'pages' => $this->_attr('pages', ''),
+					'access' => $this->_attr('access', null),
+					'default_access' => $this->_attr('default_access', null)
+				];
 		}
 	}
 
@@ -2432,6 +2444,105 @@ class iaModule extends abstractCore
 		$this->iaDb->resetTable();
 	}
 
+	/**
+	 * Process image types
+	 *
+	 * @param array $imageTypes
+	 */
+	protected function _processImageTypes(array $imageTypes)
+	{
+		$this->iaCore->factory('field');
+
+		$this->iaDb->setTable(iaField::getTableImageTypes());
+
+		foreach ($imageTypes as $entry)
+		{
+			if (!trim($entry['name'])) continue;
+
+			$entry['name'] = strtolower(iaSanitize::paranoid($entry['name']));
+
+			$extensions = explode(',', $entry['extensions']);
+			unset($entry['extensions']);
+
+			if ($id = $this->iaDb->insert($entry))
+			{
+				foreach ($extensions as $ext)
+				{
+					if (!$ext = trim($ext)) continue;
+
+					$fileTypeId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION,
+						iaDb::convertIds($ext, 'extension'), iaField::getTableFileTypes());
+
+					if ($fileTypeId)
+					{
+						$this->iaDb->insert(['image_type_id' => $id, 'file_type_id' => $fileTypeId],
+							null, iaField::getTableImageTypesFileTypes());
+					}
+				}
+			}
+		}
+
+		$this->iaDb->resetTable();
+	}
+
+	/**
+	 * Process template positions
+	 *
+	 * @param array $positions positions
+	 */
+	protected function _processPositions(array $positions)
+	{
+		$positionsList = $positionPages = [];
+
+		$this->iaDb->setTable('positions');
+		$this->iaDb->truncate();
+		foreach ($positions as $position)
+		{
+			$positionsList[] = $position['name'];
+
+			$this->iaDb->insert(['name' => $position['name'], 'menu' => (int)$position['menu'], 'movable' => (int)$position['movable']]);
+
+			if (null != $position['default_access'])
+			{
+				$positionPages[] = ['object_type' => 'positions', 'page_name' => '', 'object' => $position['name'], 'access' => (int)$position['default_access']];
+			}
+
+			if ($position['pages'])
+			{
+				foreach (explode(',', $position['pages']) as $pageName)
+					$positionPages[] = ['object_type' => 'positions', 'page_name' => $pageName,
+						'object' => $position['name'], 'access' => (int)$position['access']];
+			}
+		}
+		$this->iaDb->resetTable();
+
+		if ($positionPages)
+		{
+			$this->iaDb->delete("`object_type` = 'positions'", 'objects_pages');
+			foreach ($positionPages as $positionPage)
+				$this->iaDb->insert($positionPage, null, 'objects_pages');
+		}
+	}
+
+	protected function _processActions(array $actions)
+	{
+		$this->iaDb->setTable('admin_actions');
+		foreach ($actions as $action)
+		{
+			$action['name'] = strtolower(str_replace(' ', '_', $action['name']));
+			if ($action['name'] && !$this->iaDb->exists('`name` = :name && `module` = :module',
+					['name' => $action['name'], 'module' => $this->itemData['name']]))
+			{
+				$action['order'] = (empty($action['order']) || !is_numeric($action['order']))
+					? $this->iaDb->getMaxOrder() + 1
+					: $action['order'];
+
+				$this->iaDb->insert($action);
+			}
+		}
+		$this->iaDb->resetTable();
+	}
+
 	protected function _runPhpCode($code)
 	{
 		if (iaSystem::phpSyntaxCheck($code))
@@ -2448,6 +2559,59 @@ class iaModule extends abstractCore
 		foreach ($this->iaCore->languages as $isoCode => $language)
 		{
 			iaLanguage::addPhrase($key, $value, $isoCode, $this->itemData['name'], $category, false);
+		}
+	}
+
+	public function rollback()
+	{
+		$rollbackData = $this->iaCore->get(self::CONFIG_ROLLBACK_DATA);
+		if (empty($rollbackData))
+		{
+			return;
+		}
+		$rollbackData = unserialize($rollbackData);
+		if (!is_array($rollbackData))
+		{
+			return;
+		}
+
+		if (isset($rollbackData['blocks']))
+		{
+			$existPositions = [];
+			if ($this->_positions)
+			{
+				foreach ($this->_positions as $entry)
+				{
+					$existPositions[] = $entry['name'];
+				}
+			}
+		}
+
+		foreach ($rollbackData as $dbTable => $actions)
+		{
+			foreach ($actions as $name => $itemData)
+			{
+				switch ($dbTable)
+				{
+					case 'fields':
+						list($fieldName, $itemName) = explode('-', $name);
+						$stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", ['name' => $fieldName, 'item' => $itemName]);
+						break;
+					case 'blocks': // menus are handled here as well
+						if (isset($itemData['position']))
+						{
+							if (!in_array($itemData['position'], $existPositions))
+							{
+								$itemData['position'] = '';
+								$itemData['status'] = iaCore::STATUS_INACTIVE;
+							}
+						}
+					// BREAK stmt missed intentionally
+					default:
+						$stmt = iaDb::printf("`name` = ':name'", ['name' => $name]);
+				}
+				$this->iaDb->update($itemData, $stmt, null, $dbTable);
+			}
 		}
 	}
 }
