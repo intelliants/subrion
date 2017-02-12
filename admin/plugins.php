@@ -485,7 +485,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 				else
 				{
-					$result['message'] = iaLanguage::get('upload_plugin_error');
+					$result['message'] = iaLanguage::get('upload_module_error');
 				}
 			}
 		}

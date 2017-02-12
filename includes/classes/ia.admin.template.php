@@ -28,8 +28,8 @@ class iaTemplate extends abstractCore
 {
 	const INSTALL_FILE_NAME = 'install.xml';
 
-	const DEPENDENCY_TYPE_PACKAGE = 'package';
-	const DEPENDENCY_TYPE_PLUGIN = 'plugin';
+	const TYPE_PACKAGE = 'package';
+	const TYPE_PLUGIN = 'plugin';
 	const DEPENDENCY_TYPE_TEMPLATE = 'template';
 
 	const CONFIG_ROLLBACK_DATA = 'tmpl_rollback_data';
@@ -235,8 +235,8 @@ class iaTemplate extends abstractCore
 				$shouldBeExist = (bool)$dependency['exist'];
 				switch ($dependency['type'])
 				{
-					case self::DEPENDENCY_TYPE_PACKAGE:
-					case self::DEPENDENCY_TYPE_PLUGIN:
+					case self::TYPE_PACKAGE:
+					case self::TYPE_PLUGIN:
 						$exists = $iaItem->isModuleExist($moduleName, $dependency['type']);
 						break;
 					case self::DEPENDENCY_TYPE_TEMPLATE:

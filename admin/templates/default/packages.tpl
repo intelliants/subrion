@@ -25,30 +25,30 @@
 										{if $package.items.set_default}
 											{access object='admin_page' id='packages' action='set_default'}
 												{if $core.config.default_package != $package.name}
-													<li><a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/set_default/" href="javascript:;" onclick="setDefault(this)"><span class="fa fa-refresh"></span> {lang key='set_as_default_package'}</a></li>
+													<li><a data-url="{$smarty.const.IA_ADMIN_URL}modules/packages/{$package.name}/set_default/" href="javascript:;" onclick="setDefault(this)"><span class="fa fa-refresh"></span> {lang key='set_as_default_package'}</a></li>
 												{else}
-													<li><a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$package.name}')"><span class="fa fa-refresh"></span> {lang key='reset_default'}</a></li>
+													<li><a data-url="{$smarty.const.IA_ADMIN_URL}modules/packages/{$package.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$package.name}')"><span class="fa fa-refresh"></span> {lang key='reset_default'}</a></li>
 												{/if}
 											{/access}
 										{/if}
 										{if $package.items.upgrade}
 											{access object='admin_page' id='packages' action='upgrade'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/upgrade/"><span class="fa fa-arrow-circle-o-up"></span> {lang key='upgrade'}</a></li>
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$package.name}/upgrade/"><span class="fa fa-arrow-circle-o-up"></span> {lang key='upgrade'}</a></li>
 											{/access}
 										{/if}
 										{if $package.items.deactivate}
 											{access object='admin_page' id='packages' action='activate'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/deactivate/"><span class="fa fa-power-off"></span> {lang key='deactivate'}</a></li>
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$package.name}/deactivate/"><span class="fa fa-power-off"></span> {lang key='deactivate'}</a></li>
 											{/access}
 										{/if}
 										{if $package.items.activate}
 											{access object='admin_page' id='packages' action='activate'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/activate/"><span class="fa fa-check-circle"></span> {lang key='activate'}</a></li>
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$package.name}/activate/"><span class="fa fa-check-circle"></span> {lang key='activate'}</a></li>
 											{/access}
 										{/if}
 										{if $package.items.uninstall}
 											{access object='admin_page' id='packages' action='uninstall'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/uninstall/" class="js-uninstall"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$package.name}/uninstall/" class="js-uninstall"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
 											{/access}
 										{/if}
 									</ul>
@@ -85,7 +85,7 @@
 								{/if}
 								{if $package.items.install}
 									{access object='admin_page' id='packages' action='install'}
-										<a data-url="{$smarty.const.IA_ADMIN_URL}packages/{$package.name}/install/" href="javascript:;" onclick="installPackage(this,'{$package.name}')" title="{lang key='install'}" class="btn btn-success btn-xs pull-right">{lang key='install'}</a>
+										<a href="{$smarty.const.IA_ADMIN_URL}modules/packages/{$package.name}/install/" class="btn btn-success btn-xs pull-right js-install-package" data-module="{$package.name}">{lang key='install'}</a>
 									{/access}
 								{elseif iaCore::STATUS_ACTIVE == $package.status}
 									<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>

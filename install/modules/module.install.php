@@ -209,13 +209,12 @@ switch ($step)
 		$template = 'default';
 		$templates = [];
 
-		$templatesFolder = IA_HOME . 'templates/';
-		$directory = opendir($templatesFolder);
+		$directory = opendir(IA_FRONT_TEMPLATES);
 		while ($file = readdir($directory))
 		{
 			if (substr($file, 0, 1) != '.' && '_common' != $file)
 			{
-				if (is_dir($templatesFolder . $file))
+				if (is_dir(IA_FRONT_TEMPLATES . $file))
 				{
 					$templates[] = $file;
 				}
@@ -373,19 +372,19 @@ switch ($step)
 					}
 				}
 
-				$iaTemplate = iaHelper::loadCoreClass('template');
+				$iaModuleInstaller = iaHelper::loadCoreClass('module');
 
 				$templateInstallationFile = IA_HOME . 'templates' . IA_DS . iaHelper::getPost('tmpl', '') . IA_DS . 'install.xml';
-				$iaTemplate->getFromPath($templateInstallationFile);
+				$iaModuleInstaller->getFromPath($templateInstallationFile);
 
-				$iaTemplate->parse();
-				$iaTemplate->check();
+				$iaModuleInstaller->parse();
+				$iaModuleInstaller->checkValidity(iaHelper::getPost('tmpl', ''));
 
-				if ($notes = $iaTemplate->getNotes())
+				if ($notes = $iaModuleInstaller->getNotes())
 				{
 					$error = true;
 					$errorList[] = 'template';
-					$message = sprintf('&quot;%s&quot; template error: %s', $iaTemplate->title, implode('<br>', $notes));
+					$message = sprintf('Template installation error: %s', implode('<br>', $notes));
 				}
 
 				if (!$error)
@@ -503,7 +502,7 @@ HTML;
 
 					iaHelper::cleanUpCacheContents();
 
-					$iaTemplate->install(iaTemplate::SETUP_INITIAL);
+					$iaModuleInstaller->install(iaModule::SETUP_INITIAL);
 
 					// writing it to the system log
 					$iaLog = iaHelper::loadCoreClass('log', 'core');
@@ -512,14 +511,14 @@ HTML;
 
 				if (!$error && $builtinPlugins)
 				{
+					$iaModuleInstaller = iaHelper::loadCoreClass('module');
+
 					$modulesFolder = IA_HOME . 'modules' . IA_DS;
 					foreach ($builtinPlugins as $pluginName)
 					{
 						$installationFile = file_get_contents($modulesFolder . $pluginName . IA_DS . iaHelper::INSTALLATION_FILE_NAME);
 						if ($installationFile !== false)
 						{
-							$iaModuleInstaller = iaHelper::loadCoreClass('module');
-
 							$iaModuleInstaller->setXml($installationFile);
 							$iaModuleInstaller->parse();
 
