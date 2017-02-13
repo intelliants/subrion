@@ -267,24 +267,13 @@
 											<span class="label label-info" data-type="thumbnail" {if $item.imagetype_thumbnail == $imageType.name} style="display: block;"{/if}>{lang key='thumbnail'}</span>
 										</div>
 										<div class="input-group-btn">
-											<button type="button" disabled class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="fa fa-ellipsis-h"></span></button>
+											<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"{if empty($item.image_types) || !in_array($imageType.id, $item.image_types)} disabled{/if}><span class="fa fa-ellipsis-h"></span></button>
 											<ul class="dropdown-menu dropdown-menu-right has-icons">
-												<li><a class="js-set-image-type" data-type="primary" href="#">{lang key='set_as_primary'}</a></li>
-												<li><a class="js-set-image-type" data-type="thumbnail" href="#">{lang key='set_as_thumbnail'}</a></li>
+												<li{if $item.imagetype_primary == $imageType.name} class="disabled"{/if}><a class="js-set-image-type" data-type="primary" href="#">{lang key='set_as_primary'}</a></li>
+												<li{if $item.imagetype_thumbnail == $imageType.name} class="disabled"{/if}><a class="js-set-image-type" data-type="thumbnail" href="#">{lang key='set_as_thumbnail'}</a></li>
 											</ul>
 										</div>
 									</div>
-
-									{*<div class="checkbox">
-										<label><input name="image_types[]" value="{$imageType.id}" data-name="{$imageType.name}" type="checkbox"
-											{if $item.imagetype_primary == $imageType.name} data-type="primary"
-											{elseif $item.imagetype_thumbnail == $imageType.name} data-type="thumbnail"{/if}
-											{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
-											{$imageType.name|escape:'html'} &nbsp; <small>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</small></label>
-										<a href="#" class="label label-info hide js-image-type-primary" data-type="primary">Set as primary</a>
-										<a href="#" class="label label-default hide js-image-type-thumbnail" data-type="thumbnail">Set as thumbnail</a>
-									</div>
-									*}
 								{/foreach}
 							{else}
 								<div class="alert alert-info">{lang key='no_image_types'}</div>
@@ -513,14 +502,26 @@
 						<div class="col col-lg-4">
 							{if $imageTypes}
 								{foreach $imageTypes as $imageType}
-									<div class="checkbox">
-										<label><input name="pic_image_types[]" value="{$imageType.id}" data-name="{$imageType.name}" type="checkbox"
+									<div class="input-group image-type-control">
+										<span class="input-group-addon">
+											<input name="pic_image_types[]" value="{$imageType.id}" data-name="{$imageType.name}" type="checkbox"
 											{if $item.imagetype_primary == $imageType.name} data-type="primary"
 											{elseif $item.imagetype_thumbnail == $imageType.name} data-type="thumbnail"{/if}
 											{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
-											{$imageType.name|escape:'html'} &nbsp; <small>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</small></label>
-										<a href="#" class="label label-info hide js-image-type-primary" data-type="primary">Set as primary</a>
-										<a href="#" class="label label-default hide js-image-type-thumbnail" data-type="thumbnail">Set as thumbnail</a>
+										</span>
+										<div class="form-control-static">
+											{$imageType.name|escape:'html'} <span>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</span>
+
+											<span class="label label-info" data-type="primary" {if $item.imagetype_primary == $imageType.name} style="display: block;"{/if}>{lang key='primary'}</span>
+											<span class="label label-info" data-type="thumbnail" {if $item.imagetype_thumbnail == $imageType.name} style="display: block;"{/if}>{lang key='thumbnail'}</span>
+										</div>
+										<div class="input-group-btn">
+											<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"{if empty($item.image_types) || !in_array($imageType.id, $item.image_types)} disabled{/if}><span class="fa fa-ellipsis-h"></span></button>
+											<ul class="dropdown-menu dropdown-menu-right has-icons">
+												<li{if $item.imagetype_primary == $imageType.name} class="disabled"{/if}><a class="js-set-image-type" data-type="primary" href="#">{lang key='set_as_primary'}</a></li>
+												<li{if $item.imagetype_thumbnail == $imageType.name} class="disabled"{/if}><a class="js-set-image-type" data-type="thumbnail" href="#">{lang key='set_as_thumbnail'}</a></li>
+											</ul>
+										</div>
 									</div>
 								{/foreach}
 							{else}

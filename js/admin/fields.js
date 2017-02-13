@@ -608,15 +608,13 @@ $(function()
 
 	$('input[type="checkbox"]', $imgFieldImageTypesSetup).on('change', function()
 	{
-		var $this = $(this),
-			$btns = $this.closest('.image-type-control').find('.dropdown-toggle');
+		var $this = $(this);
 
-		$this.is(':checked')
-			? $btns.prop('disabled', false)
-			: $btns.prop('disabled', true)
+		$this.closest('.image-type-control').find('.dropdown-toggle').prop('disabled', !$this.is(':checked'))
 	});
 
-	$('.js-set-image-type').click(function(e) {
+	$('.js-set-image-type').click(function(e)
+	{
 		e.preventDefault();
 
 		if ($(this).parent().hasClass('disabled')) {
@@ -624,19 +622,23 @@ $(function()
 		}
 
 		var $this = $(this),
-			type = $this.data('type')
-			$checkbox = $this.closest('.image-type-control').find('input[type="checkbox"]')
+			type = $this.data('type'),
+			$checkbox = $this.closest('.image-type-control').find('input[type="checkbox"]'),
 			$label = $this.closest('.image-type-control').find('span[data-type="' + type + '"]');
 
 		$checkbox.data('type', type);
 
 		var inputName = ('primary' == type) ? 'imagetype_primary' : 'imagetype_thumbnail';
 
-		if ($this.closest('#pictures')) {
+		if ($this.closest('#pictures').length) {
 			inputName = 'pic_' + inputName;
 		}
 
-		$('input[name="' + inputName + '"]').val($checkbox.data('name'));
+		var $input = $('input[name="' + inputName + '"]'),
+			value = $checkbox.data('name');
+
+		$input.val(value);
+		$('input[value="' + value + '"]').not($input).val('');
 
 		$this.parent().addClass('disabled').siblings().removeClass('disabled');
 		$label.show().siblings('.label').hide();
