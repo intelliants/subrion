@@ -12,7 +12,7 @@
 									<a href="#" class="dropdown-toggle" type="button" data-toggle="dropdown"><span class="fa fa-ellipsis-v"></span></a>
 									<ul class="dropdown-menu dropdown-menu-right has-icons">
 										{if !empty($module.buttons.docs)}
-											<li><a href="{$module.buttons.docs}" target="_blank"><span class="fa fa-info-circle"></span> {lang key='documentation'}</a></li>
+											<li><a href="{$module.buttons.docs}" target="_blank"><span class="fa fa-info-circle"></span> {lang key='details'}</a></li>
 										{/if}
 
 										{if !empty($module.buttons.readme)}
@@ -80,10 +80,8 @@
 								<h4>{$module.title}</h4>
 								<p>{$module.summary}</p>
 								<div class="card__item__chips">
-									{if $module.buttons}
-										{if !empty($module.buttons.upgrade)}
-											<span class="chip chip--success"><span class="fa fa-arrow-circle-o-up"></span> {lang key='update_available'}</span>
-										{/if}
+									{if !empty($module.buttons.upgrade)}
+										<span class="chip chip--success"><span class="fa fa-arrow-circle-o-up"></span> {lang key='update_available'}</span>
 									{/if}
 
 									{if !empty($module.notes)}
