@@ -93,28 +93,42 @@ function resetUrl(item, packageName)
 	dialog_package('reset', item, packageName);
 }
 
-var installClick = function(record, action)
-{
+intelli.modules = {
+	url: intelli.config.admin_url + '/modules/',
+	failure: function()
+	{
+		intelli.notifFloatBox({msg: _t('error_saving_changes'), type: 'error', autohide: true});
+	},
+	refresh: function(response)
+	{
+		intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
+
+		if (response.result)
+		{
+			synchronizeAdminMenu('plugins', response.groups);
+		}
+	}
 };
 
 Ext.onReady(function() {
-	$('.js-install-package').on('click', function(e) {
-		e.preventDefault();
-
-		var module = $(this).data('module'),
-			url = $(this).attr('href');
-
-		dialog_package('install', module, url);
-	});
 
 	$('.js-install').on('click', function(e) {
 		e.preventDefault();
 
-		var module = $(this).data('module');
+		var module = $(this).data('module'),
+			type = $(this).data('type'),
+			url = $(this).attr('href');
+
+		if ('packages' == type)
+		{
+			dialog_package('install', module, url);
+
+			return;
+		}
 
 		Ext.Msg.show({
 			title: _t('confirm'),
-			msg: _t('are_you_sure_' + action + '_plugin'),
+			msg: _t('are_you_sure_install_plugin'),
 			buttons: Ext.Msg.YESNO,
 			icon: Ext.Msg.QUESTION,
 			fn: function(btn)
@@ -124,21 +138,14 @@ Ext.onReady(function() {
 					return;
 				}
 
-				var params = {name: record.get('file')};
-				if (Ext.getCmp('modeFilter'))
-				{
-					if ('remote' == Ext.getCmp('modeFilter').getValue())
-					{
-						params.mode = 'remote';
-					}
-				}
+				var params = {name: module, type: type};
 
 				$.ajax({
 					data: params,
-					failure: intelli.plugins.failure,
+					failure: intelli.modules.failure(),
 					type: 'POST',
-					url: intelli.plugins.url + action + '.json',
-					success: intelli.plugins.refresh
+					url: intelli.modules.url + action + '.json',
+					success: intelli.modules.refresh()
 				});
 			}
 		});
@@ -147,7 +154,39 @@ Ext.onReady(function() {
 	$('.js-reinstall').on('click', function(e) {
 		e.preventDefault();
 
-		var module = $(this).data('module');
+		var module = $(this).data('module'),
+			type = $(this).data('type'),
+			url = $(this).attr('href');
+
+		Ext.Msg.show(
+		{
+			title: _t('confirm'),
+			msg: _t('are_you_sure_reinstall_module'),
+			buttons: Ext.Msg.YESNO,
+			icon: Ext.Msg.QUESTION,
+			fn: function(btn)
+			{
+				if ('yes' != btn)
+				{
+					return;
+				}
+
+				if ('templates' == type)
+				{
+					document.location = url;
+					return;
+				}
+
+				$.ajax(
+				{
+					data: {name: module, mode: mode},
+					failure: intelli.plugins.failure,
+					type: 'POST',
+					url: intelli.plugins.url + action + '.json',
+					success: intelli.plugins.refresh
+				});
+			}
+		});
 	});
 
 	$('.js-upgrade').on('click', function(e) {

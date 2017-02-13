@@ -21,7 +21,7 @@
 
 										{if !empty($module.buttons.reinstall)}
 											<li>
-												<a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/reinstall/" class="js-reinstall"><span class="fa fa-refresh"></span> {lang key='reinstall'}</a>
+												<a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/reinstall/" class="js-reinstall" data-module="{$module.name}" data-type="{$core.page.name}"><span class="fa fa-refresh"></span> {lang key='reinstall'}</a>
 											</li>
 										{/if}
 
@@ -105,7 +105,7 @@
 
 							{if !empty($module.buttons.install)}
 								{access object='admin_page' id=$core.page.name action='install'}
-									<a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/install/" class="btn btn-success btn-xs pull-right js-install-package">{lang key='install'}</a>
+									<a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/install/" class="btn btn-success btn-xs pull-right js-install" data-module="{$module.name}" data-type="{$core.page.name}">{lang key='install'}</a>
 								{/access}
 							{elseif !empty($module.buttons.reinstall)}
 								<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
