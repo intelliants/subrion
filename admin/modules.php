@@ -120,13 +120,30 @@ class iaBackendController extends iaAbstractControllerBackend
 		$iaView->display($this->_template);
 	}
 
+	/**
+	 * Process ajax actions
+	 *
+	 * @param $params
+	 *
+	 * @return array
+	 */
 	protected function _gridRead($params)
 	{
-		return (1 == count($this->_iaCore->requestPath) && 'documentation' == $this->_iaCore->requestPath[0])
-			? $this->_getDocumentation($params['name'], $this->_iaCore->iaView)
-			: [];
-	}
+		if (1 == count($this->_iaCore->requestPath) && 'documentation' == $this->_iaCore->requestPath[0])
+		{
+			$result = $this->_getDocumentation($params['name'], $this->_iaCore->iaView);
+		}
+		elseif (1 == count($this->_iaCore->requestPath))
+		{
+			_v($this->_iaCore->requestPath);
+		}
+		else
+		{
+			$result = [];
+		}
 
+		return $result;
+	}
 
 	private function _getDocumentation($moduleName, &$iaView)
 	{
@@ -627,6 +644,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 		}
+		_v($result);
 
 		return [$result, $moduleNames];
 	}

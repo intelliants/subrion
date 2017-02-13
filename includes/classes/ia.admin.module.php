@@ -95,7 +95,6 @@ class iaModule extends abstractCore
 			'info' => [
 				'author' => '',
 				'contributor' => '',
-				'homepage' => '',
 				'date' => '',
 				'summary' => '',
 				'status' => iaCore::STATUS_ACTIVE,
@@ -1524,7 +1523,7 @@ class iaModule extends abstractCore
 
 	public function _parserQuickData($parser, $text)
 	{
-		if (in_array($this->_inTag, ['title', 'summary', 'author', 'contributor', 'homepage', 'version', 'date']))
+		if (in_array($this->_inTag, ['title', 'summary', 'author', 'contributor', 'version', 'date']))
 		{
 			$this->itemData['info'][$this->_inTag] = trim($text);
 		}
@@ -1553,7 +1552,6 @@ class iaModule extends abstractCore
 			case 'summary':
 			case 'author':
 			case 'contributor':
-			case 'homepage':
 			case 'version':
 			case 'date':
 			case 'category':
