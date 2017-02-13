@@ -47,7 +47,7 @@ final class iaSystem
 			// modules
 			'abstractModuleAdmin' => 'ia.base.module.admin',
 			'abstractModuleFront' => 'ia.base.module.front',
-			'abstractModuleFrontApiResponder' => 'ia.base.package.front.api',
+			'abstractModuleFrontApiResponder' => 'ia.base.module.front.api',
 			// backend controllers
 			'iaAbstractControllerBackend' => 'ia.base.controller.admin',
 			'iaAbstractControllerModuleBackend' => 'ia.base.controller.module.admin'
