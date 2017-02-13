@@ -165,7 +165,7 @@ CREATE TABLE `{install:prefix}cron` (
 CREATE TABLE `{install:prefix}modules` (
 	`id` smallint(4) unsigned NOT NULL auto_increment,
 	`name` varchar(40) NOT NULL,
-	`type` enum('plugin','package','core') NOT NULL default 'plugin',
+	`type` enum('plugin','package','template','core') NOT NULL default 'plugin',
 	`author` varchar(75) NOT NULL,
 	`contributor` varchar(75) NOT NULL,
 	`title` varchar(150) NOT NULL,
