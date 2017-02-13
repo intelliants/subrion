@@ -127,6 +127,23 @@ Ext.onReady(function() {
 
 			return;
 		}
+		else if ('templates' == type)
+		{
+			Ext.Msg.show({
+				title: _t('confirm'),
+				msg: _t('are_you_sure_reinstall_module'),
+				buttons: Ext.Msg.YESNO,
+				icon: Ext.Msg.QUESTION,
+				fn: function(btn)
+				{
+					if ('yes' != btn) return;
+
+					document.location = url;
+				}
+			});
+
+			return;
+		}
 
 		$.ajax({
 			data: {name: module, type: type, remote: remote},
