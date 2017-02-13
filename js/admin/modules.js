@@ -145,10 +145,10 @@ Ext.onReady(function() {
 					failure: intelli.modules.failure,
 					type: 'POST',
 					url: intelli.modules.url + type + '/' + module + '/install.json',
-					success: function() {
-						intelli.modules.refresh;
+					success: function(response) {
+						intelli.modules.refresh(response);
 
-						var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + intelli.lang.installed + '</span>';
+						var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
 
 						$this.replaceWith(installedStatusHtml);
 					}
