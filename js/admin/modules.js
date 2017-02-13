@@ -150,6 +150,7 @@ Ext.onReady(function() {
 
 						var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
 
+						$this.closest('.card').addClass('card--active');
 						$this.replaceWith(installedStatusHtml);
 					}
 				});
@@ -199,10 +200,11 @@ Ext.onReady(function() {
 	{
 		e.preventDefault();
 
-		var module = $(this).data('module'),
-			type = $(this).data('type'),
-			remote = $(this).data['remote'],
-			url = $(this).attr('href');
+		var $this = $(this),
+			module = $this.data('module'),
+			type = $this.data('type'),
+			remote = $this.data['remote'],
+			url = $this.attr('href');
 
 		if ('packages' == type)
 		{
@@ -213,7 +215,7 @@ Ext.onReady(function() {
 				icon: Ext.Msg.QUESTION,
 				fn: function (btn) {
 					if ('yes' == btn) {
-						document.location = $this.attr('href');
+						document.location = url;
 					}
 				}
 			});
@@ -241,7 +243,14 @@ Ext.onReady(function() {
 						failure: intelli.modules.failure,
 						type: 'POST',
 						url: intelli.modules.url + type + '/' + module + '/uninstall.json',
-						success: intelli.modules.refresh
+						success: function(response) {
+							intelli.modules.refresh(response);
+
+							var installBtnHtml = '<a href="' + intelli.config.admin_url + '/modules/' + type + '/' + module + '/install/" class="btn btn-success btn-xs pull-right js-install" data-module="' + module + '" data-type="' + type + '" data-remote="' + remote + '">' + _t('install') + '</a>';
+
+							$this.closest('.card').removeClass('card--active')
+								.find('.card__actions__status').replaceWith(installBtnHtml);
+						}
 					});
 				}
 			});
