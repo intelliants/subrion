@@ -534,13 +534,6 @@
 
 					<div id="js-block-gallery-field-setup-by-settings"{if $item.timepicker} style="display: none;"{/if}>
 						<div class="row">
-							<label class="col col-lg-2 control-label">{lang key='max_num_images'}</label>
-
-							<div class="col col-lg-4">
-								<input type="text" name="pic_max_images" value="{if isset($item.pic_max_images)}{$item.pic_max_images|escape:'html'}{else}5{/if}">
-							</div>
-						</div>
-						<div class="row">
 							<label class="col col-lg-2 control-label">{lang key='image_width'} / {lang key='image_height'}</label>
 
 							<div class="col col-lg-4">
@@ -577,19 +570,28 @@
 									<option value="fit"{if isset($item.resize_mode) && iaPicture::FIT == $item.resize_mode} selected{/if} data-tooltip="{lang key='fit_tip'}">{lang key='fit'}</option>
 								</select>
 								<p class="help-block"></p>
-							</div>
-						</div>
-						<div class="row">
-							<label class="col col-lg-2 control-label">{lang key='file_prefix'}</label>
-
-							<div class="col col-lg-4">
-								<input type="text" name="pic_file_prefix" value="{if isset($item.file_prefix)}{$item.file_prefix|escape:'html'}{/if}">
 								<p class="help-block"><a href="#" class="pull-right js-cmd-toggle-gallery-setup" style="text-decoration: none; border-bottom: 1px dashed;" data-type="1">Use image types instead</a></p>
 							</div>
 						</div>
 					</div>
 
 					<hr>
+
+					<div class="row">
+						<label class="col col-lg-2 control-label">{lang key='max_num_images'}</label>
+
+						<div class="col col-lg-4">
+							<input type="text" name="pic_max_images" value="{if isset($item.pic_max_images)}{$item.pic_max_images|escape:'html'}{else}5{/if}">
+						</div>
+					</div>
+
+					<div class="row">
+						<label class="col col-lg-2 control-label">{lang key='file_prefix'}</label>
+
+						<div class="col col-lg-4">
+							<input type="text" name="pic_file_prefix" value="{if isset($item.file_prefix)}{$item.file_prefix|escape:'html'}{/if}">
+						</div>
+					</div>
 				{/if}
 			</div>
 
