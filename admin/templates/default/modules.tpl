@@ -16,7 +16,7 @@
 										{/if}
 
 										{if !empty($module.buttons.readme)}
-											<li><a href="#" class="js-readme" data-module="{$module.name}"><span class="fa fa-info-circle"></span> {lang key='documentation'}</a></li>
+											<li><a href="#" class="js-readme" data-module="{$module.name}"><span class="fa fa-book"></span> {lang key='documentation'}</a></li>
 										{/if}
 
 										{if !empty($module.buttons.reinstall)}
