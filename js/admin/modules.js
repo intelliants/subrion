@@ -1,13 +1,3 @@
-$(function() {
-	$('.js-install-package').on('click', function(e) {
-		e.preventDefault();
-
-		var module = $(this).data('module'),
-			url = $(this).attr('href');
-
-		dialog_package('install', module, url);
-	})
-});
 function dialog_package(type, module, url)
 {
 	intelli.config.default_package = $('#js-default-package-value').val();
@@ -103,7 +93,106 @@ function resetUrl(item, packageName)
 	dialog_package('reset', item, packageName);
 }
 
+var installClick = function(record, action)
+{
+};
+
 Ext.onReady(function() {
+	$('.js-install-package').on('click', function(e) {
+		e.preventDefault();
+
+		var module = $(this).data('module'),
+			url = $(this).attr('href');
+
+		dialog_package('install', module, url);
+	});
+
+	$('.js-install').on('click', function(e) {
+		e.preventDefault();
+
+		var module = $(this).data('module');
+
+		Ext.Msg.show({
+			title: _t('confirm'),
+			msg: _t('are_you_sure_' + action + '_plugin'),
+			buttons: Ext.Msg.YESNO,
+			icon: Ext.Msg.QUESTION,
+			fn: function(btn)
+			{
+				if ('yes' != btn)
+				{
+					return;
+				}
+
+				var params = {name: record.get('file')};
+				if (Ext.getCmp('modeFilter'))
+				{
+					if ('remote' == Ext.getCmp('modeFilter').getValue())
+					{
+						params.mode = 'remote';
+					}
+				}
+
+				$.ajax({
+					data: params,
+					failure: intelli.plugins.failure,
+					type: 'POST',
+					url: intelli.plugins.url + action + '.json',
+					success: intelli.plugins.refresh
+				});
+			}
+		});
+	});
+
+	$('.js-reinstall').on('click', function(e) {
+		e.preventDefault();
+
+		var module = $(this).data('module');
+	});
+
+	$('.js-upgrade').on('click', function(e) {
+		e.preventDefault();
+
+		var module = $(this).data('module');
+
+		$.ajax({
+			data: {action: 'install', name: record.get('file')},
+			failure: intelli.plugins.failure,
+			type: 'POST',
+			url: intelli.plugins.url + 'install.json',
+			success: intelli.plugins.refresh
+		});
+	});
+
+	$('.js-upgrade').on('click', function(e) {
+		e.preventDefault();
+
+		var module = $(this).data('module');
+
+		Ext.Msg.show({
+			title: _t('confirm'),
+			msg: _t('are_you_sure_to_uninstall_selected_plugin'),
+			buttons: Ext.Msg.YESNO,
+			icon: Ext.Msg.QUESTION,
+			fn: function(btn)
+			{
+				if ('yes' != btn)
+				{
+					return;
+				}
+
+				$.ajax(
+					{
+						data: {name: record.get('file')},
+						failure: intelli.plugins.failure,
+						type: 'POST',
+						url: intelli.plugins.url + 'uninstall.json',
+						success: intelli.plugins.refresh
+					});
+			}
+		});
+	});
+
 	$('.js-readme').on('click', function(e) {
 		e.preventDefault();
 
@@ -191,3 +280,30 @@ Ext.onReady(function() {
 		});
 	});
 });
+
+var synchronizeAdminMenu = function(currentPage, extensionGroups)
+{
+	currentPage = currentPage || 'plugins';
+
+	$.ajax({
+		data: {action: 'menu', page: currentPage},
+		success: function(response)
+		{
+			var $menuSection = $('#panel-center'),
+				$menus = $(response.menus);
+
+			if (typeof extensionGroups != 'undefined')
+			{
+				$.each(extensionGroups, function(i, val)
+				{
+					$('#menu-section-' + val + ' a').append('<span class="menu-updated animated bounceIn"></span>');
+				});
+			}
+
+			$('ul', $menuSection).remove();
+			$menus.appendTo($menuSection);
+		},
+		type: 'POST',
+		url: intelli.config.admin_url + '/index/read.json'
+	});
+};
