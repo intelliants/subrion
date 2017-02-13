@@ -29,41 +29,43 @@
 
 <div class="row animated-widgets">
 	<div class="col col-lg-7">
-		<div class="widget-block widget-block-group">
+		<div class="row">
 			{foreach $statistics.medium as $itemName => $info}
-			<div class="widget widget-medium" id="widget-{$itemName}">
-				<div class="widget-content">
-					<div class="widget-total-stats">
-						<span><a href="{$info.url}">{$info.total}</a></span> {$info.item}
-					</div>
-					<div class="widget-icon"><i class="i-{$info.icon}"></i></div>
-					<hr>
-					<div class="widget-stats">
-						<table>
-							{foreach $info.rows as $key => $value}
-							<tr>
-								<td><a href="{$info.url}?status={$key}">{lang key=$key default=$key}</a>:</td>
-								<td>{$value}</td>
-							</tr>
-							{/foreach}
-						</table>
-					</div>
-					{if isset($info.data)}
-					<div class="widget-chart">
-						<div class="js-stats"{if isset($info.data)}{foreach $info.data as $key => $value} data-{$key}="{$value}"{/foreach}{/if}></div>
-						<div class="widget-chart-weekdays">
-							<span>Su</span>
-							<span>Mo</span>
-							<span>Tu</span>
-							<span>We</span>
-							<span>Th</span>
-							<span>Fr</span>
-							<span>Sa</span>
+				<div class="col-md-6">
+					<div class="widget widget-medium" id="widget-{$itemName}">
+						<div class="widget-content">
+							<div class="widget-total-stats">
+								<span><a href="{$info.url}">{$info.total}</a></span> {$info.item}
+							</div>
+							<div class="widget-icon"><i class="i-{$info.icon}"></i></div>
+							<hr>
+							<div class="widget-stats">
+								<table>
+									{foreach $info.rows as $key => $value}
+									<tr>
+										<td><a href="{$info.url}?status={$key}">{lang key=$key default=$key}</a>:</td>
+										<td>{$value}</td>
+									</tr>
+									{/foreach}
+								</table>
+							</div>
+							{if isset($info.data)}
+							<div class="widget-chart">
+								<div class="js-stats"{if isset($info.data)}{foreach $info.data as $key => $value} data-{$key}="{$value}"{/foreach}{/if}></div>
+								<div class="widget-chart-weekdays">
+									<span>Su</span>
+									<span>Mo</span>
+									<span>Tu</span>
+									<span>We</span>
+									<span>Th</span>
+									<span>Fr</span>
+									<span>Sa</span>
+								</div>
+							</div>
+							{/if}
 						</div>
 					</div>
-					{/if}
 				</div>
-			</div>
 			{/foreach}
 		</div>
 
