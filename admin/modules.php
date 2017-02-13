@@ -143,6 +143,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$result = $this->_installPlugin($this->_iaCore->requestPath[0], $action, $_POST['remote']);
 					break;
+				case 'uninstall':
+					$result = $this->_uninstallPlugin($this->_iaCore->requestPath[0]);
+					break;
 			}
 		}
 		else
