@@ -131,7 +131,7 @@ Ext.onReady(function() {
 		{
 			Ext.Msg.show({
 				title: _t('confirm'),
-				msg: _t('are_you_sure_reinstall_module'),
+				msg: _t('are_you_sure_install_module'),
 				buttons: Ext.Msg.YESNO,
 				icon: Ext.Msg.QUESTION,
 				fn: function(btn)
