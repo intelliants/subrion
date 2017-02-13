@@ -279,6 +279,18 @@
         .img-responsive();
       }
 
+      > .fa {
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        font-size: 24px;
+        text-align: center;
+        color: fade(@text-color, 50%);
+        background: #f5f5f5;
+        border-radius: 50%;
+        border: 1px solid #f0f0f0;
+      }
+
       @media (min-width: 992px) and (max-width: 1280px) {
         display: none;
       }
@@ -357,4 +369,61 @@
   &--inactive {
     .box-shadow(0 0 0 4px fade(@brand-danger, 20%));
   }
+
+  &--widget {
+
+    .card__item__body {
+      text-align: right;
+
+      h4 {
+        font-size: 26px;
+        font-weight: bold;
+      }
+
+      p {
+        font-size: 16px;
+        line-height: 16px;
+        height: auto;
+      }
+    }
+  }
 }
+
+
+
+//
+// Card item modifiers
+// --------------------------------------------------
+
+.card-item-variant(@color) {
+
+  .card__item__image {
+
+    > .fa {
+      color: @color;
+      background: fade(@color, 10%);
+      border-color: fade(@color, 15%);
+    }
+  }
+
+  .card__item__body {
+    h4 {
+      color: @color;
+    }
+  }
+}
+
+.card__item--primary { .card-item-variant(@brand-primary); }
+.card__item--success { .card-item-variant(@brand-success); }
+.card__item--info { .card-item-variant(@brand-info); }
+.card__item--warning { .card-item-variant(@brand-warning); }
+.card__item--danger { .card-item-variant(@brand-danger); }
+
+
+
+//
+// Cards icons aliases
+// --------------------------------------------------
+
+.fa-member::before { content: @fa-var-users; }
+.fa-transaction::before { content: @fa-var-money; }
