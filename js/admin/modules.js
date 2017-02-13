@@ -117,6 +117,7 @@ Ext.onReady(function() {
 
 		var module = $(this).data('module'),
 			type = $(this).data('type'),
+			remote = $(this).data['remote'],
 			url = $(this).attr('href');
 
 		if ('packages' == type)
@@ -128,7 +129,7 @@ Ext.onReady(function() {
 
 		Ext.Msg.show({
 			title: _t('confirm'),
-			msg: _t('are_you_sure_install_plugin'),
+			msg: _t('are_you_sure_install_module'),
 			buttons: Ext.Msg.YESNO,
 			icon: Ext.Msg.QUESTION,
 			fn: function(btn)
@@ -138,14 +139,12 @@ Ext.onReady(function() {
 					return;
 				}
 
-				var params = {name: module, type: type};
-
 				$.ajax({
-					data: params,
-					failure: intelli.modules.failure(),
+					data: {name: module, type: type, remote: remote},
+					failure: intelli.modules.failure,
 					type: 'POST',
-					url: intelli.modules.url + action + '.json',
-					success: intelli.modules.refresh()
+					url: intelli.modules.url + type + '/' + module + '/install.json',
+					success: intelli.modules.refresh
 				});
 			}
 		});
@@ -179,11 +178,11 @@ Ext.onReady(function() {
 
 				$.ajax(
 				{
-					data: {name: module, mode: mode},
-					failure: intelli.plugins.failure,
+					data: {name: module},
+					failure: intelli.modules.failure,
 					type: 'POST',
-					url: intelli.plugins.url + action + '.json',
-					success: intelli.plugins.refresh
+					url: intelli.modules.url + type + '/' + module + '/reinstall.json',
+					success: intelli.modules.refresh
 				});
 			}
 		});
