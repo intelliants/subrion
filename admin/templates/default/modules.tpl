@@ -91,7 +91,7 @@
 									{/if}
 
 									{if !empty($module.remote) && $module.price > 0}
-										<span class="chip chip--warning"><span class="fa fa-star"></span> Premium</span>
+										<span class="chip chip--warning"><span class="fa fa-star"></span> Premium ${$module.price}</span>
 									{/if}
 									<span class="chip chip--default">{lang key='compatibility'}: {$module.compatibility}</span>
 								</div>
@@ -114,7 +114,6 @@
 							{elseif !empty($module.buttons.download)}
 								<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='unable_to_install'}</span>
 							{elseif $module.price > 0}
-								<a href="{$module.url}" target="_blank" class="btn btn-success btn-xs pull-right">{lang key='buy'} ${$module.price}</a>
 								<a href="{$module.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
 							{elseif !empty($module.buttons.download)}
 								<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
