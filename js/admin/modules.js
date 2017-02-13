@@ -128,32 +128,18 @@ Ext.onReady(function() {
 			return;
 		}
 
-		Ext.Msg.show({
-			title: _t('confirm'),
-			msg: _t('are_you_sure_install_module'),
-			buttons: Ext.Msg.YESNO,
-			icon: Ext.Msg.QUESTION,
-			fn: function(btn)
-			{
-				if ('yes' != btn)
-				{
-					return;
-				}
+		$.ajax({
+			data: {name: module, type: type, remote: remote},
+			failure: intelli.modules.failure,
+			type: 'POST',
+			url: intelli.modules.url + type + '/' + module + '/install.json',
+			success: function(response) {
+				intelli.modules.refresh(response);
 
-				$.ajax({
-					data: {name: module, type: type, remote: remote},
-					failure: intelli.modules.failure,
-					type: 'POST',
-					url: intelli.modules.url + type + '/' + module + '/install.json',
-					success: function(response) {
-						intelli.modules.refresh(response);
+				var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
 
-						var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
-
-						$this.closest('.card').addClass('card--active');
-						$this.replaceWith(installedStatusHtml);
-					}
-				});
+				$this.closest('.card').addClass('card--active');
+				$this.replaceWith(installedStatusHtml);
 			}
 		});
 	});
@@ -161,9 +147,10 @@ Ext.onReady(function() {
 	$('.js-reinstall').on('click', function(e) {
 		e.preventDefault();
 
-		var module = $(this).data('module'),
-			type = $(this).data('type'),
-			url = $(this).attr('href');
+		var $this = $(this),
+			module = $this.data('module'),
+			type = $this.data('type'),
+			url = $this.attr('href');
 
 		Ext.Msg.show(
 		{
@@ -249,7 +236,7 @@ Ext.onReady(function() {
 							var installBtnHtml = '<a href="' + intelli.config.admin_url + '/modules/' + type + '/' + module + '/install/" class="btn btn-success btn-xs pull-right js-install" data-module="' + module + '" data-type="' + type + '" data-remote="' + remote + '">' + _t('install') + '</a>';
 
 							$this.closest('.card').removeClass('card--active')
-								.find('.card__actions__status').replaceWith(installBtnHtml);
+							.find('.card__actions__status').replaceWith(installBtnHtml);
 						}
 					});
 				}
