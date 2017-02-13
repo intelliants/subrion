@@ -10,7 +10,7 @@
 
 				<div class="col col-lg-4">
 					{if iaCore::ACTION_ADD == $pageAction}
-						<input type="text" name="name" value="{if isset($item.name)}{$item.name|escape:'html'}{/if}">
+						<input type="text" name="name" value="{$item.name|escape:'html'}">
 						<p class="help-block">{lang key='unique_name'}</p>
 					{else}
 						<input type="text" value="{$item.name|escape:'html'}" disabled>
@@ -24,10 +24,10 @@
 				<div class="col col-lg-4">
 					<div class="row">
 						<div class="col col-lg-6">
-							<input type="text" name="width" value="{if isset($item.width)}{$item.width|escape:'html'}{else}900{/if}">
+							<input type="text" name="width" value="{$item.width|intval}">
 						</div>
 						<div class="col col-lg-6">
-							<input type="text" name="height" value="{if isset($item.height)}{$item.height|escape:'html'}{else}600{/if}">
+							<input type="text" name="height" value="{$item.height|intval}">
 						</div>
 					</div>
 				</div>
@@ -38,8 +38,8 @@
 
 				<div class="col col-lg-4">
 					<select name="resize_mode">
-						<option value="crop"{if isset($item.pic_resize_mode) && iaPicture::CROP == $item.pic_resize_mode} selected{/if} data-tooltip="{lang key='crop_tip'}">{lang key='crop'}</option>
-						<option value="fit"{if isset($item.pic_resize_mode) && iaPicture::FIT == $item.pic_resize_mode} selected{/if} data-tooltip="{lang key='fit_tip'}">{lang key='fit'}</option>
+						<option value="crop" data-tooltip="{lang key='crop_tip'}"{if iaPicture::CROP == $item.resize_mode} selected{/if}>{lang key='crop'}</option>
+						<option value="fit" data-tooltip="{lang key='fit_tip'}"{if iaPicture::FIT == $item.resize_mode} selected{/if}>{lang key='fit'}</option>
 					</select>
 					<p class="help-block"></p>
 				</div>
@@ -59,7 +59,7 @@
 					{foreach $fileTypes as $entry}
 						<div class="checkbox">
 							<label>
-								<input type="checkbox" value="{$entry.id}"{if in_array($entry.id, $item.types)} checked{/if} name="fileTypes[{$entry.id}]">
+								<input type="checkbox" value="{$entry.id}"{if in_array($entry.id, $assignedFileTypes)} checked{/if} name="fileTypes[{$entry.id}]">
 								{$entry.extension}
 							</label>
 						</div>
