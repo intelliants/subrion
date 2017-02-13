@@ -243,10 +243,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		switch ($action)
 		{
 			case 'download':
-				if ($this->_download($module))
-				{
-					$this->_iaCore->iaCache->remove('subrion_templates');
-				}
+				$this->_download($module);
 
 				break;
 			case 'activate':
@@ -778,8 +775,6 @@ class iaBackendController extends iaAbstractControllerBackend
 							}
 						}
 
-						$pluginsData['total'] = count($pluginsData['plugins']);
-
 						// cache well-formed results
 						$this->_iaCore->iaCache->write('subrion_plugins', $pluginsData);
 					}
@@ -972,13 +967,15 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						if (isset($response['extensions']) && is_array($response['extensions']))
 						{
+							$_local = array_keys($this->_modules);
+
 							foreach ($response['extensions'] as $entry)
 							{
 								$templateInfo = (array)$entry;
 								$templateInfo['summary'] = $templateInfo['description'];
 
 								// exclude installed templates
-								if (!array_key_exists($templateInfo['name'], $this->_modules))
+								if (!in_array($templateInfo['name'], $_local))
 								{
 									$buttons['docs'] = 'https://subrion.org/template/' . $templateInfo['name'] . '.html';
 									$buttons['download'] = true;
@@ -1056,6 +1053,9 @@ class iaBackendController extends iaAbstractControllerBackend
 					$this->error = true;
 					$this->addMessage('error_incorrect_format_from_subrion');
 				}
+
+				$this->_iaCore->iaCache->remove('subrion_plugins');
+				$this->_iaCore->iaCache->remove('subrion_templates');
 
 				return (bool)$result;
 			}
