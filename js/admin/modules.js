@@ -188,6 +188,59 @@ Ext.onReady(function() {
 		});
 	});
 
+	$('.js-uninstall').click(function(e)
+	{
+		e.preventDefault();
+
+		var module = $(this).data('module'),
+			type = $(this).data('type'),
+			remote = $(this).data['remote'],
+			url = $(this).attr('href');
+
+		if ('packages' == type)
+		{
+			Ext.Msg.show({
+				title: _t('confirm'),
+				msg: _t('are_you_sure_to_uninstall_selected_package'),
+				buttons: Ext.Msg.YESNO,
+				icon: Ext.Msg.QUESTION,
+				fn: function (btn) {
+					if ('yes' == btn) {
+						document.location = $this.attr('href');
+					}
+				}
+			});
+
+			return;
+		}
+		else
+		{
+			Ext.Msg.show(
+			{
+				title: _t('confirm'),
+				msg: _t('are_you_sure_to_uninstall_selected_plugin'),
+				buttons: Ext.Msg.YESNO,
+				icon: Ext.Msg.QUESTION,
+				fn: function(btn)
+				{
+					if ('yes' != btn)
+					{
+						return;
+					}
+
+					$.ajax(
+					{
+						data: {name: module},
+						failure: intelli.modules.failure,
+						type: 'POST',
+						url: intelli.modules.url + type + '/' + module + '/uninstall.json',
+						success: intelli.modules.refresh
+					});
+				}
+			});
+		}
+	});
+
 	$('.js-upgrade').on('click', function(e) {
 		e.preventDefault();
 
@@ -199,35 +252,6 @@ Ext.onReady(function() {
 			type: 'POST',
 			url: intelli.plugins.url + 'install.json',
 			success: intelli.plugins.refresh
-		});
-	});
-
-	$('.js-upgrade').on('click', function(e) {
-		e.preventDefault();
-
-		var module = $(this).data('module');
-
-		Ext.Msg.show({
-			title: _t('confirm'),
-			msg: _t('are_you_sure_to_uninstall_selected_plugin'),
-			buttons: Ext.Msg.YESNO,
-			icon: Ext.Msg.QUESTION,
-			fn: function(btn)
-			{
-				if ('yes' != btn)
-				{
-					return;
-				}
-
-				$.ajax(
-					{
-						data: {name: record.get('file')},
-						failure: intelli.plugins.failure,
-						type: 'POST',
-						url: intelli.plugins.url + 'uninstall.json',
-						success: intelli.plugins.refresh
-					});
-			}
 		});
 	});
 
@@ -295,24 +319,6 @@ Ext.onReady(function() {
 							buttons: Ext.Msg.OK,
 							icon: Ext.Msg.ERROR
 						});
-				}
-			}
-		});
-	});
-
-	$('.js-uninstall').click(function(e)
-	{
-		e.preventDefault();
-
-		var $this = $(this);
-		Ext.Msg.show({
-			title: _t('confirm'),
-			msg: _t('are_you_sure_to_uninstall_selected_package'),
-			buttons: Ext.Msg.YESNO,
-			icon: Ext.Msg.QUESTION,
-			fn: function (btn) {
-				if ('yes' == btn) {
-					document.location = $this.attr('href');
 				}
 			}
 		});

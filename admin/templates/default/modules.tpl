@@ -67,7 +67,7 @@
 
 										{if !empty($module.buttons.uninstall)}
 											{access object='admin_page' id=$core.page.name action='uninstall'}
-												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/uninstall/" class="js-uninstall"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
+												<li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/uninstall/" class="js-uninstall" data-module="{$module.name}" data-type="{$core.page.name}"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
 											{/access}
 										{/if}
 									</ul>
