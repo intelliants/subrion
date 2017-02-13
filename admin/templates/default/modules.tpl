@@ -128,7 +128,8 @@
 			{/foreach}
 		</div>
 	</div>
-	{ia_print_js files='admin/packages'}
+
+	{ia_print_js files='admin/modules'}
 {else}
-	<div class="alert alert-info">{lang key='no_packages'}</div>
+	<div class="alert alert-info">{lang key='no_modules'}</div>
 {/if}

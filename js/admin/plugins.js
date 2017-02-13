@@ -1,30 +1,4 @@
-var synchronizeAdminMenu = function(currentPage, extensionGroups)
-{
-	currentPage = currentPage || 'plugins';
 
-	$.ajax(
-	{
-		data: {action: 'menu', page: currentPage},
-		success: function(response)
-		{
-			var $menuSection = $('#panel-center'),
-				$menus = $(response.menus);
-
-			if (typeof extensionGroups != 'undefined')
-			{
-				$.each(extensionGroups, function(i, val)
-				{
-					$('#menu-section-' + val + ' a').append('<span class="menu-updated animated bounceIn"></span>');
-				});
-			}
-
-			$('ul', $menuSection).remove();
-			$menus.appendTo($menuSection);
-		},
-		type: 'POST',
-		url: intelli.config.admin_url + '/index/read.json'
-	});
-};
 
 intelli.plugins = {
 	failure: function()
@@ -163,96 +137,7 @@ var install_click_multiple = function()
 	installRequest();
 };
 */
-var helpClick = function(record)
-{
-	$.ajax(
-	{
-		url: intelli.plugins.url + 'documentation.json',
-		data: {name: (record.get('file') ? record.get('file') : record.get('name'))},
-		error: intelli.plugins.failure,
-		success: function(response)
-		{
-			if (response.tabs)
-			{
-				var win = new Ext.Window(
-				{
-					title: _t('extra_documentation'),
-					closable: true,
-					width: 800,
-					height: 550,
-					border: false,
-					plain: true,
-					layout: 'border',
-					items:
-						[
-							new Ext.TabPanel(
-								{
-									region: 'center',
-									bodyStyle: 'padding: 5px;',
-									activeTab: 0,
-									defaults: {autoScroll: true},
-									items: response.tabs
-								}),
-							new Ext.Panel(
-								{
-									region: 'east',
-									split: true,
-									minWidth: 200,
-									collapsible: true,
-									html: response.info,
-									bodyStyle: 'padding: 5px;'
-								})
-						]
-				});
 
-				win.show();
-			}
-			else
-			{
-				intelli.notifFloatBox({msg: _t('documentation_not_available'), type: 'error', autohide: true});
-			}
-		}
-	});
-};
-
-var upgradeClick = function(record, field)
-{
-	$.ajax(
-	{
-		data: {action: 'install', name: record.get('file')},
-		failure: intelli.plugins.failure,
-		type: 'POST',
-		url: intelli.plugins.url + 'install.json',
-		success: intelli.plugins.refresh
-	});
-};
-
-var uninstallClick = function(record, field)
-{
-	Ext.Msg.show(
-	{
-		title: _t('confirm'),
-		msg: _t('are_you_sure_to_uninstall_selected_plugin'),
-		buttons: Ext.Msg.YESNO,
-		icon: Ext.Msg.QUESTION,
-		fn: function(btn)
-		{
-			if ('yes' != btn)
-			{
-				return;
-			}
-
-			$.ajax(
-			{
-				data: {name: record.get('file')},
-				failure: intelli.plugins.failure,
-				type: 'POST',
-				url: intelli.plugins.url + 'uninstall.json',
-				success: intelli.plugins.refresh
-			});
-		}
-	});
-};
 
 intelli.available = {
 	columns: [
