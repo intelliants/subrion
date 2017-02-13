@@ -949,14 +949,12 @@ class iaBackendController extends iaAbstractControllerBackend
 			in_array($imageType['id'], $data[$imageTypesKey])
 			&& $sizes[$imageType['name']] = $imageType['width'] + $imageType['height'];
 
-		$names = array_keys($sizes);
-
-		if (!$entry['imagetype_primary'] || !in_array($entry['imagetype_primary'], $names))
+		if (!$entry['imagetype_primary'] || !isset($sizes[$entry['imagetype_primary']]))
 		{
 			$entry['imagetype_primary'] = array_search(max($sizes), $sizes);
 		}
 
-		if (!$entry['imagetype_thumbnail'] || !in_array($entry['imagetype_thumbnail'], $names))
+		if (!$entry['imagetype_thumbnail'] || !isset($sizes[$entry['imagetype_thumbnail']]))
 		{
 			$entry['imagetype_thumbnail'] = array_search(min($sizes), $sizes);
 		}

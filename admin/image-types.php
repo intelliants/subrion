@@ -38,16 +38,17 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		parent::__construct();
 
+		$this->_iaCore->factory('picture');
+
 		$this->setHelper($this->_iaCore->factory('field'));
 	}
 
-	protected function _assignValues(&$iaView, array &$entryData)
+	protected function _setDefaultValues(array &$entry)
 	{
-		$entryData['types'] = empty($_POST['fileTypes'])
-			? $this->getHelper()->getFileTypesByImageTypeId($this->getEntryId())
-			: $_POST['fileTypes'];
-
-		$iaView->assign('fileTypes', $this->getHelper()->getFileTypes(true));
+		$entry['name'] = '';
+		$entry['width'] = 900;
+		$entry['height'] = 600;
+		$entry['resize_mode'] = iaPicture::CROP;
 	}
 
 	protected function _preSaveEntry(array &$entry, array $data, $action)
@@ -92,6 +93,26 @@ class iaBackendController extends iaAbstractControllerBackend
 				'id' => $this->getEntryId()
 			]);
 		}
+	}
+
+	protected function _assignValues(&$iaView, array &$entryData)
+	{
+		switch (true)
+		{
+			case isset($_POST['fileTypes']):
+				$types = $_POST['fileTypes'];
+				break;
+			case $this->getEntryId():
+				$types = $this->getHelper()->getFileTypesByImageTypeId($this->getEntryId());
+				break;
+			default:
+				$types = [];
+				foreach ($this->getHelper()->getFileTypes(true) as $fileType)
+					$types[] = $fileType['id'];
+		}
+
+		$iaView->assign('assignedFileTypes', $types);
+		$iaView->assign('fileTypes', $this->getHelper()->getFileTypes(true));
 	}
 
 	private function _saveFileTypes(array $fileTypes)
