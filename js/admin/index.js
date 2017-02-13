@@ -54,7 +54,7 @@ $(function()
 
 			$this.parent().addClass('active').siblings().removeClass('active');
 			$this.closest('.nav').find('.dropdown-toggle').html(changelogNum + ' <span class="caret"></span>');
-			$(changelogItem).show().siblings().hide();	
+			$(changelogItem).show().siblings().hide();
 		}
 	});
 

@@ -36,6 +36,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private $_modules = [];
 
+	private $_error;
+
 
 	public function __construct()
 	{
@@ -91,16 +93,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
 				$installedPlugins = $this->_iaDb->assoc(['name', 'status', 'version'], iaDb::convertIds(iaModule::TYPE_PLUGIN, 'type'));
 				$this->_getLocal(IA_MODULES, array('installed' => $installedPlugins));
-
-				$remotePlugins = $this->_getRemotePlugins($start, $limit, $sort);
-
-				!empty($remotePlugins['total']) && $this->_modules = array_merge($this->_modules, $remotePlugins);
+				$this->_getRemotePlugins($start, $limit, $sort);
 				break;
 
 			case 'templates':
-				$this->_folder = IA_TEMPLATES;
 
-				$modules = $this->_getTemplatesList();
+				$this->_getTemplatesList();
 				if ($this->_messages)
 				{
 					$iaView->setMessages($this->_messages);
@@ -135,15 +133,28 @@ class iaBackendController extends iaAbstractControllerBackend
 		}
 		elseif (count($this->_iaCore->requestPath) > 1)
 		{
+			$iaAcl = $this->_iaCore->factory('acl');
+
 			switch ($this->_iaCore->requestPath[1])
 			{
 				case 'install':
 				case 'reinstall':
 					$action = 'install';
 
+					if (!$iaAcl->isAccessible($this->_iaCore->requestPath[0], $action))
+					{
+						return iaView::accessDenied();
+					}
+
 					$result = $this->_installPlugin($this->_iaCore->requestPath[0], $action, $_POST['remote']);
 					break;
 				case 'uninstall':
+
+					if (!$iaAcl->isAccessible($this->_iaCore->requestPath[0], $this->_iaCore->requestPath[1]))
+					{
+						return iaView::accessDenied();
+					}
+
 					$result = $this->_uninstallPlugin($this->_iaCore->requestPath[0]);
 					break;
 			}
@@ -232,10 +243,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		switch ($action)
 		{
 			case 'download':
-				if ($this->_downloadTemplate($module))
+				if ($this->_download($module))
 				{
 					$this->_iaCore->iaCache->remove('subrion_templates');
 				}
+
 				break;
 			case 'activate':
 			case 'deactivate':
@@ -741,34 +753,32 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					if (isset($response['extensions']) && is_array($response['extensions']))
 					{
-						$pluginsData = [];
-						$installedPlugins = $this->_iaDb->keyvalue(['name', 'version'], iaDb::convertIds(iaModule::TYPE_PLUGIN, 'type'));
+						$_local = array_keys($this->_modules);
 
+						$pluginsData = [];
 						foreach ($response['extensions'] as $entry)
 						{
 							$pluginInfo = (array)$entry;
-							$pluginInfo['install'] = 0;
+
+							$buttons['docs'] = 'https://subrion.org/template/' . $pluginInfo['name'] . '.html';
+							$buttons['download'] = true;
 
 							// exclude installed plugins
-							if (!array_key_exists($pluginInfo['name'], $installedPlugins))
+							if (!in_array($pluginInfo['name'], $_local))
 							{
-								$pluginsData['pluginsList'][$pluginInfo['name']] = $pluginInfo['title'];
-
-								if (isset($pluginInfo['compatibility']) && version_compare($pluginInfo['compatibility'], IA_VERSION, '<='))
-								{
-									$pluginInfo['install'] = 1;
-								}
+								$pluginInfo['summary'] = $pluginInfo['description'];
 								$pluginInfo['date'] = gmdate(iaDb::DATE_FORMAT, $pluginInfo['date']);
 								$pluginInfo['file'] = $pluginInfo['name'];
-								$pluginInfo['readme'] = false;
-								$pluginInfo['reinstall'] = false;
-								$pluginInfo['uninstall'] = false;
-								$pluginInfo['remove'] = false;
-								$pluginInfo['removable'] = false;
+								$pluginInfo['status'] = 'remote';
+								$pluginInfo['remote'] = true;
+								$pluginInfo['price'] = $pluginInfo['price'];
+								$pluginInfo['buttons'] = $buttons;
 
 								$pluginsData['plugins'][$pluginInfo['name']] = $pluginInfo;
 							}
 						}
+
+						$pluginsData['total'] = count($pluginsData['plugins']);
 
 						// cache well-formed results
 						$this->_iaCore->iaCache->write('subrion_plugins', $pluginsData);
@@ -785,64 +795,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 		}
 
-		return $this->getMessages()
-			? ['result' => false, 'message' => $this->getMessages()]
-			: $pluginsData;
-	}
-
-	private function _getInstalledPlugins($start, $limit, $sort, $dir, $filter)
-	{
-		$where = "`type` = '" . iaModule::TYPE_PLUGIN . "'" . (empty($filter) ? '' : " AND `title` LIKE '%{$filter}%'");
-		$order = ($sort && $dir) ? " ORDER BY `{$sort}` {$dir}" : '';
-
-		$result = [
-			'data' => $this->_iaDb->all(['id', 'name', 'title', 'version', 'status', 'author', 'summary', 'removable', 'date'], $where . $order, $start, $limit),
-			'total' => $this->_iaDb->one(iaDb::STMT_COUNT_ROWS, $where)
-		];
-
-		if ($result['data'])
-		{
-			foreach ($result['data'] as &$entry)
-			{
-				if ($row = $this->_iaDb->row_bind(['name', 'config_group'], '`module` = :plugin ORDER BY `order` ASC', ['plugin' => $entry['name']], iaCore::getConfigTable()))
-				{
-					$entry['config'] = $row['config_group'] . '/#' . $row['name'] . '';
-				}
-
-				if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', ['name' => $entry['name']], 'admin_pages'))
-				{
-					$entry['manage'] = $alias;
-				}
-
-				$entry['file'] = $entry['name'];
-				$entry['info'] = true;
-				$entry['reinstall'] = true;
-				$entry['uninstall'] = $entry['removable'];
-				$entry['remove'] = $entry['removable'];
-
-				if (is_dir(IA_MODULES . $entry['name']))
-				{
-					$installationFile = IA_MODULES . $entry['name'] . IA_DS . iaModule::INSTALL_FILE_NAME;
-
-					if (file_exists($installationFile))
-					{
-						$fileContent = file_get_contents($installationFile);
-
-						$this->getHelper()->setXml($fileContent);
-						$this->getHelper()->parse();
-
-						if (($this->getHelper()->itemData['compatibility'] && version_compare(IA_VERSION, $this->getHelper()->itemData['compatibility'], '>=')) && version_compare($this->getHelper()->itemData['info']['version'], $entry['version'], '>'))
-						{
-							$entry['upgrade'] = $entry['name'];
-						}
-
-						$entry['name'] = $this->getHelper()->itemData['name'];
-					}
-				}
-			}
-		}
-
-		return $result;
+		!empty($pluginsData['plugins']) && $this->_modules = array_merge($this->_modules, $pluginsData['plugins']);
 	}
 
 	private function _installPlugin($moduleName, $action, $remote = false)
@@ -851,37 +804,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		if ($remote)
 		{
-			$modulesTempFolder = IA_TMP . 'modules' . IA_DS;
-			is_dir($modulesTempFolder) || mkdir($modulesTempFolder);
-
-			$filePath = $modulesTempFolder . $moduleName;
-			$fileName = $filePath . '.zip';
-
-			// save remote plugin file
-			iaUtil::downloadRemoteContent(iaUtil::REMOTE_TOOLS_URL . 'install/' . $moduleName . IA_URL_DELIMITER . IA_VERSION, $fileName);
-
-			if (file_exists($fileName))
-			{
-				if (is_writable($this->_folder))
-				{
-					// delete previous folder
-					if (is_dir($this->_folder . $moduleName))
-					{
-						unlink($this->_folder . $moduleName);
-					}
-
-					include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
-
-					$pclZip = new PclZip($fileName);
-					$pclZip->extract(PCLZIP_OPT_PATH, IA_MODULES . $moduleName);
-
-					$this->_iaCore->iaCache->remove('subrion_plugins');
-				}
-				else
-				{
-					$result['message'] = iaLanguage::get('upload_module_error');
-				}
-			}
+			$this->_download($moduleName);
 		}
 
 		$iaModule = $this->getHelper();
@@ -1024,55 +947,6 @@ class iaBackendController extends iaAbstractControllerBackend
 		return false;
 	}
 
-	private function _downloadTemplate($moduleName)
-	{
-		$templatesTempFolder = IA_TMP . 'templates' . IA_DS;
-		if (!is_dir($templatesTempFolder))
-		{
-			mkdir($templatesTempFolder);
-		}
-
-		$filePath = $templatesTempFolder . $moduleName;
-		$fileName = $filePath . '.zip';
-
-		// save remote template file
-		iaUtil::downloadRemoteContent(iaUtil::REMOTE_TOOLS_URL . 'install/' . $moduleName . IA_URL_DELIMITER . IA_VERSION, $fileName);
-
-		if (file_exists($fileName))
-		{
-			if (is_writable(IA_FRONT_TEMPLATES))
-			{
-				// delete previous folder
-				if (is_dir(IA_FRONT_TEMPLATES . $moduleName))
-				{
-					unlink(IA_FRONT_TEMPLATES . $moduleName);
-				}
-
-				include_once (IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
-
-				$pclZip = new PclZip($fileName);
-				if ($result = $pclZip->extract(PCLZIP_OPT_PATH, IA_FRONT_TEMPLATES . $moduleName))
-				{
-					$this->addMessage(iaLanguage::getf('template_downloaded', ['name' => $moduleName]), false);
-				}
-				else
-				{
-					$this->error = true;
-					$this->addMessage('error_incorrect_format_from_subrion');
-				}
-
-				return (bool)$result;
-			}
-			else
-			{
-				$this->_error = true;
-				$this->addMessage('upload_template_error');
-			}
-		}
-
-		return false;
-	}
-
 	private function _getTemplatesList()
 	{
 		$this->_getLocal(IA_FRONT_TEMPLATES);
@@ -1153,10 +1027,10 @@ class iaBackendController extends iaAbstractControllerBackend
 	 *
 	 * @return bool
 	 */
-	private function _downloadModule($moduleName)
+	private function _download($moduleName)
 	{
 		$tempFolder = IA_TMP . 'modules' . IA_DS;
-		!is_dir($tempFolder) || mkdir($tempFolder);
+		!is_dir($tempFolder) && mkdir($tempFolder);
 
 		$filePath = $tempFolder . $moduleName;
 		$fileName = $filePath . '.zip';
@@ -1175,7 +1049,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				$pclZip = new PclZip($fileName);
 				if ($result = $pclZip->extract(PCLZIP_OPT_PATH, $this->_folder . $moduleName))
 				{
-					$this->addMessage(iaLanguage::getf('template_downloaded', ['name' => $moduleName]), false);
+					$this->addMessage(iaLanguage::getf('module_downloaded', ['name' => $moduleName]), false);
 				}
 				else
 				{
@@ -1187,7 +1061,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			}
 			else
 			{
-				$this->_error = true;
+				$this->error = true;
 				$this->addMessage(iaLanguage::getf('upload_module_error', ['module' => $this->_folder]));
 			}
 		}

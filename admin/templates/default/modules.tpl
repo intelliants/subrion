@@ -112,11 +112,11 @@
 							{elseif !empty($module.buttons.activate)}
 								<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='deactivated'}</span>
 							{elseif !empty($module.buttons.download)}
-								<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='unable_to_install'}</span>
+								<a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
 							{elseif $module.price > 0}
 								<a href="{$module.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
-							{elseif !empty($module.buttons.download)}
-								<a href="{$smarty.const.IA_ADMIN_URL}modules/templates/{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
+							{elseif empty($module.buttons.download)}
+								<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='unable_to_install'}</span>
 							{/if}
 						</div>
 					</div>
