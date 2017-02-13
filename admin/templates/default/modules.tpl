@@ -85,10 +85,14 @@
 											<span class="chip chip--success"><span class="fa fa-arrow-circle-o-up"></span> {lang key='update_available'}</span>
 										{/if}
 									{/if}
-									{foreach $module.notes as $note}
-										<span class="chip chip--danger js-tooltip" data-toggle="tooltip" title="{$note}"><span class="fa fa-warning"></span> {lang key='package_required'}</span>
-									{/foreach}
-									{if isset($module.remote) && $module.price > 0}
+
+									{if !empty($module.notes)}
+										{foreach $module.notes as $note}
+											<span class="chip chip--danger js-tooltip" data-toggle="tooltip" title="{$note}"><span class="fa fa-warning"></span> {lang key='package_required'}</span>
+										{/foreach}
+									{/if}
+
+									{if !empty($module.remote) && $module.price > 0}
 										<span class="chip chip--warning"><span class="fa fa-star"></span> Premium</span>
 									{/if}
 									<span class="chip chip--default">{lang key='compatibility'}: {$module.compatibility}</span>
