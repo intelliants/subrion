@@ -133,9 +133,17 @@ class iaBackendController extends iaAbstractControllerBackend
 		{
 			$result = $this->_getDocumentation($params['name'], $this->_iaCore->iaView);
 		}
-		elseif (1 == count($this->_iaCore->requestPath))
+		elseif (count($this->_iaCore->requestPath) > 1)
 		{
-			_v($this->_iaCore->requestPath);
+			switch ($this->_iaCore->requestPath[1])
+			{
+				case 'install':
+				case 'reinstall':
+					$action = 'install';
+
+					$result = $this->_installPlugin($this->_iaCore->requestPath[0], $action, $_POST['remote']);
+					break;
+			}
 		}
 		else
 		{
@@ -833,11 +841,11 @@ class iaBackendController extends iaAbstractControllerBackend
 		return $result;
 	}
 
-	private function _installPlugin($moduleName, $action)
+	private function _installPlugin($moduleName, $action, $remote = false)
 	{
 		$result = ['error' => true];
 
-		if (isset($_POST['mode']) && 'remote' == $_POST['mode'])
+		if ($remote)
 		{
 			$modulesTempFolder = IA_TMP . 'modules' . IA_DS;
 			is_dir($modulesTempFolder) || mkdir($modulesTempFolder);
@@ -887,25 +895,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
 		$iaModule->parse();
 
-		$installationPossible = false;
-		$version = explode('-', $iaModule->itemData['compatibility']);
-		if (!isset($version[1]))
-		{
-			if (version_compare($version[0], IA_VERSION, '<='))
-			{
-				$installationPossible = true;
-			}
-		}
-		else
-		{
-			if (version_compare($version[0], IA_VERSION, '<=')
-				&& version_compare($version[1], IA_VERSION, '>='))
-			{
-				$installationPossible = true;
-			}
-		}
-
-		if (!$installationPossible)
+		if (!$this->_checkCompatibility($iaModule->itemData['compatibility']))
 		{
 			$result['message'] = iaLanguage::get('incompatible');
 			$result['error'] = true;
@@ -932,7 +922,7 @@ class iaBackendController extends iaAbstractControllerBackend
 				else
 				{
 					$result['groups'] = $iaModule->getMenuGroups();
-					$result['message'] = (iaModule::ACTION_INSTALL == $action)
+					$result['message'] = iaModule::ACTION_INSTALL == $action
 						? iaLanguage::getf('plugin_installed', ['name' => $iaModule->itemData['info']['title']])
 						: iaLanguage::getf('plugin_reinstalled', ['name' => $iaModule->itemData['info']['title']]);
 
