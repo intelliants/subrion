@@ -136,10 +136,13 @@ Ext.onReady(function() {
 			success: function(response) {
 				intelli.modules.refresh(response);
 
-				var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
+				if (response.result)
+				{
+					var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
 
-				$this.closest('.card').addClass('card--active');
-				$this.replaceWith(installedStatusHtml);
+					$this.closest('.card').addClass('card--active');
+					$this.replaceWith(installedStatusHtml);
+				}
 			}
 		});
 	});
@@ -233,14 +236,17 @@ Ext.onReady(function() {
 						success: function(response) {
 							intelli.modules.refresh(response);
 
-							var installBtnHtml = '<a href="' + intelli.modules.url + type + '/' + module + '/install/" class="btn btn-success btn-xs pull-right js-install" data-module="' + module + '" data-type="' + type + '" data-remote="' + remote + '">' + _t('install') + '</a>';
+							if (response.result)
+							{
+								var installBtnHtml = '<a href="' + intelli.modules.url + type + '/' + module + '/install/" class="btn btn-success btn-xs pull-right js-install" data-module="' + module + '" data-type="' + type + '" data-remote="' + remote + '">' + _t('install') + '</a>';
 
-							$this.closest('.card').removeClass('card--active')
-							.find('.card__actions__status').replaceWith(installBtnHtml);
+								$this.closest('.card').removeClass('card--active')
+								.find('.card__actions__status').replaceWith(installBtnHtml);
 
-							// hide buttons
-							$this.closest('ul').find('.js-reinstall').hide();
-							$this.closest('li').hide();
+								// hide buttons
+								$this.closest('ul').find('.js-reinstall').hide();
+								$this.closest('li').hide();
+							}
 						}
 					});
 				}
