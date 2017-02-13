@@ -298,3 +298,74 @@
 		</div>
 	</div>
 </div>
+
+<div class="c-el-sec">
+	<div class="container">
+		<div class="c-el-sec__head">Pricing tables</div>
+		<div class="c-el-sec__content">
+			<p>Here is an example of pricing tables. This layout can be integrated into plans page.</p>
+
+			<div class="pricing-table">
+				<div class="row">
+					<div class="col-md-4">
+						<div class="pricing-table__item">
+							<div class="pricing-table__item__title">Starter</div>
+							<div class="pricing-table__item__subtitle">for individuals</div>
+							<div class="pricing-table__item__price">13.99<sup>USD</sup></div>
+							<div class="pricing-table__item__features">
+								<ul>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+								</ul>
+							</div>
+							<div class="pricing-table__item__action">
+								<a href="#" class="btn btn-default">Buy this plan</a>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="pricing-table__item">
+							<div class="pricing-table__item__title">Business</div>
+							<div class="pricing-table__item__subtitle">for small teams</div>
+							<div class="pricing-table__item__price">23.99<sup>USD</sup></div>
+							<div class="pricing-table__item__features">
+								<ul>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+								</ul>
+							</div>
+							<div class="pricing-table__item__action">
+								<a href="#" class="btn btn-warning">Buy this plan</a>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="pricing-table__item">
+							<div class="pricing-table__item__title">Enterprise</div>
+							<div class="pricing-table__item__subtitle">for individuals</div>
+							<div class="pricing-table__item__price">33.99<sup>USD</sup></div>
+							<div class="pricing-table__item__features">
+								<ul>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+									<li>Feature description in one line</li>
+								</ul>
+							</div>
+							<div class="pricing-table__item__action">
+								<a href="#" class="btn btn-default">Buy this plan</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
