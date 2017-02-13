@@ -80,6 +80,11 @@ class iaBackendController extends iaAbstractControllerBackend
 //		$dir = in_array($params['dir'], [iaDb::ORDER_ASC, iaDb::ORDER_DESC]) ? $params['dir'] : iaDb::ORDER_ASC;
 //		$filter = empty($params['filter']) ? '' : $params['filter'];
 
+		if (2 == count($this->_iaCore->requestPath))
+		{
+			$this->_processAction($iaView);
+		}
+
 		switch ($iaView->name())
 		{
 			case 'packages':
@@ -109,11 +114,6 @@ class iaBackendController extends iaAbstractControllerBackend
 				return iaView::accessDenied();
 		}
 		$iaView->assign('modules', $this->_modules);
-
-		if (2 == count($this->_iaCore->requestPath))
-		{
-			$this->_processAction($iaView);
-		}
 
 		$iaView->display($this->_template);
 	}
