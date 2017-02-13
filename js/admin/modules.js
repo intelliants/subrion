@@ -233,10 +233,14 @@ Ext.onReady(function() {
 						success: function(response) {
 							intelli.modules.refresh(response);
 
-							var installBtnHtml = '<a href="' + intelli.config.admin_url + '/modules/' + type + '/' + module + '/install/" class="btn btn-success btn-xs pull-right js-install" data-module="' + module + '" data-type="' + type + '" data-remote="' + remote + '">' + _t('install') + '</a>';
+							var installBtnHtml = '<a href="' + intelli.modules.url + type + '/' + module + '/install/" class="btn btn-success btn-xs pull-right js-install" data-module="' + module + '" data-type="' + type + '" data-remote="' + remote + '">' + _t('install') + '</a>';
 
 							$this.closest('.card').removeClass('card--active')
 							.find('.card__actions__status').replaceWith(installBtnHtml);
+
+							// hide buttons
+							$this.closest('ul').find('.js-reinstall').hide();
+							$this.closest('li').hide();
 						}
 					});
 				}
