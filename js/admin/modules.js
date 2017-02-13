@@ -115,10 +115,11 @@ Ext.onReady(function() {
 	$('.js-install').on('click', function(e) {
 		e.preventDefault();
 
-		var module = $(this).data('module'),
-			type = $(this).data('type'),
-			remote = $(this).data['remote'],
-			url = $(this).attr('href');
+		var $this = $(this),
+			module = $this.data('module'),
+			type = $this.data('type'),
+			remote = $this.data['remote'],
+			url = $this.attr('href');
 
 		if ('packages' == type)
 		{
@@ -144,7 +145,13 @@ Ext.onReady(function() {
 					failure: intelli.modules.failure,
 					type: 'POST',
 					url: intelli.modules.url + type + '/' + module + '/install.json',
-					success: intelli.modules.refresh
+					success: function() {
+						intelli.modules.refresh;
+
+						var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + intelli.lang.installed + '</span>';
+
+						$this.replaceWith(installedStatusHtml);
+					}
 				});
 			}
 		});
