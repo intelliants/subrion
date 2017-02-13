@@ -209,12 +209,12 @@ switch ($step)
 		$template = 'default';
 		$templates = [];
 
-		$directory = opendir(IA_FRONT_TEMPLATES);
+		$directory = opendir(IA_HOME . 'templates' . IA_DS);
 		while ($file = readdir($directory))
 		{
 			if (substr($file, 0, 1) != '.' && '_common' != $file)
 			{
-				if (is_dir(IA_FRONT_TEMPLATES . $file))
+				if (is_dir(IA_HOME . 'templates' . IA_DS . $file))
 				{
 					$templates[] = $file;
 				}
