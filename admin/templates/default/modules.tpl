@@ -111,7 +111,7 @@
 								<span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
 							{elseif !empty($module.buttons.activate)}
 								<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='deactivated'}</span>
-							{elseif empty($module.buttons.download)}
+							{elseif !empty($module.buttons.download)}
 								<span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='unable_to_install'}</span>
 							{elseif $module.price > 0}
 								<a href="{$module.url}" target="_blank" class="btn btn-success btn-xs pull-right">{lang key='buy'} ${$module.price}</a>
