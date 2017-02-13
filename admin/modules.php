@@ -1076,9 +1076,8 @@ class iaBackendController extends iaAbstractControllerBackend
 	private function _getTemplatesList()
 	{
 		$this->_getLocal(IA_FRONT_TEMPLATES);
-		$templates = $this->_modules;
-		$remoteTemplates = [];
 
+		$remoteTemplates = [];
 		if ($this->_iaCore->get('allow_remote_templates'))
 		{
 			if ($cachedData = $this->_iaCore->iaCache->get('subrion_templates', 3600, true))
@@ -1105,7 +1104,7 @@ class iaBackendController extends iaAbstractControllerBackend
 								$templateInfo['summary'] = $templateInfo['description'];
 
 								// exclude installed templates
-								if (!array_key_exists($templateInfo['name'], $templates))
+								if (!array_key_exists($templateInfo['name'], $this->_modules))
 								{
 									$buttons['docs'] = 'https://subrion.org/template/' . $templateInfo['name'] . '.html';
 									$buttons['download'] = true;
@@ -1117,7 +1116,7 @@ class iaBackendController extends iaAbstractControllerBackend
 									$templateInfo['status'] = 'notinstall';
 									$templateInfo['remote'] = true;
 
-									$remoteTemplates[] = $templateInfo;
+									$remoteTemplates[$templateInfo['name']] = $templateInfo;
 								}
 							}
 
@@ -1138,13 +1137,13 @@ class iaBackendController extends iaAbstractControllerBackend
 				}
 			}
 		}
-		$_templates = array_merge($templates, $remoteTemplates);
+		$this->_modules = array_merge($this->_modules, $remoteTemplates);
 
 		$moduleName = $this->_iaCore->get('tmpl');
-		$activeTemplate = $_templates[$moduleName];
-		unset($_templates[$moduleName]);
+		$activeTemplate = $this->_modules[$moduleName];
+		unset($this->_modules[$moduleName]);
 
-		return [$moduleName => $activeTemplate] + $_templates;
+		$this->_modules = [$moduleName => $activeTemplate] + $this->_modules;
 	}
 
 	/**
