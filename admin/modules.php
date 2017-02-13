@@ -632,6 +632,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 					$moduleNames[] = $data['name'];
 
+					$buttons['docs'] = 'https://subrion.org/package/' . $data['name'] . '.html';
+
 					$result[] = [
 						'title' => $data['info']['title'],
 						'version' => $data['info']['version'],
