@@ -10,10 +10,10 @@ engines:
         enabled: false
     config:
       languages:
-      - javascript
-        mass_threshold: 80
-      - php
-        mass_threshold: 56
+        javascript:
+          - mass_threshold: 80
+        php:
+          - mass_threshold: 56
   fixme:
     enabled: false
   phpmd:
