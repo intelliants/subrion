@@ -1214,6 +1214,7 @@ class iaBackendController extends iaAbstractControllerBackend
 			$buttons['reinstall'] = $this->_iaCore->get('tmpl') == $folder;
 			$buttons['install'] = $compatible && !$buttons['reinstall'];
 			$buttons['docs'] = 'https://subrion.org/template/' . $module['name'] . '.html';
+			$buttons['config'] = $buttons['reinstall'] ? ['url' => 'template_' . $module['name'], 'anchor' => ''] : false;
 
 			$module = [
 				'name' => $module['name'],
