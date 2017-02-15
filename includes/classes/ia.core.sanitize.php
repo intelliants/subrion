@@ -107,8 +107,7 @@ class iaSanitize extends abstractUtil
 	*/
 	public static function snippet($text, $length = 600)
 	{
-		$iaUtil = iaCore::instance()->factory('util');
-
+		iaCore::instance()->factory('util');
 		iaUtil::loadUTF8Functions();
 
 		// Strip HTML and BB codes
@@ -116,7 +115,7 @@ class iaSanitize extends abstractUtil
 		$text = preg_replace($pattern, '', $text);
 
 		// remove repeated spaces and new lines
-		$text = preg_replace('/\s{2,}/', PHP_EOL, $text);
+		$text = preg_replace('#\s{2,}#', PHP_EOL, $text);
 		$text = trim($text, PHP_EOL);
 
 		if (utf8_strlen($text) > $length)
@@ -127,7 +126,7 @@ class iaSanitize extends abstractUtil
 			{
 				$end_pos = $matches[1][1];
 				$text = utf8_substr($text, 0, $end_pos + 1);
-				$text .= ' ...';
+				$text.= ' ...';
 			}
 		}
 
