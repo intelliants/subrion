@@ -370,21 +370,41 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 	{
 		$output = [];
 
-		$rowsCount = $this->_iaDb->one(iaDb::STMT_COUNT_ROWS);
-		$dynamicLoadMode = ($rowsCount > 500);
+		$dynamicLoadMode = ((int)$this->_iaDb->one(iaDb::STMT_COUNT_ROWS) > 150);
+		$noRootMode = isset($data['noroot']) && '' == $data['noroot'];
 
-		$where = $dynamicLoadMode ? sprintf('`parent_id` = %d', (int)$data['id']) : iaDb::EMPTY_CONDITION;
+		$rootId = $noRootMode ? 1 : -1;
+		$parentId = isset($data['id']) && is_numeric($data['id'])
+			? (int)$data['id']
+			: $rootId;
+
+		$where = $dynamicLoadMode
+			? '`parent_id` = ' . $parentId
+			: ($noRootMode ? '`id` != ' . $rootId : iaDb::EMPTY_CONDITION);
+
+		// TODO: better solution should be found here. this code will break jstree composition in case if
+		// category to be excluded from the list has children of 2 and more levels deeper
+		empty($data['cid']) || $where.= ' AND `id` != ' . (int)$data['cid'] . ' AND `parent_id` != ' . (int)$data['cid'];
+
 		$where.= ' ORDER BY `title`';
 
-		$rows = $this->_iaDb->all(['id', 'title', 'parent_id', 'child'], $where);
+		$rows = $this->_iaDb->all(['id', 'title' => 'title_' . $this->_iaCore->language['iso'], 'parent_id', 'child'], $where);
 
 		foreach ($rows as $row)
 		{
 			$entry = ['id' => $row['id'], 'text' => $row['title']];
 
-			$dynamicLoadMode
-				? $entry['children'] = $row['child'] && $row['child'] != $row['id']
-				: $entry['parent'] = (0 == $row['parent_id']) ? '#' : $row['parent_id'];
+			if ($dynamicLoadMode)
+			{
+				$entry['children'] = ($row['child'] && $row['child'] != $row['id']) || 0 === (int)$row['id'];
+			}
+			else
+			{
+				$entry['state'] = [];
+				$entry['parent'] = $noRootMode
+					? (0 == $row['parent_id'] ? '#' : $row['parent_id'])
+					: (0 == $row['id'] ? '#' : $row['parent_id']);
+			}
 
 			$output[] = $entry;
 		}

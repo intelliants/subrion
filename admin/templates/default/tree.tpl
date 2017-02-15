@@ -22,7 +22,7 @@ $(function()
 		url: '{$url}',
 		onchange: intelli.fillUrlBox,{if iaCore::ACTION_EDIT == $pageAction}
 		nodeSelected: $('#input-tree').val(),
-		nodeOpened: [{$item.parents}],{/if}
+		nodeOpened: [0,{$item.parents}],{/if}
 		search: {if $search}true{else}false{/if}
 	});
 });

@@ -52,12 +52,12 @@ class iaBlog extends abstractModuleFront
 		return $result;
 	}
 
-	public function coreSearch($stmt, $start, $limit, $order)
+	public function coreSearch($query, $start, $limit, $order)
 	{
 		$where = '(b.`title` LIKE :query OR b.`body` LIKE :query)';
 		$this->iaDb->bind($where, ['query' => '%' . iaSanitize::sql($query) . '%']);
 
-		$rows = $this->get($start, $limit, $where);
+		$rows = $this->get(0, $limit, $where);
 
 		return [$this->iaDb->foundRows(), $rows];
 	}
