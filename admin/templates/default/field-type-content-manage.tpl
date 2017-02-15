@@ -34,13 +34,13 @@
 		{$field_inner[$fieldName]}
 	{else}
 
-	{if !empty($item.$fieldName)}
+	{if !empty($item[$fieldName])}
 		{if iaField::CHECKBOX == $type}
-			{$value = ','|explode:$item.$fieldName}
+			{$value = ','|explode:$item[$fieldName]}
 		{elseif in_array($type, [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])}
-			{$value = $item.$fieldName|unserialize}
+			{$value = $item[$fieldName]|unserialize}
 		{else}
-			{$value = $item.$fieldName}
+			{$value = $item[$fieldName]}
 		{/if}
 	{else}
 		{$value = $field.default}
