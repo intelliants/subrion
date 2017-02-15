@@ -2319,6 +2319,11 @@ class iaModule extends abstractCore
 					$entry['imagetype_primary'] = iaField::IMAGE_TYPE_LARGE;
 					$entry['imagetype_thumbnail'] = iaField::IMAGE_TYPE_THUMBNAIL;
 				}
+
+				if (iaField::IMAGE == $entry['type'] && !$entry['length'])
+				{
+					$entry['length'] = 1;
+				}
 			}
 
 			unset($entry['item_pages'], $entry['table_name'], $entry['class_name'], $entry['parent'],
