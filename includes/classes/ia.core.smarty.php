@@ -629,9 +629,7 @@ class iaSmarty extends Smarty
 			$d = $iaCore->get('gravatar_default_image') ? IA_CLEAR_URL . $iaCore->get('gravatar_default_image') : $iaCore->get('gravatar_type');
 			$s = isset($params['gravatar_width']) ? (int)$params['gravatar_width'] : $iaCore->get('gravatar_size');
 			$r = $iaCore->get('gravatar_rating');
-			$p = $iaCore->get('gravatar_secure') ? 'https' : 'http';
-
-			$url = $p . '://www.gravatar.com/avatar/' . md5(strtolower(trim($params['email']))) . "?s=$s&d=$d&r=$r";
+			$url = '//www.gravatar.com/avatar/' . md5(strtolower(trim($params['email']))) . "?s=$s&d=$d&r=$r";
 		}
 		else
 		{
