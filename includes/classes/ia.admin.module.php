@@ -250,11 +250,11 @@ class iaModule extends abstractCore
 				{
 					if (!$exists && $shouldBeExist)
 					{
-						$messageCode = 'installation_extra_requirement_exist';
+						$messageCode = 'installation_module_requirement_exist';
 					}
 					elseif ($exists && !$shouldBeExist)
 					{
-						$messageCode = 'installation_extra_requirement_doesnot_exist';
+						$messageCode = 'installation_module_requirement_doesnot_exist';
 					}
 					if (isset($messageCode))
 					{
@@ -262,8 +262,9 @@ class iaModule extends abstractCore
 						$this->error = true;
 					}
 				}
-				else {
-					$this->setMessage(iaLanguage::get('installation_extra_requirement_incorrect'));
+				else
+				{
+					$this->setMessage(iaLanguage::get('installation_module_requirement_incorrect'));
 				}
 			}
 		}
