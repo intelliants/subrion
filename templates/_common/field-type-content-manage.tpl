@@ -4,18 +4,20 @@
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
-{if isset($item.$fieldName)}
+{if isset($item[$fieldName])}
 	{if iaField::CHECKBOX == $type}
-		{$value = ','|explode:$item.$fieldName}
+		{$value = ','|explode:$item[$fieldName]}
+	{elseif in_array($type, [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])}
+		{$value = $item[$fieldName]|unserialize}
 	{else}
-		{$value = $item.$fieldName}
+		{$value = $item[$fieldName]}
 	{/if}
 {else}
 	{$value = $field.default}
 {/if}
 
 {if isset($field.disabled) && $field.disabled}
-	<input type="hidden" name="{$fieldName}" value="{$value}">
+	<input type="hidden" name="{$fieldName}" value="{$value|escape:'html'}">
 {/if}
 
 <div class="form-group{if iaField::TEXTAREA == $type} form-group--textarea{/if} {$field.class} {$field.relation}{if $field.for_plan && !$field.required} form-group--plan" style="display:none;{/if}" id="{$fieldName}_fieldzone">
@@ -26,12 +28,14 @@
 
 	{switch $type}
 		{case iaField::TEXT break}
+			{if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
 			<input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::NUMBER break}
 			<input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::TEXTAREA break}
+			{if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
 			{if !$field.use_editor}
 				<textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
 				{if $field.length > 0}
