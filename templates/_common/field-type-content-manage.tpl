@@ -159,29 +159,23 @@ $(function()
 			{/if}
 
 			<div class="upload-list" id="wrap_{$fieldName}" {if $max_num <= 0}style="display: none;"{/if}>
-				<div class="row upload-list__item">
-					<div class="col-md-6">
-						<div class="input-group js-files">
+				<div class="upload-list__item">
+					<div class="input-group js-files">
+						<div class="input-group-btn">
+							<span class="btn btn-primary btn-file">
+								{lang key='browse'} <input type="file" name="{$fieldName}[]">
+							</span>
+						</div>
+						<input type="text" readonly class="form-control js-file-name">
+						{if $max_num > 0}
 							<div class="input-group-btn">
-								<span class="btn btn-primary btn-file">
-									{lang key='browse'} <input type="file" name="{$fieldName}[]">
-								</span>
+								<button type="button" class="js-add-img btn btn-default"><span class="fa fa-plus"></span></button>
+								<button type="button" class="js-remove-img btn btn-default"><span class="fa fa-minus"></span></button>
 							</div>
-							<input type="text" readonly class="form-control js-file-name">
-						</div>
-					</div>
-					<div class="col-md-6">
-						<div class="input-group">
-							{if $max_num > 0}
-								<div class="input-group-btn">
-									<button type="button" class="js-add-img btn btn-default"><span class="fa fa-plus"></span></button>
-									<button type="button" class="js-remove-img btn btn-default"><span class="fa fa-minus"></span></button>
-								</div>
-							{/if}
-						</div>
+						{/if}
 					</div>
 				</div>
-				
+
 				<input type="hidden" value="{$max_num}" id="{$fieldName}">
 			</div>
 
