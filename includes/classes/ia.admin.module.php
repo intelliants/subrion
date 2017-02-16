@@ -635,7 +635,7 @@ class iaModule extends abstractCore
 			{
 				if (!$this->iaDb->exists('`item` = :item', $item))
 				{
-					$iaDb->insert(array_merge($item, ['package' => $this->itemData['name']]));
+					$iaDb->insert(array_merge($item, ['module' => $this->itemData['name']]));
 				}
 			}
 
@@ -732,7 +732,7 @@ class iaModule extends abstractCore
 
 		$code = $iaDb->row_bind(['uninstall_code', 'uninstall_sql', 'rollback_data'], '`name` = :name', ['name' => $moduleName], self::getTable());
 
-		if ($itemsList = $iaDb->onefield('item', "`package` = '{$moduleName}'", null, null, 'items'))
+		if ($itemsList = $iaDb->onefield('item', iaDb::convertIds($moduleName, 'module'), null, null, 'items'))
 		{
 			$where = "`item` IN ('" . implode("','", $itemsList) . "')";
 			$iaDb->cascadeDelete(['items_pages', 'favorites', 'views_log', 'payment_plans_options'], $where);
@@ -838,8 +838,8 @@ class iaModule extends abstractCore
 
 		$entry = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', ['name' => $moduleName], self::getTable());
 
-		$iaDb->delete('`name` = :plugin', self::getTable(), ['plugin' => $moduleName]);
-		$iaDb->delete('`package` = :plugin', 'items', ['plugin' => $moduleName]);
+		$iaDb->delete('`name` = :module', self::getTable(), ['module' => $moduleName]);
+		$iaDb->delete('`module` = :module', 'items', ['module' => $moduleName]);
 
 		empty($entry) || $this->_processCategory($entry, self::ACTION_UNINSTALL);
 
@@ -1338,7 +1338,7 @@ class iaModule extends abstractCore
 			$iaDb->setTable('items');
 			foreach ($this->itemData['items'] as $item)
 			{
-				$iaDb->insert(array_merge($item, ['package' => $this->itemData['name']]));
+				$iaDb->insert(array_merge($item, ['module' => $this->itemData['name']]));
 			}
 			$iaDb->resetTable();
 		}
