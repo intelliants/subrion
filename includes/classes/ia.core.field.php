@@ -1063,7 +1063,11 @@ SQL;
 		else
 		{
 			$this->alterColumnScheme($dbTable, $fieldData);
-			$this->alterColumnIndex($dbTable, $fieldData['name'], $fieldData['searchable']);
+
+			if (in_array($fieldData['type'], [self::TEXT, self::TEXTAREA]))
+			{
+				$this->alterColumnIndex($dbTable, $fieldData['name'], $fieldData['searchable']);
+			}
 		}
 	}
 
@@ -1215,7 +1219,8 @@ SQL;
 				}
 		}
 
-		$result.= in_array($fieldData['type'], [self::COMBO, self::RADIO]) ? 'NULL' : 'NOT NULL';
+		//$result.= in_array($fieldData['type'], [self::COMBO, self::RADIO]) ? 'NULL' : 'NOT NULL';
+		$result.= $fieldData['allow_null'] ? 'NULL' : 'NOT NULL';
 
 		return $result;
 	}
