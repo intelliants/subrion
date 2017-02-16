@@ -257,27 +257,32 @@
 		<div class="wrap-group" id="js-plan-options">
 			<div class="wrap-group-heading">{lang key='options'}</div>
 			<p class="help-block"{if $item.item} style="display: none;"{/if}>{lang key='choose_item'}</p>
+
 			{foreach $options as $itemName => $group}
 				{foreach $group as $option}
-				<div class="row" data-item="{$itemName}"{if $item.item != $itemName} style="display: none"{/if}>
-					<label class="col col-lg-2 control-label">{lang key="plan_option_{$itemName}_{$option.name}"}</label>
+					<div class="row plan-options" data-item="{$itemName}"{if $item.item != $itemName} style="display: none"{/if}>
+						<label class="col col-lg-2 control-label">{lang key="plan_option_{$itemName}_{$option.name}"}</label>
 
-					<div class="col col-lg-{if 'int' == $option.type || 'float' == $option.type}1{else}4{/if}">
-						{switch $option.type}
-						{case 'int' break}
-							<input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
-						{case 'float' break}
-							<input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
-						{case 'bool' break}
-							{html_radio_switcher value={$option.values.value} name="options[{$option.id}][value]"}
-						{default}
-							<input type="text" name="options[{$option.id}][value]" value="{$option.values.value|escape:'html'}">
-						{/switch}
-						{if $option.chargeable}
-							<span style="margin-left: 40px;{if !$option.values.value} display: none{/if}">{lang key='price'}:&nbsp; <input type="text" style="display: inline; width: 90px" name="options[{$option.id}][price]" class="js-filter-numeric" maxlength="8" value="{$option.values.price}"></span>
-						{/if}
+						<div class="col col-lg-4">
+							{switch $option.type}
+								{case 'int' break}
+									<input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
+								{case 'float' break}
+									<input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
+								{case 'bool' break}
+									{html_radio_switcher value={$option.values.value} name="options[{$option.id}][value]"}
+								{default}
+									<input type="text" name="options[{$option.id}][value]" value="{$option.values.value|escape:'html'}">
+							{/switch}
+
+							{if $option.chargeable}
+								<div class="plan-options__price"{if !$option.values.value} style="display:none;"{/if}>
+									{lang key='price'}:
+									<input type="text" name="options[{$option.id}][price]" class="js-filter-numeric" maxlength="8" value="{$option.values.price}">
+								</div>
+							{/if}
+						</div>
 					</div>
-				</div>
 				{/foreach}
 			{/foreach}
 		</div>
