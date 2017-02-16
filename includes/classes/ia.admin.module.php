@@ -484,7 +484,7 @@ class iaModule extends abstractCore
 
 			$maxOrder = $iaDb->getMaxOrder();
 
-			foreach ($this->itemData['pages']['front'] as $title => $page)
+			foreach ($this->itemData['pages']['front'] as $page)
 			{
 				if ($page['blocks'] && ($ids = $this->iaDb->onefield(iaDb::ID_COLUMN_SELECTION,
 						"`name` IN ('" . implode("','", $page['blocks']) . "')", null, null, iaBlock::getTable())))
@@ -495,13 +495,14 @@ class iaModule extends abstractCore
 					}
 				}
 
+				$title = $page['title'];
 				$content = empty($page['contents']) ? null : $page['contents'];
 
 				is_int($page['group']) || $page['group'] = $this->_lookupGroupId($page['group']);
 				$page['last_updated'] = date(iaDb::DATETIME_FORMAT);
 				$page['order'] = ++$maxOrder;
 
-				unset($page['blocks']);
+				unset($page['title'], $page['blocks']);
 
 				$result = $iaDb->exists('`name` = :name', $page)
 					? $iaDb->update($page, iaDb::convertIds($page['name'], 'name'))
@@ -1080,7 +1081,7 @@ class iaModule extends abstractCore
 			$maxOrder = $iaDb->getMaxOrder();
 			$existPages = $iaDb->keyvalue(['name', 'id']);
 
-			foreach ($this->itemData['pages']['front'] as $title => $page)
+			foreach ($this->itemData['pages']['front'] as $page)
 			{
 				if (!isset($existPages[$page['name']]))
 				{
@@ -1089,11 +1090,12 @@ class iaModule extends abstractCore
 						$iaDb->insert(['page_name' => $page['name'], 'item' => $page['fields_item']], null, 'items_pages');
 					}
 
+					$title = $page['title'];
 					$blocks = empty($page['blocks']) ? false : $page['blocks'];
 					$menus = empty($page['menus']) ? [] : explode(',', $page['menus']);
 					$contents = empty($page['contents']) ? false : $page['contents'];
 
-					unset($page['blocks'], $page['menus'], $page['contents']);
+					unset($page['title'], $page['blocks'], $page['menus'], $page['contents']);
 
 					$page['group'] = $pageGroups[$page['group']];
 
@@ -1640,7 +1642,7 @@ class iaModule extends abstractCore
 			case 'page':
 				if ($this->_checkPath('adminpages'))
 				{
-					$this->itemData['pages']['admin'][$text] = [
+					$this->itemData['pages']['admin'][] = [
 						'name' => $this->_attr('name'),
 						'filename' => $this->_attr('filename'),
 						'alias' => $this->_attr('url'),
@@ -1650,7 +1652,8 @@ class iaModule extends abstractCore
 						'menus' => $this->_attr('menus'),
 						'action' => $this->_attr('action', iaCore::ACTION_READ),
 						'parent' => $this->_attr('parent'),
-						'module' => $this->itemData['name']
+						'module' => $this->itemData['name'],
+						'title' => $text
 					];
 				}
 				elseif ($this->_checkPath('pages'))
@@ -1663,7 +1666,7 @@ class iaModule extends abstractCore
 					$blocks = empty($blocks) ? null : explode(',', $blocks);
 
 					// TODO: add pages param to display some existing blocks on new page
-					$this->itemData['pages']['front'][$text] = [
+					$this->itemData['pages']['front'][] = [
 						'name' => $this->_attr('name'),
 						'filename' => $this->_attr('filename'),
 						'custom_tpl' => (bool)$this->_attr('template', 0),
@@ -1682,7 +1685,8 @@ class iaModule extends abstractCore
 						'action' => $this->_attr('action', iaCore::ACTION_READ),
 						'parent' => $this->_attr('parent'),
 						'suburl' => $this->_attr('suburl'),
-						'fields_item' => $this->_attr('fields_item', '')
+						'fields_item' => $this->_attr('fields_item', ''),
+						'title' => $text
 					];
 				}
 				break;
@@ -2398,8 +2402,11 @@ class iaModule extends abstractCore
 
 		$this->iaDb->delete(iaDb::convertIds($this->itemData['name'], 'module'));
 
-		foreach ($entries as $title => $entry)
+		foreach ($entries as $entry)
 		{
+			$title = $entry['title'];
+			unset($entry['title']);
+
 			empty($entry['group']) || ($this->_menuGroups[] = $entry['group']);
 
 			$entry['group'] = $this->_lookupGroupId($entry['group']);
@@ -2409,6 +2416,7 @@ class iaModule extends abstractCore
 			empty($entry['name']) && $entry['attr'] = iaUtil::generateToken(8);
 
 			$this->iaDb->insert($entry);
+
 			$this->_addPhrase('page_title_' . ($entry['name'] ? $entry['name'] : $entry['attr']), $title, iaLanguage::CATEGORY_ADMIN);
 		}
 
