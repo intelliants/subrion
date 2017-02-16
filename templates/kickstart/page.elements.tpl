@@ -327,7 +327,7 @@
 						</div>
 					</div>
 					<div class="col-md-4">
-						<div class="pricing-table__item">
+						<div class="pricing-table__item pricing-table__item--featured">
 							<div class="pricing-table__item__title">Business</div>
 							<div class="pricing-table__item__subtitle">for small teams</div>
 							<div class="pricing-table__item__price">23.99<sup>USD</sup></div>
