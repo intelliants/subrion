@@ -735,7 +735,7 @@ class iaModule extends abstractCore
 		if ($itemsList = $iaDb->onefield('item', "`package` = '{$moduleName}'", null, null, 'items'))
 		{
 			$where = "`item` IN ('" . implode("','", $itemsList) . "')";
-			$iaDb->cascadeDelete(['items_pages', 'favorites', 'views_log'], $where);
+			$iaDb->cascadeDelete(['items_pages', 'favorites', 'views_log', 'payment_plans_options'], $where);
 		}
 
 		if ($imageTypeIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($moduleName, 'module'), null, null, iaField::getTableImageTypes()))
