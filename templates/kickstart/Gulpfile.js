@@ -1,7 +1,9 @@
 var fs           = require("fs"),
+    path         = require('path'),
     serverConf   = (fs.existsSync('./config.json')) ? require('./config.json').server : null,
     gulp         = require("gulp"),
     gutil        = require('gulp-util'),
+    notify       = require("gulp-notify"),
     concat       = require("gulp-concat"),
     imagemin     = require("gulp-imagemin"),
     less         = require("gulp-less"),
@@ -37,6 +39,7 @@ gulp.task("images", function() {
 });
 
 gulp.task("less-dev", function(){
+  console.log(path.join(__dirname, "docs/img/icon.png"));
   return gulp.src(config.paths.less.src)
     .pipe(sourcemaps.init())
     .pipe(less().on('error', function(err) {
@@ -45,6 +48,12 @@ gulp.task("less-dev", function(){
     }))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(config.paths.less.dest))
+    .pipe(notify({
+      sound: true,
+      title: "Yay! LESS compiled! =)",
+      message: "File: <%= file.relative %>",
+      icon: path.join(__dirname, "docs/img/icon.png")
+    }))
     .pipe(browserSync.stream());
 });
 

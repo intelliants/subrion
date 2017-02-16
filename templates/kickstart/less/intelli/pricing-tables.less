@@ -1,6 +1,20 @@
 .pricing-table {
   margin: 30px 0;
 
+  [class^="col-md-"] {
+    padding: 0;
+
+    &:first-child {
+      padding-left: 15px;
+      padding-top: 40px;
+    }
+
+    &:last-child {
+      padding-right: 15px;
+      padding-top: 40px;
+    }
+  }
+
   &__item {
     border: 1px solid #eee;
     padding: 30px;
@@ -53,6 +67,16 @@
 
     &__actions {
 
+    }
+
+    // modifiers
+
+    &--featured {
+      padding-top: 70px;
+      padding-bottom: 70px;
+      .box-shadow(0 0 25px rgba(0,0,0,.1));
+      position: relative;
+      z-index: 20;
     }
   }
 }
