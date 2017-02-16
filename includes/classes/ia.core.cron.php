@@ -63,7 +63,9 @@ class iaCron extends abstractCore
 
 		if (is_file(IA_HOME . $data[self::C_CMD]))
 		{
-			if ($this->iaDb->update(['date_next_launch' => $data['lastScheduled']], iaDb::convertIds($job['id']), ['date_prev_launch' => 'UNIX_TIMESTAMP()']))
+			$nextLaunchTs = self::_getLastScheduledRunTime($data);
+
+			if ($this->iaDb->update(['date_next_launch' => $nextLaunchTs], iaDb::convertIds($job['id']), ['date_prev_launch' => 'UNIX_TIMESTAMP()']))
 			{
 				$this->_launchFile($data[self::C_CMD]);
 			}
@@ -86,6 +88,7 @@ class iaCron extends abstractCore
 	protected function _parse($jobString)
 	{
 		$regex = '~^([-0-9,/*]+)\\s+([-0-9,/*]+)\\s+([-0-9,/*]+)\\s+([-0-9,/*]+)\\s+([-0-7,/*]+|(-|/|Sun|Mon|Tue|Wed|Thu|Fri|Sat)+)\\s+([^#]*)\\s*(#.*)?$~i';
+
 		if (preg_match($regex, $jobString, $job))
 		{
 			if ($job[self::C_DOW][0] != self::ASTERISK && !is_numeric($job[self::C_DOW]))
@@ -95,11 +98,10 @@ class iaCron extends abstractCore
 					[0, 1, 2, 3, 4, 5, 6],
 					$job[self::C_DOW]);
 			}
+
 			$job[self::C_CMD] = trim($job[self::C_CMD]);
 			$job[self::C_COMMENT] = isset($job[self::C_COMMENT]) ? trim(substr($job[self::C_COMMENT], 1)) : false;
 			$job[self::C_CRONLINE] = $jobString;
-
-			$job['lastScheduled'] = self::_getLastScheduledRunTime($job);
 		}
 
 		return $job;
@@ -120,6 +122,7 @@ class iaCron extends abstractCore
 	protected function _getLastScheduledRunTime($job)
 	{
 		$extjob = [];
+
 		$this->_parseElement($job[self::C_MINUTE], $extjob[self::C_MINUTE], 60);
 		$this->_parseElement($job[self::C_HOUR], $extjob[self::C_HOUR], 24);
 		$this->_parseElement($job[self::C_DOM], $extjob[self::C_DOM], 31);
@@ -128,6 +131,7 @@ class iaCron extends abstractCore
 
 		$dateArr = getdate();
 		$minutesAhead = 0;
+
 		while (
 			$minutesAhead < 525600 &&
 			(!$extjob[self::C_MINUTE][$dateArr['minutes']] ||
@@ -197,12 +201,7 @@ class iaCron extends abstractCore
 
 	protected static function _leftTrimZeros($number)
 	{
-		while ($number[0] == '0')
-		{
-			$number = substr($number, 1);
-		}
-
-		return $number;
+		return empty($number) ? $number : (int)ltrim((string)$number, '0');
 	}
 
 	protected static function _incDate(&$dateArr, $amount, $unit)
