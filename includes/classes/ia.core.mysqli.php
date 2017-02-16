@@ -664,8 +664,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
 		$table = $tableName ? $this->prefix . $tableName : $this->_table;
 
-		$sql = sprintf('UPDATE `%s` SET %s %s', $table, $stmtSet, $stmtWhere);
-		$this->query($sql);
+		$this->query(sprintf('UPDATE `%s` SET %s %s', $table, $stmtSet, $stmtWhere));
 
 		return $this->getAffected();
 	}
@@ -873,6 +872,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		}
 
 		$array = [];
+
 		if (is_array($values))
 		{
 			foreach ($values as $columnName => $value)
@@ -899,6 +899,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 				$array[] = sprintf($pattern, $columnName, $value);
 			}
 		}
+
 		if (is_array($rawValues) && $rawValues)
 		{
 			foreach ($rawValues as $field => $value)
@@ -906,6 +907,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 				$array[] = "`$field` = $value";
 			}
 		}
+
 		$result = implode(', ', $array);
 
 		return $result;
