@@ -468,7 +468,8 @@ class iaSearch extends abstractCore
 				$search = call_user_func_array([$this->_itemInstance, self::ITEM_SEARCH_METHOD], [
 					$this->_query,
 					$this->_start,
-					$this->_limit
+					$this->_limit,
+					$this->_sorting
 				]);
 
 				$result[$pluginName] = [$search[0], $this->_renderResults($search[1])];
@@ -929,17 +930,17 @@ SQL;
 			return true;
 		}
 
-		$itemData = $this->iaDb->row(['package'], iaDb::convertIds($this->_itemName, 'item'), iaItem::getTable());
+		$itemData = $this->iaDb->row(['module'], iaDb::convertIds($this->_itemName, 'item'), iaItem::getTable());
 
-		if ($itemData && iaCore::CORE != $itemData['package'])
+		if ($itemData && iaCore::CORE != $itemData['module'])
 		{
-			$instance = $this->iaCore->factoryModule('item', $itemData['package'], iaCore::FRONT, $this->_itemName);
+			$instance = $this->iaCore->factoryModule('item', $itemData['module'], iaCore::FRONT, $this->_itemName);
 
 			if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED})
 			{
 				$this->_type = self::SEARCH_PACKAGE;
 				$this->_itemInstance = &$instance;
-				$this->_extrasName = $itemData['package'];
+				$this->_extrasName = $itemData['module'];
 				$this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : [];
 
 				return true;

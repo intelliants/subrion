@@ -81,7 +81,7 @@ class iaItem extends abstractCore
 		$itemsInfo = $this->getItemsInfo($payableOnly);
 		foreach ($itemsInfo as $itemInfo)
 		{
-			$result[$itemInfo['item']] = $itemInfo['package'];
+			$result[$itemInfo['item']] = $itemInfo['module'];
 		}
 
 		return $result;
@@ -100,7 +100,7 @@ class iaItem extends abstractCore
 
 		if (!isset($itemsInfo[(int)$payableOnly]))
 		{
-			$items = $this->iaDb->all('`item`, `package`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
+			$items = $this->iaDb->all('`item`, `module`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
 			$itemsInfo[(int)$payableOnly] = is_array($items) ? $items : [];
 
 			// get active packages
@@ -108,7 +108,7 @@ class iaItem extends abstractCore
 
 			foreach ($items as $key => $itemInfo)
 			{
-				if (iaCore::CORE != $itemInfo['package'] && !in_array($itemInfo['package'], $packages))
+				if (iaCore::CORE != $itemInfo['module'] && !in_array($itemInfo['module'], $packages))
 				{
 					unset($itemsInfo[(int)$payableOnly][$key]);
 				}
