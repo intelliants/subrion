@@ -20,10 +20,15 @@ var config = {
     },
     less: {
       path: "less/**/*.less",
-      src:  [
-        "less/iabootstrap.less",
-        "less/ckeditor.less"
-      ],
+      src: {
+        dev: [
+          "less/iabootstrap.less",
+        ],
+        prod: [
+          "less/iabootstrap.less",
+          "less/ckeditor.less"
+        ]
+      },
       dest: "css"
     }
   }
@@ -39,8 +44,7 @@ gulp.task("images", function() {
 });
 
 gulp.task("less-dev", function(){
-  console.log(path.join(__dirname, "docs/img/icon.png"));
-  return gulp.src(config.paths.less.src)
+  return gulp.src(config.paths.less.src.dev)
     .pipe(sourcemaps.init())
     .pipe(less().on('error', function(err) {
         gutil.log(err);
@@ -58,7 +62,7 @@ gulp.task("less-dev", function(){
 });
 
 gulp.task("less", function() {
-  return gulp.src(config.paths.less.src)
+  return gulp.src(config.paths.less.src.prod)
     .pipe(less().on('error', function(err) {
       gutil.log(err);
       this.emit('end');
@@ -77,7 +81,7 @@ gulp.task('browser-sync', function() {
   if (serverConf !== null) {
     browserSync.init(serverConf);
   } else {
-    console.log('BrowserSync config not specified');
+    console.log('\x1b[31m', '***\nBrowserSync config not specified.\nRunning without livereload...\n***' ,'\x1b[0m');
   }
 });
 
