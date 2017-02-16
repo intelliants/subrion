@@ -24,7 +24,6 @@
  *
  ******************************************************************************/
 
-$iaDb->delete('`time` < (UNIX_TIMESTAMP() - 86400)', 'search'); // 24 hours
 $iaDb->delete('`date` < (UNIX_TIMESTAMP() - 172800)', 'views_log'); // 48 hours
 
 $iaCore->factory('log')->cleanup();

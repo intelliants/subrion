@@ -420,4 +420,18 @@ class iaHelper
 		header('Location: ' . URL_HOME . 'install/' . $url);
 		exit();
 	}
+
+	public static function launchCronTasks()
+	{
+		$iaCore = iaCore::instance();
+		$iaCron = $iaCore->factory('cron');
+
+		$tasks = $iaCore->iaDb->all(iaDb::ID_COLUMN_SELECTION, null, null, null, $iaCron::getTable());
+
+		if ($tasks)
+		{
+			foreach ($tasks as $task)
+				$iaCron->run($task['id']);
+		}
+	}
 }

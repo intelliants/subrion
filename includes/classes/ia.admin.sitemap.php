@@ -99,12 +99,14 @@ class iaSitemap extends abstractCore
 	 */
 	protected function _getEntries($setType)
 	{
+		$iaItem = $this->iaCore->factory('item');
+
 		$result = [];
 		
 		switch ($setType)
 		{
 			case self::LINKS_SET_CORE:
-				$modulesList = $this->iaDb->keyvalue(['name', 'type'], "`status` = 'active'", 'module');
+				$modulesList = $this->iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), $iaItem::getModulesTable());
 				$homePageName = $this->iaCore->get('home_page');
 
 				$stmt = '`nofollow` = 0 AND `service` = 0 AND `status` = :status AND `passw` = :password ORDER BY `order`';
@@ -137,8 +139,6 @@ class iaSitemap extends abstractCore
 				break;
 
 			case self::LINKS_SET_PACKAGES:
-				$iaItem = $this->iaCore->factory('item');
-
 				foreach ($iaItem->getPackageItems() as $itemName => $package)
 				{
 					if (iaCore::CORE != $package)

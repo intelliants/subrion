@@ -98,24 +98,24 @@ class iaItem extends abstractCore
 	{
 		static $itemsInfo;
 
-		if (is_null($itemsInfo))
+		if (!isset($itemsInfo[(int)$payableOnly]))
 		{
-			$itemsInfo = $this->iaDb->all('`item`, `package`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
-			$itemsInfo = is_array($itemsInfo) ? $itemsInfo : [];
+			$items = $this->iaDb->all('`item`, `package`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
+			$itemsInfo[(int)$payableOnly] = is_array($items) ? $items : [];
 
 			// get active packages
 			$packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getModulesTable());
-			foreach($itemsInfo as $key => $itemInfo)
+
+			foreach ($items as $key => $itemInfo)
 			{
-				if ('core' != $itemInfo['package'] && !in_array($itemInfo['package'], $packages))
+				if (iaCore::CORE != $itemInfo['package'] && !in_array($itemInfo['package'], $packages))
 				{
-					unset($itemsInfo[$key]);
+					unset($itemsInfo[(int)$payableOnly][$key]);
 				}
 			}
-
 		}
 
-		return $itemsInfo;
+		return $itemsInfo[(int)$payableOnly];
 	}
 
 	/**

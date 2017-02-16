@@ -509,7 +509,7 @@ HTML;
 					$iaLog->write(iaLog::ACTION_INSTALL, ['type' => 'app']);
 				}
 
-				if (!$error && $builtinPlugins)
+				if (!$error)
 				{
 					$iaModuleInstaller = iaHelper::loadCoreClass('module');
 
@@ -528,6 +528,11 @@ HTML;
 							}
 						}
 					}
+				}
+
+				if (!$error)
+				{
+					iaHelper::launchCronTasks();
 				}
 			}
 
