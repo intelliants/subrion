@@ -28,7 +28,7 @@ $iaItem = $iaCore->factory('item');
 
 $where = '`featured` = 1 AND `featured_end` < NOW()';
 
-foreach ($iaItem->getItems() as $itemName)
+foreach ($iaItem->getItems(true) as $itemName)
 {
 	$values = ['featured' => false, 'featured_start' => null, 'featured_end' => null];
 
