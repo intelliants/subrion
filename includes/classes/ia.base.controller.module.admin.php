@@ -373,10 +373,8 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 		$dynamicLoadMode = ((int)$this->_iaDb->one(iaDb::STMT_COUNT_ROWS) > 150);
 		$noRootMode = isset($data['noroot']) && '' == $data['noroot'];
 
-		$rootId = $noRootMode ? 1 : -1;
-		$parentId = isset($data['id']) && is_numeric($data['id'])
-			? (int)$data['id']
-			: $rootId;
+		$rootId = $noRootMode ? 1 : 0;
+		$parentId = isset($data['id']) && is_numeric($data['id']) ? (int)$data['id'] : $rootId;
 
 		$where = $dynamicLoadMode
 			? '`parent_id` = ' . $parentId
@@ -402,8 +400,8 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 			{
 				$entry['state'] = [];
 				$entry['parent'] = $noRootMode
-					? (0 == $row['parent_id'] ? '#' : $row['parent_id'])
-					: (0 == $row['id'] ? '#' : $row['parent_id']);
+					? ($rootId == $row['parent_id'] ? '#' : $row['parent_id'])
+					: (1 == $row['id'] ? '#' : $row['parent_id']);
 			}
 
 			$output[] = $entry;
