@@ -1,7 +1,13 @@
+# Some servers require this option to be enabled
 Options -MultiViews
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
+
+	# Uncomment two lines below to redirect all non-secure traffic to https://
+	# Make sure you enabled HTTPS in Dashboard / System / System in Subrion CMS
+	# RewriteCond %{HTTPS} off
+	# RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_URI} !(.*)\.(.*)$
