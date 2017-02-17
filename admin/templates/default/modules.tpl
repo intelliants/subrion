@@ -121,6 +121,11 @@
 						</div>
 					</div>
 				</div>
+
+				{if $module@iteration % 3 == 0 && !$module@last}
+					</div>
+					<div class="row">
+				{/if}
 			{/foreach}
 		</div>
 	</div>
