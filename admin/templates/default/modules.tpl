@@ -120,11 +120,6 @@
 							{/if}
 						</div>
 					</div>
-
-					{if $module@iteration % 3 == 0}
-						</div>
-						<div class="row">
-					{/if}
 				</div>
 			{/foreach}
 		</div>
