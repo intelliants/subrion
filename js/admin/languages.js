@@ -304,7 +304,7 @@ Ext.onReady(function()
 	{
 		intelli.sortable('languagesList', {
 			handle: '.uploads-list-item__drag-handle',
-			animation: 0,
+			animation: 150,
 			onEnd: function (e) {
 				var langs = $('.iso-val').map(function() {
 					return $(this).text();
