@@ -119,7 +119,7 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
 			return [];
 		}
 
-		$fields = $this->iaCore->factory('field')->getImageFields($this->getItemName());
+		$fields = $this->iaCore->factory('field')->getSerializedFields($this->getItemName());
 
 		if (!$fields)
 		{

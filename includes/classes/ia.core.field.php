@@ -985,40 +985,34 @@ SQL;
 		return false;
 	}
 
-	public function getImageFields($itemName = null)
-	{
-		return $this->_getFieldNames("`type` IN ('image','pictures')", $itemName);
-	}
-
-	public function getStorageFields($itemName = null)
-	{
-		return $this->_getFieldNames(iaDb::convertIds(self::STORAGE, 'type'), $itemName);
-	}
-
-	public function getUploadFields($itemName = null)
+	public function getUploadFields($itemName)
 	{
 		$where = '`type` IN (:image, :pictures, :storage)';
 		$this->iaDb->bind($where, ['image' => self::IMAGE, 'pictures' => self::PICTURES, 'storage' => self::STORAGE]);
 
-		return $this->_getFieldNames($where, $itemName);
+		return $this->_getFieldNames($itemName, $where);
 	}
 
-	public function getSerializedFields($itemName = null)
+	public function getSerializedFields($itemName)
 	{
-		return $this->_getFieldNames("`type` IN ('image', 'pictures', 'storage')", $itemName);
+		return $this->_getFieldNames($itemName, "`type` IN ('image', 'pictures', 'storage')");
 	}
 
-	public function getMultilingualFields($itemName = null)
+	public function getMultilingualFields($itemName)
 	{
-		return $this->_getFieldNames(iaDb::convertIds(1, 'multilingual'), $itemName);
+		return $this->_getFieldNames($itemName, iaDb::convertIds(1, 'multilingual'));
 	}
 
-	protected function _getFieldNames($condition, $itemName = null)
+	protected function _getFieldNames($itemName, $condition)
 	{
+		if (!$itemName)
+		{
+			return [];
+		}
+
 		static $cache = [];
 
-		$conditions = ["`status` = 'active'", $condition];
-		is_null($itemName) || $conditions[] = iaDb::convertIds($itemName, 'item');
+		$conditions = ["`status` = 'active'", iaDb::convertIds($itemName, 'item'), $condition];
 		$conditions = implode(' AND ', $conditions);
 
 		if (!isset($cache[$conditions]))
