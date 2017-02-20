@@ -12,6 +12,10 @@
 			</div>
 		{/if}
 
+		<div class="text-right">
+			<button class="btn btn-small btn-primary">{lang key='go'}</button>
+		</div>
+
 		{ia_hooker name='smartyFrontFiltersBeforeFields'}
 
 		{foreach $filters.fields as $field}

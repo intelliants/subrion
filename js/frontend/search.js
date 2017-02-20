@@ -52,10 +52,10 @@ $(function()
 			e.preventDefault();
 			intelli.search.run();
 		});
-		$('select, input', $filtersForm).not('.no-js').on('change', function()
+		/*$('select, input', $filtersForm).not('.no-js').on('change', function()
 		{
 			intelli.search.run();
-		});
+		});*/
 
 		var $container = $('#js-search-results-container'),
 			$defaultOptions = $('#js-default-search-options'),
