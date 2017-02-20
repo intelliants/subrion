@@ -1,7 +1,8 @@
 $(function()
 {
 	var $search = $('#input-search-query'),
-		$filtersForm = $('#js-item-filters-form');
+		$filtersForm = $('#js-item-filters-form'),
+		$applyBtn = $('.js-cmd-apply-param', $filtersForm);
 
 	if ($search.length > 0)
 	{
@@ -52,10 +53,24 @@ $(function()
 			e.preventDefault();
 			intelli.search.run();
 		});
-		/*$('select, input', $filtersForm).not('.no-js').on('change', function()
+
+		if ($applyBtn.length)
 		{
-			intelli.search.run();
-		});*/
+			$('input[type="checkbox"], input[type="radio"]', $filtersForm).not('.no-js').on('click', function()
+			{
+				var t = $(this).offset().top,
+					l = $filtersForm.offset().left + $(this).closest('.form-group').outerWidth();
+
+				$applyBtn.offset({top: t, left: l}).show();
+			});
+		}
+		else
+		{
+			$('select, input', $filtersForm).not('.no-js').on('change', function()
+			{
+				intelli.search.run();
+			});
+		}
 
 		var $container = $('#js-search-results-container'),
 			$defaultOptions = $('#js-default-search-options'),

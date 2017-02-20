@@ -12,9 +12,14 @@
 			</div>
 		{/if}
 
+		{if !$core.config.search_instant}
 		<div class="text-right">
-			<button class="btn btn-small btn-primary">{lang key='go'}</button>
+			<button type="submit" class="btn btn-small btn-info">{lang key='go'}</button>
 		</div>
+		<div class="js-cmd-apply-param" style="display: none; position: absolute; z-index: 1">
+			<button class="btn btn-xs btn-warning">{lang key='apply'}</button>
+		</div>
+		{/if}
 
 		{ia_hooker name='smartyFrontFiltersBeforeFields'}
 

@@ -978,6 +978,8 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('miscellaneous', 'captcha', '1', '\'1\',\'0\'', 'radio', 10, '', 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":false}'),
 ('miscellaneous', 'captcha_name', 'kcaptcha', 'kcaptcha,kcaptcha', 'select', 11, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"captcha|1\",\"multilingual\":false}'),
 ('miscellaneous', 'captcha_preview', '', '', 'text', 12, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"captcha|1\",\"multilingual\":false}'),
+('miscellaneous', '', 'Search', '', 'divider', 13, '', 1, 1, ''),
+('miscellaneous', 'search_instant', '1', '\'1\',\'0\'', 'radio', 14, '', 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":false}'),
 
 ('financial', '', 'General', '1', 'divider', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":false}'),
 ('financial', 'currency', 'USD', '', 'text', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":false}'),
@@ -1467,6 +1469,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_captcha', 'Captcha', 'admin'),
 ('config_captcha_name', 'Captcha name', 'admin'),
 ('config_captcha_preview', 'Captcha preview', 'admin'),
+('config_search_instant', 'Instant search', 'admin'),
 ('config_currency', 'Currency', 'admin'),
 ('config_funds_min_deposit', 'Minimum deposit', 'admin'),
 ('config_funds_max_deposit', 'Maximum deposit', 'admin'),
@@ -2648,6 +2651,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('regular_field','Specifies if the field is a host or dependent field.','tooltip'),
 ('required_checks','This PHP code validates the field value when Required Field is ON. Please make sure you use correct code.','tooltip'),
 
+('search_instant','If enabled, the search will begin immediately once an option clicked.','tooltip'),
 ('searchable','Specifies if the field is available to search by on Advanced Search page.','tooltip'),
 ('site','This will be your site name.','tooltip'),
 ('site_email','Email address you wish to get member changes and notifications sent to.','tooltip'),
