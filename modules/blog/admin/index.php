@@ -97,19 +97,25 @@ class iaBackendController extends iaAbstractControllerModuleBackend
 
 		iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
+		$entry['body'] = iaUtil::safeHTML($entry['body']);
+
 		if (!utf8_is_valid($entry['title']))
 		{
 			$entry['title'] = utf8_bad_replace($entry['title']);
-		}
-		if (empty($entry['title']))
-		{
-			$this->addMessage('title_is_empty');
 		}
 
 		if (!utf8_is_valid($entry['body']))
 		{
 			$entry['body'] = utf8_bad_replace($entry['body']);
 		}
+
+		$entry['alias'] = $this->getHelper()->titleAlias(empty($entry['alias']) ? $entry['title'] : $entry['alias']);
+
+		if (empty($entry['title']))
+		{
+			$this->addMessage('title_is_empty');
+		}
+
 		if (empty($entry['body']))
 		{
 			$this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('body')]), false);
@@ -119,8 +125,6 @@ class iaBackendController extends iaAbstractControllerModuleBackend
 		{
 			$entry['date_added'] = date(iaDb::DATETIME_FORMAT);
 		}
-
-		$entry['alias'] = $this->getHelper()->titleAlias(empty($entry['alias']) ? $entry['title'] : $entry['alias']);
 
 		if ($this->getMessages())
 		{

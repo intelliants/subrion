@@ -180,14 +180,14 @@
 					{if in_array($core.page.name, array('login', 'member_registration'))}
 						<div class="page-system">
 							<div class="content__header">
-								<h1>{$core.page.title}</h1>
+								<h1>{$core.page.title|escape:'html'}</h1>
 								<ul class="content__actions">
 									{foreach $core.actions as $name => $action}
 										<li>
 											{if 'action-favorites' == $name}
 												{printFavorites item=$item itemtype=$item.item guests=true}
 											{else}
-												<a data-toggle="tooltip" title="{$action.title}" {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
+												<a data-toggle="tooltip" title="{$action.title|escape:'html'}" {foreach $action.attributes as $key => $value}{$key}="{$value}" {/foreach}>
 													<span class="fa fa-{$name}"></span>
 												</a>
 											{/if}
@@ -218,7 +218,7 @@
 									{ia_blocks block='top'}
 
 									<div class="content__header">
-										<h1>{$core.page.title}</h1>
+										<h1>{$core.page.title|escape:'html'}</h1>
 										<ul class="content__actions">
 											{foreach $core.actions as $name => $action}
 												<li>

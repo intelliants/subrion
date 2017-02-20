@@ -1118,7 +1118,7 @@ class iaSmarty extends Smarty
 		$suffix = iaCore::instance()->get('suffix');
 		$title = empty($params['title']) ? iaCore::instance()->iaView->get('title') : $params['title'];
 
-		return $title . ' ' . $suffix;
+		return iaSanitize::html($title . ' ' . $suffix);
 	}
 
 	public static function displayTreeNodes(array $params)

@@ -213,13 +213,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 					return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 				}
 
-				$title = iaSanitize::tags($entry['title']);
-				iaBreadcrumb::toEnd($title);
-				$iaView->title($title);
+				iaBreadcrumb::toEnd($entry['title']);
+				$iaView->title($entry['title']);
 
 				// add open graph data
 				$openGraph = [
-					'title' => $title,
+					'title' => $entry['title'],
 					'url' => IA_SELF,
 					'description' => $entry['body']
 				];

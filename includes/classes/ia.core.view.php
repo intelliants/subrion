@@ -205,6 +205,7 @@ class iaView extends abstractUtil
 		{
 			return $this->get('title');
 		}
+
 		$this->set('title', $title);
 	}
 
