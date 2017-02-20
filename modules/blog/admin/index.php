@@ -35,7 +35,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
 	protected $_tableBlogTags = 'blog_tags';
 	protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
-	protected $_gridFilters = ['status' => 'equal'];
+	protected $_gridFilters = ['status' => self::EQUAL];
 	protected $_gridQueryMainTableAlias = 'b';
 
 	protected $_phraseAddSuccess = 'blog_entry_added';
