@@ -255,6 +255,8 @@ class iaPatchApplier
 
 	protected function _processModules(array $entries)
 	{
+		require_once IA_INSTALL . 'classes/ia.helper.php';
+
 		foreach ($entries as $entry)
 		{
 			$friendlyName = ucfirst($entry['name']);
