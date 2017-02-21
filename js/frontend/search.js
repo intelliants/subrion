@@ -58,10 +58,12 @@ $(function()
 		{
 			$('input[type="checkbox"], input[type="radio"]', $filtersForm).not('.no-js').on('click', function()
 			{
-				var t = $(this).offset().top,
-					l = $filtersForm.offset().left + $(this).closest('.form-group').outerWidth();
+				$applyBtn.appendTo($(this).closest('.checkbox')).show();
+			});
 
-				$applyBtn.offset({top: t, left: l}).show();
+			$('select, input[type="text"]', $filtersForm).not('.no-js').on('change', function()
+			{
+				$applyBtn.appendTo($(this).closest('.form-group')).show();
 			});
 		}
 		else

@@ -1,24 +1,7 @@
 {if isset($filters.item)}
 	<form class="ia-form ia-form-filters" id="js-item-filters-form" data-item="{$filters.item}" action="{$smarty.const.IA_URL}search/{$filters.item}.json">
-		{if $member}
-			<div class="ia-form-filters__actions">
-				<a href="{$smarty.const.IA_URL}search/my/" class="btn btn-xs btn-success" data-loading-text="{lang key='loading'}" id="js-cmd-open-searches">{lang key='my_searches'}</a>
-				<div class="modal fade" id="js-modal-searches" tabindex="-1" role="dialog">
-					<div class="modal-dialog" role="document"><div class="modal-content"></div></div>
-				</div>
-				{if isset($regular)}
-					<button type="button" class="btn btn-xs btn-default" id="js-cmd-save-search">{lang key='save_this_search'}</button>
-				{/if}
-			</div>
-		{/if}
-
 		{if !$core.config.search_instant}
-		<div class="text-right">
-			<button type="submit" class="btn btn-small btn-info">{lang key='go'}</button>
-		</div>
-		<div class="js-cmd-apply-param" style="display: none; position: absolute; z-index: 1">
-			<button class="btn btn-xs btn-warning">{lang key='apply'}</button>
-		</div>
+			<button class="ia-form-filters__apply js-cmd-apply-param" type="submit">{lang key='apply'}</button>
 		{/if}
 
 		{ia_hooker name='smartyFrontFiltersBeforeFields'}
@@ -92,6 +75,18 @@
 		{/foreach}
 
 		{ia_hooker name='smartyFrontFiltersAfterFields'}
+
+		{if $member}
+			<div class="ia-form-filters__actions">
+				<a href="{$smarty.const.IA_URL}search/my/" class="btn btn-xs btn-success" data-loading-text="{lang key='loading'}" id="js-cmd-open-searches">{lang key='my_searches'}</a>
+				<div class="modal fade" id="js-modal-searches" tabindex="-1" role="dialog">
+					<div class="modal-dialog" role="document"><div class="modal-content"></div></div>
+				</div>
+				{if isset($regular)}
+					<button type="button" class="btn btn-xs btn-default" id="js-cmd-save-search">{lang key='save_this_search'}</button>
+				{/if}
+			</div>
+		{/if}
 	</form>
 	{ia_add_media files='select2, js:intelli/intelli.search, js:frontend/search'}
 {/if}
