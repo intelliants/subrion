@@ -61,7 +61,7 @@ $(function()
 				$applyBtn.appendTo($(this).closest('.checkbox')).show();
 			});
 
-			$('select, input[type="text"]', $filtersForm).not('.no-js').on('change', function()
+			$('select, input[type="text"]', $filtersForm).on('change', function()
 			{
 				$applyBtn.appendTo($(this).closest('.form-group')).show();
 			});
