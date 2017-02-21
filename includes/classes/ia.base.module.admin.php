@@ -109,7 +109,7 @@ abstract class abstractModuleAdmin extends abstractCore
 
 		if (is_null($cachedData))
 		{
-			$cachedData = $this->iaDb->row_bind(['id', 'type', 'title', 'url', 'version'], '`name` = :name', ['name' => $this->getModuleName()], 'module');
+			$cachedData = $this->iaDb->row(['id', 'type', 'title', 'url', 'version'], iaDb::convertIds($this->getModuleName(), 'name'), 'modules');
 
 			$cachedData['url'] = IA_URL . (IA_URL_DELIMITER == $cachedData['url'] ? '' : $cachedData['url']);
 		}
