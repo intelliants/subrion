@@ -100,19 +100,16 @@ $(function()
 		}
 	});
 
-	// hide tab list if no tabs exists
 	$('.tabbable').each(function()
 	{
-		if (!$(this).children('.nav-tabs').children('li').length)
+		var $tabs = $(this).children('.nav-tabs');
+		if (!$tabs.children('li.active').length)
 		{
-			$(this).remove();
+			$tabs.children('li').length
+				? $('a[href*="#"]:first', $tabs).tab('show')
+				: $(this).remove();
 		}
 	});
-
-	if ($('.tabbable').length > 0)
-	{
-		$('.tabbable .nav-tabs li a:first').tab('show');
-	}
 
 	$('input[placeholder]').each(function()
 	{

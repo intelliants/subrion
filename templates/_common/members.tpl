@@ -1,6 +1,6 @@
 <ul class="nav nav-tabs m-b">
 	<li><span>{lang key='sort_by'}</span></li>
-	<li{if !$activeGroup} class="active"{/if}><a href="{$smarty.const.IA_URL}members/?group=all">{lang key='all'}</a></li>
+	<li{if !$activeGroup} class="active"{/if}><a href="{$smarty.const.IA_SELF}?group=all">{lang key='all'}</a></li>
 
 	{if isset($usergroups) && $usergroups}
 		{foreach $usergroups as $entryId => $name}
