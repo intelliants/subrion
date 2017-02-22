@@ -243,6 +243,27 @@ class iaTransaction extends abstractCore
 		return $iaInvoice->create($transaction);
 	}
 
+	public function getLatestTransactions($limit = 10)
+	{
+		$sql = <<<SQL
+SELECT t.`id`, t.`item`, t.`item_id`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, 
+	t.`date_created`, t.`status`, t.`currency`, t.`operation`, t.`plan_id`, t.`reference_id`, 
+	t.`gateway`, IF(t.`fullname` = '', m.`fullname`, t.`fullname`) `user`, IF(t.`status` != 'passed', 1, 0) `delete`
+FROM `:prefix:table_transactions` t 
+LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`)
+ORDER BY t.`date_created`
+LIMIT 0, :limit
+SQL;
+		$sql = iaDb::printf($sql, [
+			'prefix' => $this->iaDb->prefix,
+			'table_members' => iaUsers::getTable(),
+			'table_transactions' => $this->getTable(),
+			'limit' => $limit
+		]);
+
+		return $this->iaDb->getAll($sql);
+	}
+
 	/**
 	 * Filling admin dashboard statistics with the financial information
 	 *

@@ -69,6 +69,46 @@
 			{/foreach}
 		</div>
 
+		{if !empty($transactions)}
+			<div class="widget widget-large" id="widget-latest-transactions">
+				<div class="widget-header"><i class="i-coin"></i> {lang key='transactions'}
+					<ul class="nav nav-pills pull-right">
+						<li><a href="#" class="widget-toggle"><i class="i-chevron-up"></i></a></li>
+					</ul>
+				</div>
+				<div class="widget-content">
+					<table class="table table-light">
+						<thead>
+						<tr>
+							<th>#</th>
+							<th>{lang key='reference_id'}</th>
+							<th>{lang key='member'}</th>
+							<th>{lang key='operation'}</th>
+							<th>{lang key='gateway'}</th>
+							<th>{lang key='date'}</th>
+							<th>{lang key='status'}</th>
+							<th>{lang key='amount'}</th>
+						</tr>
+						</thead>
+						<tbody>
+						{foreach $transactions as $transaction}
+							<tr>
+								<td>{$transaction.id}</td>
+								<td>{$transaction.reference_id}</td>
+								<td>{$transaction.user}</td>
+								<td>{$transaction.operation}</td>
+								<td>{$transaction.gateway}</td>
+								<td>{$transaction.date_created}</td>
+								<td>{$transaction.status}</td>
+								<td>{$transaction.amount}</td>
+							</tr>
+						{/foreach}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{/if}
+
 		{foreach $statistics.package as $itemName => $info}
 		<div class="widget-block">
 			<div class="widget widget-package" id="widget-{$itemName}">

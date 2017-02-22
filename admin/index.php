@@ -199,6 +199,12 @@ class iaBackendController extends iaAbstractControllerBackend
 			$iaView->assign('online_members', $data);
 		}
 
+		if ($customizationMode || !in_array('latest-transactions', $disabledWidgets))
+		{
+			$data = $iaCore->factory('transaction')->getLatestTransactions();
+			$iaView->assign('transactions', $data);
+		}
+
 		if ($iaCore->get('check_for_updates'))
 		{
 			$this->_checkForUpdates();
