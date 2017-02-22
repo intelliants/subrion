@@ -35,6 +35,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	protected $_phraseAddSuccess = 'page_added';
 
+	protected $_permissionsEdit = true;
+
 
 	public function __construct()
 	{
