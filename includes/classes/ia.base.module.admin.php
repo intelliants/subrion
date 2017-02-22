@@ -210,7 +210,9 @@ abstract class abstractModuleAdmin extends abstractCore
 			return false;
 		}
 
-		$result = $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
+		$this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
+
+		$result = (0 === $this->iaDb->getErrorNumber());
 
 		if ($result)
 		{
