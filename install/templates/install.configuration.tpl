@@ -2,7 +2,7 @@
 
 	<div class="widget widget-default">
 		<div class="widget-header">
-			Common
+			General
 		</div>
 		<div class="widget-content">
 			<div class="row">
@@ -46,7 +46,7 @@
 
 	<div class="widget widget-default">
 		<div class="widget-header">
-			MySQL Configuration
+			Database
 		</div>
 		<div class="widget-content">
 			<div class="row">
@@ -79,7 +79,7 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-lg-4 control-label">MySQL Port:</label>
+						<label class="col-lg-4 control-label">DB Port:</label>
 						<div class="col-lg-8">
 							<input type="text" name="dbport" id="dbport" value="<?php echo (int)iaHelper::getPost('dbport', 3306) ?>">
 						</div>
@@ -104,9 +104,7 @@
 				</div>
 				<div class="col col-lg-4">
 					<div class="widget-annotation">
-						<p>Setting up Subrion CMS to run on your server involves 3 simple steps...</p>
-						<p>Please enter the hostname of the server Subrion CMS is to be installed on.</p>
-						<p>Enter the MySQL username, password and database name you wish to use with Subrion CMS.</p>
+						<p>Enter the MySQL, MariaDB, Percona Server, or equivalent database connection and database name you wish to use with Subrion CMS.</p>
 						<p>Enter the a table name prefix to be used by Subrion CMS and select what to do with existing tables from former installations.</p>
 					</div>
 				</div>
@@ -152,7 +150,7 @@
 				</div>
 				<div class="col col-lg-4">
 					<div class="widget-annotation">
-						<p>Please set your admin username. It will be used for logging into your admin panel.</p>
+						<p>Please set your admin username. It will be used for logging into your admin dashboard.</p>
 						<p>You should input admin password. Make sure your entered passwords match each other.</p>
 						<p>Input your email. All the notifications will be sent from this email. It can be changed in your admin panel later.</p>
 					</div>
