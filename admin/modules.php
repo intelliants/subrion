@@ -758,17 +758,20 @@ class iaBackendController extends iaAbstractControllerBackend
 							$pluginInfo = (array)$entry;
 
 							$buttons['docs'] = 'https://subrion.org/template/' . $pluginInfo['name'] . '.html';
-							$buttons['download'] = true;
 
 							// exclude installed plugins
 							if (!in_array($pluginInfo['name'], $_local))
 							{
+								if ((int)$pluginInfo['price'] <= 0)
+								{
+									$buttons['download'] = true;
+								}
+
 								$pluginInfo['summary'] = $pluginInfo['description'];
 								$pluginInfo['date'] = gmdate(iaDb::DATE_FORMAT, $pluginInfo['date']);
 								$pluginInfo['file'] = $pluginInfo['name'];
 								$pluginInfo['status'] = 'remote';
 								$pluginInfo['remote'] = true;
-								$pluginInfo['price'] = $pluginInfo['price'];
 								$pluginInfo['buttons'] = $buttons;
 
 								$pluginsData['plugins'][$pluginInfo['name']] = $pluginInfo;
