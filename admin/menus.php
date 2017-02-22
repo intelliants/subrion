@@ -36,6 +36,8 @@ class iaBackendController extends iaAbstractControllerBackend
 	protected $_phraseGridEntryDeleted = 'menu_deleted';
 	protected $_phraseGridEntriesDeleted = 'menus_deleted';
 
+	protected $_permissionsEdit = true;
+
 
 	public function __construct()
 	{
