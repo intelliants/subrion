@@ -14,14 +14,14 @@
 			</ol>
 
 			{if isset($core.page.info.actions)}
-				<div class="action-buttons">
+				<div class="dropdown action-buttons">
 					{section action $core.page.info.actions max=2}
 						<a href="{$core.page.info.actions[action].url}" class="btn btn-xs {if isset($core.page.info.actions[action].classes)} {$core.page.info.actions[action].classes}{else}btn-success{/if}"><span class="fa fa-{$core.page.info.actions[action].icon}"></span> {$core.page.info.actions[action].title|escape:'html'}</a>
 					{/section}
 
 					{if count($core.page.info.actions) > 2}
-						<a class="btn btn-xs dropdown-toggle" data-toggle="dropdown" href="#">
-							<span class="caret"></span>
+						<a class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" href="#">
+							<span class="fa fa-angle-down"></span>
 						</a>
 						<ul class="dropdown-menu pull-right">
 							{section action $core.page.info.actions start=2}
@@ -29,7 +29,7 @@
 									<li class="divider"></li>
 								{/if}
 								<li>
-									<a href="{$core.page.info.actions[action].url}"{if isset($core.page.info.actions[action].classes)} class="{$core.page.info.actions[action].classes}{/if}"><i class="{$core.page.info.actions[action].icon}"></i> {$core.page.info.actions[action].title|escape:'html'}</a>
+									<a href="{$core.page.info.actions[action].url}"><i class="fa fa-{$core.page.info.actions[action].icon}"></i> {$core.page.info.actions[action].title|escape:'html'}</a>
 								</li>
 							{/section}
 						</ul>
