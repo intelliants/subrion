@@ -1388,57 +1388,10 @@ class iaModule extends abstractCore
 			}
 		}
 
-		$rollbackData = [];
-		if ($this->itemData['changeset'])
-		{
-			$tablesMapping = [
-				'block' => 'blocks',
-				'field' => 'fields',
-				'menu' => 'blocks'
-			];
+		$rollbackData = empty($this->itemData['changeset'])
+			? []
+			: $this->_processChangeset($this->itemData['changeset']);
 
-			foreach ($this->itemData['changeset'] as $entry)
-			{
-				if (!isset($tablesMapping[$entry['type']]))
-				{
-					continue;
-				}
-
-				switch ($entry['type'])
-				{
-					case 'field':
-						list($fieldName, $itemName) = explode('-', $entry['name']);
-						if (empty($fieldName) || empty($itemName)) // incorrect identity specified by template
-						{
-							continue;
-						}
-						$stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", ['name' => $fieldName, 'item' => $itemName]);
-						break;
-					default:
-						$stmt = iaDb::printf("`name` = ':name'", $entry);
-				}
-
-				$tableName = $tablesMapping[$entry['type']];
-				$name = $entry['name'];
-				$type = $entry['type'];
-				$pages = isset($entry['pages']) ? explode(',', $entry['pages']) : [];
-
-				unset($entry['type'], $entry['name'], $entry['pages']);
-
-				$entryData = $iaDb->row('`id`, `' . implode('`,`', array_keys($entry)) . '`', $stmt, $tableName);
-
-				if ($iaDb->update($entry, $stmt, null, $tableName))
-				{
-					if ('field' != $type && isset($entry['sticky']))
-					{
-						$iaBlock->setVisibility($entryData['id'], $entry['sticky'], $pages);
-					}
-					unset($entryData['id']);
-
-					$rollbackData[$tableName][$name] = $entryData;
-				}
-			}
-		}
 		$extraEntry['rollback_data'] = empty($rollbackData) ? '' : serialize($rollbackData);
 
 		if (self::TYPE_PLUGIN == $this->itemData['type'])
@@ -2568,22 +2521,111 @@ class iaModule extends abstractCore
 		}
 	}
 
-	protected function _addPhrase($key, $value, $category = iaLanguage::CATEGORY_COMMON)
+	protected function _addPhrase($key, $value, $category = iaLanguage::CATEGORY_COMMON, $forceReplacement = false)
 	{
 		foreach ($this->iaCore->languages as $isoCode => $language)
 		{
-			iaLanguage::addPhrase($key, $value, $isoCode, $this->itemData['name'], $category, false);
+			iaLanguage::addPhrase($key, $value, $isoCode, $this->itemData['name'], $category, $forceReplacement);
 		}
+	}
+
+	protected function _updatePhrase($key, $title, $category)
+	{
+		$this->iaDb->setTable(iaLanguage::getTable());
+
+		foreach ($this->iaCore->languages as $code => $language)
+		{
+			$row = $this->iaDb->row_bind([iaDb::ID_COLUMN_SELECTION], '`key` = :key AND `category` = :category AND `code` = :code',
+				['key' => $key, 'category' => $category, 'code' => $code]);
+
+			$row
+				? $this->iaDb->update(['value' => $title], iaDb::convertIds($row['id']))
+				: $this->iaDb->insert(['key' => $key, 'value' => $title, 'original' => $title, 'category' => $category, 'code' => $code]);
+		}
+
+		$this->iaDb->resetTable();
+	}
+
+	protected function _processChangeset(array $entries)
+	{
+		$result = [];
+
+		$tablesMapping = ['block' => 'blocks', 'field' => 'fields', 'menu' => 'blocks'];
+
+		foreach ($entries as $entry)
+		{
+			if (!isset($tablesMapping[$entry['type']]))
+			{
+				continue;
+			}
+
+			switch ($entry['type'])
+			{
+				case 'field':
+					list($fieldName, $itemName) = explode('-', $entry['name']);
+					if (empty($fieldName) || empty($itemName)) // incorrect identity specified by template
+					{
+						continue;
+					}
+					$stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", ['name' => $fieldName, 'item' => $itemName]);
+					break;
+				default:
+					$stmt = iaDb::convertIds($entry['name'], 'name');
+			}
+
+			$tableName = $tablesMapping[$entry['type']];
+			$name = $entry['name'];
+			$type = $entry['type'];
+			$title = isset($entry['title']) ? $entry['title'] : null;
+			$pages = isset($entry['pages']) ? explode(',', $entry['pages']) : [];
+
+			unset($entry['type'], $entry['name'], $entry['title'], $entry['pages']);
+
+			$entryData = $this->iaDb->row('`id`, `' . implode('`,`', array_keys($entry)) . '`', $stmt, $tableName);
+
+			$this->iaDb->update($entry, $stmt, null, $tableName);
+
+			if (0 === $this->iaDb->getErrorNumber())
+			{
+				if ('field' != $type && isset($entry['sticky']))
+				{
+					$this->iaCore->factory('block')->setVisibility($entryData['id'], $entry['sticky'], $pages);
+				}
+
+				if (!is_null($title))
+				{
+					$entryData['title'] = $title;
+
+					$key = ('field' == $type)
+						? sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName)
+						: iaBlock::LANG_PATTERN_TITLE . $entryData['id'];
+					$category = ('field' == $type)
+						? iaLanguage::CATEGORY_COMMON
+						: iaLanguage::CATEGORY_FRONTEND;
+
+					$this->_updatePhrase($key, $title, $category);
+				}
+
+				unset($entryData['id']);
+
+				$result[$tableName][$name] = $entryData;
+			}
+		}
+
+		return $result;
 	}
 
 	public function rollback()
 	{
 		$rollbackData = $this->iaCore->get(self::CONFIG_ROLLBACK_DATA);
+
 		if (empty($rollbackData))
 		{
 			return;
 		}
+
 		$rollbackData = unserialize($rollbackData);
+
 		if (!is_array($rollbackData))
 		{
 			return;
@@ -2612,18 +2654,16 @@ class iaModule extends abstractCore
 						$stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", ['name' => $fieldName, 'item' => $itemName]);
 						break;
 					case 'blocks': // menus are handled here as well
-						if (isset($itemData['position']))
+						if (isset($itemData['position']) && !in_array($itemData['position'], $existPositions))
 						{
-							if (!in_array($itemData['position'], $existPositions))
-							{
-								$itemData['position'] = '';
-								$itemData['status'] = iaCore::STATUS_INACTIVE;
-							}
+							$itemData['position'] = '';
+							$itemData['status'] = iaCore::STATUS_INACTIVE;
 						}
 					// BREAK stmt missed intentionally
 					default:
 						$stmt = iaDb::printf("`name` = ':name'", ['name' => $name]);
 				}
+
 				$this->iaDb->update($itemData, $stmt, null, $dbTable);
 			}
 		}
