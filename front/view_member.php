@@ -164,7 +164,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 	$openGraph = [
 		'title' => $title,
 		'url' => IA_SELF,
-		'image' => isset($member['avatar']) && $member['avatar']['path'] ? IA_CLEAR_URL . 'uploads/' . $member['avatar']['path'] : ''
+		'image' => !empty($member['avatar']['path']) ? IA_CLEAR_URL . 'uploads/' . $member['avatar']['path'] : ''
 	];
 	$iaView->set('og', $openGraph);
 }
