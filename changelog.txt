@@ -774,3 +774,22 @@
 	+ Feature #2199: Metas should be multi lingual
 	+ Feature #2206: Make it possible to have menu titles for different languages
 	+ Feature #2437: Choose different template for each language especially RTL and LTR
+
+>> From 4.1.0 to 4.1.1 <<
+
+	- Bug #123: Fields are not updated while upgrading the package
+	- Issue #214: 'Items per page' option not saved in grid
+	+ Feature #215: to keep the current page in grid after edit
+	- Bug #347: When reinstalling a template, do not change the data of blocks in the <changeset> tag of install file
+	- Bug #168: Incorrect working of inputs with type = checkbox in Refine Search block
+	+ Feature #370: Fix action button in breadcrumbs
+	- Bug #369: Undefined index: path
+	- Bug #202: Cron file several times execution per request
+	- Bug #366: Add config for CKEditor
+	- Bug #367: Issue with image field on front
+	- Bug #368: Incorrect display for premium remote plugins
+	+ Feature #146: Display last transactions in dashboard
+	+ Feature #364: Permissions during menu creation
+	+ Feature #363: Permissions during page creation
+	- Bug #285: Next launch date for cron jobs calculated incorrectly
+	- Bug #234: Cron date is not set after installation
