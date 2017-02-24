@@ -619,6 +619,8 @@ SQL;
 			switch ($this->_fieldTypes[$fieldName])
 			{
 				case iaField::CHECKBOX:
+					is_string($value) && $value = [$value];
+
 					foreach ($value as $v)
 					{
 						$expr = sprintf("FIND_IN_SET('%s', :column)", iaSanitize::sql($v));
