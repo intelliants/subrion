@@ -217,7 +217,7 @@ function IntelliGrid(params, autoInit)
 			}
 			else
 			{
-				localStorage.setItem(key, value);
+				localStorage.setItem(k, value);
 			}
 		}
 	}
@@ -263,7 +263,7 @@ function IntelliGrid(params, autoInit)
 		{
 			autoDestroy: true,
 			autoLoad: autoLoad,
-			currentPage: 1 || __localStorage('p'),
+			currentPage: __localStorage('p') || 1,
 			fields: self.fields,
 			pageSize: __localStorage('n') || self.config.pageSize,
 			proxy:
