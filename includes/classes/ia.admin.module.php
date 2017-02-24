@@ -2206,28 +2206,12 @@ class iaModule extends abstractCore
 
 		foreach ($fields as $entry)
 		{
-			$stmt = '`item` = :item AND `name` = :name';
-			$this->iaDb->bind($stmt, ['item' => $entry['item'], 'name' => $entry['name']]);
-
-			if ($row = $this->iaDb->row(['id', 'module'], $stmt))
-			{
-				if (false === stripos($row['module'], $this->itemData['name']))
-				{
-					$value = ($row['module'] ? ',' : '') . $this->itemData['name'];
-					$value = sprintf("CONCAT(`module`, '%s')", $value);
-
-					$this->iaDb->update(null, iaDb::convertIds($row['id']), ['module' => $value]);
-				}
-
-				continue;
-			}
-
 			$entry['order'] || $entry['order'] = $this->iaDb->getMaxOrder(null, ['item', $entry['item']]) + 1;
 			$entry['fieldgroup_id'] = isset($fieldGroups[$entry['item'] . $entry['group']])
 				? $fieldGroups[$entry['item'] . $entry['group']]
 				: 0;
 
-			$this->_addPhrase(sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $entry['item'], $entry['name']), $entry['title']);
+			$this->_addPhrase(sprintf(iaField::FIELD_TITLE_PHRASE_KEY, $entry['item'], $entry['name']), $entry['title'], iaLanguage::CATEGORY_COMMON, true);
 
 			/*if (is_array($entry['numberRangeForSearch']))
 			{
@@ -2287,7 +2271,15 @@ class iaModule extends abstractCore
 			unset($entry['item_pages'], $entry['table_name'], $entry['class_name'], $entry['parent'],
 				$entry['group'], $entry['title'], $entry['multiselection'], $entry['image_types']);
 
-			$fieldId = $this->iaDb->insert($entry);
+			if ($row = $iaField->getField($entry['name'], $entry['item']))
+			{
+				$fieldId = $row['id'];
+				$this->iaDb->update($entry, iaDb::convertIds($row['id']));
+			}
+			else
+			{
+				$fieldId = $this->iaDb->insert($entry);
+			}
 
 			$iaField->alterTable($entry);
 
