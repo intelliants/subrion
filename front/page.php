@@ -139,6 +139,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType())
 
 	if ($page['custom_tpl'] && $page['template_filename'])
 	{
+		$iaView->iaSmarty->assign('img', IA_TPL_URL . 'img/');
+
 		$content = $iaView->iaSmarty->fetch($page['template_filename']);
 	}
 
