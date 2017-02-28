@@ -237,7 +237,7 @@ Ext.onReady(function()
 			editable: false,
 			emptyText: _t('module'),
 			name: 'module',
-			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/languages.json?get=plugins'),
+			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/actions/options/module.json'),
 			typeAhead: true,
 			valueField: 'value',
 			xtype: 'combo'
@@ -463,9 +463,9 @@ Ext.onReady(function()
 			displayField: 'title',
 			editable: false,
 			emptyText: _t('module'),
-			id: 'plugin',
-			name: 'plugin',
-			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/languages.json?get=plugins'),
+			id: 'module',
+			name: 'module',
+			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/actions/options/module.json'),
 			typeAhead: true,
 			valueField: 'value',
 			xtype: 'combo'
@@ -497,7 +497,7 @@ Ext.onReady(function()
 
 					intelli.languageComparison.store.getProxy().extraParams.key = Ext.getCmp('value').getValue();
 					intelli.languageComparison.store.getProxy().extraParams.category = Ext.getCmp('category').getValue();
-					intelli.languageComparison.store.getProxy().extraParams.plugin = Ext.getCmp('plugin').getValue();
+					intelli.languageComparison.store.getProxy().extraParams.module = Ext.getCmp('module').getValue();
 
 					intelli.languageComparison.store.loadPage(1);
 				}
@@ -513,7 +513,7 @@ Ext.onReady(function()
 
 				Ext.getCmp('value').reset();
 				Ext.getCmp('category').reset();
-				Ext.getCmp('plugin').reset();
+				Ext.getCmp('module').reset();
 
 				intelli.languageComparison.store.getProxy().extraParams = {
 					get: 'comparison',
