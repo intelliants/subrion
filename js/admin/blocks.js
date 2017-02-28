@@ -78,7 +78,7 @@ Ext.onReady(function()
 			xtype: 'combo',
 			typeAhead: true,
 			editable: false,
-			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/actions/options/extras.json'),
+			store: intelli.gridHelper.store.ajax(intelli.config.admin_url + '/actions/options/module.json'),
 			displayField: 'title',
 			name: 'module',
 			valueField: 'value',
