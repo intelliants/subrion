@@ -72,7 +72,8 @@ gulp.task("less", function() {
         cascade: false
     }))
     .pipe(cleanCSS({
-      advanced: false
+      advanced: false,
+      processImport: false
     }))
     .pipe(gulp.dest(config.paths.less.dest));
 });
