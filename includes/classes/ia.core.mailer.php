@@ -183,12 +183,12 @@ class iaMailer extends PHPMailer
 
 	public function send($toAdmins = false)
 	{
-		$this->_applyReplacements();
-		$this->_setBcc();
 		if ($this->Body && $this->_defaultSignature && !$toAdmins)
 		{
 			$this->Body .= $this->_iaCore->get('default_email_signature');
 		}
+		$this->_applyReplacements();
+		$this->_setBcc();
 
 		$result = (bool)parent::send();
 
