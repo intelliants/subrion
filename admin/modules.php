@@ -430,12 +430,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
 	private function _activate($moduleName, $deactivate)
 	{
-		$stmt = '`name` = :name AND `type` = :type';
-		$this->_iaDb->bind($stmt, ['name' => $moduleName, 'type' => iaModule::TYPE_PACKAGE]);
-
 		$status = $deactivate ? iaCore::STATUS_INACTIVE : iaCore::STATUS_ACTIVE;
 
-		return (bool)$this->_iaDb->update(['status' => $status], $stmt);
+		return (bool)$this->_iaDb->update(['status' => $status], iaDb::convertIds($moduleName, 'name'));
 	}
 
 	private function _reset($domain)
@@ -1157,11 +1154,13 @@ class iaBackendController extends iaAbstractControllerBackend
 				switch ($module['status'])
 				{
 					case iaCore::STATUS_ACTIVE:
+						$buttons['deactivate'] = true;
 						$buttons['reinstall'] = true;
 						$buttons['uninstall'] = true;
 						break;
 					case iaCore::STATUS_INACTIVE:
 						$buttons['activate'] = true;
+						$buttons['reinstall'] = false;
 						$buttons['uninstall'] = true;
 						break;
 				}
