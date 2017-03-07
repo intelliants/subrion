@@ -4,6 +4,25 @@
 
 .cards {
   .clearfix();
+  margin-left: -2%;
+  font-size: 0;
+
+  .card {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 0 2% 2%;
+    width: 31.33333333333333%;
+
+    @media (max-width: 1300px) {
+      width: 48%;
+    }
+
+    @media (max-width: 991px) {
+      width: auto;
+      display: block;
+      margin-bottom: 4%;
+    }
+  }
 }
 
 // card
@@ -170,6 +189,10 @@
   }
 
   // modifiers
+  &.is-hidden {
+    display: none;
+  }
+
   &--remote {
     
   }

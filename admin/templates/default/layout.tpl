@@ -188,6 +188,37 @@
 								{include 'breadcrumb.tpl'}
 							</div>
 
+							{if 'plugins' == $core.page.name}
+								<div class="page__heading__actions sap-form">
+									<div class="input-group">
+										<input type="text" class="form-control js-live-search" placeholder="Search for...">
+									</div>
+
+									{ia_add_js}
+$(function() {
+	$('.js-live-search').on('keyup', function(e) {
+		var $this = $(this),
+			text = $this.val(),
+			$collection = $('.card--module');
+
+		if (text != '') {
+			var rx = RegExp(text, 'i')
+
+			$collection.each(function() {
+				var $item = $(this),
+					name = String($('.card__item__body > h4', $item).text());
+
+				(name.match(rx) !== null) ? $item.show() : $item.hide();
+			});
+		} else {
+			$collection.show();
+		}
+	});
+});
+									{/ia_add_js}
+								</div>
+							{/if}
+
 							<ul class="page__heading__actions">
 								{if 'index' == $core.page.name}
 									{if isset($customization_mode)}
