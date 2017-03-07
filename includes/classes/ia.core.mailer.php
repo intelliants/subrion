@@ -37,51 +37,9 @@ class iaMailer extends PHPMailer
 	protected $_defaultSignature;
 
 
-	/*
-	 * Set replacements for email body
-	 *
-	 * @param array of key/value pairs or $key, $value parameters
+	/**
+	 * Class initializer
 	 */
-	public function setReplacements()
-	{
-		$replacements = [];
-
-		switch (func_num_args())
-		{
-			case 1:
-				$values = func_get_arg(0);
-				if (is_array($values))
-				{
-					$replacements = $values;
-				}
-				break;
-
-			case 2:
-				$key = func_get_arg(0);
-				$value = func_get_arg(1);
-
-				if (is_string($key) && is_string($value))
-				{
-					$replacements[$key] = $value;
-				}
-		}
-
-		if ($replacements)
-		{
-			foreach ($replacements as $key => $value)
-			{
-				$keyPattern = '{%' . strtoupper($key) . '%}';
-				$this->_replacements[$keyPattern] = $value;
-			}
-		}
-	}
-
-	protected function _applyReplacements()
-	{
-		$this->Body = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Body);
-		$this->Subject = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Subject);
-	}
-
 	public function init()
 	{
 		$this->_iaCore = iaCore::instance();
@@ -130,9 +88,54 @@ class iaMailer extends PHPMailer
 		]);
 	}
 
-	/*
-	 * Load email template
-	 * Mail subject loaded as well
+	/**
+	 * Set key/value replacements array for email body
+	 */
+	public function setReplacements()
+	{
+		$replacements = [];
+
+		switch (func_num_args())
+		{
+			case 1:
+				$values = func_get_arg(0);
+				if (is_array($values))
+				{
+					$replacements = $values;
+				}
+				break;
+
+			case 2:
+				$key = func_get_arg(0);
+				$value = func_get_arg(1);
+
+				if (is_string($key) && is_string($value))
+				{
+					$replacements[$key] = $value;
+				}
+		}
+
+		if ($replacements)
+		{
+			foreach ($replacements as $key => $value)
+			{
+				$keyPattern = '{%' . strtoupper($key) . '%}';
+				$this->_replacements[$keyPattern] = $value;
+			}
+		}
+	}
+
+	/**
+	 * Apply replacements in email Subject & Body
+	 */
+	protected function _applyReplacements()
+	{
+		$this->Body = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Body);
+		$this->Subject = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Subject);
+	}
+
+	/**
+	 * Load email Subject & Body template
 	 *
 	 * @param string $name template name
 	 */
@@ -145,6 +148,11 @@ class iaMailer extends PHPMailer
 		$this->_defaultSignature = empty($options->signature);
 	}
 
+	/**
+	 * Send email notifications to administrators
+	 *
+	 * @return bool
+	 */
 	public function sendToAdministrators()
 	{
 		$where = '`usergroup_id` = :group AND `status` = :status';
@@ -165,6 +173,9 @@ class iaMailer extends PHPMailer
 		return $this->send(true);
 	}
 
+	/**
+	 * Set a list of bcc recipients
+	 */
 	protected function _setBcc()
 	{
 		if (is_null($this->_bccEmails))
@@ -177,10 +188,17 @@ class iaMailer extends PHPMailer
 
 		foreach ($this->_bccEmails as $email)
 		{
-			$this->addBCC($email);
+			if (!empty($email)) $this->addBCC($email);
 		}
 	}
 
+	/**
+	 * Send email
+	 *
+	 * @param bool $toAdmins if true, send the same email to administrators
+	 *
+	 * @return bool
+	 */
 	public function send($toAdmins = false)
 	{
 		if ($this->Body && $this->_defaultSignature && !$toAdmins)
@@ -202,6 +220,11 @@ class iaMailer extends PHPMailer
 		return $result;
 	}
 
+	/**
+	 * Get error text
+	 *
+	 * @return string
+	 */
 	public function getError()
 	{
 		return $this->ErrorInfo;

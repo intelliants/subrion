@@ -95,22 +95,21 @@ class iaSanitize extends abstractUtil
 		return preg_replace('#[^a-z_0-9]#i', '', $string);
 	}
 
-	/*
-	* Converts text to snippet
-	*
-	* The function cuts text to specified length,
-	* also it strips all special tags like [b] etc.
-	*
-	* @params array $params - full text, if 'summary' not used, create snippet from it
-	*
-	* @return string
-	*/
+	/**
+	 * Converts text to snippet
+	 * The function cuts text to specified length, also it strips all special tags like [b] etc.
+	 *
+	 * @param string $text text to process
+	 * @param int $length
+	 *
+	 * @return mixed|string
+	 */
 	public static function snippet($text, $length = 600)
 	{
 		iaCore::instance()->factory('util');
 		iaUtil::loadUTF8Functions();
 
-		// Strip HTML and BB codes
+		// strip HTML and BB codes
 		$pattern = '#(\[\w+[^\]]*?\]|\[\/\w+\]|<\w+[^>]*?>|<\/\w+>)#i';
 		$text = preg_replace($pattern, '', $text);
 
