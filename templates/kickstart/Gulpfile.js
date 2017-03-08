@@ -10,6 +10,7 @@ var fs           = require("fs"),
     sourcemaps   = require('gulp-sourcemaps'),
     cleanCSS     = require('gulp-clean-css'),
     autoprefixer = require('gulp-autoprefixer'),
+    cache        = require('gulp-cache'),
     browserSync  = require('browser-sync').create();
 
 var config = {
@@ -36,17 +37,17 @@ var config = {
 
 gulp.task("images", function() {
   return gulp.src(config.paths.images.src)
-    .pipe(imagemin({
+    .pipe(cache(imagemin({
       progressive: true,
       interlaced: true
-    }))
+    })))
     .pipe(gulp.dest(config.paths.images.dest));
 });
 
 gulp.task("less-dev", function(){
   return gulp.src(config.paths.less.src.dev)
     .pipe(sourcemaps.init())
-    .pipe(less().on('error', function(err) {
+    .pipe(cache(less()).on('error', function(err) {
         gutil.log(err);
         this.emit('end');
     }))
@@ -63,7 +64,7 @@ gulp.task("less-dev", function(){
 
 gulp.task("less", function() {
   return gulp.src(config.paths.less.src.prod)
-    .pipe(less().on('error', function(err) {
+    .pipe(cache(less()).on('error', function(err) {
       gutil.log(err);
       this.emit('end');
     }))
@@ -86,13 +87,17 @@ gulp.task('browser-sync', function() {
   }
 });
 
-gulp.task("build", ["less", "images"]);
+gulp.task('clear', function (done) {
+  return cache.clearAll(done);
+});
+
+gulp.task("build", ["less", "images", "clear"]);
 
 gulp.task("watch", function() {
   gulp.watch(config.paths.less.path, ["less-dev"]);
 });
 
-gulp.task("dev", ["less-dev", "images", "browser-sync", "watch"]);
+gulp.task("dev", ["less-dev", "images", "clear", "browser-sync", "watch"]);
 
 gulp.task("default", function() {
   console.log('Silence is gold');
