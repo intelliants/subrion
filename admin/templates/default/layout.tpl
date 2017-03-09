@@ -188,34 +188,21 @@
 								{include 'breadcrumb.tpl'}
 							</div>
 
-							{if 'plugins' == $core.page.name}
-								<div class="page__heading__actions sap-form">
-									<div class="input-group">
-										<input type="text" class="form-control js-live-search" placeholder="Search for...">
+							{if in_array($core.page.name, ['templates', 'plugins', 'packages'])}
+								<div class="sap-form filter-toolbar">
+									<input type="text" class="form-control js-filter-modules-text" placeholder="Start typing...">
+									<div class="dropdown">
+										<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Filter <span class="fa fa-angle-down"></span></button>
+										<ul class="dropdown-menu dropdown-menu-right">
+											<li class="dropdown-header">Show only</li>
+											<li><a class="js-filter-modules" data-type="local" data-filtered="no" href="#"><span class="fa fa-check"></span> Local</a></li>
+											<li><a class="js-filter-modules" data-type="remote" data-filtered="no" href="#"><span class="fa fa-check"></span> Remote</a></li>
+											<li><a class="js-filter-modules" data-type="installed" data-filtered="no" href="#"><span class="fa fa-check"></span> Installed</a></li>
+											<li><a class="js-filter-modules" data-type="notinstalled" data-filtered="no" href="#"><span class="fa fa-check"></span> Not installed</a></li>
+											<li class="divider"></li>
+											<li><a class="js-filter-modules-reset" href="#"><span class="fa fa-times"></span> Reset filter</a></li>
+										</ul>
 									</div>
-
-									{ia_add_js}
-$(function() {
-	$('.js-live-search').on('keyup', function(e) {
-		var $this = $(this),
-			text = $this.val(),
-			$collection = $('.card--module');
-
-		if (text != '') {
-			var rx = RegExp(text, 'i')
-
-			$collection.each(function() {
-				var $item = $(this),
-					name = String($('.card__item__body > h4', $item).text());
-
-				(name.match(rx) !== null) ? $item.show() : $item.hide();
-			});
-		} else {
-			$collection.show();
-		}
-	});
-});
-									{/ia_add_js}
 								</div>
 							{/if}
 
