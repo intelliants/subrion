@@ -197,8 +197,8 @@
 											<li class="dropdown-header">Show only</li>
 											<li><a class="js-filter-modules" data-type="local" data-filtered="no" href="#"><span class="fa fa-check"></span> Local</a></li>
 											<li><a class="js-filter-modules" data-type="remote" data-filtered="no" href="#"><span class="fa fa-check"></span> Remote</a></li>
-											<li><a class="js-filter-modules" data-type="installed" data-filtered="no" href="#"><span class="fa fa-check"></span> Installed</a></li>
-											<li><a class="js-filter-modules" data-type="notinstalled" data-filtered="no" href="#"><span class="fa fa-check"></span> Not installed</a></li>
+											<li><a class="js-filter-modules" data-type="active" data-filtered="no" href="#"><span class="fa fa-check"></span> Installed</a></li>
+											{*<li><a class="js-filter-modules" data-type="notinstalled" data-filtered="no" href="#"><span class="fa fa-check"></span> Not installed</a></li>*}
 											<li class="divider"></li>
 											<li><a class="js-filter-modules-reset" href="#"><span class="fa fa-times"></span> Reset filter</a></li>
 										</ul>

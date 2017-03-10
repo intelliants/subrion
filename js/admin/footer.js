@@ -800,33 +800,15 @@ $(function()
 		e.preventDefault();
 
 		var $this = $(this),
-			type  = $this.data('type');
+			type  = $this.data('type'),
+			filtered = $this.data('filtered');
 
-		switch (type) {
-			case 'installed':
-				if ($this.data('filtered') == 'no') {
-					$this.data('filtered', 'yes');
-					$('.card--active').hide();
-					
-				} else {
-					$this.data('filtered', 'no');
-					$('.card--active').show();
-				}
-
-				break;
-			case 'remote':
-				if ($this.data('filtered') == 'no') {
-					$this.data('filtered', 'yes');
-					$('.card--remote').hide();
-					
-				} else {
-					$this.data('filtered', 'no');
-					$('.card--remote').show();
-				}
-
-				break;
-			default:
-				console.log('no match');
+		if (filtered == 'no') {
+			$this.data('filtered', 'yes');
+			$('.card--' + type).hide();
+		} else {
+			$this.data('filtered', 'no');
+			$('.card--' + type).show();
 		}
 
 		$('.fa', $this).toggleClass('fa-circle-thin fa-check');
@@ -836,6 +818,10 @@ $(function()
 		e.preventDefault();
 
 		$('.js-filter-modules-text').val('').trigger('keyup');
+		$('.js-filter-modules').data('filtered', 'no')
+			.find('.fa')
+			.removeClass('fa-circle-thin')
+			.addClass('fa-check');
 	});
 });
 
