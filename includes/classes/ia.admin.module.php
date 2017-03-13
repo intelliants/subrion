@@ -1672,10 +1672,10 @@ class iaModule extends abstractCore
 						'custom' => $this->_attr('custom', true),
 						'module' => $this->itemData['name'],
 						'options' => [
-							'wysiwyg' => $this->_attr('wysiwyg', false),
-							'code_editor' => $this->_attr('code_editor', false),
+							'wysiwyg' => $this->_attr('wysiwyg', 0),
+							'code_editor' => $this->_attr('code_editor', 0),
 							'show' => $this->_attr('show'),
-							'multilingual' => $this->_attr('multilingual', false)
+							'multilingual' => $this->_attr('multilingual', 0)
 						]
 					];
 				}
