@@ -365,22 +365,25 @@ class iaSearch extends abstractCore
 			{
 				$pageName = str_replace(['page_title_', 'page_content_'], '', $row['key']);
 
-				$key = (false === stripos($row['key'], 'page_content_')) ? 'title' : 'content';
-				$value = iaSanitize::tags($row['value']);
-
-				isset($result[$pageName]) || $result[$pageName] = [];
-
-				if ('content' == $key)
+				if ($iaPage->getByName($pageName))
 				{
-					$value = $this->_extractSnippet($value);
-					if (empty($result[$pageName]['title']))
-					{
-						$result[$pageName]['title'] = iaLanguage::get('page_title_' . $pageName);
-					}
-				}
+					$key = (false === stripos($row['key'], 'page_content_')) ? 'title' : 'content';
+					$value = iaSanitize::tags($row['value']);
 
-				$result[$pageName]['url'] = $iaPage->getUrlByName($pageName, false);
-				$result[$pageName][$key] = $value;
+					isset($result[$pageName]) || $result[$pageName] = [];
+
+					if ('content' == $key)
+					{
+						$value = $this->_extractSnippet($value);
+						if (empty($result[$pageName]['title']))
+						{
+							$result[$pageName]['title'] = iaLanguage::get('page_title_' . $pageName);
+						}
+					}
+
+					$result[$pageName]['url'] = $iaPage->getUrlByName($pageName, false);
+					$result[$pageName][$key] = $value;
+				}
 			}
 		}
 

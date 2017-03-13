@@ -4,7 +4,7 @@
 	<a href="#" class="categories-toggle" id="js-tree-toggler">{lang key='open_close'}</a>
 	{if $search}
 		<div id="js-tree-search"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}>
-			<input type="text" placeholder="{lang key='start_typing_to_filter'}">
+			<input class="form-control" type="text" placeholder="{lang key='start_typing_to_filter'}">
 		</div>
 	{/if}
 	<div id="js-tree" class="tree categories-tree">{lang key='loading'}</div>
