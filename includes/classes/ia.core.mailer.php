@@ -54,6 +54,9 @@ class iaMailer extends PHPMailer
 		switch ($this->_iaCore->get('mail_function'))
 		{
 			case 'smtp':
+
+				require_once IA_INCLUDES . 'phpmailer' . IA_DS . 'class.smtp.php';
+
 				$this->isSMTP();
 
 				$this->Host = $this->_iaCore->get('smtp_server');
