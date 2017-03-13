@@ -1,4 +1,4 @@
-{if isset($plans) && $plans}
+{if !empty($plans)}
 	<div class="fieldset">
 		<div class="fieldset__header">{lang key='plans'}</div>
 
@@ -27,7 +27,7 @@
 									<li>{lang key="plan_option_{$option.item}_{$option.name}"} —
 									{if 'bool' == $option.type}
 										{if $option.value}{lang key='yes'}{else}{lang key='no'}{/if}
-										{else}
+									{else}
 										{$option.value|escape:'html'}
 									{/if}
 									</li>

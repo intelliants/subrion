@@ -14,35 +14,35 @@
 			<span class="fa fa-eye"></span> {$item.views_num}
 		</div>
 		<div class="ia-item__additional">
-			{if isset($item.facebook) && $item.facebook}
+			{if !empty($item.facebook)}
 				<p><a class="ia-item__additional__icon" href="{$item.facebook}"><span class="fa fa-facebook"></span></a></p>
 			{/if}
-			{if isset($item.twitter) && $item.twitter}
+			{if !empty($item.twitter)}
 				<p><a class="ia-item__additional__icon" href="{$item.twitter}"><span class="fa fa-twitter"></span></a></p>
 			{/if}
-			{if isset($item.gplus) && $item.gplus}
+			{if !empty($item.gplus)}
 				<p><a class="ia-item__additional__icon" href="{$item.gplus}"><span class="fa fa-google-plus"></span></a></p>
 			{/if}
-			{if isset($item.linkedin) && $item.linkedin}
+			{if !empty($item.linkedin)}
 				<p><a class="ia-item__additional__icon" href="{$item.linkedin}"><span class="fa fa-linkedin"></span></a></p>
 			{/if}
 		</div>
 
 		<table class="table ia-item__table">
 			<tbody>
-				{if isset($item.phone) && $item.phone}
+				{if !empty($item.phone)}
 					<tr>
 						<td>{lang key='field_members_phone'}</td>
 						<td>{$item.phone}</td>
 					</tr>
 				{/if}
-				{if isset($item.website) && $item.website}
+				{if !empty($item.website)}
 					<tr>
 						<td>{lang key='field_members_website'}</td>
 						<td>{$item.website|linkify}</td>
 					</tr>
 				{/if}
-				{if isset($item.biography) && $item.biography}
+				{if !empty($item.biography)}
 					<tr>
 						<td>{lang key='field_members_biography'}</td>
 						<td>{$item.biography|escape}</td>

@@ -38,6 +38,7 @@
 			</div>
 		</form>
 	</div>
+
 	{if $core.providers}
 		<div class="col-md-4">
 			<div class="social-providers">

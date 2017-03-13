@@ -2,7 +2,7 @@
 	<li><span>{lang key='sort_by'}</span></li>
 	<li{if !$activeGroup} class="active"{/if}><a href="{$smarty.const.IA_SELF}?group=all">{lang key='all'}</a></li>
 
-	{if isset($usergroups) && $usergroups}
+	{if !empty($usergroups)}
 		{foreach $usergroups as $entryId => $name}
 			<li{if $activeGroup && $entryId == $activeGroup} class="active"{/if}><a href="{$smarty.const.IA_SELF}?group={$entryId}" rel="nofollow">{lang key="usergroup_{$name}"}</a></li>
 		{/foreach}
@@ -11,7 +11,7 @@
 
 <div class="tab-content">
 	<div id="tab-all" class="tab-pane{if !$activeGroup} active{/if}">
-		{if !$activeGroup && isset($letters) && $letters}
+		{if !$activeGroup && !empty($letters)}
 			<ul class="nav nav-pills nav-pills-sm m-b">
 				{foreach $letters.all as $letter}
 					{if $letter == $letters.active || !in_array($letter, $letters.existing)}
@@ -24,7 +24,7 @@
 		{/if}
 	</div>
 
-	{if isset($usergroups) && $usergroups}
+	{if !empty($usergroups)}
 		{foreach $usergroups as $entryId => $name}
 			<div id="tab-usergroups" class="tab-pane{if $entryId == $activeGroup} active{/if}">
 				{if $entryId == $activeGroup && isset($letters) && $letters}

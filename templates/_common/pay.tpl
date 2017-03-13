@@ -1,6 +1,6 @@
-{if isset($pay_message) && $pay_message}
+{if !empty($pay_message)}
 	<div class="alert alert-warning">{$pay_message}</div>
-{elseif isset($transaction) && $transaction && is_array($transaction)}
+{elseif !empty($transaction) && is_array($transaction)}
 	<table class="table table-striped table-bordered">
 	<thead>
 		<tr>

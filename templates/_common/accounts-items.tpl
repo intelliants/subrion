@@ -20,7 +20,7 @@
 			<div class="ia-item-panel">
 				{ia_url item=$all_item_type data=$oneitem type='icon_text' icon='icon-user'}
 
-				{if isset($member.id) && $member.id}
+				{if !empty($member.id)}
 					{printFavorites item=$oneitem itemtype=$all_item_type}
 					{accountActions item=$oneitem itemtype=$all_item_type}
 				{/if}
