@@ -269,6 +269,8 @@ abstract class abstractModuleFront extends abstractCore
 						$row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
 					}
 				}
+
+				$row['link'] = $this->url('view', $row);
 			}
 		}
 
