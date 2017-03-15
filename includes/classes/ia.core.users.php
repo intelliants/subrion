@@ -70,6 +70,21 @@ class iaUsers extends abstractCore
 		return self::$_providersTable;
 	}
 
+	public function url($action, array $listingData)
+	{
+		$patterns = [
+			'edit' => 'profile/',
+			'default' => 'member/:username.html',
+		];
+
+		return IA_URL . iaDb::printf(isset($patterns[$action]) ? $patterns[$action] : $patterns['default'],
+				[
+					'action' => $action,
+					'username' => $listingData['username']
+				]
+			);
+	}
+
 	/* IDENTITY STORAGE MECH */
 	// currently uses the standard PHP session
 
@@ -801,7 +816,7 @@ SQL;
 		{
 			foreach ($rows as &$row)
 			{
-				$row['url'] = $this->iaView->iaSmarty->ia_url(['item' => $this->getItemName(), 'type' => 'link', 'text' => $row['fullname'], 'data' => $row]) ;
+				$row['link'] = $this->iaView->iaSmarty->ia_url(['item' => $this->getItemName(), 'type' => 'link', 'text' => $row['fullname'], 'data' => $row]);
 			}
 		}
 
@@ -1017,6 +1032,8 @@ SQL;
 						$row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
 					}
 				}
+
+				$row['link'] = $this->url('view', $row);
 			}
 		}
 

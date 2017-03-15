@@ -263,8 +263,8 @@ class iaSmarty extends Smarty
 		switch ($params['item'])
 		{
 			case iaUsers::getItemName():
-				$fieldName = isset($params['field']) ? $params['field'] : 'username';
-				$params['url'] = IA_URL . 'member/' . (is_array($params['data']) && $params['data'] ? $params['data'][$fieldName] : $params['data']) . '.html';
+
+				$params['url'] = iaCore::instance()->factory('users')->url($params['action'], $params['data']);
 
 				break;
 
