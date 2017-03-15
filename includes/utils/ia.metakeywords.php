@@ -93,6 +93,11 @@ class iaMetaKeywords
 		}
 
 		$k = array_count_values($k);
+		if (empty($k))
+		{
+			return;
+		}
+
 		$filtered = $this->_chunkFilter($k, $this->wordOccuredMin);
 		arsort($filtered);
 
@@ -119,6 +124,10 @@ class iaMetaKeywords
 
 		//count the 2 word phrases
 		$y = array_count_values($y);
+		if (empty($k))
+		{
+			return;
+		}
 
 		$filtered = $this->_chunkFilter($y, $this->phrase2WordLengthMinOccur);
 		arsort($filtered);
@@ -147,6 +156,10 @@ class iaMetaKeywords
 		}
 
 		$b = array_count_values($b);
+		if (empty($k))
+		{
+			return;
+		}
 
 		$filtered = $this->_chunkFilter($b, $this->phrase3WordLengthMinOccur);
 		arsort($filtered);

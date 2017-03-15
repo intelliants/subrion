@@ -372,7 +372,7 @@ class iaUtil extends abstractUtil
 
 	public static function getMetaKeywords($text)
 	{
-		require_once IA_INCLUDES . 'utils/ia.metakeywords.php';
+		require_once IA_INCLUDES . 'utils' . IA_DS . 'ia.metakeywords.php';
 		$iaMetaKeywords = new iaMetaKeywords();
 
 		return $iaMetaKeywords->get($text);
