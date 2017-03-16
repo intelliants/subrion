@@ -762,8 +762,7 @@ SQL;
 					$validProtocols = ['http://', 'https://'];
 					$item[$fieldName] = '';
 
-					if ($field['required']
-						&& (empty($value['url']) || in_array($value['url'], $validProtocols)))
+					if ($field['required'] && (empty($value['url']) || in_array($value['url'], $validProtocols)))
 					{
 						$errors[$fieldName] = iaLanguage::getf('field_is_empty', ['field' => self::getFieldTitle($field['item'], $fieldName)]);
 					}
@@ -890,9 +889,9 @@ SQL;
 	{
 		$allowedExtensions = empty($field['file_types'])
 			? []
-			: explode(',', $field['file_types']); // no need to replace spaces, it's done when setting up a field
+			: explode(',', strtolower($field['file_types'])); // no need to replace spaces, it's done when setting up a field
 
-		$extension = pathinfo($fileName, PATHINFO_EXTENSION);
+		$extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
 		if (!$extension || !in_array($extension, $allowedExtensions))
 		{
