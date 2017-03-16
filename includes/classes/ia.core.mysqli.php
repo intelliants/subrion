@@ -77,6 +77,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 		mysqli_select_db($this->_link, INTELLI_DBNAME);
 
 		$this->query("SET NAMES 'utf8'");
+		$this->query("SET sql_mode = ''");
 	}
 
 	public function setTimezoneOffset($offset)
