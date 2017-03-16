@@ -16,7 +16,7 @@
 				{foreach $plans as $plan}
 					<div class="plans__item">
 						<label for="input-plan{$plan.id}" class="plans__item__header radio">
-							<input type="radio" name="plan_id" value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} checked{/if} id="input-plan{$plan.id}" data-fields="{if isset($plan.fields)}{$plan.fields|escape:'html'}{/if}">
+							<input type="radio" name="plan_id" value="{$plan.id}"{if isset($item.sponsored_plan_id) && $plan.id == $item.sponsored_plan_id} checked{/if} id="input-plan{$plan.id}" data-fields="{if isset($plan.fields)}{$plan.fields|escape}{/if}">
 							<strong>{lang key="plan_title_{$plan.id}"} &mdash; {$plan.cost} {$core.config.currency}</strong>
 						</label>
 						<div class="plans__item__body">{lang key="plan_description_{$plan.id}"}</div>
@@ -28,7 +28,7 @@
 									{if 'bool' == $option.type}
 										{if $option.value}{lang key='yes'}{else}{lang key='no'}{/if}
 									{else}
-										{$option.value|escape:'html'}
+										{$option.value|escape}
 									{/if}
 									</li>
 								{/foreach}

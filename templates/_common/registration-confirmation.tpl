@@ -2,11 +2,11 @@
 	<form method="get" action="{$smarty.const.IA_SELF}">
 		{preventCsrf}
 		<label>{lang key='username_or_email'}:</label>
-		<input type="text" name="email" value="{$smarty.get.email|escape:'html'}">
+		<input type="text" name="email" value="{$smarty.get.email|escape}">
 		<p>{lang key='enter_confirmation_code'}:</p>
 		<label>{lang key='key'}:</label>
 		<p class="form-horizontal">
-			<input type="text" name="key" value="{$smarty.get.key|escape:'html'}">
+			<input type="text" name="key" value="{$smarty.get.key|escape}">
 			<button type="submit" class="btn btn-primary">{lang key='confirm'}</button>
 		</p>
 	</form>

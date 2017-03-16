@@ -8,7 +8,7 @@
 			{foreach $searches as $entry}
 				<tr>
 					<td width="100"><small>{$entry.date|date_format:$core.config.date_format}</small></td>
-					<td><a href="{$smarty.const.IA_URL}{$entry.params}" title="{lang key='open_in_new_tab'}" target="_blank">{$entry.title|escape:'html'|default:"<em>{lang key='untitled'}</em>"}</a></td>
+					<td><a href="{$smarty.const.IA_URL}{$entry.params}" title="{lang key='open_in_new_tab'}" target="_blank">{$entry.title|escape|default:"<em>{lang key='untitled'}</em>"}</a></td>
 					<td width="60"><small>{lang key=$entry.item}</small></td>
 					<td width="20">
 						<a href="#" class="js-delete-search" data-id="{$entry.id}" title="{lang key='delete'}">

@@ -24,12 +24,12 @@
 	</tr>
 	<tr>
 		<td colspan="2" valign="top">
-			<p>{$invoice.fullname|escape:'html'}</p>
+			<p>{$invoice.fullname|escape}</p>
 			<p>
-				{$invoice.address1|escape:'html'}<br>
-				{if $invoice.address2}{$invoice.address2|escape:'html'}<br>{/if}
-				{if $invoice.zip}{$invoice.zip|escape:'html'}<br>{/if}
-				{if $invoice.country}{$invoice.country|escape:'html'}{/if}
+				{$invoice.address1|escape}<br>
+				{if $invoice.address2}{$invoice.address2|escape}<br>{/if}
+				{if $invoice.zip}{$invoice.zip|escape}<br>{/if}
+				{if $invoice.country}{$invoice.country|escape}{/if}
 			</p>
 		</td>
 	</tr>
@@ -55,7 +55,7 @@
 				{foreach $items as $entry}
 					<tr>
 						<td>{$entry@iteration}</td>
-						<td>{$entry.title|escape:'html'}</td>
+						<td>{$entry.title|escape}</td>
 						<td>{$entry.price}</td>
 						<td>{$entry.quantity}</td>
 						<td>

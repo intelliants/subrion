@@ -10,7 +10,7 @@
 						<span class="fa{if !empty($category.icon)} {$category.icon}{else} fa-folder-open{/if}"></span>
 					{/if}
 
-					{if !empty($category.crossed)}@&nbsp;{/if}<a href="{$category.link}">{$category.title|escape:'html'}</a>
+					{if !empty($category.crossed)}@&nbsp;{/if}<a href="{$category.link}">{$category.title|escape}</a>
 					{if !empty($show_amount)}
 						&mdash; {$category.num|default:0}
 					{/if}
@@ -18,7 +18,7 @@
 					{if !empty($category.subcategories)}
 						<div class="ia-cat__sub">
 							{foreach $category.subcategories as $subcategory}
-								<a href="{$subcategory.link}">{$subcategory.title|escape:'html'}</a>{if !$subcategory@last}, {/if}
+								<a href="{$subcategory.link}">{$subcategory.title|escape}</a>{if !$subcategory@last}, {/if}
 							{/foreach}
 						</div>
 					{/if}

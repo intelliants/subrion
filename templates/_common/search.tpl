@@ -1,7 +1,7 @@
 {if $query || $regular}
 	<form class="ia-form">
 		<div class="input-group">
-			<input type="text" class="form-control" name="q" id="input-search-query" placeholder="{lang key='search_for'}" value="{$query|escape:'html'}">
+			<input type="text" class="form-control" name="q" id="input-search-query" placeholder="{lang key='search_for'}" value="{$query|escape}">
 			<span class="input-group-btn">
 				<button class="btn btn-primary" type="submit">{lang key='search'}</button>
 			</span>

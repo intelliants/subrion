@@ -10,31 +10,31 @@
 	<tbody>
 		<tr>
 			<td>{lang key='total_paid'}:</td>
-			<td>{$order.payment_gross|escape:'html'}</td>
+			<td>{$order.payment_gross|escape}</td>
 		</tr>
 		<tr>
 			<td>{lang key='currency'}:</td>
-			<td>{$order.mc_currency|escape:'html'}</td>
+			<td>{$order.mc_currency|escape}</td>
 		</tr>
 		<tr>
 			<td>{lang key='payment_date'}:</td>
-			<td>{$order.payment_date|escape:'html'}</td>
+			<td>{$order.payment_date|escape}</td>
 		</tr>
 		<tr>
 			<td>{lang key='payment_status'}:</td>
-			<td>{$order.payment_status|escape:'html'}</td>
+			<td>{$order.payment_status|escape}</td>
 		</tr>
 		<tr>
 			<td>{lang key='payer_name'}:</td>
-			<td>{$order.first_name|escape:'html'} {$order.last_name|escape:'html'}</td>
+			<td>{$order.first_name|escape} {$order.last_name|escape}</td>
 		</tr>
 		<tr>
 			<td>{lang key='payer_email'}:</td>
-			<td>{$order.payer_email|escape:'html'}</td>
+			<td>{$order.payer_email|escape}</td>
 		</tr>
 		<tr>
 			<td>{lang key='reference_id'}:</td>
-			<td>{$order.txn_id|escape:'html'}</td>
+			<td>{$order.txn_id|escape}</td>
 		</tr>
 	</tbody>
 	</table>

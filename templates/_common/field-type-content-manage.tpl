@@ -15,27 +15,27 @@
 {/if}
 
 {if isset($field.disabled) && $field.disabled}
-	<input type="hidden" name="{$fieldName}" value="{$value|escape:'html'}">
+	<input type="hidden" name="{$fieldName}" value="{$value|escape}">
 {/if}
 
 <div class="form-group{if iaField::TEXTAREA == $type} form-group--textarea{/if} {$field.class} {$field.relation}{if $field.for_plan && !$field.required} form-group--plan" style="display:none;{/if}" id="{$fieldName}_fieldzone">
 	<label for="{$name}">
-		{$field.title|escape:'html'}:
+		{$field.title|escape}:
 		{if $field.required}<span class="is-required">*</span>{/if}
 	</label>
 
 	{switch $type}
 		{case iaField::TEXT break}
 			{if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
-			<input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+			<input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::NUMBER break}
-			<input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+			<input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::TEXTAREA break}
 			{if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
 			{if !$field.use_editor}
-				<textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
+				<textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape}</textarea>
 				{if $field.length > 0}
 					{ia_add_js}
 $(function()
@@ -62,7 +62,7 @@ $(function()
 			<div class="row">
 				<div class="col-md-6">
 					<label for="{$fieldName}[title]">{lang key='title'}:</label>
-					<input class="form-control" type="text" name="{$fieldName}[title]" value="{if isset($value['title'])}{$value['title']|escape:'html'}{elseif !empty($value[1])}{$value[1]|escape:'html'}{/if}">
+					<input class="form-control" type="text" name="{$fieldName}[title]" value="{if isset($value['title'])}{$value['title']|escape}{elseif !empty($value[1])}{$value[1]|escape}{/if}">
 				</div>
 				<div class="col-md-6">
 					<label for="{$fieldName}[url]">{lang key='url'}:</label>
@@ -71,7 +71,7 @@ $(function()
 			</div>
 
 		{case iaField::DATE break}
-			{$default_date = ($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape:'html'} : ''}
+			{$default_date = ($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape} : ''}
 
 			<div class="row">
 				<div class="col-md-6">
@@ -88,7 +88,7 @@ $(function()
 			{if $value}
 				<div class="thumbnail">
 					<div class="thumbnail__actions">
-						<button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$value.file|escape:'html'}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+						<button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$value.file|escape}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 					</div>
 
 					{if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
@@ -100,7 +100,7 @@ $(function()
 					{/if}
 
 					{foreach $value as $k => $v}
-					<input type="hidden" name="{$fieldName}[{$k}]" value="{$v|escape:'html'}">
+					<input type="hidden" name="{$fieldName}[{$k}]" value="{$v|escape}">
 					{/foreach}
 				</div>
 			{/if}
@@ -132,12 +132,12 @@ $(function()
 								</a>
 
 								{*<div class="caption">
-									<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" data-emptytext="{lang key='empty_image_title'}" class="js-edit-picture-title editable editable-click">{$entry.title|escape:'html'}</a></h5>
+									<h5><a href="#" id="{$fieldName}_{$entry@index}" data-type="text" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id}" data-picture-path="{$entry.path}" data-pk="1" data-emptytext="{lang key='empty_image_title'}" class="js-edit-picture-title editable editable-click">{$entry.title|escape}</a></h5>
 								</div>
 
-								<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">*}
+								<input type="hidden" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape}">*}
 								{foreach $entry as $k => $v}
-								<input type="hidden" name="{$fieldName}[{$entry@index}][{$k}]" value="{$v|escape:'html'}">
+								<input type="hidden" name="{$fieldName}[{$entry@index}][{$k}]" value="{$v|escape}">
 								{/foreach}
 							</div>
 						</div>
@@ -186,13 +186,13 @@ $(function()
 				<div class="upload-items upload-items--files" id="{$fieldName}_upload_list">
 					{foreach $value as $entry}
 						<div class="input-group upload-items__item">
-							<input type="text" class="form-control" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape:'html'}">
-							<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path|escape:'html'}">
-							<input type="hidden" name="{$fieldName}[{$entry@index}][file]" value="{$entry.file|escape:'html'}">
+							<input type="text" class="form-control" name="{$fieldName}[{$entry@index}][title]" value="{$entry.title|escape}">
+							<input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path|escape}">
+							<input type="hidden" name="{$fieldName}[{$entry@index}][file]" value="{$entry.file|escape}">
 							<div class="input-group-btn">
 								<a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{lang key='download'}"><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
 								<span class="btn btn-default drag-handle"><span class="fa fa-arrows-v"></span></span>
-								<button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file|escape:'html'}">{lang key='delete'}</button>
+								<button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file|escape}">{lang key='delete'}</button>
 							</div>
 						</div>
 					{/foreach}
@@ -232,8 +232,8 @@ $(function()
 
 		{case iaField::TREE}
 			<input class="form-control" type="text" id="label-{$fieldName}" disabled>
-			<input type="hidden" name="{$fieldName}" id="input-{$fieldName}" value="{$value|escape:'html'}">
-			<div class="js-tree categories-tree" data-field="{$fieldName}" data-nodes="{$field.values|escape:'html'}" data-multiple="{$field.timepicker}"></div>
+			<input type="hidden" name="{$fieldName}" id="input-{$fieldName}" value="{$value|escape}">
+			<div class="js-tree categories-tree" data-field="{$fieldName}" data-nodes="{$field.values|escape}" data-multiple="{$field.timepicker}"></div>
 			{ia_add_media files='tree'}
 			{ia_add_js order=5}
 $(function()

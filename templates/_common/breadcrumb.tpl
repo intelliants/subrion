@@ -5,10 +5,10 @@
 				{foreach $core.page.breadcrumb as $entry}
 					{if $entry.url && !$entry@last}
 						<li typeof="v:Breadcrumb">
-							<a href="{$entry.url}"{if isset($entry.no_follow) && $entry.no_follow} rel="nofollow"{/if} rel="v:url" property="v:title">{$entry.caption|escape:'html'}</a>
+							<a href="{$entry.url}"{if isset($entry.no_follow) && $entry.no_follow} rel="nofollow"{/if} rel="v:url" property="v:title">{$entry.caption|escape}</a>
 						</li>
 					{else}
-						<li class="active">{$entry.caption|escape:'html'}</li>
+						<li class="active">{$entry.caption|escape}</li>
 					{/if}
 				{/foreach}
 			</ol>
@@ -16,7 +16,7 @@
 			{if isset($core.page.info.actions)}
 				<div class="dropdown action-buttons">
 					{section action $core.page.info.actions max=2}
-						<a href="{$core.page.info.actions[action].url}" class="btn btn-xs {if isset($core.page.info.actions[action].classes)} {$core.page.info.actions[action].classes}{else}btn-success{/if}"><span class="fa fa-{$core.page.info.actions[action].icon}"></span> {$core.page.info.actions[action].title|escape:'html'}</a>
+						<a href="{$core.page.info.actions[action].url}" class="btn btn-xs {if isset($core.page.info.actions[action].classes)} {$core.page.info.actions[action].classes}{else}btn-success{/if}"><span class="fa fa-{$core.page.info.actions[action].icon}"></span> {$core.page.info.actions[action].title|escape}</a>
 					{/section}
 
 					{if count($core.page.info.actions) > 2}
@@ -29,7 +29,7 @@
 									<li class="divider"></li>
 								{/if}
 								<li>
-									<a href="{$core.page.info.actions[action].url}"><i class="fa fa-{$core.page.info.actions[action].icon}"></i> {$core.page.info.actions[action].title|escape:'html'}</a>
+									<a href="{$core.page.info.actions[action].url}"><i class="fa fa-{$core.page.info.actions[action].icon}"></i> {$core.page.info.actions[action].title|escape}</a>
 								</li>
 							{/section}
 						</ul>

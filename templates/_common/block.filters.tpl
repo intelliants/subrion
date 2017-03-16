@@ -45,17 +45,17 @@
 						<div class="row">
 							<div class="col-md-6">
 								<label class="ia-form__label-mini">{lang key='from'}</label>
-								<input class="form-control" type="text" name="{$field.name}[f]" maxlength="{$field.length}" placeholder="{$field.range[0]}"{if $selected} value="{$selected.f|escape:'html'}"{/if}>
+								<input class="form-control" type="text" name="{$field.name}[f]" maxlength="{$field.length}" placeholder="{$field.range[0]}"{if $selected} value="{$selected.f|escape}"{/if}>
 							</div>
 							<div class="col-md-6">
 								<label class="ia-form__label-mini">{lang key='to'}</label>
-								<input class="form-control" type="text" name="{$field.name}[t]" maxlength="{$field.length}" placeholder="{$field.range[1]}"{if $selected} value="{$selected.t|escape:'html'}"{/if}>
+								<input class="form-control" type="text" name="{$field.name}[t]" maxlength="{$field.length}" placeholder="{$field.range[1]}"{if $selected} value="{$selected.t|escape}"{/if}>
 							</div>
 						</div>
 
 					{case iaField::TEXT}
 					{case iaField::TEXTAREA break}
-						<input class="form-control" type="text" name="{$field.name}"{if is_string($selected)} value="{$selected|escape:'html'}"{/if}>
+						<input class="form-control" type="text" name="{$field.name}"{if is_string($selected)} value="{$selected|escape}"{/if}>
 
 					{case iaField::TREE}
 						<select class="form-control" name="{$field.name}[]" multiple>

@@ -8,24 +8,24 @@
 	{capture assign='_field_text'}
 		{switch $type}
 		{case iaField::TEXT break}
-			{$item.$name|escape:'html'}
+			{$item.$name|escape}
 
 		{case iaField::TEXTAREA break}
 			{if $field.use_editor}
 				{$item.$name}
 			{else}
-				{$item.$name|escape:'html'|nl2br}
+				{$item.$name|escape|nl2br}
 			{/if}
 
 		{case iaField::NUMBER break}
-			{$item.$name|escape:'html'}
+			{$item.$name|escape}
 
 		{case iaField::CHECKBOX break}
 			{arrayToLang values=$item.$name item=$field.item name=$name}
 
 		{case iaField::STORAGE break}
 			{foreach $item[$name] as $entry}
-				<a href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}">{if $entry.title}{$entry.title|escape:'html'}{else}{lang key='download'} {$entry@iteration}{/if}</a>{if !$entry@last}, {/if}
+				<a href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}">{if $entry.title}{$entry.title|escape}{else}{lang key='download'} {$entry@iteration}{/if}</a>{if !$entry@last}, {/if}
 			{/foreach}
 
 		{case iaField::IMAGE break}
@@ -53,7 +53,7 @@
 			{/if}
 		{case iaField::URL break}
 			{$value = '|'|explode:$item.$name}
-			<a href="{$value[0]}"{if $field.url_nofollow} rel="nofollow"{/if} target="_blank">{$value[1]|escape:'html'}</a>
+			<a href="{$value[0]}"{if $field.url_nofollow} rel="nofollow"{/if} target="_blank">{$value[1]|escape}</a>
 
 		{case iaField::PICTURES break}
 			{if $item[$name]}
@@ -62,11 +62,11 @@
 					<div class="fotorama" 
 						 data-nav="thumbs"
 						 data-width="100%"
-						 data-ratio="800/400"
+						 data-ratio="16/9"
 						 data-allowfullscreen="true"
 						 data-fit="cover">
 						{foreach $item[$name] as $entry}
-							<a class="ia-gallery__item"{if !empty($entry.title)} data-caption="{$entry.title|escape:'html'}"{/if} href="{ia_image file=$entry field=$field url=true large=true}">{ia_image file=$entry field=$field title=$entry.title}</a>
+							<a class="ia-gallery__item"{if !empty($entry.title)} data-caption="{$entry.title|escape}"{/if} href="{ia_image file=$entry field=$field url=true large=true}">{ia_image file=$entry field=$field title=$entry.title}</a>
 						{/foreach}
 					</div>
 				</div>
@@ -90,11 +90,11 @@
 	{/if}
 {elseif empty($item.$name) && $field.empty_field}
 	{if !isset($wrappedValues)}
-		<span class="empty_field">{$field.empty_field|escape:'html'}</span>
+		<span class="empty_field">{$field.empty_field|escape}</span>
 	{else}
 		<div class="field field-{$type}" id="{$name}_fieldzone">
 			<span>{lang key=$fieldName}:</span>
-			<span class="empty_field">{$field.empty_field|escape:'html'}</span>
+			<span class="empty_field">{$field.empty_field|escape}</span>
 		</div>
 	{/if}
 {/if}

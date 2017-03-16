@@ -1,7 +1,7 @@
 <!--__b_{$id}-->
 {if $header}
 	<div id="block_{$name}" class="box {$classname}{if !empty($collapsible)} collapsible{if !empty($collapsed)} collapsed{/if}{/if}"{if isset($manageMode)} vm-hidden="{$hidden}"{/if}>
-		<h4 id="caption_{$name}" class="box__caption">{$title|escape:'html'}
+		<h4 id="caption_{$name}" class="box__caption">{$title|escape}
 			{if !empty($icons)}
 				<span class="box__actions">
 					{foreach $icons as $icon}

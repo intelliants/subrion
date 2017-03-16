@@ -1,6 +1,6 @@
 {$search = !isset($nosearch)}
 <div class="form-group">
-	<input type="text" id="js-category-label" value="{if isset($category.title)}{$category.title|escape:'html'}{else}{lang key='select_category_from_list'}{/if}" disabled class="form-control">
+	<input type="text" id="js-category-label" value="{if isset($category.title)}{$category.title|escape}{else}{lang key='select_category_from_list'}{/if}" disabled class="form-control">
 	<a href="#" class="categories-toggle" id="js-tree-toggler">{lang key='open_close'}</a>
 	{if $search}
 		<div id="js-tree-search"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}>
