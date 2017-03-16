@@ -13,12 +13,11 @@
 			<script src="../../../js/utils/respond.min.js"></script>
 		<![endif]-->
 
-		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="{$img}ico/apple-touch-icon-144-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="{$img}ico/apple-touch-icon-114-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="{$img}ico/apple-touch-icon-72-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" href="{$img}ico/apple-touch-icon-57-precomposed.png">
-		<link rel="shortcut icon" href="{$img}ico/favicon.png">
-		<link rel="shortcut icon" href="{$img}ico/favicon.ico">
+		<link rel="apple-touch-icon" sizes="180x180" href="{$img}ico/apple-touch-icon.png?v=2">
+		<link rel="icon" type="image/png" href="{$img}ico/favicon-32x32.png?v=2" sizes="32x32">
+		<link rel="icon" type="image/png" href="{$img}ico/favicon-16x16.png?v=2" sizes="16x16">
+		<link rel="shortcut icon" href="{$img}ico/favicon.ico?v=2">
+		<meta name="theme-color" content="#ffffff">
 
 		{ia_hooker name='smartyAdminAfterHeadSection'}
 
