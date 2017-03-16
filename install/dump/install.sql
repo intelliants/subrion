@@ -979,7 +979,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('miscellaneous', 'captcha_name', 'kcaptcha', 'kcaptcha,kcaptcha', 'select', 11, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"captcha|1\",\"multilingual\":\"0\"}'),
 ('miscellaneous', 'captcha_preview', '', '', 'text', 12, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"captcha|1\",\"multilingual\":\"0\"}'),
 ('miscellaneous', '', 'Search', '', 'divider', 13, '', 1, 1, ''),
-('miscellaneous', 'search_instant', '1', '\'1\',\'0\'', 'radio', 14, '', 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('miscellaneous', 'search_instant', '0', '\'1\',\'0\'', 'radio', 14, '', 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 
 ('financial', '', 'General', '1', 'divider', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('financial', 'currency', 'USD', '', 'text', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
@@ -1620,6 +1620,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_exists','Field already exists.','admin'),
 ('field_length','Field length','admin'),
 ('field_name_exists','This name can not be chosen for selected item.','admin'),
+('field_name_restricted','This name is reserved for system use. Please change it.','admin'),
 ('field_name_invalid','Field name should consist of letters and numbers only. Length 2-60.','admin'),
 ('field_relation','Field relation','admin'),
 ('field_relation_dependent','Dependent field','admin'),

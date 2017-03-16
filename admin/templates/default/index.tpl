@@ -247,7 +247,7 @@
 						{foreach $online_members as $member}
 						<tr>
 							<td>{$member@index + 1}</td>
-							<td>{$member.url}</td>
+							<td><a href="{$member.link}" target="_blank">{$member.fullname}</a></td>
 							<td>{long2ip($member.ip)}</td>
 							<td class="page-url"><a href="{$member.page}" target="_blank">{$member.page}</a></td>
 						</tr>

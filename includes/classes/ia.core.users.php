@@ -813,13 +813,11 @@ SQL;
 
 	public function getVisitorsInfo()
 	{
-		$rows = $this->iaDb->all("`username`, IF(`fullname` != '', `fullname`, `username`) `fullname`, `page`, `ip`", "`username` != '' AND `status` = 'active' GROUP BY `username`", null, null, 'online');
-
-		if ($rows)
+		if ($rows = $this->iaDb->all("`username`, IF(`fullname` != '', `fullname`, `username`) `fullname`, `page`, `ip`", "`username` != '' AND `status` = 'active' GROUP BY `username`", null, null, 'online'))
 		{
 			foreach ($rows as &$row)
 			{
-				$row['link'] = $this->iaView->iaSmarty->ia_url(['item' => $this->getItemName(), 'type' => 'link', 'text' => $row['fullname'], 'data' => $row]);
+				$row['link'] = $this->url('view', $row);
 			}
 		}
 
@@ -993,7 +991,7 @@ SQL;
 	}
 
 	/**
-	 * Used to unserialize fields
+	 * Used to process member fields
 	 *
 	 * @param array $rows items array
 	 * @param boolean $singleRow true when item is passed as one row

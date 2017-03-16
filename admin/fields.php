@@ -209,6 +209,10 @@ class iaBackendController extends iaAbstractControllerBackend
 			{
 				$this->addMessage('field_name_exists');
 			}
+			elseif ($this->getHelper()->isRestrictedName($entry['name']))
+			{
+				$this->addMessage('field_name_restricted');
+			}
 		}
 		else
 		{

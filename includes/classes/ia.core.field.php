@@ -67,6 +67,8 @@ class iaField extends abstractCore
 	protected static $_tableFieldsImageTypes = 'fields_image_types';
 	protected static $_tableImageTypesFileTypes = 'image_types_filetypes';
 
+	protected $_restrictedNames = ['link'];
+
 
 	public static function getTableGroups()
 	{
@@ -768,8 +770,7 @@ SQL;
 					}
 					else
 					{
-						if (false === stripos($value['url'], 'http://')
-							&& false === stripos($value['url'], 'https://'))
+						if (false === stripos($value['url'], 'http://') && false === stripos($value['url'], 'https://'))
 						{
 							$value['url'] = 'http://' . $value['url'];
 						}
@@ -891,9 +892,9 @@ SQL;
 			? []
 			: explode(',', strtolower($field['file_types'])); // no need to replace spaces, it's done when setting up a field
 
-		$extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+		$extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
-		if (!$extension || !in_array($extension, $allowedExtensions))
+		if (!$extension || !in_array(strtolower($extension), $allowedExtensions))
 		{
 			throw new Exception(iaLanguage::getf('file_type_error', ['extension' => $field['file_types']]));
 		}
@@ -1168,6 +1169,11 @@ SQL;
 			$this->iaDb->prefix, $dbTable, $columnName);
 
 		return (bool)$this->iaDb->getRow($sql);
+	}
+
+	public function isRestrictedName($columnName)
+	{
+		return in_array($columnName, $this->_restrictedNames);
 	}
 
 	private function _alterCmdBody(array $fieldData)
