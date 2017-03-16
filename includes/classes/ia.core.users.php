@@ -466,7 +466,9 @@ SQL;
 		$this->iaCore->startHook('phpUserPreRegister', ['member' => &$memberInfo, 'password' => $password]);
 
 		$this->iaDb->setTable(self::getTable());
-		$memberId = $this->iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`username` = :username', ['username' => $memberInfo['username']]);
+
+		$memberId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($memberInfo['email'], 'email'));
+
 		if (empty($memberId))
 		{
 			$memberId = $this->iaDb->insert($memberInfo, ['date_reg' => iaDb::FUNCTION_NOW, 'date_update' => iaDb::FUNCTION_NOW]);
@@ -479,6 +481,7 @@ SQL;
 				$this->sendRegistrationEmail($memberId, $password, $memberInfo);
 			}
 		}
+
 		$this->iaDb->resetTable();
 
 		$this->iaCore->startHook('phpUserRegister', ['userInfo' => $memberInfo, 'password' => $password]);
