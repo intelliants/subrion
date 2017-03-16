@@ -10,7 +10,7 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-title">{lang key='title'} {lang key='field_required'}</label>
 				<div class="col col-lg-4">
-					<input type="text" name="title" value="{$item.title|escape:'html'}" id="input-title">
+					<input type="text" name="title" value="{$item.title|escape}" id="input-title">
 				</div>
 			</div>
 
@@ -32,7 +32,7 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-tag">{lang key='tags'}</label>
 				<div class="col col-lg-4">
-					<input type="text" name="tags" value="{$item.tags|escape:'html'}" id="input-tag">
+					<input type="text" name="tags" value="{$item.tags|escape}" id="input-tag">
 					<p class="help-block text-break-word" id="title_box">{lang key='separate_with_comma_or_enter'}</p>
 				</div>
 			</div>

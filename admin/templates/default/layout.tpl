@@ -184,7 +184,7 @@
 					<div class="page">
 						<div class="page__heading">
 							<div class="page__heading__title">
-								<h1>{$core.page.title|escape:'html'}</h1>
+								<h1>{$core.page.title|escape}</h1>
 								{include 'breadcrumb.tpl'}
 							</div>
 

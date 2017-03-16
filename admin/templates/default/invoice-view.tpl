@@ -27,29 +27,29 @@
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='fullname'}</label>
-				<div class="col col-lg-4 form-control-static">{$invoice.fullname|escape:'html'}</div>
+				<div class="col col-lg-4 form-control-static">{$invoice.fullname|escape}</div>
 			</div>
 
 			<hr>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='address_line'} 1</label>
-				<div class="col col-lg-4 form-control-static">{$invoice.address1|escape:'html'}</div>
+				<div class="col col-lg-4 form-control-static">{$invoice.address1|escape}</div>
 			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='address_line'} 2</label>
-				<div class="col col-lg-4 form-control-static">{$invoice.address2|escape:'html'}</div>
+				<div class="col col-lg-4 form-control-static">{$invoice.address2|escape}</div>
 			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='zip'}</label>
-				<div class="col col-lg-4 form-control-static">{$invoice.zip|escape:'html'}</div>
+				<div class="col col-lg-4 form-control-static">{$invoice.zip|escape}</div>
 			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='country'}</label>
-				<div class="col col-lg-4 form-control-static">{$invoice.country|escape:'html'}</div>
+				<div class="col col-lg-4 form-control-static">{$invoice.country|escape}</div>
 			</div>
 		</div>
 
@@ -72,7 +72,7 @@
 				{foreach $items as $entry}
 					<tr>
 						<td>{$entry@iteration}</td>
-						<td>{$entry.title|escape:'html'}</td>
+						<td>{$entry.title|escape}</td>
 						<td class="text-right">{$entry.price}</td>
 						<td class="text-right">{$entry.quantity}</td>
 						<td class="text-right">

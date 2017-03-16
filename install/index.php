@@ -44,7 +44,6 @@ date_default_timezone_set('UTC');
 session_name(sprintf('INTELLI_%s', substr(md5(IA_HOME), 0, 10)));
 session_start();
 
-$ia_version = true;
 include IA_HOME . 'index.php';
 
 $scriptFolder = trim(str_replace(INSTALL . IA_URL_DELIMITER . 'index.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER);

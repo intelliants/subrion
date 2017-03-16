@@ -24,9 +24,9 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '4.1.1');
+define('IA_VERSION', '4.1.2');
 
-if (isset($ia_version))
+if (defined('IA_INSTALL'))
 {
 	return IA_VERSION;
 }

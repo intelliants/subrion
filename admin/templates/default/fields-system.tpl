@@ -9,7 +9,7 @@
 			<label class="col col-lg-2 control-label">{lang key='owner'}</label>
 
 			<div class="col col-lg-4">
-				<input type="text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner|escape:'html'}" maxlength="255">
+				<input type="text" autocomplete="off" id="js-owner-autocomplete" name="owner" value="{$item.owner|escape}" maxlength="255">
 				<input type="hidden" name="member_id" id="member-id"{if !empty($item.member_id)} value="{$item.member_id}"{/if}>
 			</div>
 		</div>

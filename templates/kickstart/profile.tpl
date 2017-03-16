@@ -7,29 +7,29 @@
 					{ia_image file=$member.avatar width=120 alt=$member.fullname|default:$member.username gravatar=true email=$member.email}
 				</a>
 				<div class="ia-item-author__content">
-					<h4 class="ia-item__title"><a href="{ia_url type='url' item='members' data=$member}">{$member.fullname|escape:'html'}</a></h4>
+					<h4 class="ia-item__title"><a href="{ia_url type='url' item='members' data=$member}">{$member.fullname|escape}</a></h4>
 					{if $member.biography}
 						<p class="text-center text-fade-50">{$member.biography|strip_tags|truncate:100:'...':true}</p>
 					{/if}
 					{if $member.phone}
 					<div class="ia-item__additional">
-						<p><span class="fa fa-phone"></span> {lang key='field_members_phone'}: {$member.phone|escape:'html'}</p>
+						<p><span class="fa fa-phone"></span> {lang key='field_members_phone'}: {$member.phone|escape}</p>
 					</div>
 					{/if}
 				</div>
 				{if $member.facebook || $member.twitter || $member.gplus || $member.linkedin}
 					<p class="text-center">
 						{if !empty($member.facebook)}
-							<a href="{$member.facebook|escape:'html'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-facebook fa-stack-1x fa-inverse"></i></a>
+							<a href="{$member.facebook|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-facebook fa-stack-1x fa-inverse"></i></a>
 						{/if}
 						{if !empty($member.twitter)}
-							<a href="{$member.twitter|escape:'html'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-twitter fa-stack-1x fa-inverse"></i></a>
+							<a href="{$member.twitter|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-twitter fa-stack-1x fa-inverse"></i></a>
 						{/if}
 						{if !empty($member.gplus)}
-							<a href="{$member.gplus|escape:'html'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-google-plus fa-stack-1x fa-inverse"></i></a>
+							<a href="{$member.gplus|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-google-plus fa-stack-1x fa-inverse"></i></a>
 						{/if}
 						{if !empty($member.linkedin)}
-							<a href="{$member.linkedin|escape:'html'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-linkedin fa-stack-1x fa-inverse"></i></a>
+							<a href="{$member.linkedin|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-linkedin fa-stack-1x fa-inverse"></i></a>
 						{/if}
 					</p>
 				{/if}

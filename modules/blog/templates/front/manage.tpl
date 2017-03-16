@@ -12,7 +12,7 @@
 					<div class="fieldset__content">
 						<div class="form-group">
 							<label for="input-title">{lang key='title'}</label>
-							<input class="form-control" type="text" name="title" value="{$item.title|escape:'html'}" id="input-title">
+							<input class="form-control" type="text" name="title" value="{$item.title|escape}" id="input-title">
 						</div>
 
 						<div class="form-group">
@@ -28,7 +28,7 @@
 
 						<div class="form-group">
 							<label for="input-tag">{lang key='tags'}</label>
-							<input class="form-control" type="text" name="tags" value="{$blog_entry_tags|escape:'html'}" id="input-tag">
+							<input class="form-control" type="text" name="tags" value="{$blog_entry_tags|escape}" id="input-tag">
 							<p class="help-block text-break-word" id="title_box">{lang key='separate_with_comma_or_enter'}</p>
 						</div>
 
@@ -38,14 +38,14 @@
 							{if !empty($item.image)}
 								<div class="thumbnail">
 									<div class="thumbnail__actions">
-										<button class="btn btn-danger btn-sm js-delete-file" data-field="image" data-item="blog_entries" data-item-id="{$item.id|default:''}" data-file="{$item.image|escape:'html'}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+										<button class="btn btn-danger btn-sm js-delete-file" data-field="image" data-item="blog_entries" data-item-id="{$item.id|default:''}" data-file="{$item.image|escape}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
 									</div>
 
 									<a href="{ia_image file=$item.image type='large' url=true}" rel="ia_lightbox[image]">
 										{ia_image file=$item.image}
 									</a>
 
-									<input type="hidden" name="image[path]" value="{$item.image|escape:'html'}">
+									<input type="hidden" name="image[path]" value="{$item.image|escape}">
 								</div>
 							{/if}
 
@@ -55,7 +55,7 @@
 										{lang key='browse'} <input type="file" name="image" id="field_image">
 									</span>
 								</span>
-								<input type="text" class="form-control js-file-name" readonly{if $item.image} value="{$item.image|escape:'html'}{/if}">
+								<input type="text" class="form-control js-file-name" readonly{if $item.image} value="{$item.image|escape}{/if}">
 							</div>
 						</div>
 					</div>

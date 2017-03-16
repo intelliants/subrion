@@ -5,7 +5,7 @@
 		{if isset($position) && 'landing' == $position}
 			<div class="container">
 		{/if}
-		<h4 id="caption_{$name}" class="box__caption">{$title|escape:'html'}
+		<h4 id="caption_{$name}" class="box__caption">{$title|escape}
 			{if isset($icons) && $icons}
 				<span class="box__actions">
 					{foreach $icons as $icon}

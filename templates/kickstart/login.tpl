@@ -3,7 +3,7 @@
 		{preventCsrf}
 
 		<div class="form-group">
-			<input class="form-control" type="text" tabindex="4" name="username" value="{if isset($smarty.post.username)}{$smarty.post.username|escape:'html'}{/if}" placeholder="{lang key='username_or_email'}">
+			<input class="form-control" type="text" tabindex="4" name="username" value="{if isset($smarty.post.username)}{$smarty.post.username|escape}{/if}" placeholder="{lang key='username_or_email'}">
 		</div>
 
 		<div class="form-group">

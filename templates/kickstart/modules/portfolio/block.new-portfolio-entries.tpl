@@ -10,7 +10,7 @@
 
 						<div class="ia-item__content">
 							<h4 class="ia-item__title text-center">
-								<a href="{$smarty.const.IA_URL}portfolio/{$pf_entry.id}-{$pf_entry.alias}">{$pf_entry.title|escape:'html'}</a>
+								<a href="{$smarty.const.IA_URL}portfolio/{$pf_entry.id}-{$pf_entry.alias}">{$pf_entry.title|escape}</a>
 							</h4>
 						</div>
 					</div>

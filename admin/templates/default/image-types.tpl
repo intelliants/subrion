@@ -10,10 +10,10 @@
 
 				<div class="col col-lg-4">
 					{if iaCore::ACTION_ADD == $pageAction}
-						<input type="text" name="name" value="{$item.name|escape:'html'}">
+						<input type="text" name="name" value="{$item.name|escape}">
 						<p class="help-block">{lang key='unique_name'}</p>
 					{else}
-						<input type="text" value="{$item.name|escape:'html'}" disabled>
+						<input type="text" value="{$item.name|escape}" disabled>
 					{/if}
 				</div>
 			</div>

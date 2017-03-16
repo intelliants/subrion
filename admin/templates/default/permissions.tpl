@@ -17,7 +17,7 @@
 							{foreach $usergroups as $entry}
 								<tr>
 									<td>{$entry@iteration}</td>
-									<td>{lang key="usergroup_{$entry.name}"|escape:'html'}</td>
+									<td>{lang key="usergroup_{$entry.name}"|escape}</td>
 									<td>
 										{if $entry.admin_access}
 											<span class="text-success">{lang key='allowed'}</span> 
@@ -55,9 +55,9 @@
 						</thead>
 						<tbody>
 							{foreach $members as $entry}
-								<tr data-name="{$entry.fullname|escape:'html'}">
+								<tr data-name="{$entry.fullname|escape}">
 									<td>{$entry@iteration}</td>
-									<td><a href="{$smarty.const.ADMIN_URL}members/edit/{$entry.id}/">{$entry.fullname|escape:'html'}</a></td>
+									<td><a href="{$smarty.const.ADMIN_URL}members/edit/{$entry.id}/">{$entry.fullname|escape}</a></td>
 									<td>{lang key="usergroup_{$entry.usergroup}"}</td>
 									<td>
 										{if $entry.admin_access}

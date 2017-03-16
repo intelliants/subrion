@@ -8,14 +8,14 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-password">{lang key='password'}</label>
 				<div class="col col-lg-4">
-					<input type="password" class="js-input-password" name="_password" id="input-password" value="{if isset($smarty.post._password)}{$smarty.post._password|escape:'html'}{/if}">
+					<input type="password" class="js-input-password" name="_password" id="input-password" value="{if isset($smarty.post._password)}{$smarty.post._password|escape}{/if}">
 				</div>
 			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label" for="input-password-confirmation">{lang key='password_confirm'}</label>
 				<div class="col col-lg-4">
-					<input type="password" name="_password2" id="input-password-confirmation" value="{if isset($smarty.post._password2)}{$smarty.post._password2|escape:'html'}{/if}">
+					<input type="password" name="_password2" id="input-password-confirmation" value="{if isset($smarty.post._password2)}{$smarty.post._password2|escape}{/if}">
 				</div>
 			</div>
 

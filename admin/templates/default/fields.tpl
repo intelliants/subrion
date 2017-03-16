@@ -10,16 +10,16 @@
 					<label class="col col-lg-2 control-label">{lang key='name'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" value="{$item.name|escape:'html'}" disabled>
-						<input type="hidden" name="name" value="{$item.name|escape:'html'}">
+						<input type="text" value="{$item.name|escape}" disabled>
+						<input type="hidden" name="name" value="{$item.name|escape}">
 					</div>
 				</div>
 				<div class="row">
 					<label class="col col-lg-2 control-label">{lang key='field_item'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" value="{$item.item|escape:'html'}" disabled>
-						<input type="hidden" name="item" id="input-item" value="{$item.item|escape:'html'}">
+						<input type="text" value="{$item.item|escape}" disabled>
+						<input type="hidden" name="item" id="input-item" value="{$item.item|escape}">
 					</div>
 				</div>
 				<div class="row">
@@ -27,7 +27,7 @@
 
 					<div class="col col-lg-4">
 						<input type="text" value="{lang key="field_type_{$item.type}" default=$item.type}" disabled>
-						<input type="hidden" name="type" id="input-type" value="{$item.type|escape:'html'}">
+						<input type="hidden" name="type" id="input-type" value="{$item.type|escape}">
 					</div>
 				</div>
 			{else}
@@ -73,7 +73,7 @@
 					<select name="fieldgroup_id" id="input-fieldgroup"{if !$groups} disabled{/if}>
 						<option value="">{lang key='_select_'}</option>
 						{foreach $groups as $group}
-							<option value="{$group.id}"{if $group.id == $item.fieldgroup_id} selected{/if}>{$group.title|escape:'html'}</option>
+							<option value="{$group.id}"{if $group.id == $item.fieldgroup_id} selected{/if}>{$group.title|escape}</option>
 						{/foreach}
 					</select>
 				</div>
@@ -83,7 +83,7 @@
 				<label class="col col-lg-2 control-label">{lang key='empty_field'} <a href="#" class="js-tooltip" title="{$tooltips.empty_field}"><span class="fa fa-info-circle"></span></a></label>
 
 				<div class="col col-lg-4">
-					<input type="text" name="empty_field" value="{if isset($item.empty_field)}{$item.empty_field|escape:'html'}{/if}">
+					<input type="text" name="empty_field" value="{if isset($item.empty_field)}{$item.empty_field|escape}{/if}">
 				</div>
 			</div>
 
@@ -93,10 +93,10 @@
 				<div class="col col-lg-4">
 					<div class="box-simple fieldset">
 						{foreach $pages as $entry}
-							<div class="checkbox" data-item="{$entry.item|escape:'html'}"{if $item.item != $entry.item} style="display: none;"{/if}>
+							<div class="checkbox" data-item="{$entry.item|escape}"{if $item.item != $entry.item} style="display: none;"{/if}>
 								<label>
 									<input type="checkbox" value="{$entry.name}"{if in_array($entry.name, $item.pages)} checked{/if} name="pages[]">
-									{$entry.title|escape:'html'}
+									{$entry.title|escape}
 								</label>
 							</div>
 						{/foreach}
@@ -145,7 +145,7 @@
 											<div class="checkbox">
 												<label>
 													<input type="checkbox" value="1"{if isset($item.parents[$fieldId][$option])} checked{/if} name="parents[{$fieldItem}][{$fieldName}][{$option}]">
-													{{lang key="field_{$fieldItem}_{$fieldName}+{$option}"}|escape:'html'}
+													{{lang key="field_{$fieldItem}_{$fieldName}+{$option}"}|escape}
 												</label>
 											</div>
 										{/foreach}
@@ -199,7 +199,7 @@
 					<label class="col col-lg-2 control-label">{lang key='field_length'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" name="length" class="js-code-editor" value="{$item.length|escape:'html'}">
+						<input type="text" name="length" class="js-code-editor" value="{$item.length|escape}">
 					</div>
 				</div>
 			</div>
@@ -218,14 +218,14 @@
 						<label class="col col-lg-2 control-label">{lang key='max_files'}</label>
 
 						<div class="col col-lg-4">
-							<input class="js-filter-numeric" type="text" name="max_files" value="{$item.length|escape:'html'}">
+							<input class="js-filter-numeric" type="text" name="max_files" value="{$item.length|escape}">
 						</div>
 					</div>
 					<div class="row">
 						<label class="col col-lg-2 control-label">{lang key='file_types'} <span class="required">*</span></label>
 
 						<div class="col col-lg-4">
-							<textarea rows="3" id="file_types" name="file_types">{if isset($item.file_types)}{$item.file_types|escape:'html'}{/if}</textarea>
+							<textarea rows="3" id="file_types" name="file_types">{if isset($item.file_types)}{$item.file_types|escape}{/if}</textarea>
 						</div>
 					</div>
 				{/if}
@@ -244,8 +244,8 @@
 					<hr>
 
 					<input type="hidden" name="use_img_types" value="{$item.timepicker|intval}">
-					<input type="hidden" name="imagetype_primary"{if $item.timepicker} value="{$item.imagetype_primary|escape:'html'}"{/if}>
-					<input type="hidden" name="imagetype_thumbnail"{if $item.timepicker}  value="{$item.imagetype_thumbnail|escape:'html'}"{/if}>
+					<input type="hidden" name="imagetype_primary"{if $item.timepicker} value="{$item.imagetype_primary|escape}"{/if}>
+					<input type="hidden" name="imagetype_thumbnail"{if $item.timepicker}  value="{$item.imagetype_thumbnail|escape}"{/if}>
 
 					<div class="row" id="js-image-field-setup-by-imgtypes"{if !$item.timepicker} style="display: none;"{/if}>
 						<label class="col col-lg-2 control-label">{lang key='image_types'} <span class="required">*</span></label>
@@ -261,7 +261,7 @@
 											{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
 										</span>
 										<div class="form-control-static">
-											{$imageType.name|escape:'html'} <span>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</span>
+											{$imageType.name|escape} <span>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</span>
 
 											<span class="label label-info" data-type="primary" {if $item.imagetype_primary == $imageType.name} style="display: block;"{/if}>{lang key='primary'}</span>
 											<span class="label label-info" data-type="thumbnail" {if $item.imagetype_thumbnail == $imageType.name} style="display: block;"{/if}>{lang key='thumbnail'}</span>
@@ -289,10 +289,10 @@
 							<div class="col col-lg-4">
 								<div class="row">
 									<div class="col col-lg-6">
-										<input type="text" name="image_width" value="{if isset($item.image_width)}{$item.image_width|escape:'html'}{else}900{/if}">
+										<input type="text" name="image_width" value="{if isset($item.image_width)}{$item.image_width|escape}{else}900{/if}">
 									</div>
 									<div class="col col-lg-6">
-										<input type="text" name="image_height" value="{if isset($item.image_height)}{$item.image_height|escape:'html'}{else}600{/if}">
+										<input type="text" name="image_height" value="{if isset($item.image_height)}{$item.image_height|escape}{else}600{/if}">
 									</div>
 								</div>
 							</div>
@@ -303,10 +303,10 @@
 							<div class="col col-lg-4">
 								<div class="row">
 									<div class="col col-lg-6">
-										<input type="text" name="thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape:'html'}{else}{$core.config.thumb_w}{/if}">
+										<input type="text" name="thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape}{else}{$core.config.thumb_w}{/if}">
 									</div>
 									<div class="col col-lg-6">
-										<input type="text" name="thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape:'html'}{else}{$core.config.thumb_h}{/if}">
+										<input type="text" name="thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape}{else}{$core.config.thumb_h}{/if}">
 									</div>
 								</div>
 							</div>
@@ -331,7 +331,7 @@
 						<label class="col col-lg-2 control-label">{lang key='file_prefix'}</label>
 
 						<div class="col col-lg-4">
-							<input type="text" name="file_prefix"{if isset($item.file_prefix)} value="{$item.file_prefix|escape:'html'}"{/if}>
+							<input type="text" name="file_prefix"{if isset($item.file_prefix)} value="{$item.file_prefix|escape}"{/if}>
 						</div>
 					</div>
 				{/if}
@@ -378,7 +378,7 @@
 					<label class="col col-lg-2 control-label">{lang key='field_default'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" readonly name="multiple_default" id="multiple_default" value="{if isset($item.default)}{$item.default|escape:'html'}{/if}">
+						<input type="text" readonly name="multiple_default" id="multiple_default" value="{if isset($item.default)}{$item.default|escape}{/if}">
 						<a href="#" class="js-actions label label-default pull-right" data-action="clearDefault"><i class="i-cancel-circle"></i> {lang key='clear_default'}</a>
 					</div>
 				</div>
@@ -393,14 +393,14 @@
 									<div class="row">
 										<label class="col col-lg-4 control-label">{lang key='key'} <i>({lang key='not_required'})</i></label>
 										<div class="col col-lg-8">
-											<input type="text" name="keys[]" value="{$value|escape:'html'}">
+											<input type="text" name="keys[]" value="{$value|escape}">
 										</div>
 									</div>
 									{foreach $core.languages as $code => $language}
 										<div class="row">
-											<label class="col col-lg-4 control-label">{lang key='item_value'} <span class="label label-info">{$language.title|escape:'html'}</span></label>
+											<label class="col col-lg-4 control-label">{lang key='item_value'} <span class="label label-info">{$language.title|escape}</span></label>
 											<div class="col col-lg-8">
-												<input type="text" name="values[{$code}][]"{if isset($titles.$value.$code)} value="{$titles.$value.$code|escape:'html'}"{/if}>
+												<input type="text" name="values[{$code}][]"{if isset($titles.$value.$code)} value="{$titles.$value.$code|escape}"{/if}>
 											</div>
 										</div>
 									{/foreach}
@@ -494,8 +494,8 @@
 					<hr>
 
 					<input type="hidden" name="pic_use_img_types" value="{$item.timepicker|intval}">
-					<input type="hidden" name="pic_imagetype_primary"{if $item.timepicker} value="{$item.imagetype_primary|escape:'html'}"{/if}>
-					<input type="hidden" name="pic_imagetype_thumbnail"{if $item.timepicker}  value="{$item.imagetype_thumbnail|escape:'html'}"{/if}>
+					<input type="hidden" name="pic_imagetype_primary"{if $item.timepicker} value="{$item.imagetype_primary|escape}"{/if}>
+					<input type="hidden" name="pic_imagetype_thumbnail"{if $item.timepicker}  value="{$item.imagetype_thumbnail|escape}"{/if}>
 
 					<div class="row" id="js-gallery-field-setup-by-imgtypes"{if !$item.timepicker} style="display: none;"{/if}>
 						<label class="col col-lg-2 control-label">{lang key='image_types'} <span class="required">*</span></label>
@@ -511,7 +511,7 @@
 											{if isset($item.image_types) && in_array($imageType.id, $item.image_types)} checked{/if}>
 										</span>
 										<div class="form-control-static">
-											{$imageType.name|escape:'html'} <span>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</span>
+											{$imageType.name|escape} <span>({$imageType.width}/{$imageType.height}/{$imageType.resize_mode})</span>
 
 											<span class="label label-info" data-type="primary" {if $item.imagetype_primary == $imageType.name} style="display: block;"{/if}>{lang key='primary'}</span>
 											<span class="label label-info" data-type="thumbnail" {if $item.imagetype_thumbnail == $imageType.name} style="display: block;"{/if}>{lang key='thumbnail'}</span>
@@ -539,10 +539,10 @@
 							<div class="col col-lg-4">
 								<div class="row">
 									<div class="col col-lg-6">
-										<input type="text" name="pic_image_width" value="{if isset($item.image_width)}{$item.image_width|escape:'html'}{else}900{/if}">
+										<input type="text" name="pic_image_width" value="{if isset($item.image_width)}{$item.image_width|escape}{else}900{/if}">
 									</div>
 									<div class="col col-lg-6">
-										<input type="text" name="pic_image_height" value="{if isset($item.image_height)}{$item.image_height|escape:'html'}{else}600{/if}">
+										<input type="text" name="pic_image_height" value="{if isset($item.image_height)}{$item.image_height|escape}{else}600{/if}">
 									</div>
 								</div>
 							</div>
@@ -553,10 +553,10 @@
 							<div class="col col-lg-4">
 								<div class="row">
 									<div class="col col-lg-6">
-										<input type="text" name="pic_thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape:'html'}{else}{$core.config.thumb_w}{/if}">
+										<input type="text" name="pic_thumb_width" value="{if isset($item.thumb_width)}{$item.thumb_width|escape}{else}{$core.config.thumb_w}{/if}">
 									</div>
 									<div class="col col-lg-6">
-										<input type="text" name="pic_thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape:'html'}{else}{$core.config.thumb_h}{/if}">
+										<input type="text" name="pic_thumb_height" value="{if isset($item.thumb_height)}{$item.thumb_height|escape}{else}{$core.config.thumb_h}{/if}">
 									</div>
 								</div>
 							</div>
@@ -581,7 +581,7 @@
 						<label class="col col-lg-2 control-label">{lang key='max_num_images'}</label>
 
 						<div class="col col-lg-4">
-							<input type="text" name="pic_max_images" value="{if isset($item.pic_max_images)}{$item.pic_max_images|escape:'html'}{else}5{/if}">
+							<input type="text" name="pic_max_images" value="{if isset($item.pic_max_images)}{$item.pic_max_images|escape}{else}5{/if}">
 						</div>
 					</div>
 
@@ -589,7 +589,7 @@
 						<label class="col col-lg-2 control-label">{lang key='file_prefix'}</label>
 
 						<div class="col col-lg-4">
-							<input type="text" name="pic_file_prefix" value="{if isset($item.file_prefix)}{$item.file_prefix|escape:'html'}{/if}">
+							<input type="text" name="pic_file_prefix" value="{if isset($item.file_prefix)}{$item.file_prefix|escape}{/if}">
 						</div>
 					</div>
 				{/if}
@@ -623,7 +623,7 @@
 				<label class="col col-lg-2 control-label">{lang key='required_checks'} <a href="#" class="js-tooltip" title="{$tooltips.required_checks}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-8">
-					<textarea name="required_checks" id="required_checks" class="js-code-editor">{if isset($item.required_checks)}{$item.required_checks|escape:'html'}{/if}</textarea>
+					<textarea name="required_checks" id="required_checks" class="js-code-editor">{if isset($item.required_checks)}{$item.required_checks|escape}{/if}</textarea>
 				</div>
 			</div>
 
@@ -631,7 +631,7 @@
 				<label class="col col-lg-2 control-label">{lang key='extra_actions'} <a href="#" class="js-tooltip" title="{$tooltips.extra_actions}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-8">
-					<textarea name="extra_actions" id="extra_actions" class="js-code-editor">{if isset($item.extra_actions)}{$item.extra_actions|escape:'html'}{/if}</textarea>
+					<textarea name="extra_actions" id="extra_actions" class="js-code-editor">{if isset($item.extra_actions)}{$item.extra_actions|escape}{/if}</textarea>
 				</div>
 			</div>
 
@@ -652,23 +652,23 @@
 						<div class="translate-group" id="language-group-title">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="title[{$iso}]"{if isset($item.title.$iso)} value="{$item.title.$iso|escape:'html'}"{/if}>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<input type="text" name="title[{$iso}]"{if isset($item.title.$iso)} value="{$item.title.$iso|escape}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape}"{/if}>
 					{/if}
 				</div>
 			</div>
@@ -688,23 +688,23 @@
 						<div class="translate-group" id="language-group-tooltip">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="tooltip[{$core.language.iso}]"{if isset($item.tooltip[$core.language.iso])} value="{$item.tooltip[$core.language.iso]|escape:'html'}"{/if}>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<input type="text" name="tooltip[{$core.language.iso}]"{if isset($item.tooltip[$core.language.iso])} value="{$item.tooltip[$core.language.iso]|escape}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="tooltip[{$iso}]"{if isset($item.tooltip.$iso)} value="{$item.tooltip.$iso|escape:'html'}"{/if}>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<input type="text" name="tooltip[{$iso}]"{if isset($item.tooltip.$iso)} value="{$item.tooltip.$iso|escape}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<input type="text" name="tooltip[{$core.language.iso}]"{if isset($item.tooltip[$core.language.iso])} value="{$item.tooltip[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="tooltip[{$core.language.iso}]"{if isset($item.tooltip[$core.language.iso])} value="{$item.tooltip[$core.language.iso]|escape}"{/if}>
 					{/if}
 				</div>
 			</div>

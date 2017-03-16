@@ -13,7 +13,7 @@
 				<button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"><span class="i-copy"></span></button>
 			</div>
 		{/if}
-		<label class="control-label">{$field.title|escape:'html'} {if $field.required}{lang key='field_required'}{/if}</label>
+		<label class="control-label">{$field.title|escape} {if $field.required}{lang key='field_required'}{/if}</label>
 		{if (iaField::PICTURES == $type || iaField::IMAGE == $type) && !$field.timepicker}
 			<div class="help-block">
 				{lang key='thumb_dimensions'}: {$field.thumb_width}x{$field.thumb_height}<br>
@@ -52,27 +52,27 @@
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
-							<input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" value="{if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.masterLanguage.iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
-							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>{/if}
+							<input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" value="{if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}{$field.default|escape}{else}{$item["{$fieldName}_{$core.masterLanguage.iso}"]|escape}{/if}" maxlength="{$field.length}">
+							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>{/if}
 						</div>
 					</div>
 					<div class="translate-group__langs">
 						{foreach $core.languages as $iso => $language}
 							{if $iso != $core.masterLanguage.code}
 								<div class="translate-group__item">
-									<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}" maxlength="{$field.length}">
-									<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+									<input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" value="{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape}{else}{$item["{$fieldName}_{$iso}"]|escape}{/if}" maxlength="{$field.length}">
+									<span class="translate-group__item__code">{$language.title|escape}</span>
 								</div>
 							{/if}
 						{/foreach}
 					</div>
 				</div>
 			{else}
-				<input type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+				<input type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
 			{/if}
 
 		{case iaField::DATE break}
-			{assign var='default_date' value=($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape:'html'} : ''}
+			{assign var='default_date' value=($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape} : ''}
 
 			<div class="input-group date" id="field_date_{$fieldName}">
 				<input type="text" class="js-datepicker" name="{$fieldName}" id="{$name}" value="{$default_date}" {if $field.timepicker}data-date-format="YYYY-MM-DD HH:mm:ss"{else}data-date-format="YYYY-MM-DD"{/if}>
@@ -80,7 +80,7 @@
 			</div>
 
 		{case iaField::NUMBER break}
-			<input class="js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape:'html'}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+			<input class="js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
 
 		{case iaField::URL break}
 			{if !is_array($value)}
@@ -94,7 +94,7 @@
 
 				<div class="col col-lg-6">
 					<label for="{$field.name}[title]" class="control-label">{lang key='title'}:</label>
-					<input type="text" name="{$field.name}[title]" value="{if isset($value['title'])}{$value['title']|escape:'html'}{elseif !empty($value[1])}{$value[1]|escape:'html'}{/if}">
+					<input type="text" name="{$field.name}[title]" value="{if isset($value['title'])}{$value['title']|escape}{elseif !empty($value[1])}{$value[1]|escape}{/if}">
 					<p class="help-block">({lang key='optional'})</p>
 				</div>
 			</div>
@@ -112,23 +112,23 @@
 				<div class="translate-group" id="language-group-{$fieldName}">
 					<div class="translate-group__default">
 						<div class="translate-group__item">
-							<textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" rows="5">{if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$core.masterLanguage.iso}"]|escape:'html'}{/if}</textarea>
-							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>{/if}
+							<textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" rows="5">{if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}{$field.default|escape}{else}{$item["{$fieldName}_{$core.masterLanguage.iso}"]|escape}{/if}</textarea>
+							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>{/if}
 						</div>
 					</div>
 					<div class="translate-group__langs">
 						{foreach $core.languages as $iso => $language}
 							{if $iso != $core.masterLanguage.iso}
 							<div class="translate-group__item">
-								<textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" rows="5">{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape:'html'}{else}{$item["{$fieldName}_{$iso}"]|escape:'html'}{/if}</textarea>
-								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+								<textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" rows="5">{if empty($item["{$fieldName}_{$iso}"])}{$field.default|escape}{else}{$item["{$fieldName}_{$iso}"]|escape}{/if}</textarea>
+								<span class="translate-group__item__code">{$language.title|escape}</span>
 							</div>
 							{/if}
 						{/foreach}
 					</div>
 				</div>
 				{else}
-				<textarea name="{$fieldName}" rows="8" id="{$name}">{$value|escape:'html'}</textarea>
+				<textarea name="{$fieldName}" rows="8" id="{$name}">{$value|escape}</textarea>
 				{if $field.length > 0}
 					{ia_add_js}
 $(function($)
@@ -153,7 +153,7 @@ $(function($)
 						<div class="translate-group__item">
 							{$value = {(empty($item["{$fieldName}_{$core.masterLanguage.iso}"])) ? $field.default : $item["{$fieldName}_{$core.masterLanguage.iso}"]}}
 							{ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
-							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape:'html'}</div>{/if}
+							{if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>{/if}
 						</div>
 					</div>
 					<div class="translate-group__langs">
@@ -162,7 +162,7 @@ $(function($)
 							<div class="translate-group__item">
 								{$value = {(empty($item["{$fieldName}_{$iso}"])) ? $field.default : $item["{$fieldName}_{$iso}"]}}
 								{ia_wysiwyg value=$value name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"}
-								<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+								<span class="translate-group__item__code">{$language.title|escape}</span>
 							</div>
 							{/if}
 						{/foreach}
@@ -198,12 +198,12 @@ $(function($)
 							<div class="uploads-list-item__body">
 								<div class="input-group">
 									{foreach $entry as $k => $v}
-									<input type="hidden" name="{$fieldName}[{$i}][{$k}]" value="{$v|escape:'html'}">
+									<input type="hidden" name="{$fieldName}[{$i}][{$k}]" value="{$v|escape}">
 									{/foreach}
-									<input type="text" name="{$fieldName}[{$i}][title]" value="{$entry.title|escape:'html'}" id="{$fieldName}_{$entry@index}">
+									<input type="text" name="{$fieldName}[{$i}][title]" value="{$entry.title|escape}" id="{$fieldName}_{$entry@index}">
 
 									<span class="input-group-btn">
-										<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{$entry.title|escape:'html'}"><i class="i-box-add"></i></a>
+										<a class="btn btn-success uploads-list-item__img" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{$entry.title|escape}"><i class="i-box-add"></i></a>
 										<a class="btn btn-danger js-cmd-delete-file" href="#" title="{lang key='delete'}" data-file="{$entry.file}" data-item="{$field.item}" data-field="{$field.name}" data-id="{$id}"><span class="fa fa-remove"></span></a>
 										<span class="btn btn-default uploads-list-item__drag-handle"><span class="fa fa-reorder"></span></span>
 									</span>
@@ -329,8 +329,8 @@ $(function()
 
 		{case iaField::TREE break}
 			<input type="text" id="label-{$fieldName}" disabled>
-			<input type="hidden" name="{$fieldName}" id="input-{$fieldName}" value="{$value|escape:'html'}">
-			<div class="js-tree categories-tree" data-field="{$fieldName}" data-nodes="{$field.values|escape:'html'}" data-multiple="{$field.timepicker}"></div>
+			<input type="hidden" name="{$fieldName}" id="input-{$fieldName}" value="{$value|escape}">
+			<div class="js-tree categories-tree" data-field="{$fieldName}" data-nodes="{$field.values|escape}" data-multiple="{$field.timepicker}"></div>
 			{ia_add_media files='tree'}
 			{ia_add_js order=5}
 $(function()

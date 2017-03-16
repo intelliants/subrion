@@ -154,7 +154,7 @@
 					<div class="row">
 						<label class="col col-lg-2 control-label">{lang key='filename'}</label>
 						<div class="col col-lg-4">
-							<input type="text" name="filename" value="{if isset($smarty.post.filename) && $smarty.post.filename}{$smarty.post.filename|escape:'html'}{else}subrion_{$smarty.const.IA_VERSION}_{$smarty.const.IA_LANGUAGE}{/if}">
+							<input type="text" name="filename" value="{if isset($smarty.post.filename) && $smarty.post.filename}{$smarty.post.filename|escape}{else}subrion_{$smarty.const.IA_VERSION}_{$smarty.const.IA_LANGUAGE}{/if}">
 						</div>
 					</div>
 				</div>

@@ -2298,6 +2298,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('plans','Plans','common'),
 ('position','Position','common'),
 ('previous','Previous','common'),
+('print','Print','common'),
 ('print_invoice','Print invoice','common'),
 ('profile','Profile','common'),
 

@@ -20,23 +20,23 @@
 						<div class="translate-group" id="language-group-title">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="title[{$core.language.iso}]" value="{$item.title[$core.language.iso]|default:''|escape:'html'}">
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<input type="text" name="title[{$core.language.iso}]" value="{$item.title[$core.language.iso]|default:''|escape}">
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="title[{$iso}]" value="{$item.title.$iso|default:''|escape:'html'}">
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<input type="text" name="title[{$iso}]" value="{$item.title.$iso|default:''|escape}">
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<input type="text" name="title[{$core.language.iso}]" value="{$item.title[$core.language.iso]|default:''|escape:'html'}">
+						<input type="text" name="title[{$core.language.iso}]" value="{$item.title[$core.language.iso]|default:''|escape}">
 					{/if}
 				</div>
 			</div>
@@ -56,23 +56,23 @@
 						<div class="translate-group" id="language-group-description">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<textarea class="js-wysiwyg" id="description_{$core.language.iso}" name="description[{$core.language.iso}]" rows="10">{$item.description[$core.language.iso]|default:''|escape:'html'}</textarea>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<textarea class="js-wysiwyg" id="description_{$core.language.iso}" name="description[{$core.language.iso}]" rows="10">{$item.description[$core.language.iso]|default:''|escape}</textarea>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<textarea class="js-wysiwyg" id="description_{$iso}" name="description[{$iso}]" rows="10">{$item.description.$iso|default:''|escape:'html'}</textarea>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<textarea class="js-wysiwyg" id="description_{$iso}" name="description[{$iso}]" rows="10">{$item.description.$iso|default:''|escape}</textarea>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<textarea class="js-wysiwyg" id="description_{$core.language.iso}" name="description[{$core.language.iso}]" rows="10">{$item.description[$core.language.iso]|default:''|escape:'html'}</textarea>
+						<textarea class="js-wysiwyg" id="description_{$core.language.iso}" name="description[{$core.language.iso}]" rows="10">{$item.description[$core.language.iso]|default:''|escape}</textarea>
 					{/if}
 				</div>
 			</div>
@@ -95,7 +95,7 @@
 
 				<div class="col col-lg-4">
 					<div class="input-group">
-						<input class="js-filter-numeric" type="text" name="cost" value="{$item.cost|escape:'html'}" maxlength="11">
+						<input class="js-filter-numeric" type="text" name="cost" value="{$item.cost|escape}" maxlength="11">
 						<div class="input-group-addon">{$core.config.currency}</div>
 					</div>
 				</div>
@@ -107,7 +107,7 @@
 				<div class="col col-lg-4">
 					<div class="row">
 						<div class="col-lg-3">
-							<input class="js-filter-numeric" type="text" name="duration" value="{$item.duration|escape:'html'}" maxlength="10">
+							<input class="js-filter-numeric" type="text" name="duration" value="{$item.duration|escape}" maxlength="10">
 						</div>
 						<div class="col-lg-8 col-lg-offset-1">
 							<select name="unit">
@@ -137,7 +137,7 @@
 				<label class="col col-lg-2 control-label">{lang key='listings_limit'}</label>
 
 				<div class="col col-lg-1">
-					<input type="text" name="listings_limit" class="js-input-numeric" value="{$item.listings_limit|escape:'html'}">
+					<input type="text" name="listings_limit" class="js-input-numeric" value="{$item.listings_limit|escape}">
 					<p class="help-block">Leave 0 for unlimited</p>
 				</div>
 			</div>
@@ -171,12 +171,12 @@
 															{if $for_plan != 2}
 																<label class="checkbox">
 																	<input{if isset($item.data.fields) && in_array($fieldName, $item.data.fields)} checked{/if} type="checkbox" value="{$fieldName}" name="fields[]">
-																	{$title|escape:'html'}
+																	{$title|escape}
 																</label>
 															{else}
 																<label class="checkbox">
 																	<input checked type="checkbox" value="{$fieldName}" disabled name="checked_fields[]">
-																	{$title|escape:'html'}
+																	{$title|escape}
 																</label>
 															{/if}
 														</li>
@@ -249,7 +249,7 @@
 				<label class="col col-lg-2 control-label">{lang key='number_of_cycles'} <a href="#" class="js-tooltip" title="{$tooltips.plan_cycles}"><i class="i-info"></i></a></label>
 
 				<div class="col col-lg-1">
-					<input type="text" name="cycles" class="js-filter-numeric" value="{$item.cycles|escape:'html'}" maxlength="5">
+					<input type="text" name="cycles" class="js-filter-numeric" value="{$item.cycles|escape}" maxlength="5">
 				</div>
 			</div>
 		</div>
@@ -272,7 +272,7 @@
 								{case 'bool' break}
 									{html_radio_switcher value={$option.values.value} name="options[{$option.id}][value]"}
 								{default}
-									<input type="text" name="options[{$option.id}][value]" value="{$option.values.value|escape:'html'}">
+									<input type="text" name="options[{$option.id}][value]" value="{$option.values.value|escape}">
 							{/switch}
 
 							{if $option.chargeable}

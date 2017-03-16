@@ -9,7 +9,7 @@
 				<label class="col col-lg-2 control-label" for="input-name">{lang key='name'}</label>
 
 				<div class="col col-lg-4">
-					<input type="text" name="name" id="input-name" value="{if isset($smarty.post.name)}{$smarty.post.name|escape:'html'}{/if}">
+					<input type="text" name="name" id="input-name" value="{if isset($smarty.post.name)}{$smarty.post.name|escape}{/if}">
 					<p class="help-block">{lang key='unique_name'}</p>
 				</div>
 			</div>
@@ -29,23 +29,23 @@
 						<div class="translate-group" id="language-group-title">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape:'html'}"{/if}>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="title[{$iso}]"{if isset($smarty.post.title.$iso)} value="{$smarty.post.title.$iso|escape:'html'}"{/if}>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<input type="text" name="title[{$iso}]"{if isset($smarty.post.title.$iso)} value="{$smarty.post.title.$iso|escape}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<input type="text" name="title[{$core.language.iso}]"{if isset($smarty.post.title[$core.language.iso])} value="{$smarty.post.title[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="title[{$core.language.iso}]"{if isset($smarty.post.title[$core.language.iso])} value="{$smarty.post.title[$core.language.iso]|escape}"{/if}>
 					{/if}
 				</div>
 			</div>

@@ -21,7 +21,7 @@
 				{/if}
 				<a name="{$entry.name}"></a>
 				<div class="wrap-group-heading" {$dependent_fields}>
-					{$entry.value|escape:'html'}
+					{$entry.value|escape}
 
 					{if isset($tooltips[$entry.name])}
 						<a href="#" class="js-tooltip" data-placement="right" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
@@ -45,7 +45,7 @@
 							</div>
 						{/if}
 						<label class="control-label" for="{$entry.name}">
-							{$entry.description|escape:'html'}
+							{$entry.description|escape}
 							{if isset($tooltips[$entry.name])}
 								<a href="#" class="js-tooltip" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
 							{/if}
@@ -65,14 +65,14 @@
 						{/if}
 
 						<div class="item-input">
-							<input type="password" class="js-input-password" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:'html'}" autocomplete="new-password" />
+							<input type="password" class="js-input-password" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape}" autocomplete="new-password" />
 						</div>
 					{elseif 'text' == $entry.type}
 						{if 'captcha_preview' == $entry.name}
 							{captcha preview=true}
 						{else}
 							{if $custom}
-								<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default|escape:'html'}{/if}</div>
+								<div class="form-control disabled item-val">{if empty($entry.default)}{lang key='config_empty_value'}{else}{$entry.default|escape}{/if}</div>
 							{/if}
 
 							{$isMultilingual = isset($entry.options.multilingual) && $entry.options.multilingual}
@@ -80,10 +80,10 @@
 							<div class="translate-group item-input" id="language-group-{$entry.name}">
 								<div class="translate-group__default">
 									<div class="translate-group__item">
-										<input type="text" name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}-{$core.language.iso}" value="{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}" />
+										<input type="text" name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}-{$core.language.iso}" value="{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape}" />
 										{if $isMultilingual && count($core.languages) > 1}
 											<div class="translate-group__item__code">
-												{$core.language.title|escape:'html'}
+												{$core.language.title|escape}
 											</div>
 										{/if}
 									</div>
@@ -93,8 +93,8 @@
 										{foreach $core.languages as $iso => $language}
 											{if $iso != $core.language.iso}
 												<div class="translate-group__item">
-													<input type="text" name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" value="{$entry.value[$iso]|escape:'html'}" />
-													<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+													<input type="text" name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" value="{$entry.value[$iso]|escape}" />
+													<span class="translate-group__item__code">{$language.title|escape}</span>
 												</div>
 											{/if}
 										{/foreach}
@@ -105,7 +105,7 @@
 					{elseif 'colorpicker' == $entry.type}
 						<div class="item-input">
 							<div id="cp_{$entry.name}" class="input-group colorpicker-component">
-								<input type="text" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape:'html'}" />
+								<input type="text" name="v[{$entry.name}]" id="{$entry.name}" value="{$entry.value|escape}" />
 								<span class="input-group-addon"><i></i></span>
 							</div>
 						</div>
@@ -126,10 +126,10 @@ $(function() {
 						<div class="translate-group item-input" id="language-group-{$entry.name}">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<textarea name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape:'html'}</textarea>
+									<textarea name="v[{$entry.name}]{if $isMultilingual}[{$core.language.iso}]{/if}" id="{$entry.name}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{{($isMultilingual) ? $entry.value[$core.language.iso] : $entry.value}|escape}</textarea>
 									{if $isMultilingual && count($core.languages) > 1}
 										<div class="translate-group__item__code">
-											{$core.language.title|escape:'html'}
+											{$core.language.title|escape}
 										</div>
 									{/if}
 								</div>
@@ -139,8 +139,8 @@ $(function() {
 									{foreach $core.languages as $iso => $language}
 										{if $iso != $core.language.iso}
 											<div class="translate-group__item">
-												<textarea name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value[$iso]|escape:'html'}</textarea>
-												<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+												<textarea name="v[{$entry.name}][{$iso}]" id="{$entry.name}-{$iso}" class="{if $entry.options.wysiwyg == 1}js-wysiwyg {elseif $entry.options.code_editor}js-code-editor {/if}common" cols="45" rows="7">{$entry.value[$iso]|escape}</textarea>
+												<span class="translate-group__item__code">{$language.title|escape}</span>
 											</div>
 										{/if}
 									{/foreach}
@@ -183,14 +183,14 @@ $(function() {
 						</div>
 					{elseif 'select' == $entry.type}
 						{if $custom}
-							<div class="form-control disabled item-val">{if $entry.name == 'lang'}{$entry.values[$entry.default].title|escape:'html'}{else}{$entry.default}{/if}</div>
+							<div class="form-control disabled item-val">{if $entry.name == 'lang'}{$entry.values[$entry.default].title|escape}{else}{$entry.default}{/if}</div>
 						{/if}
 
 						<div class="item-input">
 							<select name="v[{$entry.name}]" id="{$entry.name}"{if 1 == count($entry.values)} disabled{/if}>
 								{foreach $entry.values as $k => $v}
 									{if 'lang' == $entry.name}
-										<option value="{$k}"{if $k == $entry.value || $v == $entry.value} selected{/if}>{$v.title|escape:'html'}</option>
+										<option value="{$k}"{if $k == $entry.value || $v == $entry.value} selected{/if}>{$v.title|escape}</option>
 									{elseif is_array($v)}
 										<optgroup label="{$k}">
 											{foreach $v as $subkey => $subvalue}
@@ -198,7 +198,7 @@ $(function() {
 											{/foreach}
 										</optgroup>
 									{else}
-										<option value="{$k}"{if $k == $entry.value} selected{/if}>{$v|escape:'html'}</option>
+										<option value="{$k}"{if $k == $entry.value} selected{/if}>{$v|escape}</option>
 									{/if}
 								{/foreach}
 							</select>

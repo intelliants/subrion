@@ -37,23 +37,23 @@
 						<div class="translate-group" id="language-group-title">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="title[{$iso}]"{if isset($item.title[$iso])} value="{$item.title[$iso]|escape:'html'}"{/if}>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<input type="text" name="title[{$iso}]"{if isset($item.title[$iso])} value="{$item.title[$iso]|escape}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape}"{/if}>
 					{/if}
 				</div>
 			</div>
@@ -91,7 +91,7 @@
 				<label class="col col-lg-2 control-label">{lang key='css_class_name'}</label>
 
 				<div class="col col-lg-4">
-					<input type="text" name="classname" value="{$item.classname|escape:'html'}">
+					<input type="text" name="classname" value="{$item.classname|escape}">
 				</div>
 			</div>
 
@@ -155,7 +155,7 @@
 									<div class="checkbox">
 										<label>
 											<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $visibleOn)} checked{/if}>
-											{if empty($page.title)}{$page.name}{else}{$page.title|escape:'html'}{/if}
+											{if empty($page.title)}{$page.name}{else}{$page.title|escape}{/if}
 
 											{if $page.suburl}
 												<div class="subpages" style="display: none" rel="{$page.suburl}::{$key}">&nbsp;</div>

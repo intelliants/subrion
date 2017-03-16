@@ -1,7 +1,7 @@
 <form method="post" id="page_form" class="sap-form form-horizontal">
 	{preventCsrf}
 	<input type="hidden" name="language" id="js-active-language">
-	<input type="hidden" name="module" value="{$item.module|escape:'html'}">
+	<input type="hidden" name="module" value="{$item.module|escape}">
 
 	<div class="wrap-list">
 		<div class="wrap-group">
@@ -10,7 +10,7 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='name'}</label>
 				<div class="col col-lg-4">
-					<input type="text" name="name" value="{$item.name|escape:'html'}" id="input-name"{if iaCore::ACTION_EDIT == $pageAction} readonly{/if}>
+					<input type="text" name="name" value="{$item.name|escape}" id="input-name"{if iaCore::ACTION_EDIT == $pageAction} readonly{/if}>
 					{if iaCore::ACTION_ADD == $pageAction}<p class="help-block">{lang key='unique_name'}</p>{/if}
 				</div>
 			</div>
@@ -25,7 +25,7 @@
 							{foreach $pagesGroup as $pageGroup}
 								<optgroup label="{$pageGroup.title}">
 									{foreach $pageGroup.children as $pageId => $pageTitle}
-										<option value="{$pageId}"{if $parentPageId == $pageId} selected{/if}>{$pageTitle|escape:'html'}</option>
+										<option value="{$pageId}"{if $parentPageId == $pageId} selected{/if}>{$pageTitle|escape}</option>
 									{/foreach}
 								</optgroup>
 							{/foreach}
@@ -36,7 +36,7 @@
 				<div class="row" id="js-field-remote-url" style="display: none;">
 					<label class="col col-lg-2 control-label">{lang key='page_external_url'}</label>
 					<div class="col col-lg-4">
-						<input type="text" name="custom_url" id="input-custom-url" value="{if isset($item.custom_url)}{$item.custom_url|escape:'html'}{/if}">
+						<input type="text" name="custom_url" id="input-custom-url" value="{if isset($item.custom_url)}{$item.custom_url|escape}{/if}">
 					</div>
 				</div>
 
@@ -44,7 +44,7 @@
 					<label class="col col-lg-2 control-label">{lang key='custom_url'}</label>
 					<div class="col col-lg-4">
 						<div class="input-group">
-							<input type="text" name="alias" id="input-alias" value="{$item.alias|escape:'html'}">
+							<input type="text" name="alias" id="input-alias" value="{$item.alias|escape}">
 							<input type="hidden" name="extension" value="{if $item.extension}.{$item.extension}{else}/{/if}">
 							<div class="input-group-btn">
 								<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -93,7 +93,7 @@
 				<div class="row js-local-url-field">
 					<label class="col col-lg-2 control-label">{lang key='password'}</label>
 					<div class="col col-lg-4">
-						<input type="text" name="passw" value="{if isset($item.passw)}{$item.passw|escape:'html'}{elseif isset($smarty.post.passw)}{$smarty.post.passw|escape:"html"}{/if}">
+						<input type="text" name="passw" value="{if isset($item.passw)}{$item.passw|escape}{elseif isset($smarty.post.passw)}{$smarty.post.passw|escape:"html"}{/if}">
 					</div>
 				</div>
 			{else}
@@ -122,7 +122,7 @@
 						<ul class="nav nav-tabs">
 							{foreach $menus as $menu}
 								{if $menu.items}
-									<li{if $menu@iteration == 1} class="active"{/if}><a href="#tab-{$menu.title|replace:' ':''}" data-toggle="tab">{$menu.title|escape:'html'}</a></li>
+									<li{if $menu@iteration == 1} class="active"{/if}><a href="#tab-{$menu.title|replace:' ':''}" data-toggle="tab">{$menu.title|escape}</a></li>
 								{/if}
 							{/foreach}
 						</ul>
@@ -134,7 +134,7 @@
 										{foreach $menu.items as $menuItem}
 											<div class="checkbox">
 												<label>
-													<input type="checkbox" name="menus[]" value="{$menuItem.id}" id="p_{$menuItem.id}"{if in_array($menuItem.id, $selectedMenus)} checked{/if}> {$menuItem.title|escape:'html'}
+													<input type="checkbox" name="menus[]" value="{$menuItem.id}" id="p_{$menuItem.id}"{if in_array($menuItem.id, $selectedMenus)} checked{/if}> {$menuItem.title|escape}
 												</label>
 											</div>
 										{/foreach}
@@ -158,7 +158,7 @@
 					<div class="row" id="js-field-tpl-filename" style="display: none;">
 						<label class="col col-lg-2 control-label">{lang key='custom_template_filename'}</label>
 						<div class="col col-lg-4">
-							<input type="text" name="template_filename" id="input-tpl-filename" value="{if isset($item.template_filename)}{$item.template_filename|escape:'html'}{/if}">
+							<input type="text" name="template_filename" id="input-tpl-filename" value="{if isset($item.template_filename)}{$item.template_filename|escape}{/if}">
 						</div>
 					</div>
 				{/if}
@@ -183,23 +183,23 @@
 						<div class="translate-group" id="language-group-meta_description">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<textarea name="meta_description[{$core.language.iso}]" rows="2" id="meta_description-{$core.language.iso}">{if isset($metaDescription[$core.language.iso])}{$metaDescription[$core.language.iso]|escape:'html'}{/if}</textarea>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<textarea name="meta_description[{$core.language.iso}]" rows="2" id="meta_description-{$core.language.iso}">{if isset($metaDescription[$core.language.iso])}{$metaDescription[$core.language.iso]|escape}{/if}</textarea>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<textarea name="meta_description[{$iso}]" rows="2">{if isset($metaDescription.$iso)}{$metaDescription.$iso|escape:'html'}{/if}</textarea>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<textarea name="meta_description[{$iso}]" rows="2">{if isset($metaDescription.$iso)}{$metaDescription.$iso|escape}{/if}</textarea>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<textarea name="meta_description[{$core.language.iso}]" rows="2">{if isset($metaDescription[$core.language.iso])}{$metaDescription[$core.language.iso]|escape:'html'}{/if}</textarea>
+						<textarea name="meta_description[{$core.language.iso}]" rows="2">{if isset($metaDescription[$core.language.iso])}{$metaDescription[$core.language.iso]|escape}{/if}</textarea>
 					{/if}
 				</div>
 			</div>
@@ -219,23 +219,23 @@
 						<div class="translate-group" id="language-group-meta_keywords">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="meta_keywords[{$core.language.iso}]"{if isset($metaKeywords[$core.language.iso])} value="{$metaKeywords[$core.language.iso]|escape:'html'}"{/if}>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<input type="text" name="meta_keywords[{$core.language.iso}]"{if isset($metaKeywords[$core.language.iso])} value="{$metaKeywords[$core.language.iso]|escape}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="meta_keywords[{$iso}]"{if isset($metaKeywords.$iso)} value="{$metaKeywords.$iso|escape:'html'}"{/if}>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<input type="text" name="meta_keywords[{$iso}]"{if isset($metaKeywords.$iso)} value="{$metaKeywords.$iso|escape}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<input type="text" name="meta_keywords[{$core.language.iso}]"{if isset($metaKeywords[$core.language.iso])} value="{$metaKeywords[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="meta_keywords[{$core.language.iso}]"{if isset($metaKeywords[$core.language.iso])} value="{$metaKeywords[$core.language.iso]|escape}"{/if}>
 					{/if}
 				</div>
 			</div>
@@ -257,23 +257,23 @@
 						<div class="translate-group" id="language-group-title">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape:'html'}"{/if}>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="title[{$iso}]"{if isset($title.$iso)} value="{$title.$iso|escape:'html'}"{/if}>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<input type="text" name="title[{$iso}]"{if isset($title.$iso)} value="{$title.$iso|escape}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="title[{$core.language.iso}]"{if isset($title[$core.language.iso])} value="{$title[$core.language.iso]|escape}"{/if}>
 					{/if}
 				</div>
 			</div>
@@ -293,23 +293,23 @@
 						<div class="translate-group" id="language-group-page_content">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<textarea name="content[{$core.language.iso}]" data-language="{$core.language.iso}" rows="2" id="content-{$core.language.iso}">{if isset($content[$core.language.iso])}{$content[$core.language.iso]|escape:'html'}{/if}</textarea>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<textarea name="content[{$core.language.iso}]" data-language="{$core.language.iso}" rows="2" id="content-{$core.language.iso}">{if isset($content[$core.language.iso])}{$content[$core.language.iso]|escape}{/if}</textarea>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<textarea name="content[{$iso}]" data-language="{$iso}" rows="2">{if isset($content.$iso)}{$content.$iso|escape:'html'}{/if}</textarea>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<textarea name="content[{$iso}]" data-language="{$iso}" rows="2">{if isset($content.$iso)}{$content.$iso|escape}{/if}</textarea>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<textarea name="content[{$core.language.iso}]" data-language="{$core.language.iso}" rows="2">{if isset($content[$core.language.iso])}{$content[$core.language.iso]|escape:'html'}{/if}</textarea>
+						<textarea name="content[{$core.language.iso}]" data-language="{$core.language.iso}" rows="2">{if isset($content[$core.language.iso])}{$content[$core.language.iso]|escape}{/if}</textarea>
 					{/if}
 				</div>
 			</div>

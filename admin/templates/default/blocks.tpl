@@ -10,10 +10,10 @@
 
 				<div class="col col-lg-4">
 					{if iaCore::ACTION_ADD == $core.page.info.action}
-						<input type="text" name="name" value="{$item.name|escape:'html'}">
+						<input type="text" name="name" value="{$item.name|escape}">
 						<p class="help-block">{lang key='unique_name'}</p>
 					{else}
-						<input type="text" value="{$item.name|escape:'html'}" disabled>
+						<input type="text" value="{$item.name|escape}" disabled>
 					{/if}
 				</div>
 			</div>
@@ -27,7 +27,7 @@
 							{if iaBlock::TYPE_MENU != $type}
 								{access object='admin_page' id='blocks' action=$type}
 								{$tip = {lang key="block_type_tip_{$type}"}}
-								<option value="{$type}" data-tip="{$tip|escape:'html'}"{if $type == $item.type} selected{/if}>{$type}</option>
+								<option value="{$type}" data-tip="{$tip|escape}"{if $type == $item.type} selected{/if}>{$type}</option>
 								{/access}
 							{/if}
 						{/foreach}
@@ -115,7 +115,7 @@
 									{if $page.group == $group}
 										<div class="checkbox">
 											<label>
-												<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}" id="page_{$key}"{if in_array($page.name, $item.pages)} checked{/if}> {$page.title|escape:'html'}
+												<input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}" id="page_{$key}"{if in_array($page.name, $item.pages)} checked{/if}> {$page.title|escape}
 											</label>
 										</div>
 										{if $page.suburl}
@@ -200,23 +200,23 @@
 						<div class="translate-group" id="language-group-title">
 							<div class="translate-group__default">
 								<div class="translate-group__item">
-									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
-									<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+									<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape}"{/if}>
+									<div class="translate-group__item__code">{$core.language.title|escape}</div>
 								</div>
 							</div>
 							<div class="translate-group__langs">
 								{foreach $core.languages as $iso => $language}
 									{if $iso != $core.language.iso}
 										<div class="translate-group__item">
-											<input type="text" name="title[{$iso}]"{if isset($item.title[$iso])} value="{$item.title[$iso]|escape:'html'}"{/if}>
-											<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+											<input type="text" name="title[{$iso}]"{if isset($item.title[$iso])} value="{$item.title[$iso]|escape}"{/if}>
+											<span class="translate-group__item__code">{$language.title|escape}</span>
 										</div>
 									{/if}
 								{/foreach}
 							</div>
 						</div>
 					{else}
-						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape:'html'}"{/if}>
+						<input type="text" name="title[{$core.language.iso}]"{if isset($item.title[$core.language.iso])} value="{$item.title[$core.language.iso]|escape}"{/if}>
 					{/if}
 				</div>
 			</div>
@@ -234,7 +234,7 @@
 					<label class="col col-lg-2 control-label">{lang key='filename'}</label>
 
 					<div class="col col-lg-4">
-						<input type="text" name="filename" value="{$item.filename|escape:'html'}">
+						<input type="text" name="filename" value="{$item.filename|escape}">
 						{if iaCore::ACTION_ADD == $core.page.info.action}
 							<p class="help-block">{lang key='filename_notification'}</p>
 						{/if}
@@ -245,7 +245,7 @@
 					<label class="col col-lg-2 control-label">{lang key='contents'}</label>
 
 					<div class="col col-lg-8">
-						<textarea name="contents" id="input-content" rows="8">{$item.contents|escape:'html'}</textarea>
+						<textarea name="contents" id="input-content" rows="8">{$item.contents|escape}</textarea>
 					</div>
 				</div>
 			</div>
@@ -266,23 +266,23 @@
 							<div class="translate-group" id="language-group-content">
 								<div class="translate-group__default">
 									<div class="translate-group__item">
-										<textarea name="content[{$core.language.iso}]" id="content_{$core.language.iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$core.language.iso])}{$item.content[$core.language.iso]|escape:'html'}{/if}</textarea>
-										<div class="translate-group__item__code">{$core.language.title|escape:'html'}</div>
+										<textarea name="content[{$core.language.iso}]" id="content_{$core.language.iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$core.language.iso])}{$item.content[$core.language.iso]|escape}{/if}</textarea>
+										<div class="translate-group__item__code">{$core.language.title|escape}</div>
 									</div>
 								</div>
 								<div class="translate-group__langs">
 									{foreach $core.languages as $iso => $language}
 										{if $iso != $core.language.iso}
 											<div class="translate-group__item">
-												<textarea name="content[{$iso}]" id="content_{$iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$iso])}{$item.content[$iso]|escape:'html'}{/if}</textarea>
-												<span class="translate-group__item__code">{$language.title|escape:'html'}</span>
+												<textarea name="content[{$iso}]" id="content_{$iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$iso])}{$item.content[$iso]|escape}{/if}</textarea>
+												<span class="translate-group__item__code">{$language.title|escape}</span>
 											</div>
 										{/if}
 									{/foreach}
 								</div>
 							</div>
 						{else}
-							<textarea name="content[{$core.language.iso}]" id="content_{$core.language.iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$core.language.iso])}{$item.content[$core.language.iso]|escape:'html'}{/if}</textarea>
+							<textarea name="content[{$core.language.iso}]" id="content_{$core.language.iso}" class="js-ckeditor resizable" rows="8">{if isset($item.content[$core.language.iso])}{$item.content[$core.language.iso]|escape}{/if}</textarea>
 						{/if}
 					</div>
 				</div>

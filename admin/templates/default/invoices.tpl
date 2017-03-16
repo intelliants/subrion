@@ -30,7 +30,7 @@
 				<label class="col col-lg-2 control-label">{lang key='date_due'} {lang key='field_required'}</label>
 				<div class="col col-lg-4">
 					{$value = $item.date_due}
-					{assign var='default_date' value=($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape:'html'} : ''}
+					{assign var='default_date' value=($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape} : ''}
 
 					<div class="input-group date">
 						<input type="text" class="js-datepicker" name="date_due" id="field_date_due" value="{$default_date}" data-date-format="YYYY-MM-DD HH:mm:ss">
@@ -42,7 +42,7 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='owner'} {lang key='field_required'}</label>
 				<div class="col col-lg-4">
-					<input type="text" name="fullname" value="{$item.fullname|escape:'html'}" autocomplete="off">
+					<input type="text" name="fullname" value="{$item.fullname|escape}" autocomplete="off">
 					<input type="hidden" name="member_id" id="member-id" {if !empty($item.member_id)}value="{$item.member_id}"{/if}>
 				</div>
 			</div>
@@ -52,28 +52,28 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='address_line'} 1</label>
 				<div class="col col-lg-4">
-					<input type="text" name="address1" maxlength="255" value="{$item.address1|escape:'html'}">
+					<input type="text" name="address1" maxlength="255" value="{$item.address1|escape}">
 				</div>
 			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='address_line'} 2</label>
 				<div class="col col-lg-4">
-					<input type="text" name="address2" maxlength="255" value="{$item.address2|escape:'html'}">
+					<input type="text" name="address2" maxlength="255" value="{$item.address2|escape}">
 				</div>
 			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='zip'}</label>
 				<div class="col col-lg-4">
-					<input type="text" name="zip" maxlength="12" value="{$item.zip|escape:'html'}">
+					<input type="text" name="zip" maxlength="12" value="{$item.zip|escape}">
 				</div>
 			</div>
 
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='country'}</label>
 				<div class="col col-lg-4">
-					<input type="text" name="country" maxlength="32" value="{$item.country|escape:'html'}">
+					<input type="text" name="country" maxlength="32" value="{$item.country|escape}">
 				</div>
 			</div>
 
@@ -82,7 +82,7 @@
 			<div class="row">
 				<label class="col col-lg-2 control-label">{lang key='notes'}</label>
 				<div class="col col-lg-4">
-					<textarea name="notes" rows="5" id="notes">{$item.notes|escape:'html'}</textarea>
+					<textarea name="notes" rows="5" id="notes">{$item.notes|escape}</textarea>
 					<span class="help-block">{lang key='visible_for_admin'}</span>
 				</div>
 			</div>
@@ -106,7 +106,7 @@
 				{foreach $items as $entry}
 				<tr>
 					<td><span></span></td>
-					<td><input type="text" name="items[title][]" value="{$entry.title|escape:'html'}"></td>
+					<td><input type="text" name="items[title][]" value="{$entry.title|escape}"></td>
 					<td><input type="text" name="items[price][]" class="js-field-price" value="{$entry.price}"></td>
 					<td><input type="text" name="items[quantity][]" class="js-field-quantity" value="{$entry.quantity}"></td>
 					<td><span></span></td>
