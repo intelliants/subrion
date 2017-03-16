@@ -4,6 +4,7 @@ Ext.onReady(function()
 	{
 		columns: [
 			'numberer',
+			{name: 'id', title: _t('id'), width: 30, hidden: true},
 			{name: 'name', title: _t('name'), width: 150, hidden: true},
 			{name: 'title', title: _t('title'), width: 150, sortable: false, renderer: function(value, metadata, record)
 			{
