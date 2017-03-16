@@ -10,21 +10,21 @@
 						<div class="plugins-list">
 							<?php foreach ($this->plugins as $name => $entry): ?>
 								<div class="item-plugin">
-									<p class="date">Last Updated: <?php echo date('M d, Y', $entry->date) ?></p>
+									<p class="date">Last Updated: <?= date('M d, Y', $entry->date) ?></p>
 									<div class="item-plugin-image">
-										<img src="<?php echo $entry->logo ?>" alt="<?php echo $entry->title ?>" width="100" />
+										<img src="<?= $entry->logo ?>" alt="<?= $entry->title ?>" width="100" />
 									</div>
 									<div class="item-plugin-desc">
-										<h4><?php echo $entry->title ?></h4>
-										<p><?php echo $entry->description ?></p>
+										<h4><?= $entry->title ?></h4>
+										<p><?= $entry->description ?></p>
 										<div class="item-plugin-actions">
-											<input type="checkbox" name="plugins[]" value="<?php echo $name ?>" id="cb_<?php echo $name ?>" rel="<?php echo $entry->title ?>" />
+											<input type="checkbox" name="plugins[]" value="<?= $name ?>" id="cb_<?= $name ?>" rel="<?= $entry->title ?>" />
 											<?php if (!isset($entry->installed)): ?>
 												<a href="#" class="btn btn-xs btn-success js-plugin-check">Select</a>
 											<?php else: ?>
 												<a href="#" class="btn btn-xs btn-info btn-disabled" disabled>Plugin already installed</a>
 											<?php endif ?>
-											<a href="<?php echo $entry->url ?>" target="_blank" class="btn btn-default btn-xs">Details</a>
+											<a href="<?= $entry->url ?>" target="_blank" class="btn btn-default btn-xs">Details</a>
 										</div>
 									</div>
 								</div>
@@ -48,8 +48,8 @@
 	<?php endif ?>
 
 	<div class="form-actions">
-		<a href="<?php echo URL_ADMIN_PANEL ?>" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>
-		<a href="<?php echo URL_HOME ?>" class="btn btn-lg btn-primary"><i class="i-screen"></i> to Home page</a>
+		<a href="<?= URL_ADMIN_PANEL ?>" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>
+		<a href="<?= URL_HOME ?>" class="btn btn-lg btn-primary"><i class="i-screen"></i> to Home page</a>
 	</div>
 </div>
 
@@ -59,10 +59,10 @@
 			<div id="js-progress-bar" class="alert alert-info">
 				Installation is in progress... 
 				<strong><span id="js-counter-current">1</span> of <span id="js-counter-total"></span></strong>
-				<img src="<?php echo URL_ASSETS ?>templates/img/loading.gif" alt="loading..." />
+				<img src="<?= URL_ASSETS ?>templates/img/loading.gif" alt="loading..." />
 			</div>
 			<p>Check the status of plugins you selected to install.</p>
-			<p>Missed a plugin? <a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/<?php echo $this->step ?>/">Show the list again</a>.</p>
+			<p>Missed a plugin? <a href="<?= URL_INSTALL ?><?= $this->module ?>/<?= $this->step ?>/">Show the list again</a>.</p>
 		</div>
 	</div>
 
@@ -78,8 +78,8 @@
 	</div>
 	
 	<div class="form-actions">
-		<a href="<?php echo URL_ADMIN_PANEL ?>" class="btn btn-lg btn-primary">to Admin panel <i class="i-gauge"></i></a>
-		<a href="<?php echo URL_HOME ?>" class="btn btn-lg btn-primary">to Home page <i class="i-screen"></i></a>
+		<a href="<?= URL_ADMIN_PANEL ?>" class="btn btn-lg btn-primary">to Admin panel <i class="i-gauge"></i></a>
+		<a href="<?= URL_HOME ?>" class="btn btn-lg btn-primary">to Home page <i class="i-screen"></i></a>
 	</div>
 </div>
 
@@ -170,7 +170,7 @@ $(function()
 				$.ajax(
 				{
 					type: 'POST',
-					url: '<?php echo URL_INSTALL ?>install/plugins/',
+					url: '<?= URL_INSTALL ?>install/plugins/',
 					data: {plugin: item.val()},
 					dataType: 'html',
 					success: function(resultMessage) {

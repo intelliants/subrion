@@ -1,11 +1,11 @@
-<form method="get" action="<?php echo URL_INSTALL ?><?php echo $this->module ?>/finish/">
+<form method="get" action="<?= URL_INSTALL ?><?= $this->module ?>/finish/">
 	<div class="widget widget-default">
 		<div class="widget-content">
 			<p>We are pretty sure that everything will be fine. Whatever, it's good to have a backup just in case.</p>
 			<p>Script's files are to be zipped into single one. Complete DB backup to be included into as well.</p>
 			<p>
 				<a class="btn btn-default" id="js-cmd-backup" href="#"><i class="i-box-add"></i> Create backup</a> &nbsp;
-				<small id="js-notification-area">Backup is to be saved to <em><?php echo $this->backupFile ?></em></small>.
+				<small id="js-notification-area">Backup is to be saved to <em><?= $this->backupFile ?></em></small>.
 			</p>
 			<hr>
 			<p>Sure, you may skip this step, just consider the options below and click the <code>&laquo;Perform Upgrade&raquo;</code> button then.</p>
@@ -52,7 +52,7 @@ $(function()
 		$btnStart.addClass('disabled');
 		$notificationArea
 			.css('font-weight', 'bold')
-			.html('Started to create backup... <img src="<?php echo URL_HOME ?>templates/_common/img/preloader.gif"> This may take a while depending on your script\'s content.');
+			.html('Started to create backup... <img src="<?= URL_HOME ?>templates/_common/img/preloader.gif"> This may take a while depending on your script\'s content.');
 
 		$.ajax(
 		{
