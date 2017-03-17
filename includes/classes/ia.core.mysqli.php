@@ -66,11 +66,15 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 			die('Setting MYSQLI_OPT_CONNECT_TIMEOUT failed.');
 		}
 
-		mysqli_real_connect($this->_link, INTELLI_DBHOST, INTELLI_DBUSER, INTELLI_DBPASS, INTELLI_DBNAME, INTELLI_DBPORT);
-		if (!$this->_link)
+		if (!mysqli_real_connect($this->_link, INTELLI_DBHOST, INTELLI_DBUSER, INTELLI_DBPASS, INTELLI_DBNAME, INTELLI_DBPORT))
 		{
-			$message = !INTELLI_DEBUG ? 'Could not connect.' : 'Could not connect to the database. For more information see error logs.';
-			die($message);
+			$page = [
+				'title' => $_SERVER['SERVER_NAME'],
+				'content' => 'Maintenance ongoing, please try later.',
+			];
+
+			require_once 'templates' . IA_DS . '_common' . IA_DS . 'offline.tpl';
+			die();
 		}
 
 		// set active database again

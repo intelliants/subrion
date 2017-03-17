@@ -756,6 +756,12 @@ SQL;
 				&& (!iaUsers::hasIdentity() || iaUsers::getIdentity()->usergroup_id != iaUsers::MEMBERSHIP_ADMINISTRATOR))
 			{
 				$this->set('nodebug', true);
+
+				$page = [
+					'title' => $this->iaCore->get('site', 'Subrion CMS'),
+					'content' => $this->iaCore->get('underconstruction', 'We are sorry. Our site is under construction.'),
+				];
+
 				require_once IA_FRONT_TEMPLATES . self::COMMON_TEMPLATE_FOLDER . IA_DS . 'offline.tpl';
 				die();
 			}
