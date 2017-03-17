@@ -450,15 +450,9 @@ HTML;
 					$configMsg = '';
 
 					// session path test
-					$testResult = false;
-					$filePath = session_save_path() . IA_DS . 'foo';
-					if ($fh = @fopen($filePath, 'w'))
-					{
-						$testResult = fwrite($fh, 'bar');
-						fclose($fh);
-					}
-
+					$testResult = is_writable(session_save_path());
 					$testResult = $testResult ? '' : "session_save_path('" . IA_HOME . "tmp');";
+
 					$config = str_replace('{sessionpath}', $testResult, $config);
 					//
 
