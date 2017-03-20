@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
  *
  * Subrion - open source content management system
@@ -23,56 +24,53 @@
  * @link https://subrion.org/
  *
  ******************************************************************************/
-
 class iaBackendController extends iaAbstractControllerBackend
 {
-	protected $_name = 'hooks';
+    protected $_name = 'hooks';
 
-	protected $_processAdd = false;
-	protected $_processEdit = false;
+    protected $_processAdd = false;
+    protected $_processEdit = false;
 
-	protected $_gridColumns = "`id`, `name`, `module`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`";
-	protected $_gridFilters = ['name' => 'like', 'type' => 'equal'];
+    protected $_gridColumns = "`id`, `name`, `module`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`";
+    protected $_gridFilters = ['name' => 'like', 'type' => 'equal'];
 
 
-	protected function _gridRead($params)
-	{
-		$output = [];
+    protected function _gridRead($params)
+    {
+        $output = [];
 
-		switch ($this->_iaCore->requestPath[0])
-		{
-			case 'get':
-				$output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_GET['id']), []);
-				break;
+        switch ($this->_iaCore->requestPath[0]) {
+            case 'get':
+                $output['code'] = $this->_iaDb->one_bind('`code`', iaDb::convertIds((int)$_GET['id']), []);
+                break;
 
-			case 'set':
-				$this->_iaDb->update(['code' => $_POST['code']], iaDb::convertIds($_POST['id']));
+            case 'set':
+                $this->_iaDb->update(['code' => $_POST['code']], iaDb::convertIds($_POST['id']));
 
-				$output['result'] = (0 == $this->_iaDb->getErrorNumber());
-				$output['message'] = iaLanguage::get($output['result'] ? 'saved' : 'db_error');
-				break;
+                $output['result'] = (0 == $this->_iaDb->getErrorNumber());
+                $output['message'] = iaLanguage::get($output['result'] ? 'saved' : 'db_error');
+                break;
 
-			default:
-				$output = parent::_gridRead($params);
-		}
+            default:
+                $output = parent::_gridRead($params);
+        }
 
-		return $output;
-	}
+        return $output;
+    }
 
-	protected function _modifyGridParams(&$conditions, &$values, array $params)
-	{
-		if (isset($_GET['item']) && $_GET['item'])
-		{
-			$value = ('core' == strtolower($_GET['item']) ? '' : iaSanitize::sql($_GET['item']));
+    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    {
+        if (isset($_GET['item']) && $_GET['item']) {
+            $value = ('core' == strtolower($_GET['item']) ? '' : iaSanitize::sql($_GET['item']));
 
-			$conditions[] = '`module` = :module';
-			$values['module'] = $value;
-		}
-	}
+            $conditions[] = '`module` = :module';
+            $values['module'] = $value;
+        }
+    }
 
-	protected function _indexPage(&$iaView)
-	{
-		parent::_indexPage($iaView);
-		$iaView->display($this->getName());
-	}
+    protected function _indexPage(&$iaView)
+    {
+        parent::_indexPage($iaView);
+        $iaView->display($this->getName());
+    }
 }

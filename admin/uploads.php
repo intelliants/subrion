@@ -25,77 +25,74 @@
  ******************************************************************************/
 
 $iaAcl = $iaCore->factory('acl');
-if (!$iaAcl->isAdmin())
-{
-	die('No permissions.');
+if (!$iaAcl->isAdmin()) {
+    die('No permissions.');
 }
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
-{
-	define('IA_ENABLE_FULL_ACCESS', false);
+if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
+    define('IA_ENABLE_FULL_ACCESS', false);
 
-	error_reporting(0); // Set E_ALL for debugging
+    error_reporting(0); // Set E_ALL for debugging
 
-	$pluginPath = IA_INCLUDES . 'elfinder' . IA_DS . 'php' . IA_DS;
-	include_once $pluginPath . 'elFinderConnector.class.php';
-	include_once $pluginPath . 'elFinder.class.php';
-	include_once $pluginPath . 'elFinderVolumeDriver.class.php';
-	include_once $pluginPath . 'elFinderVolumeLocalFileSystem.class.php';
+    $pluginPath = IA_INCLUDES . 'elfinder' . IA_DS . 'php' . IA_DS;
+    include_once $pluginPath . 'elFinderConnector.class.php';
+    include_once $pluginPath . 'elFinder.class.php';
+    include_once $pluginPath . 'elFinderVolumeDriver.class.php';
+    include_once $pluginPath . 'elFinderVolumeLocalFileSystem.class.php';
 
-	// Required for MySQL storage connector
-	// include_once $pluginPath . 'elFinderVolumeMySQL.class.php';
-	// Required for FTP connector support
-	// include_once $pluginPath . 'elFinderVolumeFTP.class.php';
+    // Required for MySQL storage connector
+    // include_once $pluginPath . 'elFinderVolumeMySQL.class.php';
+    // Required for FTP connector support
+    // include_once $pluginPath . 'elFinderVolumeFTP.class.php';
 
-	/**
-	 * Simple function to demonstrate how to control file access using "accessControl" callback.
-	 * This method will disable accessing files/folders starting from '.' (dot)
-	 *
-	 * @param  string  $attr  attribute name (read|write|locked|hidden)
-	 * @param  string  $path  file path relative to volume root directory started with directory separator
-	 * @return bool|null
-	 **/
-	function access($attr, $path, $data, $volume) {
-		return strpos(basename($path), '.') === 0       // if file/folder begins with '.' (dot)
-			? !($attr == 'read' || $attr == 'write')    // set read+write to false, other (locked+hidden) set to true
-			:  null;                                    // else elFinder decide it itself
-	}
+    /**
+     * Simple function to demonstrate how to control file access using "accessControl" callback.
+     * This method will disable accessing files/folders starting from '.' (dot)
+     *
+     * @param  string $attr attribute name (read|write|locked|hidden)
+     * @param  string $path file path relative to volume root directory started with directory separator
+     * @return bool|null
+     **/
+    function access($attr, $path, $data, $volume)
+    {
+        return strpos(basename($path), '.') === 0       // if file/folder begins with '.' (dot)
+            ? !($attr == 'read' || $attr == 'write')    // set read+write to false, other (locked+hidden) set to true
+            : null;                                    // else elFinder decide it itself
+    }
 
-	$path = IA_UPLOADS;
-	$url = IA_CLEAR_URL . 'uploads/';
-	if (!IA_ENABLE_FULL_ACCESS && iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id)
-	{
-		iaCore::factory('util');
+    $path = IA_UPLOADS;
+    $url = IA_CLEAR_URL . 'uploads/';
+    if (!IA_ENABLE_FULL_ACCESS && iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id) {
+        iaCore::factory('util');
 
-		$path .= iaUtil::getAccountDir();
-		$url .= strtolower(substr(iaUsers::getIdentity()->username, 0, 1)) . IA_URL_DELIMITER . iaUsers::getIdentity()->username . IA_URL_DELIMITER;
-	}
+        $path .= iaUtil::getAccountDir();
+        $url .= strtolower(substr(iaUsers::getIdentity()->username, 0,
+                1)) . IA_URL_DELIMITER . iaUsers::getIdentity()->username . IA_URL_DELIMITER;
+    }
 
-	// Documentation for connector options:
-	// https://github.com/Studio-42/elFinder/wiki/Connector-configuration-options
-	$opts = [
-		// 'debug' => true,
-		'roots' => [
-			[
-				'driver'        => 'LocalFileSystem',   // driver for accessing file system (REQUIRED)
-				'path'          => $path,         // path to files (REQUIRED)
-				'URL'           => $url, // URL to files (REQUIRED)
-				'accessControl' => 'access'             // disable and hide dot starting files (OPTIONAL)
-			]
-		]
-	];
+    // Documentation for connector options:
+    // https://github.com/Studio-42/elFinder/wiki/Connector-configuration-options
+    $opts = [
+        // 'debug' => true,
+        'roots' => [
+            [
+                'driver' => 'LocalFileSystem',   // driver for accessing file system (REQUIRED)
+                'path' => $path,         // path to files (REQUIRED)
+                'URL' => $url, // URL to files (REQUIRED)
+                'accessControl' => 'access'             // disable and hide dot starting files (OPTIONAL)
+            ]
+        ]
+    ];
 
-	// run elFinder
-	$connector = new elFinderConnector(new elFinder($opts));
-	$connector->run();
+    // run elFinder
+    $connector = new elFinderConnector(new elFinder($opts));
+    $connector->run();
 }
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if (isset($_GET['mode']))
-	{
-		$iaView->set('nodebug', 1);
-		$iaView->disableLayout();
-	}
-	$iaView->display('uploads');
+if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
+    if (isset($_GET['mode'])) {
+        $iaView->set('nodebug', 1);
+        $iaView->disableLayout();
+    }
+    $iaView->display('uploads');
 }

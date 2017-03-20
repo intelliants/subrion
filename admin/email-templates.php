@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
  *
  * Subrion - open source content management system
@@ -23,73 +24,71 @@
  * @link https://subrion.org/
  *
  ******************************************************************************/
-
 class iaBackendController extends iaAbstractControllerBackend
 {
-	protected $_name = 'email-templates';
+    protected $_name = 'email-templates';
 
-	protected $_processAdd = false;
-	protected $_processEdit = false;
+    protected $_processAdd = false;
+    protected $_processEdit = false;
 
 
-	public function __construct()
-	{
-		parent::__construct();
+    public function __construct()
+    {
+        parent::__construct();
 
-		$this->setTable(iaCore::getConfigTable());
-	}
+        $this->setTable(iaCore::getConfigTable());
+    }
 
-	protected function _indexPage(&$iaView)
-	{
-		$iaView->display($this->getName());
+    protected function _indexPage(&$iaView)
+    {
+        $iaView->display($this->getName());
 
-		$templates = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`config_group` = 'email_templates' AND `type` IN ('radio', 'divider') ORDER BY `order`");
-		$iaView->assign('templates', $templates);
-	}
+        $templates = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION,
+            "`config_group` = 'email_templates' AND `type` IN ('radio', 'divider') ORDER BY `order`");
+        $iaView->assign('templates', $templates);
+    }
 
-	protected function _gridRead($params)
-	{
-		$template = $params['id'];
-		$options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
-		$signature = empty($options->signature) ? false : true;
+    protected function _gridRead($params)
+    {
+        $template = $params['id'];
+        $options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
+        $signature = empty($options->signature) ? false : true;
 
-		$result = [
-			'config' => (bool)$this->_iaCore->get($template, null, false, true),
-			'signature' => $signature,
-			'subject' => $this->_iaCore->get($template . '_subject', null, false, true),
-			'body' => $this->_iaCore->get($template . '_body', null, false, true)
-		];
+        $result = [
+            'config' => (bool)$this->_iaCore->get($template, null, false, true),
+            'signature' => $signature,
+            'subject' => $this->_iaCore->get($template . '_subject', null, false, true),
+            'body' => $this->_iaCore->get($template . '_body', null, false, true)
+        ];
 
-		// composing the patterns description
-		if ($array = $this->_iaDb->one_bind('multiple_values', '`name` = :name', ['name' => $template . '_body']))
-		{
-			$array = array_filter(explode(',', $array));
-			$patterns = [];
+        // composing the patterns description
+        if ($array = $this->_iaDb->one_bind('multiple_values', '`name` = :name', ['name' => $template . '_body'])) {
+            $array = array_filter(explode(',', $array));
+            $patterns = [];
 
-			foreach ($array as $entry)
-			{
-				list($key, $value) = explode('|', $entry);
-				$patterns[$key] = $value;
-			}
+            foreach ($array as $entry) {
+                list($key, $value) = explode('|', $entry);
+                $patterns[$key] = $value;
+            }
 
-			$result['patterns'] = $patterns;
-		}
+            $result['patterns'] = $patterns;
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 
-	protected function _gridUpdate($params)
-	{
-		$template = $params['id'];
+    protected function _gridUpdate($params)
+    {
+        $template = $params['id'];
 
-		$this->_iaCore->set($template . '_subject', $params['subject'], true);
-		$this->_iaCore->set($template . '_body', $params['body'], true);
-		$this->_iaCore->set($template, (int)$params['enable_template'], true);
+        $this->_iaCore->set($template . '_subject', $params['subject'], true);
+        $this->_iaCore->set($template . '_body', $params['body'], true);
+        $this->_iaCore->set($template, (int)$params['enable_template'], true);
 
-		$options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
-		$options->signature = $params['enable_signature'] ? true : false;
-		$this->_iaDb->update(['options' => json_encode($options)], iaDb::convertIds($template, 'name'));
+        $options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
+        $options->signature = $params['enable_signature'] ? true : false;
+        $this->_iaDb->update(['options' => json_encode($options)], iaDb::convertIds($template, 'name'));
 
-		return ['result' => (0 == $this->_iaDb->getErrorNumber())];
-	}
+        return ['result' => (0 == $this->_iaDb->getErrorNumber())];
+    }
 }
