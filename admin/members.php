@@ -23,7 +23,7 @@
  *
  * @link https://subrion.org/
  *
- ******************************************************************************/
+ **************************iaUser****************************************************/
 class iaBackendController extends iaAbstractControllerBackend
 {
     protected $_name = 'members';
@@ -57,7 +57,7 @@ class iaBackendController extends iaAbstractControllerBackend
         if (2 == count($this->_iaCore->requestPath) && 'login' == $this->_iaCore->requestPath[0]) {
             $this->getHelper()->clearIdentity();
             $this->getHelper()->getAuth($this->_iaCore->requestPath[1]);
-            $this->_iaCore->factory('utils');
+
             iaUtil::go_to(IA_URL);
 
             return;
