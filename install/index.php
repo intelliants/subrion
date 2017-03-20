@@ -31,12 +31,11 @@ define('IA_HOME', str_replace([INSTALL . IA_DS, '\\'], ['', IA_DS], dirname(__FI
 define('IA_INSTALL', IA_HOME . INSTALL . IA_DS);
 
 // installation files can only be in 'install' directory!
-if (false === strpos($_SERVER['SCRIPT_NAME'], IA_URL_DELIMITER . INSTALL . IA_URL_DELIMITER))
-{
-	die('Access denied');
+if (false === strpos($_SERVER['SCRIPT_NAME'], IA_URL_DELIMITER . INSTALL . IA_URL_DELIMITER)) {
+    die('Access denied');
 }
 
-error_reporting (E_STRICT | E_ALL);
+error_reporting(E_STRICT | E_ALL);
 ini_set('display_errors', true);
 
 date_default_timezone_set('UTC');
@@ -72,67 +71,56 @@ require_once 'ia.helper.php';
 require_once 'ia.output.php';
 
 $modulesPath = IA_INSTALL . 'modules' . IA_DS;
-if (is_dir($modulesPath))
-{
-	if ($directory = opendir($modulesPath))
-	{
-		while ($file = readdir($directory))
-		{
-			$pos = strpos($file, 'module.');
-			if ($pos !== false && $pos == 0)
-			{
-				list(, $mod,) = explode('.', $file);
-				switch ($mod)
-				{
-					case 'install':
-						$modules[] = $mod;
-						break;
-					case 'upgrade':
-						if (iaHelper::isScriptInstalled())
-						{
-							$iaUsers = iaHelper::loadCoreClass('users', 'core');
-							if ($mod == $module || iaUsers::hasIdentity() && iaUsers::MEMBERSHIP_ADMINISTRATOR == iaUsers::getIdentity()->usergroup_id)
-							{
-								$modules[] = $mod;
-							}
-						}
-						break;
-					default:
-						$modules[] = $mod;
-				}
-			}
-		}
-		closedir($directory);
-	}
+if (is_dir($modulesPath)) {
+    if ($directory = opendir($modulesPath)) {
+        while ($file = readdir($directory)) {
+            $pos = strpos($file, 'module.');
+            if ($pos !== false && $pos == 0) {
+                list(, $mod, ) = explode('.', $file);
+                switch ($mod) {
+                    case 'install':
+                        $modules[] = $mod;
+                        break;
+                    case 'upgrade':
+                        if (iaHelper::isScriptInstalled()) {
+                            $iaUsers = iaHelper::loadCoreClass('users', 'core');
+                            if ($mod == $module || iaUsers::hasIdentity() && iaUsers::MEMBERSHIP_ADMINISTRATOR == iaUsers::getIdentity()->usergroup_id) {
+                                $modules[] = $mod;
+                            }
+                        }
+                        break;
+                    default:
+                        $modules[] = $mod;
+                }
+            }
+        }
+        closedir($directory);
+    }
 }
 
-if (empty($modules))
-{
-	header('HTTP/1.0 403');
-	exit('Forbidden.');
+if (empty($modules)) {
+    header('HTTP/1.0 403');
+    exit('Forbidden.');
 }
 
-if (1 == count($modules))
-{
-	$module = $modules[0];
+if (1 == count($modules)) {
+    $module = $modules[0];
 }
 
-if ('welcome' == $module)
-{
-	$url = URL_HOME . 'install' . IA_URL_DELIMITER;
-	$url .= iaHelper::isScriptInstalled() ? 'upgrade' : 'install';
-	$url .= IA_URL_DELIMITER;
-	header('Location: ' . $url);
-	exit();
+if ('welcome' == $module) {
+    $url = URL_HOME . 'install' . IA_URL_DELIMITER;
+    $url .= iaHelper::isScriptInstalled() ? 'upgrade' : 'install';
+    $url .= IA_URL_DELIMITER;
+    header('Location: ' . $url);
+    exit();
 }
 
-if (!file_exists(IA_HOME . 'includes' . IA_DS . 'config.inc.php'))
-{
-	// disallow upgrade module if no config file exists
-	$modules = array_diff($modules, ['upgrade']);
+if (!file_exists(IA_HOME . 'includes' . IA_DS . 'config.inc.php')) {
+    // disallow upgrade module if no config file exists
+    $modules = array_diff($modules, ['upgrade']);
 
-	// set active module
-	$module = 'install';
+    // set active module
+    $module = 'install';
 }
 
 $iaOutput = new iaOutput(IA_INSTALL . 'templates/');
@@ -143,15 +131,11 @@ $iaOutput->step = $step;
 
 require $modulesPath . 'module.' . $module . '.php';
 
-if (!iaHelper::isAjaxRequest())
-{
-	if ($iaOutput->isRenderable($template = $module . '.' . $step))
-	{
-		echo $iaOutput->render($template);
-	}
-	else
-	{
-		header('HTTP/1.0 500');
-		die('Internal Server Error.');
-	}
+if (!iaHelper::isAjaxRequest()) {
+    if ($iaOutput->isRenderable($template = $module . '.' . $step)) {
+        echo $iaOutput->render($template);
+    } else {
+        header('HTTP/1.0 500');
+        die('Internal Server Error.');
+    }
 }
