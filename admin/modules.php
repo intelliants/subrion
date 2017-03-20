@@ -286,7 +286,6 @@ class iaBackendController extends iaAbstractControllerBackend
                             ['type' => 'template', 'name' => $this->getHelper()->itemData['info']['title']]);
                     }
                 } elseif (iaModule::TYPE_PLUGIN == $this->_type) {
-
                 } elseif ($this->_install($module, $action, $iaView->domain)) {
                     // log this event
                     $action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;

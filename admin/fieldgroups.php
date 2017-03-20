@@ -137,8 +137,7 @@ SQL;
 
     protected function _assignValues(&$iaView, array &$entryData)
     {
-        if (!empty($entryData['name'])) // generate title & description for all available languages
-        {
+        if (!empty($entryData['name'])) { // generate title & description for all available languages
             $this->_iaDb->setTable(iaLanguage::getTable());
 
             $entryData['titles'] = $this->_iaDb->keyvalue(['code', 'value'],

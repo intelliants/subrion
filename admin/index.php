@@ -227,7 +227,7 @@ class iaBackendController extends iaAbstractControllerBackend
     protected function _gridRead($params)
     {
         switch ($_POST['action']) {
-            case 'request';
+            case 'request':
                 $email = $this->_iaCore->get('site_email');
                 if (isset($_POST['feedback_email']) && iaValidate::isEmail($_POST['feedback_email'])) {
                     $email = $_POST['feedback_email'];

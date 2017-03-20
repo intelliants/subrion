@@ -172,8 +172,7 @@ SQL;
             $this->addMessage(iaLanguage::getf('field_is_not_selected', ['field' => iaLanguage::get('type')]), false);
         }
 
-        foreach ($this->_iaCore->languages as $iso => $language) // checking multilingual values
-        {
+        foreach ($this->_iaCore->languages as $iso => $language) { // checking multilingual values
             if (empty($data['title'][$iso])) {
                 $this->addMessage(iaLanguage::getf('multilingual_field_is_empty',
                     ['lang' => $language['title'], 'field' => iaLanguage::get('title')]), false);

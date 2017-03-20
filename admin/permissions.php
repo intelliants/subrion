@@ -132,7 +132,7 @@ class iaBackendController extends iaAbstractControllerBackend
             ];
 
             $actionCode = 'admin_access--read';
-            list($object,) = explode(iaAcl::DELIMITER, $actionCode);
+            list($object, ) = explode(iaAcl::DELIMITER, $actionCode);
 
             $adminAccess = [
                 'title' => iaLanguage::get($actionCode, $actionCode),

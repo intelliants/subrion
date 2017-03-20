@@ -225,8 +225,7 @@ class iaBackendController extends iaAbstractControllerBackend
             $stmt = '`id` IN (' . implode($params['id']) . ')';
 
             unset($params['id']);
-        } elseif (isset($params['key'])) // request from the page 'Comparison'
-        {
+        } elseif (isset($params['key'])) { // request from the page 'Comparison'
             $stmt = '`key` = :key';
             empty($params['lang']) || $stmt .= ' AND `code` = :lang';
             $this->_iaDb->bind($stmt, $params);

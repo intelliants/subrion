@@ -179,8 +179,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
         $iaView->title($title);
 
-        if ($groupData['module']) // special cases
-        {
+        if ($groupData['module']) { // special cases
             $iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
 
             $activeMenu = $groupData['name'];
@@ -404,8 +403,7 @@ SQL;
 
     protected function _updateCustomParam($key, $value)
     {
-        switch ($key) // exit with false in case if config should not be updated
-        {
+        switch ($key) { // exit with false in case if config should not be updated
             case 'https':
                 $baseUrl = $this->_iaCore->get('baseurl');
                 $newBaseUrl = 'http' . ($value ? 's' : '') . substr($baseUrl, strpos($baseUrl, '://'));
