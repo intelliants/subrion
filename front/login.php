@@ -24,42 +24,35 @@
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	switch ($iaView->name())
-	{
-		case 'hybrid':
-			require_once IA_INCLUDES . 'hybrid/Auth.php';
-			require_once IA_INCLUDES . 'hybrid/Endpoint.php';
+if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
+    switch ($iaView->name()) {
+        case 'hybrid':
+            require_once IA_INCLUDES . 'hybrid/Auth.php';
+            require_once IA_INCLUDES . 'hybrid/Endpoint.php';
 
-			Hybrid_Endpoint::process();
+            Hybrid_Endpoint::process();
 
-			break;
+            break;
 
-		case 'login':
-			$iaUsers = $this->factory('users');
+        case 'login':
+            $iaUsers = $this->factory('users');
 
-			if (1 == count($iaCore->requestPath))
-			{
-				try {
-					$iaUsers->hybridAuth($iaCore->requestPath[0]);
-				}
-				catch (Exception $e)
-				{
-					$iaCore->iaView->setMessages('HybridAuth error: ' . $e->getMessage(), iaView::ERROR);
-				}
-			}
+            if (1 == count($iaCore->requestPath)) {
+                try {
+                    $iaUsers->hybridAuth($iaCore->requestPath[0]);
+                } catch (Exception $e) {
+                    $iaCore->iaView->setMessages('HybridAuth error: ' . $e->getMessage(), iaView::ERROR);
+                }
+            }
 
-			if (iaUsers::hasIdentity())
-			{
-				$iaPage = $iaCore->factory('page', iaCore::FRONT);
+            if (iaUsers::hasIdentity()) {
+                $iaPage = $iaCore->factory('page', iaCore::FRONT);
 
-				$iaCore->factory('util')->go_to($iaPage->getUrlByName('profile'));
-			}
+                $iaCore->factory('util')->go_to($iaPage->getUrlByName('profile'));
+            }
 
-			if (isset($_SERVER['HTTP_REFERER']) && IA_SELF != $_SERVER['HTTP_REFERER']) // used by login redirecting mech
-			{
-				$_SESSION['referrer'] = $_SERVER['HTTP_REFERER'];
-			}
-	}
+            if (isset($_SERVER['HTTP_REFERER']) && IA_SELF != $_SERVER['HTTP_REFERER']) { // used by login redirecting mech
+                $_SESSION['referrer'] = $_SERVER['HTTP_REFERER'];
+            }
+    }
 }

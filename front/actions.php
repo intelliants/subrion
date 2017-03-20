@@ -24,234 +24,195 @@
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action']))
-{
-	$output = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
+if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])) {
+    $output = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
 
-	switch ($_POST['action'])
-	{
-		case 'edit-picture-title':
-			$title = empty($_POST['value']) ? '' : $_POST['value'];
-			$item = isset($_POST['item']) ? $_POST['item'] : null;
-			$field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : null;
-			$path = isset($_POST['path']) ? $_POST['path'] : null;
-			$itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
+    switch ($_POST['action']) {
+        case 'edit-picture-title':
+            $title = empty($_POST['value']) ? '' : $_POST['value'];
+            $item = isset($_POST['item']) ? $_POST['item'] : null;
+            $field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : null;
+            $path = isset($_POST['path']) ? $_POST['path'] : null;
+            $itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
 
-			if ($itemId && $item && $field && $path)
-			{
-				$tableName = $iaCore->factory('item')->getItemTable($item);
+            if ($itemId && $item && $field && $path) {
+                $tableName = $iaCore->factory('item')->getItemTable($item);
 
-				if (iaUsers::getItemName() == $item)
-				{
-					$itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
-					$memberId = $itemId;
-				}
-				else
-				{
-					$row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName);
-					$itemValue = $row[$field];
-					$memberId = $row['id'];
-				}
+                if (iaUsers::getItemName() == $item) {
+                    $itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
+                    $memberId = $itemId;
+                } else {
+                    $row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName);
+                    $itemValue = $row[$field];
+                    $memberId = $row['id'];
+                }
 
-				if (iaUsers::hasIdentity() && $memberId == iaUsers::getIdentity()->id && $itemValue)
-				{
-					$pictures = null;
-					if ($itemValue[1] == ':')
-					{
-						$array = unserialize($itemValue);
-						if (is_array($array) && $array)
-						{
-							$pictures = $array;
-						}
-					}
-					else
-					{
-						if ($array = explode(',', $itemValue))
-						{
-							$pictures = $array;
-						}
-					}
+                if (iaUsers::hasIdentity() && $memberId == iaUsers::getIdentity()->id && $itemValue) {
+                    $pictures = null;
+                    if ($itemValue[1] == ':') {
+                        $array = unserialize($itemValue);
+                        if (is_array($array) && $array) {
+                            $pictures = $array;
+                        }
+                    } else {
+                        if ($array = explode(',', $itemValue)) {
+                            $pictures = $array;
+                        }
+                    }
 
-					if (is_array($pictures))
-					{
-						foreach ($pictures as $i => $value)
-						{
-							if (is_array($value))
-							{
-								if ($path == $value['path'])
-								{
-									$pictures[$i]['title'] = $title;
-								}
-							}
-							else
-							{
-								if ($path == $value)
-								{
-									$key = $i;
-								}
-							}
-						}
+                    if (is_array($pictures)) {
+                        foreach ($pictures as $i => $value) {
+                            if (is_array($value)) {
+                                if ($path == $value['path']) {
+                                    $pictures[$i]['title'] = $title;
+                                }
+                            } else {
+                                if ($path == $value) {
+                                    $key = $i;
+                                }
+                            }
+                        }
 
-						$newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
-						$iaDb->update([$field => $newValue], iaDb::convertIds($itemId), null, $tableName);
+                        $newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
+                        $iaDb->update([$field => $newValue], iaDb::convertIds($itemId), null, $tableName);
 
-						if (0 == $iaDb->getErrorNumber())
-						{
-							$output['error'] = false;
-							unset($output['message']);
-						}
-						else
-						{
-							$output['message'] = iaLanguage::get('db_error');
-						}
+                        if (0 == $iaDb->getErrorNumber()) {
+                            $output['error'] = false;
+                            unset($output['message']);
+                        } else {
+                            $output['message'] = iaLanguage::get('db_error');
+                        }
 
-						if (iaUsers::getItemName() == $item)
-						{
-							// update current profile data
-							if ($itemId == iaUsers::getIdentity()->id)
-							{
-								iaUsers::reloadIdentity();
-							}
-						}
-					}
-				}
-			}
+                        if (iaUsers::getItemName() == $item) {
+                            // update current profile data
+                            if ($itemId == iaUsers::getIdentity()->id) {
+                                iaUsers::reloadIdentity();
+                            }
+                        }
+                    }
+                }
+            }
 
-			break;
+            break;
 
-		case 'delete-file':
-			if (!empty($_POST['item']) && !empty($_POST['itemid']) && !empty($_POST['field']) && !empty($_POST['file']))
-			{
-				$output = $iaCore->factory('field')->deleteUploadedFile($_POST['field'], $_POST['item'], $_POST['itemid'], $_POST['file'], true)
-					? ['error' => false, 'message' => iaLanguage::get('deleted')]
-					: ['error' => true, 'message' => iaLanguage::get('error')];
-			}
+        case 'delete-file':
+            if (!empty($_POST['item']) && !empty($_POST['itemid']) && !empty($_POST['field']) && !empty($_POST['file'])) {
+                $output = $iaCore->factory('field')->deleteUploadedFile($_POST['field'], $_POST['item'], $_POST['itemid'], $_POST['file'], true)
+                    ? ['error' => false, 'message' => iaLanguage::get('deleted')]
+                    : ['error' => true, 'message' => iaLanguage::get('error')];
+            }
 
-			break;
+            break;
 
-		case 'send_email':
-			$output['message'] = [];
-			$memberInfo = $iaCore->factory('users')->getInfo((int)$_POST['author_id']);
+        case 'send_email':
+            $output['message'] = [];
+            $memberInfo = $iaCore->factory('users')->getInfo((int)$_POST['author_id']);
 
-			if (empty($memberInfo) || $memberInfo['status'] != iaCore::STATUS_ACTIVE)
-			{
-				$output['message'][] = iaLanguage::get('member_doesnt_exist');
-			}
+            if (empty($memberInfo) || $memberInfo['status'] != iaCore::STATUS_ACTIVE) {
+                $output['message'][] = iaLanguage::get('member_doesnt_exist');
+            }
 
-			if (empty($_POST['from_name']))
-			{
-				$output['message'][] = iaLanguage::get('incorrect_fullname');
-			}
+            if (empty($_POST['from_name'])) {
+                $output['message'][] = iaLanguage::get('incorrect_fullname');
+            }
 
-			if (empty($_POST['from_email']) || !iaValidate::isEmail($_POST['from_email']))
-			{
-				$output['message'][] = iaLanguage::get('error_email_incorrect');
-			}
+            if (empty($_POST['from_email']) || !iaValidate::isEmail($_POST['from_email'])) {
+                $output['message'][] = iaLanguage::get('error_email_incorrect');
+            }
 
-			if (empty($_POST['email_body']))
-			{
-				$output['message'][] = iaLanguage::get('err_message');
-			}
+            if (empty($_POST['email_body'])) {
+                $output['message'][] = iaLanguage::get('err_message');
+            }
 
-			if ($captchaName = $iaCore->get('captcha_name'))
-			{
-				$iaCaptcha = $iaCore->factoryPlugin($captchaName, iaCore::FRONT, 'captcha');
-				if (!$iaCaptcha->validate())
-				{
-					$output['message'][] = iaLanguage::get('confirmation_code_incorrect');
-				}
-			}
+            if ($captchaName = $iaCore->get('captcha_name')) {
+                $iaCaptcha = $iaCore->factoryPlugin($captchaName, iaCore::FRONT, 'captcha');
+                if (!$iaCaptcha->validate()) {
+                    $output['message'][] = iaLanguage::get('confirmation_code_incorrect');
+                }
+            }
 
-			if (empty($output['message']))
-			{
-				$iaMailer = $iaCore->factory('mailer');
+            if (empty($output['message'])) {
+                $iaMailer = $iaCore->factory('mailer');
 
-				$subject = iaLanguage::getf('author_contact_request', ['title' => $_POST['regarding']]);
+                $subject = iaLanguage::getf('author_contact_request', ['title' => $_POST['regarding']]);
 
-				$iaMailer->FromName = $_POST['from_name'];
-				$iaMailer->From = $_POST['from_email'];
-				$iaMailer->AddAddress($memberInfo['email'], $memberInfo['fullname']);
-				$iaMailer->Subject = $subject;
-				$iaMailer->Body = strip_tags($_POST['email_body']);
+                $iaMailer->FromName = $_POST['from_name'];
+                $iaMailer->From = $_POST['from_email'];
+                $iaMailer->AddAddress($memberInfo['email'], $memberInfo['fullname']);
+                $iaMailer->Subject = $subject;
+                $iaMailer->Body = strip_tags($_POST['email_body']);
 
-				$output['error'] = !$iaMailer->Send();
-				$output['message'][] = iaLanguage::get($output['error'] ? 'unable_to_send_email' : 'mail_sent');
-			}
+                $output['error'] = !$iaMailer->Send();
+                $output['message'][] = iaLanguage::get($output['error'] ? 'unable_to_send_email' : 'mail_sent');
+            }
 
-			break;
+            break;
 
-		default:
-			$output = [];
-			$iaCore->startHook('phpActionsJsonHandle', ['action' => $_POST['action'], 'output' => &$output]);
-	}
+        default:
+            $output = [];
+            $iaCore->startHook('phpActionsJsonHandle', ['action' => $_POST['action'], 'output' => &$output]);
+    }
 
-	$iaView->assign($output);
+    $iaView->assign($output);
 }
 
-if (isset($_GET) && isset($_GET['action']))
-{
-	switch ($_GET['action'])
-	{
-		case 'ckeditor_upload':
-			$iaView->disableLayout();
-			$iaView->display(iaView::NONE);
-			$iaView->set('nodebug', 1);
+if (isset($_GET) && isset($_GET['action'])) {
+    switch ($_GET['action']) {
+        case 'ckeditor_upload':
+            $iaView->disableLayout();
+            $iaView->display(iaView::NONE);
+            $iaView->set('nodebug', 1);
 
-			if (isset($_GET['Type']) && 'Image' == $_GET['Type']
-				&& isset($_FILES['upload']['error']) && !$_FILES['upload']['error'])
-			{
-				$file = $_FILES['upload'];
-				$folder = 'uploads/' . iaUtil::getAccountDir();
-				$imgTypes = $iaCore->factory('picture')->getSupportedImageTypes();
+            if (isset($_GET['Type']) && 'Image' == $_GET['Type']
+                && isset($_FILES['upload']['error']) && !$_FILES['upload']['error']) {
+                $file = $_FILES['upload'];
+                $folder = 'uploads/' . iaUtil::getAccountDir();
+                $imgTypes = $iaCore->factory('picture')->getSupportedImageTypes();
 
-				if (!isset($imgTypes[$file['type']]))
-				{
-					return '202 error';
-				}
+                if (!isset($imgTypes[$file['type']])) {
+                    return '202 error';
+                }
 
-				$fileName = iaUtil::generateToken() . '.' . $imgTypes[$file['type']];
-				$filePath = IA_HOME . $folder . $fileName;
+                $fileName = iaUtil::generateToken() . '.' . $imgTypes[$file['type']];
+                $filePath = IA_HOME . $folder . $fileName;
 
-				if (!move_uploaded_file($file['tmp_name'], $filePath))
-				{
-					return iaLanguage::get('error');
-				}
+                if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+                    return iaLanguage::get('error');
+                }
 
-				chmod($filePath, 0777);
+                chmod($filePath, 0777);
 
-				$fileUrl = IA_CLEAR_URL . $folder . $fileName;
-				$callback = (int)$_GET['CKEditorFuncNum'];
+                $fileUrl = IA_CLEAR_URL . $folder . $fileName;
+                $callback = (int)$_GET['CKEditorFuncNum'];
 
-				$output = '<html><body><script type="text/javascript">';
-				$output.= "window.parent.CKEDITOR.tools.callFunction('{$callback}', '{$fileUrl}', '');";
-				$output.= '</script></body></html>';
+                $output = '<html><body><script type="text/javascript">';
+                $output.= "window.parent.CKEDITOR.tools.callFunction('{$callback}', '{$fileUrl}', '');";
+                $output.= '</script></body></html>';
 
-				die($output);
-			}
+                die($output);
+            }
 
-			break;
+            break;
 
-		case 'assign-owner':
-			if (iaView::REQUEST_JSON == $iaView->getRequestType())
-			{
-				if (isset($_GET['q']) && $_GET['q'])
-				{
-					$stmt = '(`username` LIKE :name OR `email` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
-					$iaDb->bind($stmt, ['name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE]);
+        case 'assign-owner':
+            if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
+                if (isset($_GET['q']) && $_GET['q']) {
+                    $stmt = '(`username` LIKE :name OR `email` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
+                    $iaDb->bind($stmt, ['name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE]);
 
-					$sql = 'SELECT `id`, CONCAT (`fullname`, \' (\',`email`, \')\') `fullname` ' .
-						'FROM :table_members ' .
-						'WHERE :conditions ' .
-						'LIMIT 0, 20';
-					$sql = iaDb::printf($sql, [
-						'table_members' => iaUsers::getTable(true),
-						'conditions' => $stmt,
-					]);
+                    $sql = 'SELECT `id`, CONCAT (`fullname`, \' (\',`email`, \')\') `fullname` ' .
+                        'FROM :table_members ' .
+                        'WHERE :conditions ' .
+                        'LIMIT 0, 20';
+                    $sql = iaDb::printf($sql, [
+                        'table_members' => iaUsers::getTable(true),
+                        'conditions' => $stmt,
+                    ]);
 
-					$output = $iaDb->getAll($sql);
+                    $output = $iaDb->getAll($sql);
 
-					$iaView->assign($output);
-				}
-			}
-	}
+                    $iaView->assign($output);
+                }
+            }
+    }
 }

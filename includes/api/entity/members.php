@@ -26,142 +26,119 @@
 
 class iaApiEntityMembers extends iaApiEntityAbstract
 {
-	const KEYWORD_SELF = 'self';
+    const KEYWORD_SELF = 'self';
 
-	protected $_name = 'members';
+    protected $_name = 'members';
 
-	protected $_table = 'members';
+    protected $_table = 'members';
 
 
-	public function apiGet($id)
-	{
-		if (self::KEYWORD_SELF == $id)
-		{
-			if (!iaUsers::hasIdentity())
-			{
-				throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
-			}
+    public function apiGet($id)
+    {
+        if (self::KEYWORD_SELF == $id) {
+            if (!iaUsers::hasIdentity()) {
+                throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
+            }
 
-			$entry = iaUsers::getIdentity(true);
-		}
-		else
-		{
-			$entry = parent::apiGet($id);
-		}
+            $entry = iaUsers::getIdentity(true);
+        } else {
+            $entry = parent::apiGet($id);
+        }
 
-		if ($entry)
-		{
-			unset($entry['password'], $entry['sec_key']);
-		}
+        if ($entry) {
+            unset($entry['password'], $entry['sec_key']);
+        }
 
-		return $entry;
-	}
+        return $entry;
+    }
 
-	public function apiUpdate(array $data, $id, array $params)
-	{
-		if (self::KEYWORD_SELF == $id)
-		{
-			if (!iaUsers::hasIdentity())
-			{
-				throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
-			}
+    public function apiUpdate(array $data, $id, array $params)
+    {
+        if (self::KEYWORD_SELF == $id) {
+            if (!iaUsers::hasIdentity()) {
+                throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
+            }
 
-			$id = iaUsers::getIdentity()->id;
+            $id = iaUsers::getIdentity()->id;
 
-			if (1 == count($params))
-			{
-				return $this->_apiUpdateField($params[0], $id, $data);
-			}
+            if (1 == count($params)) {
+                return $this->_apiUpdateField($params[0], $id, $data);
+            }
 
-			// restrict update of sensitive data
-			unset($data['email'], $data['status'], $data['date_reg'], $data['views_num'],
-				$data['sponsored'], $data['sponsored_plan_id'], $data['sponsored_start'], $data['sponsored_end'],
-				$data['featured'], $data['featured_start'], $data['featured_end'],
-				$data['usergroup_id'], $data['sec_key'], $data['date_update'], $data['date_logged']);
-		}
-		elseif (!$this->_iaCore->factory('acl')->checkAccess('admin_page:edit', 'members'))
-		{
-			throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
-		}
+            // restrict update of sensitive data
+            unset($data['email'], $data['status'], $data['date_reg'], $data['views_num'],
+                $data['sponsored'], $data['sponsored_plan_id'], $data['sponsored_start'], $data['sponsored_end'],
+                $data['featured'], $data['featured_start'], $data['featured_end'],
+                $data['usergroup_id'], $data['sec_key'], $data['date_update'], $data['date_logged']);
+        } elseif (!$this->_iaCore->factory('acl')->checkAccess('admin_page:edit', 'members')) {
+            throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
+        }
 
-		$this->_processFields($data);
+        $this->_processFields($data);
 
-		if (isset($data['password']))
-		{
-			if ($data['password'])
-			{
-				$data['password'] = $this->_iaCore->factory('users')->encodePassword($data['password']);
-			}
-			else
-			{
-				unset($data['password']);
-			}
-		}
+        if (isset($data['password'])) {
+            if ($data['password']) {
+                $data['password'] = $this->_iaCore->factory('users')->encodePassword($data['password']);
+            } else {
+                unset($data['password']);
+            }
+        }
 
-		return $this->_update($data, $id, $params);
-	}
+        return $this->_update($data, $id, $params);
+    }
 
-	protected function _update(array $data, $id, array $params)
-	{
-		$resource = $this->apiGet($id);
+    protected function _update(array $data, $id, array $params)
+    {
+        $resource = $this->apiGet($id);
 
-		if (!$resource)
-		{
-			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
-		}
+        if (!$resource) {
+            throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+        }
 
-		$this->_iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
+        $this->_iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
 
-		return (0 === $this->_iaDb->getErrorNumber());
-	}
+        return (0 === $this->_iaDb->getErrorNumber());
+    }
 
-	public function apiInsert(array $data)
-	{
-		if (iaUsers::hasIdentity())
-		{
-			throw new Exception('Unable to register member being logged in', iaApiResponse::FORBIDDEN);
-		}
+    public function apiInsert(array $data)
+    {
+        if (iaUsers::hasIdentity()) {
+            throw new Exception('Unable to register member being logged in', iaApiResponse::FORBIDDEN);
+        }
 
-		$iaUsers = $this->_iaCore->factory('users');
+        $iaUsers = $this->_iaCore->factory('users');
 
-		if (empty($data['email']))
-		{
-			throw new Exception('No email specified', iaApiResponse::BAD_REQUEST);
-		}
-		elseif ($this->_iaDb->exists(iaDb::convertIds($data['email'], 'email'), null, iaUsers::getTable()))
-		{
-			throw new Exception('Email exists', iaApiResponse::CONFLICT);
-		}
+        if (empty($data['email'])) {
+            throw new Exception('No email specified', iaApiResponse::BAD_REQUEST);
+        } elseif ($this->_iaDb->exists(iaDb::convertIds($data['email'], 'email'), null, iaUsers::getTable())) {
+            throw new Exception('Email exists', iaApiResponse::CONFLICT);
+        }
 
-		if (empty($data['password']))
-		{
-			$data['password'] = $iaUsers->createPassword();
-		}
+        if (empty($data['password'])) {
+            $data['password'] = $iaUsers->createPassword();
+        }
 
-		unset($data['disable_fields']);
+        unset($data['disable_fields']);
 
-		return $iaUsers->register($data);
-	}
+        return $iaUsers->register($data);
+    }
 
-	public function apiDelete($id)
-	{
-		if (!is_numeric($id))
-		{
-			throw new Exception('Numeric ID expected', iaApiResponse::NOT_FOUND);
-		}
+    public function apiDelete($id)
+    {
+        if (!is_numeric($id)) {
+            throw new Exception('Numeric ID expected', iaApiResponse::NOT_FOUND);
+        }
 
-		$resource = $this->apiGet($id);
+        $resource = $this->apiGet($id);
 
-		if (!$resource)
-		{
-			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
-		}
+        if (!$resource) {
+            throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+        }
 
-		if (!$this->_iaCore->factory('acl')->checkAccess('admin_page:delete', 'members'))
-		{
-			throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
-		}
+        if (!$this->_iaCore->factory('acl')->checkAccess('admin_page:delete', 'members')) {
+            throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
+        }
 
-		return (bool)$this->_iaDb->delete(iaDb::convertIds($id), $this->getTable());
-	}
+        return (bool)$this->_iaDb->delete(iaDb::convertIds($id), $this->getTable());
+    }
 }

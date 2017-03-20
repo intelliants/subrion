@@ -26,88 +26,85 @@
 
 class iaApiResponse
 {
-	const OK = 200;
-	const CREATED = 201;
+    const OK = 200;
+    const CREATED = 201;
 
-	const BAD_REQUEST = 400;
-	const UNAUTHORIZED = 401;
-	const FORBIDDEN = 403;
-	const NOT_FOUND = 404;
-	const NOT_ALLOWED = 405;
-	const CONFLICT = 409;
-	const UNPROCESSABLE_ENTITY = 422;
-	const TOO_MANY_REQUESTS = 429;
+    const BAD_REQUEST = 400;
+    const UNAUTHORIZED = 401;
+    const FORBIDDEN = 403;
+    const NOT_FOUND = 404;
+    const NOT_ALLOWED = 405;
+    const CONFLICT = 409;
+    const UNPROCESSABLE_ENTITY = 422;
+    const TOO_MANY_REQUESTS = 429;
 
-	const INTERNAL_ERROR = 500;
+    const INTERNAL_ERROR = 500;
 
-	protected $_code = self::OK;
-	protected $_body;
+    protected $_code = self::OK;
+    protected $_body;
 
-	protected $_headers = [];
+    protected $_headers = [];
 
-	protected $_renderer;
+    protected $_renderer;
 
 
-	public function setCode($code)
-	{
-		$this->_code = (int)$code;
-	}
+    public function setCode($code)
+    {
+        $this->_code = (int)$code;
+    }
 
-	public function isRedirect()
-	{
-		return (3 == floor($this->_code / 100));
-	}
+    public function isRedirect()
+    {
+        return (3 == floor($this->_code / 100));
+    }
 
-	public function setBody($body)
-	{
-		$this->_body = $body;
-	}
+    public function setBody($body)
+    {
+        $this->_body = $body;
+    }
 
-	public function setHeader($headerName, $value, $replace = false)
-	{
-		if ($replace || !isset($this->_headers[$headerName]))
-		{
-			$this->_headers[$headerName] = $value;
-		}
-	}
+    public function setHeader($headerName, $value, $replace = false)
+    {
+        if ($replace || !isset($this->_headers[$headerName])) {
+            $this->_headers[$headerName] = $value;
+        }
+    }
 
-	public function setRedirect($url, $code = 301)
-	{
-		$this->setCode($code);
-		$this->setHeader('location', $url);
-	}
+    public function setRedirect($url, $code = 301)
+    {
+        $this->setCode($code);
+        $this->setHeader('location', $url);
+    }
 
-	public function setRenderer(iaApiRenderer $renderer)
-	{
-		$this->_renderer = $renderer;
-	}
+    public function setRenderer(iaApiRenderer $renderer)
+    {
+        $this->_renderer = $renderer;
+    }
 
-	protected function _sendHeaders()
-	{
-		if (headers_sent())
-		{
-			return;
-		}
+    protected function _sendHeaders()
+    {
+        if (headers_sent()) {
+            return;
+        }
 
-		header('HTTP/1.1 ' . $this->_code);
+        header('HTTP/1.1 ' . $this->_code);
 
-		header('Access-Control-Allow-Origin: *');
-		header('Access-Control-Allow-Methods: *');
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: *');
 
-		foreach ($this->_headers as $name => $value)
-		{
-			header(ucfirst($name) . ': ' . $value);
-		}
-	}
+        foreach ($this->_headers as $name => $value) {
+            header(ucfirst($name) . ': ' . $value);
+        }
+    }
 
-	public function emit()
-	{
-		$this->_renderer->setResultCode($this->_code);
-		$this->_renderer->setData($this->_body);
+    public function emit()
+    {
+        $this->_renderer->setResultCode($this->_code);
+        $this->_renderer->setData($this->_body);
 
-		$this->_sendHeaders();
-		$this->_renderer->sendHeaders();
+        $this->_sendHeaders();
+        $this->_renderer->sendHeaders();
 
-		echo $this->_renderer->render();
-	}
+        echo $this->_renderer->render();
+    }
 }

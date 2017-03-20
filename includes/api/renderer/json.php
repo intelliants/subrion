@@ -26,15 +26,13 @@
 
 class iaApiRendererJson extends iaApiRendererAbstract implements iaApiRenderer
 {
+    public function sendHeaders()
+    {
+        header('Content-Type: application/json');
+    }
 
-
-	public function sendHeaders()
-	{
-		header('Content-Type: application/json');
-	}
-
-	public function render()
-	{
-		return empty($this->_data) ? '' : json_encode($this->_data);
-	}
+    public function render()
+    {
+        return empty($this->_data) ? '' : json_encode($this->_data);
+    }
 }

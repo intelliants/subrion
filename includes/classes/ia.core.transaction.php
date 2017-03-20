@@ -26,226 +26,215 @@
 
 class iaTransaction extends abstractCore
 {
-	const FAILED = 'failed';
-	const REFUNDED = 'refunded';
-	const PASSED = 'passed';
-	const PENDING = 'pending';
+    const FAILED = 'failed';
+    const REFUNDED = 'refunded';
+    const PASSED = 'passed';
+    const PENDING = 'pending';
 
-	const TRANSACTION_MEMBER_BALANCE = 'funds';
+    const TRANSACTION_MEMBER_BALANCE = 'funds';
 
-	const GATEWAY_CALLBACK_NAME = 'emailNotification';
+    const GATEWAY_CALLBACK_NAME = 'emailNotification';
 
-	protected static $_table = 'payment_transactions';
-	protected $_tableGateways = 'payment_gateways';
-	protected $_tableIpnLog = 'payment_gateways_ipn_log';
+    protected static $_table = 'payment_transactions';
+    protected $_tableGateways = 'payment_gateways';
+    protected $_tableIpnLog = 'payment_gateways_ipn_log';
 
-	protected $_gateways;
+    protected $_gateways;
 
-	public $dashboardStatistics = true;
+    public $dashboardStatistics = true;
 
 
-	/**
-	 * Return array of installed payment gateways
-	 *
-	 * @return string
-	 */
-	public function getTableGateways()
-	{
-		return $this->_tableGateways;
-	}
+    /**
+     * Return array of installed payment gateways
+     *
+     * @return string
+     */
+    public function getTableGateways()
+    {
+        return $this->_tableGateways;
+    }
 
-	public function getTableIpnLog()
-	{
-		return $this->_tableIpnLog;
-	}
+    public function getTableIpnLog()
+    {
+        return $this->_tableIpnLog;
+    }
 
-	/**
-	 * Returns installed payment gateways
-	 *
-	 * @return array
-	 */
-	public function getPaymentGateways()
-	{
-		if (is_null($this->_gateways))
-		{
-			$stmt = "`name` IN ('" . implode("','", $this->iaCore->get('module')) . "')";
-			$this->_gateways = $this->iaDb->keyvalue(['name', 'title'], $stmt, $this->getTableGateways());
-		}
+    /**
+     * Returns installed payment gateways
+     *
+     * @return array
+     */
+    public function getPaymentGateways()
+    {
+        if (is_null($this->_gateways)) {
+            $stmt = "`name` IN ('" . implode("','", $this->iaCore->get('module')) . "')";
+            $this->_gateways = $this->iaDb->keyvalue(['name', 'title'], $stmt, $this->getTableGateways());
+        }
 
-		return $this->_gateways;
-	}
+        return $this->_gateways;
+    }
 
-	/**
-	 * Checks if payment gateway installed
-	 *
-	 * @param string $gatewayName payment gateway name
-	 *
-	 * @return boolean
-	 */
-	public function isPaymentGateway($gatewayName)
-	{
-		return $this->iaDb->exists('`name` = :name', ['name' => $gatewayName], $this->getTableGateways());
-	}
+    /**
+     * Checks if payment gateway installed
+     *
+     * @param string $gatewayName payment gateway name
+     *
+     * @return boolean
+     */
+    public function isPaymentGateway($gatewayName)
+    {
+        return $this->iaDb->exists('`name` = :name', ['name' => $gatewayName], $this->getTableGateways());
+    }
 
-	/**
-	 * Update transaction record
-	 *
-	 * @param array $transactionData transaction data
-	 * @param int $id transaction id
-	 *
-	 * @return bool
-	 */
-	public function update(array $transactionData, $id)
-	{
-		$result = false;
+    /**
+     * Update transaction record
+     *
+     * @param array $transactionData transaction data
+     * @param int $id transaction id
+     *
+     * @return bool
+     */
+    public function update(array $transactionData, $id)
+    {
+        $result = false;
 
-		if ($transaction = $this->getById($id))
-		{
-				$transactionData['date_updated'] = date(iaDb::DATETIME_FORMAT);
-				!(self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
-					|| $transactionData['date_paid'] = date(iaDb::DATETIME_FORMAT);
-				$result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), null, self::getTable());
+        if ($transaction = $this->getById($id)) {
+            $transactionData['date_updated'] = date(iaDb::DATETIME_FORMAT);
+            !(self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
+                    || $transactionData['date_paid'] = date(iaDb::DATETIME_FORMAT);
+            $result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), null, self::getTable());
 
-			if ($result && isset($transactionData['status']))
-			{
-				$operation = empty($transactionData['item']) ? $transaction['item'] : $transactionData['item'];
+            if ($result && isset($transactionData['status'])) {
+                $operation = empty($transactionData['item']) ? $transaction['item'] : $transactionData['item'];
 
-				if (self::TRANSACTION_MEMBER_BALANCE == $operation)
-				{
-					$itemId = empty($transactionData['item_id']) ? $transaction['item_id'] : $transactionData['item_id'];
-					$amount = empty($transactionData['amount']) ? $transaction['amount'] : $transactionData['amount'];
+                if (self::TRANSACTION_MEMBER_BALANCE == $operation) {
+                    $itemId = empty($transactionData['item_id']) ? $transaction['item_id'] : $transactionData['item_id'];
+                    $amount = empty($transactionData['amount']) ? $transaction['amount'] : $transactionData['amount'];
 
-					if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
-					{
-						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), ['funds' => '`funds` + ' . $amount], iaUsers::getTable());
-					}
-					elseif (self::PASSED != $transactionData['status'] && self::PASSED == $transaction['status'])
-					{
-						$result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), ['funds' => '`funds` - ' . $amount], iaUsers::getTable());
-					}
-				}
+                    if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status']) {
+                        $result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), ['funds' => '`funds` + ' . $amount], iaUsers::getTable());
+                    } elseif (self::PASSED != $transactionData['status'] && self::PASSED == $transaction['status']) {
+                        $result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), ['funds' => '`funds` - ' . $amount], iaUsers::getTable());
+                    }
+                }
 
-				if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
-				{
-					$transaction = $this->getById($id);
+                if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status']) {
+                    $transaction = $this->getById($id);
 
-					$this->_sendEmailNotification($transaction);
-					empty($transaction['member_id']) || $this->_createInvoice($transaction);
+                    $this->_sendEmailNotification($transaction);
+                    empty($transaction['member_id']) || $this->_createInvoice($transaction);
 
-					$this->iaCore->factory('plan')->setPaid($transaction);
-				}
-			}
-		}
+                    $this->iaCore->factory('plan')->setPaid($transaction);
+                }
+            }
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * Delete transaction record
-	 *
-	 * @param int $transactionId transaction id
-	 *
-	 * @return bool
-	 */
-	public function delete($transactionId)
-	{
-		$result = false;
-		if ($transactionId)
-		{
-			$result = (bool)$this->iaDb->delete('`id` = :id AND `status` != :status', self::getTable(), ['id' => (int)$transactionId, 'status' => self::PASSED]);
-			empty($result) || $this->iaCore->factory('invoice')->deleteCorrespondingInvoice($transactionId);
-		}
+    /**
+     * Delete transaction record
+     *
+     * @param int $transactionId transaction id
+     *
+     * @return bool
+     */
+    public function delete($transactionId)
+    {
+        $result = false;
+        if ($transactionId) {
+            $result = (bool)$this->iaDb->delete('`id` = :id AND `status` != :status', self::getTable(), ['id' => (int)$transactionId, 'status' => self::PASSED]);
+            empty($result) || $this->iaCore->factory('invoice')->deleteCorrespondingInvoice($transactionId);
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * Return transaction details by id
-	 *
-	 * @param int $transactionId transaction id
-	 *
-	 * @return mixed
-	 */
-	public function getById($transactionId)
-	{
-		return $this->getBy(iaDb::ID_COLUMN_SELECTION, $transactionId);
-	}
+    /**
+     * Return transaction details by id
+     *
+     * @param int $transactionId transaction id
+     *
+     * @return mixed
+     */
+    public function getById($transactionId)
+    {
+        return $this->getBy(iaDb::ID_COLUMN_SELECTION, $transactionId);
+    }
 
-	public function getBy($key, $id)
-	{
-		return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id, $key), self::getTable());
-	}
+    public function getBy($key, $id)
+    {
+        return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id, $key), self::getTable());
+    }
 
-	public function createIpn($transaction)
-	{
-		empty($transaction['status']) || $status = $transaction['status'];
-		unset($transaction['id'], $transaction['date_created'], $transaction['status']);
+    public function createIpn($transaction)
+    {
+        empty($transaction['status']) || $status = $transaction['status'];
+        unset($transaction['id'], $transaction['date_created'], $transaction['status']);
 
-		$id = $this->iaDb->insert($transaction, ['date_created' => iaDb::FUNCTION_NOW], self::getTable());
+        $id = $this->iaDb->insert($transaction, ['date_created' => iaDb::FUNCTION_NOW], self::getTable());
 
-		if ($id && isset($status))
-		{
-			$this->update(['status' => $status], $id);
-		}
+        if ($id && isset($status)) {
+            $this->update(['status' => $status], $id);
+        }
 
-		return $id;
-	}
+        return $id;
+    }
 
-	/**
-	 * Generates invoice for an item
-	 *
-	 * @param string $title plan title
-	 * @param double $cost plan cost
-	 * @param string $itemName item name
-	 * @param array $itemData item details
-	 * @param string $returnUrl return URL
-	 * @param int $planId plan id
-	 * @param bool $return true redirects to invoice payment URL
-	 *
-	 * @return string
-	 */
-	public function create($title, $cost, $itemName = 'members', $itemData = [], $returnUrl = '', $planId = 0, $return = false)
-	{
-		if (!isset($itemData['id']))
-		{
-			$itemData['id'] = 0;
-		}
+    /**
+     * Generates invoice for an item
+     *
+     * @param string $title plan title
+     * @param double $cost plan cost
+     * @param string $itemName item name
+     * @param array $itemData item details
+     * @param string $returnUrl return URL
+     * @param int $planId plan id
+     * @param bool $return true redirects to invoice payment URL
+     *
+     * @return string
+     */
+    public function create($title, $cost, $itemName = 'members', $itemData = [], $returnUrl = '', $planId = 0, $return = false)
+    {
+        if (!isset($itemData['id'])) {
+            $itemData['id'] = 0;
+        }
 
-		$title = empty($title) ? iaLanguage::get('plan_title_' . $planId) : $title;
-		$title .= ($itemData['id']) ? ' - #' . $itemData['id'] : '';
+        $title = empty($title) ? iaLanguage::get('plan_title_' . $planId) : $title;
+        $title .= ($itemData['id']) ? ' - #' . $itemData['id'] : '';
 
-		$transactionId = uniqid('t');
-		$transaction = [
-			'member_id' => (int)(isset($itemData['member_id']) && $itemData['member_id'] ? $itemData['member_id'] : iaUsers::getIdentity()->id),
-			'item' => $itemName,
-			'item_id' => $itemData['id'],
-			'amount' => $cost,
-			'currency' => $this->iaCore->get('currency'),
-			'sec_key' => $transactionId,
-			'status' => self::PENDING,
-			'plan_id' => $planId,
-			'return_url' => $returnUrl,
-			'operation' => $title,
-			'date_created' => date(iaDb::DATETIME_FORMAT)
-		];
+        $transactionId = uniqid('t');
+        $transaction = [
+            'member_id' => (int)(isset($itemData['member_id']) && $itemData['member_id'] ? $itemData['member_id'] : iaUsers::getIdentity()->id),
+            'item' => $itemName,
+            'item_id' => $itemData['id'],
+            'amount' => $cost,
+            'currency' => $this->iaCore->get('currency'),
+            'sec_key' => $transactionId,
+            'status' => self::PENDING,
+            'plan_id' => $planId,
+            'return_url' => $returnUrl,
+            'operation' => $title,
+            'date_created' => date(iaDb::DATETIME_FORMAT)
+        ];
 
-		$result = $this->iaDb->insert($transaction, null, $this->getTable());
-		$result && $this->iaCore->startHook('phpTransactionCreated', ['id' => $result, 'transaction' => $transaction]);
-		$return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
+        $result = $this->iaDb->insert($transaction, null, $this->getTable());
+        $result && $this->iaCore->startHook('phpTransactionCreated', ['id' => $result, 'transaction' => $transaction]);
+        $return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 
-		return $result ? $transactionId : false;
-	}
+        return $result ? $transactionId : false;
+    }
 
-	protected function _createInvoice($transaction)
-	{
-		$iaInvoice = $this->iaCore->factory('invoice');
+    protected function _createInvoice($transaction)
+    {
+        $iaInvoice = $this->iaCore->factory('invoice');
 
-		return $iaInvoice->create($transaction);
-	}
+        return $iaInvoice->create($transaction);
+    }
 
-	public function getLatestTransactions($limit = 10)
-	{
-		$sql = <<<SQL
+    public function getLatestTransactions($limit = 10)
+    {
+        $sql = <<<SQL
 SELECT t.`id`, t.`item`, t.`item_id`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, 
 	t.`date_created`, t.`status`, t.`currency`, t.`operation`, t.`plan_id`, t.`reference_id`, 
 	t.`gateway`, IF(t.`fullname` = '', m.`fullname`, t.`fullname`) `user`, IF(t.`status` != 'passed', 1, 0) `delete`
@@ -254,174 +243,163 @@ LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`)
 ORDER BY t.`date_created`
 LIMIT 0, :limit
 SQL;
-		$sql = iaDb::printf($sql, [
-			'prefix' => $this->iaDb->prefix,
-			'table_members' => iaUsers::getTable(),
-			'table_transactions' => $this->getTable(),
-			'limit' => $limit
-		]);
+        $sql = iaDb::printf($sql, [
+            'prefix' => $this->iaDb->prefix,
+            'table_members' => iaUsers::getTable(),
+            'table_transactions' => $this->getTable(),
+            'limit' => $limit
+        ]);
 
-		return $this->iaDb->getAll($sql);
-	}
+        return $this->iaDb->getAll($sql);
+    }
 
-	/**
-	 * Filling admin dashboard statistics with the financial information
-	 *
-	 * @return array
-	 */
-	public function getDashboardStatistics()
-	{
-		$this->iaDb->setTable(self::getTable());
+    /**
+     * Filling admin dashboard statistics with the financial information
+     *
+     * @return array
+     */
+    public function getDashboardStatistics()
+    {
+        $this->iaDb->setTable(self::getTable());
 
-		$currenciesToSymbolMap = ['USD' => '$', 'EUR' => '€', 'RMB' => '¥', 'CNY' => '¥'];
+        $currenciesToSymbolMap = ['USD' => '$', 'EUR' => '€', 'RMB' => '¥', 'CNY' => '¥'];
 
-		$currency = strtoupper($this->iaCore->get('currency'));
-		$currency = isset($currenciesToSymbolMap[$currency]) ? $currenciesToSymbolMap[$currency] : '';
-
-
-		$data = [];
-		$weekDay = getdate();
-		$weekDay = $weekDay['wday'];
-		$stmt = '`status` = :status AND DATE(`date_paid`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date_paid`)';
-		$this->iaDb->bind($stmt, ['status' => self::PASSED]);
-		$rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date_paid`)), SUM(`amount`)', $stmt);
-		for ($i = 0; $i < 7; $i++)
-		{
-			$data[$i] = isset($rows[$i]) ? $rows[$i] : 0;
-		}
-
-		$statuses = [self::PASSED, self::PENDING, self::REFUNDED, self::FAILED];
-		$rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status`');
-
-		foreach ($statuses as $status)
-		{
-			isset($rows[$status]) || $rows[$status] = 0;
-		}
-
-		$total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', "`status` = :status && (`item` = 'funds' || (`item` != 'funds' && `gateway` != 'funds'))", ['status' => self::PASSED]);
-		$total || $total = 0;
-
-		$this->iaDb->resetTable();
+        $currency = strtoupper($this->iaCore->get('currency'));
+        $currency = isset($currenciesToSymbolMap[$currency]) ? $currenciesToSymbolMap[$currency] : '';
 
 
-		return [
-			'_format' => 'medium',
-			'data' => ['array' => implode(',', $data)],
-			'icon' => 'banknote',
-			'item' => iaLanguage::get('total_income'),
-			'rows' => $rows,
-			'total' => $currency . $total,
-			'url' => 'transactions/'
-		];
-	}
+        $data = [];
+        $weekDay = getdate();
+        $weekDay = $weekDay['wday'];
+        $stmt = '`status` = :status AND DATE(`date_paid`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date_paid`)';
+        $this->iaDb->bind($stmt, ['status' => self::PASSED]);
+        $rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date_paid`)), SUM(`amount`)', $stmt);
+        for ($i = 0; $i < 7; $i++) {
+            $data[$i] = isset($rows[$i]) ? $rows[$i] : 0;
+        }
 
-	public function addIpnLogEntry($gateway, $data, $result)
-	{
-		$entry = [
-			'gateway' => $gateway,
-			'data' => var_export($data, true),
-			'result' => $result
-		];
+        $statuses = [self::PASSED, self::PENDING, self::REFUNDED, self::FAILED];
+        $rows = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 GROUP BY `status`');
 
-		return (bool)$this->iaDb->insert($entry, ['date' => iaDb::FUNCTION_NOW], $this->getTableIpnLog());
-	}
+        foreach ($statuses as $status) {
+            isset($rows[$status]) || $rows[$status] = 0;
+        }
 
-	protected function _sendEmailNotification(array $transaction)
-	{
-		// first, do check if gateway has its own email submission
-		if ($result = $this->_doGatewayCallback($transaction['gateway'], $transaction))
-		{
-			return $result;
-		}
+        $total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', "`status` = :status && (`item` = 'funds' || (`item` != 'funds' && `gateway` != 'funds'))", ['status' => self::PASSED]);
+        $total || $total = 0;
 
-		$result1 = true;
+        $this->iaDb->resetTable();
 
-		$notification = 'transaction_paid';
-		if ($this->iaCore->get($notification))
-		{
-			$iaUsers = $this->iaCore->factory('users');
 
-			$member = $iaUsers->getById($transaction['member_id']);
+        return [
+            '_format' => 'medium',
+            'data' => ['array' => implode(',', $data)],
+            'icon' => 'banknote',
+            'item' => iaLanguage::get('total_income'),
+            'rows' => $rows,
+            'total' => $currency . $total,
+            'url' => 'transactions/'
+        ];
+    }
 
-			if (!$member)
-			{
-				return false;
-			}
+    public function addIpnLogEntry($gateway, $data, $result)
+    {
+        $entry = [
+            'gateway' => $gateway,
+            'data' => var_export($data, true),
+            'result' => $result
+        ];
 
-			$iaMailer = $this->iaCore->factory('mailer');
+        return (bool)$this->iaDb->insert($entry, ['date' => iaDb::FUNCTION_NOW], $this->getTableIpnLog());
+    }
 
-			$iaMailer->loadTemplate('transaction_paid');
-			$iaMailer->addAddress($member['email']);
+    protected function _sendEmailNotification(array $transaction)
+    {
+        // first, do check if gateway has its own email submission
+        if ($result = $this->_doGatewayCallback($transaction['gateway'], $transaction)) {
+            return $result;
+        }
 
-			$iaMailer->setReplacements($transaction);
-			$iaMailer->setReplacements([
-				'email' => $member['username'],
-				'username' => $member['username'],
-				'fullname' => $member['fullname']
-			]);
+        $result1 = true;
 
-			$result1 = $iaMailer->send();
-		}
+        $notification = 'transaction_paid';
+        if ($this->iaCore->get($notification)) {
+            $iaUsers = $this->iaCore->factory('users');
 
-		// notify admin
-		$result2 = true;
+            $member = $iaUsers->getById($transaction['member_id']);
 
-		$notification.= '_admin';
-		if ($this->iaCore->get($notification))
-		{
-			$iaMailer->loadTemplate($notification);
-			$iaMailer->addAddress($this->iaCore->get('site_email'));
-			$iaMailer->setReplacements([
-				'username' => iaUsers::getIdentity()->username,
-				'amount' => $transaction['amount'],
-				'operation' => $transaction['operation']
-			]);
+            if (!$member) {
+                return false;
+            }
 
-			$result2 = $iaMailer->send();
-		}
+            $iaMailer = $this->iaCore->factory('mailer');
 
-		return $result1 && $result2;
-	}
+            $iaMailer->loadTemplate('transaction_paid');
+            $iaMailer->addAddress($member['email']);
 
-	protected function _doGatewayCallback($gatewayName, array $transaction)
-	{
-		if (!$gatewayName)
-		{
-			return false;
-		}
+            $iaMailer->setReplacements($transaction);
+            $iaMailer->setReplacements([
+                'email' => $member['username'],
+                'username' => $member['username'],
+                'fullname' => $member['fullname']
+            ]);
 
-		$gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common');
+            $result1 = $iaMailer->send();
+        }
 
-		if ($gatewayInstance && method_exists($gatewayInstance, self::GATEWAY_CALLBACK_NAME))
-		{
-			return call_user_func([$gatewayInstance, self::GATEWAY_CALLBACK_NAME], $transaction);
-		}
+        // notify admin
+        $result2 = true;
 
-		return false;
-	}
+        $notification.= '_admin';
+        if ($this->iaCore->get($notification)) {
+            $iaMailer->loadTemplate($notification);
+            $iaMailer->addAddress($this->iaCore->get('site_email'));
+            $iaMailer->setReplacements([
+                'username' => iaUsers::getIdentity()->username,
+                'amount' => $transaction['amount'],
+                'operation' => $transaction['operation']
+            ]);
 
-	public function refund($transactionId)
-	{
-		$transaction = $this->getById($transactionId);
+            $result2 = $iaMailer->send();
+        }
 
-		if (!$transaction)
-		{
-			return false;
-		}
+        return $result1 && $result2;
+    }
 
-		$gatewayName = $transaction['gateway'];
+    protected function _doGatewayCallback($gatewayName, array $transaction)
+    {
+        if (!$gatewayName) {
+            return false;
+        }
 
-		$gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common', $gatewayName);
+        $gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common');
 
-		if ($gatewayInstance && method_exists($gatewayInstance, 'refund'))
-		{
-			try
-			{
-				return call_user_func([$gatewayInstance, 'refund'], $transaction);
-			}
-			catch (Exception $e) {}
-		}
+        if ($gatewayInstance && method_exists($gatewayInstance, self::GATEWAY_CALLBACK_NAME)) {
+            return call_user_func([$gatewayInstance, self::GATEWAY_CALLBACK_NAME], $transaction);
+        }
 
-		return false;
-	}
+        return false;
+    }
+
+    public function refund($transactionId)
+    {
+        $transaction = $this->getById($transactionId);
+
+        if (!$transaction) {
+            return false;
+        }
+
+        $gatewayName = $transaction['gateway'];
+
+        $gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common', $gatewayName);
+
+        if ($gatewayInstance && method_exists($gatewayInstance, 'refund')) {
+            try {
+                return call_user_func([$gatewayInstance, 'refund'], $transaction);
+            } catch (Exception $e) {
+            }
+        }
+
+        return false;
+    }
 }

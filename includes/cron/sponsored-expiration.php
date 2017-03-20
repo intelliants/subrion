@@ -31,13 +31,10 @@ $itemNames = $iaDb->onefield('item', "`status` = 'active' AND `duration` > 0 GRO
 
 $where = '`sponsored` = 1 AND `sponsored_plan_id` != 0 AND `sponsored_end` < NOW()';
 
-foreach ($itemNames as $itemName)
-{
-	if ($itemIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, $where, null, null, $iaItem->getItemTable($itemName)))
-	{
-		foreach ($itemIds as $itemId)
-		{
-			$iaPlan->setUnpaid($itemName, $itemId);
-		}
-	}
+foreach ($itemNames as $itemName) {
+    if ($itemIds = $iaDb->onefield(iaDb::ID_COLUMN_SELECTION, $where, null, null, $iaItem->getItemTable($itemName))) {
+        foreach ($itemIds as $itemId) {
+            $iaPlan->setUnpaid($itemName, $itemId);
+        }
+    }
 }

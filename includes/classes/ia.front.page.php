@@ -26,65 +26,59 @@
 
 class iaPage extends abstractCore
 {
-	protected static $_table = 'pages';
+    protected static $_table = 'pages';
 
 
-	public function getUrlByName($pageName, $appendScriptPath = true)
-	{
-		static $pagesToUrlMap;
+    public function getUrlByName($pageName, $appendScriptPath = true)
+    {
+        static $pagesToUrlMap;
 
-		if (is_null($pagesToUrlMap))
-		{
-			$pagesToUrlMap = $this->iaDb->keyvalue(['name', 'alias'], null, self::getTable());
-		}
+        if (is_null($pagesToUrlMap)) {
+            $pagesToUrlMap = $this->iaDb->keyvalue(['name', 'alias'], null, self::getTable());
+        }
 
-		return isset($pagesToUrlMap[$pageName])
-			? ($appendScriptPath ? IA_URL : '') . $pagesToUrlMap[$pageName]
-			: null;
-	}
+        return isset($pagesToUrlMap[$pageName])
+            ? ($appendScriptPath ? IA_URL : '') . $pagesToUrlMap[$pageName]
+            : null;
+    }
 
-	public function getByName($name, $status = iaCore::STATUS_ACTIVE)
-	{
-		$row = $this->iaDb->row_bind(
-			iaDb::ALL_COLUMNS_SELECTION,
-			'`name` = :name AND `status` = :status AND `service` != 1',
-			['name' => $name, 'status' => $status],
-			self::getTable()
-		);
+    public function getByName($name, $status = iaCore::STATUS_ACTIVE)
+    {
+        $row = $this->iaDb->row_bind(
+            iaDb::ALL_COLUMNS_SELECTION,
+            '`name` = :name AND `status` = :status AND `service` != 1',
+            ['name' => $name, 'status' => $status],
+            self::getTable()
+        );
 
-		if ($row)
-		{
-			foreach (['meta_description', 'meta_keywords'] as $key)
-			{
-				$phraseKey = sprintf('page_%s_%s', $key, $row['name']);
-				$row[$key] = iaLanguage::exists($phraseKey) ? iaLanguage::get($phraseKey) : null;
-			}
-		}
+        if ($row) {
+            foreach (['meta_description', 'meta_keywords'] as $key) {
+                $phraseKey = sprintf('page_%s_%s', $key, $row['name']);
+                $row[$key] = iaLanguage::exists($phraseKey) ? iaLanguage::get($phraseKey) : null;
+            }
+        }
 
-		return $row;
-	}
+        return $row;
+    }
 
-	protected function _getInfoByName($name)
-	{
-		$pageParams = $this->getByName($name);
+    protected function _getInfoByName($name)
+    {
+        $pageParams = $this->getByName($name);
 
-		return [
-			'parent' => $pageParams['parent'],
-			'title' => iaLanguage::get(sprintf('page_title_%s', $pageParams['name'])),
-			'url' => $pageParams['alias'] ? $this->getUrlByName($pageParams['name']) : $pageParams['name'] . IA_URL_DELIMITER
-		];
-	}
+        return [
+            'parent' => $pageParams['parent'],
+            'title' => iaLanguage::get(sprintf('page_title_%s', $pageParams['name'])),
+            'url' => $pageParams['alias'] ? $this->getUrlByName($pageParams['name']) : $pageParams['name'] . IA_URL_DELIMITER
+        ];
+    }
 
-	public function getParents($parentPageName, array &$chain)
-	{
-		if ($parentPageName)
-		{
-			$chain[] = $parent = $this->_getInfoByName($parentPageName);
-			$this->getParents($parent['parent'], $chain);
-		}
-		else
-		{
-			$chain = array_reverse($chain);
-		}
-	}
+    public function getParents($parentPageName, array &$chain)
+    {
+        if ($parentPageName) {
+            $chain[] = $parent = $this->_getInfoByName($parentPageName);
+            $this->getParents($parent['parent'], $chain);
+        } else {
+            $chain = array_reverse($chain);
+        }
+    }
 }

@@ -24,109 +24,94 @@
  *
  ******************************************************************************/
 
-if (!$iaCore->get('members_enabled'))
-{
-	return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+if (!$iaCore->get('members_enabled')) {
+    return iaView::errorPage(iaView::ERROR_NOT_FOUND);
 }
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$iaUsers = $iaCore->factory('users');
+if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
+    $iaUsers = $iaCore->factory('users');
 
-	// filter by usergroups
-	$usergroups = $iaUsers->getUsergroups(true);
-	$iaView->assign('usergroups', $usergroups);
+    // filter by usergroups
+    $usergroups = $iaUsers->getUsergroups(true);
+    $iaView->assign('usergroups', $usergroups);
 
-	$activeGroup = '';
-	if (isset($_GET['group']))
-	{
-		$_SESSION['group'] = (int)$_GET['group'];
+    $activeGroup = '';
+    if (isset($_GET['group'])) {
+        $_SESSION['group'] = (int)$_GET['group'];
 
-		if ('all' == $_GET['group'])
-		{
-			unset($_SESSION['group']);
-		}
-	}
+        if ('all' == $_GET['group']) {
+            unset($_SESSION['group']);
+        }
+    }
 
-	if (isset($_SESSION['group']) && in_array($_SESSION['group'], array_keys($usergroups)))
-	{
-		$activeGroup = $_SESSION['group'];
+    if (isset($_SESSION['group']) && in_array($_SESSION['group'], array_keys($usergroups))) {
+        $activeGroup = $_SESSION['group'];
 
-		$stmt = '`usergroup_id` = ' . $activeGroup . ' AND ';
-	}
-	else
-	{
-		$stmt = '`usergroup_id` IN (' . implode(',', array_keys($usergroups)) . ') AND ';
-	}
-	$iaView->assign('activeGroup', $activeGroup);
+        $stmt = '`usergroup_id` = ' . $activeGroup . ' AND ';
+    } else {
+        $stmt = '`usergroup_id` IN (' . implode(',', array_keys($usergroups)) . ') AND ';
+    }
+    $iaView->assign('activeGroup', $activeGroup);
 
-	$filterBy = 'username';
+    $filterBy = 'username';
 
-	/* check values */
-	if (isset($_GET['account_by']))
-	{
-		$_SESSION['account_by'] = $_GET['account_by'];
-	}
-	if (!isset($_SESSION['account_by']))
-	{
-		$_SESSION['account_by'] = 'username';
-	}
-	$filterBy = ($_SESSION['account_by'] == 'fullname') ? 'fullname' : 'username';
+    /* check values */
+    if (isset($_GET['account_by'])) {
+        $_SESSION['account_by'] = $_GET['account_by'];
+    }
+    if (!isset($_SESSION['account_by'])) {
+        $_SESSION['account_by'] = 'username';
+    }
+    $filterBy = ($_SESSION['account_by'] == 'fullname') ? 'fullname' : 'username';
 
-	$letters['all'] = iaUtil::getLetters();
-	$letters['active'] = (isset($iaCore->requestPath[0]) && in_array($iaCore->requestPath[0], $letters['all'])) ? $iaCore->requestPath[0] : false;
-	$letters['existing'] = [];
+    $letters['all'] = iaUtil::getLetters();
+    $letters['active'] = (isset($iaCore->requestPath[0]) && in_array($iaCore->requestPath[0], $letters['all'])) ? $iaCore->requestPath[0] : false;
+    $letters['existing'] = [];
 
-	$iaDb->setTable(iaUsers::getTable());
-	if ($array = $iaDb->all('DISTINCT UPPER(SUBSTR(`' . $filterBy . '`, 1, 1)) `letter`', $stmt . "`status` = 'active' GROUP BY `username`"))
-	{
-		foreach ($array as $item)
-		{
-			$letters['existing'][] = $item['letter'];
-		}
-	}
-	$iaDb->resetTable();
+    $iaDb->setTable(iaUsers::getTable());
+    if ($array = $iaDb->all('DISTINCT UPPER(SUBSTR(`' . $filterBy . '`, 1, 1)) `letter`', $stmt . "`status` = 'active' GROUP BY `username`")) {
+        foreach ($array as $item) {
+            $letters['existing'][] = $item['letter'];
+        }
+    }
+    $iaDb->resetTable();
 
-	$stmt .= $letters['active'] ? ('0-9' == $letters['active'] ? "(`$filterBy` REGEXP '^[0-9]') AND " : "(`$filterBy` LIKE '{$letters['active']}%') AND ") : '';
-	if ($letters['active'])
-	{
-		$iaView->set('subpage', array_search($letters['active'], $letters) + 1);
-	}
+    $stmt .= $letters['active'] ? ('0-9' == $letters['active'] ? "(`$filterBy` REGEXP '^[0-9]') AND " : "(`$filterBy` LIKE '{$letters['active']}%') AND ") : '';
+    if ($letters['active']) {
+        $iaView->set('subpage', array_search($letters['active'], $letters) + 1);
+    }
 
-	// gets current page and defines start position
-	$pagination = [
-		'limit' => 20,
-		'url' => IA_URL . 'members/' . ($letters['active'] ? $letters['active'] . '/' : '') . '?page={page}'
-	];
-	$page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
-	$start = (max($page, 1) - 1) * $pagination['limit'];
+    // gets current page and defines start position
+    $pagination = [
+        'limit' => 20,
+        'url' => IA_URL . 'members/' . ($letters['active'] ? $letters['active'] . '/' : '') . '?page={page}'
+    ];
+    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
+    $start = (max($page, 1) - 1) * $pagination['limit'];
 
-	list($pagination['total'], $membersList) = $iaUsers->coreSearch($stmt . "`status` = 'active' ", $start, $pagination['limit'], '`date_reg`');
-	$fields = $iaCore->factory('field')->filter($iaUsers->getItemName(), $membersList);
+    list($pagination['total'], $membersList) = $iaUsers->coreSearch($stmt . "`status` = 'active' ", $start, $pagination['limit'], '`date_reg`');
+    $fields = $iaCore->factory('field')->filter($iaUsers->getItemName(), $membersList);
 
-	// breadcrumb formation
-	if ($activeGroup)
-	{
-		iaBreadcrumb::toEnd(iaLanguage::get('usergroup_' . $usergroups[$activeGroup]), IA_URL . 'members/?group=' . $activeGroup);
-	}
-	if ($letters['active'])
-	{
-		iaBreadcrumb::toEnd($letters['active'], IA_SELF);
-	}
+    // breadcrumb formation
+    if ($activeGroup) {
+        iaBreadcrumb::toEnd(iaLanguage::get('usergroup_' . $usergroups[$activeGroup]), IA_URL . 'members/?group=' . $activeGroup);
+    }
+    if ($letters['active']) {
+        iaBreadcrumb::toEnd($letters['active'], IA_SELF);
+    }
 
-	if ($membersList)
-	{
-		$membersList = $iaCore->factory('item')->updateItemsFavorites($membersList, $iaUsers->getItemName());
-	}
+    if ($membersList) {
+        $membersList = $iaCore->factory('item')->updateItemsFavorites($membersList, $iaUsers->getItemName());
+    }
 
-	$iaView->assign('title', iaLanguage::get('members') . ($letters['active'] ? " [ {$letters['active']} ] " : ''));
-	$iaView->assign('filter', $filterBy);
-	$iaView->assign('letters', $letters);
-	$iaView->assign('members', $membersList);
-	$iaView->assign('pagination', $pagination);
-	$iaView->assign('fields', $fields);
+    $iaView->assign('title', iaLanguage::get('members') . ($letters['active'] ? " [ {$letters['active']} ] " : ''));
+    $iaView->assign('filter', $filterBy);
+    $iaView->assign('letters', $letters);
+    $iaView->assign('members', $membersList);
+    $iaView->assign('pagination', $pagination);
+    $iaView->assign('fields', $fields);
 
-	$iaView->title(iaLanguage::get('members') . ($letters['active'] ? " [{$letters['active']}] " : ''));
+    $iaView->title(iaLanguage::get('members') . ($letters['active'] ? " [{$letters['active']}] " : ''));
 
-	$iaView->set('filtersItemName', $iaUsers->getItemName());
+    $iaView->set('filtersItemName', $iaUsers->getItemName());
 }

@@ -26,196 +26,176 @@
 
 class iaSitemap extends abstractCore
 {
-	const FILENAME = 'sitemap.xml';
+    const FILENAME = 'sitemap.xml';
 
-	const GETTER_METHOD_NAME = 'getSitemapEntries';
-	
-	const LINKS_SET_CORE = 1;
-	const LINKS_SET_PACKAGES = 2;
-	const LINKS_SET_PLUGINS = 3;
+    const GETTER_METHOD_NAME = 'getSitemapEntries';
+    
+    const LINKS_SET_CORE = 1;
+    const LINKS_SET_PACKAGES = 2;
+    const LINKS_SET_PLUGINS = 3;
 
-	protected $_xmlEntry = '<url><loc>:url</loc></url>';
+    protected $_xmlEntry = '<url><loc>:url</loc></url>';
 
-	protected $_xmlContent = '<?xml version="1.0" encoding="UTF-8"?><urlset
+    protected $_xmlContent = '<?xml version="1.0" encoding="UTF-8"?><urlset
 		xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
 		http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">:content:</urlset>';
 
-	protected $_multilingual = false;
+    protected $_multilingual = false;
 
 
-	public function init()
-	{
-		parent::init();
+    public function init()
+    {
+        parent::init();
 
-		$this->_multilingual = ($this->iaCore->get('language_switch') && count($this->iaCore->languages) > 1);
-	}
+        $this->_multilingual = ($this->iaCore->get('language_switch') && count($this->iaCore->languages) > 1);
+    }
 
-	/**
-	 * Writes the sitemap file
-	 *
-	 * @return bool
-	 */
-	public function generate()
-	{
-		set_time_limit(600);
+    /**
+     * Writes the sitemap file
+     *
+     * @return bool
+     */
+    public function generate()
+    {
+        set_time_limit(600);
 
-		$fh = fopen(IA_TMP . self::FILENAME, 'w');
+        $fh = fopen(IA_TMP . self::FILENAME, 'w');
 
-		if (!$fh)
-		{
-			return false;
-		}
+        if (!$fh) {
+            return false;
+        }
 
-		// write file header
-		$marker = ':content:';
-		$offset = stripos($this->_xmlContent, $marker);
-		$content = substr($this->_xmlContent, 0, $offset);
+        // write file header
+        $marker = ':content:';
+        $offset = stripos($this->_xmlContent, $marker);
+        $content = substr($this->_xmlContent, 0, $offset);
 
-		fwrite($fh, $content);
+        fwrite($fh, $content);
 
-		$sets = [self::LINKS_SET_CORE, self::LINKS_SET_PACKAGES, self::LINKS_SET_PLUGINS]; // priority
-		foreach ($sets as $set)
-		{
-			foreach ($this->_getEntries($set) as $url)
-			{
-				fwrite($fh, $this->_validate($url));
-			}
-		}
+        $sets = [self::LINKS_SET_CORE, self::LINKS_SET_PACKAGES, self::LINKS_SET_PLUGINS]; // priority
+        foreach ($sets as $set) {
+            foreach ($this->_getEntries($set) as $url) {
+                fwrite($fh, $this->_validate($url));
+            }
+        }
 
-		// write XML footer
-		fwrite($fh, substr($this->_xmlContent, $offset + strlen($marker)));
+        // write XML footer
+        fwrite($fh, substr($this->_xmlContent, $offset + strlen($marker)));
 
-		fclose($fh);
+        fclose($fh);
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * Returns array of sitemap entries
-	 *
-	 * @return array
-	 */
-	protected function _getEntries($setType)
-	{
-		$iaItem = $this->iaCore->factory('item');
+    /**
+     * Returns array of sitemap entries
+     *
+     * @return array
+     */
+    protected function _getEntries($setType)
+    {
+        $iaItem = $this->iaCore->factory('item');
 
-		$result = [];
-		
-		switch ($setType)
-		{
-			case self::LINKS_SET_CORE:
-				$modulesList = $this->iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), $iaItem::getModulesTable());
-				$homePageName = $this->iaCore->get('home_page');
+        $result = [];
+        
+        switch ($setType) {
+            case self::LINKS_SET_CORE:
+                $modulesList = $this->iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), $iaItem::getModulesTable());
+                $homePageName = $this->iaCore->get('home_page');
 
-				$stmt = '`nofollow` = 0 AND `service` = 0 AND `status` = :status AND `passw` = :password ORDER BY `order`';
-				$this->iaDb->bind($stmt, ['status' => iaCore::STATUS_ACTIVE, 'password' => '']);
+                $stmt = '`nofollow` = 0 AND `service` = 0 AND `status` = :status AND `passw` = :password ORDER BY `order`';
+                $this->iaDb->bind($stmt, ['status' => iaCore::STATUS_ACTIVE, 'password' => '']);
 
-				$pages = $this->iaDb->all(['name', 'alias', 'custom_url', 'module'], $stmt, null, null, 'pages');
-				foreach ($pages as $page)
-				{
-					if (empty($page['module']) || isset($modulesList[$page['module']]))
-					{
-						switch (true)
-						{
-							case ($page['name'] == $homePageName):
-								$url = '';
-								break;
-							case $page['custom_url']:
-								$url = $page['custom_url'];
-								break;
-							case $page['alias']:
-								$url = $page['alias'];
-								break;
-							default:
-								$url = $page['name'] . IA_URL_DELIMITER;
-						}
+                $pages = $this->iaDb->all(['name', 'alias', 'custom_url', 'module'], $stmt, null, null, 'pages');
+                foreach ($pages as $page) {
+                    if (empty($page['module']) || isset($modulesList[$page['module']])) {
+                        switch (true) {
+                            case ($page['name'] == $homePageName):
+                                $url = '';
+                                break;
+                            case $page['custom_url']:
+                                $url = $page['custom_url'];
+                                break;
+                            case $page['alias']:
+                                $url = $page['alias'];
+                                break;
+                            default:
+                                $url = $page['name'] . IA_URL_DELIMITER;
+                        }
 
-						$result[] = $url;
-					}
-				}
+                        $result[] = $url;
+                    }
+                }
 
-				break;
+                break;
 
-			case self::LINKS_SET_PACKAGES:
-				foreach ($iaItem->getPackageItems() as $itemName => $package)
-				{
-					if (iaCore::CORE != $package)
-					{
-						$itemClassInstance = $this->iaCore->factoryModule('item', $package, iaCore::ADMIN, $itemName);
-						if (empty($itemClassInstance))
-						{
-							$itemClassInstance = $this->iaCore->factoryModule('item', $package, 'common', $itemName);
-						}
+            case self::LINKS_SET_PACKAGES:
+                foreach ($iaItem->getPackageItems() as $itemName => $package) {
+                    if (iaCore::CORE != $package) {
+                        $itemClassInstance = $this->iaCore->factoryModule('item', $package, iaCore::ADMIN, $itemName);
+                        if (empty($itemClassInstance)) {
+                            $itemClassInstance = $this->iaCore->factoryModule('item', $package, 'common', $itemName);
+                        }
 
-						if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME))
-						{
-							$entries = call_user_func([$itemClassInstance, self::GETTER_METHOD_NAME]);
-							if (is_array($entries) && $entries)
-							{
-								$result = $entries;
-							}
-						}
-					}
-				}
+                        if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME)) {
+                            $entries = call_user_func([$itemClassInstance, self::GETTER_METHOD_NAME]);
+                            if (is_array($entries) && $entries) {
+                                $result = $entries;
+                            }
+                        }
+                    }
+                }
 
-				break;
+                break;
 
-			case self::LINKS_SET_PLUGINS:
-				$itemsList = [];
+            case self::LINKS_SET_PLUGINS:
+                $itemsList = [];
 
-				$this->iaCore->startHook('sitemapGeneration', ['items' => &$itemsList]);
+                $this->iaCore->startHook('sitemapGeneration', ['items' => &$itemsList]);
 
-				if (is_array($itemsList) && $itemsList)
-				{
-					foreach ($itemsList as $item)
-					{
-						$array = explode(':', $item);
-						$pluginInstance = $this->iaCore->factoryPlugin($array[0], iaCore::ADMIN, isset($array[1]) ? $array[1] : null);
+                if (is_array($itemsList) && $itemsList) {
+                    foreach ($itemsList as $item) {
+                        $array = explode(':', $item);
+                        $pluginInstance = $this->iaCore->factoryPlugin($array[0], iaCore::ADMIN, isset($array[1]) ? $array[1] : null);
 
-						if (method_exists($pluginInstance, self::GETTER_METHOD_NAME))
-						{
-							$entries = call_user_func([$pluginInstance, self::GETTER_METHOD_NAME]);
-							if (is_array($entries) && $entries)
-							{
-								$result = $entries;
-							}
-						}
-					}
-				}
-		}
+                        if (method_exists($pluginInstance, self::GETTER_METHOD_NAME)) {
+                            $entries = call_user_func([$pluginInstance, self::GETTER_METHOD_NAME]);
+                            if (is_array($entries) && $entries) {
+                                $result = $entries;
+                            }
+                        }
+                    }
+                }
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 
-	protected function _validate($url)
-	{
-		if (empty($url))
-		{
-			return '';
-		}
+    protected function _validate($url)
+    {
+        if (empty($url)) {
+            return '';
+        }
 
-		$url = (false === stripos($url, 'http://') && false === stripos($url, 'https://'))
-			? IA_URL . $url
-			: $url;
+        $url = (false === stripos($url, 'http://') && false === stripos($url, 'https://'))
+            ? IA_URL . $url
+            : $url;
 
-		$result = str_replace(':url', $url, $this->_xmlEntry);
+        $result = str_replace(':url', $url, $this->_xmlEntry);
 
-		if ($this->_multilingual)
-		{
-			$currentLanguage = $this->iaView->language;
+        if ($this->_multilingual) {
+            $currentLanguage = $this->iaView->language;
 
-			foreach ($this->iaCore->languages as $code => $title)
-			{
-				if ($code != $currentLanguage)
-				{
-					// potentially buggy. replaces all (!) of entries in URL
-					$result.= str_replace(IA_URL_DELIMITER . $currentLanguage . IA_URL_DELIMITER, IA_URL_DELIMITER . $code . IA_URL_DELIMITER, $url);
-				}
-			}
-		}
+            foreach ($this->iaCore->languages as $code => $title) {
+                if ($code != $currentLanguage) {
+                    // potentially buggy. replaces all (!) of entries in URL
+                    $result.= str_replace(IA_URL_DELIMITER . $currentLanguage . IA_URL_DELIMITER, IA_URL_DELIMITER . $code . IA_URL_DELIMITER, $url);
+                }
+            }
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 }

@@ -26,472 +26,404 @@
 
 class iaUtil extends abstractUtil
 {
-	const REMOTE_TOOLS_URL = 'https://tools.subrion.org/';
+    const REMOTE_TOOLS_URL = 'https://tools.subrion.org/';
 
 
-	public static function downloadRemoteContent($sourceUrl, $savePath)
-	{
-		if (extension_loaded('curl'))
-		{
-			$fh = fopen($savePath, 'w');
+    public static function downloadRemoteContent($sourceUrl, $savePath)
+    {
+        if (extension_loaded('curl')) {
+            $fh = fopen($savePath, 'w');
 
-			$ch = curl_init($sourceUrl);
-			curl_setopt($ch, CURLOPT_FILE, $fh);
-			$result = curl_exec($ch);
-			curl_close($ch);
+            $ch = curl_init($sourceUrl);
+            curl_setopt($ch, CURLOPT_FILE, $fh);
+            $result = curl_exec($ch);
+            curl_close($ch);
 
-			fclose($fh);
+            fclose($fh);
 
-			return (bool)$result;
-		}
+            return (bool)$result;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public static function getPageContent($url, $timeout = 5)
-	{
-		$result = null;
-		$userAgent = 'Subrion CMS Bot';
-		if (extension_loaded('curl'))
-		{
-			$ch = curl_init();
-			curl_setopt_array($ch, [
-				CURLOPT_URL => $url,
-				CURLOPT_HEADER => false,
-				CURLOPT_REFERER => IA_CLEAR_URL,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_CONNECTTIMEOUT => (int)$timeout,
-				CURLOPT_USERAGENT => $userAgent
-			]);
+    public static function getPageContent($url, $timeout = 5)
+    {
+        $result = null;
+        $userAgent = 'Subrion CMS Bot';
+        if (extension_loaded('curl')) {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_HEADER => false,
+                CURLOPT_REFERER => IA_CLEAR_URL,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => (int)$timeout,
+                CURLOPT_USERAGENT => $userAgent
+            ]);
 
-			$result = curl_exec($ch);
+            $result = curl_exec($ch);
 
-			curl_close($ch);
-		}
-		elseif (ini_get('allow_url_fopen'))
-		{
-			ini_set('user_agent', $userAgent);
-			$result = file_get_contents($url, false);
-			ini_restore('user_agent');
-		}
-		else
-		{
-			$result = false;
-		}
+            curl_close($ch);
+        } elseif (ini_get('allow_url_fopen')) {
+            ini_set('user_agent', $userAgent);
+            $result = file_get_contents($url, false);
+            ini_restore('user_agent');
+        } else {
+            $result = false;
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * Makes safe XHTML code, strip only dangerous tags and attributes
-	 *
-	 * @param $string HTML text
-	 *
-	 * @return string
-	 */
-	public static function safeHTML($string)
-	{
-		require_once IA_INCLUDES . 'htmlpurifier' . IA_DS . 'HTMLPurifier.auto' . iaSystem::EXECUTABLE_FILE_EXT;
+    /**
+     * Makes safe XHTML code, strip only dangerous tags and attributes
+     *
+     * @param $string HTML text
+     *
+     * @return string
+     */
+    public static function safeHTML($string)
+    {
+        require_once IA_INCLUDES . 'htmlpurifier' . IA_DS . 'HTMLPurifier.auto' . iaSystem::EXECUTABLE_FILE_EXT;
 
-		// generate cache folder
-		$cacheDirectory = IA_CACHEDIR . 'Serializer' . IA_DS;
-		file_exists($cacheDirectory) || @mkdir($cacheDirectory, 0777);
+        // generate cache folder
+        $cacheDirectory = IA_CACHEDIR . 'Serializer' . IA_DS;
+        file_exists($cacheDirectory) || @mkdir($cacheDirectory, 0777);
 
-		$config = HTMLPurifier_Config::createDefault();
+        $config = HTMLPurifier_Config::createDefault();
 
-		$config->set('HTML.Doctype', 'XHTML 1.0 Transitional');
-		$config->set('Cache.SerializerPath', $cacheDirectory);
-		$config->set('Attr.AllowedFrameTargets', ['_blank']);
-		$config->set('Attr.AllowedRel', 'facebox,nofollow,print,ia_lightbox');
+        $config->set('HTML.Doctype', 'XHTML 1.0 Transitional');
+        $config->set('Cache.SerializerPath', $cacheDirectory);
+        $config->set('Attr.AllowedFrameTargets', ['_blank']);
+        $config->set('Attr.AllowedRel', 'facebox,nofollow,print,ia_lightbox');
 
-		// allow YouTube and Vimeo
-		$config->set('HTML.SafeIframe', true);
-		$config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|www\.google\.com/maps/embed\?)%');
+        // allow YouTube and Vimeo
+        $config->set('HTML.SafeIframe', true);
+        $config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|www\.google\.com/maps/embed\?)%');
 
-		$purifier = new HTMLPurifier($config);
+        $purifier = new HTMLPurifier($config);
 
-		return $purifier->purify($string);
-	}
+        return $purifier->purify($string);
+    }
 
-	public static function go_to($url)
-	{
-		if (empty($url))
-		{
-			trigger_error('Fatal error: empty url param of function ' . __METHOD__);
-		}
-		if (!headers_sent())
-		{
-			unset($_SESSION['info'], $_SESSION['msg']);
+    public static function go_to($url)
+    {
+        if (empty($url)) {
+            trigger_error('Fatal error: empty url param of function ' . __METHOD__);
+        }
+        if (!headers_sent()) {
+            unset($_SESSION['info'], $_SESSION['msg']);
 
-			$_SESSION['msg'] = iaCore::instance()->iaView->getMessages();
+            $_SESSION['msg'] = iaCore::instance()->iaView->getMessages();
 //			$_SESSION['error_msg'] = true;
 
-			header('Location: ' . $url);
+            header('Location: ' . $url);
 
-			exit;
-		}
-		else
-		{
-			trigger_error('Headers already sent. Redirection is impossible.');
-		}
-	}
+            exit;
+        } else {
+            trigger_error('Headers already sent. Redirection is impossible.');
+        }
+    }
 
-	public static function post_goto($goto, $name = 'goto')
-	{
-		$action = 'stay';
-		if (isset($_POST[$name]))
-		{
-			$action = $_POST[$name];
-		}
-		isset($goto[$action]) || $action = 'list';
+    public static function post_goto($goto, $name = 'goto')
+    {
+        $action = 'stay';
+        if (isset($_POST[$name])) {
+            $action = $_POST[$name];
+        }
+        isset($goto[$action]) || $action = 'list';
 
-		self::go_to($goto[$action]);
-	}
+        self::go_to($goto[$action]);
+    }
 
-	public static function makeDirCascade($path, $mode = 0755, $chmod = false)
-	{
-		is_dir(dirname($path)) || self::makeDirCascade(dirname($path), $mode);
+    public static function makeDirCascade($path, $mode = 0755, $chmod = false)
+    {
+        is_dir(dirname($path)) || self::makeDirCascade(dirname($path), $mode);
 
-		if (!is_dir($path))
-		{
-			$result = mkdir($path, $mode);
-			if ($chmod && !function_exists('posix_getuid') || function_exists('posix_getuid') && posix_getuid() != fileowner(IA_HOME . 'index.php'))
-			{
-				chmod($path, $mode);
-			}
+        if (!is_dir($path)) {
+            $result = mkdir($path, $mode);
+            if ($chmod && !function_exists('posix_getuid') || function_exists('posix_getuid') && posix_getuid() != fileowner(IA_HOME . 'index.php')) {
+                chmod($path, $mode);
+            }
 
-			return $result;
-		}
+            return $result;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	public static function generateToken($length = 10)
-	{
-		$result = md5(uniqid(rand(), true));
-		$result = substr($result, 0, $length);
+    public static function generateToken($length = 10)
+    {
+        $result = md5(uniqid(rand(), true));
+        $result = substr($result, 0, $length);
 
-		return $result;
-	}
+        return $result;
+    }
 
-	public static function redirect($title, $message, $url = null, $isAjax = false)
-	{
-		$url = $url ? $url : IA_URL;
-		$message = is_array($message) ? implode('<br>', $message) : $message;
-		unset($_SESSION['redir']);
+    public static function redirect($title, $message, $url = null, $isAjax = false)
+    {
+        $url = $url ? $url : IA_URL;
+        $message = is_array($message) ? implode('<br>', $message) : $message;
+        unset($_SESSION['redir']);
 
-		$_SESSION['redir'] = ['caption' => $title, 'msg' => $message, 'url' => $url];
+        $_SESSION['redir'] = ['caption' => $title, 'msg' => $message, 'url' => $url];
 
-		if (!$isAjax)
-		{
-			$redirectUrl = IA_URL . 'redirect/';
+        if (!$isAjax) {
+            $redirectUrl = IA_URL . 'redirect/';
 
-			if (iaCore::instance()->get('redirect_time', 4000) == 0)
-			{
-				$redirectUrl = $url;
-			}
+            if (iaCore::instance()->get('redirect_time', 4000) == 0) {
+                $redirectUrl = $url;
+            }
 
-			header('Location: ' . $redirectUrl);
-			exit;
-		}
-	}
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+    }
 
-	public static function reload($params = null)
-	{
-		$url = IA_SELF;
+    public static function reload($params = null)
+    {
+        $url = IA_SELF;
 
-		if (is_array($params))
-		{
-			foreach ($params as $k => $v)
-			{
-				// remove key
-				if (is_null($v))
-				{
-					unset($params[$k]);
-					if (array_key_exists($k, $_GET))
-					{
-						unset($_GET[$k]);
-					}
-				}
-				elseif (array_key_exists($k, $_GET)) // set new value
-				{
-					$_GET[$k] = $v;
-					unset($params[$k]);
-				}
-			}
-		}
+        if (is_array($params)) {
+            foreach ($params as $k => $v) {
+                // remove key
+                if (is_null($v)) {
+                    unset($params[$k]);
+                    if (array_key_exists($k, $_GET)) {
+                        unset($_GET[$k]);
+                    }
+                } elseif (array_key_exists($k, $_GET)) { // set new value
+                    $_GET[$k] = $v;
+                    unset($params[$k]);
+                }
+            }
+        }
 
-		if ($_GET || $params)
-		{
-			$url .= '?';
-		}
+        if ($_GET || $params) {
+            $url .= '?';
+        }
 
-		if ($params)
-		{
-			if (is_array($params))
-			{
-				foreach ($params as $k => $v)
-				{
-					$url .= $k . '=' . urlencode($v) . '&';
-				}
-			}
-			else
-			{
-				$url .= $params;
-			}
-		}
-		$url = rtrim($url, '&');
+        if ($params) {
+            if (is_array($params)) {
+                foreach ($params as $k => $v) {
+                    $url .= $k . '=' . urlencode($v) . '&';
+                }
+            } else {
+                $url .= $params;
+            }
+        }
+        $url = rtrim($url, '&');
 
-		self::go_to($url);
-	}
+        self::go_to($url);
+    }
 
-	/**
-	 * Checks that personal folder exists and return path
-	 *
-	 * @param string $userName member username
-	 *
-	 * @return string
-	 */
-	public static function getAccountDir($userName = '')
-	{
-		if (empty($userName))
-		{
-			$userName = iaUsers::hasIdentity() ? iaUsers::getIdentity()->username : false;
-		}
+    /**
+     * Checks that personal folder exists and return path
+     *
+     * @param string $userName member username
+     *
+     * @return string
+     */
+    public static function getAccountDir($userName = '')
+    {
+        if (empty($userName)) {
+            $userName = iaUsers::hasIdentity() ? iaUsers::getIdentity()->username : false;
+        }
 
-		$serverDirectory = empty($userName)
-			? '_notregistered' . IA_DS
-			: strtolower(substr($userName, 0, 1)) . IA_DS . $userName . IA_DS;
+        $serverDirectory = empty($userName)
+            ? '_notregistered' . IA_DS
+            : strtolower(substr($userName, 0, 1)) . IA_DS . $userName . IA_DS;
 
-		umask(0);
-		is_dir(IA_UPLOADS . $serverDirectory) || mkdir(IA_UPLOADS . $serverDirectory, 0777, true);
+        umask(0);
+        is_dir(IA_UPLOADS . $serverDirectory) || mkdir(IA_UPLOADS . $serverDirectory, 0777, true);
 
-		return $serverDirectory;
-	}
+        return $serverDirectory;
+    }
 
-	/**
-	 * Provides a basic check if file is a zip archive
-	 *
-	 * @param $file file path
-	 * @return bool
-	 */
-	public static function isZip($file)
-	{
-		if (function_exists('zip_open'))
-		{
-			if (is_resource($zip = zip_open($file)))
-			{
-				zip_close($zip);
+    /**
+     * Provides a basic check if file is a zip archive
+     *
+     * @param $file file path
+     * @return bool
+     */
+    public static function isZip($file)
+    {
+        if (function_exists('zip_open')) {
+            if (is_resource($zip = zip_open($file))) {
+                zip_close($zip);
 
-				return true;
-			}
-		}
-		else
-		{
-			$fh = fopen($file, 'r');
-			if (is_resource($fh))
-			{
-				$signature = fread($fh, 2);
-				fclose($fh);
+                return true;
+            }
+        } else {
+            $fh = fopen($file, 'r');
+            if (is_resource($fh)) {
+                $signature = fread($fh, 2);
+                fclose($fh);
 
-				if ('PK' === $signature)
-				{
-					return true;
-				}
-			}
-		}
+                if ('PK' === $signature) {
+                    return true;
+                }
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public static function checkPostParam($key, $default = '')
-	{
-		if (isset($_POST[$key]))
-		{
-			return is_array($_POST[$key]) ? $_POST[$key] : trim($_POST[$key]);
-		}
-		if (is_array($default))
-		{
-			if (isset($default[$key]))
-			{
-				$default = $default[$key];
-			}
-			else
-			{
-				$default = '';
-			}
-		}
+    public static function checkPostParam($key, $default = '')
+    {
+        if (isset($_POST[$key])) {
+            return is_array($_POST[$key]) ? $_POST[$key] : trim($_POST[$key]);
+        }
+        if (is_array($default)) {
+            if (isset($default[$key])) {
+                $default = $default[$key];
+            } else {
+                $default = '';
+            }
+        }
 
-		return $default;
-	}
+        return $default;
+    }
 
-	public static function getFormattedTimezones()
-	{
-		$result = [];
-		$regions = ['Africa', 'America', 'Antarctica', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific'];
-		$timezones = DateTimeZone::listIdentifiers();
-		foreach ($timezones as $timezone)
-		{
-			$array = explode('/', $timezone);
-			if (2 == count($array) && in_array($array[0], $regions))
-			{
-				$result[$array[0]][$timezone] = str_replace('_', ' ', $timezone);
-			}
-		}
+    public static function getFormattedTimezones()
+    {
+        $result = [];
+        $regions = ['Africa', 'America', 'Antarctica', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific'];
+        $timezones = DateTimeZone::listIdentifiers();
+        foreach ($timezones as $timezone) {
+            $array = explode('/', $timezone);
+            if (2 == count($array) && in_array($array[0], $regions)) {
+                $result[$array[0]][$timezone] = str_replace('_', ' ', $timezone);
+            }
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 
-	public static function getIp($long = true)
-	{
-		// test if it is a shared client
-		if (!empty($_SERVER['HTTP_CLIENT_IP']))
-		{
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
-		}
-		// is it a proxy address
-		elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
-		{
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-		}
-		else
-		{
-			$ip = $_SERVER['REMOTE_ADDR'];
-		}
+    public static function getIp($long = true)
+    {
+        // test if it is a shared client
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        }
+        // is it a proxy address
+        elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
 
-		return $long ? ip2long($ip) : $ip;
-	}
+        return $long ? ip2long($ip) : $ip;
+    }
 
-	public static function getLetters()
-	{
-		return [
-			'0-9','A','B','C','D','E','F','G','H','I','J','K','L',
-			'M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
-		];
-	}
+    public static function getLetters()
+    {
+        return [
+            '0-9','A','B','C','D','E','F','G','H','I','J','K','L',
+            'M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
+        ];
+    }
 
-	public static function getMetaKeywords($text)
-	{
-		require_once IA_INCLUDES . 'utils' . IA_DS . 'ia.metakeywords.php';
-		$iaMetaKeywords = new iaMetaKeywords();
+    public static function getMetaKeywords($text)
+    {
+        require_once IA_INCLUDES . 'utils' . IA_DS . 'ia.metakeywords.php';
+        $iaMetaKeywords = new iaMetaKeywords();
 
-		return $iaMetaKeywords->get($text);
-	}
+        return $iaMetaKeywords->get($text);
+    }
 
-	/**
-	 * Delete file(s)
-	 *
-	 * @param string|array $file filename(s) to be deleted
-	 *
-	 * @return bool
-	 */
-	public static function deleteFile($file)
-	{
-		if (is_array($file))
-		{
-			foreach ($file as $name)
-			{
-				self::deleteFile($name);
-			}
+    /**
+     * Delete file(s)
+     *
+     * @param string|array $file filename(s) to be deleted
+     *
+     * @return bool
+     */
+    public static function deleteFile($file)
+    {
+        if (is_array($file)) {
+            foreach ($file as $name) {
+                self::deleteFile($name);
+            }
 
-			return true;
-		}
-		elseif (is_file($file))
-		{
-			return @unlink($file);
-		}
+            return true;
+        } elseif (is_file($file)) {
+            return @unlink($file);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public static function cascadeDeleteFiles($directory, $removeDirectories = true)
-	{
-		if (substr($directory, -1) == IA_DS)
-		{
-			$directory = substr($directory, 0, -1);
-		}
-		if (!file_exists($directory) || !is_dir($directory))
-		{
-			return false;
-		}
-		elseif (is_readable($directory))
-		{
-			$handle = opendir($directory);
+    public static function cascadeDeleteFiles($directory, $removeDirectories = true)
+    {
+        if (substr($directory, -1) == IA_DS) {
+            $directory = substr($directory, 0, -1);
+        }
+        if (!file_exists($directory) || !is_dir($directory)) {
+            return false;
+        } elseif (is_readable($directory)) {
+            $handle = opendir($directory);
 
-			while ($item = readdir($handle))
-			{
-				if ($item != '.' && $item != '..' && $item != '.htaccess')
-				{
-					$path = $directory . IA_DS . $item;
-					is_dir($path) ? self::cascadeDeleteFiles($path, true) : self::deleteFile($path);
-				}
-			}
-			closedir($handle);
+            while ($item = readdir($handle)) {
+                if ($item != '.' && $item != '..' && $item != '.htaccess') {
+                    $path = $directory . IA_DS . $item;
+                    is_dir($path) ? self::cascadeDeleteFiles($path, true) : self::deleteFile($path);
+                }
+            }
+            closedir($handle);
 
-			if ($removeDirectories)
-			{
-				$objects = scandir($directory);
-				foreach ($objects as $object)
-				{
-					if ($object != '.' && $object != '..')
-					{
-						if (filetype($directory . IA_DS . $object) == 'dir')
-						{
-							rmdir($directory . IA_DS . $object);
-						}
-					}
-				}
-				reset($objects);
-			}
-		}
+            if ($removeDirectories) {
+                $objects = scandir($directory);
+                foreach ($objects as $object) {
+                    if ($object != '.' && $object != '..') {
+                        if (filetype($directory . IA_DS . $object) == 'dir') {
+                            rmdir($directory . IA_DS . $object);
+                        }
+                    }
+                }
+                reset($objects);
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * Load core of the UTF8 lib and then functions specified in arguments
-	 *
-	 * @param list of function names to be prepared to use
-	 * @return bool
-	 */
-	public static function loadUTF8Functions()
-	{
-		$libPath = 'phputf8';
-		static $isLibLoaded = false;
+    /**
+     * Load core of the UTF8 lib and then functions specified in arguments
+     *
+     * @param list of function names to be prepared to use
+     * @return bool
+     */
+    public static function loadUTF8Functions()
+    {
+        $libPath = 'phputf8';
+        static $isLibLoaded = false;
 
-		if (!$isLibLoaded)
-		{
-			$path = IA_INCLUDES . $libPath . IA_DS;
+        if (!$isLibLoaded) {
+            $path = IA_INCLUDES . $libPath . IA_DS;
 
-			try
-			{
-				if (function_exists('mb_internal_encoding'))
-				{
-					mb_internal_encoding('UTF-8');
-					require_once $path . 'mbstring' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
-				}
-				else
-				{
-					require_once $path . 'utils' . IA_DS . 'unicode' . iaSystem::EXECUTABLE_FILE_EXT;
-					require_once $path . 'native' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
-				}
-			}
-			catch (Exception $e)
-			{
-				return false;
-			}
+            try {
+                if (function_exists('mb_internal_encoding')) {
+                    mb_internal_encoding('UTF-8');
+                    require_once $path . 'mbstring' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
+                } else {
+                    require_once $path . 'utils' . IA_DS . 'unicode' . iaSystem::EXECUTABLE_FILE_EXT;
+                    require_once $path . 'native' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
+                }
+            } catch (Exception $e) {
+                return false;
+            }
 
-			$isLibLoaded = true;
-		}
+            $isLibLoaded = true;
+        }
 
-		if (func_num_args())
-		{
-			foreach (func_get_args() as $fn)
-			{
-				require_once IA_INCLUDES . $libPath . IA_DS . 'utils' . IA_DS . $fn . iaSystem::EXECUTABLE_FILE_EXT;
-			}
-		}
+        if (func_num_args()) {
+            foreach (func_get_args() as $fn) {
+                require_once IA_INCLUDES . $libPath . IA_DS . 'utils' . IA_DS . $fn . iaSystem::EXECUTABLE_FILE_EXT;
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 }

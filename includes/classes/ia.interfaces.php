@@ -26,45 +26,45 @@
 
 abstract class abstractCore
 {
-	public $iaCore;
-	public $iaDb;
-	public $iaView;
+    public $iaCore;
+    public $iaDb;
+    public $iaView;
 
-	protected $_message;
+    protected $_message;
 
-	protected static $_table;
+    protected static $_table;
 
 
-	public function init()
-	{
-		$this->iaCore = iaCore::instance();
-		$this->iaDb = &$this->iaCore->iaDb;
-		$this->iaView = &$this->iaCore->iaView;
-	}
+    public function init()
+    {
+        $this->iaCore = iaCore::instance();
+        $this->iaDb = &$this->iaCore->iaDb;
+        $this->iaView = &$this->iaCore->iaView;
+    }
 
-	public static function getTable($prefix = false)
-	{
-		return $prefix ? iaCore::instance()->iaDb->prefix . static::$_table : static::$_table;
-	}
+    public static function getTable($prefix = false)
+    {
+        return $prefix ? iaCore::instance()->iaDb->prefix . static::$_table : static::$_table;
+    }
 
-	public function getMessage()
-	{
-		return (string)$this->_message;
-	}
+    public function getMessage()
+    {
+        return (string)$this->_message;
+    }
 
-	public function setMessage($message)
-	{
-		$this->_message = $message;
-	}
+    public function setMessage($message)
+    {
+        $this->_message = $message;
+    }
 }
 
 abstract class abstractUtil
 {
-	public $iaCore;
+    public $iaCore;
 
 
-	public function init()
-	{
-		$this->iaCore = iaCore::instance();
-	}
+    public function init()
+    {
+        $this->iaCore = iaCore::instance();
+    }
 }

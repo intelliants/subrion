@@ -28,340 +28,277 @@ $iaUsers = $iaCore->factory('users');
 
 $iaDb->setTable(iaUsers::getTable());
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
-{
-	if (isset($_GET['email']))
-	{
-		$code = isset($_GET['code']) ? trim($_GET['code']) : false;
-		$email = isset($_POST['email']) ? $_POST['email'] : (isset($_GET['email']) ? $_GET['email'] : '');
-		$error = false;
-		$message = [];
+if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
+    if (isset($_GET['email'])) {
+        $code = isset($_GET['code']) ? trim($_GET['code']) : false;
+        $email = isset($_POST['email']) ? $_POST['email'] : (isset($_GET['email']) ? $_GET['email'] : '');
+        $error = false;
+        $message = [];
 
-		if ($email)
-		{
-			if (!iaValidate::isEmail($email))
-			{
-				$error = true;
-				$message = iaLanguage::get('error_email_incorrect');
-			}
-			$email = iaSanitize::sql($email);
+        if ($email) {
+            if (!iaValidate::isEmail($email)) {
+                $error = true;
+                $message = iaLanguage::get('error_email_incorrect');
+            }
+            $email = iaSanitize::sql($email);
 
-			$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
-			if (empty($member))
-			{
-				$error = true;
-				$message = iaLanguage::get('error_no_member_email');
-			}
-			if (false !== $code && $member['sec_key'] != $code)
-			{
-				$error = true;
-				$message = iaLanguage::get('confirmation_code_incorrect');
-			}
+            $member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
+            if (empty($member)) {
+                $error = true;
+                $message = iaLanguage::get('error_no_member_email');
+            }
+            if (false !== $code && $member['sec_key'] != $code) {
+                $error = true;
+                $message = iaLanguage::get('confirmation_code_incorrect');
+            }
 
-			if (!$error && false === $code)
-			{
-				$mail = [];
-				$token = $iaCore->factory('util')->generateToken();
-				$confirmationUrl = IA_URL . "forgot/?email=$email&code=$token";
+            if (!$error && false === $code) {
+                $mail = [];
+                $token = $iaCore->factory('util')->generateToken();
+                $confirmationUrl = IA_URL . "forgot/?email=$email&code=$token";
 
-				$iaMailer = $iaCore->factory('mailer');
+                $iaMailer = $iaCore->factory('mailer');
 
-				$iaMailer->loadTemplate('password_restoration');
-				$iaMailer->addAddress($member['email'], $member['fullname']);
-				$iaMailer->setReplacements([
-					'fullname' => $member['fullname'],
-					'url' => $confirmationUrl,
-					'code' => $token,
-					'email' => $email
-				]);
+                $iaMailer->loadTemplate('password_restoration');
+                $iaMailer->addAddress($member['email'], $member['fullname']);
+                $iaMailer->setReplacements([
+                    'fullname' => $member['fullname'],
+                    'url' => $confirmationUrl,
+                    'code' => $token,
+                    'email' => $email
+                ]);
 
-				$iaMailer->send();
+                $iaMailer->send();
 
-				$message = iaLanguage::get('restore_pass_confirm');
-				$iaDb->update(['id' => $member['id'], 'sec_key' => $token], null, null, iaUsers::getTable());
-			}
-			elseif (!$error && $code)
-			{
-				$iaUsers->changePassword($member);
+                $message = iaLanguage::get('restore_pass_confirm');
+                $iaDb->update(['id' => $member['id'], 'sec_key' => $token], null, null, iaUsers::getTable());
+            } elseif (!$error && $code) {
+                $iaUsers->changePassword($member);
 
-				$error = false;
-				$message = iaLanguage::get('new_password_sent');
-			}
-		}
-		elseif ($_POST && empty($_POST['email']))
-		{
-			$error = true;
-			$message = iaLanguage::get('error_email_incorrect');
-		}
+                $error = false;
+                $message = iaLanguage::get('new_password_sent');
+            }
+        } elseif ($_POST && empty($_POST['email'])) {
+            $error = true;
+            $message = iaLanguage::get('error_email_incorrect');
+        }
 
-		$iaView->assign('message', $message);
-		$iaView->assign('result', !$error);
-	}
+        $iaView->assign('message', $message);
+        $iaView->assign('result', !$error);
+    }
 }
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if (!$iaCore->get('members_enabled'))
-	{
-		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-	}
+if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
+    if (!$iaCore->get('members_enabled')) {
+        return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+    }
 
-	$iaCore->factory('util');
+    $iaCore->factory('util');
 
-	if (iaUsers::hasIdentity())
-	{
-		iaUtil::go_to(IA_URL . 'profile/');
-	}
+    if (iaUsers::hasIdentity()) {
+        iaUtil::go_to(IA_URL . 'profile/');
+    }
 
-	$memberId = null;
-	$error = false;
-	$messages = [];
-	$itemData = [];
+    $memberId = null;
+    $error = false;
+    $messages = [];
+    $itemData = [];
 
-	if ('member_password_forgot' == $iaView->name())
-	{
-		$code = isset($_GET['code']) ? trim($_GET['code']) : false;
-		$email = isset($_POST['email']) ? $_POST['email'] : (isset($_GET['email']) ? $_GET['email'] : '');
-		$form = (false === $code) ? 'request' : 'confirm';
+    if ('member_password_forgot' == $iaView->name()) {
+        $code = isset($_GET['code']) ? trim($_GET['code']) : false;
+        $email = isset($_POST['email']) ? $_POST['email'] : (isset($_GET['email']) ? $_GET['email'] : '');
+        $form = (false === $code) ? 'request' : 'confirm';
 
-		if ($email)
-		{
-			if ($form != 'confirm' && !iaValidate::isCaptchaValid())
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('confirmation_code_incorrect');
-			}
+        if ($email) {
+            if ($form != 'confirm' && !iaValidate::isCaptchaValid()) {
+                $error = true;
+                $messages[] = iaLanguage::get('confirmation_code_incorrect');
+            }
 
-			if (!iaValidate::isEmail($email))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('error_email_incorrect');
-			}
+            if (!iaValidate::isEmail($email)) {
+                $error = true;
+                $messages[] = iaLanguage::get('error_email_incorrect');
+            }
 
-			if (!$error)
-			{
-				$member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
+            if (!$error) {
+                $member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
 
-				if (empty($member))
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_no_member_email');
-				}
-				elseif (in_array($member['status'], [iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED]))
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('your_membership_is_inactive');
-				}
+                if (empty($member)) {
+                    $error = true;
+                    $messages[] = iaLanguage::get('error_no_member_email');
+                } elseif (in_array($member['status'], [iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED])) {
+                    $error = true;
+                    $messages[] = iaLanguage::get('your_membership_is_inactive');
+                }
 
-				if (false !== $code && $member['sec_key'] != $code)
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('confirmation_code_incorrect');
-				}
+                if (false !== $code && $member['sec_key'] != $code) {
+                    $error = true;
+                    $messages[] = iaLanguage::get('confirmation_code_incorrect');
+                }
 
-				if (!$error && false === $code)
-				{
-					$token = iaUtil::generateToken();
-					$confirmationUrl = IA_URL . 'forgot/?email=' . $email . '&code=' . $token;
+                if (!$error && false === $code) {
+                    $token = iaUtil::generateToken();
+                    $confirmationUrl = IA_URL . 'forgot/?email=' . $email . '&code=' . $token;
 
-					$iaMailer = $iaCore->factory('mailer');
+                    $iaMailer = $iaCore->factory('mailer');
 
-					$iaMailer->loadTemplate('password_restoration');
-					$iaMailer->addAddress($member['email'], $member['fullname']);
-					$iaMailer->setReplacements([
-						'fullname' => $member['fullname'],
-						'url' => $confirmationUrl,
-						'code' => $token,
-						'email' => $member['email']
-					]);
+                    $iaMailer->loadTemplate('password_restoration');
+                    $iaMailer->addAddress($member['email'], $member['fullname']);
+                    $iaMailer->setReplacements([
+                        'fullname' => $member['fullname'],
+                        'url' => $confirmationUrl,
+                        'code' => $token,
+                        'email' => $member['email']
+                    ]);
 
-					$iaMailer->send();
+                    $iaMailer->send();
 
-					$messages[] = iaLanguage::get('restore_pass_confirm');
-					$iaDb->update(['id' => $member['id'], 'sec_key' => $token], 0, 0, iaUsers::getTable());
-					$form = 'confirm';
-				}
-				elseif (!$error && $code)
-				{
-					$error = false;
-					$messages[] = iaLanguage::get('new_password_sent');
+                    $messages[] = iaLanguage::get('restore_pass_confirm');
+                    $iaDb->update(['id' => $member['id'], 'sec_key' => $token], 0, 0, iaUsers::getTable());
+                    $form = 'confirm';
+                } elseif (!$error && $code) {
+                    $error = false;
+                    $messages[] = iaLanguage::get('new_password_sent');
 
-					$iaUsers->changePassword($member);
-					$form = false;
-				}
-			}
-		}
-		elseif ($_POST && empty($_POST['email']))
-		{
-			$error = true;
-			$messages[] = iaLanguage::get('error_email_incorrect');
+                    $iaUsers->changePassword($member);
+                    $form = false;
+                }
+            }
+        } elseif ($_POST && empty($_POST['email'])) {
+            $error = true;
+            $messages[] = iaLanguage::get('error_email_incorrect');
 
-			if (!iaValidate::isCaptchaValid())
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('confirmation_code_incorrect');
-			}
-		}
+            if (!iaValidate::isCaptchaValid()) {
+                $error = true;
+                $messages[] = iaLanguage::get('confirmation_code_incorrect');
+            }
+        }
 
-		$iaView->assign('email', $email);
-		$iaView->assign('form', $form);
-	}
-	else
-	{
-		$iaField = $iaCore->factory('field');
-		$iaPlan = $iaCore->factory('plan');
+        $iaView->assign('email', $email);
+        $iaView->assign('form', $form);
+    } else {
+        $iaField = $iaCore->factory('field');
+        $iaPlan = $iaCore->factory('plan');
 
-		$iaView->assign('plans', $iaPlan->getPlans($iaUsers->getItemName()));
-		$iaView->assign('sections', $iaField->getGroupsFiltered($iaUsers->getItemName(), $itemData));
+        $iaView->assign('plans', $iaPlan->getPlans($iaUsers->getItemName()));
+        $iaView->assign('sections', $iaField->getGroupsFiltered($iaUsers->getItemName(), $itemData));
 
-		if (isset($_POST['register']))
-		{
-			list($itemData, $error, $messages) = $iaField->parsePost($iaUsers->getItemName(), $itemData);
+        if (isset($_POST['register'])) {
+            list($itemData, $error, $messages) = $iaField->parsePost($iaUsers->getItemName(), $itemData);
 
-			if (!iaValidate::isCaptchaValid())
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('confirmation_code_incorrect');
-			}
+            if (!iaValidate::isCaptchaValid()) {
+                $error = true;
+                $messages[] = iaLanguage::get('confirmation_code_incorrect');
+            }
 
-			if (isset($_POST['plan_id']))
-			{
-				$itemData[iaPlan::SPONSORED_PLAN_ID] = (int)$_POST['plan_id'];
-			}
+            if (isset($_POST['plan_id'])) {
+                $itemData[iaPlan::SPONSORED_PLAN_ID] = (int)$_POST['plan_id'];
+            }
 
-			if (isset($_POST['username']))
-			{
-				if ($iaDb->exists('`username` = :value', ['value' => $_POST['username']], iaUsers::getTable()))
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('username_already_exists');
-				}
-			}
-			if (isset($_POST['email']))
-			{
-				if ($iaDb->exists('`email` = :value', ['value' => $_POST['email']], iaUsers::getTable()))
-				{
-					$error = true;
-					$messages[] = iaLanguage::get('error_duplicate_email');
-				}
-			}
+            if (isset($_POST['username'])) {
+                if ($iaDb->exists('`username` = :value', ['value' => $_POST['username']], iaUsers::getTable())) {
+                    $error = true;
+                    $messages[] = iaLanguage::get('username_already_exists');
+                }
+            }
+            if (isset($_POST['email'])) {
+                if ($iaDb->exists('`email` = :value', ['value' => $_POST['email']], iaUsers::getTable())) {
+                    $error = true;
+                    $messages[] = iaLanguage::get('error_duplicate_email');
+                }
+            }
 
-			if (!$error)
-			{
-				$itemData['password'] = iaUtil::checkPostParam('password');
-				$itemData['disable_fields'] = isset($_POST['disable_fields']) ? (int)$_POST['disable_fields'] : 0;
+            if (!$error) {
+                $itemData['password'] = iaUtil::checkPostParam('password');
+                $itemData['disable_fields'] = isset($_POST['disable_fields']) ? (int)$_POST['disable_fields'] : 0;
 
-				// check password
-				if (!$itemData['disable_fields'])
-				{
-					if (!$itemData['password'])
-					{
-						$error = true;
-						$messages[] = iaLanguage::get('error_password_empty');
-					}
-					else
-					{
-						if ($_POST['password'] != $_POST['password2'])
-						{
-							$error = true;
-							$messages[] = iaLanguage::get('error_password_match');
-						}
-					}
-				}
-				else
-				{
-					$itemData['password'] = '';
-				}
-			}
-			else
-			{
-				$iaView->setMessages($messages);
-			}
+                // check password
+                if (!$itemData['disable_fields']) {
+                    if (!$itemData['password']) {
+                        $error = true;
+                        $messages[] = iaLanguage::get('error_password_empty');
+                    } else {
+                        if ($_POST['password'] != $_POST['password2']) {
+                            $error = true;
+                            $messages[] = iaLanguage::get('error_password_match');
+                        }
+                    }
+                } else {
+                    $itemData['password'] = '';
+                }
+            } else {
+                $iaView->setMessages($messages);
+            }
 
-			if (!$error)
-			{
-				$memberId = $iaUsers->register($itemData);
+            if (!$error) {
+                $memberId = $iaUsers->register($itemData);
 
-				if ($memberId)
-				{
-					$iaCore->factory('log')->write(iaLog::ACTION_CREATE, ['item' => 'member', 'name' => $itemData['fullname'], 'id' => $memberId, 'type' => iaCore::FRONT]);
-				}
+                if ($memberId) {
+                    $iaCore->factory('log')->write(iaLog::ACTION_CREATE, ['item' => 'member', 'name' => $itemData['fullname'], 'id' => $memberId, 'type' => iaCore::FRONT]);
+                }
 
-				// process sponsored plan
-				if ($memberId && isset($_POST['plan_id']) && is_numeric($_POST['plan_id']))
-				{
-					$plan = $iaPlan->getById($_POST['plan_id']);
+                // process sponsored plan
+                if ($memberId && isset($_POST['plan_id']) && is_numeric($_POST['plan_id'])) {
+                    $plan = $iaPlan->getById($_POST['plan_id']);
 
-					if ($plan['cost'] > 0)
-					{
-						$itemData['id'] = $memberId;
-						$itemData['member_id'] = $memberId;
+                    if ($plan['cost'] > 0) {
+                        $itemData['id'] = $memberId;
+                        $itemData['member_id'] = $memberId;
 
-						if ($url = $iaPlan->prePayment($iaUsers->getItemName(), $itemData, $plan['id']))
-						{
-							iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('member_created'), $url);
-						}
-					}
-				}
-			}
-		}
-		elseif ('register_confirm' == $iaView->name())
-		{
-			if (!isset($_GET['email']) || !isset($_GET['key']))
-			{
-				return iaView::accessDenied();
-			}
+                        if ($url = $iaPlan->prePayment($iaUsers->getItemName(), $itemData, $plan['id'])) {
+                            iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('member_created'), $url);
+                        }
+                    }
+                }
+            }
+        } elseif ('register_confirm' == $iaView->name()) {
+            if (!isset($_GET['email']) || !isset($_GET['key'])) {
+                return iaView::accessDenied();
+            }
 
-			$error = true;
+            $error = true;
 
-			if ($iaUsers->confirmation($_GET['email'], $_GET['key']))
-			{
-				$messages[] = $iaCore->get('members_autoapproval') ? iaLanguage::get('reg_confirmed') : iaLanguage::get('reg_confirm_adm_approve');
-				$error = false;
+            if ($iaUsers->confirmation($_GET['email'], $_GET['key'])) {
+                $messages[] = $iaCore->get('members_autoapproval') ? iaLanguage::get('reg_confirmed') : iaLanguage::get('reg_confirm_adm_approve');
+                $error = false;
 
-				$url = $iaCore->get('members_autoapproval') ? IA_URL . 'login/' : IA_URL;
-				iaUtil::redirect(iaLanguage::get('reg_confirmation'), $messages, $url);
-			}
-			else
-			{
-				$messages[] = iaLanguage::get('confirmation_key_incorrect');
-			}
+                $url = $iaCore->get('members_autoapproval') ? IA_URL . 'login/' : IA_URL;
+                iaUtil::redirect(iaLanguage::get('reg_confirmation'), $messages, $url);
+            } else {
+                $messages[] = iaLanguage::get('confirmation_key_incorrect');
+            }
 
-			$iaView->assign('success', !$error);
-		}
-	}
+            $iaView->assign('success', !$error);
+        }
+    }
 
-	switch ($iaView->name())
-	{
-		case 'member_password_forgot':
-			$template = 'forgot';
+    switch ($iaView->name()) {
+        case 'member_password_forgot':
+            $template = 'forgot';
 
-			break;
+            break;
 
-		case 'register_confirm':
-			$template = 'registration-confirmation';
+        case 'register_confirm':
+            $template = 'registration-confirmation';
 
-			break;
+            break;
 
-		default:
-			if ($memberId)
-			{
-				$error = false;
-				$template = 'registration-confirmation';
-				$messages[] = iaLanguage::get('member_created');
-				$iaView->assign('email', $itemData['email']);
-			}
-			else
-			{
-				$error = true;
-				$template = 'registration';
-				$iaView->assign('tmp', $itemData);
-			}
-	}
+        default:
+            if ($memberId) {
+                $error = false;
+                $template = 'registration-confirmation';
+                $messages[] = iaLanguage::get('member_created');
+                $iaView->assign('email', $itemData['email']);
+            } else {
+                $error = true;
+                $template = 'registration';
+                $iaView->assign('tmp', $itemData);
+            }
+    }
 
-	$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
+    $iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
 
-	$iaView->display($template);
+    $iaView->display($template);
 }
 
 $iaDb->resetTable();

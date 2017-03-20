@@ -26,5 +26,5 @@
 
 interface iaApiRenderer
 {
-	public function render();
+    public function render();
 }

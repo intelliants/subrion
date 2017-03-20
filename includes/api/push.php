@@ -26,74 +26,73 @@
 
 class iaApiPush
 {
-	const PUSH_ENDPOINT_URL = 'https://android.googleapis.com/gcm/send';
+    const PUSH_ENDPOINT_URL = 'https://android.googleapis.com/gcm/send';
 
 
-	// shortcuts
-	public function sendMembers($title, $message = '', array $params = [])
-	{
-		return $this->send($this->_fetchTokens(), $title, $message, $params);
-	}
+    // shortcuts
+    public function sendMembers($title, $message = '', array $params = [])
+    {
+        return $this->send($this->_fetchTokens(), $title, $message, $params);
+    }
 
-	public function sendUsergroup($usergroupId, $title, $message = '', array $params = [])
-	{
-		return $this->send($this->_fetchTokens(iaDb::convertIds($usergroupId, 'usergroup_id')), $title, $message, $params);
-	}
+    public function sendUsergroup($usergroupId, $title, $message = '', array $params = [])
+    {
+        return $this->send($this->_fetchTokens(iaDb::convertIds($usergroupId, 'usergroup_id')), $title, $message, $params);
+    }
 
-	public function sendAdministrators($title, $message = '', array $params = [])
-	{
-		return $this->sendUsergroup(iaUsers::MEMBERSHIP_ADMINISTRATOR, $title, $message, $params);
-	}
-	//
+    public function sendAdministrators($title, $message = '', array $params = [])
+    {
+        return $this->sendUsergroup(iaUsers::MEMBERSHIP_ADMINISTRATOR, $title, $message, $params);
+    }
+    //
 
-	public function send(array $receivers, $title, $message = '', array $params = [])
-	{
-		if (!$receivers || !iaCore::instance()->get('api_push_access_key'))
-		{
-			return false;
-		}
+    public function send(array $receivers, $title, $message = '', array $params = [])
+    {
+        if (!$receivers || !iaCore::instance()->get('api_push_access_key')) {
+            return false;
+        }
 
-		$data = ['title' => $title, 'message' => $message];
-		$data = array_merge($data, $params);
+        $data = ['title' => $title, 'message' => $message];
+        $data = array_merge($data, $params);
 
-		$postData = [
-			'registration_ids' => $receivers,
-			'data' => $data
-		];
+        $postData = [
+            'registration_ids' => $receivers,
+            'data' => $data
+        ];
 
-		$headers = [
-			'Authorization: key=' . iaCore::instance()->get('api_push_access_key'),
-			'Content-Type: application/json'
-		];
+        $headers = [
+            'Authorization: key=' . iaCore::instance()->get('api_push_access_key'),
+            'Content-Type: application/json'
+        ];
 
-		return $this->_httpRequest(self::PUSH_ENDPOINT_URL, $postData, $headers);
-	}
+        return $this->_httpRequest(self::PUSH_ENDPOINT_URL, $postData, $headers);
+    }
 
-	private function _httpRequest($url, $postData, array $headers = [])
-	{
-		$ch = curl_init();
+    private function _httpRequest($url, $postData, array $headers = [])
+    {
+        $ch = curl_init();
 
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 
-		$result = curl_exec($ch);
+        $result = curl_exec($ch);
 
-		curl_close($ch);
+        curl_close($ch);
 
-		// TODO: proper error handling
+        // TODO: proper error handling
 
-		return $result;
-	}
+        return $result;
+    }
 
-	protected function _fetchTokens($condition = null)
-	{
-		$where = "`api_push_token` != '' AND `api_push_receive` = 'yes'";
-		empty($condition) || $where.= ' AND ' . $condition;
+    protected function _fetchTokens($condition = null)
+    {
+        $where = "`api_push_token` != '' AND `api_push_receive` = 'yes'";
+        empty($condition) || $where.= ' AND ' . $condition;
 
-		return iaCore::instance()->iaDb->onefield('api_push_token', $where, null, null, iaUsers::getTable());
-	}
+        return iaCore::instance()->iaDb->onefield('api_push_token', $where, null, null, iaUsers::getTable());
+    }
 }

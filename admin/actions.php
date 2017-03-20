@@ -1,5 +1,4 @@
 <?php
-
 /******************************************************************************
  *
  * Subrion - open source content management system
@@ -24,6 +23,7 @@
  * @link https://subrion.org/
  *
  ******************************************************************************/
+
 class iaBackendController extends iaAbstractControllerBackend
 {
     protected $_name = 'actions';
