@@ -23,7 +23,7 @@
  *
  * @link https://subrion.org/
  *
- **************************iaUser****************************************************/
+ ******************************************************************************/
 class iaBackendController extends iaAbstractControllerBackend
 {
     protected $_name = 'members';
