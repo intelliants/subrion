@@ -427,7 +427,7 @@ HTML;
 					$salt = '#' . strtoupper(substr(md5(IA_HOME), 21, 10));
 					$params = [
 						'{version}' => IA_VERSION,
-						'{date}' => date('d F Y H:i:s'),
+						'{date}' => (new \DateTime())->format('d F Y H:i:s'),
 						'{dbconnector}' => in_array('mysqli', get_loaded_extensions()) && function_exists('mysqli_connect') ? 'mysqli' : 'mysql',
 						'{dbhost}' => iaHelper::getPost('dbhost'),
 						'{dbuser}' => iaHelper::getPost('dbuser'),
@@ -450,8 +450,7 @@ HTML;
 					$configMsg = '';
 
 					// session path test
-					$testResult = is_writable(session_save_path());
-					$testResult = $testResult ? '' : "session_save_path('" . IA_HOME . "tmp');";
+					$testResult = is_writable(session_save_path()) ? '' : "session_save_path('" . IA_HOME . "tmp');";
 
 					$config = str_replace('{sessionpath}', $testResult, $config);
 					//

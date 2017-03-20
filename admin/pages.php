@@ -221,7 +221,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$order = $this->_iaDb->getMaxOrder() + 1;
 
-		$entryData['last_updated'] = date(iaDb::DATETIME_FORMAT);
+		$entryData['last_updated'] = (new \DateTime())->format(iaDb::DATETIME_FORMAT);
 		$entryData['order'] = $order ? $order : 1;
 
 		return parent::_entryAdd($entryData);
@@ -231,7 +231,7 @@ class iaBackendController extends iaAbstractControllerBackend
 	{
 		$currentData = $this->getById($entryId);
 
-		$entryData['last_updated'] = date(iaDb::DATETIME_FORMAT);
+		$entryData['last_updated'] = (new \DateTime())->format(iaDb::DATETIME_FORMAT);
 
 		$result = parent::_entryUpdate($entryData, $entryId);
 

@@ -154,7 +154,7 @@ class iaBackendController extends iaAbstractControllerBackend
 		if (iaCore::ACTION_ADD == $action)
 		{
 			$entry['id'] = $data['id'];
-			$entry['date_created'] = date(iaDb::DATETIME_FORMAT);
+			$entry['date_created'] = (new \DateTime())->format(iaDb::DATETIME_FORMAT);
 
 			if (empty($entry['id']))
 			{

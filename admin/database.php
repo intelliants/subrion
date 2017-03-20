@@ -197,10 +197,12 @@ class iaBackendController extends iaAbstractControllerBackend
 				{
 					$dumpFile = $dirname;
 
+					$date = (new \DateTime())->format('Y-m-d');
+
 					// saves to server
 					if ('server' == $_POST['savetype'])
 					{
-						$dumpFile .= !empty($_POST['tbl']) ? date('Y-m-d') . '-' . $_POST['tbl'][0] . '.sql' : 'db-' . date('Y-m-d') . '.sql';
+						$dumpFile .= !empty($_POST['tbl']) ? $date . '-' . $_POST['tbl'][0] . '.sql' : 'db-' . $date . '.sql';
 						$fileName = str_replace(IA_HOME, '', $dumpFile);
 
 						if (!$fd = @fopen($dumpFile, 'w'))
@@ -234,7 +236,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					{
 						$iaView->set('nodebug', 1);
 
-						$dumpFile = ($_POST['tbl']) ? date(iaDb::DATE_FORMAT) . '-' . $_POST['tbl'][0] . '.sql' : 'db_' . date('Y-m-d') . '.sql';
+						$dumpFile = ($_POST['tbl']) ? $date . '-' . $_POST['tbl'][0] . '.sql' : 'db_' . $date . '.sql';
 
 						header('Content-Type: text/plain');
 						header('Content-Disposition: attachment; filename="' . $dumpFile . '"');
@@ -522,7 +524,7 @@ class iaBackendController extends iaAbstractControllerBackend
 					$migrationProcessed = [
 						'name' => str_replace(IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS, '', $filename),
 						'status' => 'complete',
-						'date' => date(iaDb::DATETIME_FORMAT)
+						'date' => (new \DateTime())->format(iaDb::DATETIME_FORMAT),
 					];
 
 					if ($errors)

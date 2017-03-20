@@ -55,7 +55,7 @@ class iaBackup
 	public  function __construct()
 	{
 		$this->_dumpFilePath = IA_TMP . 'data_backup_' . IA_VERSION . '.sql';
-		$this->filePath = IA_HOME . 'backup/' . sprintf('backup_%s_%s.zip', IA_VERSION, date('Y-m-d'));
+		$this->filePath = IA_HOME . 'backup/' . sprintf('backup_%s_%s.zip', IA_VERSION, (new \DateTime())->format(iaDb::DATE_FORMAT));
 	}
 
 	protected function _decompressFiles($backupFile)
