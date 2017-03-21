@@ -2,49 +2,54 @@
 Options -MultiViews
 
 <IfModule mod_rewrite.c>
-	RewriteEngine On
+    RewriteEngine On
 
-	# Uncomment two lines below to redirect all non-secure traffic to https://
-	# Make sure you enabled HTTPS in Dashboard / System / System in Subrion CMS
-	# RewriteCond %{HTTPS} off
-	# RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+    # Uncomment two lines below to redirect all non-www traffic to www
+    # Make sure your baseurl config is set to www. domain
+    # RewriteCond %{HTTP_HOST} !^www\. [NC]
+    # RewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]
 
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_URI} !(.*)\.(.*)$
-	RewriteRule ^(.+[^/])$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]
+    # Uncomment two lines below to redirect all non-secure traffic to https://
+    # Make sure you enabled HTTPS in Dashboard / System / System in Subrion CMS
+    # RewriteCond %{HTTPS} off
+    # RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-	# Return default not-found as it's faster
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule \.(jpg|jpeg|png|gif|bmp|ico|swf|js|css|woff|ttf)$ - [NC,R=404,L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_URI} !(.*)\.(.*)$
+    RewriteRule ^(.+[^/])$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]
 
-	# Google sitemap controller
-	RewriteRule ^(tmp/)?sitemap.xml$ tmp/sitemap.xml [L]
+    # Return default not-found as it's faster
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule \.(jpg|jpeg|png|gif|bmp|ico|swf|js|css|woff|ttf)$ - [NC,R=404,L]
 
-	RewriteCond %{REQUEST_FILENAME} -f
-	RewriteRule ^(.*)(\.php([0-9]*)|\.json|\.xml|\.tpl|\.phtml|\.ini|\.inc|/)$ index.php?_p=$1 [NC,QSA,L]
+    # Google sitemap controller
+    RewriteRule ^(tmp/)?sitemap.xml$ tmp/sitemap.xml [L]
 
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.*)$ index.php?_p=$1 [QSA,L]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^(.*)(\.php([0-9]*)|\.json|\.xml|\.tpl|\.phtml|\.ini|\.inc|/)$ index.php?_p=$1 [NC,QSA,L]
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ index.php?_p=$1 [QSA,L]
 </IfModule>
 
 <IfModule mod_deflate.c>
-	<IfModule mod_setenvif.c>
-		<IfModule mod_headers.c>
-			SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
-			RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
-		</IfModule>
-	</IfModule>
+    <IfModule mod_setenvif.c>
+        <IfModule mod_headers.c>
+            SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
+            RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+        </IfModule>
+    </IfModule>
 
-	<IfModule mod_filter.c>
-		AddOutputFilterByType DEFLATE \
-			text/html text/plain text/xml text/css text/javascript text/xml \
-			application/xml application/xhtml+xml application/rss+xml \
-			application/javascript application/x-javascript application/json \
-			font/opentype application/x-font-ttf font/eot \
-			image/x-icon image/vnd.microsoft.icon image/svg+xml image/svg+xml
-	</IfModule>
+    <IfModule mod_filter.c>
+        AddOutputFilterByType DEFLATE \
+            text/html text/plain text/xml text/css text/javascript text/xml \
+            application/xml application/xhtml+xml application/rss+xml \
+            application/javascript application/x-javascript application/json \
+            font/opentype application/x-font-ttf font/eot \
+            image/x-icon image/vnd.microsoft.icon image/svg+xml image/svg+xml
+    </IfModule>
 
-	<IfModule mod_mime.c>
-		AddEncoding gzip svgz
-	</IfModule>
+    <IfModule mod_mime.c>
+        AddEncoding gzip svgz
+    </IfModule>
 </IfModule>
