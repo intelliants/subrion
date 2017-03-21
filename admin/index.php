@@ -133,6 +133,11 @@ class iaBackendController extends iaAbstractControllerBackend
                 $line = trim($line);
                 if ($line) {
                     if ($line[0] == '>') {
+
+                        $url = false !== stripos($line, '4.1.') ?
+                            'https://github.com/intelliants/subrion/issues/$1' :
+                            'https://dev.subrion.org/issues/$1';
+
                         $index++;
                         $log[$index] = [
                             'title' => trim($line, '<> '),
@@ -158,7 +163,7 @@ class iaBackendController extends iaAbstractControllerBackend
                         }
 
                         $issue = preg_replace('/#(\d+)/',
-                            '<a href="https://dev.subrion.org/issues/$1" target="_blank">#$1</a>',
+                            '<a href="' . $url . '" target="_blank">#$1</a>',
                             ltrim($line, '+-* '));
                         $log[$index][$class] .= '<li>' . $issue . '</li>';
                     }
