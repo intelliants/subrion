@@ -252,19 +252,19 @@ class iaApi
     protected function _getAuthServer()
     {
         if (is_null($this->_authServer)) {
-            /*			require IA_INCLUDES . 'OAuth2/Autoloader.php';
-            require IA_INCLUDES . 'api/storage.php';
-
-            OAuth2\Autoloader::register();
-
-            $storage = new iaApiStorage();
-
-            $this->_authServer = new OAuth2\Server($storage);
-
-            $this->_authServer->addGrantType(new OAuth2\GrantType\ClientCredentials($storage));
-            $this->_authServer->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage));
-            $this->_authServer->addGrantType(new OAuth2\GrantType\UserCredentials($storage));
-            $this->_authServer->addGrantType(new OAuth2\GrantType\RefreshToken($storage));*/
+//            require IA_INCLUDES . 'OAuth2/Autoloader.php';
+//            require IA_INCLUDES . 'api/storage.php';
+//
+//            OAuth2\Autoloader::register();
+//
+//            $storage = new iaApiStorage();
+//
+//            $this->_authServer = new OAuth2\Server($storage);
+//
+//            $this->_authServer->addGrantType(new OAuth2\GrantType\ClientCredentials($storage));
+//            $this->_authServer->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage));
+//            $this->_authServer->addGrantType(new OAuth2\GrantType\UserCredentials($storage));
+//            $this->_authServer->addGrantType(new OAuth2\GrantType\RefreshToken($storage));
 
             require  IA_INCLUDES . 'api/auth.php';
 
@@ -276,13 +276,13 @@ class iaApi
 
     protected function _auth()
     {
-        /*require_once IA_INCLUDES . 'OAuth2/RequestInterface.php';
-        require_once IA_INCLUDES . 'OAuth2/Request.php';
-        require_once IA_INCLUDES . 'OAuth2/ResponseInterface.php';
-        require_once IA_INCLUDES . 'OAuth2/Response.php';
-
-        $authRequest = OAuth2\Request::createFromGlobals();
-        $authResponse = new OAuth2\Response();*/
+//        require_once IA_INCLUDES . 'OAuth2/RequestInterface.php';
+//        require_once IA_INCLUDES . 'OAuth2/Request.php';
+//        require_once IA_INCLUDES . 'OAuth2/ResponseInterface.php';
+//        require_once IA_INCLUDES . 'OAuth2/Response.php';
+//
+//        $authRequest = OAuth2\Request::createFromGlobals();
+//        $authResponse = new OAuth2\Response();
 
         switch ($this->_getRequest()->getEndpoint()) {
             case 'auth':

@@ -287,12 +287,12 @@ class iaSearch extends abstractCore
 
                     case iaField::NUMBER:
                         $numberFields[] = $row['name'];
-/*						$phraseKey = sprintf('field_%s_range_', $row['name']);
-
-                        $stmt = '`category` = :category AND `key` LIKE :key AND `code` = :code ORDER BY `value`';
-                        $this->iaDb->bind($stmt, array('category' => iaLanguage::CATEGORY_FRONTEND, 'key' => $phraseKey . '%', 'code' => $this->iaView->language));
-
-                        $row['range'] = $this->iaDb->keyvalue(array('key', 'value'), $stmt, iaLanguage::getTable());*/
+//                        $phraseKey = sprintf('field_%s_range_', $row['name']);
+//
+//                        $stmt = '`category` = :category AND `key` LIKE :key AND `code` = :code ORDER BY `value`';
+//                        $this->iaDb->bind($stmt, array('category' => iaLanguage::CATEGORY_FRONTEND, 'key' => $phraseKey . '%', 'code' => $this->iaView->language));
+//
+//                        $row['range'] = $this->iaDb->keyvalue(array('key', 'value'), $stmt, iaLanguage::getTable());
 
                         break;
 

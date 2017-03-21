@@ -200,10 +200,12 @@ if (isset($_GET) && isset($_GET['action'])) {
                     $stmt = '(`username` LIKE :name OR `email` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
                     $iaDb->bind($stmt, ['name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE]);
 
-                    $sql = 'SELECT `id`, CONCAT (`fullname`, \' (\',`email`, \')\') `fullname` ' .
-                        'FROM :table_members ' .
-                        'WHERE :conditions ' .
-                        'LIMIT 0, 20';
+                   $sql = <<<SQL
+SELECT `id`, CONCAT (`fullname`, ' (', `email`, ')') `fullname` 
+  FROM :table_members 
+WHERE :conditions 
+LIMIT 0, 20
+SQL;
                     $sql = iaDb::printf($sql, [
                         'table_members' => iaUsers::getTable(true),
                         'conditions' => $stmt,
