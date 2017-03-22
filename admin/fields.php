@@ -98,6 +98,26 @@ class iaBackendController extends iaAbstractControllerBackend
             return $this->_treeActions($params);
         }
 
+        if (1 == count($this->_iaCore->requestPath) && 'relations' == $this->_iaCore->requestPath[0]) {
+            $ids = empty($_GET['ids']) ? [] : explode(',', $_GET['ids']);
+
+            $rows = $this->_iaDb->all(['id', 'item', 'name', 'module', 'relation'],
+                "`relation` != 'parent'" . (empty($_GET['item']) ? '' : " AND `item` = '" . iaSanitize::sql($_GET['item']) . "'"));
+
+            $output = [];
+            foreach ($rows as $row)
+            {
+                $output[] = [
+                    'id' => $row['name'],
+                    'text' => iaField::getFieldTitle($row['item'], $row['name']),
+                    'leaf' => true,
+                    'checked' => in_array($row['name'], $ids) ? true : false,
+                ];
+            }
+
+            return $output;
+        }
+
         if ($this->getName() != $this->_iaCore->iaView->name()) {
             $params['item'] = str_replace('_fields', '', $this->_iaCore->iaView->name());
         }
@@ -468,20 +488,7 @@ class iaBackendController extends iaAbstractControllerBackend
             $entryData['pages'] = isset($_POST['pages']) ? $_POST['pages'] : [];
         }
 
-        $iaItem = $this->_iaCore->factory('item');
-
         $fieldTypes = $this->_iaDb->getEnumValues(iaField::getTable(), 'type');
-
-        $parents = [];
-        $fieldsList = $this->_iaDb->all(['id', 'item', 'name'],
-            (empty($entryData['name']) ? '' : "`name` != '{$entryData['name']}' AND ")
-            . " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox')"
-            . (empty($entryData['item']) ? '' : " AND `item` = '" . iaSanitize::sql($entryData['item']) . "'"));
-        foreach ($fieldsList as $row) {
-            isset($parents[$row['item']]) || $parents[$row['item']] = [];
-            $array = $this->_iaDb->getEnumValues($iaItem->getItemTable($row['item']), $row['name']);
-            $parents[$row['item']][$row['name']] = [$row['id'], $array['values']];
-        }
 
         isset($_POST['title']) && is_array($_POST['title']) && $entryData['title'] = $_POST['title'];
         isset($_POST['tooltip']) && is_array($_POST['tooltip']) && $entryData['tooltip'] = $_POST['tooltip'];
@@ -494,14 +501,55 @@ class iaBackendController extends iaAbstractControllerBackend
         empty($imageTypes) && iaLanguage::set('no_image_types', iaLanguage::getf('no_image_types',
             ['url' => IA_ADMIN_URL . 'image-types/add/']));
 
+        list($parents, $children) = $this->_fetchRelations($entryData['item'], $entryData['values']);
+
+        $iaView->assign('children', $children);
         $iaView->assign('parents', $parents);
         $iaView->assign('fieldTypes', $fieldTypes['values']);
         $iaView->assign('groups', $this->_fetchFieldGroups($entryData['item']));
-        $iaView->assign('items', $iaItem->getItems());
+        $iaView->assign('items', $this->_iaCore->factory('item')->getItems());
         $iaView->assign('pages', $this->_fetchPages($entryData['item']));
         $iaView->assign('titles', $titles);
         $iaView->assign('values', $values);
         $iaView->assign('imageTypes', $imageTypes);
+    }
+
+    private function _fetchRelations($itemName, $values)
+    {
+        $parents = $children = [];
+
+        // fetch parents
+        $iaItem = $this->_iaCore->factory('item');
+
+        $fieldsList = $this->_iaDb->all(['id', 'item', 'name'],
+            (empty($entryData['name']) ? '' : "`name` != '{$entryData['name']}' AND ")
+            . " `relation` = 'parent' AND `type` IN ('combo', 'radio', 'checkbox')"
+            . (empty($entryData['item']) ? '' : " AND `item` = '" . iaSanitize::sql($entryData['item']) . "'"));
+        foreach ($fieldsList as $row) {
+            isset($parents[$row['item']]) || $parents[$row['item']] = [];
+            $array = $this->_iaDb->getEnumValues($iaItem->getItemTable($row['item']), $row['name']);
+            $parents[$row['item']][$row['name']] = [$row['id'], $array['values']];
+        }
+
+        // fetch children
+        $rows = $this->_iaDb->all(array('child', 'element'), iaDb::convertIds($this->getEntryId(), 'field_id'),
+            null, null, iaField::getTableRelations());
+
+        $titles = [];
+        foreach ($rows as $row) {
+            $children[$row['element']][] = $row['child'];
+            $titles[$row['element']][] = iaField::getFieldTitle($itemName, $row['child']);
+        }
+_d($values, 'VALUES');
+        foreach ($children as $element => $row) {
+            //$key = array_search($element, $values);
+            $children[/*$key*/$element] = [
+                'values' => implode(',', $row),
+                'titles' => implode(', ', $titles[$element])
+            ];
+        }
+_d($parents, 'PARENTS'); _d($children, 'CHILDREN');
+        return [$parents, $children];
     }
 
     protected function _entryUpdate(array $entryData, $entryId)

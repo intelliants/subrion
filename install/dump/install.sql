@@ -1663,6 +1663,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('fields_for_plans','Fields for plans only','admin'),
 ('fields_item','Fields item','admin'),
 ('fields_item_filter','Fields item filter','admin'),
+('fields_list','Fields List','admin'),
 ('file_doesnt_exist','File does not exist.','admin'),
 ('file_format','File format','admin'),
 ('file_prefix','File Prefix','admin'),

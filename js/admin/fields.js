@@ -155,111 +155,6 @@ $(function () {
         $('div[id^="item"] .itemUp:first').hide();
         $('div[id^="item"] .itemDown:last').hide();
     };
-    /*
-     var wfields = function(item)
-     {
-     var temp;
-     var div = $(item).parent().find('input:first');
-     var info = $(item).parent().find('.list:first');
-     var url = intelli.config.admin_url + '/fields.json?a=fields&item='+$('#field_item').val()+'&ids=' + div.val();
-     var tree = new Ext.tree.TreePanel(
-     {
-     height: 465,
-     width: 335,
-     useArrows:true,
-     autoScroll:true,
-     animate:true,
-     enableDD:true,
-     containerScroll: true,
-     rootVisible: false,
-     frame: true,
-     root: {nodeType: 'async'},
-     dataUrl: url,
-     buttons: [{
-     text: _t('reset'),
-     handler: function(){
-     tree.getRootNode().cascade(function(n)
-     {
-     var ui = n.getUI();
-     ui.toggleCheck(false);
-     });
-     div.val('');
-     info.html('');
-     win.close();
-     }
-     },{
-     text: _t('cancel'),
-     handler: function()
-     {
-     temp = false;
-     win.close();
-     }
-     },{
-     text: _t('save'),
-     handler: function()
-     {
-     var msg = [], selNodes = tree.getChecked(), title = [];
-     Ext.each(selNodes, function(node)
-     {
-     msg.push(node.id);
-     title.push(node.text);
-     });
-
-     div.val(msg.join(', '));
-     info.html(title.join(', '));
-     win.close();
-     }
-     }]
-     });
-
-     var win = new Ext.Window(
-     {
-     title: 'Fields List',
-     closable: true,
-     width: 352,
-     autoScroll: true,
-     height: 500,
-     plain: true,
-     listeners: {
-     beforeclose: function()
-     {
-     var msg = [], selNodes = tree.getChecked();
-     Ext.each(selNodes, function(node){msg.push(node.id);});
-     msg = msg.join(', ');
-
-     if (div.val() != msg && temp)
-     {
-     Ext.Msg.show({
-     title: _t('save_changes')+'?',
-     msg: _t('closing_window_with_unsaved_changes'),
-     buttons: Ext.Msg.YESNO,
-     fn: function(btnID)
-     {
-     if (btnID == 'yes')
-     {
-     div.val(msg);
-     return true;
-     }
-     else if (btnID == 'no')
-     {
-     return true;
-     }
-     return false;
-     },
-     icon: Ext.MessageBox.QUESTION
-     });
-     }
-     temp = true;
-     return true;
-     }
-     },
-     items: [tree]
-     });
-
-     tree.getRootNode().expand();
-     win.show();
-     };
-     */
 
     $('#input-type').on('change', function () {
         var type = $(this).val();
@@ -599,5 +494,107 @@ $(function () {
         $label.show().siblings('.label').hide();
         $this.closest('.image-type-control').siblings().find('.label[data-type="' + type + '"]').hide();
         $this.closest('.image-type-control').siblings().find('.js-set-image-type[data-type="' + type + '"]').parent().removeClass('disabled');
+    });
+
+    $('.js-cmd-configure-dependent-field').on('click', function(e){
+        e.preventDefault();
+
+        var temp,
+            $div = $(this).parent().find('input:first'),
+            $info = $(this).parent().find('.list:first');
+
+        var tree = new Ext.tree.TreePanel(
+        {
+            height: 442,
+            width: 375,
+            useArrows: true,
+            autoScroll: true,
+            animate: true,
+            enableDD: true,
+            containerScroll: true,
+            rootVisible: false,
+            store: Ext.create('Ext.data.TreeStore', {proxy: {type: 'ajax', url: intelli.config.admin_url + '/fields/relations.json?item=' + $('#input-item').val()+'&ids=' + $div.val()}}),
+            buttons: [{
+                text: _t('reset'),
+                handler: function(){
+                    tree.getRootNode().cascade(function(n)
+                    {
+                        n.getUI().toggleCheck(false);
+                    });
+                    $div.val('');
+                    $info.html('');
+                    win.close();
+                }
+            },{
+                text: _t('cancel'),
+                handler: function()
+                {
+                    temp = false;
+                    win.close();
+                }
+            },{
+                text: _t('save'),
+                handler: function()
+                {
+                    var msg = [], title = [];
+                    Ext.each(tree.getChecked(), function(node)
+                    {
+                        msg.push(node.data.id);
+                        title.push(node.data.text);
+                    });
+
+                    $div.val(msg.join(','));
+                    $info.html(title.join(', '));
+                    win.close();
+                }
+            }]
+        });
+
+        var win = new Ext.Window(
+        {
+            title: _t('fields_list'),
+            closable: true,
+            width: 388,
+            autoScroll: true,
+            height: 486,
+            plain: true,
+            listeners: {
+                beforeclose: function()
+                {
+                    var msg = [];
+                    Ext.each(tree.getChecked(), function(node){msg.push(node.id);});
+                    msg = msg.join(', ');
+
+                    if ($div.val() != msg && temp)
+                    {
+                        Ext.Msg.show({
+                            title: _t('save_changes')+'?',
+                            msg: _t('closing_window_with_unsaved_changes'),
+                            buttons: Ext.Msg.YESNO,
+                            fn: function(btnID)
+                            {
+                                if (btnID == 'yes')
+                                {
+                                    $div.val(msg);
+                                    return true;
+                                }
+                                else if (btnID == 'no')
+                                {
+                                    return true;
+                                }
+                                return false;
+                            },
+                            icon: Ext.MessageBox.QUESTION
+                        });
+                    }
+                    temp = true;
+                    return true;
+                }
+            },
+            items: [tree]
+        });
+
+        tree.getRootNode().expand();
+        win.show();
     });
 });

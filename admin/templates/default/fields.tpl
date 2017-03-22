@@ -389,7 +389,7 @@
 					<div class="col col-lg-4">
 						{if $values}
 							{foreach $values as $key => $value}
-								<div id="item-value-{$value}" class="wrap-row wrap-block" data-value-id="{$value}">
+								<div id="item-value-{$value}" class="wrap-row wrap-block" data-value-id="{$value|escape}">
 									<div class="row">
 										<label class="col col-lg-4 control-label">{lang key='key'} <i>({lang key='not_required'})</i></label>
 										<div class="col col-lg-8">
@@ -411,9 +411,14 @@
 										<a href="#" class="js-actions label label-success itemDown" style="display: none;" data-action="itemDown" title="{lang key='item_down'}"><i class="i-chevron-down"></i></a>
 									</div>
 									<div class="main_fields"{if $item.relation != iaField::RELATION_PARENT} style="display:none;"{/if}>
-										{lang key='field_element_children'}: <span onclick="wfields(this)"><i class="i-fire"></i></span>
-										<span class="list"></span>
-										<input type="hidden" name="children[]">
+										{lang key='field_element_children'}: <a href="#" class="js-cmd-configure-dependent-field"><i class="i-fire"></i></a>
+										{if isset($children[$value])}
+											<span class="list">{$children[$value].titles}</span>
+											<input type="hidden" name="children[]" value="{$children[$value].values}">
+										{else}
+											<span class="list"></span>
+											<input type="hidden" name="children[]">
+										{/if}
 									</div>
 								</div>
 							{/foreach}
