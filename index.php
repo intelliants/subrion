@@ -86,6 +86,7 @@ if (file_exists(IA_INCLUDES . 'config.inc.php')) {
 if ($performInstallation) {
     if (file_exists(IA_HOME . 'install/index.php')) {
         header('Location: ' . str_replace('index.php', 'install/', $_SERVER['SCRIPT_NAME']));
+
         return;
     }
 

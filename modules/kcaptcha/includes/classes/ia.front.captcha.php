@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
  *
  * Subrion - open source content management system
@@ -23,58 +24,54 @@
  * @link https://subrion.org/
  *
  ******************************************************************************/
-
 class iaCaptcha extends abstractUtil
 {
-	public function getImage()
-	{
-		$html =
-			'<p class="field-captcha">' .
-			'<img src=":url" onclick="$(this).attr(\'src\', \':url?\'+Math.random())" title=":title" alt="captcha" style="cursor:pointer; margin-right: 10px;" align="left">' .
-			':text<br />' .
-			'<input type="text" class="span1" name="security_code" size=":length" maxlength=":length">' .
-			'</p>' .
-			'<div class="clearfix"></div>'
-		;
-		$html = iaDb::printf($html, [
-			'length' => (int)$this->iaCore->get('kcaptcha_num_chars'),
-			'url' => IA_URL . 'captcha/',
-			'text' => iaLanguage::get('captcha_tooltip'),
-			'title' => iaLanguage::get('click_to_redraw')
-		]);
+    public function getImage()
+    {
+        $html = <<<HTML
+<p class="field-captcha">
+    <img src=":url" onclick="$(this).attr('src', ':url?'+Math.random())" title=":title" alt="captcha" style="cursor:pointer; margin-right: 10px;" align="left">:text<br />
+    <input type="text" class="span1" name="security_code" size=":length" maxlength=":length">
+</p>
+<div class="clearfix"></div>
+HTML;
+        $html = iaDb::printf($html, [
+            'length' => (int)$this->iaCore->get('kcaptcha_num_chars'),
+            'url' => IA_URL . 'captcha/',
+            'text' => iaLanguage::get('captcha_tooltip'),
+            'title' => iaLanguage::get('click_to_redraw')
+        ]);
 
-		return $html;
-	}
+        return $html;
+    }
 
-	public function validate()
-	{
-		if (iaUsers::hasIdentity())
-		{
-			return true;
-		}
+    public function validate()
+    {
+        if (iaUsers::hasIdentity()) {
+            return true;
+        }
 
-		$sc1 = isset($_POST['security_code']) ? $_POST['security_code'] : (isset($_GET['security_code']) ? $_GET['security_code'] : '');
-		$sc2 = $_SESSION['pass'];
+        $sc1 = isset($_POST['security_code']) ? $_POST['security_code'] : (isset($_GET['security_code']) ? $_GET['security_code'] : '');
+        $sc2 = $_SESSION['pass'];
 
-		$functionName = $this->iaCore->get('kcaptcha_case_sensitive') ? 'strcmp' : 'strcasecmp';
+        $functionName = $this->iaCore->get('kcaptcha_case_sensitive') ? 'strcmp' : 'strcasecmp';
 
-		if (empty($_SESSION['pass']) || $functionName($sc1, $sc2) !== 0)
-		{
-			return false;
-		}
+        if (empty($_SESSION['pass']) || $functionName($sc1, $sc2) !== 0) {
+            return false;
+        }
 
-		$_SESSION['pass'] = '';
+        $_SESSION['pass'] = '';
 
-		return true;
-	}
+        return true;
+    }
 
-	public function getPreview()
-	{
-		$html = '<img src=":url" onclick="$(this).attr(\'src\', \':url?\'+Math.random())" alt="captcha" style="cursor:pointer; margin-right: 10px;" align="left" />';
-		$html = iaDb::printf($html, [
-			'url' => IA_URL . 'captcha/'
-		]);
+    public function getPreview()
+    {
+        $html = '<img src=":url" onclick="$(this).attr(\'src\', \':url?\'+Math.random())" alt="captcha" style="cursor:pointer; margin-right: 10px;" align="left" />';
+        $html = iaDb::printf($html, [
+            'url' => IA_URL . 'captcha/'
+        ]);
 
-		return $html;
-	}
+        return $html;
+    }
 }

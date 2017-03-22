@@ -793,3 +793,16 @@
     + Feature #363: Permissions during page creation
     - Bug #285: Next launch date for cron jobs calculated incorrectly
     - Bug #234: Cron date is not set after installation
+
+>> From 4.1.1 to 4.1.2 <<
+
+    - Bug #373: Not authorized during upgrade
+    - Bug #379: Extra in Blocks
+    - Bug #380: Search pages does not consider status
+    - Bug #381: Incorrect email replacements
+    - Bug #386: Review ia-categories format
+    - Bug #387: There is no way to deactivate plugin via Admin Panel
+    - Bug #390: Files not found on admin login page
+    - Bug #385: SMTP does not send correctly
+    - Bug #398: Better handling of incorrect db details
+    - Bug #399: Incorrect working of access detection to session.save_path folder on some servers
