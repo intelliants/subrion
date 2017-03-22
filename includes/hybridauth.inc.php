@@ -25,9 +25,9 @@
  ******************************************************************************/
 
 return array(
-	"base_url" => IA_URL . 'hybrid/',
-	"providers" => array(
-	// openid providers
+    "base_url" => IA_URL . 'hybrid/',
+    "providers" => array(
+    // openid providers
 //		"OpenID" => array(
 //			"enabled" => true
 //		),
@@ -69,14 +69,14 @@ return array(
 //			"enabled" => true,
 //			"keys" => array("id" => "", "secret" => "")
 //		),
-	),
+    ),
 
-	// If you want to enable logging, set 'debug_mode' to true.
-	// You can also set it to
-	// - "error" To log only error messages. Useful in production
-	// - "info" To log info and error messages (ignore debug messages)
-	"debug_mode" => (bool)iaCore::instance()->get('hybrid_debug_mode'),
+    // If you want to enable logging, set 'debug_mode' to true.
+    // You can also set it to
+    // - "error" To log only error messages. Useful in production
+    // - "info" To log info and error messages (ignore debug messages)
+    "debug_mode" => (bool)iaCore::instance()->get('hybrid_debug_mode'),
 
-	// Path to file writable by the web server. Required if 'debug_mode' is not false
-	"debug_file" => IA_TMP . 'hybridauth.txt',
+    // Path to file writable by the web server. Required if 'debug_mode' is not false
+    "debug_file" => IA_TMP . 'hybridauth.txt',
 );

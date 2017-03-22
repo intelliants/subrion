@@ -24,147 +24,131 @@
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	// display 404 if members are disabled
-	if (!$iaCore->get('members_enabled'))
-	{
-		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-	}
+if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
+    // display 404 if members are disabled
+    if (!$iaCore->get('members_enabled')) {
+        return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+    }
 
-	$iaUsers = $iaCore->factory('users');
+    $iaUsers = $iaCore->factory('users');
 
-	if (isset($_GET['account_by']))
-	{
-		$_SESSION['account_by'] = $_GET['account_by'];
-	}
-	if (!isset($_SESSION['account_by']))
-	{
-		$_SESSION['account_by'] = 'username';
-	}
+    if (isset($_GET['account_by'])) {
+        $_SESSION['account_by'] = $_GET['account_by'];
+    }
+    if (!isset($_SESSION['account_by'])) {
+        $_SESSION['account_by'] = 'username';
+    }
 
-	$filterBy = ($_SESSION['account_by'] == 'fullname') ? 'fullname' : 'username';
-	$member = $iaUsers->getInfo($iaCore->requestPath[0], 'username');
-	if (empty($member))
-	{
-		$member = $iaUsers->getInfo((int)$iaCore->requestPath[0]);
-	}
-	if (empty($member))
-	{
-		return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-	}
+    $filterBy = ($_SESSION['account_by'] == 'fullname') ? 'fullname' : 'username';
+    $member = $iaUsers->getInfo($iaCore->requestPath[0], 'username');
+    if (empty($member)) {
+        $member = $iaUsers->getInfo((int)$iaCore->requestPath[0]);
+    }
+    if (empty($member)) {
+        return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+    }
 
-	$iaCore->factory('util');
-	$iaPage = $iaCore->factory('page', iaCore::FRONT);
+    $iaCore->factory('util');
+    $iaPage = $iaCore->factory('page', iaCore::FRONT);
 
-	$member['item'] = $iaUsers->getItemName();
+    $member['item'] = $iaUsers->getItemName();
 
-	$iaCore->startHook('phpViewListingBeforeStart', [
-		'listing' => $member['id'],
-		'item' => $member['item'],
-		'title' => $member['fullname'],
-		'url' => $iaView->iaSmarty->ia_url([
-			'data' => $member,
-			'item' => $member['item'],
-			'type' => 'url'
-		]),
-		'desc' => $member['fullname']
-	]);
+    $iaCore->startHook('phpViewListingBeforeStart', [
+        'listing' => $member['id'],
+        'item' => $member['item'],
+        'title' => $member['fullname'],
+        'url' => $iaView->iaSmarty->ia_url([
+            'data' => $member,
+            'item' => $member['item'],
+            'type' => 'url'
+        ]),
+        'desc' => $member['fullname']
+    ]);
 
-	$iaField = $iaCore->factory('field');
-	$iaItem = $iaCore->factory('item');
+    $iaField = $iaCore->factory('field');
+    $iaItem = $iaCore->factory('item');
 
-	$iaCore->set('num_items_perpage', 20);
+    $iaCore->set('num_items_perpage', 20);
 
-	$page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
-	$page = ($page < 1) ? 1 : $page;
-	$start = ($page - 1) * $iaCore->get('num_items_perpage');
+    $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;
+    $page = ($page < 1) ? 1 : $page;
+    $start = ($page - 1) * $iaCore->get('num_items_perpage');
 
-	if (iaUsers::hasIdentity() && iaUsers::getIdentity()->id == $member['id'])
-	{
-		$iaItem->setItemTools([
-			'id' => 'action-edit',
-			'title' => iaLanguage::get('edit'),
-			'attributes' => ['href' => $iaPage->getUrlByName('profile')]
-		]);
-	}
+    if (iaUsers::hasIdentity() && iaUsers::getIdentity()->id == $member['id']) {
+        $iaItem->setItemTools([
+            'id' => 'action-edit',
+            'title' => iaLanguage::get('edit'),
+            'attributes' => ['href' => $iaPage->getUrlByName('profile')]
+        ]);
+    }
 
-	$members = $iaItem->updateItemsFavorites([$member], $member['item']);
-	$member = array_shift($members);
-	$member['items'] = [];
+    $members = $iaItem->updateItemsFavorites([$member], $member['item']);
+    $member = array_shift($members);
+    $member['items'] = [];
 
-	// get all items added by this account
-	$itemsList = $iaItem->getPackageItems();
-	$itemsFlat = [];
+    // get all items added by this account
+    $itemsList = $iaItem->getPackageItems();
+    $itemsFlat = [];
 
-	if ($array = $iaItem->getItemsInfo(true))
-	{
-		foreach ($array as $itemData)
-		{
-			if ($itemData['item'] != $member['item'] && ($iaItem->isModuleExist($itemsList[$itemData['item']])))
-			{
-				$itemsFlat[] = $itemData['item'];
-			}
-		}
-	}
+    if ($array = $iaItem->getItemsInfo(true)) {
+        foreach ($array as $itemData) {
+            if ($itemData['item'] != $member['item'] && ($iaItem->isModuleExist($itemsList[$itemData['item']]))) {
+                $itemsFlat[] = $itemData['item'];
+            }
+        }
+    }
 
-	if (count($itemsFlat) > 0)
-	{
-		$limit = $iaCore->get('num_items_perpage');
-		foreach ($itemsFlat as $itemName)
-		{
-			if ($class = $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName))
-			{
-				$result = method_exists($class, iaUsers::METHOD_NAME_GET_LISTINGS)
-					? $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit)
-					: null;
+    if (count($itemsFlat) > 0) {
+        $limit = $iaCore->get('num_items_perpage');
+        foreach ($itemsFlat as $itemName) {
+            if ($class = $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName)) {
+                $result = method_exists($class, iaUsers::METHOD_NAME_GET_LISTINGS)
+                    ? $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit)
+                    : null;
 
-				if (!is_null($result))
-				{
-					if ($result['items'])
-					{
-						$result['items'] = $iaItem->updateItemsFavorites($result['items'], $itemName);
-					}
+                if (!is_null($result)) {
+                    if ($result['items']) {
+                        $result['items'] = $iaItem->updateItemsFavorites($result['items'], $itemName);
+                    }
 
-					$member['items'][$itemName] = $result;
-					$member['items'][$itemName]['package'] = isset($itemsList[$itemName]) ? $itemsList[$itemName] : '';
-					$member['items'][$itemName]['fields'] = $iaField->filter($itemName, $member['items'][$itemName]['items']);
-				}
-			}
-		}
-	}
+                    $member['items'][$itemName] = $result;
+                    $member['items'][$itemName]['package'] = isset($itemsList[$itemName]) ? $itemsList[$itemName] : '';
+                    $member['items'][$itemName]['fields'] = $iaField->filter($itemName, $member['items'][$itemName]['items']);
+                }
+            }
+        }
+    }
 
-	$iaUsers->incrementViewsCounter($member['id']);
+    $iaUsers->incrementViewsCounter($member['id']);
 
-	$alpha = substr($member[$filterBy], 0, 1);
-	$alpha || $alpha = substr($member['username'], 0, 1);
-	$alpha = strtoupper($alpha);
+    $alpha = substr($member[$filterBy], 0, 1);
+    $alpha || $alpha = substr($member['username'], 0, 1);
+    $alpha = strtoupper($alpha);
 
-	$iaView->set('subpage', $alpha);
+    $iaView->set('subpage', $alpha);
 
-	iaBreadcrumb::preEnd($alpha, $iaPage->getUrlByName('members') . $alpha . IA_URL_DELIMITER);
+    iaBreadcrumb::preEnd($alpha, $iaPage->getUrlByName('members') . $alpha . IA_URL_DELIMITER);
 
-	// TODO: custom http validation
-	if (isset($member['website']) && $member['website'] && preg_match('#^http#i', $member['website']) !== 1)
-	{
-		$member['website'] = 'http://' . $member['website'];
-	}
+    // TODO: custom http validation
+    if (isset($member['website']) && $member['website'] && preg_match('#^http#i', $member['website']) !== 1) {
+        $member['website'] = 'http://' . $member['website'];
+    }
 
-	$sections = $iaField->getTabs($iaUsers->getItemName(), $member);
+    $sections = $iaField->getTabs($iaUsers->getItemName(), $member);
 
-	$iaView->assign('item', $member);
-	$iaView->assign('sections', $sections);
+    $iaView->assign('item', $member);
+    $iaView->assign('sections', $sections);
 
-	$title = empty($member['fullname']) ? $member['username'] : $member['fullname'];
-	$iaView->title($title);
+    $title = empty($member['fullname']) ? $member['username'] : $member['fullname'];
+    $iaView->title($title);
 
-	$iaView->display('view-member');
+    $iaView->display('view-member');
 
-	// add open graph data
-	$openGraph = [
-		'title' => $title,
-		'url' => IA_SELF,
-		'image' => isset($member['avatar']) && $member['avatar']['path'] ? IA_CLEAR_URL . 'uploads/' . $member['avatar']['path'] : ''
-	];
-	$iaView->set('og', $openGraph);
+    // add open graph data
+    $openGraph = [
+        'title' => $title,
+        'url' => IA_SELF,
+        'image' => !empty($member['avatar']['path']) ? IA_CLEAR_URL . 'uploads/' . $member['avatar']['path'] : ''
+    ];
+    $iaView->set('og', $openGraph);
 }

@@ -26,23 +26,22 @@
 
 abstract class iaApiRendererAbstract
 {
-	protected $_data;
+    protected $_data;
 
-	protected $_resultCode;
+    protected $_resultCode;
 
 
-	public function setData($data)
-	{
-		$this->_data = $data;
-	}
+    public function setData($data)
+    {
+        $this->_data = $data;
+    }
 
-	public function setResultCode($code)
-	{
-		$this->_resultCode = $code;
-	}
+    public function setResultCode($code)
+    {
+        $this->_resultCode = $code;
+    }
 
-	public function sendHeaders()
-	{
-
-	}
+    public function sendHeaders()
+    {
+    }
 }

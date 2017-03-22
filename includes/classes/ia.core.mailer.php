@@ -28,182 +28,197 @@ require_once IA_INCLUDES . 'phpmailer' . IA_DS . 'class.phpmailer.php';
 
 class iaMailer extends PHPMailer
 {
-	protected $_replacements = [];
+    protected $_replacements = [];
 
-	protected $_iaCore;
+    protected $_iaCore;
 
-	protected $_bccEmails;
+    protected $_bccEmails;
 
-	protected $_defaultSignature;
+    protected $_defaultSignature;
 
 
-	/*
-	 * Set replacements for email body
-	 *
-	 * @param array of key/value pairs or $key, $value parameters
-	 */
-	public function setReplacements()
-	{
-		$replacements = [];
+    /**
+     * Class initializer
+     */
+    public function init()
+    {
+        $this->_iaCore = iaCore::instance();
 
-		switch (func_num_args())
-		{
-			case 1:
-				$values = func_get_arg(0);
-				if (is_array($values))
-				{
-					$replacements = $values;
-				}
-				break;
+        $this->CharSet = 'UTF-8';
+        $this->From = $this->_iaCore->get('site_email');
+        $this->FromName = $this->_iaCore->get('site_from_name', 'Subrion CMS');
+        $this->SingleTo = true;
 
-			case 2:
-				$key = func_get_arg(0);
-				$value = func_get_arg(1);
+        $this->isHTML($this->_iaCore->get('mimetype'));
 
-				if (is_string($key) && is_string($value))
-				{
-					$replacements[$key] = $value;
-				}
-		}
+        switch ($this->_iaCore->get('mail_function')) {
+            case 'smtp':
 
-		if ($replacements)
-		{
-			foreach ($replacements as $key => $value)
-			{
-				$keyPattern = '{%' . strtoupper($key) . '%}';
-				$this->_replacements[$keyPattern] = $value;
-			}
-		}
-	}
+                require_once IA_INCLUDES . 'phpmailer' . IA_DS . 'class.smtp.php';
 
-	protected function _applyReplacements()
-	{
-		$this->Body = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Body);
-		$this->Subject = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Subject);
-	}
+                $this->isSMTP();
 
-	public function init()
-	{
-		$this->_iaCore = iaCore::instance();
+                $this->Host = $this->_iaCore->get('smtp_server');
+                $this->SMTPAuth = (bool)$this->_iaCore->get('smtp_auth');
+                $this->Username = $this->_iaCore->get('smtp_user');
+                $this->Password = $this->_iaCore->get('smtp_password');
+                $this->SMTPSecure = strtolower($this->_iaCore->get('smtp_secure'));
+                $this->SMTPDebug = (bool)$this->_iaCore->get('smtp_debug') ? 3 : 0;
 
-		$this->CharSet = 'UTF-8';
-		$this->From = $this->_iaCore->get('site_email');
-		$this->FromName = $this->_iaCore->get('site_from_name', 'Subrion CMS');
-		$this->SingleTo = true;
+                if ($port = $this->_iaCore->get('smtp_port')) {
+                    $this->Port = (int)$port;
+                }
 
-		$this->isHTML($this->_iaCore->get('mimetype'));
+                break;
 
-		switch ($this->_iaCore->get('mail_function'))
-		{
-			case 'smtp':
-				$this->isSMTP();
+            case 'sendmail':
+                $this->isSendmail();
+                $this->Sendmail = $this->_iaCore->get('sendmail_path');
 
-				$this->Host = $this->_iaCore->get('smtp_server');
-				$this->SMTPAuth = (bool)$this->_iaCore->get('smtp_auth');
-				$this->Username = $this->_iaCore->get('smtp_user');
-				$this->Password = $this->_iaCore->get('smtp_password');
-				$this->SMTPSecure = strtolower($this->_iaCore->get('smtp_secure'));
-				$this->SMTPDebug = (bool)$this->_iaCore->get('smtp_debug') ? 3 : 0;
+                break;
 
-				if ($port = $this->_iaCore->get('smtp_port'))
-				{
-					$this->Port = (int)$port;
-				}
+            default: // PHP's mail function
+                $this->isMail();
+        }
 
-				break;
+        // global patterns
+        $this->setReplacements([
+            'site_url' => IA_URL,
+            'site_name' => $this->_iaCore->get('site'),
+            'site_email' => $this->_iaCore->get('site_email')
+        ]);
+    }
 
-			case 'sendmail':
-				$this->isSendmail();
-				$this->Sendmail = $this->_iaCore->get('sendmail_path');
+    /**
+     * Set key/value replacements array for email body
+     */
+    public function setReplacements()
+    {
+        $replacements = [];
 
-				break;
+        switch (func_num_args()) {
+            case 1:
+                $values = func_get_arg(0);
+                if (is_array($values)) {
+                    $replacements = $values;
+                }
+                break;
 
-			default: // PHP's mail function
-				$this->isMail();
-		}
+            case 2:
+                $key = func_get_arg(0);
+                $value = func_get_arg(1);
 
-		// global patterns
-		$this->setReplacements([
-			'site_url' => IA_URL,
-			'site_name' => $this->_iaCore->get('site'),
-			'site_email' => $this->_iaCore->get('site_email')
-		]);
-	}
+                if (is_string($key) && is_string($value)) {
+                    $replacements[$key] = $value;
+                }
+        }
 
-	/*
-	 * Load email template
-	 * Mail subject loaded as well
-	 *
-	 * @param string $name template name
-	 */
-	public function loadTemplate($name)
-	{
-		$this->Subject = $this->_iaCore->get($name . '_subject');
-		$this->Body = $this->_iaCore->get($name . '_body');
+        if ($replacements) {
+            foreach ($replacements as $key => $value) {
+                $keyPattern = '{%' . strtoupper($key) . '%}';
+                $this->_replacements[$keyPattern] = $value;
+            }
+        }
+    }
 
-		$options = json_decode($this->_iaCore->iaDb->one('options', iaDb::convertIds($name, 'name'), iaCore::getConfigTable()));
-		$this->_defaultSignature = empty($options->signature);
-	}
+    /**
+     * Apply replacements in email Subject & Body
+     */
+    protected function _applyReplacements()
+    {
+        $this->Body = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Body);
+        $this->Subject = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Subject);
+    }
 
-	public function sendToAdministrators()
-	{
-		$where = '`usergroup_id` = :group AND `status` = :status';
-		$this->_iaCore->iaDb->bind($where, ['group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE]);
+    /**
+     * Load email Subject & Body template
+     *
+     * @param string $name template name
+     */
+    public function loadTemplate($name)
+    {
+        $this->Subject = $this->_iaCore->get($name . '_subject');
+        $this->Body = $this->_iaCore->get($name . '_body');
 
-		$administrators = $this->_iaCore->iaDb->all(['email', 'fullname'], $where, null, null, iaUsers::getTable());
+        $options = json_decode($this->_iaCore->iaDb->one('options', iaDb::convertIds($name, 'name'), iaCore::getConfigTable()));
+        $this->_defaultSignature = empty($options->signature);
+    }
 
-		if (!$administrators)
-		{
-			return false;
-		}
+    /**
+     * Send email notifications to administrators
+     *
+     * @return bool
+     */
+    public function sendToAdministrators()
+    {
+        $where = '`usergroup_id` = :group AND `status` = :status';
+        $this->_iaCore->iaDb->bind($where, ['group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE]);
 
-		foreach ($administrators as $entry)
-		{
-			$this->addAddress($entry['email'], $entry['fullname']);
-		}
+        $administrators = $this->_iaCore->iaDb->all(['email', 'fullname'], $where, null, null, iaUsers::getTable());
 
-		return $this->send(true);
-	}
+        if (!$administrators) {
+            return false;
+        }
 
-	protected function _setBcc()
-	{
-		if (is_null($this->_bccEmails))
-		{
-			$bccEmail = $this->_iaCore->get('bcc_email');
-			$array = explode(',', $bccEmail);
+        foreach ($administrators as $entry) {
+            $this->addAddress($entry['email'], $entry['fullname']);
+        }
 
-			$this->_bccEmails = array_map('trim', $array);
-		}
+        return $this->send(true);
+    }
 
-		foreach ($this->_bccEmails as $email)
-		{
-			$this->addBCC($email);
-		}
-	}
+    /**
+     * Set a list of bcc recipients
+     */
+    protected function _setBcc()
+    {
+        if (is_null($this->_bccEmails)) {
+            $bccEmail = $this->_iaCore->get('bcc_email');
+            $array = explode(',', $bccEmail);
 
-	public function send($toAdmins = false)
-	{
-		$this->_applyReplacements();
-		$this->_setBcc();
-		if ($this->Body && $this->_defaultSignature && !$toAdmins)
-		{
-			$this->Body .= $this->_iaCore->get('default_email_signature');
-		}
+            $this->_bccEmails = array_map('trim', $array);
+        }
 
-		$result = (bool)parent::send();
+        foreach ($this->_bccEmails as $email) {
+            if (!empty($email)) {
+                $this->addBCC($email);
+            }
+        }
+    }
 
-		if (!$result)
-		{
-			iaDebug::debug($this->ErrorInfo, 'Email submission');
-		}
+    /**
+     * Send email
+     *
+     * @param bool $toAdmins if true, send the same email to administrators
+     *
+     * @return bool
+     */
+    public function send($toAdmins = false)
+    {
+        if ($this->Body && $this->_defaultSignature && !$toAdmins) {
+            $this->Body .= $this->_iaCore->get('default_email_signature');
+        }
+        $this->_applyReplacements();
+        $this->_setBcc();
 
-		parent::clearAllRecipients();
+        $result = (bool)parent::send();
 
-		return $result;
-	}
+        if (!$result) {
+            iaDebug::debug($this->ErrorInfo, 'Email submission');
+        }
 
-	public function getError()
-	{
-		return $this->ErrorInfo;
-	}
+        parent::clearAllRecipients();
+
+        return $result;
+    }
+
+    /**
+     * Get error text
+     *
+     * @return string
+     */
+    public function getError()
+    {
+        return $this->ErrorInfo;
+    }
 }

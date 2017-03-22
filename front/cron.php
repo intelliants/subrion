@@ -24,10 +24,9 @@
  *
  ******************************************************************************/
 
-if ($iaCore->get('cron'))
-{
-	$id = (isset($_GET['_t']) && isset($_GET['t']) && is_numeric($_GET['t'])) ? (int)$_GET['t'] : null;
-	$iaCore->factory('cron')->run($id);
+if ($iaCore->get('cron')) {
+    $id = (isset($_GET['_t']) && isset($_GET['t']) && is_numeric($_GET['t'])) ? (int)$_GET['t'] : null;
+    $iaCore->factory('cron')->run($id);
 }
 
 $iaView->set('nodebug', true);

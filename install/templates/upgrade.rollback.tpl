@@ -1,5 +1,5 @@
 <?php if (isset($this->error)): ?>
-<div class="alert alert-error"><?php echo $this->error ?></div>
+<div class="alert alert-error"><?= $this->error ?></div>
 <?php endif ?>
 <?php if (isset($this->success)): ?>
 <div class="alert alert-success">Completed successfully.</div>
@@ -12,9 +12,9 @@
 			<select name="backup">
 				<option value="">...</option>
 			<?php foreach ($this->backups as $version => $options): ?>
-				<optgroup label="Version <?php echo $version ?>">
+				<optgroup label="Version <?= $version ?>">
 					<?php foreach ($options as $fileName => $date): ?>
-					<option value="<?php echo $fileName ?>"<?php if (!empty($_POST['backup']) && $fileName == $_POST['backup']): ?> selected<?php endif ?>>Of <?php echo $date ?></option>
+					<option value="<?= $fileName ?>"<?php if (!empty($_POST['backup']) && $fileName == $_POST['backup']): ?> selected<?php endif ?>>Of <?= $date ?></option>
 					<?php endforeach ?>
 				</optgroup>
 			<?php endforeach ?>

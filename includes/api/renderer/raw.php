@@ -26,16 +26,13 @@
 
 class iaApiRendererRaw extends iaApiRendererAbstract implements iaApiRenderer
 {
-
-
-	public function render()
-	{
-		switch (true)
-		{
-			case is_array($this->_data):
-				return http_build_query($this->_data);
-			default:
-				return $this->_data;
-		}
-	}
+    public function render()
+    {
+        switch (true) {
+            case is_array($this->_data):
+                return http_build_query($this->_data);
+            default:
+                return $this->_data;
+        }
+    }
 }

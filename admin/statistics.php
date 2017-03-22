@@ -26,49 +26,44 @@
 
 class iaBackendController extends iaAbstractControllerBackend
 {
-	const GETTER_METHOD_NAME = 'getDashboardStatistics';
+    const GETTER_METHOD_NAME = 'getDashboardStatistics';
 
-	protected $_name = 'statistics';
+    protected $_name = 'statistics';
 
-	protected $_processAdd = false;
-	protected $_processEdit = false;
+    protected $_processAdd = false;
+    protected $_processEdit = false;
 
 
-	protected function _indexPage(&$iaView)
-	{
-		$packageName = explode('_stats', $iaView->name());
-		$packageName = array_shift($packageName);
+    protected function _indexPage(&$iaView)
+    {
+        $packageName = explode('_stats', $iaView->name());
+        $packageName = array_shift($packageName);
 
-		$this->_iaCore->startHook('phpAdminPackageStatistics', ['package' => $packageName]);
+        $this->_iaCore->startHook('phpAdminPackageStatistics', ['package' => $packageName]);
 
-		$statistics = [];
+        $statistics = [];
 
-		$iaItem = $this->_iaCore->factory('item');
-		if ($packageItems = $iaItem->getItemsByPackage($packageName))
-		{
-			foreach ($packageItems as $itemName)
-			{
-				$itemName = substr($itemName, 0, -1);
-				$itemClass = $this->_iaCore->factoryModule($itemName, $packageName, iaCore::ADMIN);
-				if (method_exists($itemClass, self::GETTER_METHOD_NAME))
-				{
-					if ($itemClass->dashboardStatistics)
-					{
-						if ($data = call_user_func([$itemClass, self::GETTER_METHOD_NAME], [false]))
-						{
-							$statistics[$itemName] = $data;
-						}
-					}
-				}
-			}
-		}
+        $iaItem = $this->_iaCore->factory('item');
+        if ($packageItems = $iaItem->getItemsByPackage($packageName)) {
+            foreach ($packageItems as $itemName) {
+                $itemName = substr($itemName, 0, -1);
+                $itemClass = $this->_iaCore->factoryModule($itemName, $packageName, iaCore::ADMIN);
+                if (method_exists($itemClass, self::GETTER_METHOD_NAME)) {
+                    if ($itemClass->dashboardStatistics) {
+                        if ($data = call_user_func([$itemClass, self::GETTER_METHOD_NAME], [false])) {
+                            $statistics[$itemName] = $data;
+                        }
+                    }
+                }
+            }
+        }
 
-		$timeline = $this->_iaCore->factory('log')->get($packageName);
+        $timeline = $this->_iaCore->factory('log')->get($packageName);
 
-		$iaView->assign('package', $packageName);
-		$iaView->assign('statistics', $statistics);
-		$iaView->assign('timeline', $timeline);
+        $iaView->assign('package', $packageName);
+        $iaView->assign('statistics', $statistics);
+        $iaView->assign('timeline', $timeline);
 
-		$iaView->display($this->getName());
-	}
+        $iaView->display($this->getName());
+    }
 }

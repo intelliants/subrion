@@ -24,115 +24,99 @@
  *
  ******************************************************************************/
 
-if (!iaUsers::hasIdentity())
-{
-	return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
+if (!iaUsers::hasIdentity()) {
+    return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
 }
 
 $iaTransaction = $iaCore->factory('transaction');
 $profilePageUrl = IA_URL . 'profile/';
 
-if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
-{
-	$output = ['error' => false];
-	$amount = (float)$_GET['amount'];
+if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount'])) {
+    $output = ['error' => false];
+    $amount = (float)$_GET['amount'];
 
-	if ($amount >= (float)$iaCore->get('funds_min_deposit')
-		&& $amount <= (float)$iaCore->get('funds_max_deposit'))
-	{
-		$transactionId = $iaTransaction->create(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl, 0, true);
-		$transactionId
-			? $output['url'] = IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER
-			: $output['error'] = iaLanguage::get('db_error');
-	}
-	else
-	{
-		$output['error'] = iaLanguage::getf('amount_incorrect', [
-			'min' => $iaCore->get('funds_min_deposit'),
-			'max' => $iaCore->get('funds_max_deposit'),
-			'currency' => $iaCore->get('currency')]
-		);
-	}
+    if ($amount >= (float)$iaCore->get('funds_min_deposit')
+        && $amount <= (float)$iaCore->get('funds_max_deposit')) {
+        $transactionId = $iaTransaction->create(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl, 0, true);
+        $transactionId
+            ? $output['url'] = IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER
+            : $output['error'] = iaLanguage::get('db_error');
+    } else {
+        $output['error'] = iaLanguage::getf('amount_incorrect', [
+            'min' => $iaCore->get('funds_min_deposit'),
+            'max' => $iaCore->get('funds_max_deposit'),
+            'currency' => $iaCore->get('currency')]
+        );
+    }
 
-	$iaView->assign($output);
+    $iaView->assign($output);
 }
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	$iaInvoice = $iaCore->factory('invoice');
+if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
+    $iaInvoice = $iaCore->factory('invoice');
 
-	if (isset($iaCore->requestPath[0]) && 'invoice' == $iaCore->requestPath[0])
-	{
-		if (isset($iaCore->requestPath[1]))
-		{
-			$iaTransaction = $iaCore->factory('transaction');
+    if (isset($iaCore->requestPath[0]) && 'invoice' == $iaCore->requestPath[0]) {
+        if (isset($iaCore->requestPath[1])) {
+            $iaTransaction = $iaCore->factory('transaction');
 
-			$transaction = $iaTransaction->getBy('sec_key', $iaCore->requestPath[1]);
+            $transaction = $iaTransaction->getBy('sec_key', $iaCore->requestPath[1]);
 
-			if (!$transaction)
-			{
-				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-			}
+            if (!$transaction) {
+                return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+            }
 
-			$invoice = $iaInvoice->getBy('transaction_id', $transaction['id']);
+            $invoice = $iaInvoice->getBy('transaction_id', $transaction['id']);
 
-			if (!$invoice)
-			{
-				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-			}
+            if (!$invoice) {
+                return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+            }
 
-			$iaView->assign('invoice', $invoice);
-			$iaView->assign('items', $iaInvoice->getItemsByInvoiceId($invoice['id']));
+            $iaView->assign('invoice', $invoice);
+            $iaView->assign('items', $iaInvoice->getItemsByInvoiceId($invoice['id']));
 
-			$iaView->disableLayout();
-			echo $iaView->display('invoice');
+            $iaView->disableLayout();
+            echo $iaView->display('invoice');
 
-			return;
-		}
-		else
-		{
-			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-		}
-	}
+            return;
+        } else {
+            return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+        }
+    }
 
-	iaUsers::reloadIdentity();
+    iaUsers::reloadIdentity();
 
-	if (isset($_POST['amount']))
-	{
-		$amount = (float)$_POST['amount'];
+    if (isset($_POST['amount'])) {
+        $amount = (float)$_POST['amount'];
 
-		if ($amount >= (float)$iaCore->get('funds_min_deposit')
-			&& $amount <= (float)$iaCore->get('funds_max_deposit'))
-		{
-			$iaTransaction->create(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl);
-		}
-		else
-		{
-			$iaView->setMessages(iaLanguage::getf('amount_incorrect', [
-				'min' => $iaCore->get('funds_min_deposit'),
-				'max' => $iaCore->get('funds_max_deposit'),
-				'currency' => $iaCore->get('currency')]
-			));
-		}
-	}
+        if ($amount >= (float)$iaCore->get('funds_min_deposit')
+            && $amount <= (float)$iaCore->get('funds_max_deposit')) {
+            $iaTransaction->create(iaLanguage::get('funds'), $amount, iaTransaction::TRANSACTION_MEMBER_BALANCE, iaUsers::getIdentity(true), $profilePageUrl);
+        } else {
+            $iaView->setMessages(iaLanguage::getf('amount_incorrect', [
+                'min' => $iaCore->get('funds_min_deposit'),
+                'max' => $iaCore->get('funds_max_deposit'),
+                'currency' => $iaCore->get('currency')]
+            ));
+        }
+    }
 
-	$pagination = [
-		'page' => 1,
-		'limit' => 10,
-		'total' => 0,
-		'template' => $profilePageUrl . 'funds/?page={page}'
-	];
+    $pagination = [
+        'page' => 1,
+        'limit' => 10,
+        'total' => 0,
+        'template' => $profilePageUrl . 'funds/?page={page}'
+    ];
 
-	$pagination['page'] = (isset($_GET['page']) && 1 < $_GET['page']) ? (int)$_GET['page'] : $pagination['page'];
-	$pagination['page'] = ($pagination['page'] - 1) * $pagination['limit'];
+    $pagination['page'] = (isset($_GET['page']) && 1 < $_GET['page']) ? (int)$_GET['page'] : $pagination['page'];
+    $pagination['page'] = ($pagination['page'] - 1) * $pagination['limit'];
 
-	$transactions = $iaDb->all('SQL_CALC_FOUND_ROWS *', '`member_id` = ' . iaUsers::getIdentity()->id . ' ORDER BY `status`', $pagination['page'], $pagination['limit'], iaTransaction::getTable());
-	$pagination['total'] = $iaDb->foundRows();
+    $transactions = $iaDb->all('SQL_CALC_FOUND_ROWS *', '`member_id` = ' . iaUsers::getIdentity()->id . ' ORDER BY `status`', $pagination['page'], $pagination['limit'], iaTransaction::getTable());
+    $pagination['total'] = $iaDb->foundRows();
 
-	$iaView->caption($iaView->title() . ': ' . number_format(iaUsers::getIdentity()->funds, 2, '.', '') . ' ' . $iaCore->get('currency'));
+    $iaView->caption($iaView->title() . ': ' . number_format(iaUsers::getIdentity()->funds, 2, '.', '') . ' ' . $iaCore->get('currency'));
 
-	$iaView->assign('pagination', $pagination);
-	$iaView->assign('transactions', $transactions);
+    $iaView->assign('pagination', $pagination);
+    $iaView->assign('transactions', $transactions);
 
-	$iaView->display('transactions');
+    $iaView->display('transactions');
 }

@@ -16,9 +16,9 @@
 	<?php endif ?>
 
 	<div class="form-actions">
-		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/" class="btn btn-lg btn-primary"><i class="i-loop"></i> Refresh</a>
+		<a href="<?= URL_INSTALL ?><?= $this->module ?>/" class="btn btn-lg btn-primary"><i class="i-loop"></i> Refresh</a>
 		<?php if (!$this->errorCode): ?>
-		<a class="pull-right btn btn-primary btn-lg" href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/rollback/"><i class="i-box-remove"></i> Rollback upgrade</a>
+		<a class="pull-right btn btn-primary btn-lg" href="<?= URL_INSTALL ?><?= $this->module ?>/rollback/"><i class="i-box-remove"></i> Rollback upgrade</a>
 		<?php endif ?>
 	</div>
 <?php else: ?>
@@ -31,8 +31,8 @@
 	</div>
 
 	<div class="form-actions">
-		<a href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/download/" class="btn btn-lg btn-primary js-btn-download">Next <i class="icon-arrow-right icon-white"></i></a>
-		<a class="pull-right btn btn-primary btn-lg" href="<?php echo URL_INSTALL ?><?php echo $this->module ?>/rollback/"><i class="i-box-remove"></i> Rollback upgrade</a>
+		<a href="<?= URL_INSTALL ?><?= $this->module ?>/download/" class="btn btn-lg btn-primary js-btn-download">Next <i class="icon-arrow-right icon-white"></i></a>
+		<a class="pull-right btn btn-primary btn-lg" href="<?= URL_INSTALL ?><?= $this->module ?>/rollback/"><i class="i-box-remove"></i> Rollback upgrade</a>
 	</div>
 
 	<div class="modal fade" id="changelog-details">
@@ -56,7 +56,7 @@
 	$(function()
 	{
 		$('#changelog-details').appendTo('body');
-		$.getJSON('https://tools.subrion.org/changelog.json?fn=?', {version: '<?php echo $this->version ?>'}, function(response)
+		$.getJSON('https://tools.subrion.org/changelog.json?fn=?', {version: '<?= $this->version ?>'}, function(response)
 		{
 			$('.modal-body:first', '#changelog-details').html(response.html);
 		});

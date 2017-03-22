@@ -26,137 +26,124 @@
 
 abstract class abstractModuleFrontApiResponder extends abstractModuleFront
 {
-	protected $_request;
-	protected $_response;
+    protected $_request;
+    protected $_response;
 
-	public $apiFilters = [];
-	public $apiSorters = [];
+    public $apiFilters = [];
+    public $apiSorters = [];
 
 
-	public function setRequest(iaApiRequest $request)
-	{
-		$this->_request = $request;
-	}
+    public function setRequest(iaApiRequest $request)
+    {
+        $this->_request = $request;
+    }
 
-	public function setResponse(iaApiResponse $response)
-	{
-		$this->_response = $response;
-	}
+    public function setResponse(iaApiResponse $response)
+    {
+        $this->_response = $response;
+    }
 
-	public function apiList($start, $limit, $where, $order)
-	{
-		$rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . $order, $start, $limit, self::getTable());
+    public function apiList($start, $limit, $where, $order)
+    {
+        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . $order, $start, $limit, self::getTable());
 
-		return $this->_unpackImageFields($rows);
-	}
+        return $this->_unpackImageFields($rows);
+    }
 
-	public function apiGet($id)
-	{
-		$row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+    public function apiGet($id)
+    {
+        $row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
 
-		if ($row)
-		{
-			$row = $this->_unpackImageFields([$row]);
-			$row = array_shift($row);
-		}
+        if ($row) {
+            $row = $this->_unpackImageFields([$row]);
+            $row = array_shift($row);
+        }
 
-		return $row;
-	}
+        return $row;
+    }
 
-	public function apiDelete($id)
-	{
-		$resource = $this->apiGet($id);
+    public function apiDelete($id)
+    {
+        $resource = $this->apiGet($id);
 
-		if (!$resource)
-		{
-			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
-		}
+        if (!$resource) {
+            throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+        }
 
-		if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id)
-		{
-			throw new Exception('Resource may be removed by owner only', iaApiResponse::FORBIDDEN);
-		}
+        if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id) {
+            throw new Exception('Resource may be removed by owner only', iaApiResponse::FORBIDDEN);
+        }
 
-		return (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
-	}
+        return (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
+    }
 
-	public function apiUpdate(array $data, $id, array $params)
-	{
-		$resource = $this->apiGet($id);
+    public function apiUpdate(array $data, $id, array $params)
+    {
+        $resource = $this->apiGet($id);
 
-		if (!$resource)
-		{
-			throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
-		}
+        if (!$resource) {
+            throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+        }
 
-		if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id)
-		{
-			throw new Exception('Resource may be edited by owner only', iaApiResponse::FORBIDDEN);
-		}
+        if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id) {
+            throw new Exception('Resource may be edited by owner only', iaApiResponse::FORBIDDEN);
+        }
 
-		$this->iaDb->update($data, iaDb::convertIds($id), null, self::getTable());
+        $this->iaDb->update($data, iaDb::convertIds($id), null, self::getTable());
 
-		return (0 == $this->iaDb->getErrorNumber());
-	}
+        return (0 == $this->iaDb->getErrorNumber());
+    }
 
-	public function apiInsert(array $data)
-	{
-		if (!iaUsers::hasIdentity())
-		{
-			throw new Exception('Guests not allowed to post data', iaApiResponse::UNAUTHORIZED);
-		}
+    public function apiInsert(array $data)
+    {
+        if (!iaUsers::hasIdentity()) {
+            throw new Exception('Guests not allowed to post data', iaApiResponse::UNAUTHORIZED);
+        }
 
-		$data['member_id'] = iaUsers::getIdentity()->id;
+        $data['member_id'] = iaUsers::getIdentity()->id;
 
-		return $this->iaDb->insert($data, null, self::getTable());
-	}
+        return $this->iaDb->insert($data, null, self::getTable());
+    }
 
-	// utility
-	protected function _unpackImageFields($rows)
-	{
-		if (!$rows || !is_array($rows))
-		{
-			return [];
-		}
+    // utility
+    protected function _unpackImageFields($rows)
+    {
+        if (!$rows || !is_array($rows)) {
+            return [];
+        }
 
-		$fields = $this->iaCore->factory('field')->getSerializedFields($this->getItemName());
+        $fields = $this->iaCore->factory('field')->getSerializedFields($this->getItemName());
 
-		if (!$fields)
-		{
-			return $rows;
-		}
+        if (!$fields) {
+            return $rows;
+        }
 
-		foreach ($rows as &$row)
-		{
-			foreach ($fields as $fieldName)
-			{
-				if (empty($row[$fieldName])) continue;
+        foreach ($rows as &$row) {
+            foreach ($fields as $fieldName) {
+                if (empty($row[$fieldName])) {
+                    continue;
+                }
 
-				$array = unserialize($row[$fieldName]);
-				if ($array && is_array($array))
-				{
-					if (isset($array['path'])) // single image field
-					{
-						$array['path'] = self::_pathToUploads($array['path']);
-					}
-					else // multiple image upload
-					{
-						foreach ($array as &$entry)
-						{
-							$entry['path'] = self::_pathToUploads($entry['path']);
-						}
-					}
-				}
+                $array = unserialize($row[$fieldName]);
+                if ($array && is_array($array)) {
+                    if (isset($array['path'])) { // single image field
+                        $array['path'] = self::_pathToUploads($array['path']);
+                    } else { // multiple image upload
+                        foreach ($array as &$entry) {
+                            $entry['path'] = self::_pathToUploads($entry['path']);
+                        }
+                    }
+                }
 
-				$row[$fieldName] = $array;
-			}
-		}
+                $row[$fieldName] = $array;
+            }
+        }
 
-		return $rows;
-	}
+        return $rows;
+    }
 
-	protected static function _pathToUploads($filePath)
-	{
-		return IA_CLEAR_URL . 'uploads/' . $filePath;
-	}
+    protected static function _pathToUploads($filePath)
+    {
+        return IA_CLEAR_URL . 'uploads/' . $filePath;
+    }
 }

@@ -4,7 +4,7 @@
 	<div class="widget widget-default">
 		<div class="widget-content">
 			<p>Installation log has been also saved to <em>uploads</em> folder.</p>
-			<div id="upgrade-log" class="box box-simple"><?php echo $this->log ?></div>
+			<div id="upgrade-log" class="box box-simple"><?= $this->log ?></div>
 			<div id="upgrade-log-legend">
 				<h5>Legend</h5>
 				<p><span class="label label-success">SUCCESS</span> <b>File successfully written</b> &mdash; <i>file has been overwritten by the file that comes in the patch</i>.</p>
@@ -15,6 +15,6 @@
 <?php endif ?>
 
 <div class="form-actions">
-	<a href="<?php echo URL_HOME . $this->adminPath ?>/" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>
-	<a href="<?php echo URL_HOME ?>" class="btn btn-lg btn-primary"><i class="i-screen"></i> to Home page</a>
+	<a href="<?= URL_HOME . $this->adminPath ?>/" class="btn btn-lg btn-primary"><i class="i-gauge"></i> to Admin panel</a>
+	<a href="<?= URL_HOME ?>" class="btn btn-lg btn-primary"><i class="i-screen"></i> to Home page</a>
 </div>

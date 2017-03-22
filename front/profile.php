@@ -24,135 +24,110 @@
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if (!iaUsers::hasIdentity())
-	{
-		return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
-	}
+if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
+    if (!iaUsers::hasIdentity()) {
+        return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
+    }
 
-	$iaField = $iaCore->factory('field');
-	$iaUsers = $iaCore->factory('users');
+    $iaField = $iaCore->factory('field');
+    $iaUsers = $iaCore->factory('users');
 
-	$itemName = $tableName = iaUsers::getTable();
-	$messages = [];
+    $itemName = $tableName = iaUsers::getTable();
+    $messages = [];
 
-	$assignableGroups = $iaDb->keyvalue(['id', 'name'], '`assignable` = 1', iaUsers::getUsergroupsTable());
+    $assignableGroups = $iaDb->keyvalue(['id', 'name'], '`assignable` = 1', iaUsers::getUsergroupsTable());
 
-	$iaPlan = $iaCore->factory('plan');
-	$plans = $iaPlan->getPlans($iaUsers->getItemName());
+    $iaPlan = $iaCore->factory('plan');
+    $plans = $iaPlan->getPlans($iaUsers->getItemName());
 
-	$iaDb->setTable($tableName);
+    $iaDb->setTable($tableName);
 
-	if (isset($_POST['change_pass']))
-	{
-		$error = false;
-		$newPassword = empty($_POST['new']) ? false : $_POST['new'];
-		// checks for current password
-		if (iaUsers::getIdentity()->password != $iaUsers->encodePassword($_POST['current']))
-		{
-			$error = true;
-			$messages[] = iaLanguage::get('password_incorrect');
-		}
+    if (isset($_POST['change_pass'])) {
+        $error = false;
+        $newPassword = empty($_POST['new']) ? false : $_POST['new'];
+        // checks for current password
+        if (iaUsers::getIdentity()->password != $iaUsers->encodePassword($_POST['current'])) {
+            $error = true;
+            $messages[] = iaLanguage::get('password_incorrect');
+        }
 
-		if (!$newPassword)
-		{
-			$error = true;
-			$messages[] = iaLanguage::get('password_empty');
-		}
+        if (!$newPassword) {
+            $error = true;
+            $messages[] = iaLanguage::get('password_empty');
+        }
 
-		if ($newPassword != $_POST['confirm'])
-		{
-			$error = true;
-			$messages[] = iaLanguage::get('error_password_match');
-		}
+        if ($newPassword != $_POST['confirm']) {
+            $error = true;
+            $messages[] = iaLanguage::get('error_password_match');
+        }
 
-		if (!$error)
-		{
-			$iaUsers->changePassword(iaUsers::getIdentity(true), $newPassword, false);
+        if (!$error) {
+            $iaUsers->changePassword(iaUsers::getIdentity(true), $newPassword, false);
 
-			$error = false;
-			$messages[] = iaLanguage::get('password_changed');
-		}
+            $error = false;
+            $messages[] = iaLanguage::get('password_changed');
+        }
 
-		$iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
-	}
-	elseif ($_POST && (isset($_POST['change_info']) || isset($_POST['plan_id'])))
-	{
-		$item = iaUsers::getIdentity(true);
+        $iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
+    } elseif ($_POST && (isset($_POST['change_info']) || isset($_POST['plan_id']))) {
+        $item = iaUsers::getIdentity(true);
 
-		if (isset($_POST['change_info']))
-		{
-			list($item, $error, $messages) = $iaField->parsePost($iaUsers->getItemName(), $item);
+        if (isset($_POST['change_info'])) {
+            list($item, $error, $messages) = $iaField->parsePost($iaUsers->getItemName(), $item);
 
-			if (!$error)
-			{
-				if (isset($_POST['usergroup_id']) && $assignableGroups && in_array((int)$_POST['usergroup_id'], array_keys($assignableGroups)))
-				{
-					$item['usergroup_id'] = $_POST['usergroup_id'];
-				}
+            if (!$error) {
+                if (isset($_POST['usergroup_id']) && $assignableGroups && in_array((int)$_POST['usergroup_id'], array_keys($assignableGroups))) {
+                    $item['usergroup_id'] = $_POST['usergroup_id'];
+                }
 
-				$iaDb->update($item, iaDb::convertIds(iaUsers::getIdentity()->id));
+                $iaDb->update($item, iaDb::convertIds(iaUsers::getIdentity()->id));
 
-				if (0 == $iaDb->getErrorNumber())
-				{
-					$iaCore->startHook('phpUserProfileUpdate', ['userInfo' => iaUsers::getIdentity(true), 'data' => $item]);
-					iaUsers::reloadIdentity();
+                if (0 == $iaDb->getErrorNumber()) {
+                    $iaCore->startHook('phpUserProfileUpdate', ['userInfo' => iaUsers::getIdentity(true), 'data' => $item]);
+                    iaUsers::reloadIdentity();
 
-					$iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
-				}
-				else
-				{
-					$iaView->setMessages(iaLanguage::get('db_error'));
-				}
-			}
-			else
-			{
-				$iaView->setMessages($messages);
-			}
-		}
+                    $iaView->setMessages(iaLanguage::get('saved'), iaView::SUCCESS);
+                } else {
+                    $iaView->setMessages(iaLanguage::get('db_error'));
+                }
+            } else {
+                $iaView->setMessages($messages);
+            }
+        }
 
-		if (isset($_POST['plan_id']) && $_POST['plan_id'] != iaUsers::getIdentity()->sponsored_plan_id)
-		{
-			if ($plan = $iaPlan->getById((int)$_POST['plan_id']))
-			{
-				if ((float)$plan['cost'])
-				{
-					$url = $iaPlan->prePayment($itemName, iaUsers::getIdentity(true), $plan['id'], IA_SELF);
-					iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('plan_added'), $url);
-				}
-				else
-				{
-					$iaPlan->setPaid(['item' => $itemName, 'plan_id' => $plan['id'],
-						'item_id' => iaUsers::getIdentity()->id, 'member_id' => iaUsers::getIdentity()->id]);
-				}
-			}
-			else
-			{
-				$iaPlan->setUnpaid(iaUsers::getItemName(), iaUsers::getIdentity()->id);
-			}
-		}
-	}
+        if (isset($_POST['plan_id']) && $_POST['plan_id'] != iaUsers::getIdentity()->sponsored_plan_id) {
+            if ($plan = $iaPlan->getById((int)$_POST['plan_id'])) {
+                if ((float)$plan['cost']) {
+                    $url = $iaPlan->prePayment($itemName, iaUsers::getIdentity(true), $plan['id'], IA_SELF);
+                    iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('plan_added'), $url);
+                } else {
+                    $iaPlan->setPaid(['item' => $itemName, 'plan_id' => $plan['id'],
+                        'item_id' => iaUsers::getIdentity()->id, 'member_id' => iaUsers::getIdentity()->id]);
+                }
+            } else {
+                $iaPlan->setUnpaid(iaUsers::getItemName(), iaUsers::getIdentity()->id);
+            }
+        }
+    }
 
-	$iaCore->startHook('phpFrontAfterProfileProcessData');
+    $iaCore->startHook('phpFrontAfterProfileProcessData');
 
-	$item = iaUsers::getIdentity(true);
+    $item = iaUsers::getIdentity(true);
 
-	$sections = $iaField->getTabs($itemName, $item);
+    $sections = $iaField->getTabs($itemName, $item);
 
-	$extraTabs = [];
-	$iaCore->startHook('phpFrontEditProfileExtraTabs', ['tabs' => &$extraTabs, 'item' => &$item]);
-	$sections = array_merge($sections, $extraTabs);
+    $extraTabs = [];
+    $iaCore->startHook('phpFrontEditProfileExtraTabs', ['tabs' => &$extraTabs, 'item' => &$item]);
+    $sections = array_merge($sections, $extraTabs);
 
-	if (iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id)
-	{
-		$iaView->assign('assignableGroups', $assignableGroups);
-	}
+    if (iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id) {
+        $iaView->assign('assignableGroups', $assignableGroups);
+    }
 
-	$iaView->assign('sections', $sections);
-	$iaView->assign('plans_count', (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, null, iaPlan::getTable()));
-	$iaView->assign('item', $item);
-	$iaView->assign('plans', $plans);
+    $iaView->assign('sections', $sections);
+    $iaView->assign('plans_count', (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, null, iaPlan::getTable()));
+    $iaView->assign('item', $item);
+    $iaView->assign('plans', $plans);
 
-	$iaDb->resetTable();
+    $iaDb->resetTable();
 }

@@ -12,6 +12,7 @@ CKEDITOR.editorConfig = function(config)
 	config.extraPlugins = 'embed,autoembed,codemirror';
 	config.extraAllowedContent = 'a[rel]';
 	CKEDITOR.dtd.$removeEmpty['span'] = false;
+	CKEDITOR.dtd.$removeEmpty['i'] = false;
 
 	if (intelli.config.ckeditor_css)
 	{

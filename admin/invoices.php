@@ -26,165 +26,163 @@
 
 class iaBackendController extends iaAbstractControllerBackend
 {
-	protected $_name = 'invoices';
+    protected $_name = 'invoices';
 
-	protected $_gridFilters = ['fullname' => self::LIKE, 'status' => self::EQUAL];
-	protected $_gridQueryMainTableAlias = 'i';
-	protected $_gridSorting = [
-		'amount' => ['amount', 't'],
-		'gateway' => ['gateway', 't'],
-		'status' => ['status', 't']
-	];
+    protected $_gridFilters = ['fullname' => self::LIKE, 'status' => self::EQUAL];
+    protected $_gridQueryMainTableAlias = 'i';
+    protected $_gridSorting = [
+        'amount' => ['amount', 't'],
+        'gateway' => ['gateway', 't'],
+        'status' => ['status', 't']
+    ];
 
 
-	public function __construct()
-	{
-		parent::__construct();
+    public function __construct()
+    {
+        parent::__construct();
 
-		$this->setHelper($this->_iaCore->factory('invoice'));
-		$this->setTable(iaInvoice::getTable());
-	}
+        $this->setHelper($this->_iaCore->factory('invoice'));
+        $this->setTable(iaInvoice::getTable());
+    }
 
-	protected function _indexPage(&$iaView)
-	{
-		if (2 == count($this->_iaCore->requestPath) && 'view' == $this->_iaCore->requestPath[0])
-		{
-			$this->_view($iaView, $this->_iaCore->requestPath[1]);
-		}
-		else
-		{
-			$iaView->grid('admin/' . $this->getName());
-		}
-	}
+    protected function _indexPage(&$iaView)
+    {
+        if (2 == count($this->_iaCore->requestPath) && 'view' == $this->_iaCore->requestPath[0]) {
+            $this->_view($iaView, $this->_iaCore->requestPath[1]);
+        } else {
+            $iaView->grid('admin/' . $this->getName());
+        }
+    }
 
-	protected function _gridQuery($columns, $where, $order, $start, $limit)
-	{
-		$sql =
-			'SELECT SQL_CALC_FOUND_ROWS '
-				. 'i.`id`, i.`date_created`, i.`fullname`, '
-				. 't.`plan_id`, t.`operation`, '
-				. 't.`status`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, t.`currency`, t.`gateway`, '
-				. "1 `pdf`, 1 `update`, IF(t.`status` != 'passed', 1, 0) `delete` " .
-			'FROM `:prefix:table_invoices` i ' .
-			'LEFT JOIN `:prefix:table_transactions` t ON (t.`id` = i.`transaction_id`) ' .
-			'LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`) ' .
-			($where ? 'WHERE ' . $where . ' ' : '') . $order . ' ' .
-			'LIMIT :start, :limit';
-		$sql = iaDb::printf($sql, [
-			'prefix' => $this->_iaDb->prefix,
-			'table_invoices' => self::getTable(),
-			'table_members' => iaUsers::getTable(),
-			'table_transactions' => 'payment_transactions',
-			'start' => $start,
-			'limit' => $limit
-		]);
+    protected function _gridQuery($columns, $where, $order, $start, $limit)
+    {
+        $sql =
+            'SELECT SQL_CALC_FOUND_ROWS '
+            . 'i.`id`, i.`date_created`, i.`fullname`, '
+            . 't.`plan_id`, t.`operation`, '
+            . 't.`status`, CONCAT(t.`amount`, " ", t.`currency`) `amount`, t.`currency`, t.`gateway`, '
+            . "1 `pdf`, 1 `update`, IF(t.`status` != 'passed', 1, 0) `delete` " .
+            'FROM `:prefix:table_invoices` i ' .
+            'LEFT JOIN `:prefix:table_transactions` t ON (t.`id` = i.`transaction_id`) ' .
+            'LEFT JOIN `:prefix:table_members` m ON (m.`id` = t.`member_id`) ' .
+            ($where ? 'WHERE ' . $where . ' ' : '') . $order . ' ' .
+            'LIMIT :start, :limit';
+        $sql = iaDb::printf($sql, [
+            'prefix' => $this->_iaDb->prefix,
+            'table_invoices' => self::getTable(),
+            'table_members' => iaUsers::getTable(),
+            'table_transactions' => 'payment_transactions',
+            'start' => $start,
+            'limit' => $limit
+        ]);
 
-		return $this->_iaDb->getAll($sql);
-	}
+        return $this->_iaDb->getAll($sql);
+    }
 
-	protected function _modifyGridParams(&$conditions, &$values, array $params)
-	{
-		if (!empty($_GET['gateway']))
-		{
-			$conditions[] = 't.`gateway` = :gateway';
-			$values['gateway'] = $_GET['gateway'];
-		}
-	}
+    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    {
+        if (!empty($_GET['gateway'])) {
+            $conditions[] = 't.`gateway` = :gateway';
+            $values['gateway'] = $_GET['gateway'];
+        }
+    }
 
-	protected function _modifyGridResult(array &$entries)
-	{
-		foreach ($entries as &$entry)
-		{
-			$entry['plan'] = $entry['plan_id'] ? iaLanguage::get('plan_title_' . $entry['plan_id']) : $entry['operation'];
-			is_null($entry['status']) && $entry['status'] = 'empty';
-			//$entry['gateway'] && ($entry['gateway'] = iaLanguage::get($entry['gateway']));
+    protected function _modifyGridResult(array &$entries)
+    {
+        foreach ($entries as &$entry) {
+            $entry['plan'] = $entry['plan_id'] ? iaLanguage::get('plan_title_' . $entry['plan_id']) : $entry['operation'];
+            is_null($entry['status']) && $entry['status'] = 'empty';
+            //$entry['gateway'] && ($entry['gateway'] = iaLanguage::get($entry['gateway']));
 
-			unset($entry['operation'], $entry['plan_id']);
-		}
-	}
+            unset($entry['operation'], $entry['plan_id']);
+        }
+    }
 
-	protected function _view(&$iaView, $invoiceId)
-	{
-		iaBreadcrumb::add(iaLanguage::get('view'), IA_SELF);
+    protected function _view(&$iaView, $invoiceId)
+    {
+        iaBreadcrumb::add(iaLanguage::get('view'), IA_SELF);
 
-		$invoice = $this->getHelper()->getById($invoiceId);
+        $invoice = $this->getHelper()->getById($invoiceId);
 
-		if (!$invoice)
-		{
-			return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-		}
+        if (!$invoice) {
+            return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+        }
 
-		$iaView->assign('invoice', $invoice);
-		$iaView->assign('items', $this->getHelper()->getItemsByInvoiceId($invoiceId));
+        $iaView->assign('invoice', $invoice);
+        $iaView->assign('items', $this->getHelper()->getItemsByInvoiceId($invoiceId));
 
-		$iaView->display('invoice-view');
-	}
+        $iaView->display('invoice-view');
+    }
 
-	protected function _setDefaultValues(array &$entry)
-	{
-		$entry['id'] = $this->getHelper()->generateId();
-		$entry['date_due'] = '';
-		$entry['fullname'] = '';
-		$entry['notes'] = '';
+    protected function _setDefaultValues(array &$entry)
+    {
+        $entry['id'] = $this->getHelper()->generateId();
+        $entry['date_due'] = '';
+        $entry['fullname'] = '';
+        $entry['notes'] = '';
 
-		$entry['address1'] = $entry['address2'] = $entry['zip'] = $entry['country'] = '';
-	}
+        $entry['address1'] = $entry['address2'] = $entry['zip'] = $entry['country'] = '';
+    }
 
-	protected function _assignValues(&$iaView, array &$entryData)
-	{
-		$iaView->set('toolbarActionsReplacements', ['id' => $this->getEntryId()]);
+    protected function _assignValues(&$iaView, array &$entryData)
+    {
+        $iaView->set('toolbarActionsReplacements', ['id' => $this->getEntryId()]);
 
-		$items = isset($_POST['items']) ? $this->_normalizeItems($_POST['items']) : [];
-		$items || $items = $this->getHelper()->getItemsByInvoiceId($this->getEntryId());
+        $items = isset($_POST['items']) ? $this->_normalizeItems($_POST['items']) : [];
+        $items || $items = $this->getHelper()->getItemsByInvoiceId($this->getEntryId());
 
-		$iaView->assign('items', $items);
-	}
+        $iaView->assign('items', $items);
+    }
 
-	protected function _preSaveEntry(array &$entry, array $data, $action)
-	{
-		$entry['member_id'] = $data['member_id'];
-		$entry['fullname'] = $data['fullname'];
-		$entry['date_due'] = $data['date_due'];
-		$entry['address1'] = $data['address1'];
-		$entry['address2'] = $data['address2'];
-		$entry['country'] = $data['country'];
-		$entry['notes'] = $data['notes'];
-		$entry['zip'] = $data['zip'];
+    protected function _preSaveEntry(array &$entry, array $data, $action)
+    {
+        $entry['member_id'] = $data['member_id'];
+        $entry['fullname'] = $data['fullname'];
+        $entry['date_due'] = $data['date_due'];
+        $entry['address1'] = $data['address1'];
+        $entry['address2'] = $data['address2'];
+        $entry['country'] = $data['country'];
+        $entry['notes'] = $data['notes'];
+        $entry['zip'] = $data['zip'];
 
-		if (iaCore::ACTION_ADD == $action)
-		{
-			$entry['id'] = $data['id'];
-			$entry['date_created'] = date(iaDb::DATETIME_FORMAT);
+        if (iaCore::ACTION_ADD == $action) {
+            $entry['id'] = $data['id'];
+            $entry['date_created'] = (new \DateTime())->format(iaDb::DATETIME_FORMAT);
 
-			if (empty($entry['id']))
-			{
-				$this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('invoice_id')]), false);
-			}
-		}
+            if (empty($entry['id'])) {
+                $this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('invoice_id')]),
+                    false);
+            }
+        }
 
-		return !$this->getMessages();
-	}
+        return !$this->getMessages();
+    }
 
-	protected function _entryAdd(array $entryData)
-	{
-		$this->_iaDb->insert($entryData);
+    protected function _entryAdd(array $entryData)
+    {
+        $this->_iaDb->insert($entryData);
 
-		return (0 == $this->_iaDb->getErrorNumber()) ? $entryData['id'] : false;
-	}
+        return (0 == $this->_iaDb->getErrorNumber()) ? $entryData['id'] : false;
+    }
 
-	protected function _postSaveEntry(array &$entry, array $data, $action)
-	{
-		$this->getHelper()->saveItems($this->getEntryId(), $data['items']);
-	}
+    protected function _postSaveEntry(array &$entry, array $data, $action)
+    {
+        $this->getHelper()->saveItems($this->getEntryId(), $data['items']);
+    }
 
-	private function _normalizeItems(array $items)
-	{
-		$result = [];
+    private function _normalizeItems(array $items)
+    {
+        $result = [];
 
-		foreach ($items['title'] as $i => $title)
-			$result[] = ['title' => $title, 'price' => $items['price'][$i],
-				'quantity' => $items['quantity'][$i], 'tax' => $items['tax'][$i]];
+        foreach ($items['title'] as $i => $title) {
+            $result[] = [
+                'title' => $title,
+                'price' => $items['price'][$i],
+                'quantity' => $items['quantity'][$i],
+                'tax' => $items['tax'][$i]
+            ];
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 }

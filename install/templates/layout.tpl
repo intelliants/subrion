@@ -3,40 +3,40 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-		<title><?php echo isset($this->steps[$this->step]) ? $this->steps[$this->step] : $this->layout()->title ?> :: Subrion CMS Web Installer</title>
+		<title><?= isset($this->steps[$this->step]) ? $this->steps[$this->step] : $this->layout()->title ?> :: Subrion CMS Web Installer</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="author" content="Intelliants LLC">
 
 		<!--[if lt IE 9]>
-			<script src="<?php echo URL_ASSETS ?>templates/js/shiv.js"></script>
-			<script src="<?php echo URL_ASSETS ?>templates/js/respond.min.js"></script>
+			<script src="<?= URL_ASSETS ?>templates/js/shiv.js"></script>
+			<script src="<?= URL_ASSETS ?>templates/js/respond.min.js"></script>
 		<![endif]-->
 
-		<link rel="stylesheet" href="<?php echo URL_ASSETS ?>templates/css/bootstrap.css">
+		<link rel="stylesheet" href="<?= URL_ASSETS ?>templates/css/bootstrap.css">
 
-		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="<?php echo URL_ASSETS ?>templates/img/ico/apple-touch-icon-144-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="<?php echo URL_ASSETS ?>templates/img/ico/apple-touch-icon-114-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="<?php echo URL_ASSETS ?>templates/img/ico/apple-touch-icon-72-precomposed.png">
-		<link rel="apple-touch-icon-precomposed" href="<?php echo URL_ASSETS ?>templates/img/ico/apple-touch-icon-57-precomposed.png">
-		<link rel="shortcut icon" href="<?php echo URL_ASSETS ?>templates/img/ico/favicon.ico">
+		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="<?= URL_ASSETS ?>templates/img/ico/apple-touch-icon-144-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="<?= URL_ASSETS ?>templates/img/ico/apple-touch-icon-114-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="<?= URL_ASSETS ?>templates/img/ico/apple-touch-icon-72-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" href="<?= URL_ASSETS ?>templates/img/ico/apple-touch-icon-57-precomposed.png">
+		<link rel="shortcut icon" href="<?= URL_ASSETS ?>templates/img/ico/favicon.ico">
 
-		<script src="<?php echo URL_ASSETS ?>templates/js/jquery.js"></script>
-		<script src="<?php echo URL_ASSETS ?>templates/js/bootstrap.min.js"></script>
+		<script src="<?= URL_ASSETS ?>templates/js/jquery.js"></script>
+		<script src="<?= URL_ASSETS ?>templates/js/bootstrap.min.js"></script>
 	</head>
 
 	<body>
 		<div class="overall-wrapper">
 			<div class="panels-wrapper">
 				<section id="panel-left">
-					<a class="brand" href="<?php echo URL_INSTALL ?>">
-						<img src="<?php echo URL_ASSETS ?>templates/img/logo.png" alt="Subrion CMS &middot; <?php echo IA_VERSION ?>">
+					<a class="brand" href="<?= URL_INSTALL ?>">
+						<img src="<?= URL_ASSETS ?>templates/img/logo.png" alt="Subrion CMS &middot; <?= IA_VERSION ?>">
 					</a>
 					<ul class="nav-main">
 						<?php if (in_array('install', $this->modules)): ?>
-							<li<?php if ($this->module == 'install'): ?> class="active"<?php endif ?>><a href="<?php echo URL_INSTALL ?>install/"><i class="i-box-add"></i>Installation wizard</a></li>
+							<li<?php if ($this->module == 'install'): ?> class="active"<?php endif ?>><a href="<?= URL_INSTALL ?>install/"><i class="i-box-add"></i>Installation wizard</a></li>
 						<?php endif ?>
 						<?php if (in_array('upgrade', $this->modules)): ?>
-							<li<?php if ($this->module == 'upgrade'): ?> class="active"<?php endif ?>><a href="<?php echo URL_INSTALL ?>upgrade/"><i class="i-loop"></i>Upgrade wizard</a></li>
+							<li<?php if ($this->module == 'upgrade'): ?> class="active"<?php endif ?>><a href="<?= URL_INSTALL ?>upgrade/"><i class="i-loop"></i>Upgrade wizard</a></li>
 						<?php endif ?>
 					</ul>
 					<div class="system-info">
@@ -46,7 +46,7 @@
 						</div>
 						<a href="https://subrion.org/" title="Open Source CMS">Subrion CMS</a>
 						<br>
-						<span class="version">v <?php echo IA_VERSION ?></span>
+						<span class="version">v <?= IA_VERSION ?></span>
 					</div>
 				</section>
 
@@ -99,24 +99,24 @@
 								</a>
 							</li>
 						</ul>
-						<p class="navbar-text pull-right">Copyright &copy; <?php echo date('Y') ?> <a href="https://intelliants.com/" title="Software Development Company">Intelliants LLC</a></p>
+						<p class="navbar-text pull-right">Copyright &copy; <?= date('Y') ?> <a href="https://intelliants.com/" title="Software Development Company">Intelliants LLC</a></p>
 					</div>
 
 					<div class="content-wrapper">
 						<div class="block">
 							<?php if (isset($this->steps[$this->step])): ?>
 							<div class="block-heading">
-								<h3><?php echo $this->steps[$this->step] ?></h3>
+								<h3><?= $this->steps[$this->step] ?></h3>
 							</div>
 							<?php endif ?>
 							<div class="block-content">
 								<?php if ($this->message): ?>
 									<div class="min-height">
-										<div class="alert alert-error"><?php echo $this->message ?></div>
+										<div class="alert alert-error"><?= $this->message ?></div>
 									</div>
 								<?php endif ?>
 
-								<?php echo $this->layout()->content ?>
+								<?= $this->layout()->content ?>
 							</div>
 						</div>
 					</div>

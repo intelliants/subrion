@@ -26,124 +26,109 @@
 
 class iaApiEntityMigrations extends iaApiEntityAbstract
 {
-	const KEYWORD_SELF = 'self';
+    const KEYWORD_SELF = 'self';
 
-	protected $_name = 'migrations';
+    protected $_name = 'migrations';
 
-	protected $_table = 'migrations';
+    protected $_table = 'migrations';
 
-	public function apiGet($id)
-	{
-		throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
-	}
+    public function apiGet($id)
+    {
+        throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
+    }
 
-	public function apiList($start, $limit, $where, $order)
-	{
-		throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
-	}
+    public function apiList($start, $limit, $where, $order)
+    {
+        throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
+    }
 
-	public function apiDelete($id)
-	{
-		throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
-	}
+    public function apiDelete($id)
+    {
+        throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
+    }
 
-	public function apiInsert(array $data)
-	{
-		if (isset($data['action']))
-		{
-			if ($data['action'] == 'migrate')
-			{
-				return ['result' => $this->applyNewMigrations()];
-			}
-		}
-		throw new Exception("Invalid or missing action", iaApiResponse::BAD_REQUEST);
-	}
+    public function apiInsert(array $data)
+    {
+        if (isset($data['action'])) {
+            if ($data['action'] == 'migrate') {
+                return ['result' => $this->applyNewMigrations()];
+            }
+        }
+        throw new Exception("Invalid or missing action", iaApiResponse::BAD_REQUEST);
+    }
 
-	private function applyNewMigrations()
-	{
-		$appliedMigrations = [];
-		$newMigrations = [];
+    private function applyNewMigrations()
+    {
+        $appliedMigrations = [];
+        $newMigrations = [];
 
-		$migrations = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, $this->getTable());
-		foreach($migrations as $migration)
-		{
-			$appliedMigrations[] = $migration['name'];
-		}
+        $migrations = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, $this->getTable());
+        foreach ($migrations as $migration) {
+            $appliedMigrations[] = $migration['name'];
+        }
 
-		$migration_dir = IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS;
-		if (is_dir($migration_dir))
-		{
-			$files = scandir($migration_dir);
-			foreach($files as $file)
-			{
-				if (substr($file, 0, 1) != '.' && is_file($migration_dir . $file))
-				{
-					if (!in_array($file, $appliedMigrations))
-					{
-						$newMigrations[] = $file;
-					}
-				}
-			}
-		}
+        $migration_dir = IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS;
+        if (is_dir($migration_dir)) {
+            $files = scandir($migration_dir);
+            foreach ($files as $file) {
+                if (substr($file, 0, 1) != '.' && is_file($migration_dir . $file)) {
+                    if (!in_array($file, $appliedMigrations)) {
+                        $newMigrations[] = $file;
+                    }
+                }
+            }
+        }
 
-		$migrationResults = [];
+        $migrationResults = [];
 
-		$masterLangCode = $this->_iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
-		foreach($newMigrations as $name)
-		{
-			$errors = [];
-			$fd = @fopen($migration_dir . IA_DS . $name, 'r');
+        $masterLangCode = $this->_iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
+        foreach ($newMigrations as $name) {
+            $errors = [];
+            $fd = @fopen($migration_dir . IA_DS . $name, 'r');
 
-			if (!$fd)
-			{
-				continue;
-			}
+            if (!$fd) {
+                continue;
+            }
 
-			$sql = '';
-			while ($s = fgets($fd, 10240))
-			{
-				$s = trim($s);
+            $sql = '';
+            while ($s = fgets($fd, 10240)) {
+                $s = trim($s);
 
-				if (!$s || in_array($s[0], ['#', '-', '']))
-				{
-					continue;
-				}
+                if (!$s || in_array($s[0], ['#', '-', ''])) {
+                    continue;
+                }
 
-				if (';' == $s[strlen($s) - 1])
-				{
-					$sql.= $s;
-				}
-				else
-				{
-					$sql.= $s;
-					continue;
-				}
+                if (';' == $s[strlen($s) - 1]) {
+                    $sql.= $s;
+                } else {
+                    $sql.= $s;
+                    continue;
+                }
 
-				$result = $this->_iaDb->query(str_replace(['{prefix}', '{lang}'],
-					[$this->_iaDb->prefix, $masterLangCode], $sql));
+                $result = $this->_iaDb->query(str_replace(['{prefix}', '{lang}'],
+                    [$this->_iaDb->prefix, $masterLangCode], $sql));
 
-				$result || $errors[] = $this->_iaDb->getError();
+                $result || $errors[] = $this->_iaDb->getError();
 
-				$sql = '';
-			}
-			fclose($fd);
+                $sql = '';
+            }
+            fclose($fd);
 
-			$migrationProcessed = [
-				'name' => $name,
-				'status' => $errors ? 'incomplete' : 'complete',
-				'data' => $errors ? $errors : null,
-				'date' => date(iaDb::DATETIME_FORMAT),
-			];
-			$migrationResults[] = $migrationProcessed;
+            $migrationProcessed = [
+                'name' => $name,
+                'status' => $errors ? 'incomplete' : 'complete',
+                'data' => $errors ? $errors : null,
+                'date' => date(iaDb::DATETIME_FORMAT),
+            ];
+            $migrationResults[] = $migrationProcessed;
 
-			if ($migrationProcessed['data'])
-			{
-				$migrationProcessed['data'] = json_encode($migrationProcessed['data']);
-			}
-			$this->_iaDb->insert($migrationProcessed, null, 'migrations');
-		}
-		$this->_iaCore->iaCache->clearAll();
+            if ($migrationProcessed['data']) {
+                $migrationProcessed['data'] = json_encode($migrationProcessed['data']);
+            }
+            $this->_iaDb->insert($migrationProcessed, null, 'migrations');
+        }
+        $this->_iaCore->iaCache->clearAll();
 
-		return $migrationResults;
-	}
+        return $migrationResults;
+    }
 }
