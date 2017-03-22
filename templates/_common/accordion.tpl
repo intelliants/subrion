@@ -5,8 +5,8 @@
 {ia_add_js order=1}
 intelli.{$accordionName}_category =
 {
-	parents: {if isset($smarty.cookies.$accordionName.parents)}'{$smarty.cookies.$accordionName.parents}'{else}'0'{/if},
-	selected: {if isset($smarty.cookies.$accordionName.id)}'{$smarty.cookies.$accordionName.id}'{else}'0'{/if}
+    parents: {if isset($smarty.cookies.$accordionName.parents)}'{$smarty.cookies.$accordionName.parents}'{else}'0'{/if},
+    selected: {if isset($smarty.cookies.$accordionName.id)}'{$smarty.cookies.$accordionName.id}'{else}'0'{/if}
 };
 {/ia_add_js}
 {ia_add_media files='tree, js:intelli/intelli.accordion'}

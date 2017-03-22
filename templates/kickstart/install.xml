@@ -1,560 +1,560 @@
 <?xml version="1.0" encoding="utf-8"?>
 <module type="template" name="kickstart">
-	<title>Kickstart</title>
-	<summary>Bootstrap 3 developer template</summary>
-	<author>Gleb Surinov</author>
-	<contributor>Intelliants LLC</contributor>
-	<version>1.1.0</version>
-	<date>2016-08-10</date>
-	<compatibility>4.1.0</compatibility>
+    <title>Kickstart</title>
+    <summary>Bootstrap 3 developer template</summary>
+    <author>Gleb Surinov</author>
+    <contributor>Intelliants LLC</contributor>
+    <version>1.1.0</version>
+    <date>2016-08-10</date>
+    <compatibility>4.1.0</compatibility>
 
-	<layout>
-		<position menu="1" movable="0">account</position>
-		<position menu="1" movable="0">mainmenu</position>
+    <layout>
+        <position menu="1" movable="0">account</position>
+        <position menu="1" movable="0">mainmenu</position>
 
-		<position>inventory</position>
-		<position>teaser</position>
-		<position>verytop</position>
-		<position>top</position>
-		<position>bottom</position>
-		<position>verybottom</position>
-		<position>copyright</position>
-		<position>landing</position>
+        <position>inventory</position>
+        <position>teaser</position>
+        <position>verytop</position>
+        <position>top</position>
+        <position>bottom</position>
+        <position>verybottom</position>
+        <position>copyright</position>
+        <position>landing</position>
 
-		<section name="content">
-			<position fixed="1">left</position>
-			<position width="6">center</position>
-			<position fixed="1">right</position>
-		</section>
-		<section name="footer-blocks">
-			<position width="3">footer1</position>
-			<position width="3">footer2</position>
-			<position width="3">footer3</position>
-			<position width="3">footer4</position>
-		</section>
-	</layout>
+        <section name="content">
+            <position fixed="1">left</position>
+            <position width="6">center</position>
+            <position fixed="1">right</position>
+        </section>
+        <section name="footer-blocks">
+            <position width="3">footer1</position>
+            <position width="3">footer2</position>
+            <position width="3">footer3</position>
+            <position width="3">footer4</position>
+        </section>
+    </layout>
 
-	<configgroup name="template_kickstart">Template</configgroup>
+    <configgroup name="template_kickstart">Template</configgroup>
 
-	<config group="template_kickstart"
-			type="divider"
-			order="3000">General</config>
-	<config group="template_kickstart"
-			name="enable_landing"
-			type="radio"
-			order="3001"
-			values="1,0"
-			description="Enable landing page">1</config>
-	<config group="template_kickstart"
-			name="custom_colors"
-			type="radio"
-			order="3002"
-			values="1,0"
-			description="Enable custom colors and backgrounds">0</config>
-	<config group="template_kickstart"
-			name="custom_color_body_bg"
-			type="colorpicker"
-			order="3003"
-			description="Body background">#fff</config>
-	<config group="template_kickstart"
-			name="custom_color_text"
-			type="colorpicker"
-			order="3004"
-			description="Text color">#333333</config>
-	<config group="template_kickstart"
-			name="custom_color_headings"
-			type="colorpicker"
-			order="3005"
-			description="Headings color">#333333</config>
-	<config group="template_kickstart"
-			name="custom_color_link"
-			type="colorpicker"
-			order="3006"
-			description="Link color">#38b7ea</config>
-	<config group="template_kickstart"
-			name="custom_color_link_hover"
-			type="colorpicker"
-			order="3007"
-			description="Link hover color">#1490c1</config>
+    <config group="template_kickstart"
+            type="divider"
+            order="3000">General</config>
+    <config group="template_kickstart"
+            name="enable_landing"
+            type="radio"
+            order="3001"
+            values="1,0"
+            description="Enable landing page">1</config>
+    <config group="template_kickstart"
+            name="custom_colors"
+            type="radio"
+            order="3002"
+            values="1,0"
+            description="Enable custom colors and backgrounds">0</config>
+    <config group="template_kickstart"
+            name="custom_color_body_bg"
+            type="colorpicker"
+            order="3003"
+            description="Body background">#fff</config>
+    <config group="template_kickstart"
+            name="custom_color_text"
+            type="colorpicker"
+            order="3004"
+            description="Text color">#333333</config>
+    <config group="template_kickstart"
+            name="custom_color_headings"
+            type="colorpicker"
+            order="3005"
+            description="Headings color">#333333</config>
+    <config group="template_kickstart"
+            name="custom_color_link"
+            type="colorpicker"
+            order="3006"
+            description="Link color">#38b7ea</config>
+    <config group="template_kickstart"
+            name="custom_color_link_hover"
+            type="colorpicker"
+            order="3007"
+            description="Link hover color">#1490c1</config>
 
-	<config group="template_kickstart" 
-			type="divider"
-			order="3100">Inventory bar</config>
-	<config group="template_kickstart"
-			name="search_inventory"
-			type="radio"
-			order="3101"
-			values="1,0"
-			description="Show search in inventory">0</config>
-	<config group="template_kickstart"
-			name="custom_color_inventory_bg"
-			type="colorpicker"
-			order="3102"
-			description="Background">#323232</config>
-	<config group="template_kickstart"
-			name="custom_color_inventory_link"
-			type="colorpicker"
-			order="3103"
-			description="Link color">rgba(255,255,255,0.45)</config>
-	<config group="template_kickstart"
-			name="custom_color_inventory_link_hover"
-			type="colorpicker"
-			order="3104"
-			description="Link hover color">rgba(255,255,255,0.5)</config>
-	<config group="template_kickstart"
-			name="custom_color_inventory_link_active"
-			type="colorpicker"
-			order="3105"
-			description="Link active color">rgba(255,255,255,0.7)</config>
+    <config group="template_kickstart"
+            type="divider"
+            order="3100">Inventory bar</config>
+    <config group="template_kickstart"
+            name="search_inventory"
+            type="radio"
+            order="3101"
+            values="1,0"
+            description="Show search in inventory">0</config>
+    <config group="template_kickstart"
+            name="custom_color_inventory_bg"
+            type="colorpicker"
+            order="3102"
+            description="Background">#323232</config>
+    <config group="template_kickstart"
+            name="custom_color_inventory_link"
+            type="colorpicker"
+            order="3103"
+            description="Link color">rgba(255,255,255,0.45)</config>
+    <config group="template_kickstart"
+            name="custom_color_inventory_link_hover"
+            type="colorpicker"
+            order="3104"
+            description="Link hover color">rgba(255,255,255,0.5)</config>
+    <config group="template_kickstart"
+            name="custom_color_inventory_link_active"
+            type="colorpicker"
+            order="3105"
+            description="Link active color">rgba(255,255,255,0.7)</config>
 
-	<config group="template_kickstart" 
-			type="divider"
-			order="3200">Navbar / Mainmenu</config>
-	<config group="template_kickstart" 
-			name="max_top_menu_items"
-			type="text"
-			description="Max number of items in Main Menu"
-			order="3201">6</config>
-	<config group="template_kickstart"
-			name="enable_text_logo"
-			type="radio"
-			order="3202"
-			values="1,0"
-			description="Enable Logo text">0</config>
-	<config group="template_kickstart"
-			name="logo_text"
-			type="text"
-			order="3203"
-			show="enable_text_logo|1"
-			description="Logo text">Kickstart</config>
-	<config group="template_kickstart"
-			name="navbar_sticky"
-			type="radio"
-			order="3204"
-			values="1,0"
-			description="Sticky navbar">1</config>
-	<config group="template_kickstart"
-			name="search_navbar"
-			type="radio"
-			order="3205"
-			values="1,0"
-			description="Show search in navbar">1</config>
-	<config group="template_kickstart"
-			name="custom_color_navbar_bg"
-			type="colorpicker"
-			order="3206"
-			description="Background">#ffffff</config>
-	<config group="template_kickstart"
-			name="custom_color_navbar_link"
-			type="colorpicker"
-			order="3207"
-			description="Link color">rgba(50,50,50,0.6)</config>
-	<config group="template_kickstart"
-			name="custom_color_navbar_link_hover"
-			type="colorpicker"
-			order="3208"
-			description="Link hover color">rgba(50,50,50,0.8)</config>
-	<config group="template_kickstart"
-			name="custom_color_navbar_link_active"
-			type="colorpicker"
-			order="3209"
-			description="Link active color">#38b7ea</config>
+    <config group="template_kickstart"
+            type="divider"
+            order="3200">Navbar / Mainmenu</config>
+    <config group="template_kickstart"
+            name="max_top_menu_items"
+            type="text"
+            description="Max number of items in Main Menu"
+            order="3201">6</config>
+    <config group="template_kickstart"
+            name="enable_text_logo"
+            type="radio"
+            order="3202"
+            values="1,0"
+            description="Enable Logo text">0</config>
+    <config group="template_kickstart"
+            name="logo_text"
+            type="text"
+            order="3203"
+            show="enable_text_logo|1"
+            description="Logo text">Kickstart</config>
+    <config group="template_kickstart"
+            name="navbar_sticky"
+            type="radio"
+            order="3204"
+            values="1,0"
+            description="Sticky navbar">1</config>
+    <config group="template_kickstart"
+            name="search_navbar"
+            type="radio"
+            order="3205"
+            values="1,0"
+            description="Show search in navbar">1</config>
+    <config group="template_kickstart"
+            name="custom_color_navbar_bg"
+            type="colorpicker"
+            order="3206"
+            description="Background">#ffffff</config>
+    <config group="template_kickstart"
+            name="custom_color_navbar_link"
+            type="colorpicker"
+            order="3207"
+            description="Link color">rgba(50,50,50,0.6)</config>
+    <config group="template_kickstart"
+            name="custom_color_navbar_link_hover"
+            type="colorpicker"
+            order="3208"
+            description="Link hover color">rgba(50,50,50,0.8)</config>
+    <config group="template_kickstart"
+            name="custom_color_navbar_link_active"
+            type="colorpicker"
+            order="3209"
+            description="Link active color">#38b7ea</config>
 
-	<config group="template_kickstart" 
-			type="divider"
-			order="3300">Header / Teaser</config>
-	<config group="template_kickstart" 
-			name="bg_header"
-			type="image"
-			description="Background image"
-			order="3301"><![CDATA[]]></config>
-	<config group="template_kickstart" 
-			name="bg_header_use_color"
-			type="radio"
-			values="1,0"
-			description="Use color instead image"
-			order="3302">0</config>
-	<config group="template_kickstart"
-			name="bg_header_color"
-			type="colorpicker"
-			order="3303"
-			show="bg_header_use_color|1"
-			description="Background color">#6b3561</config>
+    <config group="template_kickstart"
+            type="divider"
+            order="3300">Header / Teaser</config>
+    <config group="template_kickstart"
+            name="bg_header"
+            type="image"
+            description="Background image"
+            order="3301"><![CDATA[]]></config>
+    <config group="template_kickstart"
+            name="bg_header_use_color"
+            type="radio"
+            values="1,0"
+            description="Use color instead image"
+            order="3302">0</config>
+    <config group="template_kickstart"
+            name="bg_header_color"
+            type="colorpicker"
+            order="3303"
+            show="bg_header_use_color|1"
+            description="Background color">#6b3561</config>
 
-	<config group="template_kickstart" 
-			type="divider"
-			order="3350">Features section</config>
-	<config group="template_kickstart" 
-			name="bg_features"
-			type="image"
-			description="Background image"
-			order="3351"><![CDATA[]]></config>
-	<config group="template_kickstart" 
-			name="bg_features_use_color"
-			type="radio"
-			values="1,0"
-			description="Use color instead image"
-			order="3352">0</config>
-	<config group="template_kickstart"
-			name="bg_features_color"
-			type="colorpicker"
-			order="3353"
-			show="bg_features_use_color|1"
-			description="Background color">#6b3561</config>
+    <config group="template_kickstart"
+            type="divider"
+            order="3350">Features section</config>
+    <config group="template_kickstart"
+            name="bg_features"
+            type="image"
+            description="Background image"
+            order="3351"><![CDATA[]]></config>
+    <config group="template_kickstart"
+            name="bg_features_use_color"
+            type="radio"
+            values="1,0"
+            description="Use color instead image"
+            order="3352">0</config>
+    <config group="template_kickstart"
+            name="bg_features_color"
+            type="colorpicker"
+            order="3353"
+            show="bg_features_use_color|1"
+            description="Background color">#6b3561</config>
 
-	<config group="template_kickstart" 
-			type="divider"
-			order="3400">Footer</config>
-	<config group="template_kickstart"
-			name="footer_bg"
-			type="colorpicker"
-			order="3401"
-			description="Background">#323232</config>
-	<config group="template_kickstart"
-			name="footer_blocks_bg"
-			type="colorpicker"
-			order="3401"
-			description="Background of footer blocks">#444444</config>
-	<config group="template_kickstart"
-			name="footer_link"
-			type="colorpicker"
-			order="3402"
-			description="Link color">rgba(255,255,255,0.45)</config>
-	<config group="template_kickstart"
-			name="footer_link_hover"
-			type="colorpicker"
-			order="3403"
-			description="Link hover color">rgba(255,255,255,0.5)</config>
-	<config group="template_kickstart"
-			name="footer_link_active"
-			type="colorpicker"
-			order="3404"
-			description="Link active color">rgba(255,255,255,0.7)</config>
+    <config group="template_kickstart"
+            type="divider"
+            order="3400">Footer</config>
+    <config group="template_kickstart"
+            name="footer_bg"
+            type="colorpicker"
+            order="3401"
+            description="Background">#323232</config>
+    <config group="template_kickstart"
+            name="footer_blocks_bg"
+            type="colorpicker"
+            order="3401"
+            description="Background of footer blocks">#444444</config>
+    <config group="template_kickstart"
+            name="footer_link"
+            type="colorpicker"
+            order="3402"
+            description="Link color">rgba(255,255,255,0.45)</config>
+    <config group="template_kickstart"
+            name="footer_link_hover"
+            type="colorpicker"
+            order="3403"
+            description="Link hover color">rgba(255,255,255,0.5)</config>
+    <config group="template_kickstart"
+            name="footer_link_active"
+            type="colorpicker"
+            order="3404"
+            description="Link active color">rgba(255,255,255,0.7)</config>
 
-	<config group="template_kickstart" 
-			type="divider"
-			order="4000">Social links</config>
-	<config group="template_kickstart"
-			name="website_social"
-			type="radio"
-			order="4001"
-			values="1,0"
-			description="Show links">1</config>
-	<config group="template_kickstart"
-			name="website_social_t"
-			type="text"
-			order="4002"
-			show="website_social|1"
-			description="Twitter Link">https://twitter.com/IntelliantsLLC</config>
-	<config group="template_kickstart"
-			name="website_social_f"
-			type="text"
-			order="4003"
-			show="website_social|1"
-			description="Facebook Link">https://www.facebook.com/Intelliants</config>
-	<config group="template_kickstart"
-			name="website_social_g"
-			type="text"
-			order="4004"
-			show="website_social|1"
-			description="Google+ Link">https://plus.google.com/102500660503219569194/posts</config>
-	<config group="template_kickstart"
-			name="website_social_i"
-			type="text"
-			order="4005"
-			show="website_social|1"
-			description="LinkedIn Link">#</config>
+    <config group="template_kickstart"
+            type="divider"
+            order="4000">Social links</config>
+    <config group="template_kickstart"
+            name="website_social"
+            type="radio"
+            order="4001"
+            values="1,0"
+            description="Show links">1</config>
+    <config group="template_kickstart"
+            name="website_social_t"
+            type="text"
+            order="4002"
+            show="website_social|1"
+            description="Twitter Link">https://twitter.com/IntelliantsLLC</config>
+    <config group="template_kickstart"
+            name="website_social_f"
+            type="text"
+            order="4003"
+            show="website_social|1"
+            description="Facebook Link">https://www.facebook.com/Intelliants</config>
+    <config group="template_kickstart"
+            name="website_social_g"
+            type="text"
+            order="4004"
+            show="website_social|1"
+            description="Google+ Link">https://plus.google.com/102500660503219569194/posts</config>
+    <config group="template_kickstart"
+            name="website_social_i"
+            type="text"
+            order="4005"
+            show="website_social|1"
+            description="LinkedIn Link">#</config>
 
-	<config group="template_kickstart" 
-			name="ckeditor_css"
-			type="hidden"
-			description="CKEditor CSS"
-			order="5000">ckeditor.css</config>
+    <config group="template_kickstart"
+            name="ckeditor_css"
+            type="hidden"
+            description="CKEditor CSS"
+            order="5000">ckeditor.css</config>
 
-	<changeset>
-		<menu position="account" status="active">account</menu>
+    <changeset>
+        <menu position="account" status="active">account</menu>
 
-		<block status="active" classname="section section-portfolio" position="landing" order="203">new_portfolio_entries</block>
-		<block status="active" classname="section section-testimonials" position="landing" order="204">testimonials</block>
-		<block status="active" classname="section section-blog" position="landing" order="205">blogroll</block>
-		<block status="active" classname="box--border" position="right">common_statistics</block>
-		<block status="active" classname="box--border" position="left">filters</block>
-	</changeset>
+        <block status="active" classname="section section-portfolio" position="landing" order="203">new_portfolio_entries</block>
+        <block status="active" classname="section section-testimonials" position="landing" order="204">testimonials</block>
+        <block status="active" classname="section section-blog" position="landing" order="205">blogroll</block>
+        <block status="active" classname="box--border" position="right">common_statistics</block>
+        <block status="active" classname="box--border" position="left">filters</block>
+    </changeset>
 
-	<blocks>
-		<block name="header"
-			   title="Teaser block"
-			   position="teaser"
-			   header="0"
-			   collapsible="0"
-			   sticky="0"
-			   pages="index"
-			   status="active"
-			   type="html">
-			<![CDATA[
+    <blocks>
+        <block name="header"
+               title="Teaser block"
+               position="teaser"
+               header="0"
+               collapsible="0"
+               sticky="0"
+               pages="index"
+               status="active"
+               type="html">
+            <![CDATA[
 <div class="teaser">
-	<div class="container">
-		<h1>The greatest place<br>to <span class="text-warning">kickstart anything</span></h1>
-		<h2>You will love how easy<br>it is to manage your content</h2>
-	</div>
+    <div class="container">
+        <h1>The greatest place<br>to <span class="text-warning">kickstart anything</span></h1>
+        <h2>You will love how easy<br>it is to manage your content</h2>
+    </div>
 </div>
-			]]>
-		</block>
-		<block name="landing_what_is_this"
-			   title="What this all about?"
-			   position="landing"
-			   header="1"
-			   collapsible="0"
-			   sticky="0"
-			   pages="index"
-			   status="active"
-			   type="smarty"
-			   classname="section section-what"
-			   order="200">
-			<![CDATA[
+            ]]>
+        </block>
+        <block name="landing_what_is_this"
+               title="What this all about?"
+               position="landing"
+               header="1"
+               collapsible="0"
+               sticky="0"
+               pages="index"
+               status="active"
+               type="smarty"
+               classname="section section-what"
+               order="200">
+            <![CDATA[
 <p class="lead text-center">This is your Subrion CMS. Start editing your content right away!</p>
 <div class="row text-center m-t-md">
-	<div class="col-md-4">
-		<img src="{$img}icon-monitor.png" width="100" alt=""/>
-		<h3>Landing page</h3>
-		<p class="text-fade-50">This is a starting page for your website. You can change it (switch off) to display content and blocks. This can be done on Template configuration page in Admin Dashboard.</p>
-	</div>
-	<div class="col-md-4">
-		<img src="{$img}icon-sliders.png" width="100" alt=""/>
-		<h3>Configuration options</h3>
-		<p class="text-fade-50"><b>Kickstart</b> template has many configuration options to play with. Go to admin panel and try to change, for example, background of header block.</p>
-	</div>
-	<div class="col-md-4">
-		<img src="{$img}icon-browser.png" width="100" alt=""/>
-		<h3>Blocks management</h3>
-		<p class="text-fade-50">Each section on this page can be changed in Admin Dashboard in Blocks section, as well as all other blocks on all pages. Go give it a try!</p>
-	</div>
+    <div class="col-md-4">
+        <img src="{$img}icon-monitor.png" width="100" alt=""/>
+        <h3>Landing page</h3>
+        <p class="text-fade-50">This is a starting page for your website. You can change it (switch off) to display content and blocks. This can be done on Template configuration page in Admin Dashboard.</p>
+    </div>
+    <div class="col-md-4">
+        <img src="{$img}icon-sliders.png" width="100" alt=""/>
+        <h3>Configuration options</h3>
+        <p class="text-fade-50"><b>Kickstart</b> template has many configuration options to play with. Go to admin panel and try to change, for example, background of header block.</p>
+    </div>
+    <div class="col-md-4">
+        <img src="{$img}icon-browser.png" width="100" alt=""/>
+        <h3>Blocks management</h3>
+        <p class="text-fade-50">Each section on this page can be changed in Admin Dashboard in Blocks section, as well as all other blocks on all pages. Go give it a try!</p>
+    </div>
 </div>
 <div class="text-center m-t">
-	<a class="btn btn-primary text-uppercase" href="{$smarty.const.IA_ADMIN_URL}">Go to admin dashboard</a>
+    <a class="btn btn-primary text-uppercase" href="{$smarty.const.IA_ADMIN_URL}">Go to admin dashboard</a>
 </div>
-			]]>
-		</block>
-		<block name="landing_features"
-			   title="Features"
-			   position="landing"
-			   header="1"
-			   collapsible="0"
-			   sticky="0"
-			   pages="index"
-			   status="active"
-			   type="html"
-			   classname="section section-features"
-			   order="201">
-			<![CDATA[
+            ]]>
+        </block>
+        <block name="landing_features"
+               title="Features"
+               position="landing"
+               header="1"
+               collapsible="0"
+               sticky="0"
+               pages="index"
+               status="active"
+               type="html"
+               classname="section section-features"
+               order="201">
+            <![CDATA[
 <div class="row">
-	<div class="col-sm-6">
-		<div class="b-feature b-feature--right">
-			<div class="b-feature__img">
-				<span class="fa fa-hand-peace-o"></span>
-			</div>
-			<div class="b-feature__body">
-				<h3>Free & open source</h3>
-				<p>You don't need to pay a single penny to start using Subrion CMS. It's not encrypted in any way so you can customize it per your needs.</p>
-			</div>
-		</div>
-	</div>
-	<div class="col-sm-6">
-		<div class="b-feature">
-			<div class="b-feature__img">
-				<span class="fa fa-rocket"></span>
-			</div>
-			<div class="b-feature__body">
-				<h3>Extremely easy to extend</h3>
-				<p>Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
-			</div>
-		</div>
-	</div>
-</div>
-<div class="row">
-	<div class="col-sm-6">
-		<div class="b-feature b-feature--right">
-			<div class="b-feature__img">
-				<span class="fa fa-cloud-download"></span>
-			</div>
-			<div class="b-feature__body">
-				<h3>Templates and plugins</h3>
-				<p>No need to search. Plugins and templates are available straight from your admin dashboard with one click installation process.</p>
-			</div>
-		</div>
-	</div>
-	<div class="col-sm-6">
-		<div class="b-feature">
-			<div class="b-feature__img">
-				<span class="fa fa-cogs"></span>
-			</div>
-			<div class="b-feature__body">
-				<h3>Powerful admin dashboard</h3>
-				<p>It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
-			</div>
-		</div>
-	</div>
+    <div class="col-sm-6">
+        <div class="b-feature b-feature--right">
+            <div class="b-feature__img">
+                <span class="fa fa-hand-peace-o"></span>
+            </div>
+            <div class="b-feature__body">
+                <h3>Free & open source</h3>
+                <p>You don't need to pay a single penny to start using Subrion CMS. It's not encrypted in any way so you can customize it per your needs.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="b-feature">
+            <div class="b-feature__img">
+                <span class="fa fa-rocket"></span>
+            </div>
+            <div class="b-feature__body">
+                <h3>Extremely easy to extend</h3>
+                <p>Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
+            </div>
+        </div>
+    </div>
 </div>
 <div class="row">
-	<div class="col-sm-6">
-		<div class="b-feature b-feature--right">
-			<div class="b-feature__img">
-				<span class="fa fa-edit"></span>
-			</div>
-			<div class="b-feature__body">
-				<h3>Blog in the box</h3>
-				<p>Bring your online presence to a whole new level with the extensive blog functionality that comes in the version by default.</p>
-			</div>
-		</div>
-	</div>
-	<div class="col-sm-6">
-		<div class="b-feature">
-			<div class="b-feature__img">
-				<span class="fa fa-flag"></span>
-			</div>
-			<div class="b-feature__body">
-				<h3>Multilingual CMS</h3>
-				<p>Use ready translation or translate the system into your language. It provides all the functionality to become a multilingual solution.</p>
-			</div>
-		</div>
-	</div>
+    <div class="col-sm-6">
+        <div class="b-feature b-feature--right">
+            <div class="b-feature__img">
+                <span class="fa fa-cloud-download"></span>
+            </div>
+            <div class="b-feature__body">
+                <h3>Templates and plugins</h3>
+                <p>No need to search. Plugins and templates are available straight from your admin dashboard with one click installation process.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="b-feature">
+            <div class="b-feature__img">
+                <span class="fa fa-cogs"></span>
+            </div>
+            <div class="b-feature__body">
+                <h3>Powerful admin dashboard</h3>
+                <p>It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
+            </div>
+        </div>
+    </div>
 </div>
-			]]>
-		</block>
-		<block name="landing_mobile"
-			   title="Ready for mobile devices"
-			   position="landing"
-			   header="0"
-			   collapsible="0"
-			   sticky="0"
-			   pages="index"
-			   status="active"
-			   type="smarty"
-			   classname="section section-mobile"
-			   order="202">
-			<![CDATA[
 <div class="row">
-	<div class="col-md-4 col-md-offset-2">
-		<div class="section-mobile__text">
-			<h2>{$block.title}</h2>
-			<p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ipsa distinctio vel aspernatur, reiciendis excepturi.</p>
-			<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. At animi corporis laboriosam. Maiores voluptatibus dicta ea, quo repellendus eum officiis enim non? Porro aut harum pariatur sit adipisci accusantium rem!
-			</p>
-			<p class="m-t"><a href="#" class="btn btn-warning text-uppercase">Learn more</a> <a href="#" class="btn btn-link">Contact us</a></p>
-		</div>
-	</div>
-	<div class="col-md-4">
-		<div class="section-mobile__image">
-			<img class="img-responsive center-block" src="{$img}section-mobile.png" alt=""/>
-		</div>
-	</div>
+    <div class="col-sm-6">
+        <div class="b-feature b-feature--right">
+            <div class="b-feature__img">
+                <span class="fa fa-edit"></span>
+            </div>
+            <div class="b-feature__body">
+                <h3>Blog in the box</h3>
+                <p>Bring your online presence to a whole new level with the extensive blog functionality that comes in the version by default.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="b-feature">
+            <div class="b-feature__img">
+                <span class="fa fa-flag"></span>
+            </div>
+            <div class="b-feature__body">
+                <h3>Multilingual CMS</h3>
+                <p>Use ready translation or translate the system into your language. It provides all the functionality to become a multilingual solution.</p>
+            </div>
+        </div>
+    </div>
 </div>
-			]]>
-		</block>
-		<block name="top"
-			   title="Top block position"
-			   position="top"
-			   header="1"
-			   collapsible="1"
-			   sticky="0"
-			   pages="index"
-			   status="active"
-			   type="html">
-			<![CDATA[
+            ]]>
+        </block>
+        <block name="landing_mobile"
+               title="Ready for mobile devices"
+               position="landing"
+               header="0"
+               collapsible="0"
+               sticky="0"
+               pages="index"
+               status="active"
+               type="smarty"
+               classname="section section-mobile"
+               order="202">
+            <![CDATA[
+<div class="row">
+    <div class="col-md-4 col-md-offset-2">
+        <div class="section-mobile__text">
+            <h2>{$block.title}</h2>
+            <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ipsa distinctio vel aspernatur, reiciendis excepturi.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. At animi corporis laboriosam. Maiores voluptatibus dicta ea, quo repellendus eum officiis enim non? Porro aut harum pariatur sit adipisci accusantium rem!
+            </p>
+            <p class="m-t"><a href="#" class="btn btn-warning text-uppercase">Learn more</a> <a href="#" class="btn btn-link">Contact us</a></p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="section-mobile__image">
+            <img class="img-responsive center-block" src="{$img}section-mobile.png" alt=""/>
+        </div>
+    </div>
+</div>
+            ]]>
+        </block>
+        <block name="top"
+               title="Top block position"
+               position="top"
+               header="1"
+               collapsible="1"
+               sticky="0"
+               pages="index"
+               status="active"
+               type="html">
+            <![CDATA[
 <p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
 <p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod incorrupte, brute laoreet at pri, eam antiopam honestatis efficiantur ea. Velit atomorum voluptaria ad nam, hinc aperiam accumsan ne est, ut dictas dissentias his.</p>
-			]]>
-		</block>
-		<block name="bottom_block"
-			   title="Bottom block position"
-			   position="bottom"
-			   header="1"
-			   collapsible="1"
-			   sticky="0"
-			   pages="index"
-			   status="active"
-			   type="html">
-			<![CDATA[
+            ]]>
+        </block>
+        <block name="bottom_block"
+               title="Bottom block position"
+               position="bottom"
+               header="1"
+               collapsible="1"
+               sticky="0"
+               pages="index"
+               status="active"
+               type="html">
+            <![CDATA[
 <p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
 <p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod incorrupte, brute laoreet at pri, eam antiopam honestatis efficiantur ea. Velit atomorum voluptaria ad nam, hinc aperiam accumsan ne est, ut dictas dissentias his.</p>
-			]]>
-		</block>
+            ]]>
+        </block>
 
-		<block name="html_block1"
-			   title="HTML block #1"
-			   position="left"
-			   header="1"
-			   collapsible="1"
-			   sticky="1"
-			   order="99"
-			   status="active"
-			   type="html"
-			   classname="box--border">
-			<![CDATA[
+        <block name="html_block1"
+               title="HTML block #1"
+               position="left"
+               header="1"
+               collapsible="1"
+               sticky="1"
+               order="99"
+               status="active"
+               type="html"
+               classname="box--border">
+            <![CDATA[
 <p>You can change this block in admin panel. Remember, if you change template, this block will be lost. We advise you to clone this block.</p>
 <p>Ne lorem percipit efficiantur mei, ius ut simul vidisse. An vel probatus explicari appellantur. Has et comprehensam interpretaris, quo no inimicus maluisset temporibus. Ea mea quod.</p>
-			]]>
-		</block>
-		<block name="footer1"
-			   title="About CMS"
-			   position="footer1"
-			   header="1"
-			   collapsible="0"
-			   sticky="1"
-			   status="active"
-			   type="html">
-			<![CDATA[
+            ]]>
+        </block>
+        <block name="footer1"
+               title="About CMS"
+               position="footer1"
+               header="1"
+               collapsible="0"
+               sticky="1"
+               status="active"
+               type="html">
+            <![CDATA[
 <p>Subrion is a free open source content management system
 that allows you to build websites for any purpose. Yes, from blog to corporate mega portal.</p>
 <ul class="list-unstyled hidden">
-	<li><span class="fa fa-phone"></span> 1-677-124-44227</li>
-	<li><span class="fa fa-map-pin"></span> 437 S Olive St, Los Angeles</li>
-	<li><span class="fa fa-clock-o"></span> Mon - Sat 8.00 - 18.00h</li>
+    <li><span class="fa fa-phone"></span> 1-677-124-44227</li>
+    <li><span class="fa fa-map-pin"></span> 437 S Olive St, Los Angeles</li>
+    <li><span class="fa fa-clock-o"></span> Mon - Sat 8.00 - 18.00h</li>
 </ul>
-			]]>
-		</block>
-		<block name="footer2"
-			   title="For users"
-			   position="footer2"
-			   header="1"
-			   collapsible="0"
-			   sticky="1"
-			   status="active"
-			   type="html">
-			<![CDATA[
+            ]]>
+        </block>
+        <block name="footer2"
+               title="For users"
+               position="footer2"
+               header="1"
+               collapsible="0"
+               sticky="1"
+               status="active"
+               type="html">
+            <![CDATA[
 <p>It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
-			]]>
-		</block>
-		<block name="footer3"
-			   title="For developers"
-			   position="footer3"
-			   header="1"
-			   collapsible="0"
-			   sticky="1"
-			   status="active"
-			   type="html">
-			<![CDATA[
+            ]]>
+        </block>
+        <block name="footer3"
+               title="For developers"
+               position="footer3"
+               header="1"
+               collapsible="0"
+               sticky="1"
+               status="active"
+               type="html">
+            <![CDATA[
 <p>Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
-			]]>
-		</block>
-		<block name="footer4"
-			   title="For designers"
-			   position="footer4"
-			   header="1"
-			   collapsible="0"
-			   sticky="1"
-			   status="active"
-			   type="html">
-			<![CDATA[
+            ]]>
+        </block>
+        <block name="footer4"
+               title="For designers"
+               position="footer4"
+               header="1"
+               collapsible="0"
+               sticky="1"
+               status="active"
+               type="html">
+            <![CDATA[
 <p>Simple templating engine and styles allows you to create any template you wish with just a few lines of code.</p>
-			]]>
-		</block>
-	</blocks>
+            ]]>
+        </block>
+    </blocks>
 
-	<phrases>
-		<phrase category="frontend" key="login">Log in</phrase>
-		<phrase category="frontend" key="register">Sign up</phrase>
-		<phrase category="frontend" key="back_to_top">Back to top</phrase>
-		<phrase category="frontend" key="admin_dashboard">Admin Dashboard</phrase>
-	</phrases>
+    <phrases>
+        <phrase category="frontend" key="login">Log in</phrase>
+        <phrase category="frontend" key="register">Sign up</phrase>
+        <phrase category="frontend" key="back_to_top">Back to top</phrase>
+        <phrase category="frontend" key="admin_dashboard">Admin Dashboard</phrase>
+    </phrases>
 </module>

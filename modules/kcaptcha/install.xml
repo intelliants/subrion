@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <module type="plugin" name="kcaptcha">
-	<title>KCaptcha</title>
-	<summary>Plugin adds the CAPTCHA to all pages where it is needed to prevents automatic bot form submission</summary>
-	<author>Intelliants LLC</author>
-	<contributor>Intelliants LLC</contributor>
-	<version>4.1.0</version>
-	<date>2017-02-13</date>
-	<category>captcha</category>
-	<compatibility>4.1</compatibility>
+    <title>KCaptcha</title>
+    <summary>Plugin adds the CAPTCHA to all pages where it is needed to prevents automatic bot form submission</summary>
+    <author>Intelliants LLC</author>
+    <contributor>Intelliants LLC</contributor>
+    <version>4.1.0</version>
+    <date>2017-02-13</date>
+    <category>captcha</category>
+    <compatibility>4.1</compatibility>
 
-	<config group="miscellaneous" name="kcaptcha_divider" type="divider" description="KCAPTCHA">KCAPTCHA</config>
-	<config group="miscellaneous" name="kcaptcha_case_sensitive" type="radio" values="1,0" description="Case sensitive">1</config>
-	<config group="miscellaneous" name="kcaptcha_num_chars" type="text" description="Number of characters">5</config>
+    <config group="miscellaneous" name="kcaptcha_divider" type="divider" description="KCAPTCHA">KCAPTCHA</config>
+    <config group="miscellaneous" name="kcaptcha_case_sensitive" type="radio" values="1,0" description="Case sensitive">1</config>
+    <config group="miscellaneous" name="kcaptcha_num_chars" type="text" description="Number of characters">5</config>
 
-	<phrases>
-		<phrase key="click_to_redraw" category="frontend">Click here to redraw</phrase>
-		<phrase key="captcha_tooltip" category="frontend">Please input letters you see on the image.&lt;br /&gt;Click on image to redraw.</phrase>
-	</phrases>
+    <phrases>
+        <phrase key="click_to_redraw" category="frontend">Click here to redraw</phrase>
+        <phrase key="captcha_tooltip" category="frontend">Please input letters you see on the image.&lt;br /&gt;Click on image to redraw.</phrase>
+    </phrases>
 </module>
