@@ -851,7 +851,7 @@ _d($parents, 'PARENTS'); _d($children, 'CHILDREN');
         }
 
         empty($data['parents']) || $this->setParents($fieldName, $data['parents']);
-        empty($data['children']) || $this->_relationsSetChildren($this->_data, $data['children'], $fieldData['item']);
+        empty($data['children']) || $this->_relationsSetChildren($data['children'], $fieldData['item']);
     }
 
     public function setParents($fieldName, array $parents)
@@ -879,9 +879,9 @@ _d($parents, 'PARENTS'); _d($children, 'CHILDREN');
         $this->_iaDb->resetTable();
     }
 
-    private function _relationsSetChildren($values, $children, $itemName)
+    private function _relationsSetChildren($children, $itemName)
     {
-        $values = array_keys($values);
+        $values = array_keys($this->_values);
 
         $this->_iaDb->setTable(iaField::getTableRelations());
 
