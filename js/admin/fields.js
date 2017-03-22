@@ -517,9 +517,8 @@ $(function () {
             buttons: [{
                 text: _t('reset'),
                 handler: function(){
-                    tree.getRootNode().cascade(function(n)
-                    {
-                        n.getUI().toggleCheck(false);
+                    tree.getRootNode().eachChild(function(childNode){
+                        childNode.set('checked', false);
                     });
                     $div.val('');
                     $info.html('');
