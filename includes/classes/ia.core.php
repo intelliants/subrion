@@ -428,13 +428,23 @@ final class iaCore
         $stmt = [];
 
         if ($user) {
-            $stmt[] = "(`type` = 'user' AND `type_id` = $user) ";
+            $stmt[] = "(cc.`type` = 'user' AND cc.`type_id` = $user) ";
         }
         if ($group) {
-            $stmt[] = "(`type` = 'group' AND `type_id` = $group) ";
+            $stmt[] = "(cc.`type` = 'group' AND cc.`type_id` = $group) ";
         }
 
-        $rows = $this->iaDb->all(['type', 'name', 'value'], implode(' OR ', $stmt), null, null, self::getCustomConfigTable());
+        $sql = <<<SQL
+SELECT 
+  cc.`name`, cc.`value`, cc.`type`,
+  c.`type` `config_type`, c.`options` `config_options`
+FROM `:prefix:table_config` c
+LEFT JOIN `:prefix:table_custom_config` cc ON (c.`name` = cc.`name`)
+WHERE :where
+SQL;
+        $sql = iaDb::printf($sql, ['prefix' => $this->iaDb->prefix, 'table_config' => self::getConfigTable(),
+            'table_custom_config' => self::getCustomConfigTable(), 'where' => implode(' OR ', $stmt)]);
+        $rows = $this->iaDb->getAll($sql);
 
         if (empty($rows)) {
             return $result;
@@ -442,8 +452,21 @@ final class iaCore
 
         $result = ['group' => [], 'user' => [], 'plan' => []];
 
+        $currentLangCode = $this->iaView->language;
         foreach ($rows as $row) {
-            $result[$row['type']][$row['name']] = $row['value'];
+            $value = $row['value'];
+
+            if ('text' == $row['config_type'] || 'textarea' == $row['config_type']) {
+                $options = empty($row['config_options']) ? [] : json_decode($row['config_options'], true);
+
+                if (isset($options['multilingual']) && $options['multilingual']) {
+                    $value = preg_match('#\{\:' . $currentLangCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
+                        ? $matches[1]
+                        : '';
+                }
+            }
+
+            $result[$row['type']][$row['name']] = $value;
         }
 
         $result = array_merge($result['group'], $result['user'], $result['plan']);
