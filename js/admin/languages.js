@@ -290,7 +290,7 @@ Ext.onReady(function () {
         $(this).on('click', function (e) {
             e.preventDefault();
 
-            var link = $(this);
+            var $this = $(this);
 
             Ext.Msg.show(
                 {
@@ -299,7 +299,7 @@ Ext.onReady(function () {
                     buttons: Ext.Msg.YESNO,
                     fn: function (btn) {
                         if ('yes' == btn) {
-                            window.location = link.attr('href');
+                            window.location = $this.data('href');
                         }
                     },
                     icon: Ext.MessageBox.QUESTION

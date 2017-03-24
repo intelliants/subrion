@@ -405,7 +405,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
             case 'rm':
                 $defaultLanguage = $this->_iaDb->row(['code'], iaDb::convertIds(1, 'default'), iaLanguage::getLanguagesTable());
-                $url = IA_CLEAR_URL . $defaultLanguage['code'] . IA_DS . $this->_iaCore->get('admin_page') . IA_DS . $this->_name . IA_DS;
+                $url = IA_CLEAR_URL . $defaultLanguage['code'] . IA_URL_DELIMITER . $this->_iaCore->get('admin_page') . IA_URL_DELIMITER . $this->_name . IA_URL_DELIMITER;
                 // TODO: set checkAccess
                 $this->_removeLanguage($iaView);
                 iaUtil::go_to($url);
