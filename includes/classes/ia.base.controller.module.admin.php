@@ -152,6 +152,18 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
         return parent::_unpackGridColumnsArray();
     }
+
+    protected function _gridGetSorting(array $params)
+    {
+        if ($params['sort']) {
+            $multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
+            if (in_array($params['sort'], $multilingualFields)) {
+                $params['sort'].= '_' . $this->_iaCore->language['iso'];
+            }
+        }
+
+        return parent::_gridGetSorting($params);
+    }
     //
 
     protected function _indexPage(&$iaView)
