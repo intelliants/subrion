@@ -146,11 +146,16 @@ $(function () {
             fillUrlBox();
         }
 
-        var $obj = $('.js-local-url-field');
-        isRemoteUrl ? $obj.hide() : $obj.show();
-
-        $obj = $('#js-field-remote-url');
-        isRemoteUrl ? $obj.show() : $obj.hide();
+        if (isRemoteUrl) {
+            $('.js-local-url-field').hide();
+            $('.js-page-content-field').hide();
+            $('#js-field-remote-url').show();
+        }
+        else {
+            $('.js-local-url-field').show();
+            $('.js-page-content-field').show();
+            $('#js-field-remote-url').hide();
+        }
     }).trigger('change');
 
     // Page custom template

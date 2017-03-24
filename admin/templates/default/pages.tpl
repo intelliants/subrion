@@ -278,7 +278,7 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row js-page-content-field">
                 <div class="col col-lg-2">
                     {if count($core.languages) > 1}
                         <div class="btn-group btn-group-xs translate-group-actions">
