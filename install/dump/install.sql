@@ -1582,6 +1582,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_block_name_duplicate','Please change block name. There is a block with the same name in the database.','admin'),
 ('error_compare_same_languages','No way to compare same languages.','admin'),
 ('error_contents','Content field is empty.','admin'),
+('error_fieldgroup_duplicate','Please change name. There is a field group with the same name for the same item.','admin'),
 ('error_filename','Filename field is empty.','admin'),
 ('error_incorrect_dimensions','Set correct image dimensions.','admin'),
 ('error_incorrect_format_from_subrion','The module files are in the incorrect format. Please contact the Subrion team.','admin'),
