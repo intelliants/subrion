@@ -38,7 +38,7 @@ function IntelliTree(params) {
                 search: {show_only_matches: true}
             });
 
-        self.$tree.on('load_node.jstree', _cascadeOpen);
+        self.$tree.on('load_node.jstree after_open.jstree', _cascadeOpen);
         self.$tree.on('changed.jstree', this.onchange);
         if (typeof params.onchange == 'function') {
             self.$tree.on('click.jstree', params.onchange);
