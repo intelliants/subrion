@@ -826,7 +826,7 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`fil
 (2,'menus','read','','menus','menus/','menu',null,10),
 (2,'blocks','read','','blocks','blocks/','menu',null,15),
 (2,'phrases','read','','languages','languages/phrases/','menu',null,20),
-(2,'uploads','read','','uploads','uploads/','menu',null,25),
+(2,'uploads','read','','uploads','uploads/','menu',null,23),
 (2,'','','','','','menu','ctnt_ext',25),
 (2,'fieldgroups','read','','fieldgroups','fieldgroups/','menu',null,30),
 (2,'fields','read','','fields','fields/','menu',null,35),
