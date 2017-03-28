@@ -118,8 +118,8 @@ final class iaCore
         $this->_fetchHooks();
         iaSystem::renderTime('core', 'Hooks Loaded');
 
-        $this->startHook('phpCoreUrlRewrite');
         $this->_setConstants();
+        $this->startHook('phpCoreUrlRewrite');
 
         $this->startHook('init');
 
