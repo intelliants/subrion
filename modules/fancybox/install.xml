@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module type="plugin" name="fancybox">
+    <title>fancyBox</title>
+    <summary>Plugin will add lightbox effect to images based on Fancybox javascript library</summary>
+    <author>Intelliants LLC</author>
+    <contributor>Intelliants LLC</contributor>
+    <version>4.1.0</version>
+    <date>2017-02-13</date>
+    <category>lightbox</category>
+    <compatibility>4.1</compatibility>
+
+    <config group="pictures" name="fancybox_divider" type="divider">fancyBox</config>
+    <config group="pictures" name="fancybox_slide_transition" custom="1" type="select" values="elastic,fade" description="fancyBox slide effect" private="0">elastic</config>
+    <config group="pictures" name="fancybox_open_transition" custom="1" type="select" values="elastic,fade" description="fancyBox open/close effect" private="0">fade</config>
+    <config group="pictures" name="fancybox_slide_speed" custom="1" type="select" values="fast,slow,normal" description="fancyBox slide speed" private="0">fast</config>
+    <config group="pictures" name="fancybox_open_speed" custom="1" type="select" values="fast,slow,normal" description="fancyBox open/close speed" private="0">fast</config>
+    <config group="pictures" name="fancybox_padding" custom="1" type="text" description="fancyBox inner padding" private="0">15</config>
+    <config group="pictures" name="fancybox_arrows" custom="1" type="radio" values="1,0" description="Display navigation arrows" private="0">1</config>
+    <config group="pictures" name="fancybox_closeBtn" custom="1" type="radio" values="1,0" description="Display close button" private="0">1</config>
+    <config group="pictures" name="fancybox_closeClick" custom="1" type="radio" values="1,0" description="If set, fancyBox will be closed when user clicks the content" private="0">0</config>
+
+    <hooks>
+        <hook name="smartyFrontAfterHeadSection,smartyAdminAfterHeadSection" type="smarty">
+            <![CDATA[
+{if 'fancybox' == $core.config.lightbox_name}
+    {ia_add_media files='css:_IA_URL_modules/fancybox/js/jquery.fancybox, js:_IA_URL_modules/fancybox/js/jquery.fancybox.pack'}
+    {ia_add_js}
+$(function()
+{
+    $('a[rel^="ia_lightbox"]').fancybox(
+    {
+        nextEffect: '{$core.config.fancybox_slide_transition}',
+        prevEffect: '{$core.config.fancybox_slide_transition}',
+        openEffect: '{$core.config.fancybox_open_transition}',
+        closeEffect: '{$core.config.fancybox_open_transition}',
+        nextSpeed: '{$core.config.fancybox_slide_speed}',
+        prevSpeed: '{$core.config.fancybox_slide_speed}',
+        openSpeed: '{$core.config.fancybox_open_speed}',
+        closeSpeed: '{$core.config.fancybox_open_speed}',
+        padding: {$core.config.fancybox_padding},
+        arrows: {$core.config.fancybox_arrows},
+        closeBtn: {$core.config.fancybox_closeBtn},
+        closeClick: {$core.config.fancybox_closeClick},
+        helpers: {
+            overlay: {
+                locked: false
+            }
+        }
+    });
+});
+    {/ia_add_js}
+{/if}
+            ]]>
+        </hook>
+    </hooks>
+</module>

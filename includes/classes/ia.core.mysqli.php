@@ -70,7 +70,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
                 'content' => 'Maintenance ongoing, please try later.',
             ];
 
-            require_once 'templates' . IA_DS . '_common' . IA_DS . 'offline.tpl';
+            require_once IA_HOME . 'templates' . IA_DS . '_common' . IA_DS . 'offline.tpl';
             die();
         }
 
