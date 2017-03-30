@@ -46,7 +46,7 @@ abstract class iaAbstractHelperCategoryHybrid extends abstractModuleAdmin implem
             'ALTER TABLE `:table` ADD `_pid` mediumint(8) unsigned NOT NULL default 0',
             'ALTER TABLE `:table` ADD `_parents` tinytext NOT NULL',
             'ALTER TABLE `:table` ADD `_children` text NOT NULL',
-            'ALTER TABLE `:table` ADD `level` smallint(5) unsigned NOT NULL default 0',
+            'ALTER TABLE `:table` ADD `level` tinyint(3) unsigned NOT NULL default 0',
             'ALTER TABLE `:table` ADD INDEX `PARENT` (`_pid`)'
         ];
 
@@ -111,7 +111,7 @@ SQL;
             $entry = ['id' => $row['id'], 'text' => $row['title']];
 
             if ($dynamicLoadMode) {
-                $entry['children'] = ($row['child'] && $row['child'] != $row['id']) || 0 === (int)$row['id'];
+                $entry['children'] = ($row[self::COL_CHILDREN] && $row[self::COL_CHILDREN] != $row['id']) || 0 === (int)$row['id'];
             } else {
                 $entry['state'] = [];
                 $entry['parent'] = $noRootMode
@@ -123,28 +123,6 @@ SQL;
         }
 
         return $output;
-    }
-
-    public function get($columns, $where, $order = '', $start = null, $limit = null)
-    {
-        $sql = <<<SQL
-SELECT :columns, p.`title_:lang` `parent_title`
-	FROM `:table` c 
-LEFT JOIN `:table` p ON (c.`:col_parent` = p.`id`) 
-WHERE :where :order 
-LIMIT :start, :limit
-SQL;
-        $sql = iaDb::printf($sql, [
-            'lang' => $this->iaCore->language['iso'],
-            'table_categories' => self::getTable(true),
-            'columns' => $columns,
-            'where' => $where,
-            'order' => $order,
-            'start' => $start,
-            'limit' => $limit
-        ]);
-
-        return $this->iaDb->getAll($sql);
     }
 
     public function getRootId()
@@ -163,6 +141,25 @@ SQL;
         $this->_processValues($row, true);
 
         return $row;
+    }
+
+    public function update(array $itemData, $id)
+    {
+        // makes impossible to change the alias for the root
+        if ($this->getRootId() == $itemData[self::COL_PARENT_ID] && isset($itemData['title_alias'])) {
+            unset($itemData['title_alias']);
+        }
+
+        return parent::update($itemData, $id);
+    }
+
+    public function delete($itemId)
+    {
+        if ($itemId == $this->getRootId()) {
+            return false;
+        }
+
+        return parent::delete($itemId);
     }
 
     public function updateCounters($itemId, array $itemData, $action, $previousData = null)

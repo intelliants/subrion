@@ -13,7 +13,7 @@
             </div>
         {/if}
         <div id="js-tree" class="tree categories-tree"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}></div>
-        <input type="hidden" name="tree_id" id="input-tree" value="{if isset($item.parent_id)}{$item.parent_id}{else}{$parent.id}{/if}">
+        <input type="hidden" name="tree_id" id="input-tree" value="{if isset($item._pid)}{$item._pid}{else}{$parent.id}{/if}">
         {ia_add_js}
 $(function()
 {
