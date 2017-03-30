@@ -105,8 +105,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 "`relation` != 'parent'" . (empty($_GET['item']) ? '' : " AND `item` = '" . iaSanitize::sql($_GET['item']) . "'"));
 
             $output = [];
-            foreach ($rows as $row)
-            {
+            foreach ($rows as $row) {
                 $output[] = [
                     'id' => $row['name'],
                     'text' => iaField::getFieldTitle($row['item'], $row['name']),

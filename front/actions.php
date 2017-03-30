@@ -200,7 +200,7 @@ if (isset($_GET) && isset($_GET['action'])) {
                     $stmt = '(`username` LIKE :name OR `email` LIKE :name OR `fullname` LIKE :name) AND `status` = :status ORDER BY `username` ASC';
                     $iaDb->bind($stmt, ['name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE]);
 
-                   $sql = <<<SQL
+                    $sql = <<<SQL
 SELECT `id`, CONCAT (`fullname`, ' (', `email`, ')') `fullname` 
   FROM :table_members 
 WHERE :conditions 
