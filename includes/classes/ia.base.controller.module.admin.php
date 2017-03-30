@@ -351,42 +351,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
     protected function _getJsonTree(array $data)
     {
-        $output = [];
-
-        $dynamicLoadMode = ((int)$this->_iaDb->one(iaDb::STMT_COUNT_ROWS) > 150);
-        $noRootMode = isset($data['noroot']) && '' == $data['noroot'];
-
-        $rootId = $noRootMode ? 1 : 0;
-        $parentId = isset($data['id']) && is_numeric($data['id']) ? (int)$data['id'] : $rootId;
-
-        $where = $dynamicLoadMode
-            ? '`parent_id` = ' . $parentId
-            : ($noRootMode ? '`id` != ' . $rootId : iaDb::EMPTY_CONDITION);
-
-        // TODO: better solution should be found here. this code will break jstree composition in case if
-        // category to be excluded from the list has children of 2 and more levels deeper
-        empty($data['cid']) || $where.= ' AND `id` != ' . (int)$data['cid'] . ' AND `parent_id` != ' . (int)$data['cid'];
-
-        $where.= ' ORDER BY `title`';
-
-        $rows = $this->_iaDb->all(['id', 'title' => 'title_' . $this->_iaCore->language['iso'], 'parent_id', 'child'], $where);
-
-        foreach ($rows as $row) {
-            $entry = ['id' => $row['id'], 'text' => $row['title']];
-
-            if ($dynamicLoadMode) {
-                $entry['children'] = ($row['child'] && $row['child'] != $row['id']) || 0 === (int)$row['id'];
-            } else {
-                $entry['state'] = [];
-                $entry['parent'] = $noRootMode
-                    ? ($rootId == $row['parent_id'] ? '#' : $row['parent_id'])
-                    : (1 == $row['id'] ? '#' : $row['parent_id']);
-            }
-
-            $output[] = $entry;
-        }
-
-        return $output;
+        return $this->getHelper()->getJsonTree($data);
     }
 
     protected function _getPlans()

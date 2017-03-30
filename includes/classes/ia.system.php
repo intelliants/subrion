@@ -53,11 +53,26 @@ final class iaSystem
             'iaAbstractControllerModuleBackend' => 'ia.base.controller.module.admin'
         ];
 
+        $helperClasses = [
+            'iaAbstractHelperCategoryHybrid' => 'ia.category.hybrid',
+            'iaAbstractHelperCategoryNestedsets' => 'ia.category.nestedsets',
+            'iaAbstractFrontHelperCategoryHybrid' => 'ia.category.front.hybrid'
+        ];
+
         if (isset($systemClasses[$className])) {
             $fileName = $systemClasses[$className] . self::EXECUTABLE_FILE_EXT;
 
             if (include_once IA_CLASSES . $fileName) {
                 iaDebug::debug('<b>autoload:</b> ' . $fileName . ' (' . self::byteView(filesize(IA_CLASSES . $fileName)) . ')', 'Initialized Classes List', 'info');
+                return true;
+            }
+        }
+        elseif (isset($helperClasses[$className])) {
+            $filePath = IA_INCLUDES . 'helpers' . IA_DS;
+            $fileName = $helperClasses[$className] . self::EXECUTABLE_FILE_EXT;
+
+            if (include_once $filePath . $fileName) {
+                iaDebug::debug('<b>autoload:</b> ' . $fileName . ' (' . self::byteView(filesize($filePath . $fileName)) . ')', 'Initialized Classes List', 'info');
                 return true;
             }
         }
