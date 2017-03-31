@@ -46,6 +46,8 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
      */
     protected $_activityLog;
 
+    protected $_treeSettings = false;
+
     protected $_iaField;
 
 
@@ -178,9 +180,46 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         $entryData['item'] = $this->getItemName();
 
         $sections = $this->_iaField->getGroups($this->getItemName());
+        $plans = $this->_getPlans();
 
         $iaView->assign('item_sections', $sections);
-        $iaView->assign('plans', $this->_getPlans());
+        $iaView->assign('plans', $plans);
+
+        if ($this->_treeSettings) {
+            $iaView->assign('tree', $this->_getTreeVars($entryData));
+        }
+    }
+
+    protected function _getPlans()
+    {
+        $iaPlan = $this->_iaCore->factory('plan');
+
+        if ($plans = $iaPlan->getPlans($this->getItemName())) {
+            foreach ($plans as &$plan) {
+                list(, $plan['defaultEndDate']) = $iaPlan->calculateDates($plan['duration'], $plan['unit']);
+            }
+        }
+
+        return $plans;
+    }
+
+    protected function _getTreeVars(array $entryData)
+    {
+        $parent = empty($entryData[$this->_treeSettings['parent_id']])
+            ? $this->getHelper()->getRoot()
+            : $this->getHelper()->getById($entryData[$this->_treeSettings['parent_id']]);
+
+        $url = $this->getPath() . 'tree.json';
+        if (iaCore::ACTION_EDIT == $this->_iaCore->iaView->get('action')) {
+            $url .= '?cid=' . $this->getEntryId();
+        }
+
+        return [
+            'url' => $url,
+            'nodes' => $parent[$this->_treeSettings['parents']],
+            'id' => $parent['id'],
+            'title' => $parent['title']
+        ];
     }
 
     protected function _insert(array $entryData)
@@ -352,19 +391,6 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
     protected function _getJsonTree(array $data)
     {
         return $this->getHelper()->getJsonTree($data);
-    }
-
-    protected function _getPlans()
-    {
-        $iaPlan = $this->_iaCore->factory('plan');
-
-        if ($plans = $iaPlan->getPlans($this->getItemName())) {
-            foreach ($plans as &$plan) {
-                list(, $plan['defaultEndDate']) = $iaPlan->calculateDates($plan['duration'], $plan['unit']);
-            }
-        }
-
-        return $plans;
     }
 
     protected function _validateMultilingualFieldsKeys(array $data)

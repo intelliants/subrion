@@ -183,15 +183,16 @@ SQL;
         // update parents
         $parents = [$category['id']];
         $parents = $this->_getParents($category['id'], $parents);
-        $level = count($parents) - 1;
+        $parents = array_reverse($parents);
 
         $children = [$category['id']];
         $children = $this->_getChildren($category['id'], $children);
+        $children = array_reverse($children);
 
         $entry = [
             self::COL_PARENTS => implode(',', $parents),
             self::COL_CHILDREN => implode(',', $children),
-            self::COL_LEVEL => $level
+            self::COL_LEVEL => count($parents) - 1
         ];
 
         $this->iaDb->update($entry, iaDb::convertIds($category['id']));
@@ -285,44 +286,6 @@ SQL;
         $this->iaDb->resetTable();
     }
 
-    /**
-     * Updates number of active articles for each category
-     */
-    public function calculateArticles($start = 0, $limit = 10)
-    {
-        $this->iaDb->setTable(self::getTable());
-
-        $categories = $this->iaDb->all(['id', 'parent_id', 'child'], '1 ORDER BY `level` DESC', $start, $limit);
-
-        foreach ($categories as $cat) {
-            if (0 != $cat['parent_id']) {
-                $_id = $cat['id'];
-
-                $sql  = 'SELECT COUNT(a.`id`) `num`';
-                $sql .= "FROM `{$this->iaDb->prefix}articles` a ";
-                $sql .= "LEFT JOIN `{$this->iaDb->prefix}members` acc ON (a.`member_id` = acc.`id`) ";
-                $sql .= "WHERE a.`status`= 'active' AND (acc.`status` = 'active' OR acc.`status` IS NULL) ";
-                $sql .= "AND a.`category_id` = {$_id}";
-
-                $num_articles = $this->iaDb->getOne($sql);
-                $_num_articles = $num_articles ? $num_articles : 0;
-                $num_all_articles = 0;
-
-                if (!empty($cat['child']) && $cat['child'] != $cat['id']) {
-                    $num_all_articles = $this->iaDb->one('SUM(`num_articles`)', "`id` IN ({$cat['child']})", self::getTable());
-                }
-
-                $num_all_articles += $_num_articles;
-
-                $this->iaDb->update(['num_articles' => $_num_articles, 'num_all_articles' => $num_all_articles], iaDb::convertIds($_id));
-            }
-        }
-
-        $this->iaDb->resetTable();
-
-        return true;
-    }
-
     protected function _getParents($cId, $parents = [], $update = true)
     {
         $parentId = $this->iaDb->one(self::COL_PARENT_ID, iaDb::convertIds($cId));
@@ -388,5 +351,14 @@ SQL;
     public function getCount()
     {
         return $this->iaDb->one(iaDb::STMT_COUNT_ROWS, null, self::getTable());
+    }
+
+    public function assignTreeVars()
+    {
+        $result = [
+
+        ];
+
+        return $result;
     }
 }
