@@ -60,10 +60,9 @@ abstract class iaAbstractHelperCategoryHybrid extends abstractModuleAdmin implem
             self::COL_PARENTS => '1',
             self::COL_CHILDREN => '1',
             self::COL_LEVEL => 0,
+
             'id' => 1,
-            'title_' . $this->iaView->language => 'ROOT',
-            'date_added' => date(iaDb::DATE_FORMAT),
-            'date_modified' => date(iaDb::DATE_FORMAT)
+            'title_' . $this->iaView->language => 'ROOT'
         ];
 
         $this->iaDb->insert($rootEntry, null, self::getTable());
@@ -76,7 +75,6 @@ CREATE TABLE IF NOT EXISTS `:prefixcoupons_categories_flat`(
   UNIQUE KEY `UNIQUE` (`parent_id`,`category_id`)
 ) :options;
 SQL;
-
             $this->iaDb->query(iaDb::printf($sql, ['prefix' => $this->iaDb->prefix, 'options' => $this->iaDb->tableOptions]));
         }
     }

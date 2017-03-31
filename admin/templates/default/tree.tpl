@@ -1,4 +1,5 @@
 {if isset($tree)}
+    <pre>{$tree|var_dump}</pre>
     {$search = !isset($nosearch)}
     <div id="parent_fieldzone" class="row">
         <label class="col col-lg-2 control-label">
