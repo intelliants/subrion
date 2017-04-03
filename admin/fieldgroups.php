@@ -159,7 +159,7 @@ SQL;
             'collapsible' => iaUtil::checkPostParam('collapsible'),
             'collapsed' => iaUtil::checkPostParam('collapsed'),
             'tabview' => iaUtil::checkPostParam('tabview'),
-            'tabcontainer' => iaUtil::checkPostParam('tabcontainer')
+            'tabcontainer' => iaUtil::checkPostParam('tabcontainer'),
         ];
 
         iaUtil::loadUTF8Functions('ascii', 'bad', 'validation');
@@ -177,8 +177,15 @@ SQL;
 
             if (empty($data['item'])) {
                 $this->addMessage('at_least_one_item_should_be_checked');
+            } else {
+                $stmt = '`name` = :name && `item` = :item';
+                $this->_iaDb->bind($stmt, ['name' => $entry['name'], 'item' => $entry['item']]);
+                if ($this->_iaDb->exists($stmt)) {
+                    $this->addMessage('error_fieldgroup_duplicate');
+                }
             }
 
+            $entry['module'] = $this->_iaCore->factory('item')->getPackageByItem($data['item']);
             $entry['order'] = $this->_iaDb->getMaxOrder(iaField::getTableGroups()) + 1;
         }
 

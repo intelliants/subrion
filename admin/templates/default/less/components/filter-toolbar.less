@@ -1,0 +1,30 @@
+.filter-toolbar {
+  float: right;
+  margin-top: 30px;
+
+  .form-control,
+  .dropdown {
+    display: inline-block !important;
+    width: auto !important;
+    vertical-align: middle;
+    border-radius: @border-radius-base !important;
+  }
+
+  .dropdown-menu {
+    min-width: 200px;
+
+    > li {
+
+      > a {
+
+        .fa {
+          width: 16px;
+          text-align: center;
+          font-size: 14px;
+          margin-right: 5px;
+          color: fade(@text-color, 50%);
+        }
+      }
+    }
+  }
+}

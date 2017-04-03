@@ -105,8 +105,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 "`relation` != 'parent'" . (empty($_GET['item']) ? '' : " AND `item` = '" . iaSanitize::sql($_GET['item']) . "'"));
 
             $output = [];
-            foreach ($rows as $row)
-            {
+            foreach ($rows as $row) {
                 $output[] = [
                     'id' => $row['name'],
                     'text' => iaField::getFieldTitle($row['item'], $row['name']),
@@ -501,7 +500,7 @@ class iaBackendController extends iaAbstractControllerBackend
         empty($imageTypes) && iaLanguage::set('no_image_types', iaLanguage::getf('no_image_types',
             ['url' => IA_ADMIN_URL . 'image-types/add/']));
 
-        list($parents, $children) = $this->_fetchRelations($entryData['item'], $entryData['values']);
+        list($parents, $children) = $this->_fetchRelations($entryData['item']);
 
         $iaView->assign('children', $children);
         $iaView->assign('parents', $parents);
@@ -514,7 +513,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $iaView->assign('imageTypes', $imageTypes);
     }
 
-    private function _fetchRelations($itemName, $values)
+    private function _fetchRelations($itemName)
     {
         $parents = $children = [];
 
@@ -540,15 +539,14 @@ class iaBackendController extends iaAbstractControllerBackend
             $children[$row['element']][] = $row['child'];
             $titles[$row['element']][] = iaField::getFieldTitle($itemName, $row['child']);
         }
-_d($values, 'VALUES');
+
         foreach ($children as $element => $row) {
-            //$key = array_search($element, $values);
-            $children[/*$key*/$element] = [
+            $children[$element] = [
                 'values' => implode(',', $row),
                 'titles' => implode(', ', $titles[$element])
             ];
         }
-_d($parents, 'PARENTS'); _d($children, 'CHILDREN');
+
         return [$parents, $children];
     }
 

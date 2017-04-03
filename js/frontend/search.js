@@ -108,7 +108,7 @@ $(function () {
             var data = {action: 'save', params: window.location.href, item: $filtersForm.data('item'), name: name};
 
             $.post(intelli.config.ia_url + 'search.json', data, function (response) {
-                if ('boolean' == typeof response.result && response.result) {
+                if ('boolean' === typeof response.result && response.result) {
                     intelli.notifFloatBox({msg: response.message, type: 'success'});
                     window.location.reload();
                 }
@@ -117,5 +117,11 @@ $(function () {
                 }
             });
         });
+    });
+
+    $('#js-cmd-reset-filters').on('click', function () {
+        $('select.js-interactive', $filtersForm).val([]).trigger('change');
+        $filtersForm.trigger('reset');
+        intelli.search.run();
     });
 });

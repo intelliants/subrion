@@ -149,7 +149,9 @@ SQL;
     {
         iaBreadcrumb::replaceEnd(iaLanguage::get('add_usergroup'), IA_SELF);
 
-        $iaView->assign('groups', $this->_iaDb->keyvalue(['id', 'name']));
+        $usergroupList = $this->_iaDb->keyvalue(['id', 'name'], iaDb::convertIds(iaUsers::MEMBERSHIP_ADMINISTRATOR, 'id', false));
+
+        $iaView->assign('groups', $usergroupList);
     }
 
     private function _getUsergroups()

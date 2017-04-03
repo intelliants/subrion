@@ -32,8 +32,7 @@ class iaBackup
         'includes',
         'install',
         'js',
-        'packages',
-        'plugins',
+        'modules',
         'templates'
     ];
 

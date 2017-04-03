@@ -56,7 +56,7 @@ abstract class abstractModuleFront extends abstractCore
         return '#';
     }
 
-    public function makeUrl(array $itemData)
+    public function getUrl(array $itemData)
     {
         return $this->getInfo($this->getModuleName()) . '#';
     }

@@ -83,7 +83,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
     // gets current page and defines start position
     $pagination = [
-        'limit' => 20,
+        'limit' => $iaCore->get('members_per_page', 20),
         'url' => IA_URL . 'members/' . ($letters['active'] ? $letters['active'] . '/' : '') . '?page={page}'
     ];
     $page = !empty($_GET['page']) ? (int)$_GET['page'] : 1;

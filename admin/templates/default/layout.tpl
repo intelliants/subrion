@@ -13,11 +13,11 @@
             <script src="../../../js/utils/respond.min.js"></script>
         <![endif]-->
 
-        <link rel="apple-touch-icon" sizes="180x180" href="{$img}ico/apple-touch-icon.png?v=2">
-        <link rel="icon" type="image/png" href="{$img}ico/favicon-32x32.png?v=2" sizes="32x32">
-        <link rel="icon" type="image/png" href="{$img}ico/favicon-16x16.png?v=2" sizes="16x16">
-        <link rel="shortcut icon" href="{$img}ico/favicon.ico?v=2">
-        <meta name="theme-color" content="#ffffff">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{$img}ico/apple-touch-icon-144-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{$img}ico/apple-touch-icon-114-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{$img}ico/apple-touch-icon-72-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" href="{$img}ico/apple-touch-icon-57-precomposed.png">
+        <link rel="shortcut icon" href="{$img}ico/favicon.ico">
 
         {ia_hooker name='smartyAdminAfterHeadSection'}
 
@@ -187,6 +187,24 @@
                                 <h1>{$core.page.title|escape}</h1>
                                 {include 'breadcrumb.tpl'}
                             </div>
+
+                            {if in_array($core.page.name, ['templates', 'plugins', 'packages'])}
+                                <div class="sap-form filter-toolbar">
+                                    <input type="text" class="form-control js-filter-modules-text" placeholder="Start typing...">
+                                    <div class="dropdown">
+                                        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Filter <span class="fa fa-angle-down"></span></button>
+                                        <ul class="dropdown-menu dropdown-menu-right">
+                                            <li class="dropdown-header">Show only</li>
+                                            <li><a class="js-filter-modules" data-type="local" data-filtered="no" href="#"><span class="fa fa-check"></span> Local</a></li>
+                                            <li><a class="js-filter-modules" data-type="remote" data-filtered="no" href="#"><span class="fa fa-check"></span> Remote</a></li>
+                                            <li><a class="js-filter-modules" data-type="active" data-filtered="no" href="#"><span class="fa fa-check"></span> Installed</a></li>
+                                            {*<li><a class="js-filter-modules" data-type="notinstalled" data-filtered="no" href="#"><span class="fa fa-check"></span> Not installed</a></li>*}
+                                            <li class="divider"></li>
+                                            <li><a class="js-filter-modules-reset" href="#"><span class="fa fa-times"></span> Reset filter</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            {/if}
 
                             <ul class="page__heading__actions">
                                 {if 'index' == $core.page.name}

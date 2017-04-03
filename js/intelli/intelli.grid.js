@@ -231,7 +231,7 @@ function IntelliGrid(params, autoInit) {
             {
                 autoDestroy: true,
                 autoLoad: autoLoad,
-                currentPage: __localStorage('p') || 1,
+                currentPage: parseInt(__localStorage('p')) || 1,
                 fields: self.fields,
                 pageSize: __localStorage('n') || self.config.pageSize,
                 proxy: {

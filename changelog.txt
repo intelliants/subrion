@@ -806,3 +806,18 @@
     - Bug #385: SMTP does not send correctly
     - Bug #398: Better handling of incorrect db details
     - Bug #399: Incorrect working of access detection to session.save_path folder on some servers
+
+>> From 4.1.2 to 4.1.3 <<
+
+    - Bug #335: Permission for new members in the admin panel does not work correctly
+    - Bug #361: Search modules in dashboard
+    - Bug #377: Pagination in grid not working properly
+    - Bug #391: 404 Page after deleting language from admin part
+    - Bug #402: Members page issues
+    - Bug #405: Multilingual custom configs get processed incorrectly
+    - Bug #408: Grid is broken when trying to sort by multilingual field
+    - Bug #409: Field Group tabs issue
+    - Bug #410: Fieldgroups are not deleted after package uninstallation
+    - Bug #411: 4.1.2 Search is blank page
+    - Bug #414: Images are lost after a validation
+    + Feature #293: Click based filters

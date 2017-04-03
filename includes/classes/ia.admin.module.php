@@ -681,9 +681,9 @@ class iaModule extends abstractCore
             'pages',
             'hooks',
             'acl_objects',
-            'fields_groups',
-            'fields_tree_nodes',
+            iaField::getTableGroups(),
             iaField::getTableImageTypes(),
+            'fields_tree_nodes',
             'cron'
         ];
         $iaDb->cascadeDelete($tableList, iaDb::convertIds($moduleName, 'module'));

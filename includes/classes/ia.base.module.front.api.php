@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-abstract class abstractModuleFrontApiResponder extends abstractModuleFront
+abstract class abstractModuleFrontApiResponder extends iaAbstractFrontHelperCategoryHybrid
 {
     protected $_request;
     protected $_response;

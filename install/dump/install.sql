@@ -712,6 +712,7 @@ CREATE TABLE `{install:prefix}views_log` (
 -- Records
 -- ----------------------------
 INSERT INTO `{install:prefix}acl_privileges` (`type_id`,`access`,`object`,`object_id`) VALUES
+(2,1,'admin_access','0'),
 (4,0,'page','member_funds'),
 (4,0,'page','profile'),
 (8,1,'page','profile');
@@ -826,7 +827,7 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`fil
 (2,'menus','read','','menus','menus/','menu',null,10),
 (2,'blocks','read','','blocks','blocks/','menu',null,15),
 (2,'phrases','read','','languages','languages/phrases/','menu',null,20),
-(2,'uploads','read','','uploads','uploads/','menu',null,25),
+(2,'uploads','read','','uploads','uploads/','menu',null,23),
 (2,'','','','','','menu','ctnt_ext',25),
 (2,'fieldgroups','read','','fieldgroups','fieldgroups/','menu',null,30),
 (2,'fields','read','','fields','fields/','menu',null,35),
@@ -901,6 +902,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('members', '', 'General', '1', 'divider', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('members', 'members_enabled', '1', '\'1\',\'0\'', 'radio', 2, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('members', 'members_autoapproval', '1', '\'1\',\'0\'', 'radio', 3, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"members_enabled|1\",\"multilingual\":\"0\"}'),
+('members', 'members_per_page', '20', '0', 'text', 4, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"members_enabled|1\",\"multilingual\":\"0\"}'),
 ('members', '', 'HybridAuth', '1', 'divider', 5, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('members', 'hybrid_enabled', '0', '\'1\',\'0\'', 'radio', 6, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('members', 'hybrid_debug_mode', '0', '\'1\',\'0\'', 'radio', 7, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"hybrid_enabled|1\",\"multilingual\":\"0\"}'),
@@ -1409,6 +1411,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_timezone', 'Default timezone', 'admin'),
 ('config_members_enabled', 'Members functionality', 'admin'),
 ('config_members_autoapproval', 'Members auto-approval', 'admin'),
+('config_members_per_page', 'Members per page', 'admin'),
 ('config_hybrid_enabled', 'Enable HybridAuth', 'admin'),
 ('config_hybrid_debug_mode', 'Debug mode', 'admin'),
 ('config_gravatar_enabled', 'Enable Gravatars', 'admin'),
@@ -1580,6 +1583,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_block_name_duplicate','Please change block name. There is a block with the same name in the database.','admin'),
 ('error_compare_same_languages','No way to compare same languages.','admin'),
 ('error_contents','Content field is empty.','admin'),
+('error_fieldgroup_duplicate','Please change name. There is a field group with the same name for the same item.','admin'),
 ('error_filename','Filename field is empty.','admin'),
 ('error_incorrect_dimensions','Set correct image dimensions.','admin'),
 ('error_incorrect_format_from_subrion','The module files are in the incorrect format. Please contact the Subrion team.','admin'),
@@ -2503,6 +2507,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('redirected_to_home','to be redirected to the home page.','frontend'),
 ('register_login','Please Login or Register','frontend'),
 ('registration_tooltip','Registration is simple and takes just few seconds. Please fill in the form below.','frontend'),
+('reset_filters','Reset filters','frontend'),
 ('restore_pass_confirm','We have sent confirmation code to your email. Please check it and follow the instructions.','frontend'),
 
 ('safety','Safety','frontend'),
