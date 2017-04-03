@@ -809,7 +809,6 @@
 
 >> From 4.1.2 to 4.1.3 <<
 
-    - Bug #260: Permissions system for new user groups does not work correctly
     - Bug #335: Permission for new members in the admin panel does not work correctly
     - Bug #361: Search modules in dashboard
     - Bug #377: Pagination in grid not working properly
