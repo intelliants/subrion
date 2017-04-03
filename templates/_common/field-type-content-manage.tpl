@@ -118,6 +118,7 @@ $(function()
             {ia_add_media files='js:bootstrap/js/bootstrap-editable.min, css:_IA_URL_js/bootstrap/css/bootstrap-editable' order=5}
 
             {if $value}
+                {if is_string($value)}{$value = unserialize($value)}{/if}
                 <div class="row upload-items" id="{$fieldName}_upload_list">
                     {foreach $value as $entry}
                         <div class="col-md-4">
