@@ -114,7 +114,7 @@ ini_set('session.gc_maxlifetime', 1800); // 30 minutes
 //session_set_cookie_params(1800, '/', $domain, false, true);
 session_name('INTELLI_' . substr(md5(IA_HOME), 0, 10));
 session_start();
-setcookie(session_name(), session_id(), time() + 1800);
+setcookie(session_name(), session_id(), time() + 1800, '/');
 
 require_once IA_CLASSES . 'ia.system.php';
 require_once IA_INCLUDES . 'function.php';
