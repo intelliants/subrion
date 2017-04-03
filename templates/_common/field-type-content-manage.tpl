@@ -86,6 +86,7 @@ $(function()
 
         {case iaField::IMAGE break}
             {if $value}
+                {if is_string($value)}{$value = unserialize($value)}{/if}
                 <div class="thumbnail">
                     <div class="thumbnail__actions">
                         <button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$value.file|escape}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
