@@ -2506,6 +2506,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('redirected_to_home','to be redirected to the home page.','frontend'),
 ('register_login','Please Login or Register','frontend'),
 ('registration_tooltip','Registration is simple and takes just few seconds. Please fill in the form below.','frontend'),
+('reset_filters','Reset filters','frontend'),
 ('restore_pass_confirm','We have sent confirmation code to your email. Please check it and follow the instructions.','frontend'),
 
 ('safety','Safety','frontend'),

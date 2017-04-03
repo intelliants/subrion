@@ -16,8 +16,7 @@
             <div id="js-tree" class="tree categories-tree"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}></div>
             <input type="hidden" name="tree_id" id="input-tree" value="{$tree.id}">
             {ia_add_js}
-$(function()
-{
+$(function() {
     new IntelliTree({
         url: '{$tree.url}',
         onchange: intelli.fillUrlBox,
