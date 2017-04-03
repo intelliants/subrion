@@ -712,6 +712,7 @@ CREATE TABLE `{install:prefix}views_log` (
 -- Records
 -- ----------------------------
 INSERT INTO `{install:prefix}acl_privileges` (`type_id`,`access`,`object`,`object_id`) VALUES
+(2,1,'admin_access','0'),
 (4,0,'page','member_funds'),
 (4,0,'page','profile'),
 (8,1,'page','profile');

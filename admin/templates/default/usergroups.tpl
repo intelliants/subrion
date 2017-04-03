@@ -6,7 +6,7 @@
             <div class="wrap-group-heading">{lang key='options'}</div>
 
             <div class="row">
-                <label class="col col-lg-2 control-label" for="input-name">{lang key='name'}</label>
+                <label class="col col-lg-2 control-label" for="input-name">{lang key='name'} {lang key='field_required'}</label>
 
                 <div class="col col-lg-4">
                     <input type="text" name="name" id="input-name" value="{if isset($smarty.post.name)}{$smarty.post.name|escape}{/if}">
@@ -22,7 +22,7 @@
                             <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
                         </div>
                     {/if}
-                    <label class="control-label">{lang key='title'}</label>
+                    <label class="control-label">{lang key='title'} {lang key='field_required'}</label>
                 </div>
                 <div class="col col-lg-4">
                     {if count($core.languages) > 1}
@@ -51,16 +51,18 @@
             </div>
 
             <div class="row">
-                <label class="col col-lg-2 control-label" for="input-source">{lang key='copy_privileges_from'}</label>
+                <label class="col col-lg-2 control-label" for="input-source">{lang key='copy_privileges_from'} {lang key='field_required'}</label>
 
                 <div class="col col-lg-4">
                     <select name="copy_from" id="input-source">
                         {foreach $groups as $id => $name}
-                            <option value="{$id}"{if isset($smarty.post.copy_from) && $smarty.post.copy_from == $id} selected{/if}>{lang key="usergroup_{$name}"}</option>
+                            <option value="{$id}"{if (isset($smarty.post.copy_from) && $smarty.post.copy_from == $id) || (!isset($smarty.post.copy_from) && iaUsers::MEMBERSHIP_REGULAR == $id)} selected{/if}>{lang key="usergroup_{$name}"}</option>
                         {/foreach}
                     </select>
                 </div>
             </div>
+
+            <hr>
 
             <div class="row">
                 <label class="col col-lg-2 control-label">{lang key='assignable'} <a href="#" class="js-tooltip" title="{$tooltips.usergroup_assignable}"><i class="i-info"></i></a></label>
