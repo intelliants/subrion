@@ -399,7 +399,7 @@ HTML;
                     $configMsg = '';
 
                     // session path test, session_save_path might be empty in many configs
-                    $testResult = empty(session_save_path()) || is_writable(session_save_path()) ?
+                    $testResult = !session_save_path() || is_writable(session_save_path()) ?
                         '' :
                         "session_save_path('" . IA_HOME . "tmp');";
 
