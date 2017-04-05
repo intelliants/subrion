@@ -369,7 +369,7 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $result = [];
 
-        if (file_exists($documentationPath = IA_MODULES . $moduleName . IA_DS . 'docs' . IA_DS)) {
+        if (file_exists($documentationPath = IA_MODULES . $moduleName . IA_DS . 'docs/')) {
             $docs = scandir($documentationPath);
 
             foreach ($docs as $doc) {

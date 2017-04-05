@@ -163,7 +163,7 @@ class iaModule extends abstractCore
         $this->_resetValues();
         $this->_quickParseMode = $quickMode;
 
-        require_once IA_INCLUDES . 'xml' . IA_DS . 'xml_saxy_parser.php';
+        require_once IA_INCLUDES . 'xml/xml_saxy_parser.php';
 
         $xmlParser = new SAXY_Parser();
 
@@ -1637,7 +1637,7 @@ class iaModule extends abstractCore
                 if ($filename = $this->_attr('filename')) {
                     switch ($type) {
                         case 'php':
-                            $filename = 'modules' . IA_DS . $this->itemData['name'] . IA_DS . 'includes' . IA_DS . $filename . iaSystem::EXECUTABLE_FILE_EXT;
+                            $filename = 'modules/' . $this->itemData['name'] . '/includes/' . $filename . iaSystem::EXECUTABLE_FILE_EXT;
 
                             break;
 
@@ -1863,7 +1863,7 @@ class iaModule extends abstractCore
         $iaDb = &$this->iaDb;
         $iaDbControl = $this->iaCore->factory('dbcontrol', iaCore::ADMIN);
 
-        require_once IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php';
+        require_once IA_INCLUDES . 'utils/pclzip.lib.php';
 
         $mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
         $masterLanguageCode = $this->iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());

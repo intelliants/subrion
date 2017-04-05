@@ -70,7 +70,7 @@ set_include_path(IA_INSTALL . 'classes');
 require_once 'ia.helper.php';
 require_once 'ia.output.php';
 
-$modulesPath = IA_INSTALL . 'modules' . IA_DS;
+$modulesPath = IA_INSTALL . 'modules/';
 if (is_dir($modulesPath)) {
     if ($directory = opendir($modulesPath)) {
         while ($file = readdir($directory)) {
@@ -115,7 +115,7 @@ if ('welcome' == $module) {
     exit();
 }
 
-if (!file_exists(IA_HOME . 'includes' . IA_DS . 'config.inc.php')) {
+if (!file_exists(IA_HOME . 'includes/config.inc.php')) {
     // disallow upgrade module if no config file exists
     $modules = array_diff($modules, ['upgrade']);
 

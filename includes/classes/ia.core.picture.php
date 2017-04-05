@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'ImageWorkshop.php';
+require_once IA_INCLUDES . 'phpimageworkshop/ImageWorkshop.php';
 use phpimageworkshop\ImageWorkshop as ImageWorkshop;
 
 class iaPicture extends abstractCore
@@ -87,7 +87,7 @@ class iaPicture extends abstractCore
         } else {
             $watermarkFile = $iaCore->get('watermark_image') ?
                 IA_UPLOADS . $iaCore->get('watermark_image') :
-                IA_TEMPLATES . $iaCore->get('tmpl') . IA_DS . 'img' . IA_DS . 'watermark.png';
+                IA_TEMPLATES . $iaCore->get('tmpl') . '/img/watermark.png';
 
             if (is_file($watermarkFile) && !is_dir($watermarkFile)) {
                 $watermark = ImageWorkshop::initFromPath($watermarkFile);
@@ -103,7 +103,7 @@ class iaPicture extends abstractCore
 
     protected function _processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark = false)
     {
-        require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifFrameExtractor.php';
+        require_once IA_INCLUDES . 'phpimageworkshop/Core/GifFrameExtractor.php';
 
         if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($sourceFile) && $this->_allowAnimatedGifs) {
             // Extractions of the GIF frames and their durations
@@ -120,7 +120,7 @@ class iaPicture extends abstractCore
             }
 
             // Then we re-generate the GIF
-            require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifCreator.php';
+            require_once IA_INCLUDES . 'phpimageworkshop/Core/GifCreator.php';
 
             $gc = new GifCreator\GifCreator();
             $gc->create($frames, $gfe->getFrameDurations(), 0);

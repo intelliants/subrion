@@ -288,7 +288,7 @@ final class iaCore
         if (in_array($iaView->get('type'), ['plugin', 'package'])) {
             define('IA_CURRENT_MODULE', $moduleName);
             define('IA_MODULE_URL', ($iaView->packageUrl ? $iaView->packageUrl . IA_URL_LANG : $iaView->domainUrl . IA_URL_LANG . $iaView->extrasUrl));
-            define('IA_MODULE_TEMPLATE', IA_MODULES . $moduleName . IA_DS . 'templates' . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' : 'front') . IA_DS);
+            define('IA_MODULE_TEMPLATE', IA_MODULES . $moduleName . '/templates/' . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' : 'front') . IA_DS);
 
             $module = empty($fileName) ? iaView::DEFAULT_HOMEPAGE : $fileName;
             $module = IA_MODULES . $moduleName . IA_DS . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . $module . iaSystem::EXECUTABLE_FILE_EXT;
@@ -749,7 +749,7 @@ SQL;
         }
 
         if (!isset($this->_classInstances[$class])) {
-            $moduleInterface = IA_MODULES . $module . IA_DS . 'includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
+            $moduleInterface = IA_MODULES . $module . '/includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
             if (is_file($moduleInterface)) {
                 require_once $moduleInterface;
             }
@@ -814,7 +814,7 @@ SQL;
         $filename = iaSystem::CLASSES_PREFIX . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT;
 
         if ($moduleName) {
-            $classFile = IA_MODULES . $moduleName . IA_DS . 'includes' . IA_DS . 'classes' . IA_DS . $filename;
+            $classFile = IA_MODULES . $moduleName . '/includes/classes/' . $filename;
         } else {
             $classFile = IA_CLASSES . $filename;
         }
@@ -873,7 +873,7 @@ SQL;
         define('IA_CANONICAL', preg_replace('/\?(.*)/', '', $baseUrl . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
         define('IA_CLEAR_URL', $baseUrl);
         define('IA_LANGUAGE', $iaView->language);
-        define('IA_TEMPLATES', IA_HOME . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . 'templates' . IA_DS);
+        define('IA_TEMPLATES', IA_HOME . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . 'templates/');
         define('IA_URL_LANG', $languagesEnabled ? $iaView->language . IA_URL_DELIMITER : '');
         define('IA_URL', IA_CLEAR_URL . IA_URL_LANG);
         define('IA_ADMIN_URL', IA_URL . $this->get('admin_page') . IA_URL_DELIMITER);

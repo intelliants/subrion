@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-require_once IA_INCLUDES . 'phpmailer' . IA_DS . 'class.phpmailer.php';
+require_once IA_INCLUDES . 'phpmailer/class.phpmailer.php';
 
 class iaMailer extends PHPMailer
 {
@@ -54,7 +54,7 @@ class iaMailer extends PHPMailer
         switch ($this->_iaCore->get('mail_function')) {
             case 'smtp':
 
-                require_once IA_INCLUDES . 'phpmailer' . IA_DS . 'class.smtp.php';
+                require_once IA_INCLUDES . 'phpmailer/class.smtp.php';
 
                 $this->isSMTP();
 

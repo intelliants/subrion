@@ -3,7 +3,7 @@
 
     <div class="cards">
         {foreach $modules as $module}
-            <div class="card card--module{if $module.remote} card--remote{else} card--local{/if} card--{$module.status}">
+            <div class="card card--module{if $module.remote} card--remote{elseif !$module.installed} card--local{elseif $module.installed} card--installed{/if} card--{$module.status}">
                 <div class="card__item">
                     {if $module.buttons}
                         <div class="card__item__actions">

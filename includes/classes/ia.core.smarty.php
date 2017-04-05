@@ -388,7 +388,7 @@ class iaSmarty extends Smarty
                     $url = $filename;
                 } elseif (strstr($filename, '_IA_TPL_')) {
                     $url = str_replace('_IA_TPL_', IA_TPL_URL . 'js' . IA_URL_DELIMITER, $filename) . self::EXTENSION_JS;
-                    $file = str_replace('_IA_TPL_', IA_HOME . 'templates' . IA_DS . $iaCore->get('tmpl')  . IA_DS . 'js' . IA_DS, $filename) . self::EXTENSION_JS;
+                    $file = str_replace('_IA_TPL_', IA_HOME . 'templates/' . $iaCore->get('tmpl')  . '/js/', $filename) . self::EXTENSION_JS;
                     $tmp = str_replace('_IA_TPL_', 'compress/', $filename);
                 } elseif (strstr($filename, '_IA_URL_')) {
                     $url = str_replace('_IA_URL_', $iaView->assetsUrl, $filename) . self::EXTENSION_JS;
@@ -439,7 +439,7 @@ class iaSmarty extends Smarty
                             // need to compress
                             iaDebug::debug($minifiedFilename . ' - ' . $lastModified . ' - ' . $minifiedLastModifiedTime, 'compress', 'info');
 
-                            require_once IA_INCLUDES . 'utils' . IA_DS . 'Minifier.php';
+                            require_once IA_INCLUDES . 'utils/Minifier.php';
                             $minifiedCode = \JShrink\Minifier::minify(file_get_contents($file));
 
                             file_put_contents($minifiedFilename, $minifiedCode);
@@ -489,7 +489,7 @@ class iaSmarty extends Smarty
                 } else {
                     $url = IA_TPL_URL . 'css/' . $file;
                     if (defined('IA_CURRENT_MODULE')) {
-                        $suffix = 'templates' . IA_DS . $iaView->theme . IA_DS . 'modules' . IA_DS . $iaView->get('module') . IA_DS . 'css/' . $file;
+                        $suffix = 'templates/' . $iaView->theme . '/modules/' . $iaView->get('module') . '/css/' . $file;
                         if (is_file(IA_HOME . $suffix . self::EXTENSION_CSS) && iaCore::ACCESS_FRONT == $iaCore->getAccessType()) {
                             $url = IA_CLEAR_URL . $suffix;
                         }

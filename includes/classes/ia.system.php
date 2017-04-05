@@ -67,7 +67,7 @@ final class iaSystem
                 return true;
             }
         } elseif (isset($helperClasses[$className])) {
-            $filePath = IA_INCLUDES . 'helpers' . IA_DS;
+            $filePath = IA_INCLUDES . 'helpers/';
             $fileName = $helperClasses[$className] . self::EXECUTABLE_FILE_EXT;
 
             if (include_once $filePath . $fileName) {

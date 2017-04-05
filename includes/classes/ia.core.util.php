@@ -85,10 +85,10 @@ class iaUtil extends abstractUtil
      */
     public static function safeHTML($string)
     {
-        require_once IA_INCLUDES . 'htmlpurifier' . IA_DS . 'HTMLPurifier.auto' . iaSystem::EXECUTABLE_FILE_EXT;
+        require_once IA_INCLUDES . 'htmlpurifier/HTMLPurifier.auto' . iaSystem::EXECUTABLE_FILE_EXT;
 
         // generate cache folder
-        $cacheDirectory = IA_CACHEDIR . 'Serializer' . IA_DS;
+        $cacheDirectory = IA_CACHEDIR . 'Serializer/';
         file_exists($cacheDirectory) || @mkdir($cacheDirectory, 0777);
 
         $config = HTMLPurifier_Config::createDefault();
@@ -232,7 +232,7 @@ class iaUtil extends abstractUtil
         }
 
         $serverDirectory = empty($userName)
-            ? '_notregistered' . IA_DS
+            ? '_notregistered/'
             : strtolower(substr($userName, 0, 1)) . IA_DS . $userName . IA_DS;
 
         umask(0);
@@ -327,7 +327,7 @@ class iaUtil extends abstractUtil
 
     public static function getMetaKeywords($text)
     {
-        require_once IA_INCLUDES . 'utils' . IA_DS . 'ia.metakeywords.php';
+        require_once IA_INCLUDES . 'utils/ia.metakeywords.php';
         $iaMetaKeywords = new iaMetaKeywords();
 
         return $iaMetaKeywords->get($text);
@@ -406,10 +406,10 @@ class iaUtil extends abstractUtil
             try {
                 if (function_exists('mb_internal_encoding')) {
                     mb_internal_encoding('UTF-8');
-                    require_once $path . 'mbstring' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
+                    require_once $path . 'mbstring/core' . iaSystem::EXECUTABLE_FILE_EXT;
                 } else {
-                    require_once $path . 'utils' . IA_DS . 'unicode' . iaSystem::EXECUTABLE_FILE_EXT;
-                    require_once $path . 'native' . IA_DS . 'core' . iaSystem::EXECUTABLE_FILE_EXT;
+                    require_once $path . 'utils/unicode' . iaSystem::EXECUTABLE_FILE_EXT;
+                    require_once $path . 'native/core' . iaSystem::EXECUTABLE_FILE_EXT;
                 }
             } catch (Exception $e) {
                 return false;
@@ -420,7 +420,7 @@ class iaUtil extends abstractUtil
 
         if (func_num_args()) {
             foreach (func_get_args() as $fn) {
-                require_once IA_INCLUDES . $libPath . IA_DS . 'utils' . IA_DS . $fn . iaSystem::EXECUTABLE_FILE_EXT;
+                require_once IA_INCLUDES . $libPath . '/utils/' . $fn . iaSystem::EXECUTABLE_FILE_EXT;
             }
         }
 

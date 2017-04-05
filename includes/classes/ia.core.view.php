@@ -127,21 +127,21 @@ class iaView extends abstractUtil
             $compileDir = IA_TMP . (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType() ? 'admin_' : 'front_') . $this->theme . IA_DS;
 
             $this->iaCore->factory('util');
-            iaUtil::makeDirCascade(IA_TMP . 'smartycache' . IA_DS, 0777, true);
+            iaUtil::makeDirCascade(IA_TMP . 'smartycache/', 0777, true);
             iaUtil::makeDirCascade($compileDir, 0777, true);
 
             $this->iaSmarty = $this->iaCore->factory('smarty');
             if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType()) {
-                $this->iaSmarty->setTemplateDir(IA_ADMIN . 'templates' . IA_DS . $this->theme . IA_DS);
+                $this->iaSmarty->setTemplateDir(IA_ADMIN . 'templates/' . $this->theme . IA_DS);
             } else {
-                $this->iaSmarty->setTemplateDir(IA_HOME . 'templates' . IA_DS . $this->theme . IA_DS);
-                $this->iaSmarty->addTemplateDir(IA_HOME . 'templates' . IA_DS . self::COMMON_TEMPLATE_FOLDER . IA_DS);
+                $this->iaSmarty->setTemplateDir(IA_HOME . 'templates/' . $this->theme . IA_DS);
+                $this->iaSmarty->addTemplateDir(IA_HOME . 'templates/' . self::COMMON_TEMPLATE_FOLDER . IA_DS);
             }
 
             Smarty::$_CHARSET = 'UTF-8';
 
             $this->iaSmarty->setCompileDir($compileDir);
-            $this->iaSmarty->setCacheDir(IA_TMP . 'smartycache' . IA_DS);
+            $this->iaSmarty->setCacheDir(IA_TMP . 'smartycache/');
             $this->iaSmarty->setPluginsDir([IA_SMARTY . 'plugins', IA_SMARTY . 'intelli_plugins']);
 
             $this->iaSmarty->force_compile = $this->iaCore->get('smarty_cache');
@@ -632,7 +632,7 @@ SQL;
         $pageName = $this->name();
         $pageParams = $this->getParams();
 
-        define('IA_FRONT_TEMPLATES', IA_HOME . 'templates' . IA_DS);
+        define('IA_FRONT_TEMPLATES', IA_HOME . 'templates/');
 
         if (iaUsers::hasIdentity() && iaCore::ACCESS_FRONT == $this->iaCore->getAccessType() && self::REQUEST_HTML == $this->getRequestType()) {
             if (isset($_GET['preview_exit'])) {
@@ -675,7 +675,7 @@ SQL;
                     'content' => $this->iaCore->get('underconstruction', 'We are sorry. Our site is under construction.'),
                 ];
 
-                require_once IA_FRONT_TEMPLATES . self::COMMON_TEMPLATE_FOLDER . IA_DS . 'offline.tpl';
+                require_once IA_FRONT_TEMPLATES . self::COMMON_TEMPLATE_FOLDER . '/offline.tpl';
                 die();
             } elseif (!$this->iaCore->get('frontend')) {
                 $this->setMessages(iaLanguage::get('youre_admin_browsing_disabled_front'));
@@ -1349,10 +1349,10 @@ SQL;
             if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType()) {
                 $path = IA_MODULE_TEMPLATE . $resourceName;
                 is_file($path) && $resourceName = $path;
-            } elseif (is_file(IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName)) {
-                $resourceName = IA_FRONT_TEMPLATES . $templateName . IA_DS . 'modules' . IA_DS . IA_CURRENT_MODULE . IA_DS . $resourceName;
-            } elseif (is_file(IA_MODULE_TEMPLATE . 'front' . IA_DS . $resourceName)) {
-                $resourceName = IA_MODULE_TEMPLATE . 'front' . IA_DS . $resourceName;
+            } elseif (is_file(IA_FRONT_TEMPLATES . $templateName . '/modules/' . IA_CURRENT_MODULE . IA_DS . $resourceName)) {
+                $resourceName = IA_FRONT_TEMPLATES . $templateName . '/modules/' . IA_CURRENT_MODULE . IA_DS . $resourceName;
+            } elseif (is_file(IA_MODULE_TEMPLATE . 'front/' . $resourceName)) {
+                $resourceName = IA_MODULE_TEMPLATE . 'front/' . $resourceName;
             } else {
                 $resourceName = IA_MODULE_TEMPLATE . $resourceName;
             }

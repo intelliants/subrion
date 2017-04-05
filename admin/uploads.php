@@ -34,7 +34,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
 
     error_reporting(0); // Set E_ALL for debugging
 
-    $pluginPath = IA_INCLUDES . 'elfinder' . IA_DS . 'php' . IA_DS;
+    $pluginPath = IA_INCLUDES . 'elfinder/php/';
     include_once $pluginPath . 'elFinderConnector.class.php';
     include_once $pluginPath . 'elFinder.class.php';
     include_once $pluginPath . 'elFinderVolumeDriver.class.php';
