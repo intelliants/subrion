@@ -35,20 +35,21 @@ abstract class iaAbstractHelperCategoryHybrid extends abstractModuleAdmin implem
     const COL_CHILDREN = '_children';
     const COL_LEVEL = 'level';
 
-    protected $_flatStructureEnabled = false;
+    protected $_flatStructureEnabled = true;
 
-    protected $_tableFlat;
+    protected static $_tableFlat;
 
     private $_rootId;
 
 
-    public function init()
+    public static function getTableFlat($prefix = false)
     {
-        parent::init();
-
-        if ($this->_flatStructureEnabled) {
-            $this->_tableFlat = self::getTable(true) . '_flat';
+        if (is_null(self::$_tableFlat)) {
+            self::$_tableFlat = self::getTable() . '_flat';
         }
+
+        return ($prefix ? iaCore::instance()->iaDb->prefix : '')
+            . self::$_tableFlat;
     }
 
     public function setupDbStructure()
@@ -76,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `:table_name`(
   UNIQUE KEY `UNIQUE` (`parent_id`,`category_id`)
 ) :options;
 SQL;
-            $this->iaDb->query(iaDb::printf($sql, ['table_name' => $this->_tableFlat, 'options' => $this->iaDb->tableOptions]));
+            $this->iaDb->query(iaDb::printf($sql, ['table_name' => self::getTableFlat(true), 'options' => $this->iaDb->tableOptions]));
         }
     }
 
@@ -85,7 +86,7 @@ SQL;
         $iaDbControl = $this->iaCore->factory('dbcontrol', iaCore::ADMIN);
 
         $iaDbControl->truncate(self::getTable());
-        $this->_flatStructureEnabled && $iaDbControl->truncate($this->_tableFlat);
+        $this->_flatStructureEnabled && $iaDbControl->truncate(self::getTableFlat());
 
         $this->_insertRoot();
     }
@@ -185,12 +186,24 @@ SQL;
             return false;
         }
 
-        return parent::delete($itemId);
+        $result = parent::delete($itemId);
+
+        if ($result && $this->_flatStructureEnabled) {
+            // remove all the children categories as well
+            $where = sprintf('`id` IN (SELECT `category_id` FROM `%s` WHERE `parent_id` = %d)',
+                self::getTableFlat(true),$itemId);
+
+            $this->iaDb->delete($where, self::getTable());
+        }
+
+        return $result;
     }
 
     public function updateCounters($itemId, array $itemData, $action, $previousData = null)
     {
-        $this->rebuildRelations($itemId);
+        iaCore::ACTION_DELETE == $action
+            ? $this->rebuildRelations()
+            : $this->rebuildRelations($itemId);
     }
 
     public function rebuildRelations($id = null)
@@ -242,14 +255,15 @@ SQL;
     protected function _rebuildAll()
     {
         $table = self::getTable(true);
+        $tableFlat = self::getTableFlat(true);
 
         $iaDb = &$this->iaDb;
 
         if ($this->_flatStructureEnabled) {
-            $sql1 = 'INSERT INTO ' . $this->_tableFlat . ' SELECT t.`id`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid';
-            $sql2 = 'INSERT INTO ' . $this->_tableFlat . ' SELECT t.`:col_pid`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid';
+            $sql1 = 'INSERT INTO ' . $tableFlat . ' SELECT t.`id`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid';
+            $sql2 = 'INSERT INTO ' . $tableFlat . ' SELECT t.`:col_pid`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid';
 
-            $iaDb->truncate($this->_tableFlat);
+            $iaDb->truncate($tableFlat);
 
             $iaDb->query(self::_cols($sql1));
             $iaDb->query(self::_cols($sql2));
@@ -260,7 +274,7 @@ SQL;
             while ($num > 0 && $count < 10) {
                 $count++;
                 $num = 0;
-                $sql = 'INSERT INTO ' . $this->_tableFlat . ' '
+                $sql = 'INSERT INTO ' . $tableFlat . ' '
                     . 'SELECT DISTINCT t.`id`, h' . $count . '.`id` FROM ' . $table . ' t, ' . $table . ' h0 ';
                 $where = ' WHERE h0.`:col_pid` = t.`id` ';
 
@@ -275,9 +289,9 @@ SQL;
             }
         }
 
-        $sqlLevel = 'UPDATE ' . $table . ' s SET `:col_level` = (SELECT COUNT(`category_id`)-1 FROM ' . $this->_tableFlat . ' f WHERE f.`category_id` = s.`id`) WHERE s.`:col_pid` != :root_pid';
-        $sqlChildren = 'UPDATE ' . $table . ' s SET `:col_children` = (SELECT GROUP_CONCAT(`category_id`) FROM ' . $this->_tableFlat . ' f WHERE f.`parent_id` = s.`id`)';
-        $sqlParent = 'UPDATE ' . $table . ' s SET `:col_parents` = (SELECT GROUP_CONCAT(`parent_id`) FROM ' . $this->_tableFlat . ' f WHERE f.`category_id` = s.`id`)';
+        $sqlLevel = 'UPDATE ' . $table . ' s SET `:col_level` = (SELECT COUNT(`category_id`)-1 FROM ' . $tableFlat . ' f WHERE f.`category_id` = s.`id`) WHERE s.`:col_pid` != :root_pid';
+        $sqlChildren = 'UPDATE ' . $table . ' s SET `:col_children` = (SELECT GROUP_CONCAT(`category_id`) FROM ' . $tableFlat . ' f WHERE f.`parent_id` = s.`id`)';
+        $sqlParent = 'UPDATE ' . $table . ' s SET `:col_parents` = (SELECT GROUP_CONCAT(`parent_id`) FROM ' . $tableFlat . ' f WHERE f.`category_id` = s.`id`)';
 
         $iaDb->query(self::_cols($sqlLevel));
         $iaDb->query(self::_cols($sqlChildren));
