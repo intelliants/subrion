@@ -37,8 +37,19 @@ abstract class iaAbstractHelperCategoryHybrid extends abstractModuleAdmin implem
 
     protected $_flatStructureEnabled = false;
 
+    protected $_tableFlat;
+
     private $_rootId;
 
+
+    public function init()
+    {
+        parent::init();
+
+        if ($this->_flatStructureEnabled) {
+            $this->_tableFlat = self::getTable(true) . '_flat';
+        }
+    }
 
     public function setupDbStructure()
     {
@@ -55,17 +66,7 @@ abstract class iaAbstractHelperCategoryHybrid extends abstractModuleAdmin implem
             $this->iaDb->query($sql);
         }
 
-        $rootEntry = [
-            self::COL_PARENT_ID => self::ROOT_PARENT_ID,
-            self::COL_PARENTS => '1',
-            self::COL_CHILDREN => '1',
-            self::COL_LEVEL => 0,
-
-            'id' => 1,
-            'title_' . $this->iaView->language => 'ROOT'
-        ];
-
-        $this->iaDb->insert($rootEntry, null, self::getTable());
+        $this->_insertRoot();
 
         if ($this->_flatStructureEnabled) {
             $sql = <<<SQL
@@ -75,10 +76,35 @@ CREATE TABLE IF NOT EXISTS `:table_name`(
   UNIQUE KEY `UNIQUE` (`parent_id`,`category_id`)
 ) :options;
 SQL;
-            $tableName = self::getTable(true) . '_flat';
-
-            $this->iaDb->query(iaDb::printf($sql, ['table_name' => $tableName, 'options' => $this->iaDb->tableOptions]));
+            $this->iaDb->query(iaDb::printf($sql, ['table_name' => $this->_tableFlat, 'options' => $this->iaDb->tableOptions]));
         }
+    }
+
+    public function resetDbStructure()
+    {
+        $iaDbControl = $this->iaCore->factory('dbcontrol', iaCore::ADMIN);
+
+        $iaDbControl->truncate(self::getTable());
+        $this->_flatStructureEnabled && $iaDbControl->truncate($this->_tableFlat);
+
+        $this->_insertRoot();
+    }
+
+    protected function _insertRoot()
+    {
+        $rootEntry = [
+            self::COL_PARENT_ID => self::ROOT_PARENT_ID,
+            self::COL_PARENTS => '1',
+            self::COL_CHILDREN => '1',
+            self::COL_LEVEL => 0,
+
+            'id' => 1
+        ];
+
+        foreach ($this->iaCore->languages as $iso => $language)
+            $rootEntry['title_' . $iso] = 'ROOT';
+
+        $this->iaDb->insert($rootEntry, null, self::getTable());
     }
 
     public function getJsonTree(array $data)
@@ -200,51 +226,64 @@ SQL;
         $this->iaDb->resetTable();
     }
 
+    protected static function _cols($sql)
+    {
+        return str_replace(
+            [':col_pid', ':col_parents', ':col_children', ':col_level', ':root_pid'],
+            [self::COL_PARENT_ID, self::COL_PARENTS, self::COL_CHILDREN, self::COL_LEVEL, self::ROOT_PARENT_ID],
+            $sql
+        );
+    }
+
     /**
      * Rebuild categories relations.
      * Fields to be updated: parents, child, level, title_alias
      */
     protected function _rebuildAll()
     {
-        $table_flat = $this->iaDb->prefix . 'coupons_categories_flat';
         $table = self::getTable(true);
 
-        $insert_second = 'INSERT INTO ' . $table_flat . ' (`parent_id`, `category_id`) SELECT t.`parent_id`, t.`id` FROM ' . $table . ' t WHERE t.`parent_id` != 0';
-        $insert_first = 'INSERT INTO ' . $table_flat . ' (`parent_id`, `category_id`) SELECT t.`id`, t.`id` FROM ' . $table . ' t WHERE t.`parent_id` != 0';
-        $update_level = 'UPDATE ' . $table . ' s SET `level` = (SELECT COUNT(`category_id`)-1 FROM ' . $table_flat . ' f WHERE f.`category_id` = s.`id`) WHERE s.`parent_id` != 0;';
-        $update_child = 'UPDATE ' . $table . ' s SET `child` = (SELECT GROUP_CONCAT(`category_id`) FROM ' . $table_flat . ' f WHERE f.`parent_id` = s.`id`);';
-        $update_parent = 'UPDATE ' . $table . ' s SET `parents` = (SELECT GROUP_CONCAT(`parent_id`) FROM ' . $table_flat . ' f WHERE f.`category_id` = s.`id`);';
-
-        $num = 1;
-        $count = 0;
-
         $iaDb = &$this->iaDb;
-        $iaDb->truncate($table_flat);
-        $iaDb->query($insert_first);
-        $iaDb->query($insert_second);
 
-        while ($num > 0 && $count < 10) {
-            $count++;
-            $num = 0;
-            $sql = 'INSERT INTO ' . $table_flat . ' (`parent_id`, `category_id`) '
-                . 'SELECT DISTINCT t . `id`, h' . $count . ' . `id` FROM ' . $table . ' t, ' . $table . ' h0 ';
-            $where = ' WHERE h0 . `parent_id` = t . `id` ';
+        if ($this->_flatStructureEnabled) {
+            $sql1 = 'INSERT INTO ' . $this->_tableFlat . ' SELECT t.`id`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid';
+            $sql2 = 'INSERT INTO ' . $this->_tableFlat . ' SELECT t.`:col_pid`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid';
 
-            for ($i = 1; $i <= $count; $i++) {
-                $sql .= 'LEFT JOIN ' . $table . ' h' . $i . ' ON (h' . $i . '.`parent_id` = h' . ($i - 1) . '.`id`) ';
-                $where .= ' AND h' . $i . '.`id` is not null';
-            }
+            $iaDb->truncate($this->_tableFlat);
 
-            if ($iaDb->query($sql . $where)) {
-                $num = $iaDb->getAffected();
+            $iaDb->query(self::_cols($sql1));
+            $iaDb->query(self::_cols($sql2));
+
+            $num = 1;
+            $count = 0;
+
+            while ($num > 0 && $count < 10) {
+                $count++;
+                $num = 0;
+                $sql = 'INSERT INTO ' . $this->_tableFlat . ' '
+                    . 'SELECT DISTINCT t.`id`, h' . $count . '.`id` FROM ' . $table . ' t, ' . $table . ' h0 ';
+                $where = ' WHERE h0.`:col_pid` = t.`id` ';
+
+                for ($i = 1; $i <= $count; $i++) {
+                    $sql .= 'LEFT JOIN ' . $table . ' h' . $i . ' ON (h' . $i . '.`:col_pid` = h' . ($i - 1) . '.`id`) ';
+                    $where .= ' AND h' . $i . '.`id` IS NOT NULL';
+                }
+
+                if ($iaDb->query(self::_cols($sql . $where))) {
+                    $num = $iaDb->getAffected();
+                }
             }
         }
 
-        $iaDb->query($update_level);
-        $iaDb->query($update_child);
-        $iaDb->query($update_parent);
+        $sqlLevel = 'UPDATE ' . $table . ' s SET `:col_level` = (SELECT COUNT(`category_id`)-1 FROM ' . $this->_tableFlat . ' f WHERE f.`category_id` = s.`id`) WHERE s.`:col_pid` != :root_pid';
+        $sqlChildren = 'UPDATE ' . $table . ' s SET `:col_children` = (SELECT GROUP_CONCAT(`category_id`) FROM ' . $this->_tableFlat . ' f WHERE f.`parent_id` = s.`id`)';
+        $sqlParent = 'UPDATE ' . $table . ' s SET `:col_parents` = (SELECT GROUP_CONCAT(`parent_id`) FROM ' . $this->_tableFlat . ' f WHERE f.`category_id` = s.`id`)';
 
-        $iaDb->query('UPDATE ' . $table . ' SET `order` = 1 WHERE `order` = 0');
+        $iaDb->query(self::_cols($sqlLevel));
+        $iaDb->query(self::_cols($sqlChildren));
+        $iaDb->query(self::_cols($sqlParent));
+
+        $iaDb->update(['order' => 1], iaDb::convertIds(0, 'order'), null, self::getTable());
     }
 
     protected function _getPathForRebuild($title, $pid, $path = '')
@@ -261,12 +300,12 @@ SQL;
             if (isset($cache[$pid])) {
                 $parent = $cache[$pid];
             } else {
-                $parent = $this->iaDb->row(['id', 'parent_id', 'title'], "`id` = '{$pid}'");
+                $parent = $this->iaDb->row(['id', self::COL_PARENT_ID, 'title' => 'title_' . iaLanguage::getMasterLanguage()->code], iaDb::convertIds($pid));
 
                 $cache[$pid] = $parent;
             }
 
-            $path = $this->_getPathForRebuild($parent['title'], $parent['parent_id'], $path);
+            $path = $this->_getPathForRebuild($parent['title'], $parent[self::COL_PARENT_ID], $path);
         }
 
         return $path;
@@ -277,7 +316,7 @@ SQL;
         $this->iaDb->setTable(self::getTable());
 
         $category = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
-        $path = $this->_getPathForRebuild($category['title'], $category['parent_id']);
+        $path = $this->_getPathForRebuild($category['title'], $category[self::COL_PARENT_ID]);
         $this->iaDb->update(['title_alias' => $path], iaDb::convertIds($category['id']));
 
         $this->iaDb->resetTable();
