@@ -26,5 +26,4 @@
 
 abstract class iaAbstractHelperCategoryNestedsets extends abstractModuleAdmin implements iaAbstractHelperCategoryInterface
 {
-
 }

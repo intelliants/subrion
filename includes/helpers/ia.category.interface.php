@@ -26,8 +26,6 @@
 
 interface iaAbstractHelperCategoryInterface
 {
-
-
     public function setupDbStructure();
     public function getJsonTree(array $data);
 }

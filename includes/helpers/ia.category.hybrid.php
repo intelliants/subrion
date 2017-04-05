@@ -198,7 +198,7 @@ SQL;
         $this->iaDb->resetTable();
     }
 
-    /*
+    /**
      * Rebuild categories relations.
      * Fields to be updated: parents, child, level, title_alias
      */
@@ -221,22 +221,19 @@ SQL;
         $iaDb->query($insert_first);
         $iaDb->query($insert_second);
 
-        while($num > 0 && $count < 10)
-        {
+        while ($num > 0 && $count < 10) {
             $count++;
             $num = 0;
             $sql = 'INSERT INTO ' . $table_flat . ' (`parent_id`, `category_id`) '
                 . 'SELECT DISTINCT t . `id`, h' . $count . ' . `id` FROM ' . $table . ' t, ' . $table . ' h0 ';
             $where = ' WHERE h0 . `parent_id` = t . `id` ';
 
-            for ($i = 1; $i <= $count; $i++)
-            {
+            for ($i = 1; $i <= $count; $i++) {
                 $sql .= 'LEFT JOIN ' . $table . ' h' . $i . ' ON (h' . $i . '.`parent_id` = h' . ($i - 1) . '.`id`) ';
                 $where .= ' AND h' . $i . '.`id` is not null';
             }
 
-            if ($iaDb->query($sql . $where))
-            {
+            if ($iaDb->query($sql . $where)) {
                 $num = $iaDb->getAffected();
             }
         }

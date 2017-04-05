@@ -66,8 +66,7 @@ final class iaSystem
                 iaDebug::debug('<b>autoload:</b> ' . $fileName . ' (' . self::byteView(filesize(IA_CLASSES . $fileName)) . ')', 'Initialized Classes List', 'info');
                 return true;
             }
-        }
-        elseif (isset($helperClasses[$className])) {
+        } elseif (isset($helperClasses[$className])) {
             $filePath = IA_INCLUDES . 'helpers' . IA_DS;
             $fileName = $helperClasses[$className] . self::EXECUTABLE_FILE_EXT;
 
