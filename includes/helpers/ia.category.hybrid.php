@@ -69,13 +69,15 @@ abstract class iaAbstractHelperCategoryHybrid extends abstractModuleAdmin implem
 
         if ($this->_flatStructureEnabled) {
             $sql = <<<SQL
-CREATE TABLE IF NOT EXISTS `:prefixcoupons_categories_flat`(
+CREATE TABLE IF NOT EXISTS `:table_name`(
   `parent_id` int(8) unsigned NOT NULL,
   `category_id` int(8) unsigned NOT NULL,
   UNIQUE KEY `UNIQUE` (`parent_id`,`category_id`)
 ) :options;
 SQL;
-            $this->iaDb->query(iaDb::printf($sql, ['prefix' => $this->iaDb->prefix, 'options' => $this->iaDb->tableOptions]));
+            $tableName = self::getTable(true) . '_flat';
+
+            $this->iaDb->query(iaDb::printf($sql, ['table_name' => $tableName, 'options' => $this->iaDb->tableOptions]));
         }
     }
 
