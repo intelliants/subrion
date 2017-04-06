@@ -172,9 +172,9 @@ SQL;
 
     public function update(array $itemData, $id)
     {
-        // makes impossible to change the alias for the root
-        if ($this->getRootId() == $itemData[self::COL_PARENT_ID] && isset($itemData['title_alias'])) {
-            unset($itemData['title_alias']);
+        // empties slug of the root if tried to set
+        if ($this->getRootId() == $id && isset($itemData['title_alias'])) {
+            $itemData['title_alias'] = '';
         }
 
         return parent::update($itemData, $id);
@@ -186,12 +186,13 @@ SQL;
             return false;
         }
 
+        $entry = $this->getById($itemId, false);
         $result = parent::delete($itemId);
 
-        if ($result && $this->_flatStructureEnabled) {
-            // remove all the children categories as well
-            $where = sprintf('`id` IN (SELECT `category_id` FROM `%s` WHERE `parent_id` = %d)',
-                self::getTableFlat(true),$itemId);
+        if ($result && !empty($entry[self::COL_CHILDREN])) { // remove all the children categories as well
+            //$where = sprintf('`id` IN (SELECT `category_id` FROM `%s` WHERE `parent_id` = %d)',
+            //    self::getTableFlat(true),$itemId);
+            $where = '`id` IN (' . $entry[self::COL_CHILDREN] . ')';
 
             $this->iaDb->delete($where, self::getTable());
         }
@@ -260,8 +261,8 @@ SQL;
         $iaDb = &$this->iaDb;
 
         if ($this->_flatStructureEnabled) {
-            $sql1 = 'INSERT INTO ' . $tableFlat . ' SELECT t.`id`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid';
-            $sql2 = 'INSERT INTO ' . $tableFlat . ' SELECT t.`:col_pid`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid';
+            $sql1 = 'INSERT INTO ' . $tableFlat . ' SELECT t.`id`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid ORDER BY t.`:col_level` DESC';
+            $sql2 = 'INSERT INTO ' . $tableFlat . ' SELECT t.`:col_pid`, t.`id` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid ORDER BY t.`:col_level`';
 
             $iaDb->truncate($tableFlat);
 
@@ -300,47 +301,15 @@ SQL;
         $iaDb->update(['order' => 1], iaDb::convertIds(0, 'order'), null, self::getTable());
     }
 
-    protected function _getPathForRebuild($title, $pid, $path = '')
-    {
-        static $cache;
-
-        $str = preg_replace('#[^a-z0-9_-]+#i', '-', $title);
-        $str = trim($str, '-');
-        $str = str_replace("'", '', $str);
-
-        $path = $path ? $str . '/' . $path : $str . '/';
-
-        if ($pid != 1) {
-            if (isset($cache[$pid])) {
-                $parent = $cache[$pid];
-            } else {
-                $parent = $this->iaDb->row(['id', self::COL_PARENT_ID, 'title' => 'title_' . iaLanguage::getMasterLanguage()->code], iaDb::convertIds($pid));
-
-                $cache[$pid] = $parent;
-            }
-
-            $path = $this->_getPathForRebuild($parent['title'], $parent[self::COL_PARENT_ID], $path);
-        }
-
-        return $path;
-    }
-
-    public function rebuildAliases($id)
-    {
-        $this->iaDb->setTable(self::getTable());
-
-        $category = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
-        $path = $this->_getPathForRebuild($category['title'], $category[self::COL_PARENT_ID]);
-        $this->iaDb->update(['title_alias' => $path], iaDb::convertIds($category['id']));
-
-        $this->iaDb->resetTable();
-    }
-
     protected function _getParents($cId, $parents = [], $update = true)
     {
+        if ($cId == $this->getRootId()) {
+            return $parents;
+        }
+
         $parentId = $this->iaDb->one(self::COL_PARENT_ID, iaDb::convertIds($cId));
 
-        if ($parentId != 0) {
+        if ($parentId != self::ROOT_PARENT_ID) {
             $parents[] = $parentId;
 
             if ($update) {
@@ -368,7 +337,7 @@ SQL;
 
     protected function _getChildren($cId, $children = [], $update = false)
     {
-        if ($childrenIds = $this->iaDb->onefield(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($cId, 'parent_id'), null, null, self::getTable())) {
+        if ($childrenIds = $this->iaDb->onefield(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($cId, self::COL_PARENT_ID), null, null, self::getTable())) {
             foreach ($childrenIds as $childId) {
                 $children[] = $childId;
 
@@ -388,14 +357,46 @@ SQL;
         return $children;
     }
 
-    public function dropRelations()
+
+    public function rebuildAliases($id)
     {
-        $this->iaDb->update(['child' => '', 'parents' => ''], iaDb::EMPTY_CONDITION, self::getTable());
+        $this->iaDb->setTable(self::getTable());
+
+        $category = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
+        $path = $this->_getPathForRebuild($category['title'], $category[self::COL_PARENT_ID]);
+        $this->iaDb->update(['title_alias' => $path], iaDb::convertIds($category['id']));
+
+        $this->iaDb->resetTable();
     }
 
-    public function clearArticlesNum()
+    protected function _getPathForRebuild($title, $pid, $path = '')
     {
-        $this->iaDb->update(['num_articles' => 0, 'num_all_articles' => 0], iaDb::EMPTY_CONDITION, self::getTable());
+        static $cache;
+
+        $str = preg_replace('#[^a-z0-9_-]+#i', '-', $title);
+        $str = trim($str, '-');
+        $str = str_replace("'", '', $str);
+
+        $path = $path ? $str . '/' . $path : $str . '/';
+
+        if ($pid != 1) {
+            if (isset($cache[$pid])) {
+                $parent = $cache[$pid];
+            } else {
+                $parent = $this->iaDb->row(['id', self::COL_PARENT_ID, 'title' => 'title_' . iaLanguage::getMasterLanguage()->code], iaDb::convertIds($pid));
+
+                $cache[$pid] = $parent;
+            }
+
+            $path = $this->_getPathForRebuild($parent['title'], $parent[self::COL_PARENT_ID], $path);
+        }
+
+        return $path;
+    }
+
+    public function dropRelations()
+    {
+        $this->iaDb->update([self::COL_CHILDREN => '', self::COL_PARENTS => ''], iaDb::EMPTY_CONDITION, self::getTable());
     }
 
     public function getCount()

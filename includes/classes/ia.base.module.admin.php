@@ -332,9 +332,18 @@ abstract class abstractModuleAdmin extends abstractCore
                 iaCore::ACTION_DELETE => iaLog::ACTION_DELETE
             ];
 
-            $title = (isset($itemData['title']) && $itemData['title'])
-                ? $itemData['title']
-                : $this->iaDb->one('title', iaDb::convertIds($itemId), self::getTable());
+            if (empty($itemData['title'])) {
+                $multilingualFields = $this->iaCore->factory('field')->getMultilingualFields($this->getItemName());
+
+                $field = in_array('title', $multilingualFields)
+                    ? 'title_' . $this->iaView->language
+                    : 'title';
+
+                $title = $this->iaDb->one($field, iaDb::convertIds($itemId), self::getTable());
+            } else {
+                $title = $itemData['title'];
+            }
+
             $params = array_merge($this->_activityLog, ['name' => $title, 'id' => $itemId]);
 
             $iaLog->write($actionsMap[$action], $params);
