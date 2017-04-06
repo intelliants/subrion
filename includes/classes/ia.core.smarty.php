@@ -527,11 +527,11 @@ class iaSmarty extends Smarty
         echo implode(', ', $list);
     }
 
-    public static function ia_image($params)
+    public static function ia_image($params, Smarty_Internal_Template $smarty)
     {
         $iaCore = iaCore::instance();
 
-        if (isset($params['file']) && $params['file']) {
+        if (!empty($params['file'])) {
             if (is_array($params['file'])) { // treat it as a field
                 switch (true) {
                     case isset($params['type']):
@@ -544,6 +544,7 @@ class iaSmarty extends Smarty
                         break;
                     default:
                         $type = 'original';
+                        iaDebug::debug('Original image usage: ' . $params['file']['file'], 'Notice');
                 }
 
                 $url = $iaCore->iaView->assetsUrl . 'uploads/' . $params['file']['path'] . $type . '/'

@@ -1,8 +1,8 @@
 <?php
 
-namespace phpimageworkshop\Exception;
+namespace PHPImageWorkshop\Exception;
 
-use phpimageworkshop\Exception\ImageWorkshopBaseException as ImageWorkshopBaseException;
+use PHPImageWorkshop\Exception\ImageWorkshopBaseException as ImageWorkshopBaseException;
 
 // If no autoloader, uncomment these lines:
 //require_once(__DIR__.'/ImageWorkshopBaseException.php');

@@ -24,8 +24,8 @@
  *
  ******************************************************************************/
 
-require_once IA_INCLUDES . 'phpimageworkshop/ImageWorkshop.php';
-use phpimageworkshop\ImageWorkshop as ImageWorkshop;
+require_once IA_INCLUDES . 'PHPImageWorkshop/ImageWorkshop.php';
+use PHPImageWorkshop\ImageWorkshop as ImageWorkshop;
 
 class iaPicture extends abstractCore
 {
@@ -103,7 +103,7 @@ class iaPicture extends abstractCore
 
     protected function _processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark = false)
     {
-        require_once IA_INCLUDES . 'phpimageworkshop/Core/GifFrameExtractor.php';
+        require_once IA_INCLUDES . 'PHPImageWorkshop/Core/GifFrameExtractor.php';
 
         if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($sourceFile) && $this->_allowAnimatedGifs) {
             // Extractions of the GIF frames and their durations
@@ -120,7 +120,7 @@ class iaPicture extends abstractCore
             }
 
             // Then we re-generate the GIF
-            require_once IA_INCLUDES . 'phpimageworkshop/Core/GifCreator.php';
+            require_once IA_INCLUDES . 'PHPImageWorkshop/Core/GifCreator.php';
 
             $gc = new GifCreator\GifCreator();
             $gc->create($frames, $gfe->getFrameDurations(), 0);
@@ -141,7 +141,7 @@ class iaPicture extends abstractCore
                 return $this->_processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark);
             }
 
-            $image = ImageWorkshop::initFromPath($sourceFile);
+            $image = ImageWorkshop::initFromPath($sourceFile, true);
 
             // resize image
             switch ($resizeMode) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace phpimageworkshop\Exception;
+namespace PHPImageWorkshop\Exception;
 
 /**
  * ImageWorkshopBaseException
@@ -16,10 +16,10 @@ class ImageWorkshopBaseException extends \Exception
 {
     /**
      * Constructor
-     * 
+     *
      * @param string $message
      * @param integer $code
-     * @param Exception $previous
+     * @param \Exception|Exception $previous
      */
     public function __construct($message, $code = 0, \Exception $previous = null)
     {
