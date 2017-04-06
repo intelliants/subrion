@@ -282,6 +282,7 @@ SQL;
                     foreach (explode(',', $field['values']) as $v) {
                         $values[$v] = self::getLanguageValue($field['item'], $field['name'], $v);
                     }
+
                     $field['values'] = $values;
 
                     break;
@@ -292,6 +293,16 @@ SQL;
                     empty($field['timepicker']) && $field['imagetype_thumbnail'] = self::IMAGE_TYPE_THUMBNAIL;
                     //$field['imagetype_primary'] = $field['timepicker'] ? $field['imagetype_primary'] : self::IMAGE_TYPE_LARGE;
                     //$field['imagetype_thumbnail'] = $field['timepicker'] ? $field['imagetype_thumbnail'] : self::IMAGE_TYPE_THUMBNAIL;
+
+                    break;
+
+                case self::TREE:
+                    $values = json_decode($field['values'], true);
+                    foreach ($values as &$v) {
+                        $v['text'] = self::getLanguageValue($field['item'], $field['name'], $v['id']);
+                    }
+
+                    $field['values'] = json_encode($values);
             }
 
             $field['class'] = 'fieldzone';
