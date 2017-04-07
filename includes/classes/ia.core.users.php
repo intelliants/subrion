@@ -162,7 +162,8 @@ class iaUsers extends abstractCore
                     exit();
                 } else {
                     if ($isBackend) {
-                        $this->iaCore->factory('log')->write(iaLog::ACTION_LOGIN, ['ip' => $this->iaCore->util()->getIp(false)]);
+                        $this->iaCore->factory('log')->write(iaLog::ACTION_LOGIN,
+                            ['ip' => $this->iaCore->util()->getIp(false)]);
                     }
                 }
             }
@@ -250,7 +251,7 @@ class iaUsers extends abstractCore
 
         $sql = <<<SQL
 SELECT u.*, g.`name` `usergroup` 
-	FROM `:prefix_:table_users` u 
+  FROM `:prefix_:table_users` u 
 LEFT JOIN `:prefix_:table_groups` g ON (g.`id` = u.`usergroup_id`) 
 WHERE u.`id` = :id AND u.`status` = ':status' 
 LIMIT 1
@@ -275,11 +276,13 @@ SQL;
     {
         $_SESSION[self::SESSION_KEY] = $identityInfo;
     }
+
     //
 
     public function insert(array $userData)
     {
-        return $this->iaDb->insert($userData, ['date_reg' => iaDb::FUNCTION_NOW, 'date_update' => iaDb::FUNCTION_NOW], self::getTable());
+        return $this->iaDb->insert($userData, ['date_reg' => iaDb::FUNCTION_NOW, 'date_update' => iaDb::FUNCTION_NOW],
+            self::getTable());
     }
 
     public function update($values, $condition = '', $rawValues = [])
@@ -328,7 +331,8 @@ SQL;
                 $folder = IA_UPLOADS . iaUtil::getAccountDir($entry['username']);
                 iaUtil::cascadeDeleteFiles($folder, true) && @rmdir($folder);
 
-                $iaLog->write(iaLog::ACTION_DELETE, ['item' => 'member', 'name' => $entry['fullname'], 'id' => $entry['id']]);
+                $iaLog->write(iaLog::ACTION_DELETE,
+                    ['item' => 'member', 'name' => $entry['fullname'], 'id' => $entry['id']]);
 
                 $this->iaCore->startHook('phpUserDelete', ['userInfo' => $entry]);
 
@@ -421,7 +425,8 @@ SQL;
         $memberId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($memberInfo['email'], 'email'));
 
         if (empty($memberId)) {
-            $memberId = $this->iaDb->insert($memberInfo, ['date_reg' => iaDb::FUNCTION_NOW, 'date_update' => iaDb::FUNCTION_NOW]);
+            $memberId = $this->iaDb->insert($memberInfo,
+                ['date_reg' => iaDb::FUNCTION_NOW, 'date_update' => iaDb::FUNCTION_NOW]);
 
             if ($memberId) {
                 $this->iaCore->startHook('memberAddEmailSubmission', ['member' => $memberInfo]);
@@ -507,7 +512,8 @@ SQL;
         $stmt = '`email` = :email AND `sec_key` = :key';
         $this->iaDb->bind($stmt, ['email' => $email, 'key' => $key]);
 
-        return (bool)$this->iaDb->update(['sec_key' => '', 'status' => $status], $stmt, ['date_update' => iaDb::FUNCTION_NOW], self::getTable());
+        return (bool)$this->iaDb->update(['sec_key' => '', 'status' => $status], $stmt,
+            ['date_update' => iaDb::FUNCTION_NOW], self::getTable());
     }
 
     public function getById($id)
@@ -519,7 +525,8 @@ SQL;
     {
         in_array($key, ['id', 'username', 'email']) || $key = 'id';
 
-        $row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status', ['id' => $id, 'status' => iaCore::STATUS_ACTIVE], self::getTable());
+        $row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status',
+            ['id' => $id, 'status' => iaCore::STATUS_ACTIVE], self::getTable());
         !$row || $this->_processValues($row, true);
 
         return $row;
@@ -552,12 +559,13 @@ SQL;
             'condition' => $condition
         ]);
         $row = $this->iaDb->getRow($sql);
-        !$row ||$this->_processValues($row, true);
+        !$row || $this->_processValues($row, true);
 
         if (iaCore::STATUS_ACTIVE == $row['status']) {
             self::_setIdentity($row);
 
-            $this->iaDb->update(null, iaDb::convertIds($row['id']), ['date_logged' => iaDb::FUNCTION_NOW], self::getTable());
+            $this->iaDb->update(null, iaDb::convertIds($row['id']), ['date_logged' => iaDb::FUNCTION_NOW],
+                self::getTable());
 
             $this->_assignItem($row, $remember);
 
@@ -611,7 +619,8 @@ SQL;
         if ($salt = $this->_getSalt()) {
             foreach ($salt['items'] as $item) {
                 $values = ['salt' => '', 'member_id' => $memberData['id']];
-                $this->iaDb->update($values, iaDb::convertIds($salt['salt'], 'salt'), null, iaSanitize::paranoid($item));
+                $this->iaDb->update($values, iaDb::convertIds($salt['salt'], 'salt'), null,
+                    iaSanitize::paranoid($item));
             }
         }
 
@@ -703,7 +712,9 @@ SQL;
         $data = [];
         $weekDay = getdate();
         $weekDay = $weekDay['wday'];
-        $rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date_reg`)), COUNT(*)', 'DATE(`date_reg`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date_reg`)', self::getTable());
+        $rows = $this->iaDb->keyvalue('DAYOFWEEK(DATE(`date_reg`)), COUNT(*)',
+            'DATE(`date_reg`) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL ' . $weekDay . ' DAY)) AND DATE(NOW()) GROUP BY DATE(`date_reg`)',
+            self::getTable());
         for ($i = 1; $i < 8; $i++) {
             $data[$i] = isset($rows[$i]) ? $rows[$i] : 0;
         }
@@ -734,7 +745,9 @@ SQL;
 
     public function getVisitorsInfo()
     {
-        if ($rows = $this->iaDb->all("`username`, IF(`fullname` != '', `fullname`, `username`) `fullname`, `page`, `ip`", "`username` != '' AND `status` = 'active' GROUP BY `username`", null, null, 'online')) {
+        if ($rows = $this->iaDb->all("`username`, IF(`fullname` != '', `fullname`, `username`) `fullname`, `page`, `ip`",
+            "`username` != '' AND `status` = 'active' GROUP BY `username`", null, null, 'online')
+        ) {
             foreach ($rows as &$row) {
                 $row['link'] = $this->url('view', $row);
             }
@@ -753,7 +766,8 @@ SQL;
     public function postPayment($plan, $transaction)
     {
         if (isset($plan['usergroup']) && $plan['usergroup'] > 0) {
-            $this->iaDb->update(['usergroup_id' => $plan['usergroup'],'id' => $transaction['item_id']], null, null, self::getTable());
+            $this->iaDb->update(['usergroup_id' => $plan['usergroup'], 'id' => $transaction['item_id']], null, null,
+                self::getTable());
         }
 
         self::reloadIdentity();
@@ -776,8 +790,10 @@ SQL;
             // delete language records
             iaLanguage::delete('usergroup_' . $usergroup['name']);
 
-            $this->iaDb->delete('`type` = :type AND `type_id` = :id', 'acl_privileges', ['type' => 'group', 'id' => $entryId]); // TODO: use the class method for this
-            $this->iaDb->update(['usergroup_id' => iaUsers::MEMBERSHIP_REGULAR], iaDb::convertIds((int)$entryId, 'usergroup_id'), null, iaUsers::getTable());
+            $this->iaDb->delete('`type` = :type AND `type_id` = :id', 'acl_privileges',
+                ['type' => 'group', 'id' => $entryId]); // TODO: use the class method for this
+            $this->iaDb->update(['usergroup_id' => iaUsers::MEMBERSHIP_REGULAR],
+                iaDb::convertIds((int)$entryId, 'usergroup_id'), null, iaUsers::getTable());
         }
         $this->iaDb->resetTable();
 
@@ -798,12 +814,16 @@ SQL;
         $ipAddress = $this->iaCore->util()->getIp();
         $date = date(iaDb::DATE_FORMAT);
 
-        if ($this->iaDb->exists('`item` = :item AND `item_id` = :id AND `ip` = :ip AND `date` = :date', ['item' => $itemName, 'id' => $itemId, 'ip' => $ipAddress, 'date' => $date], $viewsTable)) {
+        if ($this->iaDb->exists('`item` = :item AND `item_id` = :id AND `ip` = :ip AND `date` = :date',
+            ['item' => $itemName, 'id' => $itemId, 'ip' => $ipAddress, 'date' => $date], $viewsTable)
+        ) {
             return false;
         }
 
-        $this->iaDb->insert(['item' => $itemName, 'item_id' => $itemId, 'ip' => $ipAddress, 'date' => $date], null, $viewsTable);
-        $result = $this->iaDb->update(null, iaDb::convertIds($itemId), [$columnName => '`' . $columnName . '` + 1'], self::getTable());
+        $this->iaDb->insert(['item' => $itemName, 'item_id' => $itemId, 'ip' => $ipAddress, 'date' => $date], null,
+            $viewsTable);
+        $result = $this->iaDb->update(null, iaDb::convertIds($itemId), [$columnName => '`' . $columnName . '` + 1'],
+            self::getTable());
 
         return (bool)$result;
     }
@@ -817,12 +837,13 @@ SQL;
         $visibleUsergroups = $this->getUsergroups(true);
         $visibleUsergroups = array_keys($visibleUsergroups);
 
-        $stmt.= ' AND `usergroup_id` IN(' . implode(',', $visibleUsergroups) . ')';
-        empty($order) || $stmt.= ' ORDER BY ' . $order;
+        $stmt .= ' AND `usergroup_id` IN(' . implode(',', $visibleUsergroups) . ')';
+        empty($order) || $stmt .= ' ORDER BY ' . $order;
 
-        $rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit, self::getTable());
+        $rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit,
+            self::getTable());
         $count = $this->iaDb->foundRows();
-        !$rows ||$this->_processValues($rows);
+        !$rows || $this->_processValues($rows);
 
         return [$count, $rows];
     }
@@ -852,11 +873,14 @@ SQL;
 
         if ($user_profile = $provider->getUserProfile()) {
             // identify by Hybrid identifier
-            $memberId = $this->iaDb->one('member_id', iaDb::convertIds($user_profile->identifier, 'value'), self::getProvidersTable());
+            $memberId = $this->iaDb->one('member_id', iaDb::convertIds($user_profile->identifier, 'value'),
+                self::getProvidersTable());
 
             // identify by email address
             if (!$memberId) {
-                if ($memberInfo = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, "`email` = :email_address", ['email_address' => $user_profile->email], self::getTable())) {
+                if ($memberInfo = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, "`email` = :email_address",
+                    ['email_address' => $user_profile->email], self::getTable())
+                ) {
                     $this->iaDb->insert([
                         'member_id' => $memberInfo['id'],
                         'name' => $providerName,
@@ -941,5 +965,21 @@ SQL;
         }
 
         $singleRow && $rows = array_shift($rows);
+    }
+
+    /**
+     * Returns listings for Favorites page
+     *
+     * @param $ids
+     *
+     * @return mixed
+     */
+    public function getFavorites($ids)
+    {
+        $memberIds = implode(",", $ids);
+        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION . ', 1 `favorite` ', "`id` IN ({$memberIds})", 0, 50, self::getTable());
+        !$rows || $this->_processValues($rows);
+
+        return $rows;
     }
 }

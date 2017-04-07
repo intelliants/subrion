@@ -1,16 +1,16 @@
 <div class="ia-item">
     <div class="ia-item__image">
-        {ia_image file=$listing.avatar title=$listing.fullname|default:$listing.username gravatar=true email=$listing.email gravatar_width=200}
+        {ia_image file=$listing.avatar type='thumbnail' title=$listing.fullname|default:$listing.username gravatar=true email=$listing.email gravatar_width=200}
     </div>
     <div class="ia-item__content">
         <div class="ia-item__actions">
             {printFavorites item=$listing itemtype='members' guests=true}
             {accountActions item=$listing itemtype='members'}
-            <a href="{ia_url item='members' data=$listing type='url'}">{lang key='view_profile'} <span class="fa fa-angle-double-right"></span></a>
+            <a href="{$listing.link}">{lang key='view_profile'} <span class="fa fa-angle-double-right"></span></a>
         </div>
 
         <h4 class="ia-item__title">
-            <a href="{ia_url item='members' data=$listing type='url'}">{$listing.fullname|default:$listing.username}</a>
+            <a href="{$listing.link}">{$listing.fullname|default:$listing.username}</a>
         </h4>
 
         <div class="ia-item__additional">
