@@ -137,6 +137,27 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
         return parent::update($itemData, $id);
     }
 
+    public function delete($itemId)
+    {
+        if ($itemId == $this->getRootId()) {
+            return false;
+        }
+
+        $result = parent::delete($itemId);
+
+        if ($result) {
+            // remove subcategories as well
+
+            // TODO: improve (currently no assigned assets - images, files
+            // will be removed if assigned via standard core fields
+            $where = sprintf('`id` IN (SELECT `category_id` FROM `%s` WHERE `parent_id` = %d)',
+                self::getTableFlat(true), $itemId);
+            $this->iaDb->delete($where);
+        }
+
+        return $result;
+    }
+
     public function updateCounters($itemId, array $itemData, $action, $previousData = null)
     {
         $this->_updateFlatStructure($itemId);
