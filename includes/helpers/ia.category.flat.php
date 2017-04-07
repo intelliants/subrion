@@ -66,7 +66,6 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
             'CREATE TABLE IF NOT EXISTS `:table_flat` ('
                 . '`parent_id` int(8) unsigned NOT NULL, '
                 . '`category_id` int(8) unsigned NOT NULL, '
-                . '`level` tinyint(1) unsigned NOT NULL, '
                 . 'UNIQUE KEY `UNIQUE` (`parent_id`,`category_id`)'
             . ') :options'
         ];
@@ -106,10 +105,6 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
             $row['title_' . $iso] = 'ROOT';
 
         $this->iaDb->insert($row, null, self::getTable());
-
-        $row = ['parent_id' => 1, 'category_id' => 1, 'level' => 0];
-
-        $this->iaDb->insert($row, null, self::getTableFlat());
     }
 
     public function getRoot()
@@ -144,10 +139,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
     public function updateCounters($itemId, array $itemData, $action, $previousData = null)
     {
-        //if (iaCore::ACTION_ADD == $action ||
-            //(iaCore::ACTION_EDIT == $action && isset($itemData[self::COL_PARENT_ID]) && $previousData[self::COL_PARENT_ID] != $itemData[self::COL_PARENT_ID])) {
-            $this->_updateFlatStructure($itemId);
-        //}
+        $this->_updateFlatStructure($itemId);
     }
 
 
@@ -162,8 +154,8 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
         $iaDb = &$this->iaDb;
 
-        $sql1 = 'INSERT INTO ' . $tableFlat . ' SELECT t.`id`, t.`id`, t.`:col_level` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid ORDER BY t.`:col_level`';
-        $sql2 = 'INSERT INTO ' . $tableFlat . ' SELECT t.`:col_pid`, t.`id`, t.`:col_level` FROM ' . $table . ' t WHERE t.`:col_pid` != :root_pid ORDER BY t.`:col_level`';
+        $sql1 = 'INSERT INTO ' . $tableFlat . ' SELECT d.`id`, d.`id` FROM ' . $table . ' d WHERE d.`:col_pid` != :root_pid ORDER BY d.`:col_level`';
+        $sql2 = 'INSERT INTO ' . $tableFlat . ' SELECT d.`:col_pid`, d.`id` FROM ' . $table . ' d WHERE d.`:col_pid` != :root_pid ORDER BY d.`:col_level`';
 
         $iaDb->truncate($tableFlat);
 
@@ -176,14 +168,14 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
         while ($num > 0 && $count < 10) {
             $count++;
             $num = 0;
-            $sql = 'INSERT INTO ' . $tableFlat . ' '
-                . 'SELECT DISTINCT t.`id`, h' . $count . '.`id`, h' . $count . '.`:col_level` '
-                . 'FROM ' . $table . ' t, ' . $table . ' h0 ';
-            $where = ' WHERE h0.`:col_pid` = t.`id` ';
+            $sql = "INSERT INTO `{$tableFlat}` "
+                . "SELECT DISTINCT t.`id`, h{$count}.`id` "
+                . "FROM `{$table}` t, `{$table}` h0 ";
+            $where = ' WHERE h0.`:col_pid` = t.`id`';
 
             for ($i = 1; $i <= $count; $i++) {
-                $sql .= 'LEFT JOIN ' . $table . ' h' . $i . ' ON (h' . $i . '.`:col_pid` = h' . ($i - 1) . '.`id`) ';
-                $where .= ' AND h' . $i . '.`id` IS NOT NULL';
+                $sql .= "LEFT JOIN `{$table}` h{$i} ON (h{$i}.`:col_pid` = h" . ($i - 1) . ".`id`) ";
+                $where .= " AND h{$i}.`id` IS NOT NULL";
             }
 
             if ($iaDb->query(self::_cols($sql . $where))) {
@@ -191,7 +183,9 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
             }
         }
 
-        $sqlLevel = 'UPDATE ' . $table . ' s SET `:col_level` = (SELECT COUNT(`category_id`)-1 FROM ' . $tableFlat . ' f WHERE f.`category_id` = s.`id`) WHERE s.`:col_pid` != :root_pid';
+        $this->iaDb->delete(iaDb::convertIds($this->getRootId(), 'parent_id'), self::getTableFlat());
+
+        $sqlLevel = 'UPDATE ' . $table . ' d SET `:col_level` = (SELECT COUNT(`parent_id`) FROM ' . $tableFlat . ' f WHERE f.`category_id` = d.`id`) WHERE d.`:col_pid` != :root_pid';
 
         $iaDb->query(self::_cols($sqlLevel));
 
@@ -250,11 +244,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
             $url .= '?cid=' . $id;
         }
 
-        $nodes = [];
-        if ($parents = $this->getParents($id)) {
-            foreach ($parents as $entry)
-                $nodes[] = $entry['id'];
-        }
+        $nodes = array_merge([$this->getRootId()], $this->getParents($id, true));
 
         return [
             'url' => $url,
@@ -270,31 +260,35 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
         $this->iaDb->setTable(self::getTable());
 
-        $dynamicLoadMode = ((int)$this->iaDb->one(iaDb::STMT_COUNT_ROWS) > 150);
+        //$dynamicLoadMode = ((int)$this->iaDb->one(iaDb::STMT_COUNT_ROWS) > 150);
+        $dynamicLoadMode=true;
         $noRootMode = isset($data['noroot']) && '' == $data['noroot'];
 
-        $rootId = $noRootMode ? 1 : 0; // TODO: hardcoded '1' should be reviewed
+        $rootId = $noRootMode ? $this->getRootId() : 0;
         $parentId = isset($data['id']) && is_numeric($data['id']) ? (int)$data['id'] : $rootId;
 
         $where = $dynamicLoadMode
-            ? '`:col_pid` = ' . $parentId
-            : ($noRootMode ? '`id` != ' . $rootId : iaDb::EMPTY_CONDITION);
+            ? iaDb::convertIds($parentId, self::COL_PARENT_ID)
+            : ($noRootMode ? iaDb::convertIds($rootId, 'id', false) : iaDb::EMPTY_CONDITION);
 
         // TODO: better solution should be found here. this code will break jstree composition in case if
         // category to be excluded from the list has children of 2 and more levels deeper
         if (!empty($data['cid'])) {
-            $where .= sprintf(' AND `id` != %d AND `:col_pid` != %d', $data['cid'], $data['cid']);
+            $where .= sprintf(' AND `id` != %d AND `parent_id` != %d', $data['cid'], $data['cid']);
         }
 
         $where .= ' ORDER BY `title`';
 
-        $rows = $this->iaDb->all(['id', 'title' => 'title_' . $this->iaCore->language['iso'], self::COL_PARENT_ID], $where);
+        $fields = '`id`, `title_' . $this->iaCore->language['iso'] . '` `title`, `parent_id`, '
+            . '(SELECT COUNT(*) FROM `' . self::getTableFlat(true) . '` f WHERE f.`parent_id` = `id`) `children_count`';
 
-        foreach ($rows as $row) {
+        foreach ($this->iaDb->all($fields, $where) as $row) {
             $entry = ['id' => $row['id'], 'text' => $row['title']];
 
             if ($dynamicLoadMode) {
-                $entry['children'] = true;//($row[self::COL_CHILDREN] && $row[self::COL_CHILDREN] != $row['id']) || 0 === (int)$row['id'];
+                $entry['children'] = $row['id'] == $this->getRootId()
+                    ? $this->getCount() > 1
+                    : $row['children_count'] > 1;
             } else {
                 $entry['state'] = [];
                 $entry['parent'] = $noRootMode
@@ -309,12 +303,17 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
     }
 
     // tree utulity methods
-    public function getParents($entryId)
+    public function getParents($entryId, $idsOnly = false)
     {
-        $where = sprintf('`id` IN (SELECT `parent_id` FROM `%s` WHERE `category_id` = %d)',
-            self::getTableFlat(true), $entryId);
+        if ($idsOnly) {
+            return $this->iaDb->onefield(self::COL_PARENT_ID, iaDb::convertIds($entryId, 'category_id'),
+                null, null, self::getTableFlat());
+        } else {
+            $query = sprintf('SELECT `parent_id` FROM `%s` WHERE `category_id` = %d',
+                self::getTableFlat(true), $entryId);
 
-        return $this->_get($where);
+            return $this->_get('`id` IN (' . $query . ')', 'ORDER BY `level`');
+        }
     }
 
     public function getChildren($entryId)
@@ -355,14 +354,14 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
         $this->iaDb->delete(iaDb::convertIds($entryId, 'parent_id'));
 
         if ($entry = $this->getById($entryId, false)) {
-            $this->iaDb->insert(['parent_id' => $entryId, 'category_id' => $entryId, 'level' => $entry[self::COL_LEVEL]]);
+            $this->iaDb->insert(['parent_id' => $entryId, 'category_id' => $entryId]);
 
             // handle parents first
             $entries = [];
             $this->_recursiveCollectParents($entry, $entries);
 
             foreach ($entries as $row) {
-                $this->iaDb->insert(['parent_id' => $row['id'], 'category_id' => $entryId, 'level' => $entry[self::COL_LEVEL]]);
+                $this->iaDb->insert(['parent_id' => $row['id'], 'category_id' => $entryId]);
             }
 
             // then, collect children
@@ -370,7 +369,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
             $this->_recursiveCollectChildren($entry, $entries);
 
             foreach ($entries as $row) {
-                $this->iaDb->insert(['parent_id' => $entryId, 'category_id' => $row['id'], 'level' => $row[self::COL_LEVEL]]);
+                $this->iaDb->insert(['parent_id' => $entryId, 'category_id' => $row['id']]);
             }
         }
 

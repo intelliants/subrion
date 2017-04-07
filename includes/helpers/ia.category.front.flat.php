@@ -111,18 +111,19 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
         $parentId = isset($data['id']) && is_numeric($data['id']) ? (int)$data['id'] : $rootId;
 
         $where = $dynamicLoadMode
-            ? '`:col_pid` = ' . $parentId
-            : '`id` != ' . $rootId;
+            ? iaDb::convertIds($parentId, self::COL_PARENT_ID)
+            : iaDb::convertIds($rootId, 'id', false);
 
         $where .= ' ORDER BY `title`';
 
-        $rows = $this->iaDb->all(['id', 'title' => 'title_' . $this->iaCore->language['iso'], self::COL_PARENT_ID], $where);
+        $fields = '`id`, `title_' . $this->iaCore->language['iso'] . '` `title`, `parent_id`, '
+            . '(SELECT COUNT(*) FROM `' . $this->getTableFlat(true) . '` f WHERE f.`parent_id` = `id`) `children_count`';
 
-        foreach ($rows as $row) {
+        foreach ($this->iaDb->all($fields, $where) as $row) {
             $entry = ['id' => $row['id'], 'text' => $row['title']];
 
             if ($dynamicLoadMode) {
-                $entry['children'] = true;//($row[self::COL_CHILDREN] && $row[self::COL_CHILDREN] != $row['id']) || 0 === (int)$row['id'];
+                $entry['children'] = $row['children_count'] > 1;
             } else {
                 $entry['state'] = [];
                 $entry['parent'] = $rootId == $row[self::COL_PARENT_ID] ? '#' : $row[self::COL_PARENT_ID];
