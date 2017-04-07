@@ -1032,6 +1032,18 @@ class iaBackendController extends iaAbstractControllerBackend
 
             $installed = false;
             if (array_key_exists($module['name'], $options['installed'])) {
+
+                if ($row = $this->_iaDb->row_bind(['name', 'config_group'], '`module` = :plugin ORDER BY `order` ASC', ['plugin' => $module['name']], iaCore::getConfigTable())) {
+                    $buttons['config'] = [
+                        'url' => $row['config_group'],
+                        'anchor' => $row['name']
+                    ];
+                }
+
+                if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', ['name' => $module['name']], 'admin_pages')) {
+                    $buttons['manage'] = $alias;
+                }
+
                 $installed = true;
                 $module['status'] = $options['installed'][$module['name']]['status'];
                 switch ($module['status']) {
