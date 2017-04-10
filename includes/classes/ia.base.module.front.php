@@ -262,4 +262,40 @@ abstract class abstractModuleFront extends abstractCore
 
         $singleRow && $rows = array_shift($rows);
     }
+
+
+    protected function _checkIfCountersNeedsUpdate($action, array $itemData, $previousData, $categoryClassInstance)
+    {
+        switch ($action) {
+            case iaCore::ACTION_EDIT:
+                if (!isset($itemData['category_id'])) {
+                    if (iaCore::STATUS_ACTIVE == $previousData['status'] && iaCore::STATUS_ACTIVE != $itemData['status']) {
+                        $categoryClassInstance->recountById($previousData['category_id'], -1);
+                    } elseif (iaCore::STATUS_ACTIVE != $previousData['status'] && iaCore::STATUS_ACTIVE == $itemData['status']) {
+                        $categoryClassInstance->recountById($previousData['category_id']);
+                    }
+                } else {
+                    if ($itemData['category_id'] == $previousData['category_id']) {
+                        if (iaCore::STATUS_ACTIVE == $previousData['status'] && iaCore::STATUS_ACTIVE != $itemData['status']) {
+                            $categoryClassInstance->recountById($itemData['category_id'], -1);
+                        } elseif (iaCore::STATUS_ACTIVE != $previousData['status'] && iaCore::STATUS_ACTIVE == $itemData['status']) {
+                            $categoryClassInstance->recountById($itemData['category_id']);
+                        }
+                    } else { // category changed
+                        iaCore::STATUS_ACTIVE == $itemData['status']
+                            && $categoryClassInstance->recountById($itemData['category_id']);
+                        iaCore::STATUS_ACTIVE == $previousData['status']
+                            && $categoryClassInstance->recountById($previousData['category_id'], -1);
+                    }
+                }
+                break;
+            case iaCore::ACTION_ADD:
+                $itemData['status'] == iaCore::STATUS_ACTIVE
+                    && $categoryClassInstance->recountById($itemData['category_id']);
+                break;
+            case iaCore::ACTION_DELETE:
+                $itemData['status'] == iaCore::STATUS_ACTIVE
+                    && $categoryClassInstance->recountById($itemData['category_id'], -1);
+        }
+    }
 }

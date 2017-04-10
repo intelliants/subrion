@@ -35,6 +35,16 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
 
     protected $_tableFlat;
 
+    protected $_recountEnabled = true;
+    protected $_recountOptions = []; // this to be extended by ancestor
+
+    private $_defaultRecountOptions = [
+        'listingsTable' => null,
+        'activeStatus' => iaCore::STATUS_ACTIVE,
+        'columnCounter' => 'num_listings',
+        'columnTotalCounter' => 'num_all_listings'
+    ];
+
     private $_root;
 
 
@@ -53,8 +63,7 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
     public function getRoot()
     {
         if (is_null($this->_root)) {
-            $this->_root = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds(self::ROOT_PARENT_ID, self::COL_PARENT_ID), self::getTable());
-            $this->_processValues($this->_root, true);
+            $this->_root = $this->getOne(iaDb::convertIds(self::ROOT_PARENT_ID, self::COL_PARENT_ID));
         }
 
         return $this->_root;
@@ -70,16 +79,7 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
         $where = sprintf('`id` IN (SELECT `parent_id` FROM `%s` WHERE `category_id` = %d)',
             $this->iaDb->prefix . $this->_tableFlat, $entryId);
 
-        return $this->fetch($where);
-    }
-
-    public function fetch($where, $order = null, $start = null, $limit = null)
-    {
-        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . ' ' . $order, (int)$start, (int)$limit, self::getTable());
-
-        $this->_processValues($rows);
-
-        return $rows;
+        return $this->getAll($where);
     }
 
     public function getTreeVars($id, $title)
@@ -133,5 +133,33 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
         }
 
         return $output;
+    }
+
+
+    public function recountById($id, $factor = 1)
+    {
+        if (!$this->_recountEnabled) {
+            return;
+        }
+
+        $options = array_merge($this->_defaultRecountOptions, $this->_recountOptions);
+
+        $sql = <<<SQL
+UPDATE `:table_data` 
+SET `:col_counter` = IF(`id` = :id, `:col_counter` + :factor, `:col_counter`),
+	`:col_total_counter` = `:col_total_counter` + :factor 
+WHERE `id` IN (SELECT `category_id` FROM `:table_flat` WHERE `parent_id` = :id)
+SQL;
+
+        $sql = iaDb::printf($sql, [
+            'table_data' => self::getTable(true),
+            'table_flat' => self::getTableFlat(true),
+            'col_counter' => $options['columnCounter'],
+            'col_total_counter' => $options['columnTotalCounter'],
+            'id' => (int)$id,
+            'factor' => (int)$factor
+        ]);
+
+        $this->iaDb->query($sql);
     }
 }

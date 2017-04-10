@@ -35,8 +35,25 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
     protected static $_tableFlat;
 
+    protected $_recountEnabled = true;
+    protected $_recountOptions = []; // this to be extended by ancestor
+
+    private $_defaultRecountOptions = [
+        'listingsTable' => null,
+        'activeStatus' => iaCore::STATUS_ACTIVE,
+        'columnCounter' => 'num_listings',
+        'columnTotalCounter' => 'num_all_listings'
+    ];
+
     private $_root;
 
+
+    public function init()
+    {
+        parent::init();
+
+        $this->_recountOptions = array_merge($this->_defaultRecountOptions, $this->_recountOptions);
+    }
 
     public static function getTableFlat($prefix = false)
     {
@@ -48,11 +65,11 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
             . self::$_tableFlat;
     }
 
-    protected static function _cols($sql)
+    protected function _cols($sql)
     {
         return str_replace(
-            [':col_pid', ':col_level', ':root_pid'],
-            [self::COL_PARENT_ID, self::COL_LEVEL, self::ROOT_PARENT_ID],
+            [':col_pid', ':col_level', ':col_counter', ':col_total_counter', ':root_pid'],
+            [self::COL_PARENT_ID, self::COL_LEVEL, $this->_recountOptions['columnCounter'], $this->_recountOptions['columnTotalCounter'], self::ROOT_PARENT_ID],
             $sql
         );
     }
@@ -70,6 +87,11 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
             . ') :options'
         ];
 
+        if ($this->_recountEnabled) {
+            $queries[] = 'ALTER TABLE `:table_data` ADD `:col_counter` mediumint(8) unsigned NOT NULL default 0';
+            $queries[] = 'ALTER TABLE `:table_data` ADD `:col_total_counter` mediumint(8) unsigned NOT NULL default 0';
+        }
+
         foreach ($queries as $query) {
             $sql = iaDb::printf($query, [
                 'table_data' => self::getTable(true),
@@ -77,7 +99,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
                 'options' => $this->iaDb->tableOptions
             ]);
 
-            $this->iaDb->query(self::_cols($sql));
+            $this->iaDb->query($this->_cols($sql));
         }
 
         $this->_insertRoot();
@@ -168,7 +190,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
      * Rebuild categories relations.
      * Fields to be updated: parents, child, level, title_alias
      */
-    public function rebuildRelations()
+    public function rebuild()
     {
         $table = self::getTable(true);
         $tableFlat = self::getTableFlat(true);
@@ -180,8 +202,8 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
         $iaDb->truncate($tableFlat);
 
-        $iaDb->query(self::_cols($sql1));
-        $iaDb->query(self::_cols($sql2));
+        $iaDb->query($this->_cols($sql1));
+        $iaDb->query($this->_cols($sql2));
 
         $num = 1;
         $count = 0;
@@ -199,7 +221,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
                 $where .= " AND h{$i}.`id` IS NOT NULL";
             }
 
-            if ($iaDb->query(self::_cols($sql . $where))) {
+            if ($iaDb->query($this->_cols($sql . $where))) {
                 $num = $iaDb->getAffected();
             }
         }
@@ -208,9 +230,86 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
         $sqlLevel = 'UPDATE ' . $table . ' d SET `:col_level` = (SELECT COUNT(`parent_id`) FROM ' . $tableFlat . ' f WHERE f.`category_id` = d.`id`) WHERE d.`:col_pid` != :root_pid';
 
-        $iaDb->query(self::_cols($sqlLevel));
+        $iaDb->query($this->_cols($sqlLevel));
 
         $iaDb->update(['order' => 1], iaDb::convertIds(0, 'order'), null, self::getTable());
+    }
+
+    public function recountById($id, $factor = 1)
+    {
+        if (!$this->_recountEnabled) {
+            return;
+        }
+
+        $sql = <<<SQL
+UPDATE `:table_data` 
+SET `:col_counter` = IF(`id` = :id, `:col_counter` + :factor, `:col_counter`),
+	`:col_total_counter` = `:col_total_counter` + :factor 
+WHERE `id` IN (SELECT `category_id` FROM `:table_flat` WHERE `:col_pid` = :id)
+SQL;
+
+        $sql = iaDb::printf($sql, [
+            'table_data' => self::getTable(true),
+            'table_flat' => self::getTableFlat(true),
+            'id' => (int)$id,
+            'factor' => (int)$factor
+        ]);
+
+        $this->iaDb->query($this->_cols($sql));
+    }
+
+    public function recount($start, $limit)
+    {
+        if (!$this->_recountEnabled) {
+            return;
+        }
+
+        if (empty($this->_recountOptions['listingsTable'])) {
+            throw new Exception('Recount options not defined.');
+        }
+
+        $this->iaDb->setTable(self::getTable());
+
+        $where = iaDb::EMPTY_CONDITION . ' ORDER BY `' . self::COL_LEVEL . '` DESC';
+
+        if ($rows = $this->iaDb->all(['id', self::COL_PARENT_ID], $where, (int)$start, (int)$limit)) {
+            foreach ($rows as $row) {
+                if (self::ROOT_PARENT_ID == $row[self::COL_PARENT_ID]) {
+                    continue;
+                }
+
+                $sql = <<<SQL
+SELECT COUNT(l.`id`) `num`
+FROM `:table_listings` l 
+LEFT JOIN `:table_members` m ON (l.`member_id` = m.`id`)
+WHERE l.`category_id` = :category AND l.`status` = ":active_status" AND (m.`status` IS NULL OR m.`status` = ":users_status")
+SQL;
+                $sql = iaDb::printf($sql, [
+                    'table_listings' => $this->iaDb->prefix . $this->_recountOptions['listingsTable'],
+                    'table_members' => iaUsers::getTable(true),
+                    'active_status' => $this->_recountOptions['activeStatus'],
+                    'users_status' => iaCore::STATUS_ACTIVE,
+                    'category' => $row['id']
+                ]);
+
+                $counter = (int)$this->iaDb->getOne($sql);
+                $counterTotal = $counter + (int)$this->iaDb->one('SUM(`' . $this->_recountOptions['columnCounter'] . '`)',
+                        '`id` IN (SELECT `category_id` FROM `' . self::getTableFlat(true) . '` WHERE `parent_id` = ' . $row['id'] . ')');
+
+                $this->iaDb->update([
+                    $this->_recountOptions['columnCounter'] => $counter,
+                    $this->_recountOptions['columnTotalCounter'] => $counterTotal
+                ], iaDb::convertIds($row['id']));
+            }
+        }
+
+        $this->iaDb->resetTable();
+    }
+
+    public function resetCounters()
+    {
+        $this->iaDb->update([$this->_recountOptions['columnCounter'] => 0,
+            $this->_recountOptions['columnTotalCounter'] => 0], iaDb::EMPTY_CONDITION, self::getTable());
     }
 
     public function rebuildAliases($id)
