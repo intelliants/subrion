@@ -245,7 +245,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 UPDATE `:table_data` 
 SET `:col_counter` = IF(`id` = :id, `:col_counter` + :factor, `:col_counter`),
 	`:col_total_counter` = `:col_total_counter` + :factor 
-WHERE `id` IN (SELECT `category_id` FROM `:table_flat` WHERE `:col_pid` = :id)
+WHERE `id` IN (SELECT `parent_id` FROM `:table_flat` WHERE `category_id` = :id)
 SQL;
 
         $sql = iaDb::printf($sql, [
@@ -258,6 +258,28 @@ SQL;
         $this->iaDb->query($this->_cols($sql));
     }
 
+    public function recount($start, $limit)
+    {
+        if (!$this->_recountEnabled) {
+            return;
+        }
+
+        if (empty($this->_recountOptions['listingsTable'])) {
+            throw new Exception('Recount options not defined.');
+        }
+
+        $where = '`status` = :status ORDER BY `id`';
+        $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE]);
+
+        $rows = $this->iaDb->all(['category_id'], $where, (int)$start, (int)$limit, $this->_recountOptions['listingsTable']);
+
+        if ($rows) {
+            foreach ($rows as $row) {
+                $this->recountById($row['category_id']);
+            }
+        }
+    }
+/*
     public function recount($start, $limit)
     {
         if (!$this->_recountEnabled) {
@@ -305,7 +327,7 @@ SQL;
 
         $this->iaDb->resetTable();
     }
-
+*/
     public function resetCounters()
     {
         $this->iaDb->update([$this->_recountOptions['columnCounter'] => 0,

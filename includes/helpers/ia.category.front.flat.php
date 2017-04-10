@@ -148,7 +148,7 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
 UPDATE `:table_data` 
 SET `:col_counter` = IF(`id` = :id, `:col_counter` + :factor, `:col_counter`),
 	`:col_total_counter` = `:col_total_counter` + :factor 
-WHERE `id` IN (SELECT `category_id` FROM `:table_flat` WHERE `parent_id` = :id)
+WHERE `id` IN (SELECT `parent_id` FROM `:table_flat` WHERE `category_id` = :id)
 SQL;
 
         $sql = iaDb::printf($sql, [

@@ -341,11 +341,11 @@ abstract class abstractModuleAdmin extends abstractCore
                 }
                 break;
             case iaCore::ACTION_ADD:
-                $itemData['status'] == iaCore::STATUS_ACTIVE
+                iaCore::STATUS_ACTIVE == $itemData['status']
                     && $categoryClassInstance->recountById($itemData['category_id']);
                 break;
             case iaCore::ACTION_DELETE:
-                $itemData['status'] == iaCore::STATUS_ACTIVE
+                iaCore::STATUS_ACTIVE == $itemData['status']
                     && $categoryClassInstance->recountById($itemData['category_id'], -1);
         }
     }
