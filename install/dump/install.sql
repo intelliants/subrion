@@ -1975,6 +1975,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('site_home','Site Home','admin'),
 ('sitemap_error','Sitemap file creation error! The file was not saved.','admin'),
 ('sitemap_regenerated','Sitemap file has been regenerated and is available at the following URL: <a href=":url" target="_blank">:url</a>.','admin'),
+('slug','Slug','admin'),
 ('sponsored_end','Sponsored End','admin'),
 ('sql_format','SQL format','admin'),
 ('sql_management','SQL Tool','admin'),
