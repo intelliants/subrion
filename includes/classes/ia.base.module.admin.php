@@ -315,7 +315,7 @@ abstract class abstractModuleAdmin extends abstractCore
         // within final class, the counters update routines should be placed here
     }
 
-    protected function _checkIfCountersNeedsUpdate($action, array $itemData, $previousData, $categoryClassInstance)
+    protected function _checkIfCountersNeedUpdate($action, array $itemData, $previousData, $categoryClassInstance)
     {
         switch ($action) {
             case iaCore::ACTION_EDIT:

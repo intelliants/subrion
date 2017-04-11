@@ -264,7 +264,7 @@ abstract class abstractModuleFront extends abstractCore
     }
 
 
-    protected function _checkIfCountersNeedsUpdate($action, array $itemData, $previousData, $categoryClassInstance)
+    protected function _checkIfCountersNeedUpdate($action, array $itemData, $previousData, $categoryClassInstance)
     {
         switch ($action) {
             case iaCore::ACTION_EDIT:

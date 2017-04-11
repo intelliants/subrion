@@ -402,8 +402,7 @@ SQL;
 
         $this->iaDb->setTable(self::getTable());
 
-        //$dynamicLoadMode = ((int)$this->iaDb->one(iaDb::STMT_COUNT_ROWS) > 150);
-        $dynamicLoadMode=true;
+        $dynamicLoadMode = ((int)$this->iaDb->one(iaDb::STMT_COUNT_ROWS) > 150);
         $noRootMode = isset($data['noroot']) && '' == $data['noroot'];
 
         $rootId = $noRootMode ? $this->getRootId() : 0;
