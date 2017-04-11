@@ -77,7 +77,16 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
     public function getParents($entryId)
     {
         $where = sprintf('`id` IN (SELECT `parent_id` FROM `%s` WHERE `category_id` = %d)',
-            $this->iaDb->prefix . $this->_tableFlat, $entryId);
+            $this->getTableFlat(true), $entryId);
+
+        return $this->getAll($where);
+    }
+
+    public function getChildren($entryId, $recursive = false)
+    {
+        $where = $recursive
+            ? sprintf('`id` IN (SELECT `category_id` FROM `%s` WHERE `parent_id` = %d)', $this->getTableFlat(true), $entryId)
+            : iaDb::convertIds($entryId, self::COL_PARENT_ID);
 
         return $this->getAll($where);
     }
