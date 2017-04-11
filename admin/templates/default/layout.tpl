@@ -169,7 +169,7 @@
                             </li>
                             <li class="navbar-nav__user">
                                 <a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$member.id}/" title="{lang key='edit'}">
-                                    {ia_image file=$member.avatar alt=$member.fullname|default:$member.username gravatar=true email=$member.email}
+                                    {ia_image file=$member.avatar type='large' alt=$member.fullname|default:$member.username gravatar=true email=$member.email}
                                 </a>
                             </li>
                             <li><a href="{$smarty.const.IA_ADMIN_URL}logout/" title="{lang key='logout'}" id="user-logout"><i class="fa fa-sign-out"></i> <span>{lang key='logout'}</span></a></li>
