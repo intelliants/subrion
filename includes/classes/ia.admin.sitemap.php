@@ -142,7 +142,7 @@ class iaSitemap extends abstractCore
                         if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME)) {
                             $entries = call_user_func([$itemClassInstance, self::GETTER_METHOD_NAME]);
                             if (is_array($entries) && $entries) {
-                                $result = $entries;
+                                $result = array_merge($result, $entries);
                             }
                         }
                     }
