@@ -153,6 +153,8 @@ abstract class abstractModuleFront extends abstractCore
 
                 $this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
 
+                $this->_removeFromFavorites($itemId);
+
                 $this->iaCore->startHook('phpListingRemoved', [
                     'itemId' => $itemId,
                     'itemName' => $this->getItemName(),
@@ -261,6 +263,16 @@ abstract class abstractModuleFront extends abstractCore
         }
 
         $singleRow && $rows = array_shift($rows);
+    }
+
+    protected function _removeFromFavorites($itemId)
+    {
+        $iaItem = $this->iaCore->factory('item');
+
+        $affected = $this->iaDb->delete('`item` = :item AND `id` = :id', $iaItem::getFavoritesTable(),
+            ['item' => $this->getItemName(), 'id' => $itemId]);
+
+        return $affected > 0;
     }
 
 

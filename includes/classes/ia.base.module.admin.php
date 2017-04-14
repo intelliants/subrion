@@ -226,9 +226,10 @@ abstract class abstractModuleAdmin extends abstractCore
             if ($result) {
                 $this->iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
 
-                $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $itemId);
-
                 $this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
+
+                $this->_removeFromFavorites($itemId);
+                $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $itemId);
 
                 $this->iaCore->startHook('phpListingRemoved', [
                     'itemId' => $itemId,
@@ -354,6 +355,16 @@ abstract class abstractModuleAdmin extends abstractCore
     {
         // should return URLs array to be used in sitemap creation
         return [];
+    }
+
+    protected function _removeFromFavorites($itemId)
+    {
+        $iaItem = $this->iaCore->factory('item');
+
+        $affected = $this->iaDb->delete('`item` = :item AND `id` = :id', $iaItem::getFavoritesTable(),
+            ['item' => $this->getItemName(), 'id' => $itemId]);
+
+        return $affected > 0;
     }
 
     protected function _writeLog($action, array $itemData, $itemId)
