@@ -670,8 +670,13 @@ SQL;
 
                 case self::DATE:
                     if ($value = trim($value)) {
-                        $value = date($field['timepicker'] ? iaDb::DATETIME_FORMAT : iaDb::DATE_FORMAT,
-                            strtotime($value));
+                        $value = strtotime($value);
+                    }
+
+                    if (!$value && $field['allow_null']) {
+                        $value = null;
+                    } else {
+                        $value = date($field['timepicker'] ? iaDb::DATETIME_FORMAT : iaDb::DATE_FORMAT, $value);
                     }
 
                     $item[$fieldName] = $value;
