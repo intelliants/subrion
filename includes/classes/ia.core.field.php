@@ -769,7 +769,7 @@ SQL;
         $uploadPath = empty($field['folder_name']) ? iaUtil::getAccountDir() : $field['folder_name'] . IA_DS;
         $absUploadPath = IA_UPLOADS . $uploadPath;
 
-        iaSanitize::filenameEscape($fileName);
+        self::_processFileName($fileName);
 
         if (!empty($field['file_prefix'])) {
             $fileName = $field['file_prefix'] . $fileName;
@@ -1360,5 +1360,22 @@ SQL;
     {
         return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name AND `item` = :item',
             ['name' => $fieldName, 'item' => $itemName], self::getTable());
+    }
+
+    protected static function _processFileName(&$fileName)
+    {
+        // first, sanitize filename
+        iaSanitize::filenameEscape($fileName);
+
+        // then convert utf filenames
+        iaCore::instance()->factory('util')
+            ->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+        if (!utf8_is_ascii($fileName)) {
+            $fileName = utf8_to_ascii($fileName);
+        }
+
+        // last, replace spaces
+        $fileName = str_replace(' ', '_', $fileName);
     }
 }
