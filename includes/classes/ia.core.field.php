@@ -1086,14 +1086,16 @@ SQL;
                 break;
             case self::ICONPICKER:
             case self::URL:
-            case self::TREE:
                 $result.= 'TINYTEXT ';
                 break;
+            case self::TREE:
             case self::IMAGE:
             case self::STORAGE:
             case self::PICTURES:
-            case self::TEXTAREA:
                 $result.= 'TEXT ';
+                break;
+            case self::TEXTAREA:
+                $result.= 'MEDIUMTEXT ';
                 break;
             default:
                 if (isset($fieldData['values'])) {
