@@ -54,10 +54,8 @@ final class iaSystem
         ];
 
         $helperClasses = [
-            'iaAbstractHelperCategoryHybrid' => 'ia.category.hybrid',
             'iaAbstractHelperCategoryFlat' => 'ia.category.flat',
             //'iaAbstractHelperCategoryNestedsets' => 'ia.category.nestedsets',
-            'iaAbstractFrontHelperCategoryHybrid' => 'ia.category.front.hybrid',
             'iaAbstractFrontHelperCategoryFlat' => 'ia.category.front.flat'
         ];
 
