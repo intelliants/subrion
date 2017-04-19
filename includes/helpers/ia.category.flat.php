@@ -33,7 +33,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
     const COL_PARENT_ID = 'parent_id';
     const COL_LEVEL = 'level';
 
-    protected static $_tableFlat;
+    protected $_tableFlat;
 
     protected $_recountEnabled = true;
     protected $_recountOptions = []; // this to be extended by ancestor
@@ -52,17 +52,14 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
     {
         parent::init();
 
+        $this->_tableFlat = self::getTable() . '_flat';
         $this->_recountOptions = array_merge($this->_defaultRecountOptions, $this->_recountOptions);
     }
 
-    public static function getTableFlat($prefix = false)
+    public function getTableFlat($prefix = false)
     {
-        if (is_null(self::$_tableFlat)) {
-            self::$_tableFlat = self::getTable() . '_flat';
-        }
-
         return ($prefix ? iaCore::instance()->iaDb->prefix : '')
-            . self::$_tableFlat;
+            . $this->_tableFlat;
     }
 
     protected function _cols($sql)
@@ -95,7 +92,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
         foreach ($queries as $query) {
             $sql = iaDb::printf($query, [
                 'table_data' => self::getTable(true),
-                'table_flat' => self::getTableFlat(true),
+                'table_flat' => $this->getTableFlat(true),
                 'options' => $this->iaDb->tableOptions
             ]);
 
