@@ -13,15 +13,17 @@
                     <input type="text" placeholder="{lang key='start_typing_to_filter'}">
                 </div>
             {/if}
-            <div id="js-tree" class="tree categories-tree"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}></div>
-            <input type="hidden" name="tree_id" id="input-tree" value="{$tree.id}">
+            <div id="{$tree.selector|default:'js-tree'}" class="tree categories-tree"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}></div>
+            <input type="hidden" name="{$tree.value|default:'tree_id'}" id="{$tree.value|default:'input-tree'}" value="{$tree.id}">
             {ia_add_js}
 $(function() {
     new IntelliTree({
         url: '{$tree.url}',
         onchange: intelli.fillUrlBox,
-        nodeSelected: $('#input-tree').val(),
+        nodeSelected: $('#{$tree.value|default:'input-tree'}').val(),
         nodeOpened: [{$tree.nodes}],
+        {if isset($tree.selector)}selector: '#{$tree.selector}',{/if}
+        {if isset($tree.value)}value: '#{$tree.value}',{/if}
         search: {if $search}true{else}false{/if}
     });
 });
