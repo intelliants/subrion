@@ -134,7 +134,7 @@ class iaSanitize extends abstractUtil
      *
      * @return string
      */
-    public static function alias($string, $separator = '-')
+    public static function slug($string, $separator = '-')
     {
         iaCore::instance()->factory('util')->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
@@ -157,6 +157,11 @@ class iaSanitize extends abstractUtil
         $string = trim($string, $separator);
 
         return $string;
+    }
+
+    public static function alias($string, $separator = '-')
+    {
+        return self::slug($string, $separator);
     }
 
     /**

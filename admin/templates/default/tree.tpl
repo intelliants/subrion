@@ -2,7 +2,7 @@
     {$search = !isset($nosearch)}
     <div id="parent_fieldzone" class="row">
         <label class="col col-lg-2 control-label">
-            {lang key='category'} {lang key='field_required'}<br>
+            {lang key=$tree.label|default:'category'} {lang key='field_required'}<br>
             <a href="#" class="categories-toggle" id="js-tree-toggler">{lang key='open_close'}</a>
         </label>
         <div class="col col-lg-4">
