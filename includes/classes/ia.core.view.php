@@ -138,7 +138,9 @@ class iaView extends abstractUtil
                 $this->iaSmarty->addTemplateDir(IA_HOME . 'templates/' . self::COMMON_TEMPLATE_FOLDER . IA_DS);
             }
 
+            // set specific configuration
             Smarty::$_CHARSET = 'UTF-8';
+            Smarty::$_DATE_FORMAT = $this->iaCore->get('date_format');
 
             $this->iaSmarty->setCompileDir($compileDir);
             $this->iaSmarty->setCacheDir(IA_TMP . 'smartycache/');

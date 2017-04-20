@@ -37,7 +37,7 @@ class iaLanguage
 
     protected static $_phrases = [];
 
-    protected static $_columns = ['code', 'id', 'title', 'locale', 'date_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'];
+    protected static $_columns = ['code', 'id', 'title', 'locale', 'date_format', 'time_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'];
 
     protected static $_validCategories = [self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP];
 

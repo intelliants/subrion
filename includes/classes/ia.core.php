@@ -388,7 +388,9 @@ final class iaCore
             setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
 
             // set dynamic config
+            $this->set('datetime_format', trim($this->language['date_format'] . ' ' . $this->language['time_format']));
             $this->set('date_format', $this->language['date_format']);
+            $this->set('time_format', $this->language['time_format']);
             $this->set('locale', $this->language['locale']);
         }
 

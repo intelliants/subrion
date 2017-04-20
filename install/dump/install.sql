@@ -394,6 +394,7 @@ CREATE TABLE `{install:prefix}languages` (
 	`title` varchar(100) NOT NULL,
 	`locale` varchar(30) NOT NULL,
 	`date_format` varchar(50) NOT NULL,
+	`time_format` varchar(50) NOT NULL,
 	`author` varchar(100) NOT NULL,
 	`direction` varchar(5) NOT NULL default 'ltr',
 	`master` tinyint(1) unsigned NOT NULL,
@@ -1225,7 +1226,7 @@ INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`) VALUES
 (8,'registered',1, 1);
 
 INSERT INTO `{install:prefix}languages` VALUES
-(null,'en','English','en_US','%b %e, %Y','Intelliants LLC','ltr',1,1,1,'active','us.gif');
+(null,'en','English','en_US','%e %B, %Y', '%H:%M', 'Intelliants LLC','ltr',1,1,1,'active','us.gif');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('_action_','- Action -','admin'),
@@ -1743,17 +1744,20 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('key_not_valid','Key is invalid. Only alphanumeric and underscore characters allowed.','admin'),
 
 ('lang_incorrect','Please choose correct language.','admin'),
+('language_already_exists','Language already exists.','admin'),
+('language_copied','New language created (:count phrases copied).','admin'),
+('language_deleted','Selected language has been deleted.','admin'),
 ('language_iso_code','Iso','admin'),
-('language_locale','Locale','admin'),
 ('language_date_format','Date format','admin'),
+('language_date_format_incorrect','Date format is incorrect.','admin'),
+('language_date_format_tooltip','Check all possible values for date formatting here: <a href="http://www.smarty.net/docs/en/language.modifier.date.format.tpl" target="_blank">http://www.smarty.net/docs/en/language.modifier.date.format.tpl</a>','admin'),
 ('language_direction','Direction','admin'),
 ('language_direction_ltr','Left to right (LTR)','admin'),
 ('language_direction_rtl','Right to left (RTL)','admin'),
-('language_already_exists','Language already exists.','admin'),
-('language_date_format_incorrect','Date format is incorrect.','admin'),
+('language_locale','Locale','admin'),
 ('language_locale_incorrect','Language locale is incorrect.','admin'),
-('language_copied','New language created (:count phrases copied).','admin'),
-('language_deleted','Selected language has been deleted.','admin'),
+('language_time_format','Time format','admin'),
+('language_time_format_tooltip','Be careful editing this value. Check the manual here: <a href="http://www.smarty.net/docs/en/language.modifier.date.format.tpl" target="_blank">http://www.smarty.net/docs/en/language.modifier.date.format.tpl</a>','admin'),
 ('languages_comparison','Comparison','admin'),
 ('last_updated','Last updated','admin'),
 ('launch_manually','Launch manually','admin'),
@@ -2647,6 +2651,9 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('https','Use secure HTTPS protocol for your site. Before enabling this, please make sure you have properly configured your hosting account and/or webserver.','tooltip'),
 
 ('lang','Select the preferred language of your site.','tooltip'),
+('language_iso_code','ISO 639-1 two-letter lowercase abbreviation of your language. It is used in page URLs.','tooltip'),
+('language_iso_title','This title is used for language selection on your frontend.','tooltip'),
+('language_locale','Locale is an identifier used to get language, culture, or regionally-specific behavior. Contact your hosting to get the proper locale for your server.','tooltip'),
 ('language_switch','Allows users to choose a language on the frontend of your site.','tooltip'),
 
 ('members_enabled','Enables members functionality for your Subrion CMS based website.','tooltip'),

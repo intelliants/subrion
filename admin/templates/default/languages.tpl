@@ -15,7 +15,7 @@
                 </div>
 
                 <div class="row">
-                    <label class="col col-lg-2 control-label">{lang key='language_iso_code'}</label>
+                    <label class="col col-lg-2 control-label">{lang key='language_iso_code'} <a href="#" class="js-tooltip" title="{$tooltips.language_iso_code}"><i class="i-info"></i></a></label>
 
                     <div class="col col-lg-4">
                         <input id="input-code" size="2" maxlength="2" type="text" name="code" value="{$item.code}">
@@ -23,7 +23,7 @@
                 </div>
 
                 <div class="row">
-                    <label class="col col-lg-2 control-label">{lang key='title'}</label>
+                    <label class="col col-lg-2 control-label">{lang key='title'} <a href="#" class="js-tooltip" title="{$tooltips.language_iso_title}"><i class="i-info"></i></a></label>
 
                     <div class="col col-lg-4">
                         <input id="input-title" size="10" maxlength="40" type="text" name="title" value="{$item.title}">
@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="row">
-                    <label class="col col-lg-2 control-label">{lang key='language_locale'}</label>
+                    <label class="col col-lg-2 control-label">{lang key='language_locale'} <a href="#" class="js-tooltip" title="{$tooltips.language_locale}"><i class="i-info"></i></a></label>
 
                     <div class="col col-lg-4">
                         <input id="input-locale" type="text" name="locale" value="{$item.locale}">
@@ -43,6 +43,16 @@
 
                     <div class="col col-lg-4">
                         <input id="input-date_format" type="text" name="date_format" value="{$item.date_format}">
+                        <p class="help-block">{lang key='language_date_format_tooltip'}</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <label class="col col-lg-2 control-label">{lang key='language_time_format'}</label>
+
+                    <div class="col col-lg-4">
+                        <input id="input-time_format" type="text" name="time_format" value="{$item.time_format}">
+                        <p class="help-block">{lang key='language_time_format_tooltip'}</p>
                     </div>
                 </div>
 
@@ -74,6 +84,7 @@
                             <th>{lang key='language_iso_code'}</th>
                             <th>{lang key='language_locale'}</th>
                             <th>{lang key='language_date_format'}</th>
+                            <th>{lang key='language_time_format'}</th>
                             <th>{lang key='language_direction'}</th>
                             <th>{lang key='master'}</th>
                             <th>{lang key='default'}</th>
@@ -94,6 +105,7 @@
                                 <td class="iso-val">{$language.iso}</td>
                                 <td>{$language.locale}</td>
                                 <td>{$language.date_format}</td>
+                                <td>{$language.time_format}</td>
                                 <td>{$language.direction}</td>
                                 <td>
                                     {if $language.master}

@@ -28,6 +28,8 @@ class iaBackendController extends iaAbstractControllerBackend
 {
     protected $_name = 'languages';
 
+    protected $_tooltipsEnabled = true;
+
     protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `delete`";
     protected $_gridFilters = ['key' => 'like', 'value' => 'like', 'category' => 'equal', 'module' => 'equal'];
 
@@ -288,6 +290,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $entry['code'] = strtolower($data['code']);
         $entry['locale'] = $data['locale'];
         $entry['date_format'] = $data['date_format'];
+        $entry['time_format'] = $data['time_format'];
         $entry['direction'] = $data['direction'];
         $entry['master'] = $entry['default'] = 0;
         $entry['author'] = $entry['flagicon'] = '';
@@ -318,7 +321,8 @@ class iaBackendController extends iaAbstractControllerBackend
             'code' => '',
             'title' => '',
             'locale' => 'en_US',
-            'date_format' => '%b %e, %Y',
+            'date_format' => '%e %B, %Y',
+            'time_format' => '%H:%M',
             'direction' => 'ltr',
             'status' => iaCore::STATUS_INACTIVE
         ];
