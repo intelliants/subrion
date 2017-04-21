@@ -1,6 +1,6 @@
 {if isset($tree)}
     {$search = !isset($nosearch)}
-    <div class="row">
+    <div class="row js-tree-control">
         <label class="col col-lg-2 control-label">
             {lang key=$tree.label|default:'category'} {lang key='field_required'}<br>
             <a href="#" class="categories-toggle js-tree-toggler">{lang key='open_close'}</a>

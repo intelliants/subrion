@@ -9,7 +9,7 @@ function IntelliTree(params) {
     this.$search = $('input', '#js-tree-search');
 
 
-    var $row = $(this.selector).closest('.row');
+    var $row = $(this.selector).closest('.js-tree-control');
 
     var $label = $row.find('.js-category-label'),
         $toggler = $row.find('.js-tree-toggler');
