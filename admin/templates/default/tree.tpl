@@ -1,12 +1,12 @@
 {if isset($tree)}
     {$search = !isset($nosearch)}
-    <div id="parent_fieldzone" class="row">
+    <div class="row">
         <label class="col col-lg-2 control-label">
             {lang key=$tree.label|default:'category'} {lang key='field_required'}<br>
-            <a href="#" class="categories-toggle" id="js-tree-toggler">{lang key='open_close'}</a>
+            <a href="#" class="categories-toggle js-tree-toggler">{lang key='open_close'}</a>
         </label>
         <div class="col col-lg-4">
-            <input type="text" id="js-category-label" value="{$tree.title|escape}" disabled>
+            <input type="text" class="js-category-label" value="{$tree.title|escape}" disabled>
             {if $search}
                 <div class="input-group tree-filter" id="js-tree-search"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}>
                     <span class="input-group-addon"><i class="i-filter"></i></span>
