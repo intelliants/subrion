@@ -389,7 +389,7 @@ CREATE TABLE `{install:prefix}items_pages` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}languages`;
 CREATE TABLE `{install:prefix}languages` (
-	`id` mediumint(7) unsigned NOT NULL auto_increment,
+	`id` smallint(5) unsigned NOT NULL auto_increment,
 	`code` char(2) NOT NULL,
 	`title` varchar(100) NOT NULL,
 	`locale` varchar(30) NOT NULL,
@@ -397,9 +397,9 @@ CREATE TABLE `{install:prefix}languages` (
 	`time_format` varchar(50) NOT NULL,
 	`author` varchar(100) NOT NULL,
 	`direction` varchar(5) NOT NULL default 'ltr',
-	`master` tinyint(1) unsigned NOT NULL,
-	`default` tinyint(1) unsigned NOT NULL,
-	`order` int(11) NOT NULL,
+	`master` tinyint(1) unsigned NOT NULL default 0,
+	`default` tinyint(1) unsigned NOT NULL default 0,
+	`order` smallint(5) unsigned NOT NULL default 0,
 	`status` enum('active','inactive') NOT NULL default 'active',
 	`flagicon` tinytext NOT NULL,
 	PRIMARY KEY (`id`),
