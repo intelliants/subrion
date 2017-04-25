@@ -19,16 +19,16 @@ intelli.gridHelper = {
                 success: function (response) {
                     var result = false;
                     switch (true) {
-                        case ('boolean' == typeof response.result):
+                        case ('boolean' === typeof response.result):
                             result = response.result;
                             break;
-                        case ('boolean' == typeof response.error):
+                        case ('boolean' === typeof response.error):
                             result = !response.error;
                     }
 
                     result ? caller.store.reload() : caller.store.rejectChanges();
 
-                    if ('undefined' != typeof response.message) {
+                    if ('undefined' !== typeof response.message) {
                         intelli.notifFloatBox({
                             msg: response.message,
                             type: result ? 'success' : 'error',
@@ -75,7 +75,7 @@ intelli.gridHelper = {
             var control = caller.toolbar.items.items[i];
             if (control.initialConfig.name) {
                 if (isReset) {
-                    ('function' != typeof control.reset) || control.reset();
+                    ('function' !== typeof control.reset) || control.reset();
                 }
                 else {
                     var value = control.getValue();
@@ -126,9 +126,9 @@ function IntelliGrid(params, autoInit) {
         height: params.height || 525,
         minHeight: params.minHeight || 250,
         pageSize: params.pageSize || 15,
-        resizer: ('boolean' == typeof params.resizer) ? params.resizer : true,
-        rowselect: ('function' == typeof params.rowselect) ? params.rowselect : null,
-        rowdeselect: ('function' == typeof params.rowdeselect) ? params.rowdeselect : null,
+        resizer: ('boolean' === typeof params.resizer) ? params.resizer : true,
+        rowselect: ('function' === typeof params.rowselect) ? params.rowselect : null,
+        rowdeselect: ('function' === typeof params.rowdeselect) ? params.rowdeselect : null,
         selectionType: params.selectionType || 'rowmodel',
         target: params.target || 'js-grid-placeholder',
         title: params.title || null,
@@ -170,7 +170,7 @@ function IntelliGrid(params, autoInit) {
     }
 
     var statuses = [['active', _t('active')], ['inactive', _t('inactive')]]; // default statuses
-    if ('object' == typeof this.params.statuses) {
+    if ('object' === typeof this.params.statuses) {
         statuses = [];
         for (var i in this.params.statuses) {
             var status = this.params.statuses[i];
@@ -186,7 +186,7 @@ function IntelliGrid(params, autoInit) {
         if (localStorage) {
             var k = stateId + key;
 
-            if ('undefined' == typeof value) {
+            if ('undefined' === typeof value) {
                 return localStorage.getItem(k);
             }
             else if (null === value) {
@@ -200,7 +200,7 @@ function IntelliGrid(params, autoInit) {
 
     this.init = function (autoLoad) {
         _setupColumns();
-        _setupStore('boolean' != typeof autoLoad ? true : autoLoad);
+        _setupStore('boolean' !== typeof autoLoad ? true : autoLoad);
         _setupToolbar();
         _setupGrid();
     };
@@ -209,11 +209,11 @@ function IntelliGrid(params, autoInit) {
         if ('object' == typeof self.params.columns) {
             for (i in self.params.columns) {
                 var item = self.params.columns[i];
-                if ('string' == typeof item) {
+                if ('string' === typeof item) {
                     item = __getActionColumns(item);
                     if (!item) continue;
                 }
-                var entry = ('undefined' == typeof item.$className) ? __prepareColumn(item) : item;
+                var entry = ('undefined' === typeof item.$className) ? __prepareColumn(item) : item;
                 if (entry.dataIndex !== undefined) {
                     self.columns.push(entry);
                     self.fields.push(entry.dataIndex);
@@ -262,7 +262,7 @@ function IntelliGrid(params, autoInit) {
                                     } catch (e) {
                                         return false;
                                     }
-                                    if ('boolean' == typeof respObj.result && respObj.result) {
+                                    if ('boolean' === typeof respObj.result && respObj.result) {
                                         window.location.href = respObj.redirect_url;
                                     }
                                 }

@@ -91,8 +91,10 @@ abstract class abstractModuleFront extends abstractCore
         return $row;
     }
 
-    public function getAll($where, $fields = '*', $start = null, $limit = null)
+    public function getAll($where, $fields = null, $start = null, $limit = null)
     {
+        is_null($fields) && $fields = iaDb::ALL_COLUMNS_SELECTION;
+
         $rows = $this->iaDb->all($fields, $where, $start, $limit, self::getTable());
 
         $this->_processValues($rows);

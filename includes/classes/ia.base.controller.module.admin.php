@@ -267,11 +267,10 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
             $result = $this->_delete($entryId);
 
             if ($result) {
-                $this->_iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
-
                 $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
-
                 $this->updateCounters($entryId, $entryData, iaCore::ACTION_DELETE);
+
+                $this->_iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
 
                 $this->_iaCore->startHook('phpListingRemoved', [
                     'itemId' => $entryId,
