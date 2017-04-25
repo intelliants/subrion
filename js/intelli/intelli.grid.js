@@ -293,7 +293,7 @@ function IntelliGrid(params, autoInit) {
 
     var _setupGrid = function () {
         var plugins = [];
-        if ('undefined' == typeof self.params.progressBar || self.params.progressBar) {
+        if ('undefined' === typeof self.params.progressBar || self.params.progressBar) {
             plugins.push(Ext.create('Ext.ux.ProgressBarPager', {defaultText: _t('loading'), width: 190}));
         }
 
@@ -320,8 +320,8 @@ function IntelliGrid(params, autoInit) {
                 xtype: 'combo'
             }
         ];
-        if ('undefined' == typeof self.config.bottomBar
-            || ('boolean' == typeof self.config.bottomBar && self.config.bottomBar)) {
+        if ('undefined' === typeof self.config.bottomBar
+            || ('boolean' === typeof self.config.bottomBar && self.config.bottomBar)) {
             if (self.fields.indexOf('delete') > -1) {
                 pagingBar.push('-',
                     {
@@ -335,7 +335,7 @@ function IntelliGrid(params, autoInit) {
                                     buttons: Ext.Msg.YESNO,
                                     icon: Ext.Msg.QUESTION,
                                     fn: function (btn) {
-                                        if ('yes' == btn) {
+                                        if ('yes' === btn) {
                                             var ids = [];
                                             for (var i = 0; i < selection.length; i++) {
                                                 if (1 == selection[i].data.delete) ids.push(selection[i].data.id);
@@ -387,7 +387,7 @@ function IntelliGrid(params, autoInit) {
             }
         }
 
-        if ('object' == typeof self.config.bottomBar) {
+        if ('object' === typeof self.config.bottomBar) {
             pagingBar.push(self.config.bottomBar);
         }
 
@@ -411,6 +411,7 @@ function IntelliGrid(params, autoInit) {
                 columns: self.columns,
                 height: self.config.height,
                 minHeight: self.config.minHeight,
+                multiColumnSort: true,
                 plugins: self.plugins,
                 renderTo: self.config.target,
                 selType: self.config.selectionType,
@@ -466,12 +467,12 @@ function IntelliGrid(params, autoInit) {
                         }
 
                         switch (true) {
-                            case ('string' == typeof column.href):
+                            case ('string' === typeof column.href):
                                 window.location = column.href
                                     .replace('{id}', record.get('id'))
                                     .replace('{value}', record.get(field));
                                 return;
-                            case ('function' == typeof column.click):
+                            case ('function' === typeof column.click):
                                 column.click(record, field);
                                 return;
                         }
@@ -527,10 +528,10 @@ function IntelliGrid(params, autoInit) {
                 intelli.gridHelper.httpRequest(self, data);
             });
 
-        if ('function' == typeof events.beforeedit) {
+        if ('function' === typeof events.beforeedit) {
             self.grid.on('beforeedit', events.beforeedit);
         }
-        if ('function' == typeof events.load) {
+        if ('function' === typeof events.load) {
             self.store.on('load', events.load);
         }
 
@@ -547,14 +548,14 @@ function IntelliGrid(params, autoInit) {
         if (columnData.name) {
             result = {
                 align: columnData.align || intelli.gridHelper.constants.ALIGN_LEFT,
-                click: ('function' == typeof columnData.click) ? columnData.click : null,
+                click: ('function' === typeof columnData.click) ? columnData.click : null,
                 dataIndex: columnData.name,
-                hidden: ('boolean' == typeof columnData.hidden) ? columnData.hidden : false,
-                hideable: ('boolean' == typeof columnData.hideable) ? columnData.hideable : true,
+                hidden: ('boolean' === typeof columnData.hidden) ? columnData.hidden : false,
+                hideable: ('boolean' === typeof columnData.hideable) ? columnData.hideable : true,
                 id: columnData.id || null,
-                menuDisabled: ('boolean' == typeof columnData.menu) ? !columnData.menu : false,
-                renderer: ('function' == typeof columnData.renderer) ? columnData.renderer : null,
-                sortable: ('boolean' == typeof columnData.sortable) ? columnData.sortable : true,
+                menuDisabled: ('boolean' === typeof columnData.menu) ? !columnData.menu : false,
+                renderer: ('function' === typeof columnData.renderer) ? columnData.renderer : null,
+                sortable: ('boolean' === typeof columnData.sortable) ? columnData.sortable : true,
                 text: columnData.title || '',
                 xtype: columnData.xtype || null
             };
@@ -572,11 +573,11 @@ function IntelliGrid(params, autoInit) {
                     break;
             }
 
-            if ('string' == typeof columnData.href) {
+            if ('string' === typeof columnData.href) {
                 result.href = columnData.href;
             }
 
-            if ('string' == typeof columnData.icon && !result.renderer) {
+            if ('string' === typeof columnData.icon && !result.renderer) {
                 result.align = intelli.gridHelper.constants.ALIGN_LEFT;
                 result.hideable = false;
                 result.menuDisabled = true;
@@ -670,7 +671,7 @@ function IntelliGrid(params, autoInit) {
         }
     };
 
-    if ('undefined' == typeof autoInit || autoInit) {
+    if ('undefined' === typeof autoInit || autoInit) {
         this.init();
     }
 }

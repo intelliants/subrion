@@ -23,7 +23,7 @@ function IntelliTree(params) {
                     data: {
                         data: function (n) {
                             var params = {};
-                            if (n.id != '#') {
+                            if (n.id !== '#') {
                                 params.id = n.id;
                             }
 
