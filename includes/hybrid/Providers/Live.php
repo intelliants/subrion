@@ -9,7 +9,7 @@
 /**
  * Windows Live OAuth2 Class
  * 
- * @package             HybridAuth providers package 
+ * @package             HybridAuth providers package
  * @author              Lukasz Koprowski <azram19@gmail.com>
  * @version             0.2
  * @license             BSD License
@@ -33,10 +33,16 @@ class Hybrid_Providers_Live extends Hybrid_Provider_Model_OAuth2 {
 
 		// Provider api end-points
 		$this->api->api_base_url = 'https://apis.live.net/v5.0/';
-		$this->api->authorize_url = 'https://login.live.com/oauth20_authorize.srf';
+		$this->api->authorize_url = 'https://oauth.live.com/authorize';
 		$this->api->token_url = 'https://login.live.com/oauth20_token.srf';
 
 		$this->api->curl_authenticate_method = "GET";
+
+        // Override the redirect uri when it's set in the config parameters. This way we prevent
+        // redirect uri mismatches when authenticating with Live.com
+        if (isset($this->config['redirect_uri']) && !empty($this->config['redirect_uri'])) {
+            $this->api->redirect_uri = $this->config['redirect_uri'];
+        }
 	}
 
 	/**
@@ -46,7 +52,7 @@ class Hybrid_Providers_Live extends Hybrid_Provider_Model_OAuth2 {
 		$data = $this->api->get("me");
 
 		if (!isset($data->id)) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
+			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response: " . Hybrid_Logger::dumpData( $data ), 6);
 		}
 
 		$this->user->profile->identifier = (property_exists($data, 'id')) ? $data->id : "";
