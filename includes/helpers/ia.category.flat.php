@@ -33,6 +33,8 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
     const COL_PARENT_ID = 'parent_id';
     const COL_LEVEL = 'level';
 
+    const COL_ORDER = 'order';
+
     protected $_tableFlat;
 
     protected $_recountEnabled = true;
@@ -79,8 +81,8 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
             'ALTER TABLE `:table_data` ADD INDEX `PARENT` (`:col_pid`)',
             'CREATE TABLE IF NOT EXISTS `:table_flat` ('
                 . '`parent_id` int(8) unsigned NOT NULL, '
-                . '`category_id` int(8) unsigned NOT NULL, '
-                . 'UNIQUE KEY `UNIQUE` (`parent_id`,`category_id`)'
+                . '`child_id` int(8) unsigned NOT NULL, '
+                . 'UNIQUE KEY `UNIQUE` (`parent_id`,`child_id`)'
             . ') :options'
         ];
 
@@ -169,7 +171,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
             // TODO: improve (currently no assigned assets - images, files
             // will be removed if assigned via standard core fields
-            $where = sprintf('`id` IN (SELECT `category_id` FROM `%s` WHERE `parent_id` = %d)',
+            $where = sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)',
                 self::getTableFlat(true), $itemId);
             $this->iaDb->delete($where);
         }
@@ -225,7 +227,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
         $this->iaDb->delete(iaDb::convertIds($this->getRootId(), 'parent_id'), self::getTableFlat());
 
-        $sqlLevel = 'UPDATE ' . $table . ' d SET `:col_level` = (SELECT COUNT(`parent_id`) FROM ' . $tableFlat . ' f WHERE f.`category_id` = d.`id`) WHERE d.`:col_pid` != :root_pid';
+        $sqlLevel = 'UPDATE ' . $table . ' d SET `:col_level` = (SELECT COUNT(`parent_id`) FROM ' . $tableFlat . ' f WHERE f.`child_id` = d.`id`) WHERE d.`:col_pid` != :root_pid';
 
         $iaDb->query($this->_cols($sqlLevel));
 
@@ -242,7 +244,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 UPDATE `:table_data` 
 SET `:col_counter` = IF(`id` = :id, `:col_counter` + :factor, `:col_counter`),
 	`:col_total_counter` = `:col_total_counter` + :factor 
-WHERE `id` IN (SELECT `parent_id` FROM `:table_flat` WHERE `category_id` = :id)
+WHERE `id` IN (SELECT `parent_id` FROM `:table_flat` WHERE `child_id` = :id)
 SQL;
 
         $sql = iaDb::printf($sql, [
@@ -268,11 +270,11 @@ SQL;
         $where = '`status` = :status ORDER BY `id`';
         $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE]);
 
-        $rows = $this->iaDb->all(['category_id'], $where, (int)$start, (int)$limit, $this->_recountOptions['listingsTable']);
+        $rows = $this->iaDb->all(['child_id'], $where, (int)$start, (int)$limit, $this->_recountOptions['listingsTable']);
 
         if ($rows) {
             foreach ($rows as $row) {
-                $this->recountById($row['category_id']);
+                $this->recountById($row['child_id']);
             }
         }
     }
@@ -444,10 +446,10 @@ SQL;
     public function getParents($entryId, $idsOnly = false)
     {
         if ($idsOnly) {
-            return $this->iaDb->onefield(self::COL_PARENT_ID, iaDb::convertIds($entryId, 'category_id'),
+            return $this->iaDb->onefield(self::COL_PARENT_ID, iaDb::convertIds($entryId, 'child_id'),
                 null, null, self::getTableFlat());
         } else {
-            $query = sprintf('SELECT `parent_id` FROM `%s` WHERE `category_id` = %d',
+            $query = sprintf('SELECT `parent_id` FROM `%s` WHERE `child_id` = %d',
                 self::getTableFlat(true), $entryId);
 
             return $this->_get('`id` IN (' . $query . ')', 'ORDER BY `level`');
@@ -456,7 +458,7 @@ SQL;
 
     public function getChildren($entryId)
     {
-        $where = sprintf('`id` IN (SELECT `category_id` FROM `%s` WHERE `parent_id` = %d)',
+        $where = sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)',
             self::getTableFlat(true), $entryId);
 
         return $this->_get($where);
@@ -475,11 +477,15 @@ SQL;
     protected function _assignStructureData(array &$entryData)
     {
         if (isset($entryData[self::COL_PARENT_ID])) {
-            $parent = $this->getById($entryData[self::COL_PARENT_ID], false);
-
-            if ($parent) {
+            if ($parent = $this->getById($entryData[self::COL_PARENT_ID], false)) {
                 $entryData[self::COL_LEVEL] = $parent[self::COL_LEVEL] + 1;
             }
+        }
+
+        // if module uses 'order' column
+        if (isset($entryData[self::COL_LEVEL]) && isset($this->getRoot()['order'])) {
+            $entryData[self::COL_ORDER] = (int)$this->iaDb->getMaxOrder(self::getTable(),
+                ['level', $entryData[self::COL_LEVEL]]) + 1;
         }
     }
 
@@ -488,18 +494,18 @@ SQL;
     {
         $this->iaDb->setTable(self::getTableFlat());
 
-        $this->iaDb->delete(iaDb::convertIds($entryId, 'category_id'));
+        $this->iaDb->delete(iaDb::convertIds($entryId, 'child_id'));
         $this->iaDb->delete(iaDb::convertIds($entryId, 'parent_id'));
 
         if ($entry = $this->getById($entryId, false)) {
-            $this->iaDb->insert(['parent_id' => $entryId, 'category_id' => $entryId]);
+            $this->iaDb->insert(['parent_id' => $entryId, 'child_id' => $entryId]);
 
             // handle parents first
             $entries = [];
             $this->_recursiveCollectParents($entry, $entries);
 
             foreach ($entries as $row) {
-                $this->iaDb->insert(['parent_id' => $row['id'], 'category_id' => $entryId]);
+                $this->iaDb->insert(['parent_id' => $row['id'], 'child_id' => $entryId]);
             }
 
             // then, collect children
@@ -507,7 +513,9 @@ SQL;
             $this->_recursiveCollectChildren($entry, $entries);
 
             foreach ($entries as $row) {
-                $this->iaDb->insert(['parent_id' => $entryId, 'category_id' => $row['id']]);
+                if ($row['id'] != $entryId) {
+                    $this->iaDb->insert(['parent_id' => $entryId, 'child_id' => $row['id']]);
+                }
             }
         }
 

@@ -74,9 +74,22 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
         return $this->getRoot()['id'];
     }
 
+    public function getTopLevel($fields = null)
+    {
+        return $this->getByLevel(1, $fields);
+    }
+
+    public function getByLevel($level, $fields = null)
+    {
+        $where = '`status` = :status and `level` = :level';
+        $this->iaDb->bind($where, ['status' => iaCOre::STATUS_ACTIVE, 'level' => $level]);
+
+        return $this->getAll($where, $fields);
+    }
+
     public function getParents($entryId)
     {
-        $where = sprintf('`id` IN (SELECT `parent_id` FROM `%s` WHERE `category_id` = %d)',
+        $where = sprintf('`id` IN (SELECT `parent_id` FROM `%s` WHERE `child_id` = %d)',
             $this->getTableFlat(true), $entryId);
 
         return $this->getAll($where);
@@ -85,7 +98,7 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
     public function getChildren($entryId, $recursive = false)
     {
         $where = $recursive
-            ? sprintf('`id` IN (SELECT `category_id` FROM `%s` WHERE `parent_id` = %d)', $this->getTableFlat(true), $entryId)
+            ? sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)', $this->getTableFlat(true), $entryId)
             : iaDb::convertIds($entryId, self::COL_PARENT_ID);
 
         return $this->getAll($where);
@@ -157,7 +170,7 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
 UPDATE `:table_data` 
 SET `:col_counter` = IF(`id` = :id, `:col_counter` + :factor, `:col_counter`),
 	`:col_total_counter` = `:col_total_counter` + :factor 
-WHERE `id` IN (SELECT `parent_id` FROM `:table_flat` WHERE `category_id` = :id)
+WHERE `id` IN (SELECT `parent_id` FROM `:table_flat` WHERE `child_id` = :id)
 SQL;
 
         $sql = iaDb::printf($sql, [
