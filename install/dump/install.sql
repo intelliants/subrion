@@ -1055,9 +1055,9 @@ INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('0 0 * * * includes/cron/featured-expiration.php','Check for expiration of featured items','Marks expired featured items');
 
 INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`length`,`order`,`editable`,`required`,`extra_actions`,`searchable`) VALUES
-('username','members',1,'text',50,0,0,1,'if ($_POST[$fieldName] && !iaValidate::isUsername($_POST[$fieldName]))\r\n{\r\n	$error = true;\r\n	$messages[] = iaLanguage::get(''username_incorrect'');\r\n	$invalidFields[] = $fieldName;\r\n}',1),
+('username','members',1,'text',50,0,0,1,'if ($value && !iaValidate::isUsername($value))\r\n{\r\n	$errors[$fieldName] = iaLanguage::get(\'username_incorrect\');\r\n}',1),
 ('fullname','members',1,'text',50,5,0,1,'',1),
-('email','members',1,'text',250,10,0,1,'if ($_POST[$fieldName])\r\n{\r\n	if (!iaValidate::isEmail($_POST[$fieldName]))\r\n	{\r\n		$error = true;\r\n		$messages[] = iaLanguage::get(''error_email_incorrect'');\r\n		$invalidFields[] = $fieldName;\r\n	}\r\n	else\r\n	{\r\n		$_POST[$fieldName] = strtolower($_POST[$fieldName]);\r\n	}\r\n}',0),
+('email','members',1,'text',250,10,0,1,'if ($value)\r\n{\r\n	if (iaValidate::isEmail($value))\r\n	{\r\n		$value = strtolower($value);\r\n	}\r\n	else\r\n	{\r\n		$errors[$fieldName] = iaLanguage::get(\'error_email_incorrect\');\r\n	}\r\n}',0),
 ('avatar','members',1,'image',1,15,1,0,'',1),
 ('website','members',1,'text',255,20,1,0,'',0),
 ('phone','members',1,'text',100,25,1,0,'',0),
