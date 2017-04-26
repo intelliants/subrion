@@ -198,6 +198,10 @@ class iaUsers extends abstractCore
         foreach (Hybrid_Auth::$config["providers"] as $key => $provider) {
             if ($provider['enabled']) {
                 $output[$key] = $provider;
+
+                if ('Facebook' == $key) {
+                    require_once IA_INCLUDES . 'hybrid/thirdparty/Facebook/autoload.php';
+                }
             }
         }
 
