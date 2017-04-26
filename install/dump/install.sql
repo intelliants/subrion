@@ -389,7 +389,7 @@ CREATE TABLE `{install:prefix}items_pages` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}languages`;
 CREATE TABLE `{install:prefix}languages` (
-	`id` mediumint(7) unsigned NOT NULL auto_increment,
+	`id` smallint(5) unsigned NOT NULL auto_increment,
 	`code` char(2) NOT NULL,
 	`title` varchar(100) NOT NULL,
 	`locale` varchar(30) NOT NULL,
@@ -397,9 +397,9 @@ CREATE TABLE `{install:prefix}languages` (
 	`time_format` varchar(50) NOT NULL,
 	`author` varchar(100) NOT NULL,
 	`direction` varchar(5) NOT NULL default 'ltr',
-	`master` tinyint(1) unsigned NOT NULL,
-	`default` tinyint(1) unsigned NOT NULL,
-	`order` int(11) NOT NULL,
+	`master` tinyint(1) unsigned NOT NULL default 0,
+	`default` tinyint(1) unsigned NOT NULL default 0,
+	`order` smallint(5) unsigned NOT NULL default 0,
 	`status` enum('active','inactive') NOT NULL default 'active',
 	`flagicon` tinytext NOT NULL,
 	PRIMARY KEY (`id`),
@@ -1055,9 +1055,9 @@ INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('0 0 * * * includes/cron/featured-expiration.php','Check for expiration of featured items','Marks expired featured items');
 
 INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`length`,`order`,`editable`,`required`,`extra_actions`,`searchable`) VALUES
-('username','members',1,'text',50,0,0,1,'if ($_POST[$fieldName] && !iaValidate::isUsername($_POST[$fieldName]))\r\n{\r\n	$error = true;\r\n	$messages[] = iaLanguage::get(''username_incorrect'');\r\n	$invalidFields[] = $fieldName;\r\n}',1),
+('username','members',1,'text',50,0,0,1,'if ($value && !iaValidate::isUsername($value))\r\n{\r\n	$errors[$fieldName] = iaLanguage::get(\'username_incorrect\');\r\n}',1),
 ('fullname','members',1,'text',50,5,0,1,'',1),
-('email','members',1,'text',250,10,0,1,'if ($_POST[$fieldName])\r\n{\r\n	if (!iaValidate::isEmail($_POST[$fieldName]))\r\n	{\r\n		$error = true;\r\n		$messages[] = iaLanguage::get(''error_email_incorrect'');\r\n		$invalidFields[] = $fieldName;\r\n	}\r\n	else\r\n	{\r\n		$_POST[$fieldName] = strtolower($_POST[$fieldName]);\r\n	}\r\n}',0),
+('email','members',1,'text',250,10,0,1,'if ($value)\r\n{\r\n	if (iaValidate::isEmail($value))\r\n	{\r\n		$value = strtolower($value);\r\n	}\r\n	else\r\n	{\r\n		$errors[$fieldName] = iaLanguage::get(\'error_email_incorrect\');\r\n	}\r\n}',0),
 ('avatar','members',1,'image',1,15,1,0,'',1),
 ('website','members',1,'text',255,20,1,0,'',0),
 ('phone','members',1,'text',100,25,1,0,'',0),
