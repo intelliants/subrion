@@ -385,7 +385,7 @@ final class iaCore
             }
 
             $this->_setTimezone($this->get('timezone'));
-            setlocale(LC_COLLATE|LC_TIME, $this->get('locale'));
+            setlocale(LC_COLLATE|LC_TIME, $this->language['locale']);
 
             // set dynamic config
             $this->set('datetime_format', trim($this->language['date_format'] . ' ' . $this->language['time_format']));
