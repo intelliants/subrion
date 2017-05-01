@@ -34,8 +34,8 @@
                 {if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
                     {ia_image file=$entry field=$field title=$entry.title width=$field.thumb_width height=$field.thumb_height class='img-responsive'}
                 {else}
-                    <a class="thumbnail__image" href="{ia_image file=$entry.path field=$field url=true large=1}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
-                        {ia_image file=$entry field=$field title=$entry.title}
+                    <a class="thumbnail__image" href="{ia_image file=$entry field=$field type='large' url=true}" rel="ia_lightbox[{$name}]" title="{$entry.title|default:''}">
+                        {ia_image file=$entry field=$field}
                     </a>
                     {if !empty($entry.title)}<div class="caption"><h5>{$entry.title|default:''}</h5></div>{/if}
                 {/if}
