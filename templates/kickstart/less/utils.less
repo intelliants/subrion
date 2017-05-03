@@ -3,9 +3,9 @@
 // Gaps
 // --------------------------------------------------
 
-@spacer: 	30px;
-@spacer-y:	30px;
-@spacer-x: 	30px;
+@spacer:    30px;
+@spacer-y:  30px;
+@spacer-x:  30px;
 
 .m-a-0 { margin:        0 !important; }
 .m-t-0 { margin-top:    0 !important; }
@@ -162,6 +162,20 @@
 .text-white     { color: #fff !important; }
 .text-overflow  { .text-overflow(); }
 .text-uppercase { text-transform: uppercase !important; }
+
+
+
+//
+// Alignment
+// --------------------------------------------------
+
+.v-top, .v-center, .v-bottom {
+  > [class*="col"] { position: relative; float: none; display: inline-block; margin-left: -4px; left: 4px; }
+}
+
+.v-top    > div { vertical-align: top; }
+.v-center > div { vertical-align: middle; }
+.v-bottom > div { vertical-align: bottom; }
 
 
 
