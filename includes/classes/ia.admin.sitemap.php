@@ -36,7 +36,8 @@ class iaSitemap extends abstractCore
 
     protected $_xmlWrapper = '<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-xmlns:xhtml="http://www.w3.org/1999/xhtml">:content:</urlset>';
+ xmlns:xhtml="http://www.w3.org/1999/xhtml">:content:</urlset>
+ ';
 
     protected $_xmlEntry = '<url><loc>:url</loc>:langs</url>';
     protected $_xmlLangEntry = '<xhtml:link rel="alternate" hreflang=":lang" href=":url" />';
@@ -200,11 +201,9 @@ xmlns:xhtml="http://www.w3.org/1999/xhtml">:content:</urlset>';
         $masterLangCode = iaLanguage::getMasterLanguage()->iso;
 
         foreach ($urls as &$url) {
-            $entry = [$masterLangCode => self::_injectLangCode($url, $masterLangCode)];
+            $entry = [self::_injectLangCode($url, $masterLangCode)];
             foreach ($this->iaCore->languages as $iso => $language) {
-                if ($iso != $masterLangCode) {
-                    $entry[$iso] = self::_injectLangCode($url, $iso);
-                }
+                $entry[$iso] = self::_injectLangCode($url, $iso);
             }
 
             $url = $entry;
