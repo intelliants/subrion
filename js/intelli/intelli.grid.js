@@ -70,17 +70,20 @@ intelli.gridHelper = {
     search: function (caller, isReset, isExcelExport) {
         var i;
         var data = {};
+        var storage = {};
+
+        storage[caller.toolbar.id] = {};
 
         for (i in caller.toolbar.items.items) {
             var control = caller.toolbar.items.items[i];
             if (control.initialConfig.name) {
                 if (isReset) {
                     ('function' !== typeof control.reset) || control.reset();
-                }
-                else {
+                } else {
                     var value = control.getValue();
                     if (value) {
                         data[control.initialConfig.name] = value;
+                        storage[caller.toolbar.id][i] = control.rawValue;
                     }
                 }
             }
@@ -92,6 +95,8 @@ intelli.gridHelper = {
         }
         caller.store.getProxy().extraParams = data;
         caller.store.loadPage(1);
+
+        localStorage.setItem('toolbar', JSON.stringify(storage));
     },
 
     listener: {
@@ -288,6 +293,16 @@ function IntelliGrid(params, autoInit) {
 
         if (self.params.toolbar) {
             self.toolbar = self.params.toolbar;
+        }
+
+        var params = localStorage.getItem('toolbar') === null ? false : JSON.parse(localStorage.getItem('toolbar'));
+
+        if (params && params[self.toolbar.id]) {
+            $.each(params[self.toolbar.id], function (key, value) {
+                self.toolbar.items.items[key].rawValue = value;
+            });
+
+            intelli.gridHelper.search(self, false, false);
         }
     };
 
