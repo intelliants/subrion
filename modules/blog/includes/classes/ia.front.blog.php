@@ -34,6 +34,8 @@ class iaBlog extends abstractModuleFront
     protected $_tableBlogTags = 'blog_tags';
     protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
+    public $coreSearchEnabled = true;
+
 
     public function titleAlias($title)
     {
