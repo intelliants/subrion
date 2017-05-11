@@ -297,7 +297,9 @@ function IntelliGrid(params, autoInit) {
 
         var params = localStorage.getItem('toolbar') !== null ? JSON.parse(localStorage.getItem('toolbar')) : false;
 
-        if (typeof params[self.toolbar.id] !== 'undefined' && Object.keys(params[self.toolbar.id]).length > 0) {
+        if ('object' === typeof self.toolbar && null !== self.toolbar && 
+            typeof params[self.toolbar.id] !== 'undefined' && Object.keys(params[self.toolbar.id]).length > 0) {
+
             $.each(params[self.toolbar.id], function (key, value) {
                 self.toolbar.items.items[key].rawValue = value;
             });
