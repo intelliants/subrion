@@ -167,13 +167,13 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
         $result = parent::delete($itemId);
 
         if ($result) {
-            // remove subcategories as well
-
             // TODO: improve (currently no assigned assets - images, files
-            // will be removed if assigned via standard core fields
+            // will be removed if assigned via standard core fields)
+
+            // remove subcategories as well
             $where = sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)',
                 self::getTableFlat(true), $itemId);
-            $this->iaDb->delete($where);
+            $this->iaDb->delete($where, self::getTable());
         }
 
         return $result;
@@ -184,10 +184,8 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
         $this->_updateFlatStructure($itemId);
     }
 
-
     /**
-     * Rebuild categories relations.
-     * Fields to be updated: parents, child, level, title_alias
+     * Rebuild relations
      */
     public function rebuild()
     {
@@ -270,11 +268,11 @@ SQL;
         $where = '`status` = :status ORDER BY `id`';
         $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE]);
 
-        $rows = $this->iaDb->all(['child_id'], $where, (int)$start, (int)$limit, $this->_recountOptions['listingsTable']);
+        $rows = $this->iaDb->all(['category_id'], $where, (int)$start, (int)$limit, $this->_recountOptions['listingsTable']);
 
         if ($rows) {
             foreach ($rows as $row) {
-                $this->recountById($row['child_id']);
+                $this->recountById($row['category_id']);
             }
         }
     }
