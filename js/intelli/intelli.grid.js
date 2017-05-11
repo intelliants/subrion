@@ -67,7 +67,7 @@ intelli.gridHelper = {
         }
     },
 
-    search: function (caller, isReset, isExcelExport) {
+    search: function (caller, isReset, isExcelExport, page = 1) {
         var i;
         var data = {};
         var storage = {};
@@ -94,7 +94,7 @@ intelli.gridHelper = {
             data['export_excel'] = 1;
         }
         caller.store.getProxy().extraParams = data;
-        caller.store.loadPage(1);
+        caller.store.loadPage(page);
 
         localStorage.setItem('toolbar', JSON.stringify(storage));
     },
@@ -302,7 +302,7 @@ function IntelliGrid(params, autoInit) {
                 self.toolbar.items.items[key].rawValue = value;
             });
 
-            intelli.gridHelper.search(self, false, false);
+            intelli.gridHelper.search(self, false, false, __localStorage('p'));
         }
     };
 
