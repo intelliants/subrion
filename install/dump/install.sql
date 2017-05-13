@@ -2497,6 +2497,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('payment_details','Payment details','frontend'),
 ('payment_done','Thank you for your payment. Your transaction has been completed.','frontend'),
 ('payment_date','Payment Date','frontend'),
+('payment_gateway_not_chosen','Please choose payment gateway','frontend'),
 ('payment_redirect_message',"You will be automatically redirected to the item's page in :seconds. If you do not want to wait click the button below:",'frontend'),
 ('payment_status','Payment status','frontend'),
 ('pictures','Pictures','frontend'),

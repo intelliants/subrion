@@ -130,6 +130,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                         $tplFile = 'redirect-gateway';
                         $iaView->disableLayout();
                     }
+                } elseif (isset($_POST['source']) && 'external' == $_POST['source']) {
+                    $iaView->setMessages(iaLanguage::get('payment_gateway_not_chosen'), iaView::ERROR);
                 }
 
                 iaBreadcrumb::add(iaLanguage::get('page_title_member_funds'),
