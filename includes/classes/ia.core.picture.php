@@ -74,7 +74,7 @@ class iaPicture extends abstractCore
         if ('text' == $iaCore->get('watermark_type')) {
             $watermark = ImageWorkshop::initTextLayer(
                 $iaCore->get('watermark_text', 'Subrion CMS'),
-                IA_INCLUDES . 'phpimageworkshop/Fonts/arial.ttf',
+                IA_INCLUDES . 'PHPImageWorkshop/Fonts/Arial.ttf',
                 $iaCore->get('watermark_text_size', 11),
                 $iaCore->get('watermark_text_color', '#FFFFFF')
             );
