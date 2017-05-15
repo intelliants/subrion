@@ -2658,7 +2658,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('language_switch','Allows users to choose a language on the frontend of your site.','tooltip'),
 
 ('members_enabled','Enables members functionality for your Subrion CMS based website.','tooltip'),
-('members_autoapproval','Members are activated automatically without any confirmation.','tooltip'),
+('members_autoapproval','Members are activated automatically without administrator confirmation (email confirmation is still needed).','tooltip'),
 ('multilingual_field','Allows to have field value in different languages.','tooltip'),
 ('multiple_selection','Allows to choose multiple nodes.','tooltip'),
 
