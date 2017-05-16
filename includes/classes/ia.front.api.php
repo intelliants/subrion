@@ -155,7 +155,7 @@ class iaApi
 
     protected function _loadEntity($name)
     {
-        $extras = iaCore::instance()->factory('item')->getPackageByItem($name);
+        $extras = iaCore::instance()->factory('item')->getModuleByItem($name);
 
         if (!$extras && !in_array($name, $this->_systemEntities)) {
             throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);

@@ -142,7 +142,7 @@ class iaSitemap extends abstractCore
                 break;
 
             case self::LINKS_SET_PACKAGES:
-                foreach ($iaItem->getPackageItems() as $itemName => $package) {
+                foreach ($iaItem->getModuleItems() as $itemName => $package) {
                     if (iaCore::CORE != $package) {
                         $itemClassInstance = $this->iaCore->factoryModule('item', $package, iaCore::ADMIN, $itemName);
                         if (empty($itemClassInstance)) {

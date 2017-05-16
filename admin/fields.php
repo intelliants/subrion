@@ -684,7 +684,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $key = sprintf(self::TREE_NODE_TITLE, $params['item'], $params['field'], $params['id']);
 
         if ($_POST) {
-            $packageName = $this->_iaCore->factory('item')->getPackageByItem($params['item']);
+            $packageName = $this->_iaCore->factory('item')->getModuleByItem($params['item']);
 
             $this->_iaDb->delete(iaDb::convertIds($key, 'key'), iaLanguage::getTable());
 

@@ -185,7 +185,7 @@ SQL;
                 }
             }
 
-            $entry['module'] = $this->_iaCore->factory('item')->getPackageByItem($data['item']);
+            $entry['module'] = $this->_iaCore->factory('item')->getModuleByItem($data['item']);
             $entry['order'] = $this->_iaDb->getMaxOrder(iaField::getTableGroups()) + 1;
         }
 

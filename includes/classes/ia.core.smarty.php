@@ -258,7 +258,7 @@ class iaSmarty extends Smarty
             default:
                 $iaCore = iaCore::instance();
                 $iaItem = $iaCore->factory('item');
-                $package = $iaItem->getPackageByItem($params['item']);
+                $package = $iaItem->getModuleByItem($params['item']);
                 if (empty($package)) {
                     return $result;
                 }
@@ -663,7 +663,7 @@ class iaSmarty extends Smarty
         if (iaUsers::getItemName() == $params['itemtype']) {
             $editUrl = IA_URL . 'profile/';
         } else {
-            $item = $iaItem->getPackageByItem($params['itemtype']);
+            $item = $iaItem->getModuleByItem($params['itemtype']);
             if (empty($item)) {
                 return '';
             }

@@ -72,7 +72,7 @@ class iaItem extends abstractCore
     *
     * @return array
     */
-    public function getPackageItems($payableOnly = false)
+    public function getModuleItems($payableOnly = false)
     {
         $result = [];
 
@@ -96,17 +96,9 @@ class iaItem extends abstractCore
         static $itemsInfo;
 
         if (!isset($itemsInfo[(int)$payableOnly])) {
-            $items = $this->iaDb->all('`item`, `module`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
+            $items = $this->iaDb->all('`item`, `module`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`',
+                $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
             $itemsInfo[(int)$payableOnly] = is_array($items) ? $items : [];
-
-            // get active packages
-            $packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getModulesTable());
-
-            foreach ($items as $key => $itemInfo) {
-                if (iaCore::CORE != $itemInfo['module'] && !in_array($itemInfo['module'], $packages)) {
-                    unset($itemsInfo[(int)$payableOnly][$key]);
-                }
-            }
         }
 
         return $itemsInfo[(int)$payableOnly];
@@ -121,12 +113,12 @@ class iaItem extends abstractCore
      */
     public function getItems($payableOnly = false)
     {
-        return array_keys($this->getPackageItems($payableOnly));
+        return array_keys($this->getModuleItems($payableOnly));
     }
 
     protected function _searchItems($search, $type = 'item')
     {
-        $items = $this->getPackageItems();
+        $items = $this->getModuleItems();
         $result = [];
 
         foreach ($items as $item => $package) {
@@ -159,7 +151,7 @@ class iaItem extends abstractCore
      * @param $search
      * @return string|bool
      */
-    public function getPackageByItem($search)
+    public function getModuleByItem($search)
     {
         return $this->_searchItems($search, 'item');
     }
