@@ -137,12 +137,12 @@ class iaItem extends abstractCore
     /**
      * Returns list of items by package name
      * @alias _searchItems
-     * @param string $packageName
+     * @param string $moduleName
      * @return array
      */
-    public function getItemsByPackage($packageName)
+    public function getItemsByModule($moduleName)
     {
-        return $this->_searchItems($packageName, 'package');
+        return $this->_searchItems($moduleName, 'module');
     }
 
     /**

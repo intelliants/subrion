@@ -36,18 +36,18 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _indexPage(&$iaView)
     {
-        $packageName = explode('_stats', $iaView->name());
-        $packageName = array_shift($packageName);
+        $moduleName = explode('_stats', $iaView->name());
+        $moduleName = array_shift($moduleName);
 
-        $this->_iaCore->startHook('phpAdminPackageStatistics', ['package' => $packageName]);
+        $this->_iaCore->startHook('phpAdminPackageStatistics', ['package' => $moduleName]);
 
         $statistics = [];
 
         $iaItem = $this->_iaCore->factory('item');
-        if ($packageItems = $iaItem->getItemsByPackage($packageName)) {
+        if ($packageItems = $iaItem->getItemsByModule($moduleName)) {
             foreach ($packageItems as $itemName) {
                 $itemName = substr($itemName, 0, -1);
-                $itemClass = $this->_iaCore->factoryModule($itemName, $packageName, iaCore::ADMIN);
+                $itemClass = $this->_iaCore->factoryModule($itemName, $moduleName, iaCore::ADMIN);
                 if (method_exists($itemClass, self::GETTER_METHOD_NAME)) {
                     if ($itemClass->dashboardStatistics) {
                         if ($data = call_user_func([$itemClass, self::GETTER_METHOD_NAME], [false])) {
@@ -58,9 +58,9 @@ class iaBackendController extends iaAbstractControllerBackend
             }
         }
 
-        $timeline = $this->_iaCore->factory('log')->get($packageName);
+        $timeline = $this->_iaCore->factory('log')->get($moduleName);
 
-        $iaView->assign('package', $packageName);
+        $iaView->assign('package', $moduleName);
         $iaView->assign('statistics', $statistics);
         $iaView->assign('timeline', $timeline);
 
