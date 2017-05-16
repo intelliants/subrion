@@ -829,6 +829,7 @@
     - Bug #419: Avatar are not displayed on the favorites page
     - Bug #425: Images are saved with incorrect names if filename contains non latin chars
     - Bug #427: Adapt sitemap generation to multilingual fields
+    - Bug #431: Items created by plugins don't have all features
     - Bug #435: The date is show incorrect
     - Bug #436: Hybrid Auth not working properly
     - Bug #442: HybridAuth: Facebook login doesn't work
