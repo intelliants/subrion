@@ -983,6 +983,8 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('miscellaneous', 'captcha_preview', '', '', 'text', 12, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"captcha|1\",\"multilingual\":\"0\"}'),
 ('miscellaneous', '', 'Search', '', 'divider', 13, '', 1, 1, ''),
 ('miscellaneous', 'search_instant', '0', '\'1\',\'0\'', 'radio', 14, '', 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('miscellaneous', '', 'Maps', '', 'divider', 15, '', 1, 1, ''),
+('miscellaneous', 'maps_api_key', '', '', 'text', 16, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 
 ('financial', '', 'General', '1', 'divider', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('financial', 'currency', 'USD', '', 'text', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
@@ -1474,6 +1476,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_captcha_name', 'Captcha name', 'admin'),
 ('config_captcha_preview', 'Captcha preview', 'admin'),
 ('config_search_instant', 'Instant search', 'admin'),
+('config_maps_api_key', 'Maps API key', 'admin'),
 ('config_currency', 'Currency', 'admin'),
 ('config_funds_min_deposit', 'Minimum deposit', 'admin'),
 ('config_funds_max_deposit', 'Maximum deposit', 'admin'),
