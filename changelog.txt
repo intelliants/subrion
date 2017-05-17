@@ -832,9 +832,13 @@
     - Bug #431: Items created by plugins don't have all features
     - Bug #435: The date is show incorrect
     - Bug #436: Hybrid Auth not working properly
+    - Bug #440: Incorrect working of mail signature
     - Bug #442: HybridAuth: Facebook login doesn't work
     - Bug #443: Post payment routine executed twice if paid by internal system funds
     - Bug #444: Primary language value is lost
+    - Bug #451: Images are not uploaded if watermark is enabled
+    - Bug #452: Text watermarks doesn't work
+    - Bug #455: Unable to set a package as default
     + Feature #360: Improve modules section
     + Feature #365: Provide more info when creating language
     + Feature #423: Add orientation fix for images with EXIF data
