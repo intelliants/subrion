@@ -821,9 +821,8 @@ SQL;
         empty($order) || $stmt.= ' ORDER BY ' . $order;
 
         $rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit, self::getTable());
-        !$rows ||$this->_processValues($rows);
-
         $count = $this->iaDb->foundRows();
+        !$rows ||$this->_processValues($rows);
 
         return [$count, $rows];
     }
@@ -905,6 +904,10 @@ SQL;
      */
     protected function _processValues(array &$rows, $singleRow = false, $fieldNames = [])
     {
+        if (!$rows) {
+            return;
+        }
+
         $iaField = $this->iaCore->factory('field');
 
         $serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));

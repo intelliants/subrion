@@ -133,7 +133,6 @@ class iaBackendController extends iaAbstractControllerBackend
                 $line = trim($line);
                 if ($line) {
                     if ($line[0] == '>') {
-
                         $url = false !== stripos($line, '4.1.') ?
                             'https://github.com/intelliants/subrion/issues/$1' :
                             'https://dev.subrion.org/issues/$1';

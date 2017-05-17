@@ -58,7 +58,7 @@ class iaAcl extends abstractUtil
         $this->iaCore->factory('users');
 
         $user = iaUsers::hasIdentity() ? iaUsers::getIdentity()->id : 0;
-        $group = iaUsers::hasIdentity() ? iaUsers::getIdentity()->usergroup_id : 4;
+        $group = iaUsers::hasIdentity() ? iaUsers::getIdentity()->usergroup_id : iaUsers::MEMBERSHIP_GUEST;
 
         $objects = [];
         $actions = [];
@@ -78,7 +78,7 @@ class iaAcl extends abstractUtil
         $this->_actions = $actions;
         $this->_objects = $objects;
 
-        if (empty($this->_permissions) || $user !== false || $group !== false) {
+        if (empty($this->_permissions)) {
             $this->_permissions = $this->getPermissions($user, $group);
         }
     }
@@ -89,7 +89,7 @@ class iaAcl extends abstractUtil
      */
     public function isAdmin()
     {
-        return $this->checkAccess('admin_access', null, 0, 1);
+        return $this->checkAccess('admin_access');
     }
 
     /**
@@ -169,6 +169,7 @@ class iaAcl extends abstractUtil
                 }
             }
         }
+
         // 7. All privileges check (user = 0)
         // 8. All privileges check (group = 1)
         // 9. All privileges check (plan = 2)

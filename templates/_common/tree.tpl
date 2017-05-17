@@ -12,7 +12,7 @@
     {ia_add_js}
 $(function()
 {
-    new IntelliTree({ url: '{$url}', nodeOpened: [{$category.parents}], nodeSelected: '{$item.category_id}', search: {if $search}true{else}false{/if} });
+    new IntelliTree({ url: '{$url}', nodeOpened: [{$category._parents}], nodeSelected: '{$item.category_id}', search: {if $search}true{else}false{/if} });
 });
     {/ia_add_js}
     {ia_add_media files='tree'}

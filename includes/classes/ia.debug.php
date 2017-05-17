@@ -463,7 +463,7 @@ class iaDebug
      * @param string $message Line to write to the log
      * @param string $fileName filename to write to
      *
-     * @return void
+     * @return bool
      */
     public static function write($message, $fileName = '')
     {
@@ -476,7 +476,7 @@ class iaDebug
             self::$_fileHandle = fopen(IA_TMP . self::$_fileName . '.txt', 'a');
         }
 
-        return fwrite(self::$_fileHandle, $message);
+        return (bool)fwrite(self::$_fileHandle, $message);
     }
 
     /**
@@ -486,7 +486,7 @@ class iaDebug
      *
      * @return string
      */
-    private function _formatMessage($message, $context = null)
+    private static function _formatMessage($message, $context = null)
     {
         if (!empty($context)) {
             $message .= PHP_EOL . self::_indent(self::_contextToString($context));
@@ -501,26 +501,29 @@ class iaDebug
      * @param  array $context The Context
      * @return string
      */
-    private function _contextToString($context)
+    private static function _contextToString($context)
     {
         $export = '';
         if (is_object($context)) {
             $context = json_decode(json_encode($context), true);
         }
 
-        foreach ($context as $key => $value) {
-            $export .= "{$key}: ";
-            $export .= preg_replace([
-                '/=>\s+([a-zA-Z])/im',
-                '/array\(\s+\)/im',
-                '/^  |\G  /m',
-            ], [
-                '=> $1',
-                'array()',
-                '    ',
-            ], str_replace('array (', 'array(', var_export($value, true)));
-            $export .= PHP_EOL;
+        if ($context instanceof Traversable) {
+            foreach ($context as $key => $value) {
+                $export .= "{$key}: ";
+                $export .= preg_replace([
+                    '/=>\s+([a-zA-Z])/im',
+                    '/array\(\s+\)/im',
+                    '/^  |\G  /m',
+                ], [
+                    '=> $1',
+                    'array()',
+                    '    ',
+                ], str_replace('array (', 'array(', var_export($value, true)));
+                $export .= PHP_EOL;
+            }
         }
+
         return str_replace(['\\\\', '\\\''], ['\\', '\''], rtrim($export));
     }
 
@@ -532,7 +535,7 @@ class iaDebug
      *
      * @return string
      */
-    private function _indent($string, $indent = '    ')
+    private static function _indent($string, $indent = '    ')
     {
         return $indent.str_replace("\n", "\n" . $indent, $string);
     }

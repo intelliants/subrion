@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VER', '412');
+define('IA_VER', '413');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
@@ -35,7 +35,6 @@ $iaOutput->steps = [
     'finish' => 'Script Installation',
     'plugins' => 'Plugins Installation'
 ];
-
 
 $error = false;
 $message = '';

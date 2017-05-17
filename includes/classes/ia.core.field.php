@@ -358,7 +358,7 @@ SQL;
             if ($group['tabview']) {
                 $tabs['fieldgroup_' . $group['item'] . '_' . $group['name']][$key] = $group;
             } elseif ($group['tabcontainer']) {
-                $tabs['fieldgroup_' . $group['tabcontainer']][$key] = $group;
+                $tabs['fieldgroup_' . $group['item'] . '_' . $group['tabcontainer']][$key] = $group;
             } else {
                 $tabs[$defaultTab][$key] = $group;
             }

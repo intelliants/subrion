@@ -88,7 +88,7 @@ $(function () {
                     if (response.length > 0) {
                         var selected = $('#tabcontainer').val();
                         $.each(response, function (i, name) {
-                            $fieldGroups.append($('<option>').val(name).text(_t('fieldgroup_' + name)));
+                            $fieldGroups.append($('<option>').val(name).text(_t('fieldgroup_' + item + '_' + name)));
                         });
                         $fieldGroups.val(selected);
 

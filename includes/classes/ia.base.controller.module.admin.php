@@ -46,6 +46,8 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
      */
     protected $_activityLog;
 
+    protected $_treeSettings = false;
+
     protected $_iaField;
 
 
@@ -152,6 +154,18 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
         return parent::_unpackGridColumnsArray();
     }
+
+    protected function _gridGetSorting(array $params)
+    {
+        if ($params['sort']) {
+            $multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
+            if (in_array($params['sort'], $multilingualFields)) {
+                $params['sort'].= '_' . $this->_iaCore->language['iso'];
+            }
+        }
+
+        return parent::_gridGetSorting($params);
+    }
     //
 
     protected function _indexPage(&$iaView)
@@ -166,9 +180,46 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         $entryData['item'] = $this->getItemName();
 
         $sections = $this->_iaField->getGroups($this->getItemName());
+        $plans = $this->_getPlans();
 
         $iaView->assign('item_sections', $sections);
-        $iaView->assign('plans', $this->_getPlans());
+        $iaView->assign('plans', $plans);
+
+        if ($this->_treeSettings) {
+            $iaView->assign('tree', $this->_getTreeVars($entryData));
+        }
+    }
+
+    protected function _getPlans()
+    {
+        $iaPlan = $this->_iaCore->factory('plan');
+
+        if ($plans = $iaPlan->getPlans($this->getItemName())) {
+            foreach ($plans as &$plan) {
+                list(, $plan['defaultEndDate']) = $iaPlan->calculateDates($plan['duration'], $plan['unit']);
+            }
+        }
+
+        return $plans;
+    }
+
+    protected function _getTreeVars(array $entryData)
+    {
+        $parent = empty($entryData[$this->_treeSettings['parent_id']])
+            ? $this->getHelper()->getRoot()
+            : $this->getHelper()->getById($entryData[$this->_treeSettings['parent_id']]);
+
+        $url = $this->getPath() . 'tree.json';
+        if (iaCore::ACTION_EDIT == $this->_iaCore->iaView->get('action')) {
+            $url .= '?cid=' . $this->getEntryId();
+        }
+
+        return [
+            'url' => $url,
+            'nodes' => $parent[$this->_treeSettings['parents']],
+            'id' => $parent['id'],
+            'title' => $parent['title']
+        ];
     }
 
     protected function _insert(array $entryData)
@@ -339,55 +390,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
     protected function _getJsonTree(array $data)
     {
-        $output = [];
-
-        $dynamicLoadMode = ((int)$this->_iaDb->one(iaDb::STMT_COUNT_ROWS) > 150);
-        $noRootMode = isset($data['noroot']) && '' == $data['noroot'];
-
-        $rootId = $noRootMode ? 1 : 0;
-        $parentId = isset($data['id']) && is_numeric($data['id']) ? (int)$data['id'] : $rootId;
-
-        $where = $dynamicLoadMode
-            ? '`parent_id` = ' . $parentId
-            : ($noRootMode ? '`id` != ' . $rootId : iaDb::EMPTY_CONDITION);
-
-        // TODO: better solution should be found here. this code will break jstree composition in case if
-        // category to be excluded from the list has children of 2 and more levels deeper
-        empty($data['cid']) || $where.= ' AND `id` != ' . (int)$data['cid'] . ' AND `parent_id` != ' . (int)$data['cid'];
-
-        $where.= ' ORDER BY `title`';
-
-        $rows = $this->_iaDb->all(['id', 'title' => 'title_' . $this->_iaCore->language['iso'], 'parent_id', 'child'], $where);
-
-        foreach ($rows as $row) {
-            $entry = ['id' => $row['id'], 'text' => $row['title']];
-
-            if ($dynamicLoadMode) {
-                $entry['children'] = ($row['child'] && $row['child'] != $row['id']) || 0 === (int)$row['id'];
-            } else {
-                $entry['state'] = [];
-                $entry['parent'] = $noRootMode
-                    ? ($rootId == $row['parent_id'] ? '#' : $row['parent_id'])
-                    : (1 == $row['id'] ? '#' : $row['parent_id']);
-            }
-
-            $output[] = $entry;
-        }
-
-        return $output;
-    }
-
-    protected function _getPlans()
-    {
-        $iaPlan = $this->_iaCore->factory('plan');
-
-        if ($plans = $iaPlan->getPlans($this->getItemName())) {
-            foreach ($plans as &$plan) {
-                list(, $plan['defaultEndDate']) = $iaPlan->calculateDates($plan['duration'], $plan['unit']);
-            }
-        }
-
-        return $plans;
+        return $this->getHelper()->getJsonTree($data);
     }
 
     protected function _validateMultilingualFieldsKeys(array $data)

@@ -97,14 +97,14 @@
                                 <td>{$language.direction}</td>
                                 <td>
                                     {if $language.master}
-                                        <span class="btn btn-xs disabled"><i class='i-checkmark'></i></span>
+                                        <span class="btn btn-xs disabled"><i class="i-checkmark"></i></span>
                                     {/if}
                                 </td>
                                 <td>
                                     {if $code == $core.config.lang}
-                                        <span class="btn btn-xs disabled"><i class='i-checkmark'></i></span>
+                                        <span class="btn btn-xs disabled"><i class="i-checkmark"></i></span>
                                     {elseif iaCore::STATUS_ACTIVE == $language.status}
-                                        <a class="btn btn-success btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/default/{$code}/"><i class='i-checkmark'></i></a>
+                                        <a class="btn btn-success btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/default/{$code}/"><i class="i-checkmark"></i></a>
                                     {/if}
                                 </td>
                                 <td>{$language.status}</td>
@@ -115,7 +115,7 @@
                                     <a class="btn btn-default btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/edit/{$language.id}/"><i class="i-cog"></i> {lang key='settings'}</a>
 
                                     {if count($core.languages) > 1 && $code != $core.config.lang}
-                                        <a class="btn btn-danger btn-xs js-remove-lang-cmd" href="{$smarty.const.IA_ADMIN_URL}languages/rm/{$code}/"><i class='i-close'></i> {lang key='delete'}</a>
+                                        <button class="btn btn-danger btn-xs js-remove-lang-cmd" data-href="{$smarty.const.IA_ADMIN_URL}languages/rm/{$code}/"><i class="i-close"></i> {lang key='delete'}</button>
                                     {/if}
                                 </td>
                             </tr>

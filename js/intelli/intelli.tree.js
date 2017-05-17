@@ -4,11 +4,6 @@ function IntelliTree(params) {
     this.url = params.url || window.location.href + 'read.json';
     this.selector = params.selector || '#js-tree';
 
-    if (typeof params.value == 'undefined' && !$('#input-tree').length) // compatibility layer
-    {
-        params.value = '#input-category';
-    }
-
     this.$tree = null;
     this.$label = params.label ? $(params.label) : $('#js-category-label');
     this.$value = params.value ? $(params.value) : $('#input-tree');
@@ -38,9 +33,9 @@ function IntelliTree(params) {
                 search: {show_only_matches: true}
             });
 
-        self.$tree.on('load_node.jstree', _cascadeOpen);
+        self.$tree.on('load_node.jstree after_open.jstree', _cascadeOpen);
         self.$tree.on('changed.jstree', this.onchange);
-        if (typeof params.onchange == 'function') {
+        if ('function' === typeof params.onchange) {
             self.$tree.on('click.jstree', params.onchange);
         }
 
@@ -54,7 +49,7 @@ function IntelliTree(params) {
         if (params.search) {
             var timeout = false;
 
-            self.$search.keyup(function (e) {
+            self.$search.keyup(function () {
                 if (timeout) clearTimeout(timeout);
                 timeout = setTimeout(function () {
                     self.$tree.jstree(true).search(self.$search.val());
@@ -83,7 +78,7 @@ function IntelliTree(params) {
                 tree.select_node(nodes[i]);
                 return;
             }
-            else if ($.inArray(parseInt(nodes[i]), params.nodeOpened) != -1) {
+            else if ($.inArray(parseInt(nodes[i]), params.nodeOpened) !== -1) {
                 if (tree.get_node(nodes[i])) {
                     tree.open_node(nodes[i]);
                     continue;

@@ -79,6 +79,7 @@
                 {if isset($regular)}
                     <button type="button" class="btn btn-xs btn-default" id="js-cmd-save-search">{lang key='save_this_search'}</button>
                 {/if}
+                <button type="reset" class="btn btn-xs btn-default" id="js-cmd-reset-filters">{lang key='reset_filters'}</button>
             </div>
         {/if}
     </form>

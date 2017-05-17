@@ -42,6 +42,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
     $iaDb->setTable($tableName);
 
+    $item = iaUsers::getIdentity(true);
+
     if (isset($_POST['change_pass'])) {
         $error = false;
         $newPassword = empty($_POST['new']) ? false : $_POST['new'];
@@ -70,8 +72,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
         $iaView->setMessages($messages, $error ? iaView::ERROR : iaView::SUCCESS);
     } elseif ($_POST && (isset($_POST['change_info']) || isset($_POST['plan_id']))) {
-        $item = iaUsers::getIdentity(true);
-
         if (isset($_POST['change_info'])) {
             list($item, $error, $messages) = $iaField->parsePost($iaUsers->getItemName(), $item);
 
@@ -111,8 +111,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     }
 
     $iaCore->startHook('phpFrontAfterProfileProcessData');
-
-    $item = iaUsers::getIdentity(true);
 
     $sections = $iaField->getTabs($itemName, $item);
 
