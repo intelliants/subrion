@@ -835,8 +835,8 @@
     - Bug #442: HybridAuth: Facebook login doesn't work
     - Bug #443: Post payment routine executed twice if paid by internal system funds
     - Bug #444: Primary language value is lost
-    - Feature #360: Improve modules section
-    - Feature #365: Provide more info when creating language
-    - Feature #423: Add orientation fix for images with EXIF data
-    - Feature #434: Remove item from favorites when deleted
-    - Feature #438: Change column type for text fields
+    + Feature #360: Improve modules section
+    + Feature #365: Provide more info when creating language
+    + Feature #423: Add orientation fix for images with EXIF data
+    + Feature #434: Remove item from favorites when deleted
+    + Feature #438: Change column type for text fields
