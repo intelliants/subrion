@@ -47,7 +47,7 @@ include IA_HOME . 'index.php';
 
 $scriptFolder = trim(str_replace(INSTALL . IA_URL_DELIMITER . 'index.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER);
 $scriptFolder = empty($scriptFolder) ? '' : $scriptFolder . IA_URL_DELIMITER;
-$scriptPort = (80 == $_SERVER['SERVER_PORT']) ? '' : ':' . $_SERVER['SERVER_PORT'];
+$scriptPort = (80 == $_SERVER['SERVER_PORT'] || 443 == $_SERVER['SERVER_PORT']) ? '' : ':' . $_SERVER['SERVER_PORT'];
 
 $url = '//' . $_SERVER['SERVER_NAME'] . $scriptPort . IA_URL_DELIMITER . $scriptFolder;
 
