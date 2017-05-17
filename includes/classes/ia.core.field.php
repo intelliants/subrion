@@ -282,6 +282,7 @@ SQL;
                     foreach (explode(',', $field['values']) as $v) {
                         $values[$v] = self::getLanguageValue($field['item'], $field['name'], $v);
                     }
+
                     $field['values'] = $values;
 
                     break;
@@ -292,6 +293,16 @@ SQL;
                     empty($field['timepicker']) && $field['imagetype_thumbnail'] = self::IMAGE_TYPE_THUMBNAIL;
                     //$field['imagetype_primary'] = $field['timepicker'] ? $field['imagetype_primary'] : self::IMAGE_TYPE_LARGE;
                     //$field['imagetype_thumbnail'] = $field['timepicker'] ? $field['imagetype_thumbnail'] : self::IMAGE_TYPE_THUMBNAIL;
+
+                    break;
+
+                case self::TREE:
+                    $values = json_decode($field['values'], true);
+                    foreach ($values as &$v) {
+                        $v['text'] = self::getLanguageValue($field['item'], $field['name'], $v['id']);
+                    }
+
+                    $field['values'] = json_encode($values);
             }
 
             $field['class'] = 'fieldzone';
@@ -659,8 +670,13 @@ SQL;
 
                 case self::DATE:
                     if ($value = trim($value)) {
-                        $value = date($field['timepicker'] ? iaDb::DATETIME_FORMAT : iaDb::DATE_FORMAT,
-                            strtotime($value));
+                        $value = strtotime($value);
+                    }
+
+                    if (!$value && $field['allow_null']) {
+                        $value = null;
+                    } else {
+                        $value = date($field['timepicker'] ? iaDb::DATETIME_FORMAT : iaDb::DATE_FORMAT, $value);
                     }
 
                     $item[$fieldName] = $value;
@@ -758,7 +774,7 @@ SQL;
         $uploadPath = empty($field['folder_name']) ? iaUtil::getAccountDir() : $field['folder_name'] . IA_DS;
         $absUploadPath = IA_UPLOADS . $uploadPath;
 
-        iaSanitize::filenameEscape($fileName);
+        self::_processFileName($fileName);
 
         if (!empty($field['file_prefix'])) {
             $fileName = $field['file_prefix'] . $fileName;
@@ -1070,14 +1086,16 @@ SQL;
                 break;
             case self::ICONPICKER:
             case self::URL:
-            case self::TREE:
                 $result.= 'TINYTEXT ';
                 break;
+            case self::TREE:
             case self::IMAGE:
             case self::STORAGE:
             case self::PICTURES:
-            case self::TEXTAREA:
                 $result.= 'TEXT ';
+                break;
+            case self::TEXTAREA:
+                $result.= 'MEDIUMTEXT ';
                 break;
             default:
                 if (isset($fieldData['values'])) {
@@ -1349,5 +1367,22 @@ SQL;
     {
         return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name AND `item` = :item',
             ['name' => $fieldName, 'item' => $itemName], self::getTable());
+    }
+
+    protected static function _processFileName(&$fileName)
+    {
+        // first, sanitize filename
+        iaSanitize::filenameEscape($fileName);
+
+        // then convert utf filenames
+        iaCore::instance()->factory('util')
+            ->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+        if (!utf8_is_ascii($fileName)) {
+            $fileName = utf8_to_ascii($fileName);
+        }
+
+        // last, replace spaces
+        $fileName = str_replace(' ', '_', $fileName);
     }
 }

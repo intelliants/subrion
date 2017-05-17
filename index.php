@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '4.1.3');
+define('IA_VERSION', '4.1.4');
 
 if (defined('IA_INSTALL')) {
     return IA_VERSION;
@@ -45,18 +45,17 @@ error_reporting(E_ALL | E_STRICT | E_DEPRECATED);
 define('IA_DS', '/');
 define('IA_URL_DELIMITER', '/');
 define('IA_HOME', str_replace('\\', IA_DS, dirname(__FILE__)) . IA_DS);
-define('IA_INCLUDES', IA_HOME . 'includes' . IA_DS);
-define('IA_CLASSES', IA_INCLUDES . 'classes' . IA_DS);
-define('IA_MODULES', IA_HOME . 'modules' . IA_DS);
-define('IA_UPLOADS', IA_HOME . 'uploads' . IA_DS);
-define('IA_SMARTY', IA_INCLUDES . 'smarty' . IA_DS);
-define('IA_TMP', IA_HOME . 'tmp' . IA_DS);
-define('IA_CACHEDIR', IA_TMP . 'cache' . IA_DS);
-define('IA_FRONT', IA_HOME . 'front' . IA_DS);
-define('IA_ADMIN', IA_HOME . 'admin' . IA_DS);
+define('IA_INCLUDES', IA_HOME . 'includes/');
+define('IA_CLASSES', IA_INCLUDES . 'classes/');
+define('IA_MODULES', IA_HOME . 'modules/');
+define('IA_UPLOADS', IA_HOME . 'uploads/');
+define('IA_SMARTY', IA_INCLUDES . 'smarty/');
+define('IA_TMP', IA_HOME . 'tmp/');
+define('IA_CACHEDIR', IA_TMP . 'cache/');
+define('IA_FRONT', IA_HOME . 'front/');
+define('IA_ADMIN', IA_HOME . 'admin/');
 define('FOLDER', trim(str_replace(IA_DS . 'index.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER));
-define('FOLDER_URL',
-    FOLDER != '' ? trim(str_replace(IA_DS, IA_URL_DELIMITER, FOLDER), IA_URL_DELIMITER) . IA_URL_DELIMITER : '');
+define('FOLDER_URL', FOLDER != '' ? trim(str_replace(IA_DS, IA_URL_DELIMITER, FOLDER), IA_URL_DELIMITER) . IA_URL_DELIMITER : '');
 
 // process stripslashes if magic_quotes is enabled on the server
 if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {

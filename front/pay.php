@@ -87,7 +87,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                 if ($transaction && isset($_POST['source']) && 'internal' == $_POST['source']) {
                     if ($iaPlan->extractFunds($transaction)) {
                         empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
-                        $iaPlan->setPaid($transaction);
                         iaUtil::redirect(iaLanguage::get('thanks'), iaLanguage::get('payment_done'), $transaction['return_url']);
                     }
                 }
@@ -112,12 +111,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
 
                     // include pre form send files
-                    $paymentGatewayHandler = IA_MODULES . $gate . IA_DS . 'includes' . IA_DS . 'pre-processing' . iaSystem::EXECUTABLE_FILE_EXT;
+                    $paymentGatewayHandler = IA_MODULES . $gate . '/includes/pre-processing' . iaSystem::EXECUTABLE_FILE_EXT;
                     if (is_file($paymentGatewayHandler)) {
                         include $paymentGatewayHandler;
                     }
 
-                    $form = IA_MODULES . $gate . IA_DS . 'templates' . IA_DS . 'front' . IA_DS . 'form.tpl';
+                    $form = IA_MODULES . $gate . '/templates/front/form.tpl';
 
                     if (is_file($form)) {
                         $data = [
@@ -131,6 +130,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                         $tplFile = 'redirect-gateway';
                         $iaView->disableLayout();
                     }
+                } elseif (isset($_POST['source']) && 'external' == $_POST['source']) {
+                    $iaView->setMessages(iaLanguage::get('payment_gateway_not_chosen'), iaView::ERROR);
                 }
 
                 iaBreadcrumb::add(iaLanguage::get('page_title_member_funds'),
@@ -143,7 +144,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $transaction = [];
 
                     // include post form send files
-                    $paymentGatewayHandler = IA_MODULES . $gate . IA_DS . 'includes' . IA_DS . 'post-processing' . iaSystem::EXECUTABLE_FILE_EXT;
+                    $paymentGatewayHandler = IA_MODULES . $gate . '/includes/post-processing' . iaSystem::EXECUTABLE_FILE_EXT;
 
                     if (file_exists($paymentGatewayHandler)) {
                         // set to true if custom transaction handling needed

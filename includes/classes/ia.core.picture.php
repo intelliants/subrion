@@ -24,8 +24,8 @@
  *
  ******************************************************************************/
 
-require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'ImageWorkshop.php';
-use phpimageworkshop\ImageWorkshop as ImageWorkshop;
+require_once IA_INCLUDES . 'PHPImageWorkshop/ImageWorkshop.php';
+use PHPImageWorkshop\ImageWorkshop as ImageWorkshop;
 
 class iaPicture extends abstractCore
 {
@@ -74,7 +74,7 @@ class iaPicture extends abstractCore
         if ('text' == $iaCore->get('watermark_type')) {
             $watermark = ImageWorkshop::initTextLayer(
                 $iaCore->get('watermark_text', 'Subrion CMS'),
-                IA_INCLUDES . 'phpimageworkshop/Fonts/arial.ttf',
+                IA_INCLUDES . 'PHPImageWorkshop/Fonts/Arial.ttf',
                 $iaCore->get('watermark_text_size', 11),
                 $iaCore->get('watermark_text_color', '#FFFFFF')
             );
@@ -87,7 +87,7 @@ class iaPicture extends abstractCore
         } else {
             $watermarkFile = $iaCore->get('watermark_image') ?
                 IA_UPLOADS . $iaCore->get('watermark_image') :
-                IA_TEMPLATES . $iaCore->get('tmpl') . IA_DS . 'img' . IA_DS . 'watermark.png';
+                IA_TEMPLATES . $iaCore->get('tmpl') . '/img/watermark.png';
 
             if (is_file($watermarkFile) && !is_dir($watermarkFile)) {
                 $watermark = ImageWorkshop::initFromPath($watermarkFile);
@@ -103,7 +103,7 @@ class iaPicture extends abstractCore
 
     protected function _processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark = false)
     {
-        require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifFrameExtractor.php';
+        require_once IA_INCLUDES . 'PHPImageWorkshop/Core/GifFrameExtractor.php';
 
         if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($sourceFile) && $this->_allowAnimatedGifs) {
             // Extractions of the GIF frames and their durations
@@ -120,7 +120,7 @@ class iaPicture extends abstractCore
             }
 
             // Then we re-generate the GIF
-            require_once IA_INCLUDES . 'phpimageworkshop' . IA_DS . 'Core' . IA_DS . 'GifCreator.php';
+            require_once IA_INCLUDES . 'PHPImageWorkshop/Core/GifCreator.php';
 
             $gc = new GifCreator\GifCreator();
             $gc->create($frames, $gfe->getFrameDurations(), 0);
@@ -141,7 +141,7 @@ class iaPicture extends abstractCore
                 return $this->_processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark);
             }
 
-            $image = ImageWorkshop::initFromPath($sourceFile);
+            $image = ImageWorkshop::initFromPath($sourceFile, true);
 
             // resize image
             switch ($resizeMode) {

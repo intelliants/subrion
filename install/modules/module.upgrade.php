@@ -77,7 +77,7 @@ switch ($step) {
         $patchFileContent = iaHelper::getRemoteContent($patchUrl);
 
         if ($patchFileContent !== false) {
-            $file = fopen(IA_HOME . 'tmp' . IA_DS . 'patch.iap', 'wb');
+            $file = fopen(IA_HOME . 'tmp/patch.iap', 'wb');
             fwrite($file, $patchFileContent);
             fclose($file);
 
@@ -114,7 +114,7 @@ switch ($step) {
         $options = isset($_GET['options']) && is_array($_GET['options']) ? $_GET['options'] : [];
 
         try {
-            $patchFileContent = @file_get_contents(IA_HOME . 'tmp' . IA_DS . 'patch.iap');
+            $patchFileContent = @file_get_contents(IA_HOME . 'tmp/patch.iap');
             if (false === $patchFileContent) {
                 throw new Exception('Could not get downloaded patch file. Please download it again.');
             }
@@ -139,7 +139,7 @@ switch ($step) {
             $textLog = $patchApplier->getLog();
 
             $logFile = 'upgrade-log-' . $patch['info']['version_to'] . '_' . date('d-m-y-Hi') . '.txt';
-            if ($fh = fopen(IA_HOME . 'uploads' . IA_DS . $logFile, 'wt')) {
+            if ($fh = fopen(IA_HOME . 'uploads/' . $logFile, 'wt')) {
                 fwrite($fh, $textLog);
                 fclose($fh);
             }
@@ -170,12 +170,12 @@ switch ($step) {
             $iaOutput->log = $textLog;
 
             // clean up cache files
-            $tempFolder = IA_HOME . 'tmp' . IA_DS;
+            $tempFolder = IA_HOME . 'tmp/';
             iaHelper::cleanUpDirectoryContents($tempFolder);
 
             unset($_SESSION['upgrade_to']);
         } catch (Exception $e) {
-            @unlink(IA_HOME . 'tmp' . IA_DS . 'patch.iap');
+            @unlink(IA_HOME . 'tmp/patch.iap');
 
             $iaOutput->message = $e->getMessage();
         }

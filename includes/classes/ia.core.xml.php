@@ -33,7 +33,7 @@ class iaXml extends abstractUtil
         parent::init();
 
         if (!function_exists('simplexml_load_string')) {
-            require_once IA_INCLUDES . 'utils' . IA_DS . 'simplexml.class.php';
+            require_once IA_INCLUDES . 'utils/simplexml.class.php';
 
             $this->_foreign = new simplexml();
         }

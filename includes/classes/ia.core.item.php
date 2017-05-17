@@ -48,7 +48,7 @@ class iaItem extends abstractCore
 
     public function getFavoritesByMemberId($memberId)
     {
-        $stmt = "`item` IN (':items') AND `member_id` = :user";
+        $stmt = "`item` IN (':items') && `member_id` = :user";
         $stmt = iaDb::printf($stmt, ['items' => implode("','", $this->getItems()), 'user' => (int)$memberId]);
 
         $result = [];
@@ -66,13 +66,13 @@ class iaItem extends abstractCore
     }
 
     /**
-    * Returns array with keys of available items and values - packages titles
+    * Returns array with keys of available items and values - module titles
     *
     * @param bool $payableOnly - flag to return items, that can be paid
     *
     * @return array
     */
-    public function getPackageItems($payableOnly = false)
+    public function getModuleItems($payableOnly = false)
     {
         $result = [];
 
@@ -96,17 +96,9 @@ class iaItem extends abstractCore
         static $itemsInfo;
 
         if (!isset($itemsInfo[(int)$payableOnly])) {
-            $items = $this->iaDb->all('`item`, `module`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`', $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
+            $items = $this->iaDb->all('`item`, `module`, IF(`table_name` != \'\', `table_name`, `item`) `table_name`',
+                $payableOnly ? '`payable` = 1' : '', null, null, self::getTable());
             $itemsInfo[(int)$payableOnly] = is_array($items) ? $items : [];
-
-            // get active packages
-            $packages = $this->iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null, self::getModulesTable());
-
-            foreach ($items as $key => $itemInfo) {
-                if (iaCore::CORE != $itemInfo['module'] && !in_array($itemInfo['module'], $packages)) {
-                    unset($itemsInfo[(int)$payableOnly][$key]);
-                }
-            }
         }
 
         return $itemsInfo[(int)$payableOnly];
@@ -121,18 +113,18 @@ class iaItem extends abstractCore
      */
     public function getItems($payableOnly = false)
     {
-        return array_keys($this->getPackageItems($payableOnly));
+        return array_keys($this->getModuleItems($payableOnly));
     }
 
     protected function _searchItems($search, $type = 'item')
     {
-        $items = $this->getPackageItems();
+        $items = $this->getModuleItems();
         $result = [];
 
-        foreach ($items as $item => $package) {
+        foreach ($items as $item => $module) {
             if ($search == $$type) {
-                if ($type == 'item') {
-                    return $package;
+                if ('item' == $type) {
+                    return $module;
                 } else {
                     $result[] = $item;
                 }
@@ -143,23 +135,27 @@ class iaItem extends abstractCore
     }
 
     /**
-     * Returns list of items by package name
+     * Returns list of items by module name
+     *
      * @alias _searchItems
-     * @param string $packageName
+     * @param string $moduleName
+     *
      * @return array
      */
-    public function getItemsByPackage($packageName)
+    public function getItemsByModule($moduleName)
     {
-        return $this->_searchItems($packageName, 'package');
+        return $this->_searchItems($moduleName, 'module');
     }
 
     /**
      * Returns package name by item name
+     *
      * @alias _searchItems
      * @param $search
+     *
      * @return string|bool
      */
-    public function getPackageByItem($search)
+    public function getModuleByItem($search)
     {
         return $this->_searchItems($search, 'item');
     }
@@ -180,15 +176,17 @@ class iaItem extends abstractCore
     }
 
     /**
-     * Returns an array of enabled items for specified plugin
-     * @param $plugin
+     * Returns an array of enabled items for specified module
+     *
+     * @param $module
+     *
      * @return array
      */
-    public function getEnabledItemsForPlugin($plugin)
+    public function getEnabledItemsForPlugin($module)
     {
         $result = [];
-        if ($plugin) {
-            $items = $this->iaCore->get($plugin . '_items_enabled');
+        if ($module) {
+            $items = $this->iaCore->get($module . '_items_enabled');
             if ($items) {
                 $result = explode(',', $items);
             }
@@ -198,15 +196,15 @@ class iaItem extends abstractCore
     }
 
     /**
-     * Set items for specified plugin
+     * Set items for specified module
      *
-     * @param string $plugin plugin name
+     * @param string $module module name
      * @param array $items items list
      */
-    public function setEnabledItemsForPlugin($plugin, $items)
+    public function setEnabledItemsForPlugin($module, $items)
     {
-        if ($plugin) {
-            $this->iaView->set($plugin . '_items_enabled', implode(',', $items), true);
+        if ($module) {
+            $this->iaView->set($module . '_items_enabled', implode(',', $items), true);
         }
     }
 
@@ -259,15 +257,22 @@ class iaItem extends abstractCore
         return $listings;
     }
 
+    /**
+     * Verifies if a module is installed
+     * @param string $moduleName module name
+     * @param null $type module type
+     *
+     * @return bool
+     */
     public function isModuleExist($moduleName, $type = null)
     {
-        $stmt = iaDb::printf("`name` = ':name' AND `status` = ':status'", [
+        $stmt = iaDb::printf("`name` = ':name' && `status` = ':status'", [
             'name' => $moduleName,
             'status' => iaCore::STATUS_ACTIVE
         ]);
 
         if ($type) {
-            $stmt .= iaDb::printf(" AND `type` = ':type'", ['type' => $type]);
+            $stmt .= iaDb::printf(" && `type` = ':type'", ['type' => $type]);
         }
 
         return (bool)$this->iaDb->exists($stmt, null, self::getModulesTable());

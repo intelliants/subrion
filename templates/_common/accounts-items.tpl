@@ -5,7 +5,7 @@
 
             <div class="pull-left">
                 {if $oneitem.avatar}
-                    {ia_image file=$oneitem.avatar width=100 height=100 alt=$oneitem.fullname|default:$oneitem.username class='media-object'}
+                    {ia_image file=$oneitem.avatar type='thumbnail' width=100 height=100 alt=$oneitem.fullname|default:$oneitem.username class='media-object'}
                 {/if}
             </div>
 

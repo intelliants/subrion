@@ -95,7 +95,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
                 $installedPlugins = $this->_iaDb->assoc(['name', 'status', 'version'],
                     iaDb::convertIds(iaModule::TYPE_PLUGIN, 'type'));
-                $this->_getLocal(IA_MODULES, array('installed' => $installedPlugins));
+                $this->_getLocal(IA_MODULES, ['installed' => $installedPlugins]);
                 $this->_getRemotePlugins($start, $limit, $sort);
                 break;
 
@@ -160,7 +160,7 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $result = [];
 
-        if (file_exists($documentationPath = $this->_folder . $moduleName . IA_DS . 'docs' . IA_DS)) {
+        if (file_exists($documentationPath = $this->_folder . $moduleName . '/docs/')) {
             $docs = scandir($documentationPath);
 
             foreach ($docs as $doc) {
@@ -194,7 +194,7 @@ class iaBackendController extends iaAbstractControllerBackend
             ];
 
             $icon = '';
-            if (file_exists($this->_folder . $moduleName . IA_DS . 'docs' . IA_DS . 'img' . IA_DS . 'icon.png')) {
+            if (file_exists($this->_folder . $moduleName . '/docs/img/icon.png')) {
                 $icon = '<tr><td class="plugin-icon"><img src="' . $iaView->assetsUrl . 'modules/' . $moduleName . '/docs/img/icon.png" alt=""></td></tr>';
             }
             $data = &$this->getHelper()->itemData;
@@ -211,7 +211,7 @@ class iaBackendController extends iaAbstractControllerBackend
             ];
 
             $result['info'] = str_replace($search, $replacement,
-                file_get_contents(IA_ADMIN . 'templates' . IA_DS . $this->_iaCore->get('admin_tmpl') . IA_DS . 'extra_information.tpl'));
+                file_get_contents(IA_ADMIN . 'templates/' . $this->_iaCore->get('admin_tmpl') . '/extra_information.tpl'));
         }
 
         return $result;
@@ -537,7 +537,9 @@ class iaBackendController extends iaAbstractControllerBackend
                         'manage' => false,
                         'import' => false
                     ];
+                    $installed = false;
                     if (isset($existPackages[$data['name']])) {
+                        $installed = true;
                         $status = $statuses[$data['name']];
                     }
 
@@ -547,7 +549,7 @@ class iaBackendController extends iaAbstractControllerBackend
                             $buttons['deactivate'] = true;
                             $buttons['set_default'] = true;
 
-                            if (is_dir($this->_folder . $file . IA_DS . 'includes' . IA_DS . 'dumps')) {
+                            if (is_dir($this->_folder . $file . '/includes/dumps')) {
                                 $buttons['import'] = true;
                             }
 
@@ -608,6 +610,7 @@ class iaBackendController extends iaAbstractControllerBackend
                         'file' => $file,
                         'price' => 0,
                         'status' => $status,
+                        'installed' => $installed,
                         'date_updated' => ($status != 'notinstall') ? $dates[$data['name']] : false,
                         'install' => true,
                         'remote' => false
@@ -920,7 +923,7 @@ class iaBackendController extends iaAbstractControllerBackend
      */
     private function _download($moduleName)
     {
-        $tempFolder = IA_TMP . 'modules' . IA_DS;
+        $tempFolder = IA_TMP . 'modules/';
         !is_dir($tempFolder) && mkdir($tempFolder);
 
         $filePath = $tempFolder . $moduleName;
@@ -935,7 +938,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 // delete previous folder
                 is_dir($this->_folder . $moduleName) && unlink($this->_folder . $moduleName);
 
-                include_once(IA_INCLUDES . 'utils' . IA_DS . 'pclzip.lib.php');
+                include_once(IA_INCLUDES . 'utils/pclzip.lib.php');
 
                 $pclZip = new PclZip($fileName);
                 if ($result = $pclZip->extract(PCLZIP_OPT_PATH, $this->_folder . $moduleName)) {
@@ -1027,7 +1030,21 @@ class iaBackendController extends iaAbstractControllerBackend
                 $notes .= PHP_EOL . PHP_EOL . iaLanguage::get('installation_impossible');
             }
 
+            $installed = false;
             if (array_key_exists($module['name'], $options['installed'])) {
+
+                if ($row = $this->_iaDb->row_bind(['name', 'config_group'], '`module` = :plugin ORDER BY `order` ASC', ['plugin' => $module['name']], iaCore::getConfigTable())) {
+                    $buttons['config'] = [
+                        'url' => $row['config_group'],
+                        'anchor' => $row['name']
+                    ];
+                }
+
+                if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name', ['name' => $module['name']], 'admin_pages')) {
+                    $buttons['manage'] = $alias;
+                }
+
+                $installed = true;
                 $module['status'] = $options['installed'][$module['name']]['status'];
                 switch ($module['status']) {
                     case iaCore::STATUS_ACTIVE:
@@ -1061,6 +1078,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 'file' => $folder,
                 'buttons' => $buttons,
                 'status' => !empty($module['status']) ? $module['status'] : '',
+                'installed' => $installed,
                 'remote' => false,
                 'price' => '',
                 'notes' => $notes,
@@ -1108,6 +1126,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 'file' => $folder,
                 'buttons' => $buttons,
                 'status' => $buttons['reinstall'] ? iaCore::STATUS_ACTIVE : '',
+                'installed' => $buttons['reinstall'],
                 'remote' => false,
                 'price' => '',
                 'notes' => $this->getHelper()->getNotes(),

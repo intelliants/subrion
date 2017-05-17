@@ -46,7 +46,7 @@ class iaHelper
 
     public static function isScriptInstalled()
     {
-        if (!file_exists(IA_HOME . 'includes' . IA_DS . self::CONFIGURATION_FILE)) {
+        if (!file_exists(IA_HOME . 'includes/' . self::CONFIGURATION_FILE)) {
             return false;
         }
 
@@ -108,12 +108,12 @@ class iaHelper
     public static function loadCoreClass($name, $type = 'admin')
     {
         if (!class_exists('iaCore')) {
-            define('IA_INCLUDES', IA_HOME . 'includes' . IA_DS);
-            define('IA_SMARTY', IA_INCLUDES . 'smarty' . IA_DS);
-            define('IA_CLASSES', IA_INCLUDES . 'classes' . IA_DS);
-            define('IA_MODULES', IA_HOME . 'modules' . IA_DS);
-            define('IA_TMP', IA_HOME . 'tmp' . IA_DS);
-            define('IA_CACHEDIR', IA_TMP . 'cache' . IA_DS);
+            define('IA_INCLUDES', IA_HOME . 'includes/');
+            define('IA_SMARTY', IA_INCLUDES . 'smarty/');
+            define('IA_CLASSES', IA_INCLUDES . 'classes/');
+            define('IA_MODULES', IA_HOME . 'modules/');
+            define('IA_TMP', IA_HOME . 'tmp/');
+            define('IA_CACHEDIR', IA_TMP . 'cache/');
 
             if (file_exists(IA_INCLUDES . self::CONFIGURATION_FILE)) {
                 include_once IA_INCLUDES . self::CONFIGURATION_FILE;
@@ -163,7 +163,7 @@ class iaHelper
 
             define('IA_CLEAR_URL', $config['baseurl']);
             define('IA_URL', IA_CLEAR_URL);
-            define('IA_FRONT_TEMPLATES', IA_HOME . 'templates' . IA_DS);
+            define('IA_FRONT_TEMPLATES', IA_HOME . 'templates/');
             define('IA_TEMPLATES', IA_FRONT_TEMPLATES);
         }
 
@@ -348,7 +348,7 @@ class iaHelper
                     }
                 }
 
-                iaHelper::cleanUpDirectoryContents(IA_HOME . 'tmp' . IA_DS);
+                iaHelper::cleanUpDirectoryContents(IA_HOME . 'tmp/');
             }
         }
 

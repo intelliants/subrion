@@ -91,8 +91,10 @@ abstract class abstractModuleFront extends abstractCore
         return $row;
     }
 
-    public function getAll($where, $fields = '*', $start = null, $limit = null)
+    public function getAll($where, $fields = null, $start = null, $limit = null)
     {
+        is_null($fields) && $fields = iaDb::ALL_COLUMNS_SELECTION;
+
         $rows = $this->iaDb->all($fields, $where, $start, $limit, self::getTable());
 
         $this->_processValues($rows);
@@ -152,6 +154,8 @@ abstract class abstractModuleFront extends abstractCore
                 $this->iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
 
                 $this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
+
+                $this->_removeFromFavorites($itemId);
 
                 $this->iaCore->startHook('phpListingRemoved', [
                     'itemId' => $itemId,
@@ -261,5 +265,51 @@ abstract class abstractModuleFront extends abstractCore
         }
 
         $singleRow && $rows = array_shift($rows);
+    }
+
+    protected function _removeFromFavorites($itemId)
+    {
+        $iaItem = $this->iaCore->factory('item');
+
+        $affected = $this->iaDb->delete('`item` = :item AND `id` = :id', $iaItem::getFavoritesTable(),
+            ['item' => $this->getItemName(), 'id' => $itemId]);
+
+        return $affected > 0;
+    }
+
+
+    protected function _checkIfCountersNeedUpdate($action, array $itemData, $previousData, $categoryClassInstance)
+    {
+        switch ($action) {
+            case iaCore::ACTION_EDIT:
+                if (!isset($itemData['category_id'])) {
+                    if (iaCore::STATUS_ACTIVE == $previousData['status'] && iaCore::STATUS_ACTIVE != $itemData['status']) {
+                        $categoryClassInstance->recountById($previousData['category_id'], -1);
+                    } elseif (iaCore::STATUS_ACTIVE != $previousData['status'] && iaCore::STATUS_ACTIVE == $itemData['status']) {
+                        $categoryClassInstance->recountById($previousData['category_id']);
+                    }
+                } else {
+                    if ($itemData['category_id'] == $previousData['category_id']) {
+                        if (iaCore::STATUS_ACTIVE == $previousData['status'] && iaCore::STATUS_ACTIVE != $itemData['status']) {
+                            $categoryClassInstance->recountById($itemData['category_id'], -1);
+                        } elseif (iaCore::STATUS_ACTIVE != $previousData['status'] && iaCore::STATUS_ACTIVE == $itemData['status']) {
+                            $categoryClassInstance->recountById($itemData['category_id']);
+                        }
+                    } else { // category changed
+                        iaCore::STATUS_ACTIVE == $itemData['status']
+                            && $categoryClassInstance->recountById($itemData['category_id']);
+                        iaCore::STATUS_ACTIVE == $previousData['status']
+                            && $categoryClassInstance->recountById($previousData['category_id'], -1);
+                    }
+                }
+                break;
+            case iaCore::ACTION_ADD:
+                iaCore::STATUS_ACTIVE == $itemData['status']
+                    && $categoryClassInstance->recountById($itemData['category_id']);
+                break;
+            case iaCore::ACTION_DELETE:
+                iaCore::STATUS_ACTIVE == $itemData['status']
+                    && $categoryClassInstance->recountById($itemData['category_id'], -1);
+        }
     }
 }

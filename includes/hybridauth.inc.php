@@ -24,52 +24,52 @@
  *
  ******************************************************************************/
 
-return array(
+return [
     "base_url" => IA_URL . 'hybrid/',
-    "providers" => array(
+    "providers" => [
     // openid providers
-//		"OpenID" => array(
-//			"enabled" => true
-//		),
-//		"Yahoo" => array(
-//			"enabled" => true,
-//			"keys" => array("key" => "", "secret" => ""),
-//		),
-//		"AOL" => array(
-//			"enabled" => true
-//		),
-//		"Google" => array(
-//			"enabled" => true,
-//			"keys" => array("id" => "", "secret" => ""),
-//			"scope"   => "https://www.googleapis.com/auth/userinfo.profile " .
-//						"https://www.googleapis.com/auth/userinfo.email"
-//		),
-//		"Facebook" => array(
-//			"enabled" => true,
-//			'icon' => 'facebook',
-//			"keys" => array("id" => "", "secret" => ""),
-//			"trustForwarded" => false
-//		),
-//		"Twitter" => array(
-//			"enabled" => true,
-//			'icon' => 'facebook',
-//			"keys" => array("key" => "", "secret" => ""),
-//			"includeEmail" => false
-//		),
-//		// windows live
-//		"Live" => array(
-//			"enabled" => true,
-//			"keys" => array("id" => "", "secret" => "")
-//		),
-//		"LinkedIn" => array(
-//			"enabled" => true,
-//			"keys" => array("key" => "", "secret" => "")
-//		),
-//		"Foursquare" => array(
-//			"enabled" => true,
-//			"keys" => array("id" => "", "secret" => "")
-//		),
-    ),
+//        "OpenID" => [
+//            "enabled" => true
+//        ],
+//        "Yahoo" => [
+//            "enabled" => true,
+//            "keys" => ["key" => "", "secret" => ""],
+//        ],
+//        "AOL" => [
+//            "enabled" => true
+//        ],
+//        "Google" => [
+//            "enabled" => true,
+//            "keys" => ["id" => "", "secret" => ""],
+//            "scope"   => "https://www.googleapis.com/auth/userinfo.profile " .
+//                        "https://www.googleapis.com/auth/userinfo.email"
+//        ],
+//        "Facebook" => [
+//            "enabled" => true,
+//            'icon' => 'facebook',
+//            "keys" => ["id" => "", "secret" => ""],
+//            "trustForwarded" => false
+//        ],
+//        "Twitter" => [
+//            "enabled" => true,
+//            'icon' => 'facebook',
+//            "keys" => ["key" => "", "secret" => ""],
+//            "includeEmail" => false
+//        ],
+//        // windows live
+//        "Live" => [
+//            "enabled" => true,
+//            "keys" => ["id" => "", "secret" => ""]
+//        ],
+//        "LinkedIn" => [
+//            "enabled" => true,
+//            "keys" => ["key" => "", "secret" => ""]
+//        ],
+//        "Foursquare" => [
+//            "enabled" => true,
+//            "keys" => ["id" => "", "secret" => ""]
+//        ],
+    ],
 
     // If you want to enable logging, set 'debug_mode' to true.
     // You can also set it to
@@ -79,4 +79,4 @@ return array(
 
     // Path to file writable by the web server. Required if 'debug_mode' is not false
     "debug_file" => IA_TMP . 'hybridauth.txt',
-);
+];

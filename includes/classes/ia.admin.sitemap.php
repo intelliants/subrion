@@ -34,13 +34,13 @@ class iaSitemap extends abstractCore
     const LINKS_SET_PACKAGES = 2;
     const LINKS_SET_PLUGINS = 3;
 
-    protected $_xmlEntry = '<url><loc>:url</loc></url>';
+    protected $_xmlWrapper = '<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+ xmlns:xhtml="http://www.w3.org/1999/xhtml">:content:</urlset>
+ ';
 
-    protected $_xmlContent = '<?xml version="1.0" encoding="UTF-8"?><urlset
-		xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-		http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">:content:</urlset>';
+    protected $_xmlEntry = '<url><loc>:url</loc>:langs</url>';
+    protected $_xmlLangEntry = '<xhtml:link rel="alternate" hreflang=":lang" href=":url" />';
 
     protected $_multilingual = false;
 
@@ -69,20 +69,30 @@ class iaSitemap extends abstractCore
 
         // write file header
         $marker = ':content:';
-        $offset = stripos($this->_xmlContent, $marker);
-        $content = substr($this->_xmlContent, 0, $offset);
+        $offset = stripos($this->_xmlWrapper, $marker);
+        $content = substr($this->_xmlWrapper, 0, $offset);
 
         fwrite($fh, $content);
 
         $sets = [self::LINKS_SET_CORE, self::LINKS_SET_PACKAGES, self::LINKS_SET_PLUGINS]; // priority
         foreach ($sets as $set) {
-            foreach ($this->_getEntries($set) as $url) {
-                fwrite($fh, $this->_validate($url));
+            $urls = $this->_getUrls($set);
+
+            foreach ($urls as $i => &$url) {
+                $this->_validate($url);
             }
+
+            if ($this->_multilingual) {
+                $this->_fixLanguageCode($urls);
+            }
+
+            $xml = $this->_xmlify($urls);
+
+            fwrite($fh, $xml);
         }
 
         // write XML footer
-        fwrite($fh, substr($this->_xmlContent, $offset + strlen($marker)));
+        fwrite($fh, substr($this->_xmlWrapper, $offset + strlen($marker)));
 
         fclose($fh);
 
@@ -94,7 +104,7 @@ class iaSitemap extends abstractCore
      *
      * @return array
      */
-    protected function _getEntries($setType)
+    protected function _getUrls($setType)
     {
         $iaItem = $this->iaCore->factory('item');
 
@@ -132,7 +142,7 @@ class iaSitemap extends abstractCore
                 break;
 
             case self::LINKS_SET_PACKAGES:
-                foreach ($iaItem->getPackageItems() as $itemName => $package) {
+                foreach ($iaItem->getModuleItems() as $itemName => $package) {
                     if (iaCore::CORE != $package) {
                         $itemClassInstance = $this->iaCore->factoryModule('item', $package, iaCore::ADMIN, $itemName);
                         if (empty($itemClassInstance)) {
@@ -142,7 +152,7 @@ class iaSitemap extends abstractCore
                         if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME)) {
                             $entries = call_user_func([$itemClassInstance, self::GETTER_METHOD_NAME]);
                             if (is_array($entries) && $entries) {
-                                $result = $entries;
+                                $result = array_merge($result, $entries);
                             }
                         }
                     }
@@ -173,29 +183,55 @@ class iaSitemap extends abstractCore
         return $result;
     }
 
-    protected function _validate($url)
+    protected function _validate(&$url)
     {
-        if (empty($url)) {
-            return '';
-        }
+        $url = trim($url);
 
         $url = (false === stripos($url, 'http://') && false === stripos($url, 'https://'))
-            ? IA_URL . $url
+            ? IA_CLEAR_URL . $url
             : $url;
 
-        $result = str_replace(':url', $url, $this->_xmlEntry);
+        if (false !== stripos($url, IA_URL)) {
+            $url = str_replace(IA_URL, IA_CLEAR_URL, $url);
+        }
+    }
 
-        if ($this->_multilingual) {
-            $currentLanguage = $this->iaView->language;
+    protected function _fixLanguageCode(array &$urls)
+    {
+        $masterLangCode = iaLanguage::getMasterLanguage()->iso;
 
-            foreach ($this->iaCore->languages as $code => $title) {
-                if ($code != $currentLanguage) {
-                    // potentially buggy. replaces all (!) of entries in URL
-                    $result.= str_replace(IA_URL_DELIMITER . $currentLanguage . IA_URL_DELIMITER, IA_URL_DELIMITER . $code . IA_URL_DELIMITER, $url);
+        foreach ($urls as &$url) {
+            $entry = [self::_injectLangCode($url, $masterLangCode)];
+            foreach ($this->iaCore->languages as $iso => $language) {
+                $entry[$iso] = self::_injectLangCode($url, $iso);
+            }
+
+            $url = $entry;
+        }
+    }
+
+    protected static function _injectLangCode($url, $isoCode)
+    {
+        return str_replace(IA_CLEAR_URL, IA_CLEAR_URL . $isoCode . IA_URL_DELIMITER, $url);
+    }
+
+    protected function _xmlify(array $urls)
+    {
+        $output = '';
+
+        foreach ($urls as $url) {
+            $langs = '';
+            if ($this->_multilingual) {
+                $locUrls = $url;
+                $url = array_shift($locUrls);
+                foreach ($locUrls as $iso => $locUrl) {
+                    $langs .= str_replace([':url', ':lang'], [$locUrl, $iso], $this->_xmlLangEntry);
                 }
             }
+
+            $output .= str_replace([':url', ':langs'], [$url, $langs], $this->_xmlEntry);
         }
 
-        return $result;
+        return $output;
     }
 }

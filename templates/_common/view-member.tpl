@@ -1,6 +1,6 @@
 <div class="ia-item ia-item--view">
     <div class="ia-item__image">
-        {ia_image file=$item.avatar title=$item.fullname|default:$item.username gravatar=true email=$item.email gravatar_width=200}
+        {ia_image file=$item.avatar type='thumbnail' title=$item.fullname|default:$item.username gravatar=true email=$item.email gravatar_width=200}
 
         {if $item.featured || $item.sponsored}
             <div class="ia-item__labels">

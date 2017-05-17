@@ -28,11 +28,11 @@ if (isset($_GET['file'])) {
     switch ($_GET['file']) {
         case 'default.css':
             header('Content-Type: text/css');
-            echo file_get_contents(IA_INCLUDES . 'adminer' . IA_DS . 'adminer.css');
+            echo file_get_contents(IA_INCLUDES . 'adminer/adminer.css');
             break;
         case 'functions.js':
             header('Content-Type: text/javascript; charset=utf-8');
-            echo file_get_contents(IA_INCLUDES . 'adminer' . IA_DS . 'adminer.js');
+            echo file_get_contents(IA_INCLUDES . 'adminer/adminer.js');
             break;
         case 'plus.gif':
         case 'cross.gif':
@@ -40,7 +40,7 @@ if (isset($_GET['file'])) {
         case 'down.gif':
         case 'arrow.gif':
             header("Content-Type: image/gif");
-            echo file_get_contents(IA_INCLUDES . 'adminer' . IA_DS . $_GET['file']);
+            echo file_get_contents(IA_INCLUDES . 'adminer/' . $_GET['file']);
             break;
     }
 }
@@ -59,5 +59,5 @@ if (iaCore::ACCESS_ADMIN == $iaCore->getAccessType()) {
 
     $iaView->display(iaView::NONE);
 
-    include IA_INCLUDES . 'adminer' . IA_DS . 'adminer.script' . iaSystem::EXECUTABLE_FILE_EXT;
+    include IA_INCLUDES . 'adminer/adminer.script' . iaSystem::EXECUTABLE_FILE_EXT;
 }

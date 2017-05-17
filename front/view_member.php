@@ -87,7 +87,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     $member['items'] = [];
 
     // get all items added by this account
-    $itemsList = $iaItem->getPackageItems();
+    $itemsList = $iaItem->getModuleItems();
     $itemsFlat = [];
 
     if ($array = $iaItem->getItemsInfo(true)) {

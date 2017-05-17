@@ -69,7 +69,7 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         // populate statistics
-        $itemsList = $iaCore->factory('item')->getPackageItems();
+        $itemsList = $iaCore->factory('item')->getModuleItems();
         $validSizes = ['small', 'medium', 'package'];
 
         $iaCore->startHook('adminDashboardStatistics', ['items' => &$itemsList]);

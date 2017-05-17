@@ -821,3 +821,22 @@
     - Bug #411: 4.1.2 Search is blank page
     - Bug #414: Images are lost after a validation
     + Feature #293: Click based filters
+
+>> From 4.1.3 to 4.1.4 <<
+
+    - Bug #125: Incorrect sitemap generation for multilingual sites
+    - Bug #400: Keep selected params in grid after reloading the page
+    - Bug #419: Avatar are not displayed on the favorites page
+    - Bug #425: Images are saved with incorrect names if filename contains non latin chars
+    - Bug #427: Adapt sitemap generation to multilingual fields
+    - Bug #431: Items created by plugins don't have all features
+    - Bug #435: The date is show incorrect
+    - Bug #436: Hybrid Auth not working properly
+    - Bug #442: HybridAuth: Facebook login doesn't work
+    - Bug #443: Post payment routine executed twice if paid by internal system funds
+    - Bug #444: Primary language value is lost
+    + Feature #360: Improve modules section
+    + Feature #365: Provide more info when creating language
+    + Feature #423: Add orientation fix for images with EXIF data
+    + Feature #434: Remove item from favorites when deleted
+    + Feature #438: Change column type for text fields

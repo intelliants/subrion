@@ -439,9 +439,9 @@ class iaBackendController extends iaAbstractControllerBackend
                 fclose($f);
 
                 // process migrations
-                if (strpos($filename, 'updates' . IA_DS . 'migrations')) {
+                if (strpos($filename, 'updates/migrations')) {
                     $migrationProcessed = [
-                        'name' => str_replace(IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS, '', $filename),
+                        'name' => str_replace(IA_HOME . 'updates/migrations/', '', $filename),
                         'status' => 'complete',
                         'date' => (new \DateTime())->format(iaDb::DATETIME_FORMAT),
                     ];
@@ -462,13 +462,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
         // generate list of available folders for dump files
         $dumpFolders = [
-            'Migrations' => IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS,
-            'Updates' => IA_HOME . 'updates' . IA_DS
+            'Migrations' => IA_HOME . 'updates/migrations/',
+            'Updates' => IA_HOME . 'updates/',
         ];
         $packages = $this->_iaDb->onefield('name', "`type` = 'package' AND `status` = 'active'", null, null,
             iaItem::getModulesTable());
         foreach ($packages as $package) {
-            $dumpFolders[iaLanguage::get($package)] = IA_MODULES . $package . IA_DS . 'includes' . IA_DS . 'dumps' . IA_DS;
+            $dumpFolders[iaLanguage::get($package)] = IA_MODULES . $package . '/includes/dumps/';
         }
 
         list($migrations, $appliedMigrations) = $this->_getMigrations();
@@ -483,7 +483,7 @@ class iaBackendController extends iaAbstractControllerBackend
                         $dumpFiles[$name][] = [
                             'filename' => $path . $file,
                             'title' => substr($file, 0, count($file) - 5),
-                            'applied' => (boolean)(strpos($path, 'updates' . IA_DS . 'migrations') && in_array($file,
+                            'applied' => (boolean)(strpos($path, 'updates/migrations') && in_array($file,
                                     $appliedMigrations))
                         ];
                     }
@@ -501,7 +501,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
         $appliedMigrations = [];
         foreach ($migrations as &$migration) {
-            $migration['filename'] = IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS . $migration['name'];
+            $migration['filename'] = IA_HOME . 'updates/migrations/' . $migration['name'];
 
             if ('complete' == $migration['status']) {
                 $appliedMigrations[$migration['filename']] = $migration['name'];

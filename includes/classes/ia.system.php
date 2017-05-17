@@ -54,9 +54,8 @@ final class iaSystem
         ];
 
         $helperClasses = [
-            'iaAbstractHelperCategoryHybrid' => 'ia.category.hybrid',
-            'iaAbstractHelperCategoryNestedsets' => 'ia.category.nestedsets',
-            'iaAbstractFrontHelperCategoryHybrid' => 'ia.category.front.hybrid'
+            'iaAbstractHelperCategoryFlat' => 'ia.category.flat',
+            'iaAbstractFrontHelperCategoryFlat' => 'ia.category.front.flat'
         ];
 
         if (isset($systemClasses[$className])) {
@@ -66,9 +65,8 @@ final class iaSystem
                 iaDebug::debug('<b>autoload:</b> ' . $fileName . ' (' . self::byteView(filesize(IA_CLASSES . $fileName)) . ')', 'Initialized Classes List', 'info');
                 return true;
             }
-        }
-        elseif (isset($helperClasses[$className])) {
-            $filePath = IA_INCLUDES . 'helpers' . IA_DS;
+        } elseif (isset($helperClasses[$className])) {
+            $filePath = IA_INCLUDES . 'helpers/';
             $fileName = $helperClasses[$className] . self::EXECUTABLE_FILE_EXT;
 
             if (include_once $filePath . $fileName) {

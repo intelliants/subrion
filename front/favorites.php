@@ -28,7 +28,7 @@ $iaItem = $iaCore->factory('item');
 $iaUsers = $iaCore->factory('users');
 
 // get all available items list
-$itemsList = $iaItem->getPackageItems();
+$itemsList = $iaItem->getModuleItems();
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action'])) {
     $output = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];

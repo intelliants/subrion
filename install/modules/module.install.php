@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VER', '413');
+define('IA_VER', '414');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
@@ -129,11 +129,11 @@ switch ($step) {
         }
 
         $directory = [
-            ['tmp' . IA_DS, '', true],
-            ['uploads' . IA_DS, '', true],
-            ['backup' . IA_DS, ' (optional)', false],
-            ['modules' . IA_DS, ' (optional)', false],
-            ['includes' . IA_DS . 'config.inc.php', ' (optional)', false],
+            ['tmp/', '', true],
+            ['uploads/', '', true],
+            ['backup/', ' (optional)', false],
+            ['modules/', ' (optional)', false],
+            ['includes/config.inc.php', ' (optional)', false],
         ];
 
         foreach ($directory as $item) {
@@ -143,8 +143,8 @@ switch ($step) {
                 $text = is_writable(IA_HOME . $item[0]) ? '<td class="success">Writable</td>' : '<td class="' . (empty($item[1]) ? 'danger' : 'optional') . '">Unwritable ' . $item[1] . '</td>';
                 $isWritable = is_writable(IA_HOME . $item[0]);
             } else {
-                if ($item[0] == 'includes' . IA_DS . 'config.inc.php') {
-                    if (!is_writable(IA_HOME . 'includes' . IA_DS)) {
+                if ($item[0] == 'includes/config.inc.php') {
+                    if (!is_writable(IA_HOME . 'includes/')) {
                         $text = '<td class="danger">Does not exist and cannot be created' . $item[1] . '</td>';
                     } else {
                         $text = '<td class="success">Does not exist, but can be created' . $item[1] . '</td>';
@@ -191,10 +191,10 @@ switch ($step) {
         $template = 'default';
         $templates = [];
 
-        $directory = opendir(IA_HOME . 'templates' . IA_DS);
+        $directory = opendir(IA_HOME . 'templates/');
         while ($file = readdir($directory)) {
             if (substr($file, 0, 1) != '.' && '_common' != $file) {
-                if (is_dir(IA_HOME . 'templates' . IA_DS . $file)) {
+                if (is_dir(IA_HOME . 'templates/' . $file)) {
                     $templates[] = $file;
                 }
             }
@@ -261,7 +261,7 @@ switch ($step) {
 
                 if (!$error) {
                     $dbOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
-                    $dumpFile = IA_INSTALL . 'dump' . IA_DS . 'install.sql';
+                    $dumpFile = IA_INSTALL . 'dump/install.sql';
 
                     if (!file_exists($dumpFile)) {
                         $error = true;
@@ -325,7 +325,7 @@ switch ($step) {
 
                 $iaModuleInstaller = iaHelper::loadCoreClass('module');
 
-                $templateInstallationFile = IA_HOME . 'templates' . IA_DS . iaHelper::getPost('tmpl', '') . IA_DS . 'install.xml';
+                $templateInstallationFile = IA_HOME . 'templates/' . iaHelper::getPost('tmpl', '') . IA_DS . 'install.xml';
                 $iaModuleInstaller->getFromPath($templateInstallationFile);
 
                 $iaModuleInstaller->parse();
@@ -338,7 +338,7 @@ switch ($step) {
                 }
 
                 if (!$error) {
-                    $config = file_get_contents(IA_INSTALL . 'modules' . IA_DS . 'config.sample');
+                    $config = file_get_contents(IA_INSTALL . 'modules/config.sample');
                     $body = <<<HTML
 Congratulations,
 
@@ -395,18 +395,18 @@ HTML;
                     $config = str_replace(array_keys($params), array_values($params), $config);
 
                     @mail(iaHelper::_sql(iaHelper::getPost('admin_email'), $link), 'Subrion CMS Installed', $body, 'From: support@subrion.org');
-                    $filename = IA_HOME . 'includes' . IA_DS . 'config.inc.php';
+                    $filename = IA_HOME . 'includes/config.inc.php';
                     $configMsg = '';
 
                     // session path test, session_save_path might be empty in many configs
-                    $testResult = empty(session_save_path()) || is_writable(session_save_path()) ?
+                    $testResult = !session_save_path() || is_writable(session_save_path()) ?
                         '' :
                         "session_save_path('" . IA_HOME . "tmp');";
 
                     $config = str_replace('{sessionpath}', $testResult, $config);
                     //
 
-                    if (is_writable(IA_HOME . 'includes' . IA_DS) || is_writable($filename)) {
+                    if (is_writable(IA_HOME . 'includes/') || is_writable($filename)) {
                         if (!$handle = fopen($filename, 'w+')) {
                             $configMsg = 'Cannot open file: ' . $filename;
                         }
@@ -420,7 +420,7 @@ HTML;
                         $configMsg = 'Cannot write to folder.';
                     }
 
-                    iaHelper::cleanUpDirectoryContents(IA_HOME . 'tmp' . IA_DS);
+                    iaHelper::cleanUpDirectoryContents(IA_HOME . 'tmp/');
 
                     if (!$error) {
                         $step = 'finish';
@@ -449,7 +449,7 @@ HTML;
                 if (!$error) {
                     $iaModuleInstaller = iaHelper::loadCoreClass('module');
 
-                    $modulesFolder = IA_HOME . 'modules' . IA_DS;
+                    $modulesFolder = IA_HOME . 'modules/';
                     foreach ($builtinPlugins as $pluginName) {
                         $installationFile = file_get_contents($modulesFolder . $pluginName . IA_DS . iaHelper::INSTALLATION_FILE_NAME);
                         if ($installationFile !== false) {

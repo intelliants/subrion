@@ -319,6 +319,54 @@ Ext.onReady(function () {
                 }
             });
     });
+
+    // Live filter on Modules pages
+    $('.js-filter-modules-text').on('keyup', function () {
+        var $this = $(this),
+            text = $this.val(),
+            $collection = $('.card--module');
+
+        if (text != '') {
+            var rx = RegExp(text, 'i')
+
+            $collection.each(function () {
+                var $item = $(this),
+                    name = String($('.card__item__body > h4', $item).text());
+
+                (name.match(rx) !== null) ? $item.show() : $item.hide();
+            });
+        } else {
+            $collection.show();
+        }
+    });
+
+    $('.js-filter-modules').click(function (e) {
+        e.preventDefault();
+
+        var $this = $(this),
+            type = $this.data('type'),
+            filtered = $this.data('filtered');
+
+        if (filtered == 'no') {
+            $this.data('filtered', 'yes');
+            $('.card--' + type).hide();
+        } else {
+            $this.data('filtered', 'no');
+            $('.card--' + type).show();
+        }
+
+        $('.fa', $this).toggleClass('fa-circle-thin fa-check');
+    });
+
+    $('.js-filter-modules-reset').click(function (e) {
+        e.preventDefault();
+
+        $('.js-filter-modules-text').val('').trigger('keyup');
+        $('.js-filter-modules').data('filtered', 'no')
+            .find('.fa')
+            .removeClass('fa-circle-thin')
+            .addClass('fa-check');
+    });
 });
 
 var synchronizeAdminMenu = function (currentPage, extensionGroups) {

@@ -827,7 +827,8 @@ SQL;
     {
         $instance = $this->iaCore->factoryPlugin($pluginName);
 
-        if (method_exists($instance, self::ITEM_SEARCH_METHOD)) {
+        if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED})
+            && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) {
             $this->_type = self::SEARCH_PLUGIN;
             $this->_itemInstance = &$instance;
             $this->_extrasName = $pluginName;

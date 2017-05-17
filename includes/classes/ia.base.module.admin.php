@@ -226,9 +226,10 @@ abstract class abstractModuleAdmin extends abstractCore
             if ($result) {
                 $this->iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
 
-                $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $itemId);
-
                 $this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
+
+                $this->_removeFromFavorites($itemId);
+                $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $itemId);
 
                 $this->iaCore->startHook('phpListingRemoved', [
                     'itemId' => $itemId,
@@ -315,10 +316,55 @@ abstract class abstractModuleAdmin extends abstractCore
         // within final class, the counters update routines should be placed here
     }
 
+    protected function _checkIfCountersNeedUpdate($action, array $itemData, $previousData, $categoryClassInstance)
+    {
+        switch ($action) {
+            case iaCore::ACTION_EDIT:
+                if (!isset($itemData['category_id'])) {
+                    if (iaCore::STATUS_ACTIVE == $previousData['status'] && iaCore::STATUS_ACTIVE != $itemData['status']) {
+                        $categoryClassInstance->recountById($previousData['category_id'], -1);
+                    } elseif (iaCore::STATUS_ACTIVE != $previousData['status'] && iaCore::STATUS_ACTIVE == $itemData['status']) {
+                        $categoryClassInstance->recountById($previousData['category_id']);
+                    }
+                } else {
+                    if ($itemData['category_id'] == $previousData['category_id']) {
+                        if (iaCore::STATUS_ACTIVE == $previousData['status'] && iaCore::STATUS_ACTIVE != $itemData['status']) {
+                            $categoryClassInstance->recountById($itemData['category_id'], -1);
+                        } elseif (iaCore::STATUS_ACTIVE != $previousData['status'] && iaCore::STATUS_ACTIVE == $itemData['status']) {
+                            $categoryClassInstance->recountById($itemData['category_id']);
+                        }
+                    } else { // category changed
+                        iaCore::STATUS_ACTIVE == $itemData['status']
+                            && $categoryClassInstance->recountById($itemData['category_id']);
+                        iaCore::STATUS_ACTIVE == $previousData['status']
+                            && $categoryClassInstance->recountById($previousData['category_id'], -1);
+                    }
+                }
+                break;
+            case iaCore::ACTION_ADD:
+                iaCore::STATUS_ACTIVE == $itemData['status']
+                    && $categoryClassInstance->recountById($itemData['category_id']);
+                break;
+            case iaCore::ACTION_DELETE:
+                iaCore::STATUS_ACTIVE == $itemData['status']
+                    && $categoryClassInstance->recountById($itemData['category_id'], -1);
+        }
+    }
+
     public function getSitemapEntries()
     {
         // should return URLs array to be used in sitemap creation
         return [];
+    }
+
+    protected function _removeFromFavorites($itemId)
+    {
+        $iaItem = $this->iaCore->factory('item');
+
+        $affected = $this->iaDb->delete('`item` = :item AND `id` = :id', $iaItem::getFavoritesTable(),
+            ['item' => $this->getItemName(), 'id' => $itemId]);
+
+        return $affected > 0;
     }
 
     protected function _writeLog($action, array $itemData, $itemId)
@@ -332,9 +378,18 @@ abstract class abstractModuleAdmin extends abstractCore
                 iaCore::ACTION_DELETE => iaLog::ACTION_DELETE
             ];
 
-            $title = (isset($itemData['title']) && $itemData['title'])
-                ? $itemData['title']
-                : $this->iaDb->one('title', iaDb::convertIds($itemId), self::getTable());
+            if (empty($itemData['title'])) {
+                $multilingualFields = $this->iaCore->factory('field')->getMultilingualFields($this->getItemName());
+
+                $field = in_array('title', $multilingualFields)
+                    ? 'title_' . $this->iaView->language
+                    : 'title';
+
+                $title = $this->iaDb->one($field, iaDb::convertIds($itemId), self::getTable());
+            } else {
+                $title = $itemData['title'];
+            }
+
             $params = array_merge($this->_activityLog, ['name' => $title, 'id' => $itemId]);
 
             $iaLog->write($actionsMap[$action], $params);

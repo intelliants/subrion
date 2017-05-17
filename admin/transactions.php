@@ -107,7 +107,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 $output = ['data' => null];
 
                 if (!empty($params['query'])) {
-                    $where[] = 'CONCAT(`username`, `fullname`) LIKE :username';
+                    $where[] = 'CONCAT_WS(`username`, `fullname`) LIKE :username';
                     $values['username'] = '%' . iaSanitize::sql($params['query']) . '%';
                 }
 
@@ -119,7 +119,7 @@ class iaBackendController extends iaAbstractControllerBackend
                     iaUsers::getTable())
                 ) {
                     foreach ($members as $member) {
-                        $output['data'][] = ['title' => $member['username'], 'value' => $member['id']];
+                        $output['data'][] = ['value' => $member['id'], 'title' => $member['username']];
                     }
                 }
 

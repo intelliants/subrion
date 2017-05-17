@@ -46,8 +46,6 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
      */
     protected $_activityLog;
 
-    protected $_treeSettings = false;
-
     protected $_iaField;
 
 
@@ -184,10 +182,6 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
         $iaView->assign('item_sections', $sections);
         $iaView->assign('plans', $plans);
-
-        if ($this->_treeSettings) {
-            $iaView->assign('tree', $this->_getTreeVars($entryData));
-        }
     }
 
     protected function _getPlans()
@@ -201,25 +195,6 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         }
 
         return $plans;
-    }
-
-    protected function _getTreeVars(array $entryData)
-    {
-        $parent = empty($entryData[$this->_treeSettings['parent_id']])
-            ? $this->getHelper()->getRoot()
-            : $this->getHelper()->getById($entryData[$this->_treeSettings['parent_id']]);
-
-        $url = $this->getPath() . 'tree.json';
-        if (iaCore::ACTION_EDIT == $this->_iaCore->iaView->get('action')) {
-            $url .= '?cid=' . $this->getEntryId();
-        }
-
-        return [
-            'url' => $url,
-            'nodes' => $parent[$this->_treeSettings['parents']],
-            'id' => $parent['id'],
-            'title' => $parent['title']
-        ];
     }
 
     protected function _insert(array $entryData)
@@ -292,11 +267,10 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
             $result = $this->_delete($entryId);
 
             if ($result) {
-                $this->_iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
-
                 $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
-
                 $this->updateCounters($entryId, $entryData, iaCore::ACTION_DELETE);
+
+                $this->_iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
 
                 $this->_iaCore->startHook('phpListingRemoved', [
                     'itemId' => $entryId,

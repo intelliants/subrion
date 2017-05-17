@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-$basePath = IA_INCLUDES . 'OAuth2' . IA_DS;
+$basePath = IA_INCLUDES . 'OAuth2/';
 
 require_once $basePath . 'Storage/AccessTokenInterface.php';
 require_once $basePath . 'Storage/ClientInterface.php';

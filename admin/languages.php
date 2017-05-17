@@ -28,6 +28,8 @@ class iaBackendController extends iaAbstractControllerBackend
 {
     protected $_name = 'languages';
 
+    protected $_tooltipsEnabled = true;
+
     protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `delete`";
     protected $_gridFilters = ['key' => 'like', 'value' => 'like', 'category' => 'equal', 'module' => 'equal'];
 
@@ -257,14 +259,14 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), iaLanguage::getLanguagesTable());
     }
 
-    protected function _assignValues(&$iaView, array &$entryData)
+    protected function _setPageTitle(&$iaView, array $entryData, $action)
     {
         $iaView->title(iaLanguage::get(iaCore::ACTION_EDIT == $iaView->get('action') ? 'edit_language' : 'copy_language'));
     }
 
     protected function _preSaveEntry(array &$entry, array $data, $action)
     {
-        if (empty($data['title']) || strlen(trim($data['title'])) == 0) {
+        if (empty($data['title']) || !trim($data['title'])) {
             $this->addMessage('title_incorrect');
         }
 
@@ -276,21 +278,20 @@ class iaBackendController extends iaAbstractControllerBackend
             $this->addMessage('bad_iso_code');
         }
 
-        if (empty($data['locale']) || strlen(trim($data['locale'])) == 0) {
+        if (empty($data['locale']) || !trim($data['locale'])) {
             $this->addMessage('language_locale_incorrect');
         }
 
-        if (empty($data['date_format']) || strlen(trim($data['date_format'])) == 0) {
+        if (empty($data['date_format']) || !trim($data['date_format'])) {
             $this->addMessage('language_date_format_incorrect');
         }
 
-        $entry['title'] = $data['title'];
         $entry['code'] = strtolower($data['code']);
+        $entry['title'] = $data['title'];
         $entry['locale'] = $data['locale'];
         $entry['date_format'] = $data['date_format'];
+        $entry['time_format'] = $data['time_format'];
         $entry['direction'] = $data['direction'];
-        $entry['master'] = $entry['default'] = 0;
-        $entry['author'] = $entry['flagicon'] = '';
         $entry['status'] = $data['status'];
 
         return !$this->getMessages();
@@ -318,7 +319,8 @@ class iaBackendController extends iaAbstractControllerBackend
             'code' => '',
             'title' => '',
             'locale' => 'en_US',
-            'date_format' => '%b %e, %Y',
+            'date_format' => '%e %B, %Y',
+            'time_format' => '%H:%M',
             'direction' => 'ltr',
             'status' => iaCore::STATUS_INACTIVE
         ];

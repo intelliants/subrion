@@ -27,7 +27,7 @@ class Hybrid_Endpoint {
 			// with /index.php?hauth.done={provider}?{args}...
 			// >here we need to parse $_SERVER[QUERY_STRING]
 			$request = $_REQUEST;
-			if (strrpos($_SERVER["QUERY_STRING"], '?')) {
+			if (isset($_SERVER["QUERY_STRING"]) && strrpos($_SERVER["QUERY_STRING"], '?')) {
 				$_SERVER["QUERY_STRING"] = str_replace("?", "&", $_SERVER["QUERY_STRING"]);
 				parse_str($_SERVER["QUERY_STRING"], $request);
 			}
@@ -197,6 +197,12 @@ class Hybrid_Endpoint {
 				if (!class_exists("Hybrid_Storage", false)) {
 					require_once realpath(dirname(__FILE__)) . "/Storage.php";
 				}
+				if (!class_exists("Hybrid_Exception", false)) {
+					require_once realpath(dirname(__FILE__)) . "/Exception.php";
+				}
+				if (!class_exists("Hybrid_Logger", false)) {
+					require_once realpath(dirname(__FILE__)) . "/Logger.php";
+				}
 
 				$storage = new Hybrid_Storage();
 
@@ -208,7 +214,7 @@ class Hybrid_Endpoint {
 				Hybrid_Auth::initialize($storage->config("CONFIG"));
 			} catch (Exception $e) {
 				Hybrid_Logger::error("Endpoint: Error while trying to init Hybrid_Auth: " . $e->getMessage());
-				throw new Hybrid_Exception("Oophs. Error!");
+				throw new Hybrid_Exception( "Endpoint: Error while trying to init Hybrid_Auth: " . $e->getMessage(), $e->getCode(), $e );
 			}
 		}
 	}

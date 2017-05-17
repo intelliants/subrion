@@ -67,7 +67,7 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
             $appliedMigrations[] = $migration['name'];
         }
 
-        $migration_dir = IA_HOME . 'updates' . IA_DS . 'migrations' . IA_DS;
+        $migration_dir = IA_HOME . 'updates/migrations/';
         if (is_dir($migration_dir)) {
             $files = scandir($migration_dir);
             foreach ($files as $file) {

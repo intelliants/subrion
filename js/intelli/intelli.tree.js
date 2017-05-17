@@ -5,10 +5,14 @@ function IntelliTree(params) {
     this.selector = params.selector || '#js-tree';
 
     this.$tree = null;
-    this.$label = params.label ? $(params.label) : $('#js-category-label');
     this.$value = params.value ? $(params.value) : $('#input-tree');
-    this.$toggler = params.toggler ? $(params.toggler) : $('#js-tree-toggler');
     this.$search = $('input', '#js-tree-search');
+
+
+    var $row = $(this.selector).closest('.js-tree-control');
+
+    var $label = $row.find('.js-category-label'),
+        $toggler = $row.find('.js-tree-toggler');
 
     var self = this;
 
@@ -19,7 +23,7 @@ function IntelliTree(params) {
                     data: {
                         data: function (n) {
                             var params = {};
-                            if (n.id != '#') {
+                            if (n.id !== '#') {
                                 params.id = n.id;
                             }
 
@@ -39,7 +43,7 @@ function IntelliTree(params) {
             self.$tree.on('click.jstree', params.onchange);
         }
 
-        self.$toggler.on('click', function (e) {
+        $toggler.on('click', function (e) {
             e.preventDefault();
 
             self.$tree.toggle();
@@ -64,7 +68,7 @@ function IntelliTree(params) {
 
         self.$value.val(nodeId);
         if (path)
-            self.$label.val(path.join(' / '));
+            $label.val(path.join(' / '));
     };
 
     var _cascadeOpen = function (e, o) {

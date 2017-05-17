@@ -389,16 +389,17 @@ CREATE TABLE `{install:prefix}items_pages` (
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}languages`;
 CREATE TABLE `{install:prefix}languages` (
-	`id` mediumint(7) unsigned NOT NULL auto_increment,
+	`id` smallint(5) unsigned NOT NULL auto_increment,
 	`code` char(2) NOT NULL,
 	`title` varchar(100) NOT NULL,
 	`locale` varchar(30) NOT NULL,
 	`date_format` varchar(50) NOT NULL,
+	`time_format` varchar(50) NOT NULL,
 	`author` varchar(100) NOT NULL,
 	`direction` varchar(5) NOT NULL default 'ltr',
-	`master` tinyint(1) unsigned NOT NULL,
-	`default` tinyint(1) unsigned NOT NULL,
-	`order` int(11) NOT NULL,
+	`master` tinyint(1) unsigned NOT NULL default 0,
+	`default` tinyint(1) unsigned NOT NULL default 0,
+	`order` smallint(5) unsigned NOT NULL default 0,
 	`status` enum('active','inactive') NOT NULL default 'active',
 	`flagicon` tinytext NOT NULL,
 	PRIMARY KEY (`id`),
@@ -982,6 +983,8 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('miscellaneous', 'captcha_preview', '', '', 'text', 12, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"captcha|1\",\"multilingual\":\"0\"}'),
 ('miscellaneous', '', 'Search', '', 'divider', 13, '', 1, 1, ''),
 ('miscellaneous', 'search_instant', '0', '\'1\',\'0\'', 'radio', 14, '', 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('miscellaneous', '', 'Maps', '', 'divider', 15, '', 1, 1, ''),
+('miscellaneous', 'maps_api_key', '', '', 'text', 16, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 
 ('financial', '', 'General', '1', 'divider', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('financial', 'currency', 'USD', '', 'text', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
@@ -1054,9 +1057,9 @@ INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('0 0 * * * includes/cron/featured-expiration.php','Check for expiration of featured items','Marks expired featured items');
 
 INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`length`,`order`,`editable`,`required`,`extra_actions`,`searchable`) VALUES
-('username','members',1,'text',50,0,0,1,'if ($_POST[$fieldName] && !iaValidate::isUsername($_POST[$fieldName]))\r\n{\r\n	$error = true;\r\n	$messages[] = iaLanguage::get(''username_incorrect'');\r\n	$invalidFields[] = $fieldName;\r\n}',1),
+('username','members',1,'text',50,0,0,1,'if ($value && !iaValidate::isUsername($value))\r\n{\r\n	$errors[$fieldName] = iaLanguage::get(\'username_incorrect\');\r\n}',1),
 ('fullname','members',1,'text',50,5,0,1,'',1),
-('email','members',1,'text',250,10,0,1,'if ($_POST[$fieldName])\r\n{\r\n	if (!iaValidate::isEmail($_POST[$fieldName]))\r\n	{\r\n		$error = true;\r\n		$messages[] = iaLanguage::get(''error_email_incorrect'');\r\n		$invalidFields[] = $fieldName;\r\n	}\r\n	else\r\n	{\r\n		$_POST[$fieldName] = strtolower($_POST[$fieldName]);\r\n	}\r\n}',0),
+('email','members',1,'text',250,10,0,1,'if ($value)\r\n{\r\n	if (iaValidate::isEmail($value))\r\n	{\r\n		$value = strtolower($value);\r\n	}\r\n	else\r\n	{\r\n		$errors[$fieldName] = iaLanguage::get(\'error_email_incorrect\');\r\n	}\r\n}',0),
 ('avatar','members',1,'image',1,15,1,0,'',1),
 ('website','members',1,'text',255,20,1,0,'',0),
 ('phone','members',1,'text',100,25,1,0,'',0),
@@ -1225,7 +1228,7 @@ INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`) VALUES
 (8,'registered',1, 1);
 
 INSERT INTO `{install:prefix}languages` VALUES
-(null,'en','English','en_US','%b %e, %Y','Intelliants LLC','ltr',1,1,1,'active','us.gif');
+(null,'en','English','en_US','%e %B, %Y', '%H:%M', 'Intelliants LLC','ltr',1,1,1,'active','us.gif');
 
 INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('_action_','- Action -','admin'),
@@ -1473,6 +1476,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_captcha_name', 'Captcha name', 'admin'),
 ('config_captcha_preview', 'Captcha preview', 'admin'),
 ('config_search_instant', 'Instant search', 'admin'),
+('config_maps_api_key', 'Maps API key', 'admin'),
 ('config_currency', 'Currency', 'admin'),
 ('config_funds_min_deposit', 'Minimum deposit', 'admin'),
 ('config_funds_max_deposit', 'Maximum deposit', 'admin'),
@@ -1743,17 +1747,20 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('key_not_valid','Key is invalid. Only alphanumeric and underscore characters allowed.','admin'),
 
 ('lang_incorrect','Please choose correct language.','admin'),
+('language_already_exists','Language already exists.','admin'),
+('language_copied','New language created (:count phrases copied).','admin'),
+('language_deleted','Selected language has been deleted.','admin'),
 ('language_iso_code','Iso','admin'),
-('language_locale','Locale','admin'),
 ('language_date_format','Date format','admin'),
+('language_date_format_incorrect','Date format is incorrect.','admin'),
+('language_date_format_tooltip','Check all possible values for date formatting here: <a href="http://www.smarty.net/docs/en/language.modifier.date.format.tpl" target="_blank">http://www.smarty.net/docs/en/language.modifier.date.format.tpl</a>','admin'),
 ('language_direction','Direction','admin'),
 ('language_direction_ltr','Left to right (LTR)','admin'),
 ('language_direction_rtl','Right to left (RTL)','admin'),
-('language_already_exists','Language already exists.','admin'),
-('language_date_format_incorrect','Date format is incorrect.','admin'),
+('language_locale','Locale','admin'),
 ('language_locale_incorrect','Language locale is incorrect.','admin'),
-('language_copied','New language created (:count phrases copied).','admin'),
-('language_deleted','Selected language has been deleted.','admin'),
+('language_time_format','Time format','admin'),
+('language_time_format_tooltip','Be careful editing this value. Check the manual here: <a href="http://www.smarty.net/docs/en/language.modifier.date.format.tpl" target="_blank">http://www.smarty.net/docs/en/language.modifier.date.format.tpl</a>','admin'),
 ('languages_comparison','Comparison','admin'),
 ('last_updated','Last updated','admin'),
 ('launch_manually','Launch manually','admin'),
@@ -1975,6 +1982,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('site_home','Site Home','admin'),
 ('sitemap_error','Sitemap file creation error! The file was not saved.','admin'),
 ('sitemap_regenerated','Sitemap file has been regenerated and is available at the following URL: <a href=":url" target="_blank">:url</a>.','admin'),
+('slug','Slug','admin'),
 ('sponsored_end','Sponsored End','admin'),
 ('sql_format','SQL format','admin'),
 ('sql_management','SQL Tool','admin'),
@@ -2492,6 +2500,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('payment_details','Payment details','frontend'),
 ('payment_done','Thank you for your payment. Your transaction has been completed.','frontend'),
 ('payment_date','Payment Date','frontend'),
+('payment_gateway_not_chosen','Please choose payment gateway','frontend'),
 ('payment_redirect_message',"You will be automatically redirected to the item's page in :seconds. If you do not want to wait click the button below:",'frontend'),
 ('payment_status','Payment status','frontend'),
 ('pictures','Pictures','frontend'),
@@ -2646,10 +2655,13 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('https','Use secure HTTPS protocol for your site. Before enabling this, please make sure you have properly configured your hosting account and/or webserver.','tooltip'),
 
 ('lang','Select the preferred language of your site.','tooltip'),
+('language_iso_code','ISO 639-1 two-letter lowercase abbreviation of your language. It is used in page URLs.','tooltip'),
+('language_iso_title','This title is used for language selection on your frontend.','tooltip'),
+('language_locale','Locale is an identifier used to get language, culture, or regionally-specific behavior. Contact your hosting to get the proper locale for your server.','tooltip'),
 ('language_switch','Allows users to choose a language on the frontend of your site.','tooltip'),
 
 ('members_enabled','Enables members functionality for your Subrion CMS based website.','tooltip'),
-('members_autoapproval','Members are activated automatically without any confirmation.','tooltip'),
+('members_autoapproval','Members are activated automatically without administrator confirmation (email confirmation is still needed).','tooltip'),
 ('multilingual_field','Allows to have field value in different languages.','tooltip'),
 ('multiple_selection','Allows to choose multiple nodes.','tooltip'),
 
