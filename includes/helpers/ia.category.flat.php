@@ -181,7 +181,9 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
     public function updateCounters($itemId, array $itemData, $action, $previousData = null)
     {
-        $this->_updateFlatStructure($itemId);
+        if (iaCore::ACTION_DELETE != $action) {
+            $this->_updateFlatStructure($itemId);
+        }
     }
 
     /**
@@ -440,7 +442,7 @@ SQL;
         return $output;
     }
 
-    // tree utulity methods
+    // tree utility methods
     public function getParents($entryId, $idsOnly = false)
     {
         if ($idsOnly) {
