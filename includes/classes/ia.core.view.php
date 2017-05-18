@@ -121,6 +121,11 @@ class iaView extends abstractUtil
         return $this->_pageName;
     }
 
+    /**
+     * Load Smarty template engine
+     *
+     * @param bool $force load library with no relation to REQUEST_TYPE
+     */
     public function loadSmarty($force = false)
     {
         if (iaView::REQUEST_HTML == $this->getRequestType() || $force) {
@@ -156,11 +161,25 @@ class iaView extends abstractUtil
         }
     }
 
+    /**
+     * Verifies if block exists in a list of available blocks
+     *
+     * @param string $blockName block name
+     *
+     * @return bool
+     */
     public function blockExists($blockName)
     {
-        return (bool)in_array($blockName, $this->_existBlocks);
+        return in_array($blockName, $this->_existBlocks);
     }
 
+    /**
+     * Verifies if page is a set as homepage
+     *
+     * @param bool $name page name
+     *
+     * @return bool
+     */
     public function isHomepage($name = false)
     {
         return (false === $name)
@@ -232,6 +251,11 @@ class iaView extends abstractUtil
         $this->_requestType = $requestType;
     }
 
+    /**
+     * Get pages for admin dashboard menu
+     *
+     * @return array
+     */
     public function getAdminMenu()
     {
         $iaDb = &$this->iaCore->iaDb;
@@ -378,6 +402,11 @@ SQL;
         return $result;
     }
 
+    /**
+     * Get pages for admin dashboard top menu
+     *
+     * @return array
+     */
     protected function _getAdminHeaderMenu()
     {
         $result = [];
@@ -400,6 +429,11 @@ SQL;
         return $result;
     }
 
+    /**
+     * Get list of disabled positions for frontend
+     *
+     * @return array
+     */
     protected function _getDisabledPositions()
     {
         $sql = "SELECT `object` `name`, `access` FROM `{$this->iaCore->iaDb->prefix}objects_pages` ";
@@ -416,6 +450,11 @@ SQL;
         return $return;
     }
 
+    /**
+     * Get list of disabled blocks for frontend
+     *
+     * @return array
+     */
     protected function _getDisabledBlocks()
     {
         $table = $this->iaCore->iaDb->prefix . 'objects_pages';
