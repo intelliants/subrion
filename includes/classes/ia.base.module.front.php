@@ -260,6 +260,8 @@ abstract class abstractModuleFront extends abstractCore
                     }
                 }
 
+                // mandatory keys
+                $row['item'] = $this->getItemName();
                 $row['link'] = $this->url('view', $row);
             }
         }
