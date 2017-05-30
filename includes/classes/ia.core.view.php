@@ -1013,7 +1013,7 @@ SQL;
                     }
                 }
 
-                $xmlObject = new SimpleXMLElement('<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"></rss>');
+                $xmlObject = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"></rss>');
                 xmlEncode($outputValues, $xmlObject);
 
                 echo $xmlObject->asXML();
