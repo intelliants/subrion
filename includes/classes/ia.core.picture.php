@@ -138,7 +138,7 @@ class iaPicture extends abstractCore
         try {
             // check this is an animated GIF
             if ('image/gif' == $mimeType) {
-                return $this->_processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark);
+                $this->_processAnimatedGif($sourceFile, $destinationFile, $width, $height, $applyWatermark);
             }
 
             $image = ImageWorkshop::initFromPath($sourceFile, true);
