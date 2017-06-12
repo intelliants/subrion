@@ -345,7 +345,7 @@ class iaDebug
             } else {
                 if ($title) {
                     $name = 'pre_' . mt_rand(1000, 9999);
-                    echo '<div style="margin:0px;font-size:11px;"><span onclick="document.getElementById(\''.$name.'\').style.display = (document.getElementById(\''.$name.'\').style.display==\'none\' ? \'block\' : \'none\');">
+                    echo '<div style="margin:0;font-size:11px;"><span onclick="document.getElementById(\''.$name.'\').style.display = (document.getElementById(\''.$name.'\').style.display==\'none\' ? \'block\' : \'none\');">
 					<b><i style="color:green;cursor:pointer;text-shadow: 0 1px 1px white;">'.$title.'</i></b></span> ['.count($value).']</div>
 					<pre style="display:none;font-size:12px;max-height:250px;overflow:auto;margin: 5px 0 10px;" id="'.$name.'">';
                 } else {
@@ -359,15 +359,15 @@ class iaDebug
                             echo $hook['filename'];
                         } else {
                             $hl = 'smarty' == $hook['type'] ? 'html' : $hook['type'];
-                            echo "<code class='$hl'>";
-                            print_r($hook['code']);
-                            echo '</code>';
+                            echo "<code class=\"$hl\">",
+                                htmlentities(print_r($hook['code'], true)),
+                                '</code>';
                         }
                     }
                 } else {
-                    echo "<code class='{$hl}'>";
-                    print_r($value);
-                    echo '</code>';
+                    echo "<code class=\"{$hl}\">",
+                        htmlentities(print_r($value, true)),
+                        '</code>';
                 }
                 echo '</pre>';
             }
