@@ -5,12 +5,12 @@
                 <div class="col-md-3">
                     <div class="blog-item">
                         <div class="blog-item__date">{$one_blog_entry.date_added|date_format:$core.config.date_format}</div>
-                        <h4 class="blog-item__title"><a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{$one_blog_entry.title|escape: html}</a></h4>
+                        <h4 class="blog-item__title"><a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{$one_blog_entry.title|escape}</a></h4>
 
                         <div class="blog-item__intro">
                             {$one_blog_entry.body|strip_tags|truncate:$core.config.blog_max_block:'...'}
                         </div>
-                        <div class="blog-item__author">{$one_blog_entry.fullname|escape: html}</div>
+                        <div class="blog-item__author">{$one_blog_entry.fullname|escape}</div>
                     </div>
                 </div>
 

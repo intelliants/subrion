@@ -11,7 +11,7 @@
                     {/if}
                     <div class="ia-item__content">
                         <h4 class="ia-item__title">
-                            <a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{$one_blog_entry.title|escape: html}</a>
+                            <a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}">{$one_blog_entry.title|escape}</a>
                         </h4>
 
                         <div class="ia-item__additional">
