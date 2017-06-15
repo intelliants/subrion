@@ -297,9 +297,10 @@ SQL;
                     break;
 
                 case self::TREE:
-                    $values = json_decode($field['values'], true);
-                    foreach ($values as &$v) {
-                        $v['text'] = self::getLanguageValue($field['item'], $field['name'], $v['id']);
+                    if ($values = json_decode($field['values'], true)) {
+                        foreach ($values as &$v) {
+                            $v['text'] = self::getLanguageValue($field['item'], $field['name'], $v['id']);
+                        }
                     }
 
                     $field['values'] = json_encode($values);
