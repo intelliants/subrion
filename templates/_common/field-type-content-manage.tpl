@@ -192,7 +192,7 @@ $(function()
                             <input type="hidden" name="{$fieldName}[{$entry@index}][path]" value="{$entry.path|escape}">
                             <input type="hidden" name="{$fieldName}[{$entry@index}][file]" value="{$entry.file|escape}">
                             <div class="input-group-btn">
-                                <a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{lang key='download'}"><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
+                                <a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{lang key='download'}" download><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
                                 <span class="btn btn-default drag-handle"><span class="fa fa-arrows-v"></span></span>
                                 <button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file|escape}">{lang key='delete'}</button>
                             </div>
