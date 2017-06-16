@@ -185,6 +185,7 @@ $(function()
 
         {case iaField::STORAGE break}
             {if $value}
+                {if is_string($value)}{$value = unserialize($value)}{/if}
                 <div class="upload-items upload-items--files" id="{$fieldName}_upload_list">
                     {foreach $value as $entry}
                         <div class="input-group upload-items__item">

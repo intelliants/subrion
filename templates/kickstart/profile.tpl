@@ -62,7 +62,7 @@
     </div>
 {else}
     <p class="clearfix"><a href="{$smarty.const.IA_URL}profile/" class="btn btn-default pull-right">&larr; {lang key='back_to_profile'}</a></p>
-    <form method="post" enctype="multipart/form-data" class="ia-form">
+    <form method="post" enctype="multipart/form-data" class="ia-form" action="{$smarty.const.IA_SELF}">
         {preventCsrf}
 
         {if !empty($assignableGroups)}
