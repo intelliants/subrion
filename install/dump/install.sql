@@ -968,7 +968,9 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('pictures', 'watermark_text_color', 'FFFFFF', '', 'text', 18, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"watermark_type|text\",\"multilingual\":\"0\"}'),
 ('pictures', 'watermark_text_size', '20', '', 'text', 19, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"watermark_type|text\",\"multilingual\":\"0\"}'),
 ('pictures', 'watermark_image', '', '', 'image', 20, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"watermark_type|image\",\"multilingual\":\"0\"}'),
-('pictures', 'lightbox', 'Lightbox', '', 'divider', 21, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('pictures', 'gif', 'GIF', '', 'divider', 21, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('pictures', 'allow_animated_gifs', '1', '\'1\',\'0\'', 'radio', 22, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('pictures', 'lightbox', 'Lightbox', '', 'divider', 23, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('pictures', 'lightbox_name', 'fancybox', 'fancybox,fancybox', 'select', 24, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 
 ('miscellaneous', '', 'Frontend code integration', '', 'divider', 1, '', 1, 1, ''),
@@ -1468,6 +1470,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_watermark_text_color', 'Text RGB color', 'admin'),
 ('config_watermark_text_size', 'Text size', 'admin'),
 ('config_watermark_image', 'Image', 'admin'),
+('config_allow_animated_gifs', 'Allow animated GIF images','admin'),
 ('config_lightbox', 'Lightbox', 'admin'),
 ('config_lightbox_name', 'Lightbox name', 'admin'),
 ('config_', 'Frontend code integration', 'admin'),
