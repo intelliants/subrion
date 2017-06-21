@@ -1662,7 +1662,7 @@ class iaModule extends abstractCore
             case 'block':
                 if ($this->_checkPath('blocks')) {
                     $filename = $this->_attr('filename');
-                    if ($filename && 'smarty' == $this->_attr('type')) {
+                    if ($this->itemData['type'] != self::TYPE_TEMPLATE && $filename && 'smarty' == $this->_attr('type')) {
                         $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
                     }
 
