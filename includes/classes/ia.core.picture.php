@@ -39,8 +39,6 @@ class iaPicture extends abstractCore
         'image/png' => 'png'
     ];
 
-    protected $_allowAnimatedGifs = false;
-
 
     public function getSupportedImageTypes()
     {
@@ -105,7 +103,7 @@ class iaPicture extends abstractCore
     {
         require_once IA_INCLUDES . 'PHPImageWorkshop/Core/GifFrameExtractor.php';
 
-        if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($sourceFile) && $this->_allowAnimatedGifs) {
+        if (GifFrameExtractor\GifFrameExtractor::isAnimatedGif($sourceFile) && $this->iaCore->get('allow_animated_gifs')) {
             // Extractions of the GIF frames and their durations
             $gfe = new GifFrameExtractor\GifFrameExtractor();
 
