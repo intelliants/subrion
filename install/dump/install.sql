@@ -752,6 +752,8 @@ INSERT INTO `{install:prefix}acl_objects` (`pre_object`,`object`,`action`,`acces
 ('admin_page','pages','add',1),
 ('admin_page','pages','edit',1),
 ('admin_page','pages','home',0),
+('admin_page','permissions','read',0),
+('admin_page','permissions','edit',0),
 ('admin_page','plans','add',1),
 ('admin_page','plans','edit',1),
 ('admin_page','plans','delete',1),
@@ -839,7 +841,7 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`fil
 (3,'members','read','','members','members/','menu',null,5),
 (3,'usergroups','read','','usergroups','usergroups/','menu,header',null,10),
 (3,'','','','','','menu','mbr_ext',15),
-(3,'permissions','read','index','permissions','permissions/','menu',null,20),
+(3,'permissions','read','','permissions','permissions/','menu',null,20),
 (3,'members_fields','members','fields','fields','fields/members/','menu',null,25),
 
 -- FINANCIAL
@@ -1308,6 +1310,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('admin_page-pages--edit','Allow to modify a page','admin'),
 ('admin_page-pages--home','Allow to change the Home page','admin'),
 ('admin_page-pages--read','Allow to view pages list','admin'),
+('admin_page-permissions--read','Allow to view member/usergroup permissions','admin'),
+('admin_page-permissions--edit','Allow to manage permissions','admin'),
 ('admin_page-plans--add','Allow to add new plan','admin'),
 ('admin_page-plans--delete','Allow to delete a plan','admin'),
 ('admin_page-plans--edit','Allow to modify a plan','admin'),
