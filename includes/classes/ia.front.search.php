@@ -297,7 +297,7 @@ class iaSearch extends abstractCore
                         break;
 
                     case iaField::TREE:
-                        $row['values'] = $this->_getTreeNodes($row['values']);
+                        $row['values'] = $this->_getTreeNodes($itemName, $row['name'], $row['values']);
                 }
 
                 $result[$row['name']] = $row;
@@ -889,25 +889,25 @@ SQL;
         ]);
     }
 
-    private function _getTreeNodes($packedNodes)
+    private function _getTreeNodes($itemName, $fieldName, $packedNodes)
     {
         if (!$packedNodes) {
             return [];
         }
 
-        $key = 'filter_tree_' . md5($packedNodes);
+        $key = 'filter_tree_' . md5($packedNodes) . '_' . $this->iaView->language;
 
         if ($result = $this->iaCore->iaCache->get($key, 25920000, true)) { // 30 days
             return $result;
         } else {
-            $result = $this->_parseTreeNodes($packedNodes);
+            $result = $this->_parseTreeNodes($itemName, $fieldName, $packedNodes, $this->iaView->language);
             $this->iaCore->iaCache->write($key, $result);
 
             return $result;
         }
     }
 
-    protected function _parseTreeNodes($packedNodes)
+    protected function _parseTreeNodes($itemName, $fieldName, $packedNodes, $isoCode)
     {
         $result = [];
         $nodes = json_decode($packedNodes, true);
@@ -922,8 +922,18 @@ SQL;
                 ($indent[$id]+= $indent[$parent]) : ($indent[$parent] = 0));
         }
 
+        $phraseKey = 'field_' . $itemName . '_' . $fieldName;
+        $where = '`key` LIKE :key AND `code` = :code';
+        $this->iaDb->bind($where, ['key' => $phraseKey . '+%', 'code' => $isoCode]);
+
+        $phrases = $this->iaDb->keyvalue(['key', 'value'], $where, iaLanguage::getTable());
+
         foreach ($nodes as $node) {
-            $result[$node['id']] = str_repeat('&nbsp;&nbsp;&nbsp;', $indent[$node['id']]) . ' &mdash; ' . $node['text'];
+            $title = isset($phrases[$phraseKey . '+' . $node['id']])
+                ? $phrases[$phraseKey . '+' . $node['id']]
+                : $node['text'];
+
+            $result[$node['id']] = str_repeat('&nbsp;&nbsp;&nbsp;', $indent[$node['id']]) . ' &mdash; ' . $title;
         }
 
         return $result;
