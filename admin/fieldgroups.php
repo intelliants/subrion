@@ -56,10 +56,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridRead($params)
     {
-        return (isset($params['get']) && 'tabs' == $params['get'])
-            ? $this->_iaDb->onefield('name',
-                "`item` = '{$params['item']}' AND `name` != '{$params['name']}' AND `tabview` = 1")
-            : parent::_gridRead($params);
+        if (1 == count($this->_iaCore->requestPath) && 'tabs' == $this->_iaCore->requestPath[0]) {
+            $where = '`item` = :item AND `name` != :name AND `tabview` = 1';
+            $this->_iaDb->bind($where, $params);
+
+            return $this->_iaDb->onefield('name', $where);
+        }
+
+        return parent::_gridRead($params);
     }
 
     protected function _gridQuery($columns, $where, $order, $start, $limit)

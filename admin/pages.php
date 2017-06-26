@@ -311,6 +311,8 @@ class iaBackendController extends iaAbstractControllerBackend
         $parentPage = $this->getHelper()->getByName($entryData['parent'], false);
         $groups = $this->getHelper()->getGroups([$this->_iaCore->get('home_page'), $entryData['name']]);
         $isHomepage = ($this->_iaCore->get('home_page', iaView::DEFAULT_HOMEPAGE) == $entryData['name']);
+        $homePageTitle = $this->_iaDb->one_bind('value', '`key` = :key AND `category` = :category',
+            ['key' => 'page_title_' . $this->_iaCore->get('home_page'), 'category' => iaLanguage::CATEGORY_PAGE], iaLanguage::getTable());
 
         list($title, $content, $metaDescription, $metaKeywords) = $this->_loadMultilingualData($entryData['name']);
 
@@ -320,6 +322,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $iaView->assign('metaKeywords', $metaKeywords);
 
         $iaView->assign('isHomePage', $isHomepage);
+        $iaView->assign('homePageTitle', $homePageTitle);
         $iaView->assign('extensions', $this->getHelper()->extendedExtensions);
         $iaView->assign('menus', $this->_getMenus());
         $iaView->assign('pages', $this->getHelper()->getNonServicePages(['index']));

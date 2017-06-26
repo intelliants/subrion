@@ -162,7 +162,6 @@ SELECT f.*
 	FROM `:prefix:table_fields` f 
 LEFT JOIN `:prefix:table_pages` fp ON (fp.`field_id` = f.`id`) 
 WHERE fp.`page_name` = ':page' 
-	AND f.`status` = ':status' 
 	AND f.`item` = ':item' 
 	AND f.`adminonly` = 0 
 	AND :where 
@@ -174,7 +173,6 @@ SQL;
             'table_fields' => self::getTable(),
             'table_pages' => self::getTablePages(),
             'page' => $pageName,
-            'status' => iaCore::STATUS_ACTIVE,
             'item' => $itemName,
             'where' => $where
         ]);
@@ -221,6 +219,11 @@ SQL;
 
             foreach ($result as $field) {
                 $fieldName = $field['name'];
+
+                if (iaCore::STATUS_ACTIVE != $field['status'] && isset($itemData[$fieldName])) {
+                    unset($itemData[$fieldName]);
+                    continue;
+                }
 
                 // assign a default value if field is assigned to plan and item has no active 'sponsored' flag
                 if ($field['for_plan'] &&
@@ -297,9 +300,10 @@ SQL;
                     break;
 
                 case self::TREE:
-                    $values = json_decode($field['values'], true);
-                    foreach ($values as &$v) {
-                        $v['text'] = self::getLanguageValue($field['item'], $field['name'], $v['id']);
+                    if ($values = json_decode($field['values'], true)) {
+                        foreach ($values as &$v) {
+                            $v['text'] = self::getLanguageValue($field['item'], $field['name'], $v['id']);
+                        }
                     }
 
                     $field['values'] = json_encode($values);

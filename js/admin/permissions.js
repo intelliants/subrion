@@ -1,7 +1,7 @@
 intelli.permissions =
     {
         button: null,
-        url: intelli.config.admin_url + '/permissions/read.json' + window.location.search,
+        url: intelli.config.admin_url + '/permissions/edit.json' + window.location.search,
         token: $('input:first', '#js-security-token').val(),
 
         save: function ($toggler, access) {

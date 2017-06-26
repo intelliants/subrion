@@ -201,7 +201,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $this->_values = null;
 
         $entry['name'] = iaSanitize::alias($data['name']);
-        $entry['item'] = $data['item'];
+        $entry['item'] = iaSanitize::paranoid($data['item']);
         $entry['type'] = $data['type'];
         $entry['empty_field'] = $data['empty_field'];
         $entry['relation'] = $data['relation'];

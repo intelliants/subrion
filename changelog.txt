@@ -844,3 +844,16 @@
     + Feature #423: Add orientation fix for images with EXIF data
     + Feature #434: Remove item from favorites when deleted
     + Feature #438: Change column type for text fields
+
+>> From 4.1.4 to 4.1.5 <<
+
+    - Bug #422: Values of tree field are not translated
+    - Bug #458: Detect SSL without port
+    - Bug #459: Filter in grid is shared accross several grids
+    - Bug #460: Inconsistent page name in pages mgmt
+    - Bug #461: Sitemap is deleted during cache clear
+    - Bug #462: Permissions issue
+    + Feature #344: Introduce more hooks
+    + Feature #466: Add config: allow animated gifs
+    + Feature #468: Properly escape HTML in debug output
+

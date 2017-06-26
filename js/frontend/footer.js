@@ -177,12 +177,12 @@ $(function () {
     $('.js-delete-file').on('click', function (e) {
         e.preventDefault();
 
-        var self = $(this);
+        var $this = $(this);
 
-        var file = self.data('file');
-        var id = self.data('item-id');
-        var item = self.data('item');
-        var field = self.data('field');
+        var file = $this.data('file');
+        var id = $this.data('item-id');
+        var item = $this.data('item');
+        var field = $this.data('field');
 
         intelli.confirm(_t('sure_rm_file'), '', function (result) {
             if (result) {
@@ -196,8 +196,9 @@ $(function () {
                     intelli.notifFloatBox({msg: data.message, type: data.error ? 'error' : 'success', autohide: true});
 
                     if (!data.error) {
-                        self.closest('.fieldzone').find('.js-file-name').val('');
-                        self.closest('.thumbnail').remove();
+                        $this.closest('.fieldzone').find('.js-file-name').val('');
+                        $this.closest('.thumbnail').remove();
+                        $this.closest('.upload-items__item').remove();
 
                         var counter = $('#' + field);
                         if (counter.val() == 0) {

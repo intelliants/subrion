@@ -67,14 +67,12 @@ intelli.gridHelper = {
         }
     },
 
-    search: function (caller, isReset, isExcelExport, page = 1) {
-        var i;
-        var data = {};
-        var storage = {};
+    search: function (caller, isReset, isExcelExport, page) {
+        page = page || 1;
 
-        storage[caller.toolbar.id] = {};
+        var data = {}, tb = {};
 
-        for (i in caller.toolbar.items.items) {
+        for (var i in caller.toolbar.items.items) {
             var control = caller.toolbar.items.items[i];
             if (control.initialConfig.name) {
                 if (isReset) {
@@ -83,7 +81,7 @@ intelli.gridHelper = {
                     var value = control.getValue();
                     if (value) {
                         data[control.initialConfig.name] = value;
-                        storage[caller.toolbar.id][i] = control.rawValue;
+                        tb[control.getId()] = value;
                     }
                 }
             }
@@ -96,13 +94,13 @@ intelli.gridHelper = {
         caller.store.getProxy().extraParams = data;
         caller.store.loadPage(page);
 
-        localStorage.setItem('toolbar', JSON.stringify(storage));
+        caller.storage('t', JSON.stringify(tb));
     },
 
     listener: {
         specialKey: {
             specialkey: function (field, e) {
-                if (e.ENTER == e.getKey()) Ext.getCmp('fltBtn').handler();
+                if (e.ENTER === e.getKey()) Ext.getCmp('fltBtn').handler();
             }
         }
     },
@@ -187,7 +185,14 @@ function IntelliGrid(params, autoInit) {
 
     var self = this;
 
-    var __localStorage = function (key, value) {
+    this.init = function (autoLoad) {
+        _setupColumns();
+        _setupStore('boolean' !== typeof autoLoad ? true : autoLoad);
+        _setupToolbar();
+        _setupGrid();
+    };
+
+    this.storage = function (key, value) {
         if (localStorage) {
             var k = stateId + key;
 
@@ -203,15 +208,8 @@ function IntelliGrid(params, autoInit) {
         }
     }
 
-    this.init = function (autoLoad) {
-        _setupColumns();
-        _setupStore('boolean' !== typeof autoLoad ? true : autoLoad);
-        _setupToolbar();
-        _setupGrid();
-    };
-
     var _setupColumns = function () {
-        if ('object' == typeof self.params.columns) {
+        if ('object' === typeof self.params.columns) {
             for (i in self.params.columns) {
                 var item = self.params.columns[i];
                 if ('string' === typeof item) {
@@ -236,9 +234,9 @@ function IntelliGrid(params, autoInit) {
             {
                 autoDestroy: true,
                 autoLoad: autoLoad,
-                currentPage: parseInt(__localStorage('p')) || 1,
+                currentPage: parseInt(self.storage('p')) || 1,
                 fields: self.fields,
-                pageSize: __localStorage('n') || self.config.pageSize,
+                pageSize: self.storage('n') || self.config.pageSize,
                 proxy: {
                     buildRequest: function (operation) {
                         var params = Ext.applyIf(operation.params || {}, this.extraParams || {}), request;
@@ -295,16 +293,16 @@ function IntelliGrid(params, autoInit) {
             self.toolbar = self.params.toolbar;
         }
 
-        var params = localStorage.getItem('toolbar') !== null ? JSON.parse(localStorage.getItem('toolbar')) : false;
+        var tbValues = self.storage('t');
+        if (tbValues) {
+            tbValues = JSON.parse(tbValues);
 
-        if ('object' === typeof self.toolbar && null !== self.toolbar && 
-            typeof params[self.toolbar.id] !== 'undefined' && Object.keys(params[self.toolbar.id]).length > 0) {
+            for (var controlName in tbValues) {
+                var i = self.toolbar.items.indexMap[controlName];
+                self.toolbar.items.items[i].setValue(tbValues[controlName]);
+            }
 
-            $.each(params[self.toolbar.id], function (key, value) {
-                self.toolbar.items.items[key].rawValue = value;
-            });
-
-            intelli.gridHelper.search(self, false, false, __localStorage('p'));
+            intelli.gridHelper.search(self, false, false, self.storage('p'));
         }
     };
 
@@ -326,13 +324,13 @@ function IntelliGrid(params, autoInit) {
                         self.store.pageSize = parseInt(newValue);
                         self.store.loadPage(1);
 
-                        __localStorage('n', self.store.pageSize);
-                        __localStorage('p', null);
+                        self.storage('n', self.store.pageSize);
+                        self.storage('p', null);
                     }
                 },
                 store: self.stores.paging,
                 typeAhead: true,
-                value: __localStorage('n') || self.config.pageSize,
+                value: self.storage('n') || self.config.pageSize,
                 width: 70,
                 xtype: 'combo'
             }
@@ -421,7 +419,7 @@ function IntelliGrid(params, autoInit) {
                         items: pagingBar,
                         listeners: {
                             change: function (paging, pageData, options) {
-                                __localStorage('p', pageData ? pageData.currentPage : null);
+                                self.storage('p', pageData ? pageData.currentPage : null);
                             }
                         }
                     }),
@@ -466,7 +464,7 @@ function IntelliGrid(params, autoInit) {
                                 fn: function (btn) {
                                     if ('yes' == btn) {
                                         intelli.gridHelper.httpRequest(self, {id: [record.get('id')]}, 'delete');
-                                        __localStorage('p', null);
+                                        self.storage('p', null);
                                     }
                                 }
                             });

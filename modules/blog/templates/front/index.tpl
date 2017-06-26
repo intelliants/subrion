@@ -52,7 +52,7 @@
                                     {if $tagsExist != 0}
                                         {foreach $blog_tags as $tag}
                                             {if $blog_entry.id == $tag.blog_id}
-                                                <a href="{$smarty.const.IA_URL}tag/{$tag.alias}">{$tag.title|escape: 'html'}</a>
+                                                <a href="{$smarty.const.IA_URL}tag/{$tag.alias}">{$tag.title|escape}</a>
                                             {/if}
                                         {/foreach}
                                     {else}

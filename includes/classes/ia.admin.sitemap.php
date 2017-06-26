@@ -115,7 +115,7 @@ class iaSitemap extends abstractCore
                 $modulesList = $this->iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), $iaItem::getModulesTable());
                 $homePageName = $this->iaCore->get('home_page');
 
-                $stmt = '`nofollow` = 0 AND `service` = 0 AND `status` = :status AND `passw` = :password ORDER BY `order`';
+                $stmt = '`nofollow` = 0 && `service` = 0 && `status` = :status && `passw` = :password ORDER BY `order`';
                 $this->iaDb->bind($stmt, ['status' => iaCore::STATUS_ACTIVE, 'password' => '']);
 
                 $pages = $this->iaDb->all(['name', 'alias', 'custom_url', 'module'], $stmt, null, null, 'pages');

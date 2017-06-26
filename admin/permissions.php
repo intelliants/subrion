@@ -75,6 +75,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridRead($params)
     {
+        return iaVIew::errorPage(iaView::ERROR_NOT_FOUND);
+    }
+
+    protected function _gridUpdate($params)
+    {
         $output = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
         $settings = $this->_getSettings();
 

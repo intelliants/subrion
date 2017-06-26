@@ -285,11 +285,11 @@ SQL;
             isset($rows[$status]) || $rows[$status] = 0;
         }
 
-        $total = $this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`', "`status` = :status && (`item` = 'funds' || (`item` != 'funds' && `gateway` != 'funds'))", ['status' => self::PASSED]);
-        $total || $total = 0;
+        $total = (int)$this->iaDb->one_bind('ROUND(SUM(`amount`)) `total`',
+            "`status` = :status && (`item` != :funds || (`item` = :funds && `gateway` != ''))",
+            ['status' => self::PASSED, 'funds' => 'funds']);
 
         $this->iaDb->resetTable();
-
 
         return [
             '_format' => 'medium',

@@ -99,6 +99,7 @@ class iaUtil extends abstractUtil
         $config->set('Attr.AllowedRel', 'facebox,nofollow,print,ia_lightbox');
 
         // allow YouTube and Vimeo
+        $config->set('HTML.AllowedElements', array('iframe'));
         $config->set('HTML.SafeIframe', true);
         $config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|www\.google\.com/maps/embed\?)%');
 
@@ -366,7 +367,7 @@ class iaUtil extends abstractUtil
             $handle = opendir($directory);
 
             while ($item = readdir($handle)) {
-                if ($item != '.' && $item != '..' && $item != '.htaccess') {
+                if (!in_array($item, ['.', '..', '.htaccess', 'sitemap.xml'])) {
                     $path = $directory . IA_DS . $item;
                     is_dir($path) ? self::cascadeDeleteFiles($path, true) : self::deleteFile($path);
                 }

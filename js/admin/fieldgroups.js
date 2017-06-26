@@ -78,8 +78,7 @@ $(function () {
 
             $fieldGroups.prop('disabled', true);
             if (item) {
-                $.get(intelli.config.admin_url + '/fieldgroups/read.json', {
-                    get: 'tabs',
+                $.get(intelli.config.admin_url + '/fieldgroups/tabs.json', {
                     item: item,
                     name: name
                 }, function (response) {

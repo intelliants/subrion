@@ -36,6 +36,9 @@ class iaMailer extends PHPMailer
 
     protected $_defaultSignature;
 
+    protected $_templateName;
+    protected $_recipients = [];
+
 
     /**
      * Class initializer
@@ -121,6 +124,17 @@ class iaMailer extends PHPMailer
         }
     }
 
+    public function addAddress($address, $name = '')
+    {
+        if (parent::addAddress($address, $name)) {
+            $this->_recipients[$address] = $name;
+
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Apply replacements in email Subject & Body
      */
@@ -142,6 +156,8 @@ class iaMailer extends PHPMailer
 
         $options = json_decode($this->_iaCore->iaDb->one('options', iaDb::convertIds($name, 'name'), iaCore::getConfigTable()));
         $this->_defaultSignature = empty($options->signature);
+
+        $this->_templateName = $name;
     }
 
     /**
@@ -200,10 +216,11 @@ class iaMailer extends PHPMailer
         }
         $this->_applyReplacements();
         $this->_setBcc();
+        $this->_callHook('phpEmailToBeSent', $toAdmins);
 
-        $result = (bool)parent::send();
-
-        if (!$result) {
+        if ($result = (bool)parent::send()) {
+            $this->_callHook('phpEmailSent', $toAdmins);
+        } else {
             iaDebug::debug($this->ErrorInfo, 'Email submission');
         }
 
@@ -220,5 +237,17 @@ class iaMailer extends PHPMailer
     public function getError()
     {
         return $this->ErrorInfo;
+    }
+
+    protected function _callHook($name, $toAdmins)
+    {
+        $params = [
+            'template' => $this->_templateName,
+            'subject' => $this->Subject,
+            'body' => $this->Body,
+            'recipients' => $this->_recipients
+        ];
+
+        $this->_iaCore->startHook($name . ($toAdmins ? 'ToAdministrators' : ''), $params);
     }
 }

@@ -791,19 +791,18 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
         if (is_array($values)) {
             foreach ($values as $columnName => $value) {
-                $pattern = "`%s` = '%s'";
+                $pattern = '`%s` = %s';
 
                 switch (true) { // an order of statements is important!
                     case is_bool($value):
-                        $pattern = '`%s` = %s';
                         $value = $value ? 1 : 0;
                         break;
-                    case is_null($value):
-                        $pattern = '`%s` = %s';
-                        $value = 'NULL';
-                        break;
                     case is_scalar($value):
+                        $pattern = "`%s` = '%s'";
                         $value = iaSanitize::sql($value);
+                        break;
+                    case is_null($value):
+                        $value = 'NULL';
                         break;
                     default: // arrays, objects & resources are now actually ignored
                         continue;

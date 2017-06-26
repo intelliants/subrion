@@ -2,10 +2,7 @@ User-agent: *
 Disallow: /backup/
 Disallow: /cron/?
 Disallow: /front/
-Disallow: /includes/
 Disallow: /install/
-Disallow: /js/
-Disallow: /modules/
-Disallow: /templates/
+Disallow: /panel/
 Disallow: /tmp/
 Disallow: /updates/
