@@ -1,18 +1,27 @@
 /**
  * Czech translation
  * @author Jay Gridley <gridley.jay@hotmail.com>
- * @author RobiNN <admin@robonetwork.cf>
- * @version 2016-9-16
+ * @author RobiNN <kelcakrobo@gmail.com>
+ * @version 2017-04-21
  */
-if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object') {
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(['elfinder'], factory);
+	} else if (typeof exports !== 'undefined') {
+		module.exports = factory(require('elfinder'));
+	} else {
+		factory(root.elFinder);
+	}
+}(this, function(elFinder) {
 	elFinder.prototype.i18.cs = {
-		translator : 'Jay Gridley &lt;gridley.jay@hotmail.com&gt;, RobiNN &lt;admin@robonetwork.cf&gt;',
+		translator : 'Jay Gridley &lt;gridley.jay@hotmail.com&gt;, RobiNN &lt;kelcakrobo@gmail.com&gt;',
 		language   : 'čeština',
 		direction  : 'ltr',
 		dateFormat : 'd. m. Y H:i', // Mar 13, 2012 05:27 PM
 		fancyDateFormat : '$1 H:i', // will produce smth like: Today 12:25 PM
+		nonameDateFormat : 'ymd-His', // to apply if upload file is noname: 120513172700
 		messages   : {
-			
+
 			/********************************** errors **********************************/
 			'error'                : 'Chyba',
 			'errUnknown'           : 'Neznámá chyba.',
@@ -42,6 +51,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'errLocked'            : '"$1" je uzamčený a nemůže být přejmenován, přesunut nebo smazán.',
 			'errExists'            : 'Soubor s názvem "$1" již existuje.',
 			'errInvName'           : 'Nesprávný název souboru.',
+			'errInvDirname'        : 'Neplatný název adresáře.',  // from v2.1.24 added 12.4.2017
 			'errFolderNotFound'    : 'Složka nenalezena.',
 			'errFileNotFound'      : 'Soubor nenalezen.',
 			'errTrgFolderNotFound' : 'Cílová složka "$1" nenalezena.',
@@ -51,16 +61,16 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'errRename'            : 'Nepodařilo se přejmenovat "$1".',
 			'errCopyFrom'          : 'Kopírování souborů z oddílu "$1" není povoleno.',
 			'errCopyTo'            : 'Kopírování souborů do oddílu "$1" není povoleno.',
-			'errMkOutLink'         : 'Nelze vytvořit odkaz mimo kořenového svazku.', // from v2.1 added 03.10.2015 
-			'errUpload'            : 'Chyba nahrávání.', // old name - errUploadCommon
+			'errMkOutLink'         : 'Nelze vytvořit odkaz mimo kořenového svazku.', // from v2.1 added 03.10.2015
+			'errUpload'            : 'Chyba nahrávání.',  // old name - errUploadCommon
 			'errUploadFile'        : 'Nepodařilo se nahrát "$1".', // old name - errUpload
 			'errUploadNoFiles'     : 'Nejsou vybrány žádné soubory k nahrání.',
 			'errUploadTotalSize'   : 'Překročena maximální povolená velikost dat.', // old name - errMaxSize
-			'errUploadFileSize'    : 'Překročena maximální povolená velikost souboru.', // old name - errFileMaxSize
+			'errUploadFileSize'    : 'Překročena maximální povolená velikost souboru.', //  old name - errFileMaxSize
 			'errUploadMime'        : 'Nepovolený typ souboru.',
 			'errUploadTransfer'    : '"$1" chyba přenosu.',
 			'errUploadTemp'        : 'Nelze vytvořit dočasný soubor pro upload.', // from v2.1 added 26.09.2015
-			'errNotReplace'        : 'Objekt "$1" v tomto umístění již existuje a nelze jej nahradit s jiným typem objektu.',
+			'errNotReplace'        : 'Objekt "$1" v tomto umístění již existuje a nelze jej nahradit s jiným typem objektu.', // new
 			'errReplace'           : 'Nelze nahradit "$1".',
 			'errSave'              : '"$1" nelze uložit.',
 			'errCopy'              : '"$1" nelze zkopírovat.',
@@ -74,18 +84,18 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'errNoArchive'         : 'Soubor není archív nebo má nepodporovaný formát.',
 			'errCmdNoSupport'      : 'Backend tento příkaz nepodporuje.',
 			'errReplByChild'       : 'Složka "$1" nemůže být nahrazena souborem, který sama obsahuje.',
-			'errArcSymlinks'       : 'Z bezpečnostních důvodů je zakázáno rozbalit archívy obsahující symlinky.',
+			'errArcSymlinks'       : 'Z bezpečnostních důvodů je zakázáno rozbalit archívy obsahující symlinky.', // edited 24.06.2012
 			'errArcMaxSize'        : 'Soubory archívu překračují maximální povolenou velikost.',
 			'errResize'            : 'Nepodařilo se změnit velikost obrázku "$1".',
-			'errResizeDegree'      : 'Neplatný stupeň rotace.', // added 7.3.2013
-			'errResizeRotate'      : 'Nelze otočit obrázek.', // added 7.3.2013
-			'errResizeSize'        : 'Neplatná velikost obrázku.', // added 7.3.2013
-			'errResizeNoChange'    : 'Velikost obrazu se nezmění.', // added 7.3.2013
+			'errResizeDegree'      : 'Neplatný stupeň rotace.',  // added 7.3.2013
+			'errResizeRotate'      : 'Nelze otočit obrázek.',  // added 7.3.2013
+			'errResizeSize'        : 'Neplatná velikost obrázku.',  // added 7.3.2013
+			'errResizeNoChange'    : 'Velikost obrazu se nezmění.',  // added 7.3.2013
 			'errUsupportType'      : 'Nepodporovaný typ souboru.',
-			'errNotUTF8Content'    : 'Soubor "$1" nemá ani obsah kódovaný v UTF-8 a nelze změnit.', // added 9.11.2011
+			'errNotUTF8Content'    : 'Soubor "$1" nemá ani obsah kódovaný v UTF-8 a nelze změnit.',  // added 9.11.2011
 			'errNetMount'          : 'Není možné se připojit "$ 1".', // added 17.04.2012
-			'errNetMountNoDriver'  : 'Nepodporovaný protokol.', // added 17.04.2012
-			'errNetMountFailed'    : 'Připojení se nezdařilo.', // added 17.04.2012
+			'errNetMountNoDriver'  : 'Nepodporovaný protokol.',     // added 17.04.2012
+			'errNetMountFailed'    : 'Připojení se nezdařilo.',         // added 17.04.2012
 			'errNetMountHostReq'   : 'Hostitel se vyžaduje.', // added 18.04.2012
 			'errSessionExpires'    : 'Relace byla ukončena z důvodu nečinnosti.',
 			'errCreatingTempDir'   : 'Nelze vytvořit dočasný adresář: "$1"',
@@ -98,7 +108,8 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'errConvUTF8'          : 'Nelze převést na UTF-8', // from v2.1 added 08.04.2014
 			'errFolderUpload'      : 'Pokud chcete nahrát do složky, zkuste použít prohlížeč Google Chrome.', // from v2.1 added 26.6.2015
 			'errSearchTimeout'     : 'Vypršení časového limitu při hledání "$1". Je částečně výsledkem hledání.', // from v2.1 added 12.1.2016
-			'errReauthRequire'     : 'Opětovné povolení je nutné.', // from v2.1.10 added 3.24.2016
+			'errReauthRequire'     : 'Opětovné povolení je nutné.', // from v2.1.10 added 24.3.2016
+			'errMaxTargets'        : 'Maximální počet volitelných předmětů je $1.', // from v2.1.17 added 17.10.2016
 
 			/******************************* commands names ********************************/
 			'cmdarchive'   : 'Vytvořit archív',
@@ -146,18 +157,20 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'btnCancel' : 'Zrušit',
 			'btnNo'     : 'Ne',
 			'btnYes'    : 'Ano',
-			'btnMount'  : 'Připojit', // added 18.04.2012
+			'btnMount'  : 'Připojit',  // added 18.04.2012
 			'btnApprove': 'Přejít do části 1 $ & schválit', // from v2.1 added 26.04.2012
 			'btnUnmount': 'Odpojit', // from v2.1 added 30.04.2012
 			'btnConv'   : 'Převést', // from v2.1 added 08.04.2014
-			'btnCwd'    : 'Tu', // from v2.1 added 22.5.2015
-			'btnVolume' : 'Médium', // from v2.1 added 22.5.2015
-			'btnAll'    : 'Všechno', // from v2.1 added 22.5.2015
+			'btnCwd'    : 'Tu',      // from v2.1 added 22.5.2015
+			'btnVolume' : 'Médium',    // from v2.1 added 22.5.2015
+			'btnAll'    : 'Všechno',       // from v2.1 added 22.5.2015
 			'btnMime'   : 'MIME typ', // from v2.1 added 22.5.2015
-			'btnFileName':'Název souboru', // from v2.1 added 22.5.2015
+			'btnFileName':'Název souboru',  // from v2.1 added 22.5.2015
 			'btnSaveClose': 'Uložit & zavřít', // from v2.1 added 12.6.2015
-			'btnBackup' : 'Zálohovat', // from v2.1 added 28.11.2015
-			
+			'btnBackup' : 'Zálohovat', // fromv2.1 added 28.11.2015
+			'btnRename'    : 'Přejmenovat',      // from v2.1.24 added 6.4.2017
+			'btnRenameAll' : 'Přejmenovat vše', // from v2.1.24 added 6.4.2017
+
 			/******************************** notifications ********************************/
 			'ntfopen'     : 'Otevírání složky',
 			'ntffile'     : 'Otevírání souboru',
@@ -186,7 +199,9 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'ntfchmod'    : 'Změna souboru', // from v2.1 added 20.6.2015
 			'ntfpreupload': 'Zkontrolujte název nahravaného souboru', // from v2.1 added 31.11.2015
 			'ntfzipdl'    : 'Vytvořit soubor ke stažení', // from v2.1.7 added 23.1.2016
-			
+			'ntfparents'  : 'Získání informací o cestě', // from v2.1.17 added 2.11.2016
+			'ntfchunkmerge': 'Zpracování nahraného souboru', // from v2.1.17 added 2.11.2016
+
 			/************************************ dates **********************************/
 			'dateUnknown' : 'neznámý',
 			'Today'       : 'Dnes',
@@ -237,21 +252,22 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'sortdate'          : 'dle data',
 			'sortFoldersFirst'  : 'Napřed složky',
 			'sortperm'          : 'dle povolení', // from v2.1.13 added 13.06.2016
-			'sortmode'          : 'dle módu', // from v2.1.13 added 13.06.2016
-			'sortowner'         : 'dle majitele', // from v2.1.13 added 13.06.2016
-			'sortgroup'         : 'dle skupiny', // from v2.1.13 added 13.06.2016
-			'sortAlsoTreeview'  : 'Také stromové zobrazení', // from v2.1.15 added 01.08.2016
+			'sortmode'          : 'dle módu',       // from v2.1.13 added 13.06.2016
+			'sortowner'         : 'dle majitele',      // from v2.1.13 added 13.06.2016
+			'sortgroup'         : 'dle skupiny',      // from v2.1.13 added 13.06.2016
+			'sortAlsoTreeview'  : 'Také stromové zobrazení',  // from v2.1.15 added 01.08.2016
 
 			/********************************** new items **********************************/
 			'untitled file.txt' : 'Nový textový soubor.txt', // added 10.11.2015
-			'untitled folder'   : 'Nová složka', // added 10.11.2015
-		  'Archive'           : 'Nový archiv', // from v2.1 added 10.11.2015
+			'untitled folder'   : 'Nová složka',   // added 10.11.2015
+			'Archive'           : 'Nový archiv',  // from v2.1 added 10.11.2015
 
 			/********************************** messages **********************************/
 			'confirmReq'      : 'Požadováno potvrzení',
 			'confirmRm'       : 'Opravdu chcete odstranit tyto soubory?<br/>Operace nelze vrátit!',
 			'confirmRepl'     : 'Nahradit staré soubory novými?',
 			'confirmConvUTF8' : 'Není v UTF-8, převést do UTF-8?<br/>Obsah po převodu se stává UTF-8.', // from v2.1 added 08.04.2014
+			'confirmNonUTF8'  : 'Kódování tohoto souboru nemoholo rozpoznán. Pro úpravy je třeba dočasně převést do kódování UTF-8.<br/>Prosím, vyberte kódování znaků souboru.', // from v2.1.19 added 28.11.2016
 			'confirmNotSave'  : 'Byl změněn.<br/>Pokud obsahuje neuložené změny, dojde ke ztrátě práce.', // from v2.1 added 15.7.2015
 			'apllyAll'        : 'Pro všechny',
 			'name'            : 'Název',
@@ -326,12 +342,12 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'port'                : 'Port', // added 18.04.2012
 			'user'                : 'Uživatel', // added 18.04.2012
 			'pass'                : 'Heslo', // added 18.04.2012
-			'confirmUnmount'      : 'Chcete odpojit $1?', // from v2.1 added 30.04.2012
+			'confirmUnmount'      : 'Chcete odpojit $1?',  // from v2.1 added 30.04.2012
 			'dropFilesBrowser': 'Přemístěte nebo přesuňte soubory z prohlížeče', // from v2.1 added 30.05.2012
 			'dropPasteFiles'  : 'Zde přemístěte nebo přesuňte soubory a adresy URL', // from v2.1 added 07.04.2014
 			'encoding'        : 'Kódování', // from v2.1 added 19.12.2014
-			'locale'          : 'Lokalizce', // from v2.1 added 19.12.2014
-			'searchTarget'    : 'Cíl: $1', // from v2.1 added 22.5.2015
+			'locale'          : 'Lokalizce',   // from v2.1 added 19.12.2014
+			'searchTarget'    : 'Cíl: $1',                // from v2.1 added 22.5.2015
 			'searchMime'      : 'Vyhledávání podle vstupního MIME typu', // from v2.1 added 22.5.2015
 			'owner'           : 'Majitel', // from v2.1 added 20.6.2015
 			'group'           : 'Skupina', // from v2.1 added 20.6.2015
@@ -343,8 +359,8 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'emptyFolderDrop' : 'Složka je prázdná, přesunout nebo zkontrolovat položky', // from v2.1.6 added 30.12.2015
 			'emptyFolderLTap' : 'Složka je prázdná, dlouhim kliknutím přidáte položky', // from v2.1.6 added 30.12.2015
 			'quality'         : 'Kvalita', // from v2.1.6 added 5.1.2016
-			'autoSync'        : 'Automatická synchronizace', // from v2.1.6 added 10.1.2016
-			'moveUp'          : 'Přesunout nahoru', // from v2.1.6 added 18.1.2016
+			'autoSync'        : 'Automatická synchronizace',  // from v2.1.6 added 10.1.2016
+			'moveUp'          : 'Přesunout nahoru',  // from v2.1.6 added 18.1.2016
 			'getLink'         : 'Získat URL odkaz', // from v2.1.7 added 9.2.2016
 			'selectedItems'   : 'Vybrané položky ($1)', // from v2.1.7 added 2.19.2016
 			'folderId'        : 'ID složky', // from v2.1.10 added 3.25.2016
@@ -361,8 +377,22 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'reinstate'       : 'Obnovit', // from v2.1.15 added 3.8.2016
 			'complete'        : '$1 kompletní', // from v2.1.15 added 21.8.2016
 			'contextmenu'     : 'Kontextové menu', // from v2.1.15 added 9.9.2016
-			'pageTurning'     : 'Otáčení stránky', // from v2.1.15 added 9.10.2016
-			'volumeRoots'     : 'Kořeny média', // from v2.1.16 added 16.10.2016
+			'pageTurning'     : 'Otáčení stránky', // from v2.1.15 added 10.9.2016
+			'volumeRoots'     : 'Kořeny média', // from v2.1.16 added 16.9.2016
+			'reset'           : 'Reset', // from v2.1.16 added 1.10.2016
+			'bgcolor'         : 'Barva pozadí', // from v2.1.16 added 1.10.2016
+			'colorPicker'     : 'Výběr barvy', // from v2.1.16 added 1.10.2016
+			'8pxgrid'         : '8px mřížka', // from v2.1.16 added 4.10.2016
+			'enabled'         : 'Povoleno', // from v2.1.16 added 4.10.2016
+			'disabled'        : 'Zakázáno', // from v2.1.16 added 4.10.2016
+			'emptyIncSearch'  : 'Výsledky hledání jsou prázdné v aktuálním zobrazení.\\Stisknutím tlačítka [Enter] rozšíříte vyhledávání cíle.', // from v2.1.16 added 5.10.2016
+			'emptyLetSearch'  : 'Výsledky vyhledávání prvního listu jsou v aktuálním zobrazení prázdné.', // from v2.1.23 added 24.3.2017
+			'textLabel'       : 'Nápis textu', // from v2.1.17 added 13.10.2016
+			'minsLeft'        : '$1 minut zůstává', // from v2.1.17 added 13.11.2016
+			'openAsEncoding'  : 'Otevřít pomocí zvoleného kódování', // from v2.1.19 added 2.12.2016
+			'saveAsEncoding'  : 'Uložit s vybraným kódováním', // from v2.1.19 added 2.12.2016
+			'selectFolder'    : 'Vyberte složku', // from v2.1.20 added 13.12.2016
+			'firstLetterSearch': 'Hledání prvního listu', // from v2.1.23 added 24.3.2017
 
 			/********************************** mimetypes **********************************/
 			'kindUnknown'     : 'Neznámý',
@@ -393,7 +423,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'kindOTF'         : 'Open Type font',
 			'kindRPM'         : 'RPM balíček',
 			// texts
-                        'kindText'        : 'Textový dokument',
+			'kindText'        : 'Textový dokument',
 			'kindTextPlain'   : 'Čistý text',
 			'kindPHP'         : 'PHP zdrojový kód',
 			'kindCSS'         : 'Kaskádové styly',
@@ -446,4 +476,5 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'kindVideoOGG'    : 'Ogg video'
 		}
 	};
-}
+}));
+

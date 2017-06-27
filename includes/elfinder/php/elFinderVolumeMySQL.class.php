@@ -148,7 +148,8 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 			$this->tmpPath = $tmp;
 		}
 		
-		if (!$this->tmpPath && $this->tmbPath && $this->tmbPathWritable) {
+		// fallback of $this->tmp
+		if (!$this->tmpPath && $this->tmbPathWritable) {
 			$this->tmpPath = $this->tmbPath;
 		}
 
@@ -542,6 +543,9 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 				unset($stat['height']);
 				$stat['size'] = 0;
 			} else {
+				if (!$stat['mime']) {
+					unset($stat['mime']);
+				}
 				unset($stat['dirs']);
 			}
 			unset($stat['id']);
@@ -657,7 +661,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * @author Dmitry (dio) Levashov
 	 **/
 	protected function _mkfile($path, $name) {
-		return $this->make($path, $name, 'text/plain') ? $this->_joinPath($path, $name) : false;
+		return $this->make($path, $name, '') ? $this->_joinPath($path, $name) : false;
 	}
 
 	/**

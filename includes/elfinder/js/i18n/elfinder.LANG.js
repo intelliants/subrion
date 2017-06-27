@@ -10,15 +10,24 @@
  * @author Translator Name <translator@email.tld>
  * @version 201x-xx-xx
  */
-if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object') {
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(['elfinder'], factory);
+	} else if (typeof exports !== 'undefined') {
+		module.exports = factory(require('elfinder'));
+	} else {
+		factory(root.elFinder);
+	}
+}(this, function(elFinder) {
 	elFinder.prototype.i18.REPLACE_WITH_xx_OR_xx_YY_LANG_CODE = {
 		translator : 'Translator name &lt;translator@email.tld&gt;',
 		language   : 'Language of translation in your language',
 		direction  : 'ltr',
 		dateFormat : 'd.m.Y H:i', // Mar 13, 2012 05:27 PM
 		fancyDateFormat : '$1 H:i', // will produce smth like: Today 12:25 PM
+		nonameDateFormat : 'ymd-His', // to apply if upload file is noname: 120513172700
 		messages   : {
-			
+
 			/********************************** errors **********************************/
 			'error'                : 'Error',
 			'errUnknown'           : 'Unknown error.',
@@ -48,6 +57,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'errLocked'            : '"$1" is locked and can not be renamed, moved or removed.',
 			'errExists'            : 'File named "$1" already exists.',
 			'errInvName'           : 'Invalid file name.',
+			'errInvDirname'        : 'Invalid folder name.',  // from v2.1.24 added 12.4.2017
 			'errFolderNotFound'    : 'Folder not found.',
 			'errFileNotFound'      : 'File not found.',
 			'errTrgFolderNotFound' : 'Target folder "$1" not found.',
@@ -73,6 +83,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'errMove'              : 'Unable to move "$1".',
 			'errCopyInItself'      : 'Unable to copy "$1" into itself.',
 			'errRm'                : 'Unable to remove "$1".',
+			'errTrash'             : 'Unable into trash.', // from v2.1.24 added 30.4.2017
 			'errRmSrc'             : 'Unable remove source file(s).',
 			'errExtract'           : 'Unable to extract files from "$1".',
 			'errArchive'           : 'Unable to create archive.',
@@ -100,12 +111,16 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'errFtpMkdir'          : 'Unable to create remote directory on FTP: "$1"',
 			'errArchiveExec'       : 'Error while archiving files: "$1"',
 			'errExtractExec'       : 'Error while extracting files: "$1"',
-			'errNetUnMount'        : 'Unable to unmount', // from v2.1 added 30.04.2012
+			'errNetUnMount'        : 'Unable to unmount.', // from v2.1 added 30.04.2012
 			'errConvUTF8'          : 'Not convertible to UTF-8', // from v2.1 added 08.04.2014
-			'errFolderUpload'      : 'Try Google Chrome, If you\'d like to upload the folder.', // from v2.1 added 26.6.2015
+			'errFolderUpload'      : 'Try the modern browser, If you\'d like to upload the folder.', // from v2.1 added 26.6.2015
 			'errSearchTimeout'     : 'Timed out while searching "$1". Search result is partial.', // from v2.1 added 12.1.2016
 			'errReauthRequire'     : 'Re-authorization is required.', // from v2.1.10 added 24.3.2016
 			'errMaxTargets'        : 'Max number of selectable items is $1.', // from v2.1.17 added 17.10.2016
+			'errRestore'           : 'Unable to restore from the trash. Can\'t identify the restore destination.', // from v2.1.24 added 3.5.2017
+			'errEditorNotFound'    : 'Editor not found to this file type.', // from v2.1.25 added 23.5.2017
+			'errServerError'       : 'Error occurred on the server side.', // from v2.1.25 added 16.6.2017
+			'errEmpty'             : 'Unable to empty folder "$1".', // from v2.1.25 added 22.6.2017
 
 			/******************************* commands names ********************************/
 			'cmdarchive'   : 'Create archive',
@@ -122,7 +137,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'cmdhome'      : 'Home',
 			'cmdinfo'      : 'Get info',
 			'cmdmkdir'     : 'New folder',
-			'cmdmkdirin'   : 'Into new folder', // from v2.1.7 added 19.2.2016
+			'cmdmkdirin'   : 'Into New Folder', // from v2.1.7 added 19.2.2016
 			'cmdmkfile'    : 'New text file',
 			'cmdopen'      : 'Open',
 			'cmdpaste'     : 'Paste',
@@ -130,6 +145,8 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'cmdreload'    : 'Reload',
 			'cmdrename'    : 'Rename',
 			'cmdrm'        : 'Delete',
+			'cmdtrash'     : 'Into trash', //from v2.1.24 added 29.4.2017
+			'cmdrestore'   : 'Restore', //from v2.1.24 added 3.5.2017
 			'cmdsearch'    : 'Find files',
 			'cmdup'        : 'Go to parent directory',
 			'cmdupload'    : 'Upload files',
@@ -142,8 +159,10 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'cmdchmod'     : 'Change mode', // from v2.1 added 20.6.2015
 			'cmdopendir'   : 'Open a folder', // from v2.1 added 13.1.2016
 			'cmdcolwidth'  : 'Reset column width', // from v2.1.13 added 12.06.2016
+			'cmdfullscreen': 'Full Screen', // from v2.1.15 added 03.08.2016
 			'cmdmove'      : 'Move', // from v2.1.15 added 21.08.2016
-			
+			'cmdempty'     : 'Empty the folder', // from v2.1.25 added 22.06.2017
+
 			/*********************************** buttons ***********************************/
 			'btnClose'  : 'Close',
 			'btnSave'   : 'Save',
@@ -163,17 +182,22 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'btnFileName':'Filename',  // from v2.1 added 22.5.2015
 			'btnSaveClose': 'Save & Close', // from v2.1 added 12.6.2015
 			'btnBackup' : 'Backup', // fromv2.1 added 28.11.2015
-			
+			'btnRename'    : 'Rename',      // from v2.1.24 added 6.4.2017
+			'btnRenameAll' : 'Rename(All)', // from v2.1.24 added 6.4.2017
+			'btnPrevious' : 'Prev ($1/$2)', // from v2.1.24 added 11.5.2017
+			'btnNext'     : 'Next ($1/$2)', // from v2.1.24 added 11.5.2017
+			'btnSaveAs'   : 'Save As', // from v2.1.25 added 24.5.2017
+
 			/******************************** notifications ********************************/
 			'ntfopen'     : 'Open folder',
 			'ntffile'     : 'Open file',
 			'ntfreload'   : 'Reload folder content',
-			'ntfmkdir'    : 'Creating directory',
+			'ntfmkdir'    : 'Creating folder',
 			'ntfmkfile'   : 'Creating files',
 			'ntfrm'       : 'Delete files',
 			'ntfcopy'     : 'Copy files',
 			'ntfmove'     : 'Move files',
-			'ntfprepare'  : 'Prepare to copy files',
+			'ntfprepare'  : 'Checking existing items',
 			'ntfrename'   : 'Rename files',
 			'ntfupload'   : 'Uploading files',
 			'ntfdownload' : 'Downloading files',
@@ -194,7 +218,13 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'ntfzipdl'    : 'Creating a file for download', // from v2.1.7 added 23.1.2016
 			'ntfparents'  : 'Getting path infomation', // from v2.1.17 added 2.11.2016
 			'ntfchunkmerge': 'Processing the uploaded file', // from v2.1.17 added 2.11.2016
-			
+			'ntftrash'    : 'Doing throw in the trash', // from v2.1.24 added 2.5.2017
+			'ntfrestore'  : 'Doing restore from tha trash', // from v2.1.24 added 3.5.2017
+			'ntfchkdir'   : 'Checking destination folder', // from v2.1.24 added 3.5.2017
+
+			/*********************************** volumes *********************************/
+			'volume_Trash' : 'Trash', //from v2.1.24 added 29.4.2017
+
 			/************************************ dates **********************************/
 			'dateUnknown' : 'unknown',
 			'Today'       : 'Today',
@@ -257,10 +287,13 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 
 			/********************************** messages **********************************/
 			'confirmReq'      : 'Confirmation required',
-			'confirmRm'       : 'Are you sure you want to remove files?<br/>This cannot be undone!',
-			'confirmRepl'     : 'Replace old file with new one?',
+			'confirmRm'       : 'Are you sure you want to permanently remove items?<br/>This cannot be undone!',
+			'confirmRepl'     : 'Replace old item with new one?',
+			'confirmRest'     : 'Replace existing item with the item in trash?', // fromv2.1.24 added 5.5.2017
 			'confirmConvUTF8' : 'Not in UTF-8<br/>Convert to UTF-8?<br/>Contents become UTF-8 by saving after conversion.', // from v2.1 added 08.04.2014
+			'confirmNonUTF8'  : 'Character encoding of this file couldn\'t be detected. It need to temporarily convert to UTF-8 for editting.<br/>Please select character encoding of this file.', // from v2.1.19 added 28.11.2016
 			'confirmNotSave'  : 'It has been modified.<br/>Losing work if you do not save changes.', // from v2.1 added 15.7.2015
+			'confirmTrash'    : 'Are you sure you want to move items to trash bin?', //from v2.1.24 added 29.4.2017
 			'apllyAll'        : 'Apply to all',
 			'name'            : 'Name',
 			'size'            : 'Size',
@@ -314,9 +347,10 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'shortcutsof'     : 'Shortcuts disabled',
 			'dropFiles'       : 'Drop files here',
 			'or'              : 'or',
-			'selectForUpload' : 'Select files to upload',
-			'moveFiles'       : 'Move files',
-			'copyFiles'       : 'Copy files',
+			'selectForUpload' : 'Select files',
+			'moveFiles'       : 'Move items',
+			'copyFiles'       : 'Copy items',
+			'restoreFiles'    : 'Restore items', // from v2.1.24 added 5.5.2017
 			'rmFromPlaces'    : 'Remove from places',
 			'aspectRatio'     : 'Aspect ratio',
 			'scale'           : 'Scale',
@@ -361,8 +395,8 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'nowLoading'      : 'Now loading...', // from v2.1.12 added 4.26.2016
 			'openMulti'       : 'Open multiple files', // from v2.1.12 added 5.14.2016
 			'openMultiConfirm': 'You are trying to open the $1 files. Are you sure you want to open in browser?', // from v2.1.12 added 5.14.2016
-			'emptySearch'     : 'No match results in search targets', // from v2.1.12 added 5.16.2016
-			'editingFile'     : 'You are editing a file.', // from v2.1.13 added 6.3.2016
+			'emptySearch'     : 'Search results is empty in search target.', // from v2.1.12 added 5.16.2016
+			'editingFile'     : 'It is editing a file.', // from v2.1.13 added 6.3.2016
 			'hasSelected'     : 'You have selected $1 items.', // from v2.1.13 added 6.3.2016
 			'hasClipboard'    : 'You have $1 items in the clipboard.', // from v2.1.13 added 6.3.2016
 			'incSearchOnly'   : 'Incremental search is only from the current view.', // from v2.1.13 added 6.30.2016
@@ -377,9 +411,19 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'8pxgrid'         : '8px Grid', // from v2.1.16 added 4.10.2016
 			'enabled'         : 'Enabled', // from v2.1.16 added 4.10.2016
 			'disabled'        : 'Disabled', // from v2.1.16 added 4.10.2016
-			'emptyIncSearch'  : 'No match results in current view', // from v2.1.16 added 5.10.2016
-			'textLabel'       : 'Text lable', // from v2.1.17 added 13.10.2016
+			'emptyIncSearch'  : 'Search results is empty in current view.\\APress [Enter] to expand search target.', // from v2.1.16 added 5.10.2016
+			'emptyLetSearch'  : 'First letter search results is empty in current view.', // from v2.1.23 added 24.3.2017
+			'textLabel'       : 'Text label', // from v2.1.17 added 13.10.2016
 			'minsLeft'        : '$1 mins left', // from v2.1.17 added 13.11.2016
+			'openAsEncoding'  : 'Reopen with selected encoding', // from v2.1.19 added 2.12.2016
+			'saveAsEncoding'  : 'Save with the selected encoding', // from v2.1.19 added 2.12.2016
+			'selectFolder'    : 'Select folder', // from v2.1.20 added 13.12.2016
+			'firstLetterSearch': 'First letter search', // from v2.1.23 added 24.3.2017
+			'presets'         : 'Presets', // from v2.1.25 added 26.5.2017
+			'tooManyToTrash'  : 'It\'s too many items so it can\'t into trash.', // from v2.1.25 added 9.6.2017
+			'TextArea'        : 'TextArea', // from v2.1.25 added 14.6.2017
+			'folderToEmpty'   : 'Empty the folder "$1".', // from v2.1.25 added 22.6.2017
+			'filderIsEmpty'   : 'There are no items in a folder "$1".', // from v2.1.25 added 22.6.2017
 
 			/********************************** mimetypes **********************************/
 			'kindUnknown'     : 'Unknown',
@@ -463,5 +507,5 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'kindVideoOGG'    : 'Ogg movie'
 		}
 	};
-}
+}));
 

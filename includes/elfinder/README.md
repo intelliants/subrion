@@ -1,5 +1,8 @@
 elFinder
 ========
+
+**WARNING: IF YOU HAVE OLDER VERSIONS OF ELFINDER ON PUBLIC SERVERS, IT MAY CAUSE SERIOUS DAMAGE TO YOUR SERVER AND VISITED USER. YOU SHOULD UPDATE TO THE LATEST VERSION OR REMOVE IT FROM THE SERVER.**
+
 <pre>
       _ ______ _           _           
      | |  ____(_)         | |          
@@ -38,54 +41,48 @@ Branches
 --------
 -  [master](https://github.com/Studio-42/elFinder/tree/master) - Main development branch
 -  [2.1-src](https://github.com/Studio-42/elFinder/tree/2.1-src) - 2.1 development branch, auto build to 2.1 on commit
--  [2.0-src](https://github.com/Studio-42/elFinder/tree/2.0-src) - 2.0 development branch (Security fix only), auto build to 2.0 on commit
 -  [2.1](https://github.com/Studio-42/elFinder/tree/2.1) - 2.1 nightly build branch
--  [2.0](https://github.com/Studio-42/elFinder/tree/2.0) - 2.0 nightly build branch
 
 Features
 --------
-**2.0.x**
+ * Usability like the MacOS Finder or Windows Explorer
+ * Mobile friendly view for touch devices
  * All operations with files and folders on a remote server (copy, move,
    upload, create folder/file, rename, etc.)
  * High performance server backend and light client UI
  * Multi-root support
  * Local file system, MySQL, FTP volume storage drivers
- * Background file upload with Drag & Drop HTML5 support
+ * Cloud strage (Box, Dropbox, GoogleDrive and OneDrive) drivers
+ * Background file/folder upload with Drag & Drop HTML5 support
+ * Chunked file upload for large file
+ * Upload directly to the folder
+ * Upload form URL (or list)
  * List and Icons view
  * Keyboard shortcuts
  * Standard methods of file/group selection using mouse or keyboard
  * Move/Copy files with Drag & Drop
+ * Drag & Drop to outside by starting drag with alt/option key press
  * Archives create/extract (zip, rar, 7z, tar, gzip, bzip2)
  * Rich context menu and toolbar
  * Quicklook, preview for common file types
  * Edit text files and images
  * "Places" for your favorites
  * Calculate directory sizes
- * Thumbnails for image files
+ * Thumbnails for image, movie files
  * Easy to integrate with web editors (elRTE, CKEditor, TinyMCE)
  * Flexible configuration of access rights, upload file types, user interface
    and other
- * Extensibility
+ * Extensibility by event handling of backend and client side
  * Simple client-server API based on JSON
-
-**2.1.x**
- * More High performance server backend and light client UI
+ * Supports custom information in info dialog
+ * Configuable columns of list view
+ * Supports custom CSS class function for the custom folder icon
  * Connector plugin
      * [AutoRotate](https://github.com/Studio-42/elFinder/blob/2.1-src/php/plugins/AutoRotate/plugin.php) : Auto rotation on file upload of JPEG file by EXIF Orientation.
      * [AutoResize](https://github.com/Studio-42/elFinder/blob/2.1-src/php/plugins/AutoResize/plugin.php) : Auto resize on file upload.
      * [Normalizer](https://github.com/Studio-42/elFinder/blob/2.1-src/php/plugins/Normalizer/plugin.php) : UTF-8 Normalizer of file-name and file-path etc.
      * [Sanitizer](https://github.com/Studio-42/elFinder/blob/2.1-src/php/plugins/Sanitizer/plugin.php) : Sanitizer of file-name and file-path etc.
      * [Watermark](https://github.com/Studio-42/elFinder/blob/2.1-src/php/plugins/Watermark/plugin.php) : Print watermark on file upload.
- * Folder upload with Chrome, Firefox and Edge
- * Chunked file upload
- * Upload directly to the folder
- * Upload form URL (or list)
- * Creating the archive by specifying the file name
- * Direct extraction to the current working directory (you do not want to create a folder)
- * Supports Dropbox.com&copy; (Configurable & As network volume)
- * Supports custom information in info dialog
- * Configuable columns of list view
- * Supports custom CSS class function of tree view
  * For more details, see the [Changelog](https://github.com/Studio-42/elFinder/blob/master/Changelog)
 
 Requirements
@@ -97,8 +94,8 @@ Requirements
 **However, we recommend newest version.**
 
 ### Client
- * Modern browser. elFinder was tested in Firefox 12, Internet Explorer 8+,
-   Safari 6, Opera 12 and Chrome 19
+ * Modern browser. elFinder was tested in Internet Explorer 8
+   and newest Firefox, Chrome, IE, Edge and Opera
 
 ### Server
  * Any web server
@@ -127,12 +124,11 @@ Installation
 Downloads
 ------------
 **Stable releases** ([Changelog](https://github.com/Studio-42/elFinder/blob/master/Changelog))
- + [elFinder 2.1.18](https://github.com/Studio-42/elFinder/archive/2.1.18.zip)
- + [elFinder 2.0.7](https://github.com/Studio-42/elFinder/archive/2.0.7.zip)
+ + [elFinder 2.1.25](https://github.com/Studio-42/elFinder/archive/2.1.25.zip)
+ + [elFinder 2.0.9](https://github.com/Studio-42/elFinder/archive/2.0.9.zip) (deprecated)
 
 **Nightly builds**
  + [elFinder 2.1.x (Nightly)](https://github.com/Studio-42/elFinder/archive/2.1.zip)
- + [elFinder 2.0.x (Nightly)](https://github.com/Studio-42/elFinder/archive/2.0.zip)
 
 Demo sites
 ------------
@@ -142,10 +138,6 @@ Demo sites
 
 FAQs
 ------------
-### Which version of elFinder should I use?
-* **2.0.x** if you do not need 2.1 of the advanced features.
-
-* **2.1.x** if you want to try the experimental (*bleeding edge, but API 2.1 connector is PHP only*). It is also available from the connector on the API 1.x and 2.0.
 
 ### Should I use elFinder builds (compressed) or source (uncompressed)?
 
@@ -158,17 +150,19 @@ Check out the [wiki](https://github.com/studio-42/elFinder/wiki#howtos) for indi
 
 You can create or modify the language file to use translation tool. Please refer to the pull request the results to the respective branch.
  * [2.1 branch translation tool](http://studio-42.github.io/elFinder/tools/langman/#2.1)
- * [2.0 branch translation tool](http://studio-42.github.io/elFinder/tools/langman/#2.0)
 
 
 3rd party connectors
 --------------------
  * [ASP.NET](https://github.com/leniel/elFinder.Net)
+ * [ASP.NET Core](https://github.com/gordon-matt/elFinder.NetCore)
  * [Java Servlet](https://github.com/trustsystems/elfinder-java-connector)
  * [Python](https://github.com/Studio-42/elfinder-python)
  * [Ruby/Rails](https://github.com/phallstrom/el_finder)
  * [Django](https://github.com/mikery/django-elfinder)
  * [Laravel](https://github.com/barryvdh/laravel-elfinder)
+ * [JavaScript/Efw](https://github.com/efwGrp/efw3.X/blob/master/help/api_efw_tag.md#elfinder-tag)
+ * [Symfony](https://github.com/helios-ag/FMElfinderBundle) 
 
 3rd party Volume Drivers
 --------------------
@@ -176,6 +170,8 @@ You can create or modify the language file to use translation tool. Please refer
 
 3rd party Themes
 --------------------
+Hint: [How to load CSS with RequireJS?](https://github.com/Studio-42/elFinder/wiki/How-to-load-CSS-with-RequireJS%3F)
+
  * [lokothodida/elfinder-theme-moono](https://github.com/lokothodida/elfinder-theme-moono)
  * [lokothodida/elfinder-theme-windows-10](https://github.com/lokothodida/elfinder-theme-windows-10)
  * [StudioJunkyard/elfinder-boostrap-theme](https://github.com/StudioJunkyard/LibreICONS/tree/master/themes/elFinder)
