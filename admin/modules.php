@@ -92,7 +92,6 @@ class iaBackendController extends iaAbstractControllerBackend
                 break;
 
             case 'plugins':
-
                 $installedPlugins = $this->_iaDb->assoc(['name', 'status', 'version'],
                     iaDb::convertIds(iaModule::TYPE_PLUGIN, 'type'));
                 $this->_getLocal(IA_MODULES, ['installed' => $installedPlugins]);
@@ -100,7 +99,6 @@ class iaBackendController extends iaAbstractControllerBackend
                 break;
 
             case 'templates':
-
                 $this->_getTemplatesList();
                 if ($this->_messages) {
                     $iaView->setMessages($this->_messages);
@@ -110,6 +108,7 @@ class iaBackendController extends iaAbstractControllerBackend
             default:
                 return iaView::accessDenied();
         }
+
         $iaView->assign('modules', $this->_modules);
 
         $iaView->display($this->_template);
@@ -140,14 +139,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
                     $result = $this->_installPlugin($this->_iaCore->requestPath[0], $action, $_POST['remote']);
                     break;
-                case 'uninstall':
 
+                case 'uninstall':
                     if (!$iaAcl->isAccessible($this->_iaCore->requestPath[0], $this->_iaCore->requestPath[1])) {
                         return iaView::accessDenied();
                     }
 
                     $result = $this->_uninstallPlugin($this->_iaCore->requestPath[0]);
-                    break;
             }
         } else {
             $result = [];
@@ -413,7 +411,6 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         if ($url) {
-            $url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
             $this->_changeDefault($url);
 
             $this->addMessage('reset_default_success');
@@ -436,8 +433,7 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         $this->getHelper()->getFromPath($installFile);
-//		$this->getHelper()->setUrl(IA_URL_DELIMITER);
-//		$this->getHelper()->setXml(file_get_contents($installFile));
+		$this->getHelper()->setUrl(IA_URL_DELIMITER);
         $this->getHelper()->parse();
         $this->getHelper()->checkValidity();
 
@@ -456,42 +452,43 @@ class iaBackendController extends iaAbstractControllerBackend
         return true;
     }
 
-    private function _changeDefault($url = '', $module = '')
+    private function _changeDefault($url, $module = '')
     {
-        $iaDb = &$this->_iaDb;
-
         $defaultPackage = $this->_iaCore->get('default_package');
 
-        if ($defaultPackage != $module) {
-            if ($defaultPackage) {
-                $oldModule = $this->_iaCore->factory('module', iaCore::ADMIN);
-
-//				$oldModule->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
-//				$oldModule->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME));
-                $this->getHelper()->getFromPath($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME);
-                $oldModule->parse();
-                $oldModule->checkValidity();
-
-                $iaDb->update(['url' => $oldModule->getUrl()], iaDb::convertIds($defaultPackage, 'name'));
-
-                if ($oldModule->itemData['pages']['front']) {
-                    $iaDb->setTable('pages');
-                    foreach ($oldModule->itemData['pages']['front'] as $page) {
-                        $iaDb->update(['alias' => $page['alias']],
-                            "`name` = '{$page['name']}' AND `module` = '$defaultPackage'");
-                    }
-                    $iaDb->resetTable();
-                }
-            }
-
-            $iaDb->update(['url' => IA_URL_DELIMITER], iaDb::convertIds($module, 'name'));
-            $this->_iaCore->set('default_package', $module, true);
-
-            $iaDb->setTable('hooks');
-            $iaDb->update(['status' => iaCore::STATUS_INACTIVE], "`name` = 'phpCoreUrlRewrite'");
-            $iaDb->update(['status' => iaCore::STATUS_ACTIVE], "`name` = 'phpCoreUrlRewrite' AND `module` = '$module'");
-            $iaDb->resetTable();
+        if ($defaultPackage == $module) {
+            return;
         }
+
+        $iaDb = &$this->_iaDb;
+
+        if ($defaultPackage) {
+            $url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
+
+            $this->getHelper()->setUrl($url);
+            $this->getHelper()->getFromPath($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME);
+            $this->getHelper()->parse();
+            $this->getHelper()->checkValidity();
+
+            $iaDb->update(['url' => $url], iaDb::convertIds($defaultPackage, 'name'));
+
+            if ($this->getHelper()->itemData['pages']['front']) {
+                $iaDb->setTable('pages');
+                foreach ($this->getHelper()->itemData['pages']['front'] as $page) {
+                    $iaDb->update(['alias' => $page['alias']],
+                        "`name` = '{$page['name']}' AND `module` = '$defaultPackage'");
+                }
+                $iaDb->resetTable();
+            }
+        }
+
+        $iaDb->update(['url' => IA_URL_DELIMITER], iaDb::convertIds($module, 'name'));
+        $this->_iaCore->set('default_package', $module, true);
+
+        $iaDb->setTable('hooks');
+        $iaDb->update(['status' => iaCore::STATUS_INACTIVE], "`name` = 'phpCoreUrlRewrite'");
+        $iaDb->update(['status' => iaCore::STATUS_ACTIVE], "`name` = 'phpCoreUrlRewrite' AND `module` = '$module'");
+        $iaDb->resetTable();
     }
 
     private function _getList()
