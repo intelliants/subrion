@@ -104,12 +104,12 @@ Ext.onReady(function () {
             remote = $this.data['remote'],
             url = $this.attr('href');
 
-        if ('packages' == type) {
-            dialog_package('install', module, url);
+        if ('packages' === type) {
+            dialog_package('install', url, module);
 
             return;
         }
-        else if ('templates' == type) {
+        else if ('templates' === type) {
             Ext.Msg.show({
                 title: _t('confirm'),
                 msg: _t('are_you_sure_install_module'),
