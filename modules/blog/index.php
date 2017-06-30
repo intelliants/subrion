@@ -89,7 +89,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $messages[] = iaLanguage::get('title_is_empty');
                 }
 
-                $entry['body'] = $_POST['body'];
+                $entry['body'] = iaUtil::safeHTML($_POST['body']);
                 utf8_is_valid($entry['body']) || $entry['body'] = utf8_bad_replace($entry['body']);
 
                 if (empty($entry['body'])) {
