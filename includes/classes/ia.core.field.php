@@ -1290,6 +1290,7 @@ SQL;
 
     public function deleteUploadedFile($fieldName, $itemName, $itemId, $fileName = null, $checkOwnership = false)
     {
+        $fieldName = iaSanitize::paranoid($fieldName);
         $tableName = $this->iaCore->factory('item')->getItemTable($itemName);
 
         if ($checkOwnership) {
