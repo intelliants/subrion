@@ -757,7 +757,9 @@ SQL;
 
         if ($params && is_array($params)) {
             foreach ($params as $fieldName => $value) {
-                empty($this->getOption('columnAlias')->$fieldName) || ($fieldName = $this->getOption('columnAlias')->$fieldName);
+                $fieldName = empty($this->getOption('columnAlias')->$fieldName)
+                    ? iaSanitize::paranoid($fieldName)
+                    : $this->getOption('columnAlias')->$fieldName;
 
                 if (empty($value) ||
                     (!isset($this->_fieldTypes[$fieldName]) && ($this->getOption('customColumns') && !in_array($fieldName, $this->_options['customColumns'])))) {
