@@ -39,6 +39,8 @@ class iaMailer extends PHPMailer
     protected $_templateName;
     protected $_recipients = [];
 
+    protected $_table = 'email_templates';
+
 
     /**
      * Class initializer
@@ -56,7 +58,6 @@ class iaMailer extends PHPMailer
 
         switch ($this->_iaCore->get('mail_function')) {
             case 'smtp':
-
                 require_once IA_INCLUDES . 'phpmailer/class.smtp.php';
 
                 $this->isSMTP();
@@ -86,9 +87,9 @@ class iaMailer extends PHPMailer
 
         // global patterns
         $this->setReplacements([
-            'site_url' => IA_URL,
-            'site_name' => $this->_iaCore->get('site'),
-            'site_email' => $this->_iaCore->get('site_email')
+            'siteUrl' => IA_URL,
+            'siteName' => $this->_iaCore->get('site'),
+            'siteEmail' => $this->_iaCore->get('site_email')
         ]);
     }
 
@@ -116,12 +117,17 @@ class iaMailer extends PHPMailer
                 }
         }
 
-        if ($replacements) {
-            foreach ($replacements as $key => $value) {
-                $keyPattern = '{%' . strtoupper($key) . '%}';
-                $this->_replacements[$keyPattern] = $value;
-            }
-        }
+        $replacements = array_map(['iaSanitize', 'html'], $replacements);
+
+        $this->_replacements = array_merge($this->_replacements, $replacements);
+    }
+
+    public function reset()
+    {
+        $this->Subject = '';
+        $this->Body = '';
+
+        $this->_templateName = null;
     }
 
     public function addAddress($address, $name = '')
@@ -136,28 +142,50 @@ class iaMailer extends PHPMailer
     }
 
     /**
-     * Apply replacements in email Subject & Body
-     */
-    protected function _applyReplacements()
-    {
-        $this->Body = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Body);
-        $this->Subject = str_replace(array_keys($this->_replacements), array_values($this->_replacements), $this->Subject);
-    }
-
-    /**
      * Load email Subject & Body template
      *
      * @param string $name template name
      */
     public function loadTemplate($name)
     {
-        $this->Subject = $this->_iaCore->get($name . '_subject');
-        $this->Body = $this->_iaCore->get($name . '_body');
+        $row = $this->_iaCore->iaDb->row_bind(['subject', 'body'], '`name` = :name AND `active` = 1',
+            ['name' => $name], $this->_table);
 
-        $options = json_decode($this->_iaCore->iaDb->one('options', iaDb::convertIds($name, 'name'), iaCore::getConfigTable()));
-        $this->_defaultSignature = empty($options->signature);
+        if (!$row) {
+            $this->reset();
+            return false;
+        }
+
+        $this->Subject = $row['subject'];
+        $this->Body = $row['body'];
 
         $this->_templateName = $name;
+
+        return true;
+    }
+
+    protected function _compileTemplate()
+    {
+        if (!class_exists('iaSmarty')) {
+            $this->_iaCore->iaView->loadSmarty(true);
+        }
+
+        $iaSmarty = &$this->_iaCore->iaView->iaSmarty;
+
+        $iaSmarty->assign('core', [
+            'config' => $this->_iaCore->getConfig(),
+            'member' => iaUsers::getIdentity(true)
+        ]);
+
+        $iaSmarty->assign($this->_replacements);
+
+        $subject = $iaSmarty->fetch('eval:' . $this->Subject);
+
+        $iaSmarty->assign('subject', $subject);
+        $iaSmarty->assign('content', $iaSmarty->fetch('eval:' . $this->Body));
+
+        $this->Subject = $subject;
+        $this->Body = $iaSmarty->fetch(IA_HOME . 'admin/templates/emails/dist/email.layout.html');
     }
 
     /**
@@ -211,10 +239,8 @@ class iaMailer extends PHPMailer
      */
     public function send($toAdmins = false)
     {
-        if ($this->Body && $this->_defaultSignature && !$toAdmins) {
-            $this->Body .= $this->_iaCore->get('default_email_signature');
-        }
-        $this->_applyReplacements();
+        $this->_compileTemplate();
+
         $this->_setBcc();
         $this->_callHook('phpEmailToBeSent', $toAdmins);
 

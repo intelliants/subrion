@@ -1,36 +1,36 @@
 $(function () {
-    var tagsWindow = new Ext.Window(
-        {
-            title: _t('email_templates_tags'),
-            layout: 'fit',
-            modal: false,
-            closeAction: 'hide',
-            contentEl: 'template-tags',
-            buttons: [
-                {
-                    text: _t('close'),
-                    handler: function () {
-                        tagsWindow.hide();
-                    }
-                }]
-        });
+    var tagsWindow = new Ext.Window({
+        title: _t('email_templates_tags'),
+        layout: 'fit',
+        modal: false,
+        closeAction: 'hide',
+        contentEl: 'template-tags',
+        buttons: [
+            {
+                text: _t('close'),
+                handler: function () {
+                    tagsWindow.hide();
+                }
+            }]
+    });
 
-    $('#js-view-tags').on('click', function (e) {
+    $('#js-view-tags').on('click', function(e) {
         e.preventDefault();
         tagsWindow.show();
     });
 
-    $('#input-id').on('change', function (e) {
-        var id = $(this).val();
-        var $switchers = $('#enable_sending, #use_signature'),
+    $('#input-name').on('change', function() {
+        var name = $(this).val();
+
+        var $active = $('#input-active'),
             $patterns = $('#js-patterns'),
             $subject = $('#input-subject');
 
         // hide if none selected
-        if (!id) {
+        if (!name) {
             $subject.val('').prop('disabled', true);
             CKEDITOR.instances.body.setData('');
-            $switchers.hide();
+            $active.hide();
             $patterns.hide();
             $('button[type="submit"]', '#js-email-template-form').prop('disabled', true);
 
@@ -38,37 +38,37 @@ $(function () {
         }
 
         // get actual values
-        $.get(window.location.href + 'read.json', {id: id}, function (response) {
-                $subject.val(response.subject);
-                CKEDITOR.instances.body.setData(response.body);
+        $.get(window.location.href + 'read.json', {name: name}, function(response) {
+            $subject.val(response.subject);
+            CKEDITOR.instances.body.setData(response.body);
 
-                $('#enable_sending').bootstrapSwitch('setState', response.config);
-                $('#use_signature').bootstrapSwitch('setState', response.signature);
+            $('#input-active').bootstrapSwitch('setState', response.config);
 
-                if ('undefined' != typeof response.patterns) {
-                    var i, html = '';
-                    for (i in response.patterns) {
-                        if (i != '') html += '<strong>{%' + i.toUpperCase() + '%}</strong>' + ' — ' + response.patterns[i] + '<br>';
-                    }
-
-                    $('div:first', $patterns).html(html);
-                    $patterns.show()
+            if ('undefined' !== typeof response.variables) {
+                var i, html = '';
+                for (i in response.variables) {
+                    if (i !== '') html += '<strong>{$' + i + '}</strong>' + ' — ' + response.variables[i] + '<br>';
                 }
-                else {
-                    $patterns.hide();
-                    $('div:first', $patterns).html('');
-                }
-            },
-            'json');
 
-        $switchers.show();
+                $('div:first', $patterns).html(html);
+                $patterns.show()
+            }
+            else {
+                $('div:first', $patterns).html('');
+                $patterns.hide();
+            }
+        },
+        'json');
+
+        $active.show();
+
         $('#input-subject, #js-email-template-form button[type="submit"]').prop('disabled', false);
     });
 
     $('#js-email-template-form').on('submit', function (e) {
         e.preventDefault();
 
-        if ('object' == typeof CKEDITOR.instances.body) {
+        if ('object' === typeof CKEDITOR.instances.body) {
             CKEDITOR.instances.body.updateElement();
         }
 
@@ -77,11 +77,11 @@ $(function () {
             data[x.name] = x.value;
         });
 
-        if ('' == data.id) {
+        if (!data.name) {
             return;
         }
 
-        $.post(window.location.href + 'edit.json', data, function (response) {
+        $.post(window.location.href + 'edit.json', data, function(response) {
             if (response.result) {
                 intelli.notifFloatBox({msg: _t('saved'), type: 'success', autohide: true, pause: 1500});
             }

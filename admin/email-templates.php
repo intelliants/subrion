@@ -28,50 +28,44 @@ class iaBackendController extends iaAbstractControllerBackend
 {
     protected $_name = 'email-templates';
 
+    protected $_table = 'email_templates';
+
     protected $_processAdd = false;
     protected $_processEdit = false;
 
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->setTable(iaCore::getConfigTable());
-    }
 
     protected function _indexPage(&$iaView)
     {
         $iaView->display($this->getName());
 
-        $templates = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION,
-            "`config_group` = 'email_templates' AND `type` IN ('radio', 'divider') ORDER BY `order`");
+        $templates = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '1 ORDER BY `order`');
+
         $iaView->assign('templates', $templates);
     }
 
     protected function _gridRead($params)
     {
-        $template = $params['id'];
-        $options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
-        $signature = empty($options->signature) ? false : true;
+        $templateName = $params['name'];
+
+        $template = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($templateName, 'name'));
 
         $result = [
-            'config' => (bool)$this->_iaCore->get($template, null, false, true),
-            'signature' => $signature,
-            'subject' => $this->_iaCore->get($template . '_subject', null, false, true),
-            'body' => $this->_iaCore->get($template . '_body', null, false, true)
+            'active' => (bool)$template['active'],
+            'subject' => $template['subject'],
+            'body' => $template['body']
         ];
 
         // composing the patterns description
-        if ($array = $this->_iaDb->one_bind('multiple_values', '`name` = :name', ['name' => $template . '_body'])) {
-            $array = array_filter(explode(',', $array));
-            $patterns = [];
+        if ($template['variables']) {
+            $array = array_filter(explode(',', $template['variables']));
+            $variables = [];
 
             foreach ($array as $entry) {
                 list($key, $value) = explode('|', $entry);
-                $patterns[$key] = $value;
+                $variables[$key] = $value;
             }
 
-            $result['patterns'] = $patterns;
+            $result['variables'] = $variables;
         }
 
         return $result;
@@ -79,15 +73,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridUpdate($params)
     {
-        $template = $params['id'];
+        $values = [
+            'active' => (int)$params['active'],
+            'subject' => $params['subject'],
+            'body' => $params['body']
+        ];
 
-        $this->_iaCore->set($template . '_subject', $params['subject'], true);
-        $this->_iaCore->set($template . '_body', $params['body'], true);
-        $this->_iaCore->set($template, (int)$params['enable_template'], true);
-
-        $options = json_decode($this->_iaDb->one('`options`', iaDb::convertIds($template, 'name')));
-        $options->signature = $params['enable_signature'] ? true : false;
-        $this->_iaDb->update(['options' => json_encode($options)], iaDb::convertIds($template, 'name'));
+        $this->_iaDb->update($values, iaDb::convertIds($params['name'], 'name'));
 
         return ['result' => (0 == $this->_iaDb->getErrorNumber())];
     }

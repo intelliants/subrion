@@ -117,6 +117,7 @@ class iaModule extends abstractCore
             'custom_pages' => null,
             'dependencies' => null,
             'dumps' => null,
+            'email_templates' => null,
             'fields' => null,
             'groups' => null,
             'hooks' => null,
@@ -418,6 +419,10 @@ class iaModule extends abstractCore
 
         if ($this->itemData['config']) {
             $this->_processConfig($this->itemData['config']);
+        }
+
+        if ($this->itemData['email_templates']) {
+            $this->_processEmailTemplates($this->itemData['email_templates']);
         }
 
         $iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
@@ -922,6 +927,10 @@ class iaModule extends abstractCore
 
         if ($this->itemData['config']) {
             $this->_processConfig($this->itemData['config']);
+        }
+
+        if ($this->itemData['email_templates']) {
+            $this->_processEmailTemplates($this->itemData['email_templates']);
         }
 
         if ($this->itemData['pages']['custom'] && $this->itemData['type'] == self::TYPE_PACKAGE) {
@@ -1466,8 +1475,45 @@ class iaModule extends abstractCore
                         'value' => $text
                     ];
                 } else {
+                    $group = $this->_attr('group');
+
+                    // compatibity code
+                    // TODO: remove once packages updated
+                    if ('email_templates' == $group) {
+                        $name = $this->_attr('name');
+
+                        if ('divider' == $this->_attr('type')) {
+                            $this->itemData['email_templates'][$name] = [
+                                'active' => true,
+                                'divider' => true,
+                                'description' => $this->_attr('description')
+                            ];
+
+                            break;
+                        }
+
+                        if ('_body' == substr($name, -5)) {
+                            $name = substr($name, 0, -5);
+
+                            $this->itemData['email_templates'][$name]['body'] = $text;
+                            $this->itemData['email_templates'][$name]['variables'] = $this->_attr('values');
+                        } elseif ('_subject' == substr($name, -8)) {
+                            $name = substr($name, 0, -8);
+
+                            $this->itemData['email_templates'][$name]['subject'] = $text;
+                        } else {
+                            $this->itemData['email_templates'][$name] = [
+                                'active' => (int)$text,
+                                'description' => $this->_attr('description')
+                            ];
+                        }
+
+                        break;
+                    }
+                    //
+
                     $this->itemData['config'][] = [
-                        'config_group' => $this->_attr(['group', 'configgroup']),
+                        'config_group' => $group,
                         'name' => $this->_attr('name'),
                         'value' => $text,
                         'multiple_values' => $this->_attr('values'),
@@ -1475,7 +1521,6 @@ class iaModule extends abstractCore
                         'description' => $this->_attr('description'),
                         'private' => $this->_attr('private', true),
                         'custom' => $this->_attr('custom', true),
-                        'module' => $this->itemData['name'],
                         'options' => [
                             'wysiwyg' => $this->_attr('wysiwyg', 0),
                             'code_editor' => $this->_attr('code_editor', 0),
@@ -1765,6 +1810,20 @@ class iaModule extends abstractCore
                     'access' => $this->_attr('access', null),
                     'default_access' => $this->_attr('default_access', null)
                 ];
+
+                break;
+
+            case 'template':
+                if ($this->_checkPath('emails')) {
+                    $this->itemData['email_templates'][$this->_attr('name')] = [
+                        'subject' => $this->_attr('subject'),
+                        'body' => $text,
+                        'variables' => $this->_attr('variables'),
+                        'description' => $this->_attr('description'),
+                        'divider' => $this->_attr('divider', 0),
+                        'order' => $this->_attr('order'),
+                    ];
+                }
         }
     }
 
@@ -2100,6 +2159,7 @@ class iaModule extends abstractCore
         foreach ($entries as $entry) {
             $id = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($entry['name'], 'name'));
 
+            $entry['module'] = $this->itemData['name'];
             $entry['order'] = isset($entry['order']) ? $entry['order'] : ++$maxOrder;
             $entry['options'] = json_encode($entry['options']);
 
@@ -2117,6 +2177,29 @@ class iaModule extends abstractCore
             }
 
             self::_addPhrase('config_' . $entry['name'], $description, iaLanguage::CATEGORY_ADMIN);
+        }
+
+        $this->iaDb->resetTable();
+    }
+
+    protected function _processEmailTemplates(array $entries)
+    {
+        $this->iaDb->setTable('email_templates');
+
+        $maxOrder = $this->iaDb->getMaxOrder();
+        foreach ($entries as $name => $entry) {
+            $entry['name'] = $name;
+            $entry['module'] = $this->itemData['name'];
+            $entry['order'] || $entry['order'] = ++$maxOrder;
+
+            $description = $entry['description'];
+            unset($entry['description']);
+
+            $this->iaDb->exists(iaDb::convertIds($name, 'name'))
+                ? $this->iaDb->update($entry, iaDb::convertIds($name, 'name'))
+                : $this->iaDb->insert($entry);
+
+            self::_addPhrase('email_template_' . $entry['name'], $description, iaLanguage::CATEGORY_ADMIN);
         }
 
         $this->iaDb->resetTable();

@@ -161,6 +161,20 @@ CREATE TABLE `{install:prefix}cron` (
 	KEY `ACTIVE` (`active`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}email_templates`;
+CREATE TABLE `{install:prefix}email_templates` (
+	`name` varchar(60) NOT NULL,
+	`active` tinyint(1) unsigned NOT NULL default 1,
+  `divider` tinyint(1) unsigned NOT NULL default 0,
+	`order` smallint(5) unsigned NOT NULL,
+	`subject` varchar(255) NOT NULL,
+	`body` text NOT NULL,
+	`module` varchar(40) NOT NULL,
+	`variables` varchar(300) NOT NULL,
+	PRIMARY KEY (`name`),
+	KEY `ACTIVE` (`active`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}modules`;
 CREATE TABLE `{install:prefix}modules` (
 	`id` smallint(4) unsigned NOT NULL auto_increment,
@@ -873,10 +887,6 @@ INSERT INTO `{install:prefix}blocks` VALUES
 (6,'common_statistics','',1,'right','smarty','','active',1,0,0,0,'','',1,'block.common-statistics.tpl',0,'',''),
 (7,'filters','$iaView = &$iaCore->iaView;\r\n\r\nif (($itemName = $iaView->get(''filtersItemName''))\r\n	|| (($itemName = str_replace(''search_'', '''', $iaView->name())) && $itemName != $iaView->name()))\r\n{\r\n	$iaView->iaSmarty->assign(''filters'', $iaCore->factory(''search'', iaCore::FRONT)->getFilters($itemName));\r\n\r\n	echo $iaView->iaSmarty->fetch(''block.filters.tpl'');\r\n}',1,'left','php','','active',1,1,0,1,'','',0,'',1,'','');
 
-INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
-('blocks','',6,0),
-('blocks','index',6,1);
-
 INSERT INTO `{install:prefix}config` (`name`,`value`,`type`,`private`) VALUES
 ('debug_pass','','hidden',1),
 ('tmpl','{install:tmpl}','hidden',0),
@@ -999,49 +1009,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('api', '', 'General', '1', 'divider', 1, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('api', 'api_enabled', '0', '\'1\',\'0\'', 'radio', 1, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('api', 'api_push_access_key', '', '', 'text', 2, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"api_enabled|1\",\"multilingual\":\"0\"}'),
-('api', 'api_token', '', '', 'password', 3, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"api_enabled|1\",\"multilingual\":\"0\"}'),
-
-('email_templates', 'member_templates', '', '', 'divider', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_approved', '1', '\'1\',\'0\'', 'radio', 1, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_approved_subject', 'Member was approved at {%SITE_NAME%}', NULL, 'text', 17, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_approved_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was approved in {%SITE_NAME%}. Now you can log in.</p>', 'fullname|User', 'textarea', 18, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_disapproved', '1', '\'1\',\'0\'', 'radio', 2, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_disapproved_subject', 'Member was disapproved at {%SITE_NAME%}', NULL, 'text', 21, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_disapproved_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was disapproved in {%SITE_NAME%}.</p>', 'fullname|User', 'textarea', 22, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration', '1', '\'1\',\'0\'', 'radio', 3, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration_subject', 'Thanks for registration at {%SITE_NAME%}', NULL, 'text', 3, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration_body', '<p>Dear {%FULLNAME%},</p> <p>Thanks for your registration at <a href=\"{%SITE_URL%}\" target=\"_blank\">{%SITE_URL%}</a>. Here is information you should use in order to login:</p> <p>Your username: {%USERNAME%}<br /> Your password: {%PASSWORD%}</p> <p>To activate your account, please, <a href=\"{%LINK%}\" target=\"_blank\">follow this link</a>. <br /> You may change your password later by editing your personal attributes in your member area.</p>', 'fullname|User,email|Email,username|Username,password|Password,link|Confirmation link', 'textarea', 3, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration_notification', '1', '\'1\',\'0\'', 'radio', 3, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration_notification_subject', 'Member has been created {%SITE_NAME%}', NULL, 'text', 4, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration_notification_body', '<p>Greetings {%FULLNAME%},</p> <p>Administrator has just created an account for you at {%SITE_URL%}. Here is information you should use in order to login:</p> <p>Your email: <b>{%EMAIL%}</b><br /> Your password: <b>{%PASSWORD%}</b></p>', 'fullname|User,email|Email,password|Password', 'textarea', 4, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration_admin', '1', '\'1\',\'0\'', 'radio', 3, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration_admin_subject', 'New member registered at {%SITE_NAME%}', NULL, 'text', 4, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_registration_admin_body', '<p>Greetings,</p><p>New member registered at {%SITE_URL%}. Detailed information is below:</p> <p>ID: <b>{%ID%}</b><br>Name: <b>{%FULLNAME%}</b> ({%USERNAME%})<br>Email: <b>{%EMAIL%}</b></p>', 'id|ID,fullname|User,username|Username,email|User email', 'textarea', 4, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_removal', '1', '\'1\',\'0\'', 'radio', 4, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_removal_subject', 'Member deleted at {%SITE_NAME%}', NULL, 'text', 5, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'member_removal_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>Your membership was removed from  {%SITE_URL%}.</p>', 'fullname|User', 'textarea', 8, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'password_restoration', '1', '\'1\',\'0\'', 'radio', 6, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'password_restoration_subject', 'Password restoration request at {%SITE_NAME%}', NULL, 'text', 10, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'password_restoration_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>Please follow this link if you wish to change the password at {%SITE_URL%}:<br />\r\n{%URL%}\r\n</p>\r\n<p>\r\nOr use confirmation code on page: <a href=\"{%SITE_URL%}forgot/?code\">{%SITE_URL%}forgot/?code</a><br />\r\nE-mail: {%EMAIL%}<br />\r\nCode: {%CODE%}\r\n</p>', 'fullname|User,email|Email,code|Restoration code', 'textarea', 11, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'password_changement', '1', '\'1\',\'0\'', 'radio', 7, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'password_changement_subject', 'Password change request at {%SITE_NAME%}', NULL, 'text', 13, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'password_changement_body', '<p>Dear {%FULLNAME%},</p>\r\n\r\n<p>You requested a password change in {%SITE_NAME%}. Now you should use the following credentials to log in as member:</p>\r\n\r\n<p>Username: {%USERNAME%}<br />\r\nPassword: {%PASSWORD%}</p>', 'fullname|User,username|Username,password|New password', 'textarea', 14, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'financial_templates', '', '', 'divider', 50, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'plan_activated', '1', '\'1\',\'0\'', 'radio', 55, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'plan_activated_subject', 'Plan activated at {%SITE_NAME%}', NULL, 'text', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'plan_activated_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>Your listing has been activated.</p>\r\n\r\n<ul>\r\n	<li><b>Plan:</b> {%PLAN%}</li>\r\n	<li><b>Cost:</b> {%CURRENCY%} {%COST%}</li>\r\n	<li><b>Duration:</b> {%DURATION%} {%UNIT%}(s)</li>\r\n</ul>', 'plan|Plan name,cost|Plan\'s cost,duration|Plan\'s duration,unit|Duration unit,fullname|User,currency|Currency code', 'textarea', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'plan_expired', '1', '\'1\',\'0\'', 'radio', 60, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'plan_expired_subject', 'Plan expired at {%SITE_NAME%}', NULL, 'text', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'plan_expired_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>Your paid listing submission expired.</p>\r\n\r\n<ul>\r\n	<li><b>Plan:</b> {%PLAN%}</li>\r\n	<li><b>Cost:</b> {%CURRENCY%} {%COST%}</li>\r\n	<li><b>Duration:</b> {%DURATION%} {%UNIT%}(s)</li>\r\n</ul>\r\n\r\n<p>It may always be renewed through the site.</p>', 'plan|Plan name,cost|Plan\'s cost,duration|Plan\'s duration,unit|Duration unit,fullname|User,currency|Currency code', 'textarea', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'transaction_paid', '1', '\'1\',\'0\'', 'radio', 65, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'transaction_paid_subject', 'Payment received at {%SITE_NAME%}', NULL, 'text', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'transaction_paid_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>Your payment has been successfully received.</p>\r\n\r\n<p>Order Number: <strong>{%REFERENCE_ID%}</strong></p>\r\n\r\n<p>Payment details are below:</p>\r\n\r\n<ul>\r\n	<li><b>Operation:</b> {%OPERATION%}</li>\r\n	<li><b>Amount:</b> {%CURRENCY%} {%AMOUNT%}</li>\r\n	<li><b>Item:</b> {%ITEM%} #{%ITEM_ID%}</li>\r\n	<li><b>Date:</b> {%DATE_PAID%}</li>\r\n</ul>\r\n\r\n<p>All your transactions could always be seen on the <a href=\"{%SITE_URL%}profile/funds/\" target=\"_blank\">Funds</a> page.</p>', 'email|Email,username|Username,fullname|Fullname,operation|Operation name,amount|Amount,reference_id|Reference ID,currency|Currency,item|Item,item_id|Item ID,date_created|Creation Date,date_paid|Payment Date', 'textarea', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'transaction_paid_admin', '1', '\'1\',\'0\'', 'radio', 70, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'transaction_paid_admin_subject', 'Payment completed at {%SITE_NAME%}', NULL, 'text', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'transaction_paid_admin_body', '<p>Dear Administrator,</p>\r\n<p>A payment has been completed on your site. Here is the information on the payment:</p><ul><li><b>Username:</b> {%USERNAME%}</li><li><b>Amount:</b>{%CURRENCY%} {%AMOUNT%}</li><li><b>Operation:</b> {%OPERATION%}</li></ul>', 'username|User,amount|Amount of transaction,operation|Operation name,currency|Currency', 'textarea', 8, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'invoice_created', '1', '\'1\',\'0\'', 'radio', 75, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'invoice_created_subject', 'Customer Invoice', NULL, 'text', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('email_templates', 'invoice_created_body', '<p>Dear {%FULLNAME%},</p>\r\n<p>This is a notice that an invoice has been generated on {%DATE%}</p>\r\n\r\n<p>Your payment method is: {%GATEWAY%}</p>\r\n\r\n<p>Invoice #{%INVOICE%},<br>\r\nAmount Due: {%CURRENCY%} {%AMOUNT%}\r\n</p>\r\n\r\n<p>All your invoices could always be seen on the <a href=\"{%SITE_URL%}profile/funds/\" target=\"_blank\">Funds</a> page.</p>', 'invoice|Invoice ID,gateway|Gateway,date|Invoice creation date,fullname|User,amount|Amount,currency|Currency', 'textarea', 0, '', 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}');
+('api', 'api_token', '', '', 'password', 3, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"api_enabled|1\",\"multilingual\":\"0\"}');
 
 INSERT INTO `{install:prefix}config_groups` (`name`,`order`) VALUES
 ('general',1),
@@ -1059,6 +1027,23 @@ INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('5 0 * * * includes/cron/cleanup.php','System cleanup','Cleans up temporary DB entries'),
 ('20 * * * * includes/cron/sponsored-expiration.php','Check for expiration of sponsored items','Marks expired sponsored items'),
 ('0 0 * * * includes/cron/featured-expiration.php','Check for expiration of featured items','Marks expired featured items');
+
+INSERT INTO `{install:prefix}email_templates` (`order`,`divider`,`name`,`subject`,`variables`,`body`) VALUES
+(1,1,'member_templates','','',''),
+(2,0,'member_approved','Member was approved at {$siteName}','fullname|User','<p>Dear {$fullname},</p>\r\n<p>Your membership was approved in {$siteName}. Now you can log in.</p>'),
+(3,0,'member_disapproved','Member was disapproved at {$siteName}','fullname|User','<p>Dear {$fullname},</p>\r\n<p>Your membership was disapproved in {$siteName}.</p>'),
+(4,0,'member_registration','Thanks for registration at {$siteName}','fullname|User,email|Email,username|Username,password|Password,link|Confirmation link','<p>Dear {$fullname},</p> <p>Thanks for your registration at <a href=\"{$siteUrl}\" target=\"_blank\">{$siteUrl}</a>. Here is information you should use in order to login:</p> <p>Your username: {$username}<br /> Your password: {$password}</p> <p>To activate your account, please, <a href=\"{$link}\" target=\"_blank\">follow this link</a>. <br /> You may change your password later by editing your personal attributes in your member area.</p>'),
+(5,0,'member_registration_notification','Member has been created {$siteName}','fullname|User,email|Email,password|Password','<p>Greetings {$fullname},</p> <p>Administrator has just created an account for you at {$siteUrl}. Here is information you should use in order to login:</p> <p>Your email: <b>{$email}</b><br /> Your password: <b>{$password}</b></p>'),
+(6,0,'member_registration_admin','New member registered at {$siteName}','id|ID,fullname|User,username|Username,email|User email','<p>Greetings,</p><p>New member registered at {$siteUrl}. Detailed information is below:</p> <p>ID: <b>{%ID%}</b><br>Name: <b>{$fullname}</b> ({$username})<br>Email: <b>{$email}</b></p>'),
+(7,0,'member_removal','Member deleted at {$siteName}','fullname|User','<p>Dear {$fullname},</p>\r\n<p>Your membership was removed from {$siteUrl}.</p>'),
+(8,0,'password_restoration','Password restoration request at {$siteName}','fullname|User,email|Email,code|Restoration code','<p>Dear {$fullname},</p>\r\n<p>Please follow this link if you wish to change the password at {$siteName}:<br />\r\n<a href="{$url}">{$url}</a>\r\n</p>\r\n<p>\r\nOr use confirmation code on page: <a href=\"{$siteUrl}forgot/?code\">{$siteUrl}forgot/?code</a><br />\r\nE-mail: {$email}<br />\r\nCode: {$code}\r\n</p>'),
+(9,0,'password_changement','Password change request at {$siteName}','fullname|User,username|Username,password|New password','<p>Dear {$fullname},</p>\r\n\r\n<p>You requested a password change in {$siteName}. Now you should use the following credentials to log in as member:</p>\r\n\r\n<p>Username: {$username}<br />\r\nPassword: {$password}</p>'),
+(10,1,'financial_templates','','',''),
+(11,0,'plan_activated','Plan activated at {$siteName}','plan|Plan name,cost|Plan\'s cost,duration|Plan\'s duration,unit|Duration unit,fullname|User,currency|Currency code','<p>Dear {$fullname},</p>\r\n<p>Your listing has been activated.</p>\r\n\r\n<ul>\r\n	<li><b>Plan:</b> {$plan}</li>\r\n	<li><b>Cost:</b> {$currency} {$cost}</li>\r\n	<li><b>Duration:</b> {$duration} {$unit}(s)</li>\r\n</ul>'),
+(12,0,'plan_expired','Plan expired at {$siteName}','plan|Plan name,cost|Plan\'s cost,duration|Plan\'s duration,unit|Duration unit,fullname|User,currency|Currency code','<p>Dear {$fullname},</p>\r\n<p>Your paid listing submission expired.</p>\r\n\r\n<ul>\r\n	<li><b>Plan:</b> {$plan}</li>\r\n	<li><b>Cost:</b> {$currency} {$cost}</li>\r\n	<li><b>Duration:</b> {$duration} {$unit}(s)</li>\r\n</ul>\r\n\r\n<p>It may always be renewed through the site.</p>'),
+(13,0,'transaction_paid','Payment received at {$siteName}','email|Email,username|Username,fullname|Fullname,operation|Operation name,amount|Amount,reference_id|Reference ID,currency|Currency,item|Item,item_id|Item ID,date_created|Creation Date,date_paid|Payment Date','<p>Dear {$fullname},</p>\r\n<p>Your payment has been successfully received.</p>\r\n\r\n<p>Order Number: <strong>{$reference_id}</strong></p>\r\n\r\n<p>Payment details are below:</p>\r\n\r\n<ul>\r\n	<li><b>Operation:</b> {$operation}</li>\r\n	<li><b>Amount:</b> {$currency} {$amount}</li>\r\n	<li><b>Item:</b> {$item} #{$item_id}</li>\r\n	<li><b>Date:</b> {$date_paid}</li>\r\n</ul>\r\n\r\n<p>All your transactions could always be seen on the <a href=\"{$siteUrl}profile/funds/\" target=\"_blank\">Funds</a> page.</p>'),
+(14,0,'transaction_paid_admin','Payment completed at {$siteName}','username|User,amount|Amount of transaction,operation|Operation name,currency|Currency','<p>Dear Administrator,</p>\r\n<p>A payment has been completed on your site. Here is the information on the payment:</p><ul><li><b>Username:</b> {$username}</li><li><b>Amount:</b>{$currency} {$amount}</li><li><b>Operation:</b> {$operation}</li></ul>'),
+(15,0,'invoice_created','Customer Invoice','invoice|Invoice ID,gateway|Gateway,date|Invoice creation date,fullname|User,amount|Amount,currency|Currency','<p>Dear {$fullname},</p>\r\n<p>This is a notice that an invoice has been generated on {$date}</p>\r\n\r\n<p>Your payment method is: {$gateway}</p>\r\n\r\n<p>Invoice #{$invoice},<br>\r\nAmount Due: {$currency} {$amount}\r\n</p>\r\n\r\n<p>All your invoices could always be seen on the <a href=\"{$siteUrl}profile/funds/\" target=\"_blank\">Funds</a> page.</p>');
 
 INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`length`,`order`,`editable`,`required`,`extra_actions`,`searchable`) VALUES
 ('username','members',1,'text',50,0,0,1,'if ($value && !iaValidate::isUsername($value))\r\n{\r\n	$errors[$fieldName] = iaLanguage::get(\'username_incorrect\');\r\n}',1),
@@ -1197,6 +1182,10 @@ INSERT INTO `{install:prefix}menus` (`parent_id`,`menu_id`,`el_id`,`page_name`) 
 ('0',5,'21_009','terms'),
 ('0',5,'23_010','advertise'),
 ('0',5,'22_011','help');
+
+INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
+('blocks','',6,0),
+('blocks','index',6,1);
 
 INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`,`nofollow`,`filename`,`menus`,`parent`,`suburl`) VALUES
 (2,'index',0,0,'',0,'page','main,inventory','',''),
@@ -1491,21 +1480,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_api_enabled', 'API enabled', 'admin'),
 ('config_api_push_access_key', 'GCM access key', 'admin'),
 ('config_api_token', 'Permanent API token', 'admin'),
-('config_member_templates', 'Member templates', 'admin'),
-('config_member_approved', 'Member approval', 'admin'),
-('config_member_disapproved', 'Member cancellation', 'admin'),
-('config_member_registration', 'Member registration', 'admin'),
-('config_member_registration_notification', 'Member created by admin', 'admin'),
-('config_member_registration_admin', 'Administrator\'s notification on member registration', 'admin'),
-('config_member_removal', 'Member removal', 'admin'),
-('config_password_restoration', 'Member password restoration', 'admin'),
-('config_password_changement', 'Member password change', 'admin'),
-('config_financial_templates', 'Financial templates', 'admin'),
-('config_plan_activated', 'Item paid and activated', 'admin'),
-('config_plan_expired', 'Paid item expired', 'admin'),
-('config_transaction_paid', 'Transaction passed', 'admin'),
-('config_transaction_paid_admin', 'Administrator\'s notification on payment completion', 'admin'),
-('config_invoice_created', 'Invoice created', 'admin'),
 ('config_empty_password','-empty password-','admin'),
 ('config_empty_value','-empty value-','admin'),
 ('config_groups','Configuration Groups','admin'),
@@ -1582,6 +1556,21 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('edit_page_title','Edit page title','admin'),
 ('edit_plan','Edit Plan','admin'),
 ('edit_phrases','edit phrases','admin'),
+('email_template_member_templates', 'Member templates', 'admin'),
+('email_template_member_approved', 'Member approval', 'admin'),
+('email_template_member_disapproved', 'Member cancellation', 'admin'),
+('email_template_member_registration', 'Member registration', 'admin'),
+('email_template_member_registration_notification', 'Member created by admin', 'admin'),
+('email_template_member_registration_admin', 'Administrator\'s notification on member registration', 'admin'),
+('email_template_member_removal', 'Member removal', 'admin'),
+('email_template_password_restoration', 'Member password restoration', 'admin'),
+('email_template_password_changement', 'Member password change', 'admin'),
+('email_template_financial_templates', 'Financial templates', 'admin'),
+('email_template_plan_activated', 'Item paid and activated', 'admin'),
+('email_template_plan_expired', 'Paid item expired', 'admin'),
+('email_template_transaction_paid', 'Transaction passed', 'admin'),
+('email_template_transaction_paid_admin', 'Administrator\'s notification on payment completion', 'admin'),
+('email_template_invoice_created', 'Invoice created', 'admin'),
 ('email_templates','Email Templates','admin'),
 ('email_templates_tags','Email Template Tags','admin'),
 ('email_templates_tags_info','You can use these tags in your email templates. They will be changed to real information while sending email templates. Click will paste it to template body.','admin'),
