@@ -1813,7 +1813,7 @@ class iaModule extends abstractCore
 
                 break;
 
-            case 'template':
+            case 'email':
                 if ($this->_checkPath('emails')) {
                     $this->itemData['email_templates'][$this->_attr('name')] = [
                         'subject' => $this->_attr('subject'),
@@ -2192,8 +2192,16 @@ class iaModule extends abstractCore
             $entry['module'] = $this->itemData['name'];
             $entry['order'] || $entry['order'] = ++$maxOrder;
 
+            $subject = $entry['subject'];
+            $body = $entry['body'];
             $description = $entry['description'];
-            unset($entry['description']);
+
+            unset($entry['subject'], $entry['body'], $entry['description']);
+
+            foreach ($this->iaCore->languages as $iso => $language) {
+                $entry['subject_' . $iso] = $subject;
+                $entry['body_' . $iso] = $body;
+            }
 
             $this->iaDb->exists(iaDb::convertIds($name, 'name'))
                 ? $this->iaDb->update($entry, iaDb::convertIds($name, 'name'))
