@@ -146,10 +146,14 @@ class iaMailer extends PHPMailer
      *
      * @param string $name template name
      */
-    public function loadTemplate($name)
+    public function loadTemplate($name, $langCode = null)
     {
-        $row = $this->_iaCore->iaDb->row_bind(['subject', 'body'], '`name` = :name AND `active` = 1',
-            ['name' => $name], $this->_table);
+        if (!$langCode || !isset($this->_iaCore->languages[$langCode])) {
+            $langCode = iaLanguage::getMasterLanguage()->iso;
+        }
+
+        $row = $this->_iaCore->iaDb->row_bind(['subject' => 'subject_' . $langCode, 'body' => 'body_' . $langCode],
+            '`name` = :name AND `active` = 1', ['name' => $name], $this->_table);
 
         if (!$row) {
             $this->reset();

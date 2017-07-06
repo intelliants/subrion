@@ -51,9 +51,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
         $result = [
             'active' => (bool)$template['active'],
-            'subject' => $template['subject'],
-            'body' => $template['body']
+            'subject' => [],
+            'body' => []
         ];
+
+        foreach ($this->_iaCore->languages as $iso => $language) {
+            $result['subject'][$iso] = $template['subject_' . $iso];
+            $result['body'][$iso] = $template['body_' . $iso];
+        }
 
         // composing the patterns description
         if ($template['variables']) {
@@ -73,13 +78,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridUpdate($params)
     {
-        $values = [
-            'active' => (int)$params['active'],
-            'subject' => $params['subject'],
-            'body' => $params['body']
-        ];
-
-        $this->_iaDb->update($values, iaDb::convertIds($params['name'], 'name'));
+        $this->_iaDb->update($params, iaDb::convertIds($params['name'], 'name'));
 
         return ['result' => (0 == $this->_iaDb->getErrorNumber())];
     }

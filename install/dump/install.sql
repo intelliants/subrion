@@ -165,12 +165,12 @@ CREATE TABLE `{install:prefix}cron` (
 CREATE TABLE `{install:prefix}email_templates` (
 	`name` varchar(60) NOT NULL,
 	`active` tinyint(1) unsigned NOT NULL default 1,
-  `divider` tinyint(1) unsigned NOT NULL default 0,
+	`divider` tinyint(1) unsigned NOT NULL default 0,
 	`order` smallint(5) unsigned NOT NULL,
-	`subject` varchar(255) NOT NULL,
-	`body` text NOT NULL,
 	`module` varchar(40) NOT NULL,
 	`variables` varchar(300) NOT NULL,
+	`subject_en` varchar(255) NOT NULL,
+	`body_en` text NOT NULL,
 	PRIMARY KEY (`name`),
 	KEY `ACTIVE` (`active`)
 ) {install:db_options};
@@ -1028,7 +1028,7 @@ INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('20 * * * * includes/cron/sponsored-expiration.php','Check for expiration of sponsored items','Marks expired sponsored items'),
 ('0 0 * * * includes/cron/featured-expiration.php','Check for expiration of featured items','Marks expired featured items');
 
-INSERT INTO `{install:prefix}email_templates` (`order`,`divider`,`name`,`subject`,`variables`,`body`) VALUES
+INSERT INTO `{install:prefix}email_templates` (`order`,`divider`,`name`,`subject_en`,`variables`,`body_en`) VALUES
 (1,1,'member_templates','','',''),
 (2,0,'member_approved','Member was approved at {$siteName}','fullname|User','<p>Dear {$fullname},</p>\r\n<p>Your membership was approved in {$siteName}. Now you can log in.</p>'),
 (3,0,'member_disapproved','Member was disapproved at {$siteName}','fullname|User','<p>Dear {$fullname},</p>\r\n<p>Your membership was disapproved in {$siteName}.</p>'),
@@ -1573,7 +1573,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('email_template_invoice_created', 'Invoice created', 'admin'),
 ('email_templates','Email Templates','admin'),
 ('email_templates_tags','Email Template Tags','admin'),
-('email_templates_tags_info','You can use these tags in your email templates. They will be changed to real information while sending email templates. Click will paste it to template body.','admin'),
+('email_templates_tags_info','You can use these tags in your email templates. They will be changed to real information while sending email templates.','admin'),
 ('empty','-empty-','admin'),
 ('empty_field','Empty field text','admin'),
 ('enable_no_follow','Enable No-Follow','admin'),

@@ -1,4 +1,4 @@
-$(function () {
+$(function() {
     var tagsWindow = new Ext.Window({
         title: _t('email_templates_tags'),
         layout: 'fit',
@@ -24,7 +24,7 @@ $(function () {
 
         var $active = $('#input-active'),
             $patterns = $('#js-patterns'),
-            $subject = $('#input-subject');
+            $subject = $('input', '#row-subject');
 
         // hide if none selected
         if (!name) {
@@ -39,10 +39,13 @@ $(function () {
 
         // get actual values
         $.get(window.location.href + 'read.json', {name: name}, function(response) {
-            $subject.val(response.subject);
-            CKEDITOR.instances.body.setData(response.body);
+            $('#input-active').bootstrapSwitch('setState', response.active);
+            $subject.prop('disabled', false);
 
-            $('#input-active').bootstrapSwitch('setState', response.config);
+            for (var iso in response.body) {
+                $('#input-subject-' + iso).val(response.subject[iso]);
+                CKEDITOR.instances['body_' + iso].setData(response.body[iso]);
+            }
 
             if ('undefined' !== typeof response.variables) {
                 var i, html = '';
@@ -65,15 +68,17 @@ $(function () {
         $('#input-subject, #js-email-template-form button[type="submit"]').prop('disabled', false);
     });
 
-    $('#js-email-template-form').on('submit', function (e) {
+    $('#js-email-template-form').on('submit', function(e) {
         e.preventDefault();
 
-        if ('object' === typeof CKEDITOR.instances.body) {
-            CKEDITOR.instances.body.updateElement();
+        for (var iso in intelli.languages) {
+            if ('object' === typeof CKEDITOR.instances['body_' + iso]) {
+                CKEDITOR.instances['body_' + iso].updateElement();
+            }
         }
 
         var data = {};
-        $(this).serializeArray().map(function (x) {
+        $(this).serializeArray().map(function(x) {
             data[x.name] = x.value;
         });
 
@@ -86,10 +91,5 @@ $(function () {
                 intelli.notifFloatBox({msg: _t('saved'), type: 'success', autohide: true, pause: 1500});
             }
         });
-    });
-
-    $('ul.js-tags a').on('click', function (e) {
-        e.preventDefault();
-        CKEDITOR.instances.body.insertHtml($(this).text());
     });
 });
