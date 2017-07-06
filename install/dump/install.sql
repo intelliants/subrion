@@ -965,7 +965,8 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('system', 'prevent_csrf', '1', '\'1\',\'0\'', 'radio', 23, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('system', 'caching', '0', '\'1\',\'0\'', 'hidden', 24, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('system', 'smarty_cache', '0', '\'1\',\'0\'', 'radio', 25, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('system', 'compress_js', '0', '\'1\',\'0\'', 'radio', 26, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('system', 'compress_html', '0', '\'1\',\'0\'', 'radio', 26, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('system', 'compress_js', '0', '\'1\',\'0\'', 'radio', 27, '', 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 
 ('pictures', 'thumb_w', '150', '', 'hidden', 9, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('pictures', 'thumb_h', '150', '', 'hidden', 12, '', 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
@@ -1448,6 +1449,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_prevent_csrf', 'Prevent CSRF attack', 'admin'),
 ('config_caching', 'Caching', 'admin'),
 ('config_smarty_cache', 'Smarty force compile', 'admin'),
+('config_compress_html', 'Compress HTML', 'admin'),
 ('config_compress_js', 'Compress Javascript', 'admin'),
 ('config_thumb_w', 'Thumbnails default width', 'admin'),
 ('config_thumb_h', 'Thumbnails default height', 'admin'),

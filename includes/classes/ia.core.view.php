@@ -972,6 +972,10 @@ SQL;
                     $content = $iaSmarty->fetch('layout' . self::TEMPLATE_FILENAME_EXT);
                 }
 
+                if ($this->iaCore->get('compress_html')) {
+                    $content = $this->_minifyHtml($content);
+                }
+
                 echo $content;
 
                 break;
@@ -1412,5 +1416,14 @@ SQL;
     private function _arrayAsObject(array $params = [])
     {
         return new ArrayObject($params, ArrayObject::ARRAY_AS_PROPS);
+    }
+
+    private function _minifyHtml($content = null)
+    {
+        if (is_null($content)) {
+            return false;
+        }
+
+        return str_replace('> ', '>', preg_replace('/\s+/', ' ', $content));
     }
 }
