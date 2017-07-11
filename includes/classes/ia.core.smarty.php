@@ -153,15 +153,21 @@ class iaSmarty extends Smarty
         $name = $params['name'];
         $id = isset($params['id']) ? $params['id'] : $name;
         $value = isset($params['value']) ? iaSanitize::html($params['value']) : '';
-        $toolbar = (isset($params['toolbar']) && in_array($params['toolbar'], ['simple', 'dashboard', 'extended']))
-            ? ",{toolbar:'{$params['toolbar']}'}"
-            : '';
+
+        $options = [];
+        if (isset($params['toolbar']) && in_array($params['toolbar'], ['simple', 'dashboard', 'extended'])) {
+            $options['toolbar'] = $params['toolbar'];
+        }
+        if (isset($params['source'])) {
+            $options['startupMode'] = 'source';
+        }
+        $options = json_encode($options);
 
         $iaView = iaCore::instance()->iaView;
 
         $iaView->add_js('ckeditor/ckeditor');
         $iaView->resources->js->{'code:$(function(){if(!window.CKEDITOR)'
-        . "$('textarea[id=\"{$id}\"]').show();else CKEDITOR.replace('{$id}'$toolbar);});"} = iaView::RESOURCE_ORDER_REGULAR;
+        . "$('textarea[id=\"{$id}\"]').show();else CKEDITOR.replace('{$id}',{$options});});"} = iaView::RESOURCE_ORDER_REGULAR;
 
         return sprintf(
             '<textarea style="display: none;" name="%s" id="%s">%s</textarea>',

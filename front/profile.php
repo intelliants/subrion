@@ -114,6 +114,19 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
     $sections = $iaField->getTabs($itemName, $item);
 
+    foreach ($sections['common'][0]['fields'] as &$field) {
+        if ('email_language' == $field['name']) {
+            $field['type'] = iaField::RADIO;
+            $field['default'] = iaLanguage::getMasterLanguage()->iso;
+            $field['values'] = [];
+            foreach ($iaCore->languages as $iso => $language) {
+                $field['values'][$iso] = $language['title'];
+            }
+            break;
+        }
+    }
+
+
     $extraTabs = [];
     $iaCore->startHook('phpFrontEditProfileExtraTabs', ['tabs' => &$extraTabs, 'item' => &$item]);
     $sections = array_merge($sections, $extraTabs);

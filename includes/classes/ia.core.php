@@ -507,6 +507,12 @@ SQL;
             if (isset($this->_config[$key])) {
                 return $this->_config[$key];
             }
+            // compatibility code
+            // @TODO remove once there are no references left
+            elseif ($emailTemplate = $this->iaDb->row(['active'], iaDb::convertIds($key, 'name'), 'email_templates')) {
+                return $emailTemplate['active'];
+            }
+            //
         }
 
         $this->_config[$key] = $result;

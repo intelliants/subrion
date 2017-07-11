@@ -321,11 +321,11 @@ SQL;
         $result = $this->iaDb->delete($statement, self::getTable());
 
         if ($result) {
-            $actionName = 'member_removal';
-            $emailNotificationEnabled = $this->iaCore->get($actionName);
-
             $iaMailer = $this->iaCore->factory('mailer');
             $iaLog = $this->iaCore->factory('log');
+
+            $actionName = 'member_removal';
+            $emailNotificationEnabled = $iaMailer->loadTemplate($actionName);
 
             foreach ($rows as $entry) {
                 // delete associated auth providers
@@ -341,8 +341,7 @@ SQL;
                 $this->iaCore->startHook('phpUserDelete', ['userInfo' => $entry]);
 
                 if ($emailNotificationEnabled) {
-                    $iaMailer->loadTemplate($actionName);
-                    $iaMailer->addAddress($entry['email'], $entry['fullname']);
+                    $iaMailer->addAddressByMember($entry);
                     $iaMailer->setReplacements('fullname', $entry['fullname']);
 
                     $iaMailer->send();
@@ -382,7 +381,7 @@ SQL;
             $iaMailer = $this->iaCore->factory('mailer');
 
             $iaMailer->loadTemplate('password_changement');
-            $iaMailer->addAddress($memberInfo['email'], $memberInfo['fullname']);
+            $iaMailer->addAddressByMember($memberInfo);
             $iaMailer->setReplacements([
                 'fullname' => $memberInfo['fullname'],
                 'username' => $memberInfo['username'],
@@ -416,6 +415,7 @@ SQL;
         $memberInfo['sec_key'] = md5($this->createPassword());
         $memberInfo['status'] = self::STATUS_UNCONFIRMED;
         $memberInfo['password'] = $this->encodePassword($password);
+        $memberInfo['email_language'] = $this->iaCore->language['iso'];
 
         // according to DB table scheme we have to ensure that username field will contain unique data
         if (empty($memberInfo['username'])) {
@@ -452,9 +452,8 @@ SQL;
         $iaMailer = $this->iaCore->factory('mailer');
 
         $action = 'member_registration';
-        if ($this->iaCore->get($action) && $memberInfo['email']) {
-            $iaMailer->loadTemplate($action);
-            $iaMailer->addAddress($memberInfo['email']);
+        if ($iaMailer->loadTemplate($action) && $memberInfo['email']) {
+            $iaMailer->addAddressByMember($memberInfo);
             $iaMailer->setReplacements([
                 'fullname' => $memberInfo['fullname'],
                 'username' => $memberInfo['username'],
@@ -467,8 +466,7 @@ SQL;
         }
 
         $action = 'member_registration_admin';
-        if ($this->iaCore->get($action) && $memberInfo['email']) {
-            $iaMailer->loadTemplate($action);
+        if ($iaMailer->loadTemplate($action) && $memberInfo['email']) {
             $iaMailer->setReplacements([
                 'id' => $id,
                 'username' => $memberInfo['username'],

@@ -359,22 +359,20 @@ SQL;
     {
         $notificationType = 'plan_' . $type;
 
-        if (empty($plan) || empty($memberId) || !$this->iaCore->get($notificationType)) {
+        if (empty($plan) || empty($memberId)) {
             return false;
         }
 
         $iaUsers = $this->iaCore->factory('users');
+        $iaMailer = $this->iaCore->factory('mailer');
 
         $member = $iaUsers->getById($memberId);
 
-        if (!$member) {
+        if (!$member || !$iaMailer->loadTemplate($notificationType)) {
             return false;
         }
 
-        $iaMailer = $this->iaCore->factory('mailer');
-
-        $iaMailer->loadTemplate($notificationType);
-        $iaMailer->addAddress($member['email']);
+        $iaMailer->addAddressByMember($member);
 
         $iaMailer->setReplacements($plan);
         $iaMailer->setReplacements([

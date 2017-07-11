@@ -480,6 +480,7 @@ CREATE TABLE `{install:prefix}members` (
 	`sponsored_plan_id` smallint(5) unsigned NOT NULL,
 	`api_push_token` tinytext NOT NULL,
 	`api_push_receive` enum('yes','no') NOT NULL default 'yes',
+  `email_language` varchar(2) NOT NULL,
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `USERNAME` (`username`),
 	UNIQUE KEY `EMAIL` (`email`),
@@ -1060,6 +1061,7 @@ INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`leng
 ('linkedin','members',2,'text',150,50,1,0,'',0),
 ('api_push_token','members',3,'textarea',255,55,1,0,'',0),
 ('api_push_receive','members',3,'radio',0,60,1,0,'',0),
+('email_language','members',0,'text',2,65,0,1,'',0),
 ('member_id','transactions',0,'text',100,0,1,0,'',0),
 ('reference_id','transactions',0,'text',100,5,1,0,'',0),
 ('date_created','transactions',0,'date',0,10,1,0,'',0),
@@ -1100,6 +1102,7 @@ INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`) VALUES
 ('profile',9),
 ('profile',10),
 ('profile',11),
+('profile',14),
 ('favorites',1),
 ('favorites',2),
 ('favorites',4),
@@ -1168,8 +1171,8 @@ INSERT INTO `{install:prefix}items_pages` (`page_name`,`item`) VALUES
 ('favorites','members'),
 ('member_registration','members');
 
-INSERT INTO `{install:prefix}members` (`usergroup_id`,`username`,`email`,`date_reg`,`date_update`,`fullname`) VALUES
-(1,'{install:admin_username}','{install:email}',NOW(),NOW(),'Administrator');
+INSERT INTO `{install:prefix}members` (`usergroup_id`,`username`,`email`,`date_reg`,`date_update`,`fullname`,`email_language`) VALUES
+(1,'{install:admin_username}','{install:email}',NOW(),NOW(),'Administrator','en');
 
 INSERT INTO `{install:prefix}menus` (`parent_id`,`menu_id`,`el_id`,`page_name`) VALUES
 ('0',2,'1_001','index'),
@@ -2186,6 +2189,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('field_members_biography','Biography','common'),
 ('field_tooltip_members_category_id','Select a category from the list','common'),
 ('field_members_email','Email','common'),
+('field_members_email_language','Email receiving language','common'),
 ('field_members_facebook','Facebook','common'),
 ('field_tooltip_members_facebook','Full link to your profile page','common'),
 ('field_members_fullname','Full Name','common'),

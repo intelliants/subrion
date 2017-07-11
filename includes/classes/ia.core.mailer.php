@@ -28,18 +28,21 @@ require_once IA_INCLUDES . 'phpmailer/class.phpmailer.php';
 
 class iaMailer extends PHPMailer
 {
-    protected $_replacements = [];
+    protected $_table = 'email_templates';
 
     protected $_iaCore;
 
+    protected $_replacements = [];
+
     protected $_bccEmails;
 
-    protected $_defaultSignature;
-
     protected $_templateName;
-    protected $_recipients = [];
 
-    protected $_table = 'email_templates';
+    protected $_recipients = [];
+    protected $_languages = [];
+
+    protected $_subjects = [];
+    protected $_bodies = [];
 
 
     /**
@@ -53,6 +56,7 @@ class iaMailer extends PHPMailer
         $this->From = $this->_iaCore->get('site_email');
         $this->FromName = $this->_iaCore->get('site_from_name', 'Subrion CMS');
         $this->SingleTo = true;
+        $this->XMailer = ' ';
 
         $this->isHTML($this->_iaCore->get('mimetype'));
 
@@ -112,33 +116,66 @@ class iaMailer extends PHPMailer
                 $key = func_get_arg(0);
                 $value = func_get_arg(1);
 
-                if (is_string($key) && is_string($value)) {
+                if (is_string($key)) {
                     $replacements[$key] = $value;
                 }
         }
 
-        $replacements = array_map(['iaSanitize', 'html'], $replacements);
+        self::_escapeTemplateVars($replacements);
 
         $this->_replacements = array_merge($this->_replacements, $replacements);
     }
 
+    protected static function _escapeTemplateVars(array &$replacements)
+    {
+        foreach ($replacements as $key => &$value) {
+            if (is_array($value)) {
+                self::_escapeTemplateVars($value);
+            } elseif (is_string($value)) {
+                $value = iaSanitize::html($value);
+            }
+        }
+    }
+
     public function reset()
     {
+        $this->_subjects = [];
+        $this->_bodies = [];
+
         $this->Subject = '';
         $this->Body = '';
 
         $this->_templateName = null;
     }
 
-    public function addAddress($address, $name = '')
+    public function addAddressByMemberId($memberId)
     {
-        if (parent::addAddress($address, $name)) {
-            $this->_recipients[$address] = $name;
-
-            return true;
+        if (!$memberId) {
+            return;
         }
 
-        return false;
+        $this->_iaCore->factory('users');
+
+        $member = $this->_iaCore->iaDb->row(['email', 'fullname', 'email_language'],
+            iaDb::convertIds($memberId), iaUsers::getTable());
+
+        if ($member) {
+            $this->addAddressByMember($member);
+        }
+    }
+
+    public function addAddressByMember(array $member)
+    {
+        $this->addAddress($member['email'], $member['fullname'], $member['email_language']);
+    }
+
+    public function addAddress($address, $name = '', $langCode = null)
+    {
+        if (is_null($langCode) || !isset($this->_iaCore->languages[$langCode])) {
+            $langCode = iaLanguage::getMasterLanguage()->iso;
+        }
+
+        $this->_recipients[$address] = [$name, $langCode];
     }
 
     /**
@@ -146,13 +183,9 @@ class iaMailer extends PHPMailer
      *
      * @param string $name template name
      */
-    public function loadTemplate($name, $langCode = null)
+    public function loadTemplate($name)
     {
-        if (!$langCode || !isset($this->_iaCore->languages[$langCode])) {
-            $langCode = iaLanguage::getMasterLanguage()->iso;
-        }
-
-        $row = $this->_iaCore->iaDb->row_bind(['subject' => 'subject_' . $langCode, 'body' => 'body_' . $langCode],
+        $row = $this->_iaCore->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION,
             '`name` = :name AND `active` = 1', ['name' => $name], $this->_table);
 
         if (!$row) {
@@ -160,8 +193,10 @@ class iaMailer extends PHPMailer
             return false;
         }
 
-        $this->Subject = $row['subject'];
-        $this->Body = $row['body'];
+        foreach ($this->_iaCore->languages as $iso => $language) {
+            $this->_subjects[$iso] = $row['subject_' . $iso];
+            $this->_bodies[$iso] = $row['body_' . $iso];
+        }
 
         $this->_templateName = $name;
 
@@ -183,13 +218,15 @@ class iaMailer extends PHPMailer
 
         $iaSmarty->assign($this->_replacements);
 
-        $subject = $iaSmarty->fetch('eval:' . $this->Subject);
+        foreach ($this->_iaCore->languages as $iso => $language) {
+            $subject = $iaSmarty->fetch('eval:' . $this->_subjects[$iso]);
 
-        $iaSmarty->assign('subject', $subject);
-        $iaSmarty->assign('content', $iaSmarty->fetch('eval:' . $this->Body));
+            $iaSmarty->assign('subject', $subject);
+            $iaSmarty->assign('content', $iaSmarty->fetch('eval:' . $this->_bodies[$iso]));
 
-        $this->Subject = $subject;
-        $this->Body = $iaSmarty->fetch(IA_HOME . 'admin/templates/emails/dist/email.layout.html');
+            $this->_subjects[$iso] = $subject;
+            $this->_bodies[$iso] = $iaSmarty->fetch(IA_HOME . 'admin/templates/emails/dist/email.layout.html');
+        }
     }
 
     /**
@@ -202,14 +239,15 @@ class iaMailer extends PHPMailer
         $where = '`usergroup_id` = :group AND `status` = :status';
         $this->_iaCore->iaDb->bind($where, ['group' => iaUsers::MEMBERSHIP_ADMINISTRATOR, 'status' => iaCore::STATUS_ACTIVE]);
 
-        $administrators = $this->_iaCore->iaDb->all(['email', 'fullname'], $where, null, null, iaUsers::getTable());
+        $administrators = $this->_iaCore->iaDb->all(['email', 'fullname', 'email_language'],
+            $where, null, null, iaUsers::getTable());
 
         if (!$administrators) {
             return false;
         }
 
         foreach ($administrators as $entry) {
-            $this->addAddress($entry['email'], $entry['fullname']);
+            $this->addAddressByMember($entry);
         }
 
         return $this->send(true);
@@ -244,19 +282,32 @@ class iaMailer extends PHPMailer
     public function send($toAdmins = false)
     {
         $this->_compileTemplate();
-
         $this->_setBcc();
-        $this->_callHook('phpEmailToBeSent', $toAdmins);
 
-        if ($result = (bool)parent::send()) {
-            $this->_callHook('phpEmailSent', $toAdmins);
-        } else {
-            iaDebug::debug($this->ErrorInfo, 'Email submission');
+        $results = [];
+
+        foreach ($this->_recipients as $email => $params) {
+            if (parent::addAddress($email, $params[0])) {
+                $langCode = $params[1];
+
+                $this->Subject = $this->_subjects[$langCode];
+                $this->Body = $this->_bodies[$langCode];
+
+                $this->_callHook('phpEmailToBeSent', $email, $toAdmins);
+
+                if ($result = (bool)parent::send()) {
+                    $this->_callHook('phpEmailSent', $email, $toAdmins);
+                } else {
+                    iaDebug::debug($this->ErrorInfo, 'Email submission');
+                }
+
+                parent::clearAddresses();
+
+                $results[] = $result;
+            }
         }
 
-        parent::clearAllRecipients();
-
-        return $result;
+        return $results && !in_array(false, $results, true);
     }
 
     /**
@@ -269,13 +320,13 @@ class iaMailer extends PHPMailer
         return $this->ErrorInfo;
     }
 
-    protected function _callHook($name, $toAdmins)
+    protected function _callHook($name, $address, $toAdmins)
     {
         $params = [
             'template' => $this->_templateName,
             'subject' => $this->Subject,
             'body' => $this->Body,
-            'recipients' => $this->_recipients
+            'recipient' => $address
         ];
 
         $this->_iaCore->startHook($name . ($toAdmins ? 'ToAdministrators' : ''), $params);

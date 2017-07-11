@@ -40,10 +40,12 @@
 
             <div class="row" id="row-subject">
                 <div class="col col-lg-2">
+                    {if count($core.languages) > 1}
                     <div class="btn-group btn-group-xs translate-group-actions">
                         <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-subject"><span class="i-earth"></span></button>
                         <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-subject"><span class="i-copy"></span></button>
                     </div>
+                    {/if}
                     <label class="control-label">{lang key='subject'}</label>
                 </div>
                 <div class="col col-lg-4">
@@ -70,31 +72,32 @@
 
             <div class="row">
                 <div class="col col-lg-2">
+                    {if count($core.languages) > 1}
                     <div class="btn-group btn-group-xs translate-group-actions">
                         <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-body"><span class="i-earth"></span></button>
                         <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-body"><span class="i-copy"></span></button>
                     </div>
+                    {/if}
                     <label class="control-label">{lang key='body'}</label>
                 </div>
                 <div class="col col-lg-8">
                     <div class="translate-group" id="language-group-body">
                         <div class="translate-group__default">
                             <div class="translate-group__item">
-                                {ia_wysiwyg name="body_{$core.masterLanguage.iso}"}
-                            {if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>{/if}
+                                {ia_wysiwyg name="body_{$core.masterLanguage.iso}" source=true}
+                                {if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>{/if}
+                        </div>
+                        <div class="translate-group__langs">
+                            {foreach $core.languages as $iso => $language}
+                                {if $iso != $core.masterLanguage.iso}
+                                <div class="translate-group__item">
+                                    {ia_wysiwyg name="body_{$iso}" source=true}
+                                    <span class="translate-group__item__code">{$language.title|escape}</span>
+                                </div>
+                                {/if}
+                            {/foreach}
                         </div>
                     </div>
-                    <div class="translate-group__langs">
-                        {foreach $core.languages as $iso => $language}
-                            {if $iso != $core.masterLanguage.iso}
-                            <div class="translate-group__item">
-                                {ia_wysiwyg name="body_{$iso}"}
-                                <span class="translate-group__item__code">{$language.title|escape}</span>
-                            </div>
-                            {/if}
-                        {/foreach}
-                    </div>
-                </div>
                 </div>
             </div>
         </div>

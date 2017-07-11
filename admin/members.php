@@ -128,6 +128,18 @@ class iaBackendController extends iaAbstractControllerBackend
         $iaField = $this->_iaCore->factory('field');
         $sections = $iaField->getGroups($this->_itemName);
 
+        foreach ($sections[0]['fields'] as &$field) {
+            if ('email_language' == $field['name']) {
+                $field['type'] = iaField::RADIO;
+                $field['default'] = iaLanguage::getMasterLanguage()->iso;
+                $field['values'] = [];
+                foreach ($this->_iaCore->languages as $iso => $language) {
+                    $field['values'][$iso] = $language['title'];
+                }
+                break;
+            }
+        }
+
         unset($this->_userGroups[iaUsers::MEMBERSHIP_GUEST]);
 
         $iaView->assign('plans', $plans);
@@ -235,12 +247,10 @@ class iaBackendController extends iaAbstractControllerBackend
         ]);
 
         if (iaCore::ACTION_ADD == $action) {
-            $action = 'member_registration';
-            if ($this->_iaCore->get($action)) {
-                $iaMailer = $this->_iaCore->factory('mailer');
+            $iaMailer = $this->_iaCore->factory('mailer');
 
-                $iaMailer->loadTemplate($action . '_notification');
-                $iaMailer->addAddress($entry['email']);
+            if ($iaMailer->loadTemplate('member_registration_notification')) {
+                $iaMailer->addAddressByMember($entry);
                 $iaMailer->setReplacements([
                     'fullname' => $entry['fullname'],
                     'username' => $entry['username'],

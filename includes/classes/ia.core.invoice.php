@@ -166,22 +166,16 @@ SQL;
 
     protected function _sendEmailNotification(array $invoice, array $transaction)
     {
-        if (!$this->iaCore->get('invoice_created')) {
-            return true;
-        }
-
         $iaUsers = $this->iaCore->factory('users');
+        $iaMailer = $this->iaCore->factory('mailer');
 
         $member = $iaUsers->getById($transaction['member_id']);
 
-        if (!$member) {
+        if (!$member || !$iaMailer->loadTemplate('invoice_created')) {
             return false;
         }
 
-        $iaMailer = $this->iaCore->factory('mailer');
-
-        $iaMailer->loadTemplate('invoice_created');
-        $iaMailer->addAddress($member['email']);
+        $iaMailer->addAddressByMember($member);
 
         $iaMailer->setReplacements($transaction);
         $iaMailer->setReplacements([
