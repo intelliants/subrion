@@ -146,14 +146,14 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
     public function insert(array $itemData)
     {
-        $this->_assignStructureData($itemData);
+        $this->_assignStructureData($itemData, iaCore::ACTION_ADD);
 
         return parent::insert($itemData);
     }
 
     public function update(array $itemData, $id)
     {
-        $this->_assignStructureData($itemData);
+        $this->_assignStructureData($itemData, iaCore::ACTION_EDIT);
 
         return parent::update($itemData, $id);
     }
@@ -474,7 +474,7 @@ SQL;
         return $rows;
     }
 
-    protected function _assignStructureData(array &$entryData)
+    protected function _assignStructureData(array &$entryData, $action)
     {
         if (isset($entryData[self::COL_PARENT_ID])) {
             if ($parent = $this->getById($entryData[self::COL_PARENT_ID], false)) {
@@ -483,7 +483,9 @@ SQL;
         }
 
         // if module uses 'order' column
-        if (isset($entryData[self::COL_LEVEL]) && isset($this->getRoot()['order'])) {
+        if (iaCore::ACTION_ADD == $action
+            && isset($entryData[self::COL_LEVEL])
+            && isset($this->getRoot()['order'])) {
             $entryData[self::COL_ORDER] = (int)$this->iaDb->getMaxOrder(self::getTable(),
                 ['level', $entryData[self::COL_LEVEL]]) + 1;
         }
