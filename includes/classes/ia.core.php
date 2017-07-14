@@ -74,8 +74,11 @@ final class iaCore
     public $iaView;
     public $iaCache;
 
+    public $currencies = [];
+    public $currency = null;
+
     public $languages = [];
-    public $language = [];
+    public $language = null;
 
     public $modulesData = [];
     public $requestPath = [];
@@ -109,6 +112,8 @@ final class iaCore
 
         $this->getConfig();
         iaSystem::renderTime('core', 'Configuration Loaded');
+
+        $this->_fetchCurrencies();
 
         iaSystem::setDebugMode();
 
@@ -944,5 +949,15 @@ SQL;
         }
 
         return $result;
+    }
+
+    protected function _fetchCurrencies()
+    {
+        $iaCurrency = $this->factory('currency');
+
+        $this->currencies = $iaCurrency->fetch();
+        $this->currency = $iaCurrency->get();
+
+        $this->_config['currency'] = $this->currency['code']; // compatibility fallback
     }
 }

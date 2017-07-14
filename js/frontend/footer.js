@@ -34,6 +34,16 @@ $(function () {
         window.print();
     });
 
+    $('.dropdown-menu a', '#js-currencies-list').on('click', function(e) {
+        e.preventDefault();
+
+        $.post(intelli.config.ia_url + 'actions.json', {action: 'set-currency', code: $(this).data('code')}, function(response) {
+            if (!response.error) {
+                window.location.reload(true);
+            }
+        })
+    })
+
     $('body').on('click', '.js-favorites', function (e) {
         e.preventDefault();
 
@@ -103,7 +113,7 @@ $(function () {
         $(this).parent().removeClass('focused');
     });
 
-    if ('function' == typeof $.fn.numeric) {
+    if ('function' === typeof $.fn.numeric) {
         $('.js-filter-numeric').numeric();
     }
 

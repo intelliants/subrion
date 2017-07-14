@@ -110,6 +110,7 @@
                 {/if}
                 {include 'language-selector.tpl'}
                 {ia_blocks block='inventory'}
+                {include 'currency-selector.tpl'}
             </div>
         </div>
 

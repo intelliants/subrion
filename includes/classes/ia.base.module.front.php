@@ -234,9 +234,11 @@ abstract class abstractModuleFront extends abstractCore
 
         // get serialized field names
         $iaField = $this->iaCore->factory('field');
+        $iaCurrency = $this->iaCore->factory('currency');
 
         $serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
         $multilingualFields = $iaField->getMultilingualFields($this->getItemName());
+        $currencyFields = $iaField->getFieldsByType($this->getItemName(), iaField::CURRENCY);
 
         if ($serializedFields || $multilingualFields) {
             foreach ($rows as &$row) {
@@ -257,6 +259,12 @@ abstract class abstractModuleFront extends abstractCore
                 foreach ($multilingualFields as $fieldName) {
                     if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
                         $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
+                    }
+                }
+
+                foreach ($currencyFields as $fieldName) {
+                    if (isset($row[$fieldName])) {
+                        $row[$fieldName . '_formatted'] = $iaCurrency->format($row[$fieldName]);
                     }
                 }
 

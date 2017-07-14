@@ -82,9 +82,15 @@
         {case iaField::NUMBER break}
             <input class="js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
 
+        {case iaField::CURRENCY break}
+            <div class="input-group col-md-8">
+                <span class="input-group-addon">{$core.currency.code|escape}</span>
+                <input class="form-control span2 js-filter-numeric" type="text" name="{$fieldName}"{if $value} value="{$value|floatval}"{/if} id="{$name}" maxlength="{$field.length + 2}">
+            </div>
+
         {case iaField::URL break}
             {if !is_array($value)}
-                {assign value '|'|explode:$value}
+                {$value = explode('|', $value)}
             {/if}
             <div class="row control-group-inner">
                 <div class="col col-lg-6">

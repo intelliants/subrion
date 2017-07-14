@@ -160,15 +160,15 @@ $(function () {
         var type = $(this).val();
 
         $('div.field_type').css('display', 'none');
-        $('#js-row-use-editor').css('display', ('textarea' != type ? 'none' : 'block'));
+        $('#js-row-use-editor').css('display', ('textarea' !== type ? 'none' : 'block'));
 
         var $o = $('#js-row-empty-text');
         ($.inArray(type, ['text', 'textarea', 'number']) !== -1) ? $o.show() : $o.hide();
 
         $o = $('#js-row-multilingual');
-        ('text' == type || 'textarea' == type) ? $o.show() : $o.hide();
+        ('text' === type || 'textarea' === type) ? $o.show() : $o.hide();
 
-        if (type && $.inArray(type, ['textarea', 'text', 'number', 'storage', 'image', 'url', 'date', 'pictures', 'tree']) !== -1) {
+        if (type && $.inArray(type, ['textarea', 'text', 'number', 'storage', 'image', 'url', 'date', 'pictures', 'tree', 'currency']) !== -1) {
             $('#' + type).css('display', 'block');
             if ($('#searchable').val() == '1' && ('textarea' == type || 'text' == type) && 'none' == $('#fulltext_search_zone').css('display')) {
                 $('#fulltext_search_zone').fadeIn('slow');

@@ -28,6 +28,7 @@ class iaField extends abstractCore
 {
     const CHECKBOX = 'checkbox';
     const COMBO = 'combo';
+    const CURRENCY = 'currency';
     const DATE = 'date';
     const ICONPICKER = 'iconpicker';
     const IMAGE = 'image';
@@ -559,6 +560,7 @@ SQL;
                     break;
 
                 case self::NUMBER:
+                case self::CURRENCY:
                     $item[$fieldName] = (float)str_replace(' ', '', $value);
 
                     break;
@@ -921,6 +923,11 @@ SQL;
         return $this->_getFieldNames($itemName, iaDb::convertIds(1, 'multilingual'));
     }
 
+    public function getFieldsByType($itemName, $fieldType)
+    {
+        return $this->_getFieldNames($itemName, iaDb::convertIds($fieldType, 'type'));
+    }
+
     protected function _getFieldNames($itemName, $condition)
     {
         if (!$itemName) {
@@ -1101,6 +1108,9 @@ SQL;
             case self::TEXTAREA:
                 $result.= 'MEDIUMTEXT ';
                 break;
+            case self::CURRENCY:
+                $result.= 'DECIMAL(' . ($fieldData['length'] + 2) . ',2) unsigned';
+                break;
             default:
                 if (isset($fieldData['values'])) {
                     $values = explode(',', $fieldData['values']);
@@ -1114,7 +1124,6 @@ SQL;
                 }
         }
 
-        //$result.= in_array($fieldData['type'], [self::COMBO, self::RADIO]) ? 'NULL' : 'NOT NULL';
         $result.= $fieldData['allow_null'] ? 'NULL' : 'NOT NULL';
 
         return $result;

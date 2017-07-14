@@ -148,6 +148,15 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 
             break;
 
+        case 'set-currency':
+            $iaCore->factoryModule('currency', IA_CURRENT_MODULE)
+                ->set($_POST['code']);
+
+            $output['error'] = false;
+            unset($output['message']);
+
+            break;
+
         default:
             $output = [];
             $iaCore->startHook('phpActionsJsonHandle', ['action' => $_POST['action'], 'output' => &$output]);

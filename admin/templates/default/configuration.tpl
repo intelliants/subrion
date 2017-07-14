@@ -189,7 +189,7 @@ $(function() {
                         <div class="item-input">
                             <select name="v[{$entry.name}]" id="{$entry.name}"{if 1 == count($entry.values)} disabled{/if}>
                                 {foreach $entry.values as $k => $v}
-                                    {if 'lang' == $entry.name}
+                                    {if 'lang' == $entry.name || 'currency' == $entry.name}
                                         <option value="{$k}"{if $k == $entry.value || $v == $entry.value} selected{/if}>{$v.title|escape}</option>
                                     {elseif is_array($v)}
                                         <optgroup label="{$k}">

@@ -933,6 +933,8 @@ SQL;
                     'actions' => $this->_setActions(),
                     'config' => $this->iaCore->getConfig(),
                     'customConfig' => $this->iaCore->getCustomConfig(),
+                    'currency' => $this->iaCore->currency,
+                    'currencies' => $this->iaCore->currencies,
                     'language' => $this->iaCore->languages[$this->language],
                     'languages' => $this->iaCore->languages,
                     'masterLanguage' => (array)iaLanguage::getMasterLanguage(),

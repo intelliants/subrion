@@ -501,6 +501,9 @@ SQL;
                     case 'lang':
                         $entry['values'] = $this->_iaCore->languages;
                         break;
+                    case 'currency':
+                        $entry['values'] = $this->_iaCore->factory('currency')->fetchFromDb();
+                        break;
                     default:
                         $array = explode(',', trim($entry['multiple_values'], ','));
                         $values = [];
