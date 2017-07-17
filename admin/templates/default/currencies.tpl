@@ -97,6 +97,37 @@
                 </div>
             </div>
 
+            <div class="wrap-group">
+                <div class="wrap-group-heading">{lang key='format'}</div>
+
+                <div class="row">
+                    <div class="col col-lg-2">
+                        <label class="control-label" for="input-num-decimals">{lang key='number_of_decimal_places'} {lang key='field_required'}</label>
+                    </div>
+                    <div class="col col-lg-1">
+                        <input type="text" name="fmt_num_decimals" value="{$item.fmt_num_decimals|intval}" id="input-num-decimals" maxlength="2">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col col-lg-2">
+                        <label class="control-label" for="input-dec-point">{lang key='decimal_point'} {lang key='field_required'}</label>
+                    </div>
+                    <div class="col col-lg-1">
+                        <input type="text" name="fmt_dec_point" value="{$item.fmt_dec_point|escape}" id="input-dec-point" maxlength="1">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col col-lg-2">
+                        <label class="control-label" for="input-thousand-sep">{lang key='thousand_separator'} {lang key='field_required'}</label>
+                    </div>
+                    <div class="col col-lg-1">
+                        <input type="text" name="fmt_thousand_sep" value="{$item.fmt_thousand_sep|escape}" id="input-thousand-sep" maxlength="1">
+                    </div>
+                </div>
+            </div>
+
             {capture name='systems' append='fieldset_before'}
                 <div class="row">
                     <div class="col col-lg-2">

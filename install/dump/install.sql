@@ -171,6 +171,9 @@ CREATE TABLE `{install:prefix}currencies` (
 	`sym_pos` enum('pre', 'post') NOT NULL default 'pre',
 	`default` tinyint(1) unsigned NOT NULL,
 	`order` tinyint(2) unsigned NOT NULL,
+	`fmt_num_decimals` tinyint(2) unsigned NOT NULL default 2,
+	`fmt_dec_point` char(1) NOT NULL default '.',
+	`fmt_thousand_sep` char(1) NOT NULL default ',',
 	PRIMARY KEY (`code`)
 ) {install:db_options};
 
@@ -1057,9 +1060,9 @@ INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('30 0,12 * * * includes/cron/exchange-rates.php','Refresh currency exchange rates','Updates exchange rates based on the selected rates provider');
 
 INSERT INTO `{install:prefix}currencies` VALUES
-('USD', 'active', 'US Dollar', 1, '$', 'pre', 1, 1),
-('EUR', 'inactive', 'Euro', 0.87, '€', 'post', 0, 2),
-('GBP', 'inactive', 'Pound Sterling', 0.78, '£', 'pre', 0, 3);
+('USD', 'active', 'US Dollar', 1, '$', 'pre', 1, 1, 2, '.', ','),
+('EUR', 'inactive', 'Euro', 0.87, '€', 'post', 0, 2, 2, '.', ','),
+('GBP', 'inactive', 'Pound Sterling', 0.78, '£', 'pre', 0, 3, 2, '.', ',');
 
 INSERT INTO `{install:prefix}email_templates` (`order`,`divider`,`name`,`subject_en`,`variables`,`body_en`) VALUES
 (1,1,'member_templates','','',''),
@@ -1575,6 +1578,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('deactivated','Deactivated','admin'),
 ('debug_mode','Debug Mode','admin'),
 ('debug_mode_activated','Debug mode activated for you.','admin'),
+('decimal_point','Decimal point','admin'),
 ('default_language','Default Language','admin'),
 ('digits_only','digits only (1-255), default is 255','admin'),
 ('directory_not_writable','Directory ":directory" is not writable. You could not save to server.','admin'),
@@ -1876,6 +1880,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('notification_resolve--working','Working...','admin'),
 ('notification_resolve--resolved','Resolved!','admin'),
 ('number_of_cycles','Number of cycles','admin'),
+('number_of_decimal_places','Number of decimal places','admin'),
 
 ('one_day_ago','one day ago','admin'),
 ('one_hour_ago','one hour ago','admin'),
@@ -2060,6 +2065,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('test_email_sent','Test email has been received for delivery to :email.','admin'),
 ('text','Text','admin'),
 ('this_fields_displayed_only_for_plans','These fields are displayed for sponsored plans only.','admin'),
+('thousand_separator','Thousand separator','admin'),
 ('thumb_dimensions','Thumb dimensions','admin'),
 ('thumb_width','Thumbnail width','admin'),
 ('thumb_height','Thumbnail height','admin'),
@@ -2212,13 +2218,14 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('error_tmp_directory_readonly','Temp directory is readonly. Please make it writable.','common'),
 ('error_url','Site URL is incorrect.','common'),
 
-('forgot_password','Forgot your password?','common'),
-('fullname','Full Name','common'),
-('featured','Featured','common'),
 ('failed','Failed','common'),
-('filter','Filter','common'),
-('from','from','common'),
+('featured','Featured','common'),
 ('featured_status_finished_date_is_empty','Listing has been marked as featured, but no finished date was specified.','common'),
+('filter','Filter','common'),
+('forgot_password','Forgot your password?','common'),
+('format','Format','common'),
+('from','from','common'),
+('fullname','Full Name','common'),
 ('funds','Funds','common'),
 
 ('field__tooltip','please upload only image files','common'),

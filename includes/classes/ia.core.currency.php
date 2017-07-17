@@ -70,7 +70,7 @@ class iaCurrency extends abstractModuleFront
         $converted = $currency['default']
             ? $number
             : $number * $currency['rate'];
-        $converted = number_format($converted, 2);
+        $converted = number_format($converted, $currency['fmt_num_decimals'], $currency['fmt_dec_point'], $currency['fmt_thousand_sep']);
 
         $prefix = ('pre' == $currency['sym_pos']) ? $currency['symbol'] : '';
         $postfix = ('post' == $currency['sym_pos']) ? $currency['symbol'] : '';

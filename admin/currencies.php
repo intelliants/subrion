@@ -102,6 +102,11 @@ class iaBackendController extends iaAbstractControllerBackend
             'symbol' => '',
             'sym_pos' => 'pre',
             'default' => false,
+
+            'fmt_num_decimals' => 2,
+            'fmt_dec_point' => '.',
+            'fmt_thousand_sep' => ',',
+
             'status' => iaCore::STATUS_ACTIVE
         ];
     }
@@ -116,10 +121,15 @@ class iaBackendController extends iaAbstractControllerBackend
         $entry['symbol'] = $data['symbol'];
         $entry['sym_pos'] = $data['sym_pos'];
 
+        $entry['fmt_num_decimals'] = (int)$data['fmt_num_decimals'];
+        $entry['fmt_dec_point'] = $data['fmt_dec_point'];
+        $entry['fmt_thousand_sep'] = $data['fmt_thousand_sep'];
+
         $entry['default'] = (int)$data['default'];
         $entry['status'] = $data['status'];
 
-        $requiredFields = ['code', 'title', 'rate', 'symbol' => 'currency_symbol'];
+        $requiredFields = ['code', 'title', 'rate', 'symbol' => 'currency_symbol',
+            'fmt_num_decimals' => 'number_of_decimal_places', 'fmt_dec_point' => 'decimal_point', 'fmt_thousand_sep' => 'thousand_separator'];
 
         foreach ($requiredFields as $fieldName => $fieldLabel) {
             if (is_numeric($fieldName)) {
