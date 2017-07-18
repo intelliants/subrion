@@ -1553,7 +1553,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('crop_tip','The mod will attempt to fit the image inside the &quot;frame&quot; created by the width and height arguments.','admin'),
 ('css_class_name','CSS class name','admin'),
 ('csv_format','CSV format','admin'),
-('currency_symbol','Currency_symbol','admin'),
+('currency_symbol','Currency symbol','admin'),
 ('current_home_page','Current homepage','admin'),
 ('custom','Custom','admin'),
 ('custom_configuration_title',':settings configuration for :type ":title"','admin'),
