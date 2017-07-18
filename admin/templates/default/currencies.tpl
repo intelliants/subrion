@@ -56,7 +56,7 @@
                     <div class="col col-lg-2">
                         <label class="control-label" for="input-code">{lang key='code'} {lang key='field_required'}</label>
                     </div>
-                    <div class="col col-lg-4">
+                    <div class="col col-lg-2">
                         <input type="text" name="code" value="{$item.code|escape}" id="input-code" maxlength="3">
                     </div>
                 </div>

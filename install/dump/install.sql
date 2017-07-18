@@ -833,7 +833,7 @@ INSERT INTO `{install:prefix}admin_actions` (`name`,`url`,`icon`,`attributes`,`p
 ('add_transaction','javascript:;','plus','id="js-add-transaction-cmd"','transactions','','regular',1),
 ('tags','javascript:;','eye','id="js-view-tags"','email_templates','','regular',1),
 ('add_currency','currencies/add/','plus-alt','','currencies','','regular',3),
-('currencies','currencies/','list','','currencies:add,currencies:edit','','regular',3),
+('list_currencies','currencies/','list','','currencies:add,currencies:edit','','regular',3),
 
 ('blocks','blocks/','grid','','','','dashboard',0),
 ('add_page','pages/add/','copy','','','','dashboard',0);
@@ -1798,6 +1798,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('last_updated','Last updated','admin'),
 ('launch_manually','Launch manually','admin'),
 ('legend','Legend','admin'),
+('list_currencies','List','admin'),
 ('listings_limit','Listings limit','admin'),
 ('loading_widgets','Loading widgets...','admin'),
 ('local','Local','admin'),
