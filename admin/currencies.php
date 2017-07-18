@@ -86,6 +86,15 @@ class iaBackendController extends iaAbstractControllerBackend
         }
     }
 
+    protected function _entryAdd(array $entryData)
+    {
+        $this->_iaDb->insert($entryData);
+
+        return (0 === $this->_iaDb->getErrorNumber())
+            ? $entryData['code']
+            : false;
+    }
+
     protected function _entryUpdate(array $entryData, $entryId)
     {
         $this->_iaDb->update($entryData, iaDb::convertIds($entryId, 'code'));
@@ -113,7 +122,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _preSaveEntry(array &$entry, array $data, $action)
     {
-        $entry['code'] = $data['code'];
+        $entry['code'] = strtoupper($data['code']);
         $entry['title'] = $data['title'];
 
         $entry['rate'] = (float)$data['rate'];
