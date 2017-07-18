@@ -52,8 +52,8 @@ intelli.search = (function () {
         },
 
         bindEvents: function (fnStart, fnFinish) {
-            if ('function' == typeof fnStart) events['start'] = fnStart;
-            if ('function' == typeof fnStart) events['finish'] = fnFinish;
+            if ('function' === typeof fnStart) events['start'] = fnStart;
+            if ('function' === typeof fnStart) events['finish'] = fnFinish;
         },
 
         run: function (pageNum) {

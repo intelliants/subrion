@@ -98,59 +98,6 @@ class iaCurrency extends abstractModuleFront
         return $result;
     }
 
-    public function refreshRates()
-    {
-        if (!$this->iaCore->get('exchange_rates_update')) {
-            return;
-        }
-
-        $log = 'RATES REFRESH REQUEST' . PHP_EOL;
-        $log .= 'PROVIDER IS ' . $this->iaCore->get('exchange_rates_provider') . PHP_EOL;
-
-        $provider = $this->_instantiateProvider($this->iaCore->get('exchange_rates_provider'));
-
-        if ($provider) {
-            $log .= 'PROVIDER CLASS INSTANTIATED' . PHP_EOL;
-
-            if ($rates = $provider->fetch()) {
-                $log .= 'FRESH RATES FETCHED BY PROVIDER: ' . print_r($rates, true) . PHP_EOL;
-
-                $this->iaDb->setTable(self::getTable());
-
-                foreach ($rates as $currencyCode => $rate) {
-                    $this->iaDb->update(['rate' => $rate], iaDb::convertIds($currencyCode, 'code'));
-                }
-
-                $this->iaDb->resetTable();
-
-                $this->dropCache();
-            }
-        }
-
-        if (INTELLI_DEBUG) {
-            iaDebug::log($log);
-        }
-    }
-
-    protected function _instantiateProvider($name)
-    {
-        $class = 'iaRatesProvider' . ucfirst($name);
-        $file = IA_MODULES . $this->getModuleName() . '/includes/providers/' . $name . iaSystem::EXECUTABLE_FILE_EXT;
-
-        if (file_exists($file)) {
-            require_once $file;
-
-            if (class_exists($class)) {
-                $instance = new $class($this);
-                $instance->init();
-
-                return $instance;
-            }
-        }
-
-        return false;
-    }
-
     public function invalidateCache()
     {
         $this->_iaCache->remove(self::CACHE_KEY);

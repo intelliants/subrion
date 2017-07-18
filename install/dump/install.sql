@@ -1027,10 +1027,6 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 
 ('financial', '', 'General', '1', 'divider', 1, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('financial', 'currency_switch', '0', '\'1\',\'0\'', 'radio', 3, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('financial', '', 'Exchange rates', '1', 'divider', 4, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('financial', 'exchange_rates_update', '0', '\'1\',\'0\'', 'radio', 5, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('financial', 'exchange_rates_provider', 'jsonrates', 'jsonrates', 'select', 6, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"exchange_rates_update|1\",\"multilingual\":\"0\"}'),
-('financial', 'exchange_rates_provider_apikey', 'f0419431ff596992b212b68a6df57d80', '', 'text', 7, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"exchange_rates_update|1\",\"multilingual\":\"0\"}'),
 ('financial', '', 'Internal Funds', '1', 'divider', 8, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('financial', 'funds_min_deposit', '20', '', 'text', 9, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('financial', 'funds_max_deposit', '300', '', 'text', 10, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
@@ -1056,8 +1052,7 @@ INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('1 1,12 * * * includes/cron/sitemap.php', 'Sitemap creation and update','Updates (or generates) the sitemap.xml file'),
 ('5 0 * * * includes/cron/cleanup.php','System cleanup','Cleans up temporary DB entries'),
 ('20 * * * * includes/cron/sponsored-expiration.php','Check for expiration of sponsored items','Marks expired sponsored items'),
-('0 0 * * * includes/cron/featured-expiration.php','Check for expiration of featured items','Marks expired featured items'),
-('30 0,12 * * * includes/cron/exchange-rates.php','Refresh currency exchange rates','Updates exchange rates based on the selected rates provider');
+('0 0 * * * includes/cron/featured-expiration.php','Check for expiration of featured items','Marks expired featured items');
 
 INSERT INTO `{install:prefix}currencies` VALUES
 ('USD', 'active', 'US Dollar', 1, '$', 'pre', 1, 1, 2, '.', ','),
@@ -1515,9 +1510,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_search_instant', 'Instant search', 'admin'),
 ('config_maps_api_key', 'Maps API key', 'admin'),
 ('config_currency_switch', 'Currency switching', 'admin'),
-('config_exchange_rates_update', 'Exchange rates update', 'admin'),
-('config_exchange_rates_provider', 'Exchange rates provider', 'admin'),
-('config_exchange_rates_provider_apikey', 'API key for exchange rates provider', 'admin'),
 ('config_funds_min_deposit', 'Minimum deposit', 'admin'),
 ('config_funds_max_deposit', 'Maximum deposit', 'admin'),
 ('config_funds_max', 'Maximum balance', 'admin'),
