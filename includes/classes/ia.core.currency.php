@@ -101,6 +101,10 @@ class iaCurrency extends abstractModuleFront
     public function invalidateCache()
     {
         $this->_iaCache->remove(self::CACHE_KEY);
+
+        if (isset($_SESSION[self::SESSION_KEY])) {
+            unset($_SESSION[self::SESSION_KEY]);
+        }
     }
 
     public function delete($entryId)

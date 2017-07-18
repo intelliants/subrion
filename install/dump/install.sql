@@ -164,7 +164,7 @@ CREATE TABLE `{install:prefix}cron` (
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}currencies`;
 CREATE TABLE `{install:prefix}currencies` (
 	`code` char(3) NOT NULL,
-  `status` enum('active', 'inactive') NOT NULL default 'active',
+	`status` enum('active', 'inactive') NOT NULL default 'active',
 	`title` varchar(30) NOT NULL,
 	`rate` decimal(7,2) unsigned NOT NULL,
 	`symbol` varchar(5) NOT NULL,
@@ -172,8 +172,8 @@ CREATE TABLE `{install:prefix}currencies` (
 	`default` tinyint(1) unsigned NOT NULL,
 	`order` tinyint(2) unsigned NOT NULL,
 	`fmt_num_decimals` tinyint(2) unsigned NOT NULL default 2,
-	`fmt_dec_point` char(1) NOT NULL default '.',
-	`fmt_thousand_sep` char(1) NOT NULL default ',',
+	`fmt_dec_point` varchar(1) NOT NULL default '.',
+	`fmt_thousand_sep` varchar(1) NOT NULL default ',',
 	PRIMARY KEY (`code`)
 ) {install:db_options};
 
