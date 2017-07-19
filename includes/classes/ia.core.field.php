@@ -1109,7 +1109,7 @@ SQL;
                 $result.= 'MEDIUMTEXT ';
                 break;
             case self::CURRENCY:
-                $result.= 'DECIMAL(' . ($fieldData['length'] + 2) . ',2) unsigned';
+                $result.= 'DECIMAL(' . ($fieldData['length'] + 2) . ',2) unsigned ';
                 break;
             default:
                 if (isset($fieldData['values'])) {

@@ -935,6 +935,7 @@ SQL;
                     'customConfig' => $this->iaCore->getCustomConfig(),
                     'currency' => $this->iaCore->currency,
                     'currencies' => $this->iaCore->currencies,
+                    'defaultCurrency' => (array)iaCurrency::getDefaultCurrency(),
                     'language' => $this->iaCore->languages[$this->language],
                     'languages' => $this->iaCore->languages,
                     'masterLanguage' => (array)iaLanguage::getMasterLanguage(),

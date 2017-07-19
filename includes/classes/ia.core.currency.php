@@ -18,6 +18,18 @@ class iaCurrency extends abstractModuleFront
         $this->_iaCache = $this->iaCore->factory('cache');
     }
 
+    public static function getDefaultCurrency()
+    {
+        static $row;
+
+        if (is_null($row)) {
+            $row = iaCore::instance()->iaDb->row(iaDb::ALL_COLUMNS_SELECTION,
+                iaDb::convertIds(1, 'default'), self::getTable());
+        }
+
+        return (object)$row;
+    }
+
     public function getByCode($code)
     {
         $entries = $this->fetch();

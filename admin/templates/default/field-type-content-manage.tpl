@@ -84,7 +84,7 @@
 
         {case iaField::CURRENCY break}
             <div class="input-group col-md-8">
-                <span class="input-group-addon">{$core.currency.code|escape}</span>
+                <span class="input-group-addon">{$core.defaultCurrency.code|escape}</span>
                 <input class="form-control span2 js-filter-numeric" type="text" name="{$fieldName}"{if $value} value="{$value|floatval}"{/if} id="{$name}" maxlength="{$field.length + 2}">
             </div>
 

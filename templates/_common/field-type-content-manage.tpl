@@ -32,16 +32,20 @@
         {case iaField::NUMBER break}
             <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
 
+        {case iaField::CURRENCY break}
+            <div class="input-group">
+                <div class="input-group-addon">{$core.defaultCurrency.code|escape}</div>
+                <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+            </div>
+
         {case iaField::TEXTAREA break}
             {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
             {if !$field.use_editor}
                 <textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape}</textarea>
                 {if $field.length > 0}
                     {ia_add_js}
-$(function()
-{
-    $('#{$name}').dodosTextCounter({$field.length},
-    {
+$(function() {
+    $('#{$name}').dodosTextCounter({$field.length}, {
         counterDisplayElement: 'span',
         counterDisplayClass: 'textcounter_{$fieldName}'
     });
@@ -147,8 +151,7 @@ $(function()
                 </div>
 
                 {ia_add_js}
-$(function()
-{
+$(function() {
     var params = {
         handle: '.drag-handle'
     }
@@ -239,20 +242,17 @@ $(function()
             <div class="js-tree categories-tree" data-field="{$fieldName}" data-nodes="{$field.values|escape}" data-multiple="{$field.timepicker}"></div>
             {ia_add_media files='tree'}
             {ia_add_js order=5}
-$(function()
-{
+$(function() {
     'use strict';
 
-    $('.js-tree').each(function()
-    {
+    $('.js-tree').each(function() {
         var data = $(this).data(),
             options = { core: { data: data.nodes, multiple: data.multiple } };
 
         if (data.multiple) options.plugins = ['checkbox'];
 
         $(this).jstree(options)
-        .on('changed.jstree', function(e, d)
-        {
+        .on('changed.jstree', function(e, d) {
             var nodes = [], ids = [];
             for (var i = 0; i < d.selected.length; i++)
             {
@@ -266,12 +266,10 @@ $(function()
             $('#label-' + fieldName).val(nodes.join(', '));
             $('#input-' + fieldName).val(ids.join(', '));
         })
-        .on('ready.jstree', function(e, d)
-        {
+        .on('ready.jstree', function(e, d) {
             var nodes = $('#input-' + $(this).data('field')).val().split(',');
             d.instance.open_all();
-            for (var i in nodes)
-            {
+            for (var i in nodes) {
                 d.instance.select_node(nodes[i]);
             }
         })
@@ -290,20 +288,16 @@ $(function()
 
             {if $field.relation == 'parent' && $field.children}
                 {ia_add_js order=5}
-$(function()
-{
+$(function() {
 $('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
-$('#{$name}').on('change', function()
-{
+$('#{$name}').on('change', function() {
     var value = $(this).val();
     $('.hide_{$fieldName}').hide();
     {foreach $field.children as $_field => $_values}
     if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
     {/foreach}
-    $('fieldset').show().each(function(index, item)
-    {
-        if ($('.fieldset-wrapper', item).length > 0)
-        {
+    $('fieldset').show().each(function(index, item) {
+        if ($('.fieldset-wrapper', item).length > 0) {
             $('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0
                 ? $(this).hide()
                 : $(this).show();
@@ -324,26 +318,20 @@ $('#{$name}').on('change', function()
 
             {if $field.relation == 'parent' && $field.children}
                 {ia_add_js order=5}
-$(function()
-{
+$(function() {
     $('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
 
-    $('input[name="{$fieldName}"]').on('change', function()
-    {
+    $('input[name="{$fieldName}"]').on('change', function() {
         var $this = $(this),
             value = $(this).val();
 
-        if ($this.is(':checked'))
-        {
+        if ($this.is(':checked')) {
             $('hide_{$fieldName}').hide();
 
             {foreach $field.children as $_field => $_values}
-                if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1)
-                {
+                if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}]) != -1) {
                     $('#{$_field}_fieldzone').show();
-                }
-                else
-                {
+                } else {
                     $('#{$_field}_fieldzone').hide();
                 }
             {/foreach}
@@ -363,14 +351,11 @@ $(function()
 
             {if $field.relation == 'parent' && $field.children}
             {ia_add_js order=5}
-$(function()
-{
+$(function() {
     $('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
-    $('input[name="{$fieldName}[]"]').on('change', function()
-    {
+    $('input[name="{$fieldName}[]"]').on('change', function() {
         $('.hide_{$fieldName}').hide();
-        $('input[type="checkbox"]:checked', '#type_fieldzone').each(function()
-        {
+        $('input[type="checkbox"]:checked', '#type_fieldzone').each(function() {
             var value = $(this).val();
             {foreach $field.children as $_field => $_values}
             if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
