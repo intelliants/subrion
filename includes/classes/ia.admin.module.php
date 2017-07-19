@@ -683,6 +683,7 @@ class iaModule extends abstractCore
             iaCore::getConfigGroupsTable(),
             iaCore::getConfigTable(),
             iaCore::getCustomConfigTable(),
+            'email_templates',
             'pages',
             'hooks',
             'acl_objects',
@@ -1483,9 +1484,15 @@ class iaModule extends abstractCore
                         $name = $this->_attr('name');
 
                         if ('divider' == $this->_attr('type')) {
+                            if (!$name) {
+                                $name = $this->itemData['name'] . '_div_' . iaUtil::generateToken(4);
+                            }
+
                             $this->itemData['email_templates'][$name] = [
                                 'active' => true,
                                 'divider' => true,
+                                'subject' => '',
+                                'body' => '',
                                 'description' => $this->_attr('description')
                             ];
 
@@ -2190,7 +2197,7 @@ class iaModule extends abstractCore
         foreach ($entries as $name => $entry) {
             $entry['name'] = $name;
             $entry['module'] = $this->itemData['name'];
-            $entry['order'] || $entry['order'] = ++$maxOrder;
+            empty($entry['order']) && $entry['order'] = ++$maxOrder;
 
             $subject = $entry['subject'];
             $body = $entry['body'];
