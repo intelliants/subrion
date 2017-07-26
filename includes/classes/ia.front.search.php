@@ -578,6 +578,12 @@ SQL;
                     continue 2;
 
                 case iaField::NUMBER:
+                case iaField::CURRENCY:
+                    if (iaField::CURRENCY == $this->_fieldTypes[$fieldName]) {
+                        // TODO: implement currency rates conversion
+
+                    }
+
                     empty($value['f']) || $statements[] = ['col' => $column, 'cond' => '>=', 'val' => (float)$value['f'], 'field' => $fieldName];
                     empty($value['t']) || $statements[] = ['col' => $column, 'cond' => '<=', 'val' => (float)$value['t'], 'field' => $fieldName];
 
@@ -613,13 +619,6 @@ SQL;
                 case iaField::STORAGE:
                     $condition = '!=';
                     $val = "''";
-
-                    break;
-
-                case iaField::CURRENCY:
-                    // TODO: implement currency rates conversion
-                    empty($value['f']) || $statements[] = ['col' => $column, 'cond' => '>=', 'val' => (float)$value['f'], 'field' => $fieldName];
-                    empty($value['t']) || $statements[] = ['col' => $column, 'cond' => '<=', 'val' => (float)$value['t'], 'field' => $fieldName];
 
                     break;
 
