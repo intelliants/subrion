@@ -1822,7 +1822,13 @@ class iaModule extends abstractCore
 
             case 'email':
                 if ($this->_checkPath('emails')) {
-                    $this->itemData['email_templates'][$this->_attr('name')] = [
+                    $name = $this->_attr('name');
+
+                    if (!$name) {
+                        $name = $this->itemData['name'] . '_div_' . iaUtil::generateToken(4);
+                    }
+
+                    $this->itemData['email_templates'][$name] = [
                         'subject' => $this->_attr('subject'),
                         'body' => $text,
                         'variables' => $this->_attr('variables'),
