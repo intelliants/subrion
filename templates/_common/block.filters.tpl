@@ -57,6 +57,21 @@
                     {case iaField::TEXTAREA break}
                         <input class="form-control" type="text" name="{$field.name}"{if is_string($selected)} value="{$selected|escape}"{/if}>
 
+                    {case iaField::CURRENCY break}
+                        <div class="row">
+                            <div class="col-md-7">
+                                <label class="ia-form__label-mini">{lang key='from'}</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon">{$core.currency.code}</div>
+                                    <input class="form-control" type="text" name="{$field.name}[f]" maxlength="{$field.length}" placeholder="{$field.range[0]}"{if $selected} value="{$selected.f|escape}"{/if}>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="ia-form__label-mini">{lang key='to'}</label>
+                                <input class="form-control" type="text" name="{$field.name}[t]" maxlength="{$field.length}" placeholder="{$field.range[1]}"{if $selected} value="{$selected.t|escape}"{/if}>
+                            </div>
+                        </div>
+
                     {case iaField::TREE}
                         <select class="form-control" name="{$field.name}[]" multiple>
                             <option value="">&lt;{lang key='any'}&gt;</option>
