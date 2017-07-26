@@ -286,6 +286,7 @@ class iaSearch extends abstractCore
                         break;
 
                     case iaField::NUMBER:
+                    case iaField::CURRENCY:
                         $numberFields[] = $row['name'];
 //                        $phraseKey = sprintf('field_%s_range_', $row['name']);
 //
@@ -615,6 +616,13 @@ SQL;
 
                     break;
 
+                case iaField::CURRENCY:
+                    // TODO: implement currency rates conversion
+                    empty($value['f']) || $statements[] = ['col' => $column, 'cond' => '>=', 'val' => (float)$value['f'], 'field' => $fieldName];
+                    empty($value['t']) || $statements[] = ['col' => $column, 'cond' => '<=', 'val' => (float)$value['t'], 'field' => $fieldName];
+
+                    break;
+
                 case iaField::DATE:
 
             }
@@ -666,14 +674,20 @@ SQL;
 
         foreach ($this->_fieldTypes as $fieldName => $type) {
             switch ($type) {
+                case iaField::TEXT:
+                case iaField::TEXTAREA:
+                    $statements[] = sprintf("%s LIKE '%s'", $tableAlias . $fieldName, '%' . $escapedQuery . '%');
+                    break;
                 case iaField::NUMBER:
                     if (is_numeric($this->_query)) {
                         $statements[] = sprintf('%s = %s', $tableAlias . $fieldName, (int)$this->_query);
                     }
                     break;
-                case iaField::TEXT:
-                case iaField::TEXTAREA:
-                    $statements[] = sprintf("%s LIKE '%s'", $tableAlias . $fieldName, '%' . $escapedQuery . '%');
+                case iaField::CURRENCY:
+                    if (is_numeric($this->_query)) {
+                        // TODO: implement currency rates conversion
+                        $statements[] = sprintf('%s = %s', $tableAlias . $fieldName, (int)$this->_query);
+                    }
                     break;
                 default:
                     $statements[] = sprintf("%s LIKE '%s'", $tableAlias . $fieldName, '%' . $escapedQuery . '%');
@@ -787,6 +801,7 @@ SQL;
                 if ($value && isset($this->_fieldTypes[$key])) {
                     switch ($this->_fieldTypes[$key]) {
                         case iaField::NUMBER:
+                        case iaField::CURRENCY:
                             if (count($value) > 1) {
                                 $data[$key] = ['f' => (int)$value[0], 't' => (int)$value[1]];
                                 $captions[] = sprintf('%d-%d', $value[0], $value[1]);
