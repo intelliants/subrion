@@ -462,7 +462,7 @@ function IntelliGrid(params, autoInit) {
                                 buttons: Ext.Msg.YESNO,
                                 icon: Ext.Msg.QUESTION,
                                 fn: function (btn) {
-                                    if ('yes' == btn) {
+                                    if ('yes' === btn) {
                                         intelli.gridHelper.httpRequest(self, {id: [record.get('id')]}, 'delete');
                                         self.storage('p', null);
                                     }

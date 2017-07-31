@@ -5,12 +5,11 @@
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
 <div id="{$fieldName}_fieldzone" class="row {$field.relation}">
-
     <div class="col col-lg-2">
         {if $field.multilingual && count($core.languages) > 1}
             <div class="btn-group btn-group-xs translate-group-actions">
                 <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"><span class="i-earth"></span></button>
-                <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"><span class="i-copy"></span></button>
+                <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"{if $field.use_editor} data-wysiwyg-enabled="true" data-name="{$name}"{/if}><span class="i-copy"></span></button>
             </div>
         {/if}
         <label class="control-label">{$field.title|escape} {if $field.required}{lang key='field_required'}{/if}</label>
