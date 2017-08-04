@@ -178,7 +178,7 @@ class iaDbControl extends abstractCore
             }
         }
 
-        $output = substr($output, 0, -2);
+        $output = substr($output, 0, -3);
         $output .= PHP_EOL . ')';
 
         if ($collation = $this->_getTableCollation($tableName)) {

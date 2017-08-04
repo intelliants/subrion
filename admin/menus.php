@@ -278,6 +278,7 @@ SQL;
         $entry['header'] = (int)$data['header'];
         $entry['collapsible'] = (int)$data['collapsible'];
         $entry['collapsed'] = (int)$data['collapsed'];
+        $entry['status'] = $data['status'];
 
         // bundled data
         $entry['title'] = $data['title'];

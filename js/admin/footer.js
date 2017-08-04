@@ -120,22 +120,32 @@ $(function () {
     });
 
     $('.js-edit-lang-group').on('click', function () {
-        var $this = $(this),
-            $parent = $($this.data('group')),
+        var $parent = $($(this).data('group')),
             $group = $parent.find('.translate-group__langs');
 
-        $parent.hasClass('is-opened') ? $group.slideUp('fast') : $group.slideDown('fast');
-        $parent.toggleClass('is-opened');
+        $parent.toggleClass('is-opened').hasClass('is-opened') ? $group.slideDown('fast') : $group.slideUp('fast');
     });
 
     $('.js-copy-lang-group').on('click', function () {
-        var $this = $(this),
-            $parent = $($this.data('group')),
-            defaultVal = $parent.find('input:first, textarea:first').val();
+        var $this = $(this);
 
-        $parent.find('.translate-group__langs input, .translate-group__langs textarea').val(defaultVal);
+        if ($this.data('wysiwygEnabled')) {
+            var name = $this.data('name');
+                value = CKEDITOR.instances[name].getData();
 
-        // TODO: add an ability to copy content from CKEDITOR to other instances of it in same group
+            for (var iso in intelli.languages) {
+                if (iso !== intelli.config.lang) {
+                    var ckInstance = CKEDITOR.instances[name + '-' + iso];
+
+                    ckInstance.setData(value);
+                    ckInstance.updateElement();
+                }
+            }
+        } else {
+            var $parent = $($this.data('group')),
+                value = $parent.find('input:first, textarea:first').val();
+            $parent.find('.translate-group__langs input, .translate-group__langs textarea').val(value);
+        }
     });
 
     // switching

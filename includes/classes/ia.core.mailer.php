@@ -331,4 +331,18 @@ class iaMailer extends PHPMailer
 
         $this->_iaCore->startHook($name . ($toAdmins ? 'ToAdministrators' : ''), $params);
     }
+
+    public function setSubject($subject)
+    {
+        foreach ($this->_iaCore->languages as $iso => $language) {
+            $this->_subjects[$iso] = $subject;
+        }
+    }
+
+    public function setBody($body)
+    {
+        foreach ($this->_iaCore->languages as $iso => $language) {
+            $this->_bodies[$iso] = $body;
+        }
+    }
 }

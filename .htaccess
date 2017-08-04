@@ -4,6 +4,9 @@ Options -MultiViews
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Uncomment line below if 500 error
+    # RewriteBase /install
+
     # Uncomment two lines below to redirect all non-www traffic to www
     # Make sure your baseurl config is set to www. domain
     # RewriteCond %{HTTP_HOST} !^www\. [NC]
