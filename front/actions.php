@@ -210,7 +210,7 @@ if (isset($_GET) && isset($_GET['action'])) {
                     $iaDb->bind($stmt, ['name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE]);
 
                     $sql = <<<SQL
-SELECT `id`, CONCAT (`fullname`, ' (', `email`, ')') `fullname` 
+SELECT `id`, CONCAT(`fullname`, ' (', `email`, ')') `fullname` 
   FROM :table_members 
 WHERE :conditions 
 LIMIT 0, 20
