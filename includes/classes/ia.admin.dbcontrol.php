@@ -133,7 +133,7 @@ class iaDbControl extends abstractCore
                 $output .= ' NOT NULL';
             }
             if ($value['Default']) {
-                $output .= is_numeric($value['Default'])
+                $output .= is_numeric($value['Default']) || ('CURRENT_TIMESTAMP' == $value['Default'])
                     ? ' default ' . $value['Default']
                     : " default '" . $value['Default'] . "'";
             }
