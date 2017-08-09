@@ -150,7 +150,7 @@ class iaDb extends PDO implements iaInterfaceDbAdapter
 
         $this->_counter++;
         $this->_lastQuery = $sql;
-        if (INTELLI_DEBUG) {
+        if (INTELLI_DEBUG || defined('INTELLI_QDEBUG')) {
             $this->_queryList[] = [$sql, $times];
         }
 
