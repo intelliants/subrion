@@ -133,9 +133,14 @@ class iaDbControl extends abstractCore
                 $output .= ' NOT NULL';
             }
             if ($value['Default']) {
-                $output .= is_numeric($value['Default']) || ('CURRENT_TIMESTAMP' == $value['Default'])
-                    ? ' default ' . $value['Default']
-                    : " default '" . $value['Default'] . "'";
+                if (0 === strpos($value['Type'], 'enum')) {
+                    $output .= " default '{$value['Default']}'";
+                }
+                else {
+                    $output .= is_numeric($value['Default']) || ('CURRENT_TIMESTAMP' == $value['Default'])
+                        ? ' default ' . $value['Default']
+                        : " default '{$value['Default']}'";
+                }
             }
             if ($value['Extra']) {
                 $output .= " {$value['Extra']}";
@@ -182,7 +187,7 @@ class iaDbControl extends abstractCore
         $output .= PHP_EOL . ')';
 
         if ($collation = $this->_getTableCollation($tableName)) {
-            $output .= ' DEFAULT CHARSET = `' . $collation . '`;';
+            $output .= ' ENGINE=MyISAM DEFAULT CHARSET = `' . $collation . '`;';
         }
 
         return stripslashes($output);
