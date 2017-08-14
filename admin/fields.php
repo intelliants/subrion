@@ -264,11 +264,12 @@ class iaBackendController extends iaAbstractControllerBackend
                 case iaField::COMBO:
                 case iaField::RADIO:
                 case iaField::CHECKBOX:
+                    $keys = [];
                     $values = [];
 
                     foreach ($data['keys'] as $idx => $key) {
                         $key = trim($key);
-                        $key || $key = self::_obtainKey($data['keys']);
+                        $key || $key = $keys[] = self::_obtainKey($data['keys'], $keys);
 
                         $hasValue = false;
                         foreach ($this->_iaCore->languages as $iso => $language) {
@@ -424,7 +425,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _assignValues(&$iaView, array &$entryData)
     {
-        $titles = $values = [];
+        $titles = [];
+        $values = [];
 
         if (iaCore::ACTION_EDIT == $iaView->get('action')) {
             $entryData = $this->getById($this->getEntryId());
@@ -443,28 +445,10 @@ class iaBackendController extends iaAbstractControllerBackend
                 if (iaField::CHECKBOX == $entryData['type']) {
                     $entryData['default'] = explode(',', $entryData['default']);
                     foreach ($entryData['default'] as $key_d => $key) {
-                        $entryData['default'][$key_d] = iaField::getFieldValue($entryData['item'], $entryData['name'],
-                            $key);
+                        $entryData['default'][$key_d] = iaField::getFieldValue($entryData['item'], $entryData['name'], $key);
                     }
                 } else {
-                    $entryData['default'] = iaField::getFieldValue($entryData['item'], $entryData['name'],
-                        $entryData['default']);
-                }
-            }
-
-            if (iaField::TREE == $entryData['type']) {
-                $entryData['values'] = $this->_getTree($entryData['item'], $entryData['name'], $entryData['values']);
-            } elseif (iaField::IMAGE == $entryData['type'] || iaField::PICTURES == $entryData['type']) {
-                $entryData['image_types'] = $this->getHelper()->getImageTypeIdsByFieldId($this->getEntryId());
-            } elseif ($entryData['values']) {
-                $values = explode(',', $entryData['values']);
-                foreach ($values as $key) {
-                    $phrase = sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $entryData['item'], $entryData['name'], $key);
-                    $rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($phrase, 'key'), null, null,
-                        iaLanguage::getTable());
-                    foreach ($rows as $row) {
-                        $titles[$key][$row['code']] = $row['value'];
-                    }
+                    $entryData['default'] = iaField::getFieldValue($entryData['item'], $entryData['name'], $entryData['default']);
                 }
             }
 
@@ -485,6 +469,25 @@ class iaBackendController extends iaAbstractControllerBackend
         } elseif (!empty($_GET['item']) || !empty($_POST['item'])) {
             $entryData['item'] = isset($_POST['item']) ? $_POST['item'] : $_GET['item'];
             $entryData['pages'] = isset($_POST['pages']) ? $_POST['pages'] : [];
+        }
+
+        if (iaField::TREE == $entryData['type']) {
+            $entryData['values'] = $this->_getTree($entryData['item'], $entryData['name'], $entryData['values']);
+        } elseif (iaField::IMAGE == $entryData['type'] || iaField::PICTURES == $entryData['type']) {
+            $entryData['image_types'] = $this->getHelper()->getImageTypeIdsByFieldId($this->getEntryId());
+        } elseif ($this->_values) {
+            $values = array_keys($this->_values);
+            $titles = $this->_values;
+        } elseif ($entryData['values']) {
+            $values = explode(',', $entryData['values']);
+            foreach ($values as $key) {
+                $phrase = sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $entryData['item'], $entryData['name'], $key);
+                $rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($phrase, 'key'), null, null,
+                    iaLanguage::getTable());
+                foreach ($rows as $row) {
+                    $titles[$key][$row['code']] = $row['value'];
+                }
+            }
         }
 
         $fieldTypes = $this->_iaDb->getEnumValues(iaField::getTable(), 'type');
@@ -932,10 +935,10 @@ class iaBackendController extends iaAbstractControllerBackend
         $this->_iaDb->delete($where, iaField::getTableRelations());
     }
 
-    private static function _obtainKey(array $keys)
+    private static function _obtainKey(array $keys1, array $keys2)
     {
         $i = 1;
-        while (in_array($i, $keys)) {
+        while (in_array($i, $keys1) || in_array($i, $keys2)) {
             $i++;
         }
 
