@@ -69,6 +69,8 @@ class iaCurrency extends abstractModuleFront
     public function set($currencyCode)
     {
         if ($currency = $this->getByCode($currencyCode)) {
+            $this->iaCore->startHook('phpFrontCurrencyChanged', ['currency' => $currency]);
+
             $_SESSION[self::SESSION_KEY] = $currency;
         }
     }

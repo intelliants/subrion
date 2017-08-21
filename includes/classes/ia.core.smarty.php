@@ -93,6 +93,8 @@ class iaSmarty extends Smarty
             $this->registerPlugin(self::PLUGIN_FUNCTION, 'displayTreeNodes', [__CLASS__, 'displayTreeNodes']);
 
             $this->registerPlugin(self::PLUGIN_BLOCK, 'ia_block', [__CLASS__, 'ia_block']);
+
+            $this->registerPlugin(self::PLUGIN_MODIFIER, 'currency_format', [__CLASS__, 'currency_format']);
         }
 
         // uncomment this to get rid of useless whitespaces in html
@@ -1016,5 +1018,10 @@ class iaSmarty extends Smarty
         }
 
         return implode(', ', $result);
+    }
+
+    public static function currency_format($number)
+    {
+        return iaCore::instance()->factory('currency')->format($number);
     }
 }
