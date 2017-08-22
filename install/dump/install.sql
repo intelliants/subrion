@@ -467,7 +467,7 @@ CREATE TABLE `{install:prefix}members` (
 	`id` int(11) unsigned NOT NULL auto_increment,
 	`usergroup_id` smallint(5) unsigned NOT NULL default 8,
 	`username` varchar(50) NOT NULL,
-	`password` char(32) NOT NULL,
+	`password` varchar(200) NOT NULL,
 	`email` varchar(200) NOT NULL,
 	`sec_key` varchar(32) NOT NULL,
 	`status` enum('approval','active','unconfirmed','suspended') NOT NULL default 'active',

@@ -41,6 +41,7 @@ class iaUsers extends abstractCore
     const METHOD_NAME_GET_FAVORITES = 'getFavorites';
 
     const AUTO_LOGIN_COOKIE_NAME = '_utcpl';
+    const USE_OBSOLETE_AUTH = false;
 
     protected static $_table = 'members';
     protected static $_itemName = 'members';
@@ -539,11 +540,12 @@ SQL;
         if ((int)$userId) {
             $condition = sprintf('u.`id` = %d', $userId);
         } else {
-            $condition = '(u.`username` = :username OR u.`email` = :email) AND u.`password` = :password';
+            $condition = '(u.`username` = :username OR u.`email` = :email)' .
+                (self::USE_OBSOLETE_AUTH ? ' AND u.`password` = :password' : '');
             $this->iaDb->bind($condition, [
                 'username' => preg_replace('/[^a-zA-Z0-9.@_-]/', '', $user),
                 'email' => $user,
-                'password' => $this->encodePassword($password)
+                'password' => $this->encodePassword($password),
             ]);
         }
 
@@ -561,6 +563,11 @@ SQL;
             'condition' => $condition
         ]);
         $row = $this->iaDb->getRow($sql);
+
+        if (!self::USE_OBSOLETE_AUTH && (!$row || !password_verify($password, $row['password']))) {
+            return false;
+        }
+
         !$row || $this->_processValues($row, true);
 
         if (iaCore::STATUS_ACTIVE == $row['status']) {
@@ -692,11 +699,15 @@ SQL;
 
     public function encodePassword($rawPassword)
     {
-        $factors = ['iaSubrion', 'Y2h1c2hrYW4tc3R5bGU', 'onfr64_qrpbqr'];
+        if (self::USE_OBSOLETE_AUTH) {
+            $factors = ['iaSubrion', 'Y2h1c2hrYW4tc3R5bGU', 'onfr64_qrpbqr'];
 
-        $password = $factors && array_reverse($factors);
-        $password = array_map(str_rot13($factors[2]), [$factors[1] . chr(0x3d)]);
-        $password = md5(IA_SALT . substr(reset($password), -15) . $rawPassword);
+            $password = $factors && array_reverse($factors);
+            $password = array_map(str_rot13($factors[2]), [$factors[1] . chr(0x3d)]);
+            $password = md5(IA_SALT . substr(reset($password), -15) . $rawPassword);
+        } else {
+            $password = password_hash($rawPassword, PASSWORD_BCRYPT);
+        }
 
         return $password;
     }
