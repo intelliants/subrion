@@ -1353,6 +1353,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('already_home_page','This page has been set as your homepage. You may not turn it off.','admin'),
 ('and_then','And then','admin'),
 ('are_you_sure_install_module','Are you sure you wish to install this module?','admin'),
+('are_you_sure_install_template','Are you sure you wish to install this template? Current template data will be lost. Block changes will be reset.','admin'),
 ('are_you_sure_reinstall_module','Are you sure you wish to reinstall this module? All data will be lost. You need to start from the scratch.','admin'),
 ('are_you_sure_resend_registration_email','This will permanently reset the current password of this member. Are you sure you want to re-send registration email?','admin'),
 ('are_you_sure_to_delete_currency','Are you sure to delete this currency?','admin'),
