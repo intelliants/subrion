@@ -109,8 +109,8 @@
                     </form>
                 {/if}
                 {include 'language-selector.tpl'}
-                {ia_blocks block='inventory'}
                 {include 'currency-selector.tpl'}
+                {ia_blocks block='inventory'}
             </div>
         </div>
 
