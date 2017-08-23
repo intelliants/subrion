@@ -157,7 +157,7 @@ class iaPicture extends abstractCore
             $path = pathinfo($destinationFile, PATHINFO_DIRNAME);
             $file = pathinfo($destinationFile, PATHINFO_BASENAME);
 
-            $image->save($path, $file);
+            $image->save($path, $file, true, null, $this->iaCore->get('image_quality', 75));
 
             $result = true;
         } catch (Exception $e) {
