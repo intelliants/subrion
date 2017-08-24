@@ -951,7 +951,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 return (bool)$result;
             } else {
                 $this->error = true;
-                $this->addMessage(iaLanguage::getf('upload_module_error', ['module' => $this->_folder]));
+                $this->addMessage(iaLanguage::getf('upload_module_error', ['module' => $this->_folder]), false);
             }
         }
 
