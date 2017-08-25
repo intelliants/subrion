@@ -178,8 +178,6 @@ class iaUsers extends abstractCore
         } elseif (isset($_COOKIE[self::AUTO_LOGIN_COOKIE_NAME])) {
             $this->_checkAutoLoginCookie();
         }
-
-        $this->iaCore->getSecurityToken() || $_SESSION[iaCore::SECURITY_TOKEN_MEMORY_KEY] = $this->iaCore->factory('util')->generateToken(92);
     }
 
     public static function getAuthProviders()

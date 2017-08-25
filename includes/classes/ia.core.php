@@ -590,7 +590,8 @@ SQL;
     {
         if ($_POST && $this->get('prevent_csrf') && !$this->iaView->get('nocsrf')) {
             $referrerValid = false;
-            $tokenValid = true;//(isset($_POST[self::SECURITY_TOKEN_FORM_KEY]) && $this->getSecurityToken() == $_POST[self::SECURITY_TOKEN_FORM_KEY]);
+            $tokenValid = (isset($_POST[self::SECURITY_TOKEN_FORM_KEY])
+                && $this->getSecurityToken() === $_POST[self::SECURITY_TOKEN_FORM_KEY]);
 
             if (isset($_SERVER['HTTP_REFERER'])) {
                 $wwwChunk = 'www.';
@@ -916,7 +917,32 @@ SQL;
 
     public function getSecurityToken()
     {
-        return isset($_SESSION[self::SECURITY_TOKEN_MEMORY_KEY]) ? $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] : null;
+        if (!isset($_SESSION[self::SECURITY_TOKEN_MEMORY_KEY])) {
+            $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] = $this->_generateSecurityToken(40);
+        }
+
+        return $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY];
+    }
+
+    private function _generateSecurityToken($length)
+    {
+        $result = null;
+
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            $result = openssl_random_pseudo_bytes($length * 2);
+
+            if (false !== $result) {
+                $result = substr(str_replace(['/', '+', '='], '', base64_encode($result)), 0, $length);
+            }
+        }
+
+        // fallback to built-in method if cryptographic solution is unavailable
+        if (!$result) {
+            iaDebug::debug('Unable to generate strong security token', 'Notice');
+            $result = iaUtil::generateToken($length);
+        }
+
+        return $result;
     }
 
     public function fetchConfig($where = null)
