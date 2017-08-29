@@ -72,10 +72,10 @@
                         </div>
                     {/if}
                     <div class="card__item__image">
-                        <img src="{$module.logo}" alt="{$module.title}">
+                        <img src="{$module.logo}" alt="{$module.title|escape}">
                     </div>
                     <div class="card__item__body">
-                        <h4>{$module.title}</h4>
+                        <h4>{$module.title|escape}</h4>
                         <p>{$module.summary}</p>
                         <div class="card__item__chips">
                             {if !empty($module.buttons.upgrade)}
