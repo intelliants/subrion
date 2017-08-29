@@ -876,6 +876,7 @@ SQL;
             // aliases
             $this->assign('img', IA_TPL_URL . 'img/');
             $this->assign('pageAction', $this->get('action'));
+            $this->assign('securityToken', $this->iaCore->getSecurityToken());
 
             if (isset($_SESSION['msg']) && is_array($_SESSION['msg'])) {
                 foreach ($_SESSION['msg'] as $type => $text) {

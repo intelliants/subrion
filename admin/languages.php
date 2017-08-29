@@ -155,7 +155,7 @@ class iaBackendController extends iaAbstractControllerBackend
                         iaLanguage::getLanguagesTable());
                 }
 
-                $output = ['message' => iaLanguage::get('saved'), 'success' => true];
+                $output = ['result' => true, 'message' => iaLanguage::get('saved')];
             }
         } else {
             if (empty($_POST['key'])) {

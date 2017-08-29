@@ -25,7 +25,7 @@ $(function() {
                 return $(this).text();
             }).get();
 
-            $.post(window.location.href + 'sorting.json', {codes: codes}, function(response) {
+            intelli.post(window.location.href + 'sorting.json', {codes: codes}, function(response) {
                 intelli.notifFloatBox({
                     msg: response.message,
                     type: response.result ? 'success' : 'error',

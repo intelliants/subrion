@@ -52,18 +52,13 @@
                 </div>
             </div>
             {ia_add_js}
-$(function()
-{
-    $('#js-cmd-send-reg-email').on('click', function()
-    {
+$(function() {
+    $('#js-cmd-send-reg-email').on('click', function() {
         var $btn = $(this);
 
-        intelli.confirm(_t('are_you_sure_resend_registration_email'), null, function(result)
-        {
-            if (result)
-            {
-                $.post(intelli.config.admin_url + '/members/registration-email.json', { id: {$id} }, function(response)
-                {
+        intelli.confirm(_t('are_you_sure_resend_registration_email'), null, function(result) {
+            if (result) {
+                intelli.post(intelli.config.admin_url + '/members/registration-email.json', { id: {$id} }, function(response) {
                     intelli.notifFloatBox({ msg: response.message, type: response.result ? 'success' : 'error', autohide: true });
                     $btn.prop('disabled', true);
                 });

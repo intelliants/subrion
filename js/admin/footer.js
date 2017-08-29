@@ -482,7 +482,7 @@ $(function () {
                             opacity: 0
                         }, 150, function () {
                             $this.hide().prev().show(function () {
-                                $.post(intelli.config.admin_url + '/actions/read.json', {action: 'remove-installer'}, function (response) {
+                                intelli.post(intelli.config.admin_url + '/actions/read.json', {action: 'remove-installer'}, function (response) {
                                     if (!response.error) {
                                         $this.prev().animate(
                                             {
@@ -592,13 +592,14 @@ $(function () {
                         $submit
                             .attr('disabled', true)
                             .html('<span class="fa fa-refresh fa-spin fa-fw"></span><span class="sr-only">' + _t('uploading_please_wait') + '</span> ' + _t('uploading_please_wait'));
+                        formData.append(intelli.securityTokenKey, intelli.securityToken);
                         formData.append('action', 'dropzone-upload-file');
                         formData.append('field', fieldName);
                         formData.append('item', itemName);
                     });
 
                     this.on('error', function (file) {
-                        if ('canceled' != file.status) {
+                        if ('canceled' !== file.status) {
                             error = true;
                             errorMessage = 'error';
                         }
@@ -612,7 +613,7 @@ $(function () {
                     });
 
                     this.on('removedfile', function (file) {
-                        if ('undefined' == typeof file.status || 'success' == file.status) {
+                        if ('undefined' === typeof file.status || 'success' === file.status) {
                             var params = {
                                 action: 'dropzone-delete-file',
                                 item: itemName,
@@ -628,7 +629,7 @@ $(function () {
                                 params.itemid = itemId;
                             }
 
-                            $.post(intelli.config.admin_url + '/actions/read.json', params).done(function (response) {
+                            intelli.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response) {
                                 intelli.notifFloatBox({
                                     msg: response.message,
                                     type: response.error ? 'error' : 'success',
@@ -638,7 +639,7 @@ $(function () {
                         }
                     });
 
-                    this.on('queuecomplete', function () {
+                    this.on('queuecomplete', function() {
                         if (error) {
                             message = errorMessage;
                             error = false;
@@ -650,14 +651,14 @@ $(function () {
                 }
             });
 
-        if (typeof values == 'object' && values) {
+        if ('object' === typeof values && values) {
             var imageTypes = {
                 primary: $dropzone.data('imagetype-primary'),
                 thumbnail: $dropzone.data('imagetype-thumbnail')
             };
             var existingFiles = [], mock;
 
-            values.forEach(function (entry) {
+            values.forEach(function(entry) {
                 mock = {name: entry.file, size: entry.size};
 
                 dropZone.emit('addedfile', mock);

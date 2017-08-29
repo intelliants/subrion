@@ -6,28 +6,24 @@
     </div>
 </div>
 {ia_add_js}
-$(function()
-{
+$(function() {
     var $btn = $('#js-cmd-send-test-email'),
         $form = $btn.closest('form');
 
     intelli.dataHash = $form.serialize();
 
-    $('input, textarea, select', $form).change(function()
-    {
-        var changed = intelli.dataHash != $form.serialize(),
+    $('input, textarea, select', $form).change(function() {
+        var changed = intelli.dataHash !== $form.serialize(),
             $msg = $btn.next();
 
         $btn.prop('disabled', changed);
         changed ? $msg.fadeIn() : $msg.fadeOut();
     });
 
-    $btn.on('click', function(e)
-    {
+    $btn.on('click', function() {
         $btn.button('loading');
 
-        $.post(intelli.config.admin_url + '/actions.json', { action: 'send-test-email' }, function(response)
-        {
+        intelli.post(intelli.config.admin_url + '/actions.json', { action: 'send-test-email' }, function(response) {
             $btn.button('reset');
             intelli.notifFloatBox({ msg: response.message, type: response.result ? 'success' : 'error', autohide: true });
         });

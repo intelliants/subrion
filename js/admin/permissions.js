@@ -2,7 +2,6 @@ intelli.permissions =
     {
         button: null,
         url: intelli.config.admin_url + '/permissions/edit.json' + window.location.search,
-        token: $('input:first', '#js-security-token').val(),
 
         save: function ($toggler, access) {
             var self = this,
@@ -11,15 +10,15 @@ intelli.permissions =
                 params = {
                     object: data.pageType,
                     action: data.action,
-                    id: ('undefined' == typeof data.object) ? 0 : data.object
+                    id: ('undefined' === typeof data.object) ? 0 : data.object
                 };
 
             defaults || (params.access = access);
 
-            $.post(this.url, intelli.includeSecurityToken(params, self.token), function (response) {
+            intelli.post(this.url, params, function (response) {
                 if (response.result) {
                     self.toggle($toggler, defaults ? null : params.access);
-                    if ('admin_access' == params.object) {
+                    if ('admin_access' === params.object) {
                         self.toggleDashboardActions(defaults ? $toggler.data('default-access') : params.access);
                     }
                 }
@@ -53,7 +52,7 @@ intelli.permissions =
                 params.action = actions;
             }
 
-            $.post(self.url, intelli.includeSecurityToken(params, self.token), function (response) {
+            intelli.post(self.url, params, function (response) {
                 if (response.result) {
                     self.button = $ctl.get(0);
                     $togglers.each(function () {

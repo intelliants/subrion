@@ -614,8 +614,36 @@ SQL;
             if (!$referrerValid || !$tokenValid) {
                 header('HTTP/1.1 203'); // reply with 203 "Non-Authoritative Information" status
 
+                $contentType = 'text/html';
+                $message = 'Request treated as a potential CSRF attack.';
+
+                switch ($this->iaView->getRequestType()) {
+                    case iaView::REQUEST_JSON:
+                        $contentType = 'application/json';
+
+                        $output = json_encode(['result' => false, 'message' => $message]);
+
+                        break;
+
+                    case iaView::REQUEST_XML:
+                        $contentType = 'text/xml';
+
+                        $xmlObject = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>');
+                        $xmlObject->addChild('result', false);
+                        $xmlObject->addChild('message', $message);
+
+                        $output = $xmlObject->asXML();
+
+                        break;
+
+                    default:
+                        $output = $message;
+                }
+
                 $this->iaView->set('nodebug', true);
-                die('Request treated as a potential CSRF attack.');
+
+                header('Content-Type: ' . $contentType);
+                die($output);
             }
         }
 

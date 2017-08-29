@@ -9,7 +9,7 @@ intelli.gridHelper = {
     httpRequest: function (caller, data, action) {
         $.ajax(
             {
-                data: intelli.includeSecurityToken(data, $('#' + caller.config.target).data('token')),
+                data: intelli.includeSecurityToken(data),
                 dataType: 'json',
                 failure: function () {
                     Ext.MessageBox.alert(_t('error_saving_changes'));

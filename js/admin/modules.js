@@ -94,7 +94,6 @@ intelli.modules = {
 };
 
 Ext.onReady(function () {
-
     $('.js-install').on('click', function (e) {
         e.preventDefault();
 
@@ -126,7 +125,7 @@ Ext.onReady(function () {
         }
 
         $.ajax({
-            data: {name: module, type: type, remote: remote},
+            data: intelli.includeSecurityToken({name: module, type: type, remote: remote}),
             failure: intelli.modules.failure,
             type: 'POST',
             url: intelli.modules.url + type + '/' + module + '/install.json',

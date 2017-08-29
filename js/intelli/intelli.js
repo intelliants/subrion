@@ -484,12 +484,16 @@ intelli = {
         });
     },
 
-    includeSecurityToken: function (params, tokenValue) {
-        if ('object' == typeof params) {
-            params[this.securityTokenKey] = tokenValue;
+    includeSecurityToken: function(params) {
+        if ('object' === typeof params) {
+            params[this.securityTokenKey] = intelli.securityToken;
         }
 
-        return params
+        return params;
+    },
+
+    post: function(url, data, success, dataType) {
+        return $.post(url, this.includeSecurityToken(data), success, dataType);
     }
 };
 

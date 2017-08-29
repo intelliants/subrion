@@ -311,15 +311,15 @@ Ext.onReady(function () {
         intelli.sortable('languagesList', {
             handle: '.uploads-list-item__drag-handle',
             animation: 150,
-            onEnd: function (e) {
+            onEnd: function() {
                 var langs = $('.iso-val').map(function () {
                     return $(this).text();
                 }).get();
 
-                $.post(window.location.href + 'add.json', {sorting: 'save', langs: langs}, function (response) {
+                intelli.post(window.location.href + 'add.json', {sorting: 'save', langs: langs}, function(response) {
                     intelli.notifFloatBox({
                         msg: response.message,
-                        type: (response.success ? 'success' : 'error'),
+                        type: (response.result ? 'success' : 'error'),
                         autohide: true,
                         pause: 1500
                     });
