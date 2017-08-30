@@ -85,28 +85,27 @@ class iaItem extends abstractCore
         }
 
         if ($item['instantiable']) {
-            // compatibility layer
-            $moduleInterface = IA_MODULES . $item['module'] . '/includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
-            if (is_file($moduleInterface)) {
-                require_once $moduleInterface;
-            }
-            //
-
-            $path = IA_MODULES . $item['module'] . '/includes/classes/';
-            $result = $this->iaCore->factoryClass($itemName, $type, $path);
+            $result = $this->iaCore->factoryModule($itemName, $item['module'], $type);
 
             if (!$result) {
                 throw new Exception(sprintf('Unable to instantiate item class (%s)', $itemName));
             }
         } else {
-            $result = $this->_instantiateItemModel($item);
+            $result = $this->_instantiateItemModel($item, $type);
         }
 
         return $result;
     }
 
-    protected static function _instantiateItemModel($itemName)
+    protected function _instantiateItemModel(array $item, $type)
     {
+        $itemModel = (iaCore::FRONT == $type)
+            ? new itemModelFront()
+            : new itemModelAdmin();
+
+        $itemModel->init();
+        $itemModel->setParams($item);
+
         return null;
     }
 
@@ -227,14 +226,14 @@ class iaItem extends abstractCore
     /**
      * Returns item table name
      *
-     * @param $item string item name
+     * @param $itemName string item name
      *
      * @return string
      */
-    public function getItemTable($item)
+    public function getItemTable($itemName)
     {
-        $result = $this->iaDb->one_bind('table_name', '`item` = :item', ['item' => $item], self::getTable());
-        $result || $result = self::_toPlural($item);
+        $result = $this->iaDb->one_bind('table_name', '`item` = :item', ['item' => $itemName], self::getTable());
+        $result || $result = self::_toPlural($itemName);
 
         return $result;
     }

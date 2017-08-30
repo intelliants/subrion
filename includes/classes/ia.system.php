@@ -44,6 +44,9 @@ final class iaSystem
             // core
             'iaCore' => 'ia.core',
             'iaDebug' => 'ia.debug',
+            // items
+            'itemModelAdmin' => 'ia.base.item.admin',
+            'itemModelFront' => 'ia.base.item.front',
             // modules
             'abstractModuleAdmin' => 'ia.base.module.admin',
             'abstractModuleFront' => 'ia.base.module.front',

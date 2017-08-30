@@ -774,6 +774,28 @@ SQL;
         }
     }
 
+    public function factoryModule($name, $module, $type = null)
+    {
+        $path = IA_MODULES . $module . '/includes/classes/';
+
+        // TODO: review
+        $moduleInterface = IA_MODULES . $module . '/includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
+        if (is_file($moduleInterface)) {
+            require_once $moduleInterface;
+        }
+        //
+
+        return $this->factoryClass($name, $type, $path);
+    }
+
+    // obsolete. left in compatibility purposes
+    // TODO: remove
+    public function factoryPlugin($pluginName, $type = self::FRONT, $className = null)
+    {
+        return $this->factoryModule(is_null($className) ? $pluginName : $className, $pluginName, $type);
+    }
+    //
+
     public function factoryClass($name, $type = null, $path = null)
     {
         $name = strtolower($name);
@@ -785,7 +807,6 @@ SQL;
         $className = str_replace(' ', '', // 'camelize' class name
             ucwords(str_replace('_', ' ', $name)));
         $className = self::CLASSNAME_PREFIX . ucfirst($className);
-
 
         if (isset($this->_classInstances[$className])) {
             return $this->_classInstances[$className];
@@ -818,17 +839,6 @@ SQL;
 
         return false;
     }
-
-    // compatibility layer
-    public function factoryModule($name, $module, $type = self::FRONT, $params = null)
-    {
-        if ('item' == $name && $params) {
-            $name = $params;
-        }
-
-        return $this->factoryItem($name, $type);
-    }
-    //
 
     /**
      * Get config table name
