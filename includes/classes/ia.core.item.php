@@ -46,6 +46,70 @@ class iaItem extends abstractCore
         return self::$_modulesTable;
     }
 
+    // compatibility layer helpers
+    private static function _toPlural($input)
+    {
+        $result = $input;
+
+        if ('s' != substr($input, -1)) {
+            $result.= 's';
+        }
+
+        return $result;
+    }
+
+    public static function toSingular($input)
+    {
+        $ex = ['news'];
+
+        if ('s' == substr($input, -1)
+            && !in_array($input, $ex)) {
+            $input = substr($input, 0, -1);
+        }
+
+        return $input;
+    }
+    //
+
+    public function factory($itemName, $type)
+    {
+        if (!$itemName) {
+            throw new Exception('No item name provided');
+        }
+
+        $item = $this->iaDb->row(['name' => 'item', 'module', 'instantiable'],
+            iaDb::convertIds($itemName, 'item'), self::getTable());
+
+        if (!$item) {
+            throw new Exception(sprintf('Item not found (%s)', $itemName));
+        }
+
+        if ($item['instantiable']) {
+            // compatibility layer
+            $moduleInterface = IA_MODULES . $item['module'] . '/includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
+            if (is_file($moduleInterface)) {
+                require_once $moduleInterface;
+            }
+            //
+
+            $path = IA_MODULES . $item['module'] . '/includes/classes/';
+            $result = $this->iaCore->factoryClass($itemName, $type, $path);
+
+            if (!$result) {
+                throw new Exception(sprintf('Unable to instantiate item class (%s)', $itemName));
+            }
+        } else {
+            $result = $this->_instantiateItemModel($item);
+        }
+
+        return $result;
+    }
+
+    protected static function _instantiateItemModel($itemName)
+    {
+        return null;
+    }
+
     public function getFavoritesByMemberId($memberId)
     {
         $stmt = "`item` IN (':items') && `member_id` = :user";
@@ -163,14 +227,14 @@ class iaItem extends abstractCore
     /**
      * Returns item table name
      *
-     * @param $item item name
+     * @param $item string item name
      *
      * @return string
      */
     public function getItemTable($item)
     {
         $result = $this->iaDb->one_bind('table_name', '`item` = :item', ['item' => $item], self::getTable());
-        $result || $result = $item;
+        $result || $result = self::_toPlural($item);
 
         return $result;
     }

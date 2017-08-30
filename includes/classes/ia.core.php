@@ -750,126 +750,85 @@ SQL;
         return false;
     }
 
-    public function factory($name, $type = self::CORE)
+    public function factory($className, $type = self::CORE)
     {
-        $result = null;
-        if (is_string($name)) {
-            $className = self::CLASSNAME_PREFIX . ucfirst(strtolower($name));
-            if (isset($this->_classInstances[$className])) {
-                $result = $this->_classInstances[$className];
-            } else {
-                iaSystem::renderTime('class', 'Loading class ' . $className);
-                $fileSize = $this->loadClass($type, (strtolower($name) == 'db') ? INTELLI_CONNECT : $name);
-                if (false === $fileSize) {
-                    return false;
-                }
-
-                iaDebug::debug('ia.' . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
-
-                $result = new $className();
-                $result->init();
-
-                $this->_classInstances[$className] = $result;
-            }
-        } elseif (is_array($name)) {
+        if (is_array($className)) {
             $result = [];
-            foreach ($name as $className) {
-                $result[] = $this->factory($className, $type);
+            foreach ($className as $class)
+                $result[] = $this->factory($class, $type);
+
+            return $result;
+        }
+
+        return $this->factoryClass($className, $type);
+    }
+
+    public function factoryItem($itemName, $type = null)
+    {
+        try {
+            return $this->factory('item')->factory($itemName, $type);
+        } catch (Exception $e) {
+            echo $e->getMessage();
+            iaView::errorPage(iaView::ERROR_INTERNAL, 'Item Factory: ' . $e->getMessage());
+            exit();
+        }
+    }
+
+    public function factoryClass($name, $type = null, $path = null)
+    {
+        $name = strtolower($name);
+
+        if (is_null($type)) {
+            $type = iaCore::ACCESS_FRONT == $this->getAccessType() ? iaCore::FRONT : iaCore::ADMIN;
+        }
+
+        $className = str_replace(' ', '', // 'camelize' class name
+            ucwords(str_replace('_', ' ', $name)));
+        $className = self::CLASSNAME_PREFIX . ucfirst($className);
+
+
+        if (isset($this->_classInstances[$className])) {
+            return $this->_classInstances[$className];
+        }
+
+        iaSystem::renderTime('class', 'Loading class ' . $className);
+
+        if ('db' == $name) { // can't we get rid of this?
+            $name = INTELLI_CONNECT;
+        }
+
+        $fileName = iaSystem::CLASSES_PREFIX . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT;
+        $filePath = (is_null($path) ? IA_CLASSES : $path) . $fileName;
+
+        if (file_exists($filePath)) {
+            require_once $filePath;
+
+            // compatibility layer
+            // this code makes possible to use old-style "not camelcase'd" class names
+            if (!class_exists($className)) {
+                $className = self::CLASSNAME_PREFIX . ucfirst($name);
             }
-        }
+            //
 
-        return $result;
-    }
+            $instance = $this->_classInstances[$className] = new $className();
+            $instance->init();
 
-    public function factoryModule($name, $module, $type = self::FRONT, $params = null)
-    {
-        if ('item' == $name && $params) {
-            $name = substr($params, 0, -1);
-            $class = self::CLASSNAME_PREFIX . ucfirst(strtolower($name));
-            $params = null;
-        } else {
-            $class = self::CLASSNAME_PREFIX . ucfirst(strtolower($name));
-        }
-
-        if (!isset($this->_classInstances[$class])) {
-            $moduleInterface = IA_MODULES . $module . '/includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
-            if (is_file($moduleInterface)) {
-                require_once $moduleInterface;
-            }
-
-            $fileSize = $this->loadClass($type, $name, $module);
-            if (false === $fileSize) {
-                return false;
-            }
-
-            iaDebug::debug('<b>package:</b> ia.' . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
-
-            $this->_classInstances[$class] = new $class();
-            $this->_classInstances[$class]->init();
-        }
-
-        return $this->_classInstances[$class];
-    }
-
-    protected static function _toClassName($name)
-    {
-        // from plural to singular
-        $result = self::_toSingular($name);
-
-        // camelize
-        $result = str_replace(' ', '', ucwords(str_replace('_', ' ', $result)));
-
-        return $result;
-    }
-
-    protected static function _toSingular($name)
-    {
-        return 's' == $name[strlen($name) - 1] && !in_array($name, ['news'])
-            ? substr($name, 0, -1)
-            : $name;
-    }
-
-    public function factoryPlugin($pluginName, $type = self::FRONT, $className = null)
-    {
-        empty($className) && $className = self::_toSingular($pluginName);
-
-        $class = self::CLASSNAME_PREFIX . self::_toClassName($className);
-
-        if (!isset($this->_classInstances[$class])) {
-            $fileSize = $this->loadClass($type, $className, $pluginName);
-
-            if (false === $fileSize) {
-                return false;
-            }
-
-            iaDebug::debug('<b>plugin:</b> ia.' . $type . '.' . $className . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
-
-            $this->_classInstances[$class] = new $class();
-            $this->_classInstances[$class]->init();
-        }
-
-        return $this->_classInstances[$class];
-    }
-
-    public function loadClass($type = self::CORE, $className = '', $moduleName = null)
-    {
-        $name = strtolower($className);
-        $filename = iaSystem::CLASSES_PREFIX . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT;
-
-        if ($moduleName) {
-            $classFile = IA_MODULES . $moduleName . '/includes/classes/' . $filename;
-        } else {
-            $classFile = IA_CLASSES . $filename;
-        }
-
-        if (file_exists($classFile)) {
-            include_once $classFile;
-
-            return filesize($classFile);
+            return $instance;
         }
 
         return false;
     }
+
+    // compatibility layer
+    public function factoryModule($name, $module, $type = self::FRONT, $params = null)
+    {
+        if ('item' == $name && $params) {
+            $name = $params;
+        }
+
+        return $this->factoryItem($name, $type);
+    }
+    //
 
     /**
      * Get config table name

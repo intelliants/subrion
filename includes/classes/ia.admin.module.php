@@ -82,7 +82,7 @@ class iaModule extends abstractCore
     {
         parent::init();
 
-        $this->iaCore->factory(['acl', 'util']);
+        $this->iaCore->factory(['acl', 'util', 'item']);
     }
 
     protected function _resetValues()
@@ -1349,7 +1349,7 @@ class iaModule extends abstractCore
             case 'item':
                 if ($this->_checkPath('items')) {
                     $this->itemData['items'][$text] = [
-                        'item' => $text,
+                        'item' => iaItem::toSingular($text),
                         'payable' => (int)$this->_attr('payable', true),
                         'pages' => $this->_attr('pages'),
                         'table_name' => $this->_attr('table_name'),
