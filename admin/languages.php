@@ -145,7 +145,7 @@ class iaBackendController extends iaAbstractControllerBackend
     protected function _jsonAction(&$iaView)
     {
         $error = false;
-        $output = ['message' => iaLanguage::get('invalid_parameters'), 'success' => false];
+        $output = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 
         if (isset($_POST['sorting']) && 'save' == $_POST['sorting']) {
             if (count($_POST['langs']) > 1) {
@@ -193,7 +193,8 @@ class iaBackendController extends iaAbstractControllerBackend
                     }
                 }
 
-                $output['message'] = $output['success'] = iaLanguage::get($this->_phraseAddSuccess);
+                $output['result'] = true;
+                $output['message'] = iaLanguage::get($this->_phraseAddSuccess);
 
                 $this->getHelper()->createJsCache(true);
             }
