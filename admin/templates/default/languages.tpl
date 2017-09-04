@@ -1,4 +1,4 @@
-<div id="js-add-phrase-dialog-placeholder" style="margin:0px;height:0px;overflow:hidden;">{preventCsrf}</div>
+<div id="js-add-phrase-dialog-placeholder" style="margin:0;height:0;overflow:hidden;"></div>
 
 {if iaCore::ACTION_READ != $pageAction}
     <form method="post" class="sap-form form-horizontal">
