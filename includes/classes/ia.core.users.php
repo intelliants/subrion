@@ -528,7 +528,8 @@ SQL;
 
         $row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status',
             ['id' => $id, 'status' => iaCore::STATUS_ACTIVE], self::getTable());
-        !$row || $this->_processValues($row, true);
+
+        $this->_processValues($row, true);
 
         return $row;
     }
@@ -951,29 +952,28 @@ SQL;
 
         $singleRow && $rows = [$rows];
 
-        if ($serializedFields || $multilingualFields) {
-            foreach ($rows as &$row) {
-                if (!is_array($row)) {
-                    break;
-                }
-
-                $iaField->filter($this->getItemName(), $row);
-
-                foreach ($serializedFields as $fieldName) {
-                    if (isset($row[$fieldName])) {
-                        $row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
-                    }
-                }
-
-                $currentLangCode = $this->iaCore->language['iso'];
-                foreach ($multilingualFields as $fieldName) {
-                    if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
-                        $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
-                    }
-                }
-
-                $row['link'] = $this->url('view', $row);
+        foreach ($rows as &$row) {
+            if (!is_array($row)) {
+                break;
             }
+
+            $iaField->filter($this->getItemName(), $row);
+
+            foreach ($serializedFields as $fieldName) {
+                if (isset($row[$fieldName])) {
+                    $row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
+                }
+            }
+
+            $currentLangCode = $this->iaCore->language['iso'];
+            foreach ($multilingualFields as $fieldName) {
+                if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
+                    $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
+                }
+            }
+
+            $row['item'] = self::getItemName();
+            $row['link'] = $this->url('view', $row);
         }
 
         $singleRow && $rows = array_shift($rows);
@@ -990,7 +990,8 @@ SQL;
     {
         $memberIds = implode(",", $ids);
         $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION . ', 1 `favorite` ', "`id` IN ({$memberIds})", 0, 50, self::getTable());
-        !$rows || $this->_processValues($rows);
+
+        $this->_processValues($rows);
 
         return $rows;
     }

@@ -53,7 +53,7 @@ abstract class abstractModuleFront extends abstractCore
 
     public function getItemName()
     {
-        //return $this->_itemName;
+        return $this->_itemName;
     }
 
     public function isSearchable()
@@ -68,7 +68,7 @@ abstract class abstractModuleFront extends abstractCore
 
     public function url($action, array $data)
     {
-        return '#';
+        return $this->getUrl($data);
     }
 
     public function getUrl(array $itemData)
@@ -247,46 +247,44 @@ abstract class abstractModuleFront extends abstractCore
         // process favorites
         $rows = $this->iaCore->factory('item')->updateItemsFavorites($rows, $this->getItemName());
 
-        // get serialized field names
         $iaField = $this->iaCore->factory('field');
         $iaCurrency = $this->iaCore->factory('currency');
 
+        // fields require processing
         $serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
         $multilingualFields = $iaField->getMultilingualFields($this->getItemName());
         $currencyFields = $iaField->getFieldsByType($this->getItemName(), iaField::CURRENCY);
 
-        if ($serializedFields || $multilingualFields) {
-            foreach ($rows as &$row) {
-                if (!is_array($row)) {
-                    break;
-                }
-
-                // filter fields
-                $iaField->filter($this->getItemName(), $row);
-
-                foreach ($serializedFields as $fieldName) {
-                    if (isset($row[$fieldName])) {
-                        $row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
-                    }
-                }
-
-                $currentLangCode = $this->iaCore->language['iso'];
-                foreach ($multilingualFields as $fieldName) {
-                    if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
-                        $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
-                    }
-                }
-
-                foreach ($currencyFields as $fieldName) {
-                    if (isset($row[$fieldName])) {
-                        $row[$fieldName . '_formatted'] = $iaCurrency->format($row[$fieldName]);
-                    }
-                }
-
-                // mandatory keys
-                $row['item'] = $this->getItemName();
-                $row['link'] = $this->url('view', $row);
+        foreach ($rows as &$row) {
+            if (!is_array($row)) {
+                break;
             }
+
+            // filter fields
+            $iaField->filter($this->getItemName(), $row);
+
+            foreach ($serializedFields as $fieldName) {
+                if (isset($row[$fieldName])) {
+                    $row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
+                }
+            }
+
+            $currentLangCode = $this->iaCore->language['iso'];
+            foreach ($multilingualFields as $fieldName) {
+                if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
+                    $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
+                }
+            }
+
+            foreach ($currencyFields as $fieldName) {
+                if (isset($row[$fieldName])) {
+                    $row[$fieldName . '_formatted'] = $iaCurrency->format($row[$fieldName]);
+                }
+            }
+
+            // mandatory keys
+            $row['item'] = $this->getItemName();
+            $row['link'] = $this->getUrl($row);
         }
 
         $singleRow && $rows = array_shift($rows);
