@@ -255,7 +255,8 @@ class iaCache extends abstractUtil
 
             case 'config':
                 $config = $this->iaCore->fetchConfig("`private` = 0 AND `config_group` != 'email_templates'");
-                $config['ia_url'] = IA_CLEAR_URL;
+                $config['ia_url'] = IA_CLEAR_URL; // TODO remove, left in compatibility purposes
+                $config['clear_url'] = IA_CLEAR_URL;
                 $config['packages'] = $this->iaCore->setPackagesData();
                 $config['items'] = [];
                 $config['module'] = [['core', iaLanguage::get('core', 'Core')]];

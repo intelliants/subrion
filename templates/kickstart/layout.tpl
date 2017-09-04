@@ -32,7 +32,7 @@
 
         {ia_add_js}
             intelli.pageName = '{$core.page.name}';
-
+            intelli.config.url = '{$smarty.const.IA_URL}';
             {foreach $core.customConfig as $key => $value}
                 intelli.config.{$key} = '{$value}';
             {/foreach}
