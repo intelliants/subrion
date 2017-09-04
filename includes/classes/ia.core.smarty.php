@@ -75,7 +75,6 @@ class iaSmarty extends Smarty
         $this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_page_url', [__CLASS__, 'ia_page_url']);
         $this->registerPlugin(self::PLUGIN_FUNCTION, 'lang', [__CLASS__, 'lang']);
         $this->registerPlugin(self::PLUGIN_FUNCTION, 'preventCsrf', [__CLASS__, 'preventCsrf']);
-        $this->registerPlugin(self::PLUGIN_FUNCTION, 'printImage', [__CLASS__, 'printImage']);
         $this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_image', [__CLASS__, 'ia_image']);
 
         $this->registerPlugin(self::PLUGIN_BLOCK, 'access', [__CLASS__, 'access']);
@@ -129,6 +128,12 @@ class iaSmarty extends Smarty
     {
         $key = isset($params['key']) ? $params['key'] : '';
         $default = isset($params['default']) ? $params['default'] : null;
+
+        // compatibility layer
+        if (preg_match('#^field_([a-z]+?)s_(.*)$#', $key, $matches)) {
+            $default = iaLanguage::get('field_' . $matches[1] . '_' . $matches[2]);
+        }
+        //
 
         if (count($params) > 1 && !isset($params['default'])) {
             unset($params['key']);
@@ -237,46 +242,27 @@ class iaSmarty extends Smarty
 
     public static function ia_url($params)
     {
-        if (empty($params['item'])) {
-            return '#';
-        }
-
-        $result = '';
-
         $defaults = [
-            'url' => '',
-            'action' => 'view',
-            'item' => '',
             'attr' => '',
             'text' => 'details',
             'type' => 'link',
             'data' => []
         ];
+
         $params = array_merge($defaults, $params);
+
         $params['text'] = iaLanguage::get($params['text'], $params['text']);
-        $classname = isset($params['classname']) ? $params['classname'] : '';
+        $params['url'] = isset($params['data']['link']) ? $params['data']['link'] : '#';
 
-        switch ($params['item']) {
-            case iaUsers::getItemName():
+        // compatibility fallback
+        if (!isset($params['data']['link']) && isset($params['item'])) {
+            iaDebug::debug($params, 'Compatibitily fallback used in iaSmarty::ia_url()');
 
-                $params['url'] = iaCore::instance()->factory('users')->url($params['action'], $params['data']);
-
-                break;
-
-            default:
-                $iaCore = iaCore::instance();
-                $iaItem = $iaCore->factory('item');
-                $package = $iaItem->getModuleByItem($params['item']);
-                if (empty($package)) {
-                    return $result;
-                }
-                $iaPackage = $iaCore->factoryModule('item', $package, iaCore::FRONT, $params['item']);
-
-                if (empty($iaPackage)) {
-                    return $result;
-                }
-                $params['url'] = $iaPackage->url($params['action'], $params['data']);
+            if ($itemInstance = iaCore::instance()->factoryItem($params['item'])) {
+                $params['url'] = $itemInstance->url('view', $params['data']);
+            }
         }
+        //
 
         if (!isset($params['icon'])) {
             $params['icon'] = 'info';
@@ -284,17 +270,17 @@ class iaSmarty extends Smarty
         $params['icon'] = '<span class="fa fa-' . $params['icon'] . '"></span>';
 
         switch ($params['type']) {
+            default:
+                $result = $params['url'];
+                break;
             case 'link':
                 $result = '<a href="' . $params['url'] . '" ' . $params['attr'] . '>' . iaSanitize::html($params['text']) . '</a>';
                 break;
             case 'icon':
             case 'icon_text':
                 $params['text'] = ($params['type'] == 'icon') ? $params['icon'] : $params['icon'] . ' ' . iaSanitize::html($params['text']);
-
+                $classname = isset($params['classname']) ? $params['classname'] : '';
                 $result = '<a href="' . $params['url'] . '" ' . $params['attr'] . ' class="btn btn-sm btn-default ' . $classname . '">' . $params['text'] . '</a>';
-                break;
-            case 'url':
-                $result = $params['url'];
         }
 
         return $result;
@@ -591,20 +577,6 @@ class iaSmarty extends Smarty
         empty($params['class']) || $attr.= ' class="' . $params['class'] . '"';
 
         return sprintf('<img src="%s" alt="%s"%s>', $url, $alt, $attr);
-    }
-
-    /**
-     * Prints picture in the box uses for display listing thumbnails, listing full picture, member avatar
-     *
-     * @param array $params image params
-     *
-     * @return string
-     */
-    public static function printImage($params)
-    {
-        iaDebug::debug("'printImage' obsolete method call: " . $params['imgfile'], 'Notice');
-
-        return self::ia_image(array_merge($params, ['file' => $params['imgfile']]));
     }
 
     /**

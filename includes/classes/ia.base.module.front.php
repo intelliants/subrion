@@ -36,6 +36,16 @@ abstract class abstractModuleFront extends abstractCore
     public $coreSearchOptions = [];
 
 
+    public function init()
+    {
+        parent::init();
+
+        // compatibility layer
+        $this->iaCore->factory('item');
+        $this->_itemName = iaItem::toSingular($this->_itemName);
+        //
+    }
+
     public function getModuleName()
     {
         return $this->_moduleName;
@@ -43,7 +53,12 @@ abstract class abstractModuleFront extends abstractCore
 
     public function getItemName()
     {
-        return $this->_itemName;
+        //return $this->_itemName;
+    }
+
+    public function isSearchable()
+    {
+        return $this->coreSearchEnabled;
     }
 
     public function getStatuses()

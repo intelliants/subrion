@@ -150,6 +150,7 @@ class iaBackendController extends iaAbstractControllerBackend
             'searchable' => false,
             'timepicker' => false,
             'default' => '',
+            'values' => '',
             'imagetype_primary' => '',
             'imagetype_thumbnail' => '',
             'status' => iaCore::STATUS_ACTIVE,

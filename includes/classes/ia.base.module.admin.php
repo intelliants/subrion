@@ -74,6 +74,11 @@ abstract class abstractModuleAdmin extends abstractCore
         }
 
         parent::init();
+
+        // compatibility layer
+        $this->iaCore->factory('item');
+        $this->_itemName = iaItem::toSingular($this->_itemName);
+        //
     }
 
     public function getModuleName()
@@ -83,7 +88,9 @@ abstract class abstractModuleAdmin extends abstractCore
 
     public function getItemName()
     {
-        return $this->_itemName;
+        iaCore::instance()->factory('item');
+        return iaItem::toSingular($this->_itemName); // compatibility layer
+        //return $this->_itemName;
     }
 
     public function getStatuses()

@@ -32,9 +32,6 @@ class iaSearch extends abstractCore
     const ITEM_SEARCH_METHOD = 'coreSearch';
     const ITEM_COLUMN_TRANSLATION_METHOD = 'coreSearchTranslateColumn';
 
-    const SEARCH_PLUGIN = 'plugin';
-    const SEARCH_PACKAGE = 'package';
-
     const GET_PARAM_PAGE = '__p';
     const GET_PARAM_SORTING_FIELD = '__s';
     const GET_PARAM_SORTING_ORDER = '__so';
@@ -53,7 +50,7 @@ class iaSearch extends abstractCore
 
     protected $_caption = '';
 
-    protected $_extrasName;
+    protected $_module;
     protected $_options = [];
 
     protected $_itemInstance;
@@ -78,7 +75,6 @@ class iaSearch extends abstractCore
         $results = ['pages' => $this->_searchByPages()];
         $results = array_merge($results, $this->_searchByItems());
         $results[iaUsers::getItemName()] = $this->_searchByMembers();
-        $results = array_merge($results, $this->_searchByPlugins());
 
         return $results;
     }
@@ -233,15 +229,10 @@ class iaSearch extends abstractCore
             $this->_smartyVarsAssigned = true;
         }
 
-        $result = '';
-
-        if (self::SEARCH_PACKAGE == $this->_type) {
-            $result = $this->_render(sprintf('extra:%s/search.%s', $this->_extrasName, $this->_itemName),
+        if ($this->_itemName != iaUsers::getItemName()) {
+            $result = $this->_render(sprintf('extra:%s/search.%s', $this->_module, $this->_itemName),
                 ['listings' => $rows]);
-        } elseif (self::SEARCH_PLUGIN == $this->_type) {
-            $result = $this->_render(sprintf('extra:%s/search', $this->_extrasName),
-                ['entries' => $rows]);
-        } elseif (iaUsers::getItemName() == $this->_itemName) {
+        } else {
             $array = [];
             $fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, 'members');
 
@@ -418,32 +409,6 @@ class iaSearch extends abstractCore
         return false;
     }
 
-    protected function _searchByPlugins()
-    {
-        $iaItem = $this->iaCore->factory('item');
-
-        $where = '`type` = :type AND `status` = :status';
-        $this->iaDb->bind($where, ['type' => 'plugin', 'status' => iaCore::STATUS_ACTIVE]);
-
-        $result = [];
-        $plugins = $this->iaDb->onefield('name', $where, null, null, $iaItem::getModulesTable());
-
-        foreach ($plugins as $pluginName) {
-            if ($this->_loadPluginInstance($pluginName)) {
-                $search = call_user_func_array([$this->_itemInstance, self::ITEM_SEARCH_METHOD], [
-                    $this->_query,
-                    $this->_start,
-                    $this->_limit,
-                    $this->_sorting
-                ]);
-
-                $result[$pluginName] = [$search[0], $this->_renderResults($search[1])];
-            }
-        }
-
-        return $result;
-    }
-
     /**
      * @return array
      */
@@ -495,7 +460,6 @@ SQL;
                 if ($row['external']) {
                     switch ($extras[$row['module']]) {
                         case 'package':
-                        case 'plugin':
                             $fileName = explode(':', $row['filename']);
                             array_shift($fileName);
                             $fileName = explode('/', $fileName[0]);
@@ -839,49 +803,26 @@ SQL;
         return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', http_build_query($params));
     }
 
-    protected function _loadPluginInstance($pluginName)
-    {
-        $instance = $this->iaCore->factoryPlugin($pluginName);
-
-        if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED})
-            && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) {
-            $this->_type = self::SEARCH_PLUGIN;
-            $this->_itemInstance = &$instance;
-            $this->_extrasName = $pluginName;
-            $this->_options = [];
-
-            return true;
-        }
-
-        return false;
-    }
-
     protected function _loadItemInstance($itemName)
     {
         $this->_itemName = $itemName;
 
         if (iaUsers::getItemName() == $this->_itemName) {
-            $this->_type = null;
             $this->_itemInstance = $this->iaCore->factory('users');
-            $this->_extrasName = null;
+            $this->_module = null;
             $this->_options = $this->_itemInstance->{self::ITEM_SEARCH_PROPERTY_OPTIONS};
 
             return true;
         }
 
-        $itemData = $this->iaDb->row(['module'], iaDb::convertIds($this->_itemName, 'item'), iaItem::getTable());
+        $instance = $this->iaCore->factoryItem($this->_itemName);
 
-        if ($itemData && iaCore::CORE != $itemData['module']) {
-            $instance = $this->iaCore->factoryModule('item', $itemData['module'], iaCore::FRONT, $this->_itemName);
+        if ($instance && $instance->isSearchable()) {
+            $this->_itemInstance = &$instance;
+            $this->_module = $instance->getModuleName();
+            $this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : [];
 
-            if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) {
-                $this->_type = self::SEARCH_PACKAGE;
-                $this->_itemInstance = &$instance;
-                $this->_extrasName = $itemData['module'];
-                $this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : [];
-
-                return true;
-            }
+            return true;
         }
 
         return false;

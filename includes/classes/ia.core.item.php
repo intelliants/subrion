@@ -73,28 +73,36 @@ class iaItem extends abstractCore
 
     public function factory($itemName, $type)
     {
-        if (!$itemName) {
-            throw new Exception('No item name provided');
-        }
-
-        $item = $this->iaDb->row(['name' => 'item', 'module', 'instantiable'],
-            iaDb::convertIds($itemName, 'item'), self::getTable());
-
-        if (!$item) {
-            throw new Exception(sprintf('Item not found (%s)', $itemName));
-        }
-
-        if ($item['instantiable']) {
-            $result = $this->iaCore->factoryModule($itemName, $item['module'], $type);
-
-            if (!$result) {
-                throw new Exception(sprintf('Unable to instantiate item class (%s)', $itemName));
+        try {
+            if (!$itemName) {
+                throw new Exception('No item name provided');
             }
-        } else {
-            $result = $this->_instantiateItemModel($item, $type);
-        }
 
-        return $result;
+            $itemName = self::toSingular($itemName);
+
+            $item = $this->iaDb->row(['name' => 'item', 'module', 'instantiable'],
+                iaDb::convertIds($itemName, 'item'), self::getTable());
+
+            if (!$item) {
+                throw new Exception(sprintf('Item not found (%s)', $itemName));
+            }
+
+            if ($item['instantiable']) {
+                $result = $this->iaCore->factoryModule($itemName, $item['module'], $type);
+
+                if (!$result) {
+                    throw new Exception(sprintf('Unable to instantiate item class (%s)', $itemName));
+                }
+            } else {
+                $result = $this->_instantiateItemModel($item, $type);
+            }
+
+            return $result;
+        } catch (Exception $e) {
+            iaDebug::debug($e->getMessage());
+
+            return false;
+        }
     }
 
     protected function _instantiateItemModel(array $item, $type)
@@ -106,7 +114,7 @@ class iaItem extends abstractCore
         $itemModel->init();
         $itemModel->setParams($item);
 
-        return null;
+        return $itemModel;
     }
 
     public function getFavoritesByMemberId($memberId)

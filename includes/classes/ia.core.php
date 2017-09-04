@@ -765,13 +765,7 @@ SQL;
 
     public function factoryItem($itemName, $type = null)
     {
-        try {
-            return $this->factory('item')->factory($itemName, $type);
-        } catch (Exception $e) {
-            echo $e->getMessage();
-            iaView::errorPage(iaView::ERROR_INTERNAL, 'Item Factory: ' . $e->getMessage());
-            exit();
-        }
+        return $this->factory('item')->factory($itemName, $type);
     }
 
     public function factoryModule($name, $module, $type = null)

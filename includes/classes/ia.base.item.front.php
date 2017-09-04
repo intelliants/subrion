@@ -30,11 +30,15 @@ class itemModelFront extends abstractCore
 
     protected $_moduleName;
 
+    protected $_searchable;
+
 
     public function setParams(array $params)
     {
         $this->_itemName = $params['item'];
         $this->_moduleName = $params['module'];
+
+        $this->_searchable = (bool)$params['searchable'];
 
         self::$_table = $params['table_name'];
     }
@@ -49,9 +53,9 @@ class itemModelFront extends abstractCore
         return $this->_itemName;
     }
 
-    public function getUrl(array $itemData)
+    public function isSearchable()
     {
-        return $this->getInfo($this->getModuleName()) . '#';
+        return $this->_searchable;
     }
 
     public function getById($id, $decorate = true)
@@ -136,8 +140,6 @@ class itemModelFront extends abstractCore
 
                 $this->updateCounters($itemId, $entryData, iaCore::ACTION_DELETE);
 
-                $this->_removeFromFavorites($itemId);
-
                 $this->iaCore->startHook('phpListingRemoved', [
                     'itemId' => $itemId,
                     'itemName' => $this->getItemName(),
@@ -152,30 +154,6 @@ class itemModelFront extends abstractCore
     public function updateCounters($itemId, array $itemData, $action, $previousData = null)
     {
         // within final class, the counters update routines should be placed here
-    }
-
-    /**
-     * Increments the number of views for a specified item
-     *
-     * Application should ensure if an item is in active status
-     * and provide appropriate DB column name if differs from "views_num"
-     */
-    public function incrementViewsCounter($itemId, $columnName = 'views_num')
-    {
-        $viewsTable = 'views_log';
-
-        $itemName = $this->getItemName();
-        $ipAddress = $this->iaCore->util()->getIp();
-        $date = date(iaDb::DATE_FORMAT);
-
-        if ($this->iaDb->exists('`item` = :item AND `item_id` = :id AND `ip` = :ip AND `date` = :date', ['item' => $itemName, 'id' => $itemId, 'ip' => $ipAddress, 'date' => $date], $viewsTable)) {
-            return false;
-        }
-
-        $this->iaDb->insert(['item' => $itemName, 'item_id' => $itemId, 'ip' => $ipAddress, 'date' => $date], null, $viewsTable);
-        $result = $this->iaDb->update(null, iaDb::convertIds($itemId), [$columnName => '`' . $columnName . '` + 1'], self::getTable());
-
-        return (bool)$result;
     }
 
     /**

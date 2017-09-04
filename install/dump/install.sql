@@ -1080,29 +1080,29 @@ INSERT INTO `{install:prefix}email_templates` (`order`,`divider`,`name`,`subject
 (15,0,'invoice_created','Customer Invoice','invoice|Invoice ID,gateway|Gateway,date|Invoice creation date,fullname|User,amount|Amount,currency|Currency','<p>Dear {$fullname},</p>\r\n<p>This is a notice that an invoice has been generated on {$date}</p>\r\n\r\n<p>Your payment method is: {$gateway}</p>\r\n\r\n<p>Invoice #{$invoice},<br>\r\nAmount Due: {$currency} {$amount}\r\n</p>\r\n\r\n<p>All your invoices could always be seen on the <a href=\"{$siteUrl}profile/funds/\" target=\"_blank\">Funds</a> page.</p>');
 
 INSERT INTO `{install:prefix}fields` (`name`,`item`,`fieldgroup_id`,`type`,`length`,`order`,`editable`,`required`,`extra_actions`,`searchable`) VALUES
-('username','members',1,'text',50,0,0,1,'if ($value && !iaValidate::isUsername($value))\r\n{\r\n	$errors[$fieldName] = iaLanguage::get(\'username_incorrect\');\r\n}',1),
-('fullname','members',1,'text',50,5,0,1,'',1),
-('email','members',1,'text',250,10,0,1,'if ($value)\r\n{\r\n	if (iaValidate::isEmail($value))\r\n	{\r\n		$value = strtolower($value);\r\n	}\r\n	else\r\n	{\r\n		$errors[$fieldName] = iaLanguage::get(\'error_email_incorrect\');\r\n	}\r\n}',0),
-('avatar','members',1,'image',1,15,1,0,'',1),
-('website','members',1,'text',255,20,1,0,'',0),
-('phone','members',1,'text',100,25,1,0,'',0),
-('biography','members',1,'textarea',500,30,1,0,'',0),
-('facebook','members',2,'text',150,35,1,0,'',0),
-('twitter','members',2,'text',150,40,1,0,'',0),
-('gplus','members',2,'text',150,45,1,0,'',0),
-('linkedin','members',2,'text',150,50,1,0,'',0),
-('api_push_token','members',3,'textarea',255,55,1,0,'',0),
-('api_push_receive','members',3,'radio',0,60,1,0,'',0),
-('email_language','members',0,'text',2,65,0,1,'',0),
-('member_id','transactions',0,'text',100,0,1,0,'',0),
-('reference_id','transactions',0,'text',100,5,1,0,'',0),
-('date_created','transactions',0,'date',0,10,1,0,'',0),
-('date_paid','transactions',0,'date',0,15,8,0,'',0),
-('amount','transactions',0,'number',8,20,1,0,'',0),
-('operation','transactions',0,'text',100,25,1,0,'',0),
-('gateway','transactions',0,'text',100,30,1,0,'',0),
-('currency','transactions',0,'text',10,35,1,0,'',0),
-('sec_key','transactions',0,'text',250,40,1,0,'',0);
+('username','member',1,'text',50,0,0,1,'if ($value && !iaValidate::isUsername($value))\r\n{\r\n	$errors[$fieldName] = iaLanguage::get(\'username_incorrect\');\r\n}',1),
+('fullname','member',1,'text',50,5,0,1,'',1),
+('email','member',1,'text',250,10,0,1,'if ($value)\r\n{\r\n	if (iaValidate::isEmail($value))\r\n	{\r\n		$value = strtolower($value);\r\n	}\r\n	else\r\n	{\r\n		$errors[$fieldName] = iaLanguage::get(\'error_email_incorrect\');\r\n	}\r\n}',0),
+('avatar','member',1,'image',1,15,1,0,'',1),
+('website','member',1,'text',255,20,1,0,'',0),
+('phone','member',1,'text',100,25,1,0,'',0),
+('biography','member',1,'textarea',500,30,1,0,'',0),
+('facebook','member',2,'text',150,35,1,0,'',0),
+('twitter','member',2,'text',150,40,1,0,'',0),
+('gplus','member',2,'text',150,45,1,0,'',0),
+('linkedin','member',2,'text',150,50,1,0,'',0),
+('api_push_token','member',3,'textarea',255,55,1,0,'',0),
+('api_push_receive','member',3,'radio',0,60,1,0,'',0),
+('email_language','member',0,'text',2,65,0,1,'',0),
+('member_id','transaction',0,'text',100,0,1,0,'',0),
+('reference_id','transaction',0,'text',100,5,1,0,'',0),
+('date_created','transaction',0,'date',0,10,1,0,'',0),
+('date_paid','transaction',0,'date',0,15,8,0,'',0),
+('amount','transaction',0,'number',8,20,1,0,'',0),
+('operation','transaction',0,'text',100,25,1,0,'',0),
+('gateway','transaction',0,'text',100,30,1,0,'',0),
+('currency','transaction',0,'text',10,35,1,0,'',0),
+('sec_key','transaction',0,'text',250,40,1,0,'',0);
 UPDATE `{install:prefix}fields` SET `relation`='regular';
 UPDATE `{install:prefix}fields` SET `use_editor`=1,`thumb_height`=200,`file_prefix`='avat_',`image_width`=300,`image_height`=300,`thumb_width`=200,`imagetype_primary`='large',`imagetype_thumbnail`='thumbnail' WHERE `name`='avatar';
 UPDATE `{install:prefix}fields` SET `adminonly`=1 WHERE `name`='api_push_token';
@@ -1110,9 +1110,9 @@ UPDATE `{install:prefix}fields` SET `adminonly`=1,`values`='yes,no',`default`='y
 UPDATE `{install:prefix}fields` SET `timepicker`=1 WHERE `name`IN('date_created','date_paid') AND `item`='transactions';
 
 INSERT INTO `{install:prefix}fields_groups` (`name`,`item`,`order`,`collapsed`,`tabview`) VALUES
-('general','members',1,0,0),
-('social','members',2,0,0),
-('api','members',3,0,0);
+('general','member',1,0,0),
+('social','member',2,0,0),
+('api','member',3,0,0);
 
 INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`) VALUES
 ('members',1),
@@ -1198,10 +1198,10 @@ INSERT INTO `{install:prefix}items` (`item`,`module`,`payable`,`searchable`,`pag
 ('transaction','core',0,0,'');
 
 INSERT INTO `{install:prefix}items_pages` (`page_name`,`item`) VALUES
-('profile','members'),
-('view_member','members'),
-('favorites','members'),
-('member_registration','members');
+('profile','member'),
+('view_member','member'),
+('favorites','member'),
+('member_registration','member');
 
 INSERT INTO `{install:prefix}members` (`usergroup_id`,`username`,`email`,`date_reg`,`date_update`,`fullname`,`email_language`) VALUES
 (1,'{install:admin_username}','{install:email}',NOW(),NOW(),'Administrator','en');

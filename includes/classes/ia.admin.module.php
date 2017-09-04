@@ -1456,7 +1456,7 @@ class iaModule extends abstractCore
                         'action' => $this->_attr('action', iaCore::ACTION_READ),
                         'parent' => $this->_attr('parent'),
                         'suburl' => $this->_attr('suburl'),
-                        'fields_item' => $this->_attr('fields_item', ''),
+                        'fields_item' => iaItem::toSingular($this->_attr('fields_item', '')),
                         'title' => $text
                     ];
                 }
@@ -1574,7 +1574,7 @@ class iaModule extends abstractCore
                     case $this->_checkPath('fields_groups'):
                         $this->itemData['item_field_groups'][] = [
                             'module' => $this->itemData['name'],
-                            'item' => $this->_attr('item'),
+                            'item' => iaItem::toSingular($this->_attr('item')),
                             'name' => $this->_attr('name'),
                             'collapsible' => $this->_attr('collapsible', false),
                             'collapsed' => $this->_attr('collapsed', false),
@@ -1627,7 +1627,7 @@ class iaModule extends abstractCore
                         'title' => $text,
                         'values' => $values,
                         'order' => $this->_attr('order', 0),
-                        'item' => $this->_attr('item'),
+                        'item' => iaItem::toSingular($this->_attr('item')),
                         'item_pages' => $this->_attr('page'),
                         'group' => $this->_attr('group', $this->itemData['name']), // will be changed to the inserted ID by the further code
                         'name' => $this->_attr('name'),
