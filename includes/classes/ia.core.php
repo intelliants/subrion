@@ -132,7 +132,6 @@ final class iaCore
         $iaUsers = $this->factory('users');
         $iaUsers->authorize();
 
-        $this->_forgeryCheck();
         $this->getCustomConfig();
 
         $this->startHook('phpCoreBeforePageDefine');
@@ -146,6 +145,8 @@ final class iaCore
         $this->iaView->defineOutput();
         $this->_checkPermissions();
         $this->_executeModule();
+
+        $this->_forgeryCheck();
 
         $this->startHook('phpCoreBeforeJsCache');
         $this->iaCache->createJsCache();

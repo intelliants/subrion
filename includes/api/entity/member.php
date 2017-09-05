@@ -24,13 +24,21 @@
  *
  ******************************************************************************/
 
-class iaApiEntityMembers extends iaApiEntityAbstract
+class iaApiEntityMember extends iaApiEntityAbstract
 {
     const KEYWORD_SELF = 'self';
 
-    protected $_name = 'members';
+    protected $_name = 'member';
 
     protected $_table = 'members';
+
+    protected $_hiddenFields = ['password', 'sec_key'];
+
+    protected $_protectedFields = [
+        'email', 'status', 'date_reg', 'views_num', 'sponsored',
+        'sponsored_plan_id', 'sponsored_start', 'sponsored_end', 'featured',
+        'featured_start', 'featured_end', 'usergroup_id', 'date_update', 'date_logged'
+    ];
 
 
     public function apiGet($id)
@@ -41,15 +49,12 @@ class iaApiEntityMembers extends iaApiEntityAbstract
             }
 
             $entry = iaUsers::getIdentity(true);
-        } else {
-            $entry = parent::apiGet($id);
+            $this->_processValues($entry, true);
+
+            return $entry;
         }
 
-        if ($entry) {
-            unset($entry['password'], $entry['sec_key']);
-        }
-
-        return $entry;
+        return parent::apiGet($id);
     }
 
     public function apiUpdate(array $data, $id, array $params)

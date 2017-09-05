@@ -163,7 +163,7 @@ class iaApi
 
         $entity = (iaCore::CORE == $extras || in_array($name, $this->_systemEntities))
             ? $this->_loadCoreEntity($name)
-            : $this->_loadPackageEntity($extras, $name);
+            : $this->_loadPackageEntity($name);
 
         $entity->setRequest($this->_getRequest());
         $entity->setResponse($this->_getResponse());
@@ -192,11 +192,9 @@ class iaApi
         return false;
     }
 
-    private function _loadPackageEntity($packageName, $name)
+    private function _loadPackageEntity($name)
     {
-        require_once IA_CLASSES . iaSystem::CLASSES_PREFIX . 'base.package.front.api' . iaSystem::EXECUTABLE_FILE_EXT;
-
-        return iaCore::instance()->factoryModule('item', $packageName, iaCore::FRONT, $name);
+        return iaCore::instance()->factoryItem($name);
     }
 
     protected function _paginate(array $params)

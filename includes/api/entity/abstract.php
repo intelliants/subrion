@@ -36,6 +36,9 @@ abstract class iaApiEntityAbstract
     protected $_iaCore;
     protected $_iaDb;
 
+    protected $_hiddenFields = [];
+    protected $_protectedFields = [];
+
 
     public function init()
     {
@@ -72,12 +75,20 @@ abstract class iaApiEntityAbstract
     // actions
     public function apiList($start, $limit, $where, $order)
     {
-        return $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . ' ' . $order, $start, $limit, $this->getTable());
+        $rows = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . ' ' . $order, $start, $limit, $this->getTable());
+
+        $this->_processValues($rows);
+
+        return $rows;
     }
 
     public function apiGet($id)
     {
-        return $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), $this->getTable());
+        $row = $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), $this->getTable());
+
+        $this->_processValues($row, true);
+
+        return $row;
     }
 
     public function apiDelete($id)
@@ -121,6 +132,27 @@ abstract class iaApiEntityAbstract
         $data['member_id'] = iaUsers::getIdentity()->id;
 
         return $this->_iaDb->insert($data, null, $this->getTable());
+    }
+
+    protected function _processValues(&$rows, $singleRow = false)
+    {
+        if (!$rows) {
+            return;
+        }
+
+        $singleRow && $rows = [$rows];
+
+        foreach ($rows as &$row) {
+            if (!is_array($row)) {
+                break;
+            }
+
+            foreach ($this->_hiddenFields as $fieldName) {
+                unset($row[$fieldName]);
+            }
+        }
+
+        $singleRow && $rows = array_shift($rows);
     }
 
     protected function _processFields(array &$data)

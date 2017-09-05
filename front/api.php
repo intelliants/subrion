@@ -36,6 +36,7 @@ $iaView->disableLayout();
 $iaView->display(iaView::NONE);
 
 $iaView->set('nodebug', 1);
+$iaView->set('nocsrf', 1);
 
 $iaCore->factory('api', iaCore::FRONT)->process($iaCore->requestPath);
 
