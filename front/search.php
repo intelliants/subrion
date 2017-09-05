@@ -35,6 +35,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
             }
 
             $url = str_replace(IA_URL, '', $_POST['params']);
+
             $result = $iaSearch->save($_POST['item'], $url, $_POST['name']);
 
             $iaView->assign('result', $result);

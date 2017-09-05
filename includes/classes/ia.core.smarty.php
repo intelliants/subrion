@@ -259,7 +259,7 @@ class iaSmarty extends Smarty
             iaDebug::debug($params, 'Compatibitily fallback used in iaSmarty::ia_url()');
 
             if ($itemInstance = iaCore::instance()->factoryItem($params['item'])) {
-                $params['url'] = $itemInstance->url('view', $params['data']);
+                $params['url'] = $itemInstance->getUrl($params['data']);
             }
         }
         //
@@ -604,7 +604,7 @@ class iaSmarty extends Smarty
         // generate replacements array
         $_replace = [
             'id' => (int)$params['item']['id'],
-            'item' => $params['itemtype'],
+            'item' => empty($params['item']['item']) ? $params['itemtype'] : $params['item']['item'],
             'class' => isset($params['classname']) ? $params['classname'] : '',
             'guests' => isset($params['guests']) ? (bool)$params['guests'] : false,
             'action' => (isset($params['item']['favorite']) && $params['item']['favorite'] == '1') ? 'delete' : 'add'
@@ -620,17 +620,18 @@ class iaSmarty extends Smarty
 
     public static function accountActions($params)
     {
-        if (!iaUsers::hasIdentity()
-            || empty($params['item'])
-            || empty($params['itemtype'])
-            || (iaUsers::getItemName() == $params['itemtype'] && iaUsers::getIdentity()->id != $params['item']['id'])
-            || (iaUsers::getItemName() != $params['itemtype'] && isset($params['item']['member_id']) && iaUsers::getIdentity()->id != $params['item']['member_id'])
-        ) {
+        if (!iaUsers::hasIdentity() || empty($params['item'])) {
+            return '';
+        }
+
+        $item = empty($params['item']['item']) ? $params['itemtype'] : $params['item']['item'];
+
+        if ((iaUsers::getItemName() == $item && iaUsers::getIdentity()->id != $params['item']['id'])
+            || (iaUsers::getItemName() != $item && isset($params['item']['member_id']) && iaUsers::getIdentity()->id != $params['item']['member_id'])) {
             return '';
         }
 
         $iaCore = iaCore::instance();
-        $iaItem = $iaCore->factory('item');
 
         $params['img'] = $img = IA_CLEAR_URL . 'templates/' . $iaCore->iaView->theme . '/img/';
         $classname = isset($params['classname']) ? $params['classname'] : '';
@@ -640,22 +641,19 @@ class iaSmarty extends Smarty
         $extraActions = '';
         $output = '';
 
-        if (iaUsers::getItemName() == $params['itemtype']) {
+        if (iaUsers::getItemName() == $item) {
             $editUrl = IA_URL . 'profile/';
         } else {
-            $item = $iaItem->getModuleByItem($params['itemtype']);
-            if (empty($item)) {
+            $itemInstance = $iaCore->factoryItem($item);
+
+            if (!$itemInstance) {
                 return '';
             }
-            $iaPackage = $iaCore->factoryModule('item', $item, iaCore::FRONT, $params['itemtype']);
-            if (empty($iaPackage)) {
-                return '';
+            if (method_exists($itemInstance, __FUNCTION__)) {
+                list($editUrl, $upgradeUrl) = $itemInstance->{__FUNCTION__}($params);
             }
-            if (method_exists($iaPackage, __FUNCTION__)) {
-                list($editUrl, $upgradeUrl) = $iaPackage->{__FUNCTION__}($params);
-            }
-            if (method_exists($iaPackage, 'extraActions')) {
-                $extraActions = $iaPackage->extraActions($params['item']);
+            if (method_exists($itemInstance, 'extraActions')) {
+                $extraActions = $itemInstance->extraActions($params['item']);
             }
         }
         $iaCore->startHook('phpSmartyAccountActionsBeforeShow',

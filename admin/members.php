@@ -224,7 +224,7 @@ class iaBackendController extends iaAbstractControllerBackend
                     $this->addMessage('error_password_empty');
                 } elseif (!utf8_is_ascii($entry['password'])) {
                     $this->addMessage(iaLanguage::get('password') . ': ' . iaLanguage::get('ascii_required'));
-                } elseif ($entry['password'] != $this->getHelper()->encodePassword($data['_password2'])) {
+                } elseif (!password_verify($data['_password2'], $entry['password'])) {
                     $this->addMessage('error_password_match');
                 }
             }

@@ -44,7 +44,7 @@ class iaUsers extends abstractCore
     const USE_OBSOLETE_AUTH = false;
 
     protected static $_table = 'members';
-    protected static $_itemName = 'members';
+    protected static $_itemName = 'member';
 
     protected static $_usergroupTable = 'usergroups';
     protected static $_providersTable = 'members_auth_providers';
@@ -939,7 +939,7 @@ SQL;
      * @param boolean $singleRow true when item is passed as one row
      * @param array $fieldNames list of custom serialized fields
      */
-    protected function _processValues(array &$rows, $singleRow = false, $fieldNames = [])
+    protected function _processValues(&$rows, $singleRow = false, $fieldNames = [])
     {
         if (!$rows) {
             return;

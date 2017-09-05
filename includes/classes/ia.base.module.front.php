@@ -71,9 +71,14 @@ abstract class abstractModuleFront extends abstractCore
         return $this->getUrl($data);
     }
 
-    public function getUrl(array $itemData)
+    public function getActionUrl($action, array $data)
     {
-        return $this->getInfo($this->getModuleName()) . '#';
+        return $this->getInfo('url') . $action . '/' . $data['id'] . '/';
+    }
+
+    public function getUrl(array $data)
+    {
+        return $this->url('view', $data);
     }
 
     public function getInfo($key)

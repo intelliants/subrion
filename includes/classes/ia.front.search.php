@@ -230,7 +230,7 @@ class iaSearch extends abstractCore
         }
 
         if ($this->_itemName != iaUsers::getItemName()) {
-            $result = $this->_render(sprintf('extra:%s/search.%s', $this->_module, $this->_itemName),
+            $result = $this->_render(sprintf('extra:%s/search.%s', $this->_module, $this->_itemName . 's'),
                 ['listings' => $rows]);
         } else {
             $array = [];

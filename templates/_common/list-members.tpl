@@ -4,8 +4,8 @@
     </div>
     <div class="ia-item__content">
         <div class="ia-item__actions">
-            {printFavorites item=$listing itemtype='members' guests=true}
-            {accountActions item=$listing itemtype='members'}
+            {printFavorites item=$listing guests=true}
+            {accountActions item=$listing}
             <a href="{$listing.link}">{lang key='view_profile'} <span class="fa fa-angle-double-right"></span></a>
         </div>
 
@@ -15,22 +15,22 @@
 
         <div class="ia-item__additional">
             {if !empty($listing.phone)}
-                <p><span class="fa fa-phone"></span> {$listing.phone}</p>
+                <p><span class="fa fa-phone"></span> {$listing.phone|escape}</p>
             {/if}
             {if !empty($listing.website)}
-                <p><span class="fa fa-globe"></span> <a href="{$listing.website}">{lang key='field_members_website'}</a></p>
+                <p><span class="fa fa-globe"></span> <a href="{$listing.website|escape}">{lang key='field_members_website'}</a></p>
             {/if}
             {if !empty($listing.facebook)}
-                <p><span class="fa fa-facebook"></span> <a href="{$listing.facebook}">{lang key='field_members_facebook'}</a></p>
+                <p><span class="fa fa-facebook"></span> <a href="{$listing.facebook|escape}">{lang key='field_members_facebook'}</a></p>
             {/if}
             {if !empty($listing.twitter)}
-                <p><span class="fa fa-twitter"></span> <a href="{$listing.twitter}">{lang key='field_members_twitter'}</a></p>
+                <p><span class="fa fa-twitter"></span> <a href="{$listing.twitter|escape}">{lang key='field_members_twitter'}</a></p>
             {/if}
             {if !empty($listing.gplus)}
-                <p><span class="fa fa-google-plus"></span> <a href="{$listing.gplus}">{lang key='field_members_gplus'}</a></p>
+                <p><span class="fa fa-google-plus"></span> <a href="{$listing.gplus|escape}">{lang key='field_members_gplus'}</a></p>
             {/if}
             {if !empty($listing.linkedin)}
-                <p><span class="fa fa-linkedin"></span> <a href="{$listing.linkedin}">{lang key='field_members_linkedin'}</a></p>
+                <p><span class="fa fa-linkedin"></span> <a href="{$listing.linkedin|escape}">{lang key='field_members_linkedin'}</a></p>
             {/if}
         </div>
 

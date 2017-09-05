@@ -34,7 +34,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
     $output = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
 
     if (isset($_GET['item']) && $_GET['item_id']) {
-        $itemName = in_array($_GET['item'], array_keys($itemsList)) ? $_GET['item'] : $iaUsers->getItemName();
+        $itemName = isset($itemsList[$_GET['item']]) ? $_GET['item'] : $iaUsers->getItemName();
         $itemId = (int)$_GET['item_id'];
 
         switch ($_GET['action']) {
