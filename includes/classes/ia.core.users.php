@@ -567,7 +567,7 @@ SQL;
             return false;
         }
 
-        !$row || $this->_processValues($row, true);
+        $this->_processValues($row, true);
 
         if (iaCore::STATUS_ACTIVE == $row['status']) {
             self::_setIdentity($row);

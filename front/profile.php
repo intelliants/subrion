@@ -30,14 +30,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     }
 
     $iaField = $iaCore->factory('field');
+    $iaPlan = $iaCore->factory('plan');
     $iaUsers = $iaCore->factory('users');
 
-    $itemName = $tableName = iaUsers::getTable();
+    $itemName = $iaUsers->getitemName();
+    $tableName = iaUsers::getTable();
+
     $messages = [];
 
     $assignableGroups = $iaDb->keyvalue(['id', 'name'], '`assignable` = 1', iaUsers::getUsergroupsTable());
 
-    $iaPlan = $iaCore->factory('plan');
     $plans = $iaPlan->getPlans($iaUsers->getItemName());
 
     $iaDb->setTable($tableName);
@@ -48,7 +50,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
         $error = false;
         $newPassword = empty($_POST['new']) ? false : $_POST['new'];
         // checks for current password
-        if (iaUsers::getIdentity()->password != $iaUsers->encodePassword($_POST['current'])) {
+        if (!password_verify($_POST['current'], iaUsers::getIdentity()->password)) {
             $error = true;
             $messages[] = iaLanguage::get('password_incorrect');
         }
