@@ -656,8 +656,9 @@ class iaSmarty extends Smarty
                 $extraActions = $itemInstance->extraActions($params['item']);
             }
         }
+
         $iaCore->startHook('phpSmartyAccountActionsBeforeShow',
-            ['params' => &$params, 'type' => $params['itemtype'], 'upgrade_url' => &$upgradeUrl, 'edit_url' => &$editUrl, 'output' => &$output]);
+            ['params' => &$params, 'type' => $item, 'upgrade_url' => &$upgradeUrl, 'edit_url' => &$editUrl, 'output' => &$output]);
 
         if ($editUrl) {
             $output .= '<a rel="nofollow" href="' . $editUrl . '" class="' . $classname . '" title="' . iaLanguage::get('edit') . '"><span class="fa fa-pencil"></span> ' . iaLanguage::get('edit') . '</a>';

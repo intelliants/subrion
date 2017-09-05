@@ -167,7 +167,7 @@ abstract class abstractModuleAdmin extends abstractCore
                 ? ['array' => implode('|', $data), 'max' => $max, 'statuses' => implode('|', $stArray)]
                 : implode(',', $statuses),
             'rows' => $statuses,
-            'item' => $this->getItemName(),
+            'item' => $this->getItemName() . 's',
             'total' => number_format($total)
         ], $this->dashboardStatistics);
     }

@@ -81,32 +81,21 @@ class iaBackendController extends iaAbstractControllerBackend
             $statistics[$size] = [];
         }
 
-        foreach ($itemsList as $name => $package) {
-            $itemName = substr($name, 0, -1);
-            switch ($package) {
-                case 'core':
-                    $classInstance = $iaCore->factory('member' == $itemName ? 'users' : $itemName);
-                    break;
-                case 'plugin':
-                    $array = explode(':', $name);
-                    $itemName = isset($array[1]) ? $array[1] : $name;
-                    $classInstance = $iaCore->factoryPlugin($array[0], iaCore::ADMIN,
-                        isset($array[1]) ? $array[1] : null);
-                    break;
-                default:
-                    $classInstance = $iaCore->factoryModule($itemName, $package, iaCore::ADMIN);
-            }
+        foreach ($itemsList as $itemName => $package) {
+            $itemInstance = (iaCore::CORE == $package)
+                ? $iaCore->factory('member' == $itemName ? 'users' : $itemName)
+                : $iaCore->factoryItem($itemName);
 
             if (!$customizationMode && in_array($itemName, $disabledWidgets)) {
                 continue;
             }
 
-            if ($classInstance && method_exists($classInstance, self::STATISTICS_GETTER_METHOD)) {
-                if ($classInstance->dashboardStatistics) {
-                    $data = call_user_func([$classInstance, self::STATISTICS_GETTER_METHOD]);
+            if ($itemInstance && method_exists($itemInstance, self::STATISTICS_GETTER_METHOD)) {
+                if ($itemInstance->dashboardStatistics) {
+                    $data = call_user_func([$itemInstance, self::STATISTICS_GETTER_METHOD]);
 
-                    isset($data['icon']) || $data['icon'] = $name;
-                    isset($data['caption']) || $data['caption'] = $name;
+                    isset($data['icon']) || $data['icon'] = $itemName;
+                    isset($data['caption']) || $data['caption'] = $itemName;
 
                     $data['caption'] = iaLanguage::get($data['caption'], $data['caption']);
 

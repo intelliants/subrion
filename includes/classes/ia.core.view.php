@@ -1186,12 +1186,10 @@ SQL;
         $iaDb = &$this->iaCore->iaDb;
 
         $commonStatistics = [
-            'members' => [
-                [
-                    'title' => iaLanguage::get('members'),
-                    'value' => (int)$iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`status` = :status', ['status' => iaCore::STATUS_ACTIVE], iaUsers::getTable())
-                ]
-            ]
+            'members' => [[
+                'title' => iaLanguage::get('members'),
+                'value' => (int)$iaDb->one_bind(iaDb::STMT_COUNT_ROWS, '`status` = :status', ['status' => iaCore::STATUS_ACTIVE], iaUsers::getTable())
+            ]]
         ];
 
         $this->iaCore->startHook('populateCommonStatisticsBlock', ['statistics' => &$commonStatistics]);
@@ -1230,7 +1228,8 @@ SQL;
             $outputHtml = '';
             if ($array = $iaDb->all("`username`, IF(`fullname` != '', `fullname`, `username`) `fullname`, COUNT(`id`) `count`", "`username` != '' AND `status` = 'active' GROUP BY `username`")) {
                 foreach ($array as $item) {
-                    $outputHtml .= $this->iaSmarty->ia_url(['item' => iaUsers::getItemName(), 'type' => 'link', 'text' => $item['fullname'], 'data' => $item]) . ', ';
+                    $item['item'] = iaUsers::getItemName();
+                    $outputHtml .= $this->iaSmarty->ia_url(['type' => 'link', 'text' => $item['fullname'], 'data' => $item]) . ', ';
                 }
                 $outputHtml = substr($outputHtml, 0, -2);
                 $commonStatistics['online'][count($commonStatistics['online']) - 1]['html'] = $outputHtml;
