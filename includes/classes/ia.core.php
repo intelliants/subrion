@@ -70,6 +70,8 @@ final class iaCore
 
     protected $_checkDomain;
 
+    private $_securityTokenValue = '';
+
     public $iaDb;
     public $iaView;
     public $iaCache;
@@ -589,10 +591,11 @@ SQL;
 
     protected function _forgeryCheck()
     {
-        if ($_POST && $this->get('prevent_csrf') && !$this->iaView->get('nocsrf')) {
+        if (defined('PASSED_CSRF_TOKEN')
+            && $this->get('prevent_csrf')
+            && !$this->iaView->get('nocsrf')) {
             $referrerValid = false;
-            $tokenValid = (isset($_POST[self::SECURITY_TOKEN_FORM_KEY])
-                && $this->getSecurityToken() === $_POST[self::SECURITY_TOKEN_FORM_KEY]);
+            $tokenValid = PASSED_CSRF_TOKEN === $this->getSecurityToken();
 
             if (isset($_SERVER['HTTP_REFERER'])) {
                 $wwwChunk = 'www.';
@@ -649,6 +652,7 @@ SQL;
         }
 
         unset($_POST[self::SECURITY_TOKEN_FORM_KEY]);
+
     }
 
     public function checkDomain()
@@ -888,6 +892,11 @@ SQL;
 
         $iaView->theme = $this->get((self::ACCESS_ADMIN == $this->getAccessType() ? 'admin_' : '') . 'tmpl', 'default');
         define('IA_TPL_URL', $iaView->assetsUrl . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin/' : '') . 'templates/' . $iaView->theme . IA_URL_DELIMITER);
+
+        if (isset($_POST[self::SECURITY_TOKEN_FORM_KEY])) {
+            define('PASSED_CSRF_TOKEN', $_POST[self::SECURITY_TOKEN_FORM_KEY]);
+            unset($_POST[self::SECURITY_TOKEN_FORM_KEY]);
+        }
     }
 
     private function _setTimezone($timezone)
