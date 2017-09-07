@@ -65,7 +65,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         }
 
         if ($this->_helperName) {
-            $helperClass = $this->_iaCore->factoryModule($this->_helperName, $this->getModuleName(), iaCore::ADMIN);
+            $helperClass = $this->_iaCore->factoryModule($this->_helperName, $this->getModuleName());
             $this->setHelper($helperClass);
 
             $this->_itemName || $this->_setItemName($helperClass->getItemName());

@@ -65,6 +65,9 @@ class iaItem extends abstractCore
         if ('s' == substr($input, -1)
             && !in_array($input, $ex)) {
             $input = substr($input, 0, -1);
+            if ('ie' == substr($input, -2)) {
+                $input = substr($input, 0, -2) . 'y';
+            }
         }
 
         return $input;
