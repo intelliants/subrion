@@ -946,11 +946,14 @@ SQL;
         }
 
         $iaField = $this->iaCore->factory('field');
+        $iaItem = $this->iaCore->factory('item');
 
         $serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
         $multilingualFields = $iaField->getMultilingualFields($this->getItemName());
 
         $singleRow && $rows = [$rows];
+
+        $rows = $iaItem->updateItemsFavorites($rows, $this->getItemName());
 
         foreach ($rows as &$row) {
             if (!is_array($row)) {
@@ -988,11 +991,9 @@ SQL;
      */
     public function getFavorites($ids)
     {
-        $memberIds = implode(",", $ids);
-        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION . ', 1 `favorite` ', "`id` IN ({$memberIds})", 0, 50, self::getTable());
+        $where = iaDb::printf("`id` IN (:ids) AND `status` = ':status'",
+            ['ids' => implode(',', $ids), 'status' => iaCore::STATUS_ACTIVE]);
 
-        $this->_processValues($rows);
-
-        return $rows;
+        return $this->coreSearch($where, 0, 50, null)[1];
     }
 }

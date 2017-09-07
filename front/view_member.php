@@ -82,8 +82,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
         ]);
     }
 
-    $members = $iaItem->updateItemsFavorites([$member], $member['item']);
-    $member = array_shift($members);
     $member['items'] = [];
 
     // get all items added by this account
@@ -101,9 +99,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     if (count($itemsFlat) > 0) {
         $limit = $iaCore->get('num_items_perpage');
         foreach ($itemsFlat as $itemName) {
-            if ($class = $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName)) {
-                $result = method_exists($class, iaUsers::METHOD_NAME_GET_LISTINGS)
-                    ? $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit)
+            if ($itemInstance = $iaCore->factoryItem($itemName)) {
+                $result = method_exists($itemInstance, iaUsers::METHOD_NAME_GET_LISTINGS)
+                    ? $itemInstance->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit)
                     : null;
 
                 if (!is_null($result)) {
@@ -135,7 +133,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     }
 
     $sections = $iaField->getTabs($iaUsers->getItemName(), $member);
-
+_d($member, 'ITEM');
     $iaView->assign('item', $member);
     $iaView->assign('sections', $sections);
 

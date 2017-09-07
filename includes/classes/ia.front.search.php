@@ -230,11 +230,11 @@ class iaSearch extends abstractCore
         }
 
         if ($this->_itemName != iaUsers::getItemName()) {
-            $result = $this->_render(sprintf('extra:%s/search.%s', $this->_module, $this->_itemName . 's'),
-                ['listings' => $rows]);
+            $result = $this->_render(sprintf('extra:%s/search.%s', $this->_module,
+                iaItem::toPlural($this->_itemName)), ['listings' => $rows]);
         } else {
             $array = [];
-            $fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, 'members');
+            $fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, iaUsers::getTable());
 
             $result = $this->_render('search.members' . iaView::TEMPLATE_FILENAME_EXT,
                 ['fields' => $fields, 'listings' => $rows]);

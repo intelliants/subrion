@@ -35,6 +35,8 @@ abstract class abstractModuleFront extends abstractCore
     public $coreSearchEnabled = false;
     public $coreSearchOptions = [];
 
+    private $_foundRows;
+
 
     public function init()
     {
@@ -54,6 +56,11 @@ abstract class abstractModuleFront extends abstractCore
     public function getItemName()
     {
         return $this->_itemName;
+    }
+
+    public function getFoundRows()
+    {
+        return $this->_foundRows;
     }
 
     public function isSearchable()

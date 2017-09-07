@@ -47,15 +47,16 @@ class iaItem extends abstractCore
     }
 
     // compatibility layer helpers
-    private static function _toPlural($input)
+    public static function toPlural($input)
     {
-        $result = $input;
-
-        if ('s' != substr($input, -1)) {
-            $result.= 's';
+        switch (true) {
+            case 'y' == substr($input, -1):
+                return $input . 'ies';
+            case 's' != substr($input, -1):
+                return $input . 's';
+            default:
+                return $input;
         }
-
-        return $result;
     }
 
     public static function toSingular($input)
@@ -244,7 +245,7 @@ class iaItem extends abstractCore
     public function getItemTable($itemName)
     {
         $result = $this->iaDb->one_bind('table_name', '`item` = :item', ['item' => $itemName], self::getTable());
-        $result || $result = self::_toPlural($itemName);
+        $result || $result = self::toPlural($itemName);
 
         return $result;
     }
@@ -304,7 +305,7 @@ class iaItem extends abstractCore
             $itemsList = [];
             foreach ($listings as $entry) {
                 if (
-                    ('members' == $itemName && $entry['id'] != iaUsers::getIdentity()->id) ||
+                    (iaUsers::getItemName() == $itemName && $entry['id'] != iaUsers::getIdentity()->id) ||
                     (isset($entry['member_id']) && $entry['member_id'] != iaUsers::getIdentity()->id)
                 ) {
                     $itemsList[] = $entry['id'];
