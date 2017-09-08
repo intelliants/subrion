@@ -591,11 +591,9 @@ SQL;
 
     protected function _forgeryCheck()
     {
-        if (defined('PASSED_CSRF_TOKEN')
-            && $this->get('prevent_csrf')
-            && !$this->iaView->get('nocsrf')) {
+        if ($_POST && $this->get('prevent_csrf') && !$this->iaView->get('nocsrf')) {
             $referrerValid = false;
-            $tokenValid = PASSED_CSRF_TOKEN === $this->getSecurityToken();
+            $tokenValid = defined('PASSED_CSRF_TOKEN') && PASSED_CSRF_TOKEN === $this->getSecurityToken();
 
             if (isset($_SERVER['HTTP_REFERER'])) {
                 $wwwChunk = 'www.';
