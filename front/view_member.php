@@ -98,6 +98,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
     if (count($itemsFlat) > 0) {
         $limit = $iaCore->get('num_items_perpage');
+
         foreach ($itemsFlat as $itemName) {
             if ($itemInstance = $iaCore->factoryItem($itemName)) {
                 $result = method_exists($itemInstance, iaUsers::METHOD_NAME_GET_LISTINGS)
@@ -110,8 +111,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     }
 
                     $member['items'][$itemName] = $result;
-                    $member['items'][$itemName]['package'] = isset($itemsList[$itemName]) ? $itemsList[$itemName] : '';
                     $member['items'][$itemName]['fields'] = $iaField->filter($itemName, $member['items'][$itemName]['items']);
+                    $member['items'][$itemName]['tpl'] = isset($itemsList[$itemName])
+                        ? sprintf('extra:%s/search.%s', $itemsList[$itemName], iaItem::toPlural($itemName))
+                        : 'search.' . iaItem::toPlural($itemName) . '.tpl';
                 }
             }
         }
@@ -133,7 +136,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     }
 
     $sections = $iaField->getTabs($iaUsers->getItemName(), $member);
-_d($member, 'ITEM');
+
     $iaView->assign('item', $member);
     $iaView->assign('sections', $sections);
 

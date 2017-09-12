@@ -32,19 +32,19 @@
             <tbody>
                 {if !empty($item.phone)}
                     <tr>
-                        <td>{lang key='field_members_phone'}</td>
+                        <td>{lang key='field_member_phone'}</td>
                         <td>{$item.phone}</td>
                     </tr>
                 {/if}
                 {if !empty($item.website)}
                     <tr>
-                        <td>{lang key='field_members_website'}</td>
+                        <td>{lang key='field_member_website'}</td>
                         <td>{$item.website|linkify}</td>
                     </tr>
                 {/if}
                 {if !empty($item.biography)}
                     <tr>
-                        <td>{lang key='field_members_biography'}</td>
+                        <td>{lang key='field_member_biography'}</td>
                         <td>{$item.biography|escape}</td>
                     </tr>
                 {/if}
@@ -57,22 +57,18 @@
     </div>
 </div>
 
-{foreach $item.items as $itemName => $oneitem}
-    {if $oneitem.items}
+{foreach $item.items as $itemName => $data}
+    {if $data.items}
         {capture name=$itemName append='tabs_content'}
-            {if !$oneitem.package}
-                {include "search.{$itemName}.tpl" listings=$oneitem.items fields=$oneitem.fields}
-            {else}
-                {include "extra:{$oneitem.package}/search.{$itemName}" listings=$oneitem.items fields=$oneitem.fields}
-            {/if}
+            {include $data.tpl listings=$data.items fields=$data.fields}
         {/capture}
     {/if}
 {/foreach}
 
-{include 'item-view-tabs.tpl' isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
+{include 'item-view-tabs.tpl' isView=true exceptions=['username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography']}
 
 {if isset($groups['___empty___'])}
-    {include 'field-type-content-fieldset.tpl' item_sections=$groups isView=true exceptions=array('username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography')}
+    {include 'field-type-content-fieldset.tpl' item_sections=$groups isView=true exceptions=['username', 'avatar', 'fullname', 'phone', 'website', 'facebook', 'twitter', 'gplus', 'linkedin', 'biography']}
 {/if}
 
 {ia_hooker name='smartyViewListingBeforeFooter'}
