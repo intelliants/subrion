@@ -51,7 +51,7 @@ class iaItem extends abstractCore
     {
         switch (true) {
             case 'y' == substr($input, -1):
-                return $input . 'ies';
+                return substr($input, 0, -1) . 'ies';
             case 's' != substr($input, -1):
                 return $input . 's';
             default:
