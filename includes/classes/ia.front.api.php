@@ -85,7 +85,7 @@ class iaApi
         $this->_getResponse()->emit();
     }
 
-    protected function _action(iaApiEntityAbstract $entity)
+    protected function _action($entity)
     {
         $params = $this->_getRequest()->getParams();
 
@@ -163,7 +163,7 @@ class iaApi
 
         $entity = (iaCore::CORE == $extras || in_array($name, $this->_systemEntities))
             ? $this->_loadCoreEntity($name)
-            : $this->_loadPackageEntity($name);
+            : iaCore::instance()->factoryItem($name);
 
         $entity->setRequest($this->_getRequest());
         $entity->setResponse($this->_getResponse());
@@ -185,16 +185,14 @@ class iaApi
             $className = 'iaApiEntity' . ucfirst($name);
 
             if (class_exists($className)) {
-                return new $className();
+                $instance = new $className();
+                $instance->init();
+
+                return $instance;
             }
         }
 
         return false;
-    }
-
-    private function _loadPackageEntity($name)
-    {
-        return iaCore::instance()->factoryItem($name);
     }
 
     protected function _paginate(array $params)

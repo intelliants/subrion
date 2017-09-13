@@ -24,13 +24,12 @@
  *
  ******************************************************************************/
 
-class iaApiEntityMigrations extends iaApiEntityAbstract
+class iaApiEntityMigration extends iaApiEntityAbstract
 {
-    const KEYWORD_SELF = 'self';
+    protected $_name = 'migration';
 
-    protected $_name = 'migrations';
+    protected static $_table = 'migrations';
 
-    protected $_table = 'migrations';
 
     public function apiGet($id)
     {
@@ -54,7 +53,8 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
                 return ['result' => $this->applyNewMigrations()];
             }
         }
-        throw new Exception("Invalid or missing action", iaApiResponse::BAD_REQUEST);
+
+        throw new Exception('Invalid or missing action', iaApiResponse::BAD_REQUEST);
     }
 
     private function applyNewMigrations()
@@ -62,7 +62,7 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
         $appliedMigrations = [];
         $newMigrations = [];
 
-        $migrations = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, $this->getTable());
+        $migrations = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, $this->getTable());
         foreach ($migrations as $migration) {
             $appliedMigrations[] = $migration['name'];
         }
@@ -81,7 +81,7 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
 
         $migrationResults = [];
 
-        $masterLangCode = $this->_iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
+        $masterLangCode = $this->iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
         foreach ($newMigrations as $name) {
             $errors = [];
             $fd = @fopen($migration_dir . IA_DS . $name, 'r');
@@ -105,10 +105,10 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
                     continue;
                 }
 
-                $result = $this->_iaDb->query(str_replace(['{prefix}', '{lang}'],
-                    [$this->_iaDb->prefix, $masterLangCode], $sql));
+                $result = $this->iaDb->query(str_replace(['{prefix}', '{lang}'],
+                    [$this->iaDb->prefix, $masterLangCode], $sql));
 
-                $result || $errors[] = $this->_iaDb->getError();
+                $result || $errors[] = $this->iaDb->getError();
 
                 $sql = '';
             }
@@ -125,9 +125,11 @@ class iaApiEntityMigrations extends iaApiEntityAbstract
             if ($migrationProcessed['data']) {
                 $migrationProcessed['data'] = json_encode($migrationProcessed['data']);
             }
-            $this->_iaDb->insert($migrationProcessed, null, 'migrations');
+
+            $this->iaDb->insert($migrationProcessed, null, 'migrations');
         }
-        $this->_iaCore->iaCache->clearAll();
+
+        $this->iaCore->iaCache->clearAll();
 
         return $migrationResults;
     }
