@@ -166,7 +166,7 @@ abstract class iaApiEntityAbstract extends abstractCore
                 case iaField::PICTURES:
                 case iaField::STORAGE:
                     $image = base64_decode($data[$fieldName]);
-                    $data[$fieldName] = $this->_apiProcessUploadField($image, $field);
+                    $data[$fieldName] = serialize($this->_apiProcessUploadField($image, $field));
             }
         }
     }
@@ -176,7 +176,7 @@ abstract class iaApiEntityAbstract extends abstractCore
         $iaField = $this->iaCore->factory('field');
 
         $fieldParams = $this->iaDb->row_bind(['id', 'type', 'required', 'image_width', 'image_height', 'thumb_width',
-            'thumb_height', 'resize_mode', 'file_prefix', 'folder_name', 'timepicker', 'file_types'],
+            'thumb_height', 'resize_mode', 'file_prefix', 'folder_name', 'timepicker', 'file_types', 'imagetype_thumbnail'],
             '`name` = :field AND `item` = :item', ['field' => $fieldName, 'item' => $this->getName()], $iaField::getTable());
 
         if (!$fieldParams) {
@@ -191,9 +191,15 @@ abstract class iaApiEntityAbstract extends abstractCore
             case iaField::IMAGE:
             case iaField::PICTURES:
             case iaField::STORAGE:
-                $value = $this->_apiProcessUploadField($content, $fieldParams);
-                $output = $value;
+                $result = $this->_apiProcessUploadField($content, $fieldParams);
+                $value = serialize($result);
+
+                $imageType = $fieldParams['timepicker'] ? $fieldParams['imagetype_thumbnail'] : iaField::IMAGE_TYPE_THUMBNAIL;
+
+                $output = IA_CLEAR_URL . 'uploads/' . $result['path'] . $imageType . '/' . $result['file'];
+
                 break;
+
             default:
                 $output = '';
                 $value = $content;
@@ -215,10 +221,8 @@ abstract class iaApiEntityAbstract extends abstractCore
 
         // TODO: implement previous uploads removal
 
-        $value = $this->iaField->processUploadedFile($tempFile, $field,
-            self::_getUniqueFileName(), $_SERVER['CONTENT_TYPE']);
-
-        return serialize($value);
+        return $this->iaField->processUploadedFile($tempFile, $field,
+            self::_getUniqueFileName($_SERVER['CONTENT_TYPE']), $_SERVER['CONTENT_TYPE']);
     }
 
     private static function _getTempFile()
@@ -226,8 +230,19 @@ abstract class iaApiEntityAbstract extends abstractCore
         return tempnam(sys_get_temp_dir(), 'api');
     }
 
-    private static function _getUniqueFileName()
+    private static function _getUniqueFileName($contentType)
     {
-        return uniqid(mt_rand(), true);
+        $contentTypeToExtensionMap = [
+            'image/png' => 'png',
+            'image/jpeg' => 'jpg',
+            'image/jpg' => 'jpg',
+            'image/gif' => 'gif'
+        ];
+
+        $suffix = isset($contentTypeToExtensionMap[$contentType])
+            ? '.' . $contentTypeToExtensionMap[$contentType]
+            : '';
+
+        return uniqid(mt_rand(), true) . $suffix;
     }
 }
