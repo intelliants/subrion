@@ -85,9 +85,9 @@ class iaApiEntityMember extends iaApiEntityAbstract
 
             $id = iaUsers::getIdentity()->id;
 
-            /*if (1 == count($params)) {
-                return $this->_apiUpdateField($params[0], $id, $data);
-            }*/
+            if (1 == count($params)) {
+                return $this->_apiUpdateSingleField($params[0], $id, $data);
+            }
         } elseif (!$this->iaCore->factory('acl')->checkAccess('admin_page:edit', 'members')) {
             throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
         }
