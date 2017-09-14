@@ -71,3 +71,5 @@
         {include 'fields-system.tpl' noSystemFields=true}
     </div>
 </form>
+
+{ia_print_js files='admin/image-types'}
