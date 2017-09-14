@@ -170,12 +170,13 @@ abstract class iaApiEntityAbstract extends abstractCore
             }
         }
     }
-/*
-    protected function _apiUpdateField($fieldName, $entryId, $content)
+
+    protected function _apiUpdateSingleField($fieldName, $entryId, $content)
     {
         $iaField = $this->iaCore->factory('field');
 
-        $fieldParams = $this->iaDb->row_bind(['type', 'required', 'image_width', 'image_height', 'thumb_width', 'thumb_height', 'resize_mode'],
+        $fieldParams = $this->iaDb->row_bind(['id', 'type', 'required', 'image_width', 'image_height', 'thumb_width',
+            'thumb_height', 'resize_mode', 'file_prefix', 'folder_name', 'timepicker', 'file_types'],
             '`name` = :field AND `item` = :item', ['field' => $fieldName, 'item' => $this->getName()], $iaField::getTable());
 
         if (!$fieldParams) {
@@ -188,13 +189,10 @@ abstract class iaApiEntityAbstract extends abstractCore
 
         switch ($fieldParams['type']) {
             case iaField::IMAGE:
-                list($output, $value) = $this->_processImageField($content, $fieldParams);
-                break;
             case iaField::PICTURES:
-                //$content = $this->_processPicturesField($content, $fieldParams);
-                break;
             case iaField::STORAGE:
-                //$content = $this->_processStorageField($content, $fieldParams);
+                $value = $this->_apiProcessUploadField($content, $fieldParams);
+                $output = $value;
                 break;
             default:
                 $output = '';
@@ -209,7 +207,7 @@ abstract class iaApiEntityAbstract extends abstractCore
 
         return $output;
     }
-*/
+
     protected function _apiProcessUploadField($content, array $field)
     {
         $tempFile = self::_getTempFile();
