@@ -167,7 +167,8 @@ final class iaCore
 
     public function __destruct()
     {
-        if (INTELLI_DEBUG || INTELLI_QDEBUG) { // output the debug info if enabled
+        if ((defined('INTELLI_DEBUG') && INTELLI_DEBUG)
+            || (defined('INTELLI_QDEBUG') && INTELLI_QDEBUG)) { // output the debug info if enabled
             if (is_object($this->iaView) && iaView::REQUEST_HTML == $this->iaView->getRequestType()) {
                 if (!$this->iaView->get('nodebug')) {
                     new iaDebug();
