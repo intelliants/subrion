@@ -506,6 +506,33 @@ SQL;
         return $password;
     }
 
+    public function sendPasswordResetEmail(array $member)
+    {
+        if (empty($member['email']) || empty($member['id']) || empty($member['fullname'])) {
+            return false;
+        }
+
+        $email = $member['email'];
+        $token = $this->iaCore->factory('util')->generateToken();
+
+        $this->iaDb->update(['id' => $member['id'], 'sec_key' => $token], null, null, self::getTable());
+
+        $confirmationUrl = IA_URL . "forgot/?email={$email}&code={$token}";
+
+        $iaMailer = $this->iaCore->factory('mailer');
+
+        $iaMailer->loadTemplate('password_restoration');
+        $iaMailer->addAddressByMember($member);
+        $iaMailer->setReplacements([
+            'fullname' => $member['fullname'],
+            'url' => $confirmationUrl,
+            'code' => $token,
+            'email' => $email
+        ]);
+
+        return $iaMailer->send();
+    }
+
     public function confirmation($email, $key)
     {
         $status = $this->iaCore->get('members_autoapproval') ? iaCore::STATUS_ACTIVE : iaCore::STATUS_APPROVAL;
@@ -524,7 +551,7 @@ SQL;
 
     public function getInfo($id, $key = 'id')
     {
-        in_array($key, ['id', 'username', 'email']) || $key = 'id';
+        in_array($key, ['id', 'username', 'email', 'sec_key']) || $key = 'id';
 
         $row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status',
             ['id' => $id, 'status' => iaCore::STATUS_ACTIVE], self::getTable());

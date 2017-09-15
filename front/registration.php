@@ -48,24 +48,9 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
             }
 
             if (!$message && false === $code) {
-                $token = $iaCore->factory('util')->generateToken();
-                $confirmationUrl = IA_URL . "forgot/?email={$email}&code={$token}";
-
-                $iaMailer = $iaCore->factory('mailer');
-
-                $iaMailer->loadTemplate('password_restoration');
-                $iaMailer->addAddressByMember($member);
-                $iaMailer->setReplacements([
-                    'fullname' => $member['fullname'],
-                    'url' => $confirmationUrl,
-                    'code' => $token,
-                    'email' => $email
-                ]);
-
-                $iaMailer->send();
+                $iaUsers->sendPasswordResetEmail($member);
 
                 $message = iaLanguage::get('restore_pass_confirm');
-                $iaDb->update(['id' => $member['id'], 'sec_key' => $token], null, null, iaUsers::getTable());
             } elseif (!$message && $code) {
                 $iaUsers->changePassword($member);
 

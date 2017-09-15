@@ -40,7 +40,7 @@ class iaApi
 
     const ENDPOINT_AUTH = 'auth';
 
-    protected $_authEndpoints = ['token', 'auth'];
+    protected $_authEndpoints = ['token', 'auth', 'password'];
 
     protected $_authServer;
 
@@ -318,6 +318,11 @@ class iaApi
             case 'token':
                 //$this->_getAuthServer()->handleTokenRequest($authRequest)->send();
                 $this->_getAuthServer()->handleTokenRequest($this->_getRequest(), $this->_getResponse());
+
+                break;
+
+            case 'password':
+                $this->_getAuthServer()->passwordReset($this->_getRequest(), $this->_getResponse());
         }
     }
 

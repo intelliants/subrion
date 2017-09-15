@@ -28,10 +28,14 @@ class iaApiAuth extends abstractCore
 {
     protected static $_table = 'api_tokens';
 
+    protected $iaUsers;
+
 
     public function __construct()
     {
         $this->init();
+
+        $this->iaUsers = $this->iaCore->factory('users');
     }
 
     protected function _coreAuth($params)
@@ -42,18 +46,16 @@ class iaApiAuth extends abstractCore
 
         $remember = (isset($params['remember']) && 1 == $params['remember']);
 
-        $iaUsers = $this->iaCore->factory('users');
+        $this->iaUsers = $this->iaCore->factory('users');
 
-        if (!$iaUsers->getAuth(null, $params['login'], $params['password'], $remember)) {
+        if (!$this->iaUsers->getAuth(null, $params['login'], $params['password'], $remember)) {
             throw new Exception('Invalid credentials', iaApiResponse::FORBIDDEN);
         }
     }
 
     protected function _hybridAuth($providerName)
     {
-        $iaUsers = $this->iaCore->factory('users');
-
-        $iaUsers->hybridAuth($providerName);
+        $this->iaUsers->hybridAuth($providerName);
     }
 
     public function authorize(iaApiRequest $request, iaApiResponse $response)
@@ -72,6 +74,62 @@ class iaApiAuth extends abstractCore
             $this->_hybridAuth($params[0]);
         } else {
             throw new Exception(null, iaApiResponse::NOT_FOUND);
+        }
+    }
+
+    public function passwordReset(iaApiRequest $request, iaApiResponse $response)
+    {
+        if ($request->getMethod() != iaApiRequest::METHOD_POST) {
+            throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
+        }
+
+        if (!is_array($request->getContent())) {
+            throw new Exception('Invalid data', iaApiResponse::BAD_REQUEST);
+        }
+
+        if ($request->getPost('email') !== null || $request->getPost('username') !== null) {
+            $identity = $request->getPost('email') !== null ? 'email' : 'username';
+            $credential = $request->getPost('email') ?: $request->getPost('username');
+
+            if ('email' == $identity && !iaValidate::isEmail($credential)) {
+                throw new Exception(iaLanguage::get('error_email_incorrect'), iaApiResponse::BAD_REQUEST);
+            }
+
+            $member = $this->iaUsers->getInfo($credential, $identity);
+
+            if (!$member) {
+                throw new Exception(iaLanguage::get('error_no_member_email'), iaApiResponse::NOT_FOUND);
+            }
+
+            if (!$this->iaUsers->sendPasswordResetEmail($member)) {
+                throw new Exception(iaLanguage::get('internal_error'), iaApiResponse::INTERNAL_ERROR);
+            }
+
+            $response->setCode(iaApiResponse::ACCEPTED);
+        } elseif ($request->getPost('token') !== null) {
+            if (!$request->getPost('token')) {
+                throw new Exception('Empty token', iaApiResponse::BAD_REQUEST);
+            }
+
+            if ($request->getPost('password') === null) {
+                throw new Exception('New password required', iaApiResponse::BAD_REQUEST);
+            } elseif (!$request->getPost('password')) {
+                throw new Exception('New password is empty', iaApiResponse::BAD_REQUEST);
+            }
+
+            $member = $this->iaUsers->getInfo($request->getPost('token'), 'sec_key');
+
+            if (!$member) {
+                throw new Exception('Invalid token', iaApiResponse::BAD_REQUEST);
+            }
+
+            if (!$this->iaUsers->changePassword($member, $request->getPost('password'))) {
+                throw new Exception(iaLanguage::get('internal_error'), iaApiResponse::INTERNAL_ERROR);
+            }
+
+            $response->setCode(iaApiResponse::OK);
+        } else {
+            throw new Exception('Missing required parameters', iaApiResponse::BAD_REQUEST);
         }
     }
 
