@@ -26,8 +26,6 @@
 
 class iaApiAuth extends abstractCore
 {
-    const QUERY_KEY = 'token';
-
     protected static $_table = 'api_tokens';
 
 
@@ -69,12 +67,22 @@ class iaApiAuth extends abstractCore
         if (empty($params)) {
             $this->_coreAuth($request->getContent());
         } elseif ('logout' == $params[0]) {
-            iaUsers::clearIdentity();
+            $this->_logout($request);
         } elseif (1 == count($params)) {
             $this->_hybridAuth($params[0]);
         } else {
             throw new Exception(null, iaApiResponse::NOT_FOUND);
         }
+    }
+
+    protected function _logout(iaApiRequest $request)
+    {
+        iaUsers::clearIdentity();
+
+        // we also have to revoke the token
+        $token = $request->getServer('HTTP_X_AUTH_TOKEN');
+
+        $this->iaDb->delete(iaDb::convertIds($token, 'key'), self::getTable());
     }
 
     public function handleTokenRequest(iaApiRequest $request, iaApiResponse $response)
@@ -110,7 +118,7 @@ class iaApiAuth extends abstractCore
                 'member_id' => 0,
                 'expires' => null,
                 'ip' => null,
-                'session' => null,
+                'session' => null
             ];
         }
 
