@@ -110,7 +110,13 @@ class iaApiEntityMember extends iaApiEntityAbstract
 
         $this->iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
 
-        return (0 === $this->iaDb->getErrorNumber());
+        $result = (0 === $this->iaDb->getErrorNumber());
+
+        if ($result) {
+            iaUsers::reloadIdentity();
+        }
+
+        return $result;
     }
 
     public function apiInsert(array $data)
