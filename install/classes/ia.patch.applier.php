@@ -143,7 +143,7 @@ class iaPatchApplier
 
     protected function _processQuery($query, $log = true)
     {
-        $options = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
+        $options = 'ENGINE=MyISAM DEFAULT CHARSET=utf8mb4';
 
         $query = str_replace(
             ['{prefix}', '{db.options}'],

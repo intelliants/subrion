@@ -38,7 +38,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
     protected $_table;
 
-    public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8';
+    public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8mb4';
     public $prefix;
 
 
@@ -77,7 +77,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         // set active database again
         mysqli_select_db($this->_link, INTELLI_DBNAME);
 
-        $this->query("SET NAMES 'utf8'");
+        $this->query("SET NAMES 'utf8mb4'");
         $this->query("SET sql_mode = ''");
     }
 

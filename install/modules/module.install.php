@@ -260,7 +260,7 @@ switch ($step) {
                 }
 
                 if (!$error) {
-                    $dbOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
+                    $dbOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8mb4';
                     $dumpFile = IA_INSTALL . 'dump/install.sql';
 
                     if (!file_exists($dumpFile)) {
@@ -287,7 +287,7 @@ switch ($step) {
                     $counter = 0;
                     $file = file($dumpFile);
                     if (count($file) > 0) {
-                        mysqli_query($link, "SET NAMES 'utf8'");
+                        mysqli_query($link, "SET NAMES 'utf8mb4'");
 
                         foreach ($file as $s) {
                             $s = trim($s);

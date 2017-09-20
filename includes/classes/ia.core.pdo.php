@@ -39,7 +39,7 @@ class iaDb extends PDO implements iaInterfaceDbAdapter
 
     protected $_table;
 
-    public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8';
+    public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8mb4';
 
     public $prefix;
 
@@ -73,7 +73,7 @@ class iaDb extends PDO implements iaInterfaceDbAdapter
             echo 'Connection failed: ' . $e->getMessage();
         }
 
-        $this->query("SET NAMES 'utf8'");
+        $this->query("SET NAMES 'utf8mb4'");
     }
 
     public function setTimezoneOffset($offset)

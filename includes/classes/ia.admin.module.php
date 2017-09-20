@@ -1937,7 +1937,7 @@ class iaModule extends abstractCore
 
         require_once IA_INCLUDES . 'utils/pclzip.lib.php';
 
-        $mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
+        $mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8mb4';
         $masterLanguageCode = $this->iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
 
         $extrasVersion = $this->itemData['info']['version'];
