@@ -267,7 +267,7 @@ class iaCache extends abstractUtil
                     $config['modules'][] = [$item['name'], $item['title']];
                 }
 
-                $array = $iaDb->onefield('`item`', "`item` != 'transactions'", null, null, 'items');
+                $array = $iaDb->onefield('`item`', "`item` != 'transaction'", null, null, 'items');
                 foreach ($array as $item) {
                     $config['items'][] = [$item, iaLanguage::get($item, $item)];
                 }
