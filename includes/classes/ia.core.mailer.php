@@ -307,6 +307,8 @@ class iaMailer extends PHPMailer
             }
         }
 
+        $this->_recipients = [];
+
         return $results && !in_array(false, $results, true);
     }
 
