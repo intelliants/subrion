@@ -152,11 +152,9 @@
                                 </a>
                                 <ul class="dropdown-menu pull-right">
                                     {if !empty($core.config.display_feedbacks)}
-                                        <li>
-                                            <a data-toggle="modal" href="#feedback-modal"><span class="fa fa-commenting-o"></span> Submit feedback</a>
-                                        </li>
+                                        <li><a data-toggle="modal" href="#feedback-modal"><span class="fa fa-commenting-o"></span> Submit feedback</a></li>
                                     {/if}
-                                    <li><a href="https://www.subrion.com/desk/" target="_blank"><span class="fa fa-support"></span> Helpdesk</a></li>
+                                    <li><a href="https://subrion.org/desk/" target="_blank"><span class="fa fa-support"></span> Helpdesk</a></li>
                                     <li><a href="https://subrion.org/forums/" target="_blank"><span class="fa fa-comments-o"></span> User forums</a></li>
                                     <li><a href="https://github.com/intelliants/subrion" target="_blank"><span class="fa fa-github"></span> Github</a></li>
                                     <li><a href="https://dev.subrion.org/projects/subrion-cms/wiki" target="_blank"><span class="fa fa-wikipedia-w"></span> Wiki</a></li>
@@ -227,60 +225,62 @@
             </div>
 
             <!-- Feedback modal -->
-            <div class="modal fade" id="feedback-modal">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form method="post" class="sap-form form-horizontal">
-                            {preventCsrf}
-                            <input type="hidden" name="action" value="request">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                                <h4 class="modal-title"><i class="i-bubbles-2"></i> {lang key='submit_feedback'}</h4>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div class="col col-lg-12">
-                                        <p class="text-muted">{lang key='feedback_terms'}</p>
+            {if !empty($core.config.display_feedbacks)}
+                <div class="modal fade" id="feedback-modal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" class="sap-form form-horizontal">
+                                {preventCsrf}
+                                <input type="hidden" name="action" value="request">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                    <h4 class="modal-title"><i class="i-bubbles-2"></i> {lang key='submit_feedback'}</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col col-lg-12">
+                                            <p class="text-muted">{lang key='feedback_terms'}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col col-lg-6">
+                                            <label>{lang key='fullname'}</label>
+                                            <input type="text" name="fullname" data-def="{$member.fullname}" value="{$member.fullname}">
+                                        </div>
+                                        <div class="col col-lg-6">
+                                            <label>{lang key='email'}</label>
+                                            <input type="text" name="email" data-def="{$member.email}" value="{$member.email}">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col col-lg-12">
+                                            <label id="feedback_subject_label">{lang key='subject'}</label>
+                                            <select name="subject">
+                                                <option value="">{lang key='_select_'}</option>
+                                                <option data-icon="bug">{lang key='bug_report'}</option>
+                                                <option data-icon="lightning">{lang key='feature_request'}</option>
+                                                <option data-icon="fire">{lang key='custom_modification'}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col col-lg-12">
+                                            <label>{lang key='message_body'}</label>
+                                            <textarea name="body" cols="30" rows="5"></textarea>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col col-lg-6">
-                                        <label>{lang key='fullname'}</label>
-                                        <input type="text" name="fullname" data-def="{$member.fullname}" value="{$member.fullname}">
-                                    </div>
-                                    <div class="col col-lg-6">
-                                        <label>{lang key='email'}</label>
-                                        <input type="text" name="email" data-def="{$member.email}" value="{$member.email}">
-                                    </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">{lang key='close'}</button>
+                                    <button type="button" id="clearFeedback" class="btn btn-default">{lang key='clear'}</button>
+                                    <button type="submit" class="btn btn-primary">{lang key='send'}</button>
                                 </div>
-                                <div class="row">
-                                    <div class="col col-lg-12">
-                                        <label id="feedback_subject_label">{lang key='subject'}</label>
-                                        <select name="subject">
-                                            <option value="">{lang key='_select_'}</option>
-                                            <option data-icon="bug">{lang key='bug_report'}</option>
-                                            <option data-icon="lightning">{lang key='feature_request'}</option>
-                                            <option data-icon="fire">{lang key='custom_modification'}</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col col-lg-12">
-                                        <label>{lang key='message_body'}</label>
-                                        <textarea name="body" cols="30" rows="5"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal">{lang key='close'}</button>
-                                <button type="button" id="clearFeedback" class="btn btn-default">{lang key='clear'}</button>
-                                <button type="submit" class="btn btn-primary">{lang key='send'}</button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {/if}
 
         {if !isset($smarty.cookies.loader) || 'loaded' != $smarty.cookies.loader}
             <div id="js-ajax-loader">
