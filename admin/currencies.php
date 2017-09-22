@@ -137,8 +137,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $entry['default'] = (int)$data['default'];
         $entry['status'] = $data['status'];
 
-        $requiredFields = ['code', 'title', 'rate', 'symbol' => 'currency_symbol',
-            'fmt_num_decimals' => 'number_of_decimal_places', 'fmt_dec_point' => 'decimal_point', 'fmt_thousand_sep' => 'thousand_separator'];
+        $requiredFields = [];
 
         foreach ($requiredFields as $fieldName => $fieldLabel) {
             if (is_numeric($fieldName)) {
