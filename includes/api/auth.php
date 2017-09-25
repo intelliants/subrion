@@ -35,6 +35,10 @@ class iaApiAuth extends abstractCore
     {
         $this->init();
 
+        if (!$this->iaCore->get('members_enabled')) {
+            throw new Exception('Members disabled', iaApiResponse::SERVICE_UNAVAILABLE);
+        }
+
         $this->iaUsers = $this->iaCore->factory('users');
     }
 

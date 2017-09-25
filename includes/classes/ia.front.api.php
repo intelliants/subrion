@@ -49,7 +49,7 @@ class iaApi
 
     protected $_mobilePush;
 
-    protected $_systemEntities = ['migrations'];
+    protected $_systemEntities = ['field', 'migration'];
 
 
     public function init()
@@ -221,10 +221,8 @@ class iaApi
         // where
         $where = iaDb::EMPTY_CONDITION;
 
-        foreach ($entity->apiFilters as $filterName) {
-            if (isset($params[$filterName][0]) && is_string($params[$filterName])) {
-                $where.= sprintf(" AND `%s` = '%s'", $filterName, iaSanitize::sql($params[$filterName]));
-            }
+        if (isset($params['filter']) && is_array($params['filter'])) {
+            $where = self::_getArrayToSqlWhere($params['filter'], $entity);
         }
 
         // order
@@ -242,6 +240,28 @@ class iaApi
         $order = sprintf(' ORDER BY `%s` %s', $sorting, $order);
 
         return [$where, $order];
+    }
+
+    protected static function _getArrayToSqlWhere(array $filters, $entity)
+    {
+        $where = iaDb::EMPTY_CONDITION;
+
+        $kwToConditionMap = ['eq' => '=', 'lt' => '<', 'gt' => '>'];
+
+        foreach ($filters as $filter) {
+            $array = explode(',', $filter);
+            if (3 == count($array)) {
+                list($column, $condition, $value) = $array;
+                if (isset($kwToConditionMap[$condition]) && in_array($column, $entity->apiFilters)) {
+                    $column = iaSanitize::sql($column);
+                    $value = iaSanitize::sql($value);
+
+                    $where.= sprintf(" AND `%s` %s '%s'", $column, $kwToConditionMap[$condition], $value);
+                }
+            }
+        }
+
+        return $where;
     }
 
     // oauth2

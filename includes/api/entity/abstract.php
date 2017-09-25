@@ -31,10 +31,13 @@ abstract class iaApiEntityAbstract extends abstractCore
     protected $request;
     protected $response;
 
+    protected $iaField;
+
     protected $hiddenFields = [];
     protected $protectedFields = [];
 
-    protected $iaField;
+    public $apiFilters = [];
+    public $apiSorters = [];
 
 
     public function init()

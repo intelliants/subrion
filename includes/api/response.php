@@ -40,6 +40,7 @@ class iaApiResponse
     const TOO_MANY_REQUESTS = 429;
 
     const INTERNAL_ERROR = 500;
+    const SERVICE_UNAVAILABLE = 503;
 
     protected $_code = self::OK;
     protected $_body;
