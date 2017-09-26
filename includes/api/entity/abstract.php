@@ -254,8 +254,14 @@ abstract class iaApiEntityAbstract extends abstractCore
 
         // TODO: implement previous uploads removal
 
-        return $this->iaField->processUploadedFile($tempFile, $field,
+        $result = $this->iaField->processUploadedFile($tempFile, $field,
             self::_getUniqueFileName($_SERVER['CONTENT_TYPE']), $_SERVER['CONTENT_TYPE']);
+
+        if ($message = $this->iaField->getMessage()) {
+            throw new Exception($message, iaApiResponse::INTERNAL_ERROR);
+        }
+
+        return $result;
     }
 
     private static function _getTempFile()

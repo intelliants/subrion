@@ -833,6 +833,8 @@ SQL;
 
     protected function _processImageField(array $field, $tmpFile, $path, $fileName, $mimeType)
     {
+        $this->_message = null;
+
         $iaPicture = $this->iaCore->factory('picture');
 
         if (isset($field['timepicker']) && $field['timepicker']) { // image types enabled field
@@ -883,8 +885,12 @@ SQL;
 
             $destinationFile = $imageTypeFolder . $fileName;
 
-            $iaPicture->process($originalFile, $destinationFile, $mimeType, $imageType['width'],
+            $result = $iaPicture->process($originalFile, $destinationFile, $mimeType, $imageType['width'],
                 $imageType['height'], $imageType['resize_mode'], true);
+
+            if (!$result) {
+                $this->setMessage($iaPicture->getMessage());
+            }
         }
     }
 

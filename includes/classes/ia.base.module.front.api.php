@@ -248,12 +248,14 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
         $tempFile = self::_getTempFile();
         file_put_contents($tempFile, $content);
 
-        // TODO: implement previous uploads removal
-
-        $value = $this->iaField->processUploadedFile($tempFile, $field,
+        $result = $this->iaField->processUploadedFile($tempFile, $field,
             self::_getUniqueFileName($_SERVER['CONTENT_TYPE']), $_SERVER['CONTENT_TYPE']);
 
-        return serialize($value);
+        if ($message = $this->iaField->getMessage()) {
+            throw new Exception($message, iaApiResponse::INTERNAL_ERROR);
+        }
+
+        return $result;
     }
 
     private static function _getTempFile()
