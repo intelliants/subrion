@@ -86,7 +86,7 @@
 
 	<hooks>
 		<hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="hook.blocks-load"><![CDATA[]]></hook>
-		<hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['blog'] = 'plugin';]]></hook>
+		<hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['blog'] = 'blog';]]></hook>
 		<hook name="sitemapGeneration" page_type="admin" pages="index,sitemap"><![CDATA[$items[] = 'blog:blog';]]></hook>
 	</hooks>
 

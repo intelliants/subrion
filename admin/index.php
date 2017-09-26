@@ -81,10 +81,10 @@ class iaBackendController extends iaAbstractControllerBackend
             $statistics[$size] = [];
         }
 
-        foreach ($itemsList as $itemName => $package) {
-            $itemInstance = (iaCore::CORE == $package)
+        foreach ($itemsList as $itemName => $module) {
+            $itemInstance = (iaCore::CORE == $module)
                 ? $iaCore->factory('member' == $itemName ? 'users' : $itemName)
-                : $iaCore->factoryItem($itemName);
+                : $iaCore->factoryModule($itemName, $module);
 
             if (!$customizationMode && in_array($itemName, $disabledWidgets)) {
                 continue;
