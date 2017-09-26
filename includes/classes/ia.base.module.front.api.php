@@ -32,6 +32,8 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
     protected $apiHiddenFields = [];
     protected $apiProtectedFields = [];
 
+    protected $_timestampColumn;
+
     protected $iaField;
 
 
@@ -86,7 +88,7 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
         return $this->delete($id);
     }
 
-    public function apiUpdate(array $data, $id, array $params)
+    public function apiUpdate($data, $id, array $params)
     {
         $resource = $this->apiGet($id);
 
@@ -96,6 +98,10 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
 
         if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id) {
             throw new Exception('Resource may be edited by owner only', iaApiResponse::FORBIDDEN);
+        }
+
+        if (1 == count($params)) {
+            return $this->_apiUpdateSingleField($params[0], $id, $data);
         }
 
         $this->_apiProcessFields($data);
@@ -112,6 +118,10 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
         }
 
         $data['member_id'] = iaUsers::getIdentity()->id;
+
+        if ($this->_timestampColumn && is_string($this->_timestampColumn)) {
+            $data[$this->_timestampColumn] = date(iaDb::DATETIME_FORMAT);
+        }
 
         $this->_apiProcessFields($data);
 
@@ -139,8 +149,12 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
         $singleRow && $rows = array_shift($rows);
     }
 
-    protected function _apiProcessFields(array &$data)
+    protected function _apiProcessFields(&$data)
     {
+        if (!is_array($data)) {
+            throw new Exception('Invalid data (array expected)', iaApiResponse::BAD_REQUEST);
+        }
+
         foreach ($this->apiProtectedFields as $protectedFieldName) {
             if (isset($data[$protectedFieldName])) {
                 unset($data[$protectedFieldName]);
@@ -165,11 +179,14 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
             }
         }
     }
-/*
-    protected function _apiUpdateField($fieldName, $entryId, $content)
+
+    protected function _apiUpdateSingleField($fieldName, $entryId, $content)
     {
-        $fieldParams = $this->_iaDb->row_bind(['type', 'required', 'image_width', 'image_height', 'thumb_width', 'thumb_height', 'resize_mode'],
-            '`name` = :field AND `item` = :item', ['field' => $fieldName, 'item' => $this->getName()], $iaField::getTable());
+        $iaField = $this->iaCore->factory('field');
+
+        $fieldParams = $this->iaDb->row_bind(['id', 'type', 'required', 'image_width', 'image_height', 'thumb_width',
+            'thumb_height', 'resize_mode', 'file_prefix', 'folder_name', 'timepicker', 'file_types', 'imagetype_thumbnail'],
+            '`name` = :field AND `item` = :item', ['field' => $fieldName, 'item' => $this->getItemName()], $iaField::getTable());
 
         if (!$fieldParams) {
             throw new Exception('No field to update', iaApiResponse::NOT_FOUND);
@@ -181,28 +198,51 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
 
         switch ($fieldParams['type']) {
             case iaField::IMAGE:
-                list($output, $value) = $this->_processImageField($content, $fieldParams);
-                break;
             case iaField::PICTURES:
-                //$content = $this->_processPicturesField($content, $fieldParams);
-                break;
             case iaField::STORAGE:
-                //$content = $this->_processStorageField($content, $fieldParams);
+                if (!is_string($content)) {
+                    throw new Exception('Invalid image', iaApiResponse::BAD_REQUEST);
+                }
+
+                $upload = $this->_apiProcessUploadField($content, $fieldParams);
+
+                $initialValue = $this->iaDb->one($fieldName, iaDb::convertIds($entryId), self::getTable());
+                $initialValue = empty($initialValue)
+                    ? []
+                    : unserialize($initialValue);
+
+                $value = $fieldParams['type'] == iaField::IMAGE
+                    ? $upload
+                    : array_merge($initialValue, [$upload]);
+                $value = serialize($value);
+
+                $imageType = $fieldParams['timepicker'] ? $fieldParams['imagetype_thumbnail'] : iaField::IMAGE_TYPE_THUMBNAIL;
+
+                $output = IA_CLEAR_URL . 'uploads/' . $upload['path'] . $imageType . '/' . $upload['file'];
+
                 break;
+
             default:
                 $output = '';
                 $value = $content;
         }
 
-        $this->_iaDb->update([$fieldName => $value], iaDb::convertIds($entryId), null, $this->getTable());
+        $this->iaDb->update([$fieldName => $value], iaDb::convertIds($entryId), null, self::getTable());
 
-        if (0 !== $this->_iaDb->getErrorNumber()) {
+        if (0 !== $this->iaDb->getErrorNumber()) {
             throw new Exception('DB error', iaApiResponse::INTERNAL_ERROR);
+        }
+
+        // remove previously assigned resource for 'image' field
+        if (iaField::IMAGE == $fieldParams['type'] && !empty($initialValue)) {
+            // remove previously assigned resource
+            $this->iaField->deleteUploadedFile($fieldName, $this->getItemName(), $entryId,
+                $initialValue['file']);
         }
 
         return $output;
     }
-*/
+
     protected function _apiProcessUploadField($content, array $field)
     {
         $tempFile = self::_getTempFile();
@@ -211,7 +251,7 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
         // TODO: implement previous uploads removal
 
         $value = $this->iaField->processUploadedFile($tempFile, $field,
-            self::_getUniqueFileName(), $_SERVER['CONTENT_TYPE']);
+            self::_getUniqueFileName($_SERVER['CONTENT_TYPE']), $_SERVER['CONTENT_TYPE']);
 
         return serialize($value);
     }
@@ -221,8 +261,19 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
         return tempnam(sys_get_temp_dir(), 'api');
     }
 
-    private static function _getUniqueFileName()
+    private static function _getUniqueFileName($contentType)
     {
-        return uniqid(mt_rand(), true);
+        $contentTypeToExtensionMap = [
+            'image/png' => 'png',
+            'image/jpeg' => 'jpg',
+            'image/jpg' => 'jpg',
+            'image/gif' => 'gif'
+        ];
+
+        $suffix = isset($contentTypeToExtensionMap[$contentType])
+            ? '.' . $contentTypeToExtensionMap[$contentType]
+            : '';
+
+        return uniqid(mt_rand(), true) . $suffix;
     }
 }

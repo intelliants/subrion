@@ -76,7 +76,7 @@ class iaApiEntityMember extends iaApiEntityAbstract
         return parent::apiGet($id);
     }
 
-    public function apiUpdate(array $data, $id, array $params)
+    public function apiUpdate($data, $id, array $params)
     {
         if (self::KEYWORD_SELF == $id) {
             if (!iaUsers::hasIdentity()) {
@@ -84,10 +84,6 @@ class iaApiEntityMember extends iaApiEntityAbstract
             }
 
             $id = iaUsers::getIdentity()->id;
-
-            if (1 == count($params)) {
-                return $this->_apiUpdateSingleField($params[0], $id, $data);
-            }
         } elseif (!$this->iaCore->factory('acl')->checkAccess('admin_page:edit', 'members')) {
             throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
         }
@@ -96,6 +92,10 @@ class iaApiEntityMember extends iaApiEntityAbstract
 
         if (!$resource) {
             throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
+        }
+
+        if (1 == count($params)) {
+            return $this->_apiUpdateSingleField($params[0], $id, $data);
         }
 
         $this->_apiProcessFields($data);
