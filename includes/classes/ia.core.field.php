@@ -132,6 +132,20 @@ class iaField extends abstractCore
         return iaLanguage::get(sprintf(self::FIELDGROUP_TITLE_PHRASE_KEY, $itemName, $fieldName));
     }
 
+    public function fetch($where = null, $order = null, $start = null, $limit = null)
+    {
+        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . $order, $start, $limit, self::getTable());
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['id']] = $row;
+        }
+
+        self::_unpackValues($result);
+
+        return $result;
+    }
+
     /**
      * Returns fields by item name
      *
@@ -141,19 +155,10 @@ class iaField extends abstractCore
      */
     public function get($itemName)
     {
-        $fields = [];
-
         $where = '`status` = :status && `item` = :item' . (!$this->iaCore->get('api_enabled') ? " && `fieldgroup_id` != 3 " : '') . ' ORDER BY `order`';
         $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'item' => $itemName]);
 
-        if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTable())) {
-            foreach ($rows as $row) {
-                $fields[$row['id']] = $row;
-            }
-            self::_unpackValues($fields);
-        }
-
-        return $fields;
+        return $this->fetch($where);
     }
 
     protected function _fetchVisibleFieldsForPage($pageName, $itemName, $where)

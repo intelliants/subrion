@@ -33,6 +33,25 @@ class iaApiEntityField extends iaApiEntityAbstract
     public $apiFilters = ['name', 'item', 'type', 'module', 'searchable', 'status'];
 
 
+    public function apiList($start, $limit, $where, $order)
+    {
+        $rows = $this->iaField->fetch($where, $order, $start, $limit);
+
+        $this->_filterHiddenFields($rows);
+
+        return $rows;
+    }
+
+    public function apiGet($id)
+    {
+        $row = $this->iaField->fetch(iaDb::convertIds($id));
+        $row && $row = $row[0];
+
+        $this->_filterHiddenFields($row, true);
+
+        return $row;
+    }
+
     public function apiUpdate(array $data, $id, array $params)
     {
         $resource = $this->apiGet($id);
