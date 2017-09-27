@@ -64,7 +64,7 @@ class iaApiEntityMember extends iaApiEntityAbstract
     {
         if (self::KEYWORD_SELF == $id) {
             if (!iaUsers::hasIdentity()) {
-                throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
+                throw new Exception('Not authorized', iaApiResponse::UNAUTHORIZED);
             }
 
             $entry = iaUsers::getIdentity(true);
@@ -80,7 +80,7 @@ class iaApiEntityMember extends iaApiEntityAbstract
     {
         if (self::KEYWORD_SELF == $id) {
             if (!iaUsers::hasIdentity()) {
-                throw new Exception('Not authenticated', iaApiResponse::FORBIDDEN);
+                throw new Exception('Not authorized', iaApiResponse::UNAUTHORIZED);
             }
 
             $id = iaUsers::getIdentity()->id;
@@ -143,7 +143,7 @@ class iaApiEntityMember extends iaApiEntityAbstract
     public function apiDelete($id)
     {
         if (!is_numeric($id)) {
-            throw new Exception('Numeric ID expected', iaApiResponse::NOT_FOUND);
+            throw new Exception('Numeric ID expected', iaApiResponse::BAD_REQUEST);
         }
 
         $resource = $this->apiGet($id);

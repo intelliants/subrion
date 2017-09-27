@@ -119,7 +119,7 @@ abstract class iaApiEntityAbstract extends abstractCore
         return (0 == $this->iaDb->getErrorNumber());
     }
 
-    public function apiInsert(array $data)
+    public function apiInsert($data)
     {
         if (!iaUsers::hasIdentity()) {
             throw new Exception('Guests not allowed to post data', iaApiResponse::UNAUTHORIZED);
@@ -240,7 +240,7 @@ abstract class iaApiEntityAbstract extends abstractCore
         // remove previously assigned resource for 'image' field
         if (iaField::IMAGE == $fieldParams['type'] && !empty($initialValue)) {
             // remove previously assigned resource
-            $this->iaField->deleteUploadedFile($fieldName, $this->getItemName(), $entryId,
+            $this->iaField->deleteUploadedFile($fieldName, $this->getName(), $entryId,
                 $initialValue['file']);
         }
 

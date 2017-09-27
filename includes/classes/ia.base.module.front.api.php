@@ -32,7 +32,8 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
     protected $apiHiddenFields = [];
     protected $apiProtectedFields = [];
 
-    protected $_timestampColumn;
+    protected $apiTimestampColumn;
+    protected $apiTrackOwner = true;
 
     protected $iaField;
 
@@ -96,7 +97,8 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
             throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
         }
 
-        if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id) {
+        if ($this->apiTrackOwner &&
+            (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id)) {
             throw new Exception('Resource may be edited by owner only', iaApiResponse::FORBIDDEN);
         }
 
@@ -111,19 +113,21 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
         return (0 == $this->iaDb->getErrorNumber());
     }
 
-    public function apiInsert(array $data)
+    public function apiInsert($data)
     {
         if (!iaUsers::hasIdentity()) {
             throw new Exception('Guests not allowed to post data', iaApiResponse::UNAUTHORIZED);
         }
 
-        $data['member_id'] = iaUsers::getIdentity()->id;
+        $this->_apiProcessFields($data);
 
-        if ($this->_timestampColumn && is_string($this->_timestampColumn)) {
-            $data[$this->_timestampColumn] = date(iaDb::DATETIME_FORMAT);
+        if ($this->apiTrackOwner) {
+            $data['member_id'] = iaUsers::getIdentity()->id;
         }
 
-        $this->_apiProcessFields($data);
+        if ($this->apiTimestampColumn && is_string($this->apiTimestampColumn)) {
+            $data[$this->apiTimestampColumn] = date(iaDb::DATETIME_FORMAT);
+        }
 
         return $this->iaDb->insert($data, null, $this->getTable());
     }
@@ -161,7 +165,7 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
             }
         }
 
-        $fields = $this->iaField->get($this->getName());
+        $fields = $this->iaField->get($this->getItemName());
 
         foreach ($fields as $field) {
             $fieldName = $field['name'];
