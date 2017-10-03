@@ -52,7 +52,7 @@ class iaApiEntityField extends iaApiEntityAbstract
         return $row;
     }
 
-    public function apiUpdate(array $data, $id, array $params)
+    public function apiUpdate($data, $id, array $params)
     {
         $resource = $this->apiGet($id);
 
