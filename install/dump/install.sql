@@ -930,7 +930,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('general', '', 'General', '1', 'divider', 0, 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('general', 'site', '{:en:}Subrion CMS', '1', 'text', 2, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"1\"}'),
 ('general', 'bc_home', '{:en:}Home', NULL, 'text', 3, 1, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"1\"}'),
-('general', 'suffix', '{:en:}:: Powered by Subrion 4.1', '1', 'text', 9, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"1\"}'),
+('general', 'suffix', '{:en:}:: Powered by Subrion 4.2', '1', 'text', 9, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"1\"}'),
 ('general', 'site_logo', '', '', 'image', 12, 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('general', 'site_favicon', '', '', 'image', 13, 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('general', '', 'Regional', '1', 'divider', 20, 1, 1, '{\"wysiwyg\":\"30\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),

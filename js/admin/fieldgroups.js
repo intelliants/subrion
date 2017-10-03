@@ -5,21 +5,21 @@ Ext.onReady(function () {
                 columns: [
                     'selection',
                     {name: 'id', title: _t('id'), width: 40},
-                    {name: 'name', title: _t('name'), width: 1},
+                    {name: 'name', title: _t('name'), width: 150},
                     {name: 'title', title: _t('title'), width: 1, editor: 'text'},
                     {name: 'item', title: _t('item'), width: 130},
                     {name: 'module', title: _t('module'), width: 110},
                     {
                         name: 'tabview',
                         title: _t('view_as_tab'),
-                        width: 60,
+                        width: 100,
                         align: intelli.gridHelper.constants.ALIGN_CENTER,
                         renderer: intelli.gridHelper.renderer.check
                     },
                     {
                         name: 'collapsible',
                         title: _t('collapsible'),
-                        width: 60,
+                        width: 80,
                         align: intelli.gridHelper.constants.ALIGN_CENTER,
                         renderer: intelli.gridHelper.renderer.check
                     },
