@@ -55,7 +55,7 @@ class iaSearch extends abstractCore
 
     protected $_itemInstance;
 
-    private $_fieldTypes = [];
+    private $_fields = [];
     private $_smartyVarsAssigned = false;
 
 
@@ -530,7 +530,7 @@ SQL;
             $condition = '=';
             $val = is_string($value) ? "'" . iaSanitize::sql($value) . "'" : '';
 
-            switch ($this->_fieldTypes[$fieldName]) {
+            switch ($this->_fields[$fieldName]['type']) {
                 case iaField::CHECKBOX:
                     is_string($value) && $value = [$value];
 
@@ -543,7 +543,7 @@ SQL;
 
                 case iaField::NUMBER:
                 case iaField::CURRENCY:
-                    if (iaField::CURRENCY == $this->_fieldTypes[$fieldName]) {
+                    if (iaField::CURRENCY == $this->_fields[$fieldName]['type']) {
                         // TODO: implement currency rates conversion
 
                     }
@@ -572,6 +572,12 @@ SQL;
 
                 case iaField::TEXT:
                 case iaField::TEXTAREA:
+                    if ($this->_fields[$fieldName]['multilingual']) {
+                        $fieldName .= '_' . $this->iaCore->language['iso'];
+                    }
+
+                    // BREAK stmt missing intentionally
+
                 case iaField::URL:
                     $condition = 'LIKE';
                     $val = "'%" . iaSanitize::sql($value) . "%'";
@@ -635,8 +641,8 @@ SQL;
         $tableAlias = $this->getOption('tableAlias') ? $this->getOption('tableAlias') . '.' : '';
         $escapedQuery = iaSanitize::sql($this->_query);
 
-        foreach ($this->_fieldTypes as $fieldName => $type) {
-            switch ($type) {
+        foreach ($this->_fields as $fieldName => $field) {
+            switch ($field['type']) {
                 case iaField::TEXT:
                 case iaField::TEXTAREA:
                     $statements[] = sprintf("%s LIKE '%s'", $tableAlias . $fieldName, '%' . $escapedQuery . '%');
@@ -730,7 +736,10 @@ SQL;
         $stmt = '`item` = :item AND `searchable` = 1';
         $this->iaDb->bind($stmt, ['item' => $this->_itemName]);
 
-        $this->_fieldTypes = $this->iaDb->keyvalue(['name', 'type'], $stmt, iaField::getTable());
+        $fields = $this->iaDb->all(['name', 'type', 'multilingual'], $stmt, null, null, iaField::getTable());
+        foreach ($fields as $field) {
+            $this->_fields[$field['name']] = $field;
+        }
 
         if ($params && is_array($params)) {
             foreach ($params as $fieldName => $value) {
@@ -739,7 +748,7 @@ SQL;
                     : $this->getOption('columnAlias')->$fieldName;
 
                 if (empty($value) ||
-                    (!isset($this->_fieldTypes[$fieldName]) && ($this->getOption('customColumns') && !in_array($fieldName, $this->_options['customColumns'])))) {
+                    (!isset($this->_fields[$fieldName]) && ($this->getOption('customColumns') && !in_array($fieldName, $this->_options['customColumns'])))) {
                     continue;
                 }
 
@@ -761,8 +770,8 @@ SQL;
                 $key = array_shift($value);
                 empty($this->getOption('columnAlias')->$key) || $key = $this->getOption('columnAlias')->$key;
 
-                if ($value && isset($this->_fieldTypes[$key])) {
-                    switch ($this->_fieldTypes[$key]) {
+                if ($value && isset($this->_fields[$key])) {
+                    switch ($this->_fields[$key]['type']) {
                         case iaField::NUMBER:
                         case iaField::CURRENCY:
                             if (count($value) > 1) {
