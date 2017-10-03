@@ -2229,7 +2229,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('field__tooltip','please upload only image files','common'),
 ('field_member_api_push_token','Push Token of your phone','common'),
-('field_member_api_push_receive','Are you agree to receive push notifications to your phone?','common'),
+('field_member_api_push_receive','Do you agree to receive push notifications to your phone?','common'),
 ('field_member_api_push_receive+yes','Yes','common'),
 ('field_member_api_push_receive+no','No','common'),
 ('field_member_avatar','Avatar','common'),
