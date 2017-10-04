@@ -119,7 +119,7 @@ class iaApiEntityMember extends iaApiEntityAbstract
         return $result;
     }
 
-    public function apiInsert(array $data)
+    public function apiInsert($data)
     {
         if (iaUsers::hasIdentity()) {
             throw new Exception('Unable to register member being logged in', iaApiResponse::FORBIDDEN);
@@ -140,22 +140,34 @@ class iaApiEntityMember extends iaApiEntityAbstract
         return $this->helper->register($data);
     }
 
-    public function apiDelete($id)
+    public function apiDelete($id, array $params)
     {
-        if (!is_numeric($id)) {
-            throw new Exception('Numeric ID expected', iaApiResponse::BAD_REQUEST);
+        if (self::KEYWORD_SELF == $id) {
+            if (!iaUsers::hasIdentity()) {
+                throw new Exception('Not authorized', iaApiResponse::UNAUTHORIZED);
+            }
+
+            $id = iaUsers::getIdentity()->id;
+        } elseif (!$this->iaCore->factory('acl')->checkAccess('admin_page:delete', 'members')) {
+            throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
         }
 
-        $resource = $this->apiGet($id);
+        $resource = parent::apiGet($id);
 
         if (!$resource) {
             throw new Exception('Resource does not exist', iaApiResponse::NOT_FOUND);
         }
 
-        if (!$this->iaCore->factory('acl')->checkAccess('admin_page:delete', 'members')) {
-            throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
+        if (1 == count($params)) {
+            $result = $this->_apiResetSingleField($params[0], $id);
+
+            if ($result && iaUsers::getIdentity()->id == $id) {
+                iaUsers::reloadIdentity();
+            }
+
+            return $result;
         }
 
-        return (bool)$this->iaDb->delete(iaDb::convertIds($id), $this->getTable());
+        return (bool)$this->helper->delete(iaDb::convertIds($id));
     }
 }

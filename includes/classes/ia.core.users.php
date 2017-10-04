@@ -320,6 +320,7 @@ SQL;
         $result = $this->iaDb->delete($statement, self::getTable());
 
         if ($result) {
+            $this->iaCore->factory('util');
             $iaMailer = $this->iaCore->factory('mailer');
             $iaLog = $this->iaCore->factory('log');
 

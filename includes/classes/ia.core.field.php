@@ -1275,12 +1275,12 @@ SQL;
     {
         if ($uploadFields = $this->getUploadFields($itemName)) {
             foreach ($uploadFields as $fieldName) {
-                empty($itemData[$fieldName]) || $this->_deleteFilesByFieldName($fieldName, $itemName, $itemData[$fieldName]);
+                empty($itemData[$fieldName]) || $this->deleteFilesByFieldName($fieldName, $itemName, $itemData[$fieldName]);
             }
         }
     }
 
-    protected function _deleteFilesByFieldName($fieldName, $itemName, $files)
+    public function deleteFilesByFieldName($fieldName, $itemName, $files)
     {
         if (!$files || !is_string($files)) {
             return false;

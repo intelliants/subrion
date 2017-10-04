@@ -123,11 +123,13 @@ class iaApi
                 return $this->addResource($entity);
 
             case iaApiRequest::METHOD_DELETE:
-                if (1 != count($params)) {
+                if (!$params) {
                     throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
                 }
 
-                return $this->deleteResource($entity, $params[0]);
+                $resourceId = array_shift($params);
+
+                return $this->deleteResource($entity, $resourceId, $params);
 
             default:
                 throw new Exception('Invalid request method', iaApiResponse::NOT_ALLOWED);
@@ -384,11 +386,13 @@ class iaApi
         return $resource;
     }
 
-    public function deleteResource($entity, $id)
+    public function deleteResource($entity, $id, array $params)
     {
-        if (!$entity->apiDelete($id)) {
+        if (!$entity->apiDelete($id, $params)) {
             throw new Exception('Could not delete a resource', iaApiResponse::INTERNAL_ERROR);
         }
+
+        $this->_getResponse()->setCode(iaApiResponse::NO_CONTENT);
 
         return null;
     }

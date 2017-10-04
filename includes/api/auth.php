@@ -205,6 +205,8 @@ class iaApiAuth extends abstractCore
 
     private function _generateToken(iaApiRequest $request)
     {
+        $this->iaCore->factory('util');
+
         $ipAddress = iaUtil::getIp();
         $userAgent = $request->getServer('HTTP_USER_AGENT');
 

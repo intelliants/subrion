@@ -81,7 +81,7 @@ abstract class iaApiEntityAbstract extends abstractCore
         return $row;
     }
 
-    public function apiDelete($id)
+    public function apiDelete($id, array $params)
     {
         $resource = $this->apiGet($id);
 
@@ -91,6 +91,10 @@ abstract class iaApiEntityAbstract extends abstractCore
 
         if (!isset($resource['member_id']) || $resource['member_id'] != iaUsers::getIdentity()->id) {
             throw new Exception('Resource may be removed by owner only', iaApiResponse::FORBIDDEN);
+        }
+
+        if (1 == count($params)) {
+            return $this->_apiResetSingleField($params[0], $id);
         }
 
         return (bool)$this->iaDb->delete(iaDb::convertIds($id), $this->getTable());
@@ -184,23 +188,51 @@ abstract class iaApiEntityAbstract extends abstractCore
         }
     }
 
-    protected function _apiUpdateSingleField($fieldName, $entryId, $content)
+    protected function _fetchFieldByName($name)
     {
-        $iaField = $this->iaCore->factory('field');
+        $fieldData = $this->iaCore->factory('field')->getField($name, $this->getName());
 
-        $fieldParams = $this->iaDb->row_bind(['id', 'type', 'required', 'image_width', 'image_height', 'thumb_width',
-            'thumb_height', 'resize_mode', 'file_prefix', 'folder_name', 'timepicker', 'file_types', 'imagetype_thumbnail'],
-            '`name` = :field AND `item` = :item', ['field' => $fieldName, 'item' => $this->getName()], $iaField::getTable());
-
-        if (!$fieldParams) {
+        if (!$fieldData) {
             throw new Exception('No field to update', iaApiResponse::NOT_FOUND);
         }
 
-        if ($fieldParams['required'] && !$content) {
+        return $fieldData;
+    }
+
+    protected function _apiResetSingleField($fieldName, $entryId)
+    {
+        $field = $this->_fetchFieldByName($fieldName);
+
+        if (in_array($fieldName, $this->protectedFields)) {
+            throw new Exception('Field is protected', iaApiResponse::FORBIDDEN);
+        }
+
+        $value = $this->iaDb->one($fieldName, iaDb::convertIds($entryId), self::getTable());
+
+        if ($value) {
+            if (in_array($field['type'], [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])) {
+                $this->iaCore->factory('field')->deleteFilesByFieldName($fieldName, $this->getName(), $value);
+            }
+
+            $this->iaDb->update([$fieldName => ''], iaDb::convertIds($entryId), null, self::getTable());
+
+            if (0 !== $this->iaDb->getErrorNumber()) {
+                throw new Exception('DB error', iaApiResponse::INTERNAL_ERROR);
+            }
+        }
+
+        return true;
+    }
+
+    protected function _apiUpdateSingleField($fieldName, $entryId, $content)
+    {
+        $field = $this->_fetchFieldByName($fieldName);
+
+        if ($field['required'] && !$content) {
             throw new Exception('Empty value is not accepted', iaApiResponse::UNPROCESSABLE_ENTITY);
         }
 
-        switch ($fieldParams['type']) {
+        switch ($field['type']) {
             case iaField::IMAGE:
             case iaField::PICTURES:
             case iaField::STORAGE:
@@ -208,19 +240,19 @@ abstract class iaApiEntityAbstract extends abstractCore
                     throw new Exception('Invalid image', iaApiResponse::BAD_REQUEST);
                 }
 
-                $upload = $this->_apiProcessUploadField($content, $fieldParams);
+                $upload = $this->_apiProcessUploadField($content, $field);
 
                 $initialValue = $this->iaDb->one($fieldName, iaDb::convertIds($entryId), self::getTable());
                 $initialValue = empty($initialValue)
                     ? []
                     : unserialize($initialValue);
 
-                $value = $fieldParams['type'] == iaField::IMAGE
+                $value = $field['type'] == iaField::IMAGE
                     ? $upload
                     : array_merge($initialValue, [$upload]);
                 $value = serialize($value);
 
-                $imageType = $fieldParams['timepicker'] ? $fieldParams['imagetype_thumbnail'] : iaField::IMAGE_TYPE_THUMBNAIL;
+                $imageType = $field['timepicker'] ? $field['imagetype_thumbnail'] : iaField::IMAGE_TYPE_THUMBNAIL;
 
                 $output = IA_CLEAR_URL . 'uploads/' . $upload['path'] . $imageType . '/' . $upload['file'];
 
@@ -238,7 +270,7 @@ abstract class iaApiEntityAbstract extends abstractCore
         }
 
         // remove previously assigned resource for 'image' field
-        if (iaField::IMAGE == $fieldParams['type'] && !empty($initialValue)) {
+        if (iaField::IMAGE == $field['type'] && !empty($initialValue)) {
             // remove previously assigned resource
             $this->iaField->deleteUploadedFile($fieldName, $this->getName(), $entryId,
                 $initialValue['file']);
