@@ -299,7 +299,7 @@ class iaSearch extends abstractCore
                 $stmt = '';
 
                 foreach ($numberFields as $fieldName) {
-                    $stmt.= iaDb::printf('MIN(`:field`) `:field_min`,MAX(`:field`) `:field_max`,', ['field' => $fieldName]);
+                    $stmt.= iaDb::printf('FLOOR(MIN(`:field`)) `:field_min`, CEIL(MAX(`:field`)) `:field_max`,', ['field' => $fieldName]);
                 }
                 $stmt = substr($stmt, 0, -1);
 
@@ -543,13 +543,24 @@ SQL;
 
                 case iaField::NUMBER:
                 case iaField::CURRENCY:
-                    if (iaField::CURRENCY == $this->_fields[$fieldName]['type']) {
-                        // TODO: implement currency rates conversion
+                    $d = 1;
 
+                    if (iaField::CURRENCY == $this->_fields[$fieldName]['type']) {
+                        $currency = $this->iaCore->factory('currency')->get();
+                        if (!$currency['default']) {
+                            $d = $currency['rate'];
+                        }
                     }
 
-                    empty($value['f']) || $statements[] = ['col' => $column, 'cond' => '>=', 'val' => (float)$value['f'], 'field' => $fieldName];
-                    empty($value['t']) || $statements[] = ['col' => $column, 'cond' => '<=', 'val' => (float)$value['t'], 'field' => $fieldName];
+                    if (!empty($value['f']) && is_numeric($value['f'])) {
+                        $value['f'] = round($value['f'] / $d, 2);
+                        $statements[] = ['col' => $column, 'cond' => '>=', 'val' => $value['f'], 'field' => $fieldName];
+                    }
+
+                    if (!empty($value['t']) && is_numeric($value['t'])) {
+                        $value['t'] = round($value['t'] / $d, 2);
+                        $statements[] = ['col' => $column, 'cond' => '<=', 'val' => $value['t'], 'field' => $fieldName];
+                    }
 
                     continue 2;
 

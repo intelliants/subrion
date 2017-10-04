@@ -166,7 +166,7 @@ CREATE TABLE `{install:prefix}currencies` (
 	`code` char(3) NOT NULL,
 	`status` enum('active', 'inactive') NOT NULL default 'active',
 	`title` varchar(30) NOT NULL,
-	`rate` decimal(7,2) unsigned NOT NULL,
+	`rate` decimal(10,5) unsigned NOT NULL,
 	`symbol` varchar(5) NOT NULL,
 	`sym_pos` enum('pre', 'post') NOT NULL default 'pre',
 	`default` tinyint(1) unsigned NOT NULL,
