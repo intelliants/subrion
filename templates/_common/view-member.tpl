@@ -15,16 +15,16 @@
         </div>
         <div class="ia-item__additional">
             {if !empty($item.facebook)}
-                <p><a class="ia-item__additional__icon" href="{$item.facebook}"><span class="fa fa-facebook"></span></a></p>
+                <p><a class="ia-item__additional__icon" href="{$item.facebook|escape:'url'}"><span class="fa fa-facebook"></span></a></p>
             {/if}
             {if !empty($item.twitter)}
-                <p><a class="ia-item__additional__icon" href="{$item.twitter}"><span class="fa fa-twitter"></span></a></p>
+                <p><a class="ia-item__additional__icon" href="{$item.twitter|escape:'url'}"><span class="fa fa-twitter"></span></a></p>
             {/if}
             {if !empty($item.gplus)}
-                <p><a class="ia-item__additional__icon" href="{$item.gplus}"><span class="fa fa-google-plus"></span></a></p>
+                <p><a class="ia-item__additional__icon" href="{$item.gplus|escape:'url'}"><span class="fa fa-google-plus"></span></a></p>
             {/if}
             {if !empty($item.linkedin)}
-                <p><a class="ia-item__additional__icon" href="{$item.linkedin}"><span class="fa fa-linkedin"></span></a></p>
+                <p><a class="ia-item__additional__icon" href="{$item.linkedin|escape:'url'}"><span class="fa fa-linkedin"></span></a></p>
             {/if}
         </div>
 
