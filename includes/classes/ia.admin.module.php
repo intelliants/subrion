@@ -1937,9 +1937,6 @@ class iaModule extends abstractCore
 
         require_once IA_INCLUDES . 'utils/pclzip.lib.php';
 
-        $mysqlOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8mb4';
-        $masterLanguageCode = $this->iaDb->one('code', iaDb::convertIds(1, 'master'), iaLanguage::getLanguagesTable());
-
         $extrasVersion = $this->itemData['info']['version'];
 
         foreach ($this->itemData['sql'][$type][$stage] as $version => $entries) {
@@ -1976,7 +1973,7 @@ class iaModule extends abstractCore
                     if ($entry['query']) {
                         $query = str_replace(
                             ['{prefix}', '{mysql_version}', '{lang}'],
-                            [$iaDb->prefix, $mysqlOptions, $masterLanguageCode],
+                            [$iaDb->prefix, $iaDb->tableOptions, iaLanguage::getMasterLanguage()->iso],
                             $entry['query']);
                         $iaDb->query($query);
                     }

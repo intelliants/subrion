@@ -87,8 +87,8 @@ class iaDbControl extends abstractCore
                     if (preg_match('#' . preg_quote($delimiter, '~') . '\s*$#iS', end($query)) === 1) {
                         $query = trim(implode('', $query));
                         $query = str_replace(
-                            ['{prefix}', '{mysql_version}', '{db_options}'],
-                            [$this->iaDb->prefix, $this->iaDb->tableOptions, $this->iaDb->tableOptions],
+                            ['{prefix}', '{mysql_version}', '{db_options}', '{lang}'],
+                            [$this->iaDb->prefix, $this->iaDb->tableOptions, $this->iaDb->tableOptions, iaLanguage::getMasterLanguage()->iso],
                             $query
                         );
 
