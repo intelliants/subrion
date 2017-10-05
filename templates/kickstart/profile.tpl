@@ -20,16 +20,16 @@
                 {if $member.facebook || $member.twitter || $member.gplus || $member.linkedin}
                     <p class="text-center">
                         {if !empty($member.facebook)}
-                            <a href="{$member.facebook|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-facebook fa-stack-1x fa-inverse"></i></a>
+                            <a href="{$member.facebook|escape:'url'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-facebook fa-stack-1x fa-inverse"></i></a>
                         {/if}
                         {if !empty($member.twitter)}
-                            <a href="{$member.twitter|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-twitter fa-stack-1x fa-inverse"></i></a>
+                            <a href="{$member.twitter|escape:'url'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-twitter fa-stack-1x fa-inverse"></i></a>
                         {/if}
                         {if !empty($member.gplus)}
-                            <a href="{$member.gplus|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-google-plus fa-stack-1x fa-inverse"></i></a>
+                            <a href="{$member.gplus|escape:'url'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-google-plus fa-stack-1x fa-inverse"></i></a>
                         {/if}
                         {if !empty($member.linkedin)}
-                            <a href="{$member.linkedin|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-linkedin fa-stack-1x fa-inverse"></i></a>
+                            <a href="{$member.linkedin|escape:'url'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-linkedin fa-stack-1x fa-inverse"></i></a>
                         {/if}
                     </p>
                 {/if}
