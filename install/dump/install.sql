@@ -1552,6 +1552,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('css_class_name','CSS class name','admin'),
 ('csv_format','CSV format','admin'),
 ('currency_symbol','Currency symbol','admin'),
+('currency_symbol_position_after','after the price','admin'),
+('currency_symbol_position_before','before the price','admin'),
 ('current_home_page','Current homepage','admin'),
 ('custom','Custom','admin'),
 ('custom_configuration_title',':settings configuration for :type ":title"','admin'),

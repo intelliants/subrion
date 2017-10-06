@@ -74,11 +74,13 @@
                     <div class="col col-lg-2">
                         <label class="control-label" for="input-sym">{lang key='currency_symbol'}</label>
                     </div>
-                    <div class="col col-lg-4">
+                    <div class="col col-lg-2">
                         <input type="text" name="symbol" value="{$item.symbol|escape}" id="input-sym" maxlength="5">
+                    </div>
+                    <div class="col col-lg-2">
                         <select name="sym_pos">
-                            <option value="pre"{if 'pre' == $item.sym_pos} selected{/if}>before the price</option>
-                            <option value="post"{if 'post' == $item.sym_pos} selected{/if}>after the price</option>
+                            <option value="pre"{if 'pre' == $item.sym_pos} selected{/if}>{lang key='currency_symbol_position_before'}</option>
+                            <option value="post"{if 'post' == $item.sym_pos} selected{/if}>{lang key='currency_symbol_position_after'}</option>
                         </select>
                     </div>
                 </div>
