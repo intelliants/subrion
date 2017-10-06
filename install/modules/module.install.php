@@ -118,7 +118,6 @@ switch ($step) {
 
         $recommendedSettings = [
             ['File Uploads', 'file_uploads', 'ON'],
-            ['Magic Quotes GPC', 'magic_quotes_gpc', 'OFF'],
             ['Register Globals', 'register_globals', 'OFF']
         ];
         foreach ($recommendedSettings as $item) {
