@@ -35,6 +35,21 @@ class iaItem extends abstractCore
 
     private $_itemTools;
 
+    protected $items;
+
+
+    public function init()
+    {
+        parent::init();
+
+        $items = $this->iaDb->all(['id', 'name' => 'item', 'module', 'instantiable', 'payable', 'searchable', 'table_name'],
+            null, null, null, self::getTable());
+        foreach ($items as $item) {
+            $itemName = $item['name'];
+            unset($item['name']);
+            $this->items[$itemName] = $item;
+        }
+    }
 
     public static function getFavoritesTable()
     {
@@ -84,12 +99,11 @@ class iaItem extends abstractCore
 
             $itemName = self::toSingular($itemName);
 
-            $item = $this->iaDb->row(['name' => 'item', 'module', 'instantiable'],
-                iaDb::convertIds($itemName, 'item'), self::getTable());
-
-            if (!$item) {
+            if (!isset($this->items[$itemName])) {
                 throw new Exception(sprintf('Item not found (%s)', $itemName));
             }
+
+            $item = $this->items[$itemName];
 
             if ($item['instantiable']) {
                 $result = $this->iaCore->factoryModule($itemName, $item['module'], $type);
