@@ -1109,10 +1109,10 @@ UPDATE `{install:prefix}fields` SET `adminonly`=1 WHERE `name`='api_push_token';
 UPDATE `{install:prefix}fields` SET `adminonly`=1,`values`='yes,no',`default`='yes' WHERE `name`='api_push_receive';
 UPDATE `{install:prefix}fields` SET `timepicker`=1 WHERE `name`IN('date_created','date_paid') AND `item`='transaction';
 
-INSERT INTO `{install:prefix}fields_groups` (`name`,`item`,`order`,`collapsed`,`tabview`) VALUES
-('general','member',1,0,0),
-('social','member',2,0,0),
-('api','member',3,0,0);
+INSERT INTO `{install:prefix}fields_groups` (`name`,`item`,`order`,`module`,`collapsed`,`tabview`) VALUES
+('general','member',1,'core',0,0),
+('social','member',2,'core',0,0),
+('api','member',3,'core',0,0);
 
 INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`) VALUES
 ('members',1),
@@ -2205,7 +2205,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('edit_position','Edit position','common'),
 ('enabled','Enabled','common'),
 ('exit','Exit','common'),
-('module','Extras','common'),
+('module','Module','common'),
 ('empty_login','Either login or password is empty.','common'),
 ('err_message','Message cannot be empty.','common'),
 ('error','Error','common'),

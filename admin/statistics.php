@@ -38,15 +38,15 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $moduleName = explode('_stats', $iaView->name());
         $moduleName = array_shift($moduleName);
+        $iaView->assign('package', $moduleName);
 
         $this->_iaCore->startHook('phpAdminPackageStatistics', ['package' => $moduleName]);
 
-        $statistics = [];
-
         $iaItem = $this->_iaCore->factory('item');
+
+        $statistics = [];
         if ($packageItems = $iaItem->getItemsByModule($moduleName)) {
             foreach ($packageItems as $itemName) {
-                $itemName = substr($itemName, 0, -1);
                 $itemClass = $this->_iaCore->factoryModule($itemName, $moduleName, iaCore::ADMIN);
                 if (method_exists($itemClass, self::GETTER_METHOD_NAME)) {
                     if ($itemClass->dashboardStatistics) {
@@ -57,12 +57,9 @@ class iaBackendController extends iaAbstractControllerBackend
                 }
             }
         }
-
-        $timeline = $this->_iaCore->factory('log')->get($moduleName);
-
-        $iaView->assign('package', $moduleName);
         $iaView->assign('statistics', $statistics);
-        $iaView->assign('timeline', $timeline);
+
+        $iaView->assign('timeline', $this->_iaCore->factory('log')->get($moduleName));
 
         $iaView->display($this->getName());
     }
