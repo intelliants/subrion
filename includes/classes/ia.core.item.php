@@ -42,13 +42,8 @@ class iaItem extends abstractCore
     {
         parent::init();
 
-        $items = $this->iaDb->all(['id', 'name' => 'item', 'module', 'instantiable', 'payable', 'searchable', 'table_name'],
-            null, null, null, self::getTable());
-        foreach ($items as $item) {
-            $itemName = $item['name'];
-            unset($item['name']);
-            $this->items[$itemName] = $item;
-        }
+        $this->items = $this->iaDb->assoc(['item', 'id', 'module', 'instantiable', 'payable', 'searchable', 'table_name'],
+            null, self::getTable());
     }
 
     public static function getFavoritesTable()
