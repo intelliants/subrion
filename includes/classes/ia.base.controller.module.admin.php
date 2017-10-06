@@ -120,7 +120,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
     // multilingual fields support for package items
     protected function _gridApplyFilters(&$conditions, &$values, array $params)
     {
-        $multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
+        $multilingualFields = $this->_iaField->getMultilingualFields($this->getItemName());
 
         foreach ($this->_gridFilters as $name => $type) {
             if (!empty($params[$name])) {
@@ -145,7 +145,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
     protected function _unpackGridColumnsArray()
     {
         if (is_array($this->_gridColumns)
-            && ($multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName()))) {
+            && ($multilingualFields = $this->_iaField->getMultilingualFields($this->getItemName()))) {
             foreach ($this->_gridColumns as $key => &$field) {
                 if (in_array($field, $multilingualFields)) {
                     unset($this->_gridColumns[$key]);
@@ -159,10 +159,22 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
     protected function _gridGetSorting(array $params)
     {
-        if ($params['sort']) {
-            $multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
-            if (in_array($params['sort'], $multilingualFields)) {
-                $params['sort'].= '_' . $this->_iaCore->language['iso'];
+        if (!empty($params['sort']) && is_string($params['sort'])) {
+            $sorting = $params['sort'];
+
+            if (in_array($sorting, $this->_iaField->getMultilingualFields($this->getItemName()))) {
+                $params['sort'] .= '_' . $this->_iaCore->language['iso'];
+            } elseif (isset($this->_gridSorting[$sorting])
+                && is_array($this->_gridSorting[$sorting])
+                && 3 == count($this->_gridSorting)) {
+                $joinFieldName = $this->_gridSorting[$sorting][0];
+                $joinedItemName = $this->_gridSorting[$sorting][2];
+
+                $multilingualFields = $this->_iaField->getMultilingualFields($joinedItemName);
+
+                if (in_array($joinFieldName, $multilingualFields)) {
+                    $this->_gridSorting[$sorting][0] .= '_' . $this->_iaCore->language['iso'];
+                }
             }
         }
 
@@ -274,7 +286,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
                 $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
                 $this->updateCounters($entryId, $entryData, iaCore::ACTION_DELETE);
 
-                $this->_iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
+                $this->_iaField->cleanUpItemFiles($this->getItemName(), $entryData);
 
                 $this->_iaCore->startHook('phpListingRemoved', [
                     'itemId' => $entryId,
@@ -373,7 +385,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
     protected function _validateMultilingualFieldsKeys(array $data)
     {
-        if ($multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName())) {
+        if ($multilingualFields = $this->_iaField->getMultilingualFields($this->getItemName())) {
             foreach ($data as $key => $value) {
                 if (in_array($key, $multilingualFields)) {
                     $data[$key . '_' . $this->_iaCore->language['iso']] = $value;
