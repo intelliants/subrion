@@ -57,21 +57,6 @@ define('IA_ADMIN', IA_HOME . 'admin/');
 define('FOLDER', trim(str_replace(IA_DS . 'index.php', '', $_SERVER['PHP_SELF']), IA_URL_DELIMITER));
 define('FOLDER_URL', FOLDER != '' ? trim(str_replace(IA_DS, IA_URL_DELIMITER, FOLDER), IA_URL_DELIMITER) . IA_URL_DELIMITER : '');
 
-// process stripslashes if magic_quotes is enabled on the server
-if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {
-    $in = [&$_GET, &$_POST, &$_COOKIE, &$_SERVER];
-    while (list($k, $v) = each($in)) {
-        foreach ($v as $key => $val) {
-            if (!is_array($val)) {
-                $in[$k][$key] = stripslashes($val);
-                continue;
-            }
-            $in[] = &$in[$k][$key];
-        }
-    }
-    unset($in);
-}
-
 $performInstallation = false;
 
 if (file_exists(IA_INCLUDES . 'config.inc.php')) {

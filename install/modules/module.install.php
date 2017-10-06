@@ -485,7 +485,7 @@ HTML;
         header('Content-Type: text/x-delimtext; name="config.inc.php"');
         header('Content-disposition: attachment; filename="config.inc.php"');
 
-        echo get_magic_quotes_gpc() ? stripslashes($_POST['config_content']) : $_POST['config_content'];
+        echo $_POST['config_content'];
         exit;
 
     case 'plugins':
