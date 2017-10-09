@@ -301,6 +301,10 @@ SQL;
         $plan = $this->getById($transaction['plan_id']);
 
         if ($plan && $item && !empty($transaction['item_id'])) {
+            if ($plan['cost'] > $transaction['amount']) {
+                return false;
+            }
+
             list($dateStarted, $dateFinished) = $this->calculateDates($plan['duration'], $plan['unit']);
 
             $values = [
@@ -311,8 +315,8 @@ SQL;
                 'status' => iaCore::STATUS_ACTIVE
             ];
 
-            $iaItem = $this->iaCore->factory('item');
-            $result = $this->iaDb->update($values, iaDb::convertIds($transaction['item_id']), null, $iaItem->getItemTable($item));
+            $result = $this->iaDb->update($values, iaDb::convertIds($transaction['item_id']),
+                null, $this->iaCore->factory('item')->getItemTable($item));
         }
 
         $this->_sendEmailNotification('activated', $plan, $transaction['member_id']);

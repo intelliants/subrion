@@ -35,6 +35,8 @@ abstract class abstractModuleFront extends abstractCore
     public $coreSearchEnabled = false;
     public $coreSearchOptions = [];
 
+    public $guestAccessCookieName = '__ga';
+
     private $_foundRows;
 
 
@@ -142,6 +144,10 @@ abstract class abstractModuleFront extends abstractCore
                 'itemName' => $this->getItemName(),
                 'itemData' => $itemData
             ]);
+
+            if (!iaUsers::hasIdentity()) {
+                $this->rememberGuestListing(array_merge($itemData, ['id' => $itemId]));
+            }
         }
 
         return $itemId;
@@ -312,6 +318,25 @@ abstract class abstractModuleFront extends abstractCore
         return $affected > 0;
     }
 
+    protected function rememberGuestListing(array $itemData)
+    {
+        $ids = isset($_COOKIE[$this->guestAccessCookieName])
+            ? explode(',', $_COOKIE[$this->guestAccessCookieName])
+            : [];
+        $ids[] = $this->generateGuestAccessId($itemData);
+        $ids = implode(',', $ids);
+
+        $lifetime = 60 * 60 * 24 * 365 * 2; // 2 years
+
+        setcookie($this->guestAccessCookieName, $ids, time() + $lifetime, '/');
+    }
+
+    // this method to be overloaded
+    // each item class should use own token generation logic because of specific set of fields
+    public function generateGuestAccessId(array $itemData)
+    {
+        throw new Exception('No guest access key generator method');
+    }
 
     protected function _checkIfCountersNeedUpdate($action, array $itemData, $previousData, $categoryClassInstance)
     {
