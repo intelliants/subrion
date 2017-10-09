@@ -323,6 +323,17 @@ SQL;
         return $result;
     }
 
+    public function assignFreePlan($planId, $itemName, array $itemData)
+    {
+        $iaTransaction = $this->iaCore->factory('transaction');
+
+        // first, create corresponding transaction
+        $transactionId = $iaTransaction->create(null, 0, $itemName, $itemData, '', (int)$planId, true);
+
+        // then mark it as paid
+        $this->setPaid($iaTransaction->getBy('sec_key', $transactionId));
+    }
+
     public function calculateDates($duration, $unit)
     {
         switch ($unit) {
