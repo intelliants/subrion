@@ -70,8 +70,6 @@ final class iaCore
 
     protected $_checkDomain;
 
-    private $_securityTokenValue = '';
-
     public $iaDb;
     public $iaView;
     public $iaCache;
@@ -597,7 +595,7 @@ SQL;
         }
 
         // no need to test this for the several endpoints:
-        //  - 'API' page - used to communication with mobile apps
+        //  - 'API' page - used to communicate with mobile apps
         //  - IPN/IRN/other payment notification receiving endpoints
         if ('api' == $this->iaView->name()
             || (count($this->iaView->url) > 1 && 'ipn' == $this->iaView->url[0])) {
