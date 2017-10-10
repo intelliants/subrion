@@ -846,6 +846,8 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $fieldName = empty($fieldData['name']) ? $this->_data['name'] : $fieldData['name'];
 
+        $this->_iaCore->startHook('phpAdminFieldsSaveRelations', ['field' => &$fieldData, 'data' => &$data]);
+
         // set correct relations
         if (iaField::RELATION_REGULAR == $fieldData['relation']) {
             $this->_relationsReset($fieldName, $fieldData['item']);
