@@ -228,7 +228,7 @@ CREATE TABLE `{install:prefix}fields` (
 	`group` smallint(5) unsigned NOT NULL default 1,
 	`module` varchar(40) NOT NULL,
 	`name` varchar(60) NOT NULL,
-	`item` varchar(50) NOT NULL default 'members',
+	`item` varchar(50) NOT NULL default 'member',
 	`fieldgroup_id` smallint(5) unsigned NOT NULL,
 	`type` enum('text','url','number','date','textarea','combo','radio','checkbox','storage','image','pictures','currency','tree','iconpicker') NOT NULL default 'text',
 	`length` mediumint(7) unsigned NOT NULL,
@@ -271,7 +271,7 @@ CREATE TABLE `{install:prefix}fields` (
 CREATE TABLE `{install:prefix}fields_groups` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
 	`name` varchar(50) NOT NULL,
-	`item` varchar(50) NOT NULL default 'members',
+	`item` varchar(50) NOT NULL default 'member',
 	`order` smallint(5) unsigned NOT NULL,
 	`module` varchar(40) NOT NULL,
 	`collapsible` tinyint(1) unsigned NOT NULL,

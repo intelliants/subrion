@@ -862,11 +862,11 @@ class iaBackendController extends iaAbstractControllerBackend
 
         $this->_iaDb->setTable(iaField::getTableRelations());
 
-        foreach ($parents as $itemName => $list) {
-            //$this->_iaDb->delete('`child` = :name AND `item` = :item', null,
-            //	array('name' => $fieldName, 'item' => $itemName));
-            $this->_iaDb->delete(iaDb::convertIds($fieldName, 'child'));
+        //$this->_iaDb->delete('`child` = :name AND `item` = :item', null,
+        //	array('name' => $fieldName, 'item' => $itemName));
+        $this->_iaDb->delete(iaDb::convertIds($fieldName, 'child'));
 
+        foreach ($parents as $itemName => $list) {
             foreach ($list as $parentFieldName => $values) {
                 foreach ($values as $value => $flag) {
                     $this->_iaDb->insert([
