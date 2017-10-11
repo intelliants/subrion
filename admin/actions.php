@@ -175,9 +175,8 @@ class iaBackendController extends iaAbstractControllerBackend
                 $this->_iaCore->factory('page', iaCore::ADMIN);
 
                 $sql = <<<SQL
-SELECT IF(p.`module` = '', 'core', p.`module`) `value`, 
-	IF(p.`module` = '', 'Core', g.`title`) `title` 
-	FROM `:prefix:table_pages` p 
+SELECT IF(p.`module` = '', 'core', p.`module`) `value`, IF(p.`module` = '', 'Core', g.`title`) `title` 
+  FROM `:prefix:table_pages` p 
 LEFT JOIN `:prefix:table_modules` g ON (g.`name` = p.`module`) 
 GROUP BY p.`module`
 SQL;

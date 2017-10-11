@@ -368,7 +368,7 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $sql = <<<SQL
 SELECT c.`name`, c.`value` 
-	FROM `:prefix:table_custom_config` c, `:prefix:table_members` m 
+  FROM `:prefix:table_custom_config` c, `:prefix:table_members` m 
 WHERE c.`type` = ':type' && c.`type_id` = m.`usergroup_id` && m.`id` = :id
 SQL;
         $sql = iaDb::printf($sql, [

@@ -341,7 +341,7 @@ class iaBackendController extends iaAbstractControllerBackend
         if ($this->_iaCore->factory('acl')->isAccessible($this->getName(), iaCore::ACTION_ADD)) {
             $sql = <<<SQL
 SELECT m.`removable`, m.`id`, p.`value` `title` 
-	FROM `:prefix:table_menus` m 
+  FROM `:prefix:table_menus` m 
 LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT('block_title_', m.`id`) && p.`code` = ':lang') 
 WHERE m.`type` = 'menu' 
 ORDER BY `title`

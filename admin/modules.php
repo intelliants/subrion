@@ -433,7 +433,7 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         $this->getHelper()->getFromPath($installFile);
-		$this->getHelper()->setUrl(IA_URL_DELIMITER);
+        $this->getHelper()->setUrl(IA_URL_DELIMITER);
         $this->getHelper()->parse();
         $this->getHelper()->checkValidity();
 

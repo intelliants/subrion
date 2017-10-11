@@ -70,7 +70,7 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $sql = <<<SQL
 SELECT :columns, pt.`value` `title`, pi.`value` `item` 
-	FROM `:prefix:table_groups` fg 
+  FROM `:prefix:table_groups` fg 
 LEFT JOIN `:prefix:table_phrases` pt ON (pt.`key` = CONCAT("fieldgroup_", fg.`item`, "_", fg.`name`) AND pt.`code` = ":lang") 
 LEFT JOIN `:prefix:table_phrases` pi ON (pi.`key` = fg.`item` AND pi.`code` = ":lang") 
 WHERE :conditions 

@@ -664,7 +664,7 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $systemEntities = [
             'email_templates' => [
-                'subject' => 'varchar(255) NOT NULL',
+                'subject' => 'varchar(191) NOT NULL',
                 'body' => 'text NOT NULL'
             ]
         ];
