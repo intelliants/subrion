@@ -666,12 +666,11 @@ class iaModule extends abstractCore
 
             $iaDb->cascadeDelete(['objects_pages'], "`page_name` IN ('" . implode("','", $pagesList) . "')");
 
+            // remove associated phrases
             $iaDb->setTable(iaLanguage::getTable());
-            $iaDb->delete("`key` IN ('page_title_" . implode("','page_title_", $pagesList) . "')");
-            $iaDb->delete("`key` IN ('page_content_" . implode("','page_content_", $pagesList) . "')");
-            $iaDb->delete("`key` IN ('page_meta_keywords_" . implode("','page_meta_keywords_", $pagesList) . "')");
-            $iaDb->delete("`key` IN ('page_meta_description_" . implode("','page_meta_description_", $pagesList) . "')");
-            $iaDb->delete("`key` IN ('page_meta_title_" . implode("','page_meta_title_", $pagesList) . "')");
+            foreach(['title', 'content', 'meta_keywords', 'meta_description', 'meta_title'] as $type) {
+                $iaDb->delete(sprintf("`key` IN ('page_%s_%s')", $type, implode("','page_{$type}_", $pagesList)));
+            }
             $iaDb->resetTable();
         }
 

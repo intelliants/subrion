@@ -292,13 +292,16 @@ SQL;
                     'id' => (int)$entryId
                 ]);
 
-                // remove associated entries as well
-                $this->_iaDb->delete("`key` IN ('page_title_{$pageName}', 'page_content_{$pageName}')",
-                    iaLanguage::getTable());
+                // remove associated phrases
+                $this->_iaDb->setTable(iaLanguage::getTable());
+                foreach(['title', 'content', 'meta_keywords', 'meta_description', 'meta_title'] as $type) {
+                    $this->_iaDb->delete(sprintf("`key` IN ('page_%s_%s')", $type, $pageName));
+                }
+                $this->_iaDb->resetTable();
 
+                // remove associated blocks
                 $this->_iaCore->factory('block', iaCore::ADMIN);
                 $this->_iaDb->delete('`page_name` = :page', iaBlock::getMenusTable(), ['page' => $pageName]);
-                //
             }
         }
 
