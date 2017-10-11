@@ -137,6 +137,7 @@ class iaSmarty extends Smarty
 
         if (count($params) > 1 && !isset($params['default'])) {
             unset($params['key']);
+
             return iaLanguage::getf($key, $params);
         }
 
@@ -381,8 +382,10 @@ class iaSmarty extends Smarty
                     $compress = false;
                     $url = $filename;
                 } elseif (strstr($filename, '_IA_TPL_')) {
-                    $url = str_replace('_IA_TPL_', IA_TPL_URL . 'js' . IA_URL_DELIMITER, $filename) . self::EXTENSION_JS;
-                    $file = str_replace('_IA_TPL_', IA_HOME . 'templates/' . $iaCore->get('tmpl')  . '/js/', $filename) . self::EXTENSION_JS;
+                    $url = str_replace('_IA_TPL_', IA_TPL_URL . 'js' . IA_URL_DELIMITER,
+                            $filename) . self::EXTENSION_JS;
+                    $file = str_replace('_IA_TPL_', IA_HOME . 'templates/' . $iaCore->get('tmpl') . '/js/',
+                            $filename) . self::EXTENSION_JS;
                     $tmp = str_replace('_IA_TPL_', 'compress/', $filename);
                 } elseif (strstr($filename, '_IA_URL_')) {
                     $url = str_replace('_IA_URL_', $iaView->assetsUrl, $filename) . self::EXTENSION_JS;
@@ -417,9 +420,7 @@ class iaSmarty extends Smarty
                         // modified time of the compressed file
                         if (file_exists($minifiedFilename)) {
                             $minifiedLastModifiedTime = filemtime($minifiedFilename);
-                        }
-
-                        // create directory for compressed files
+                        } // create directory for compressed files
                         else {
                             $compileDir = IA_TMP . implode(IA_DS, array_slice(explode(IA_DS, $tmp), 0, -1));
                             iaCore::util()->makeDirCascade($compileDir, 0777, true);
@@ -431,7 +432,8 @@ class iaSmarty extends Smarty
 
                         if (($lastModified > $minifiedLastModifiedTime || $minifiedLastModifiedTime == 0) && $lastModified != 0) {
                             // need to compress
-                            iaDebug::debug($minifiedFilename . ' - ' . $lastModified . ' - ' . $minifiedLastModifiedTime, 'compress', 'info');
+                            iaDebug::debug($minifiedFilename . ' - ' . $lastModified . ' - ' . $minifiedLastModifiedTime,
+                                'compress', 'info');
 
                             require_once IA_INCLUDES . 'utils/Minifier.php';
                             $minifiedCode = \JShrink\Minifier::minify(file_get_contents($file));
@@ -569,12 +571,12 @@ class iaSmarty extends Smarty
         if (isset($params['title'])) {
             $title = iaSanitize::html($params['title']);
             $alt || $alt = $title;
-            $attr.= ' title="' . $title . '"';
+            $attr .= ' title="' . $title . '"';
         }
 
-        empty($params['width']) || $attr.= ' width="' . $params['width'] . '"';
-        empty($params['height']) || $attr.= ' height="' . $params['height'] . '"';
-        empty($params['class']) || $attr.= ' class="' . $params['class'] . '"';
+        empty($params['width']) || $attr .= ' width="' . $params['width'] . '"';
+        empty($params['height']) || $attr .= ' height="' . $params['height'] . '"';
+        empty($params['class']) || $attr .= ' class="' . $params['class'] . '"';
 
         return sprintf('<img src="%s" alt="%s"%s>', $url, $alt, $attr);
     }
@@ -658,7 +660,13 @@ class iaSmarty extends Smarty
         }
 
         $iaCore->startHook('phpSmartyAccountActionsBeforeShow',
-            ['params' => &$params, 'type' => $item, 'upgrade_url' => &$upgradeUrl, 'edit_url' => &$editUrl, 'output' => &$output]);
+            [
+                'params' => &$params,
+                'type' => $item,
+                'upgrade_url' => &$upgradeUrl,
+                'edit_url' => &$editUrl,
+                'output' => &$output
+            ]);
 
         if ($editUrl) {
             $output .= '<a rel="nofollow" href="' . $editUrl . '" class="' . $classname . '" title="' . iaLanguage::get('edit') . '"><span class="fa fa-pencil"></span> ' . iaLanguage::get('edit') . '</a>';
@@ -970,7 +978,8 @@ class iaSmarty extends Smarty
     public static function ia_print_title($params)
     {
         $suffix = iaCore::instance()->get('suffix');
-        $title = empty($params['title']) ? iaCore::instance()->iaView->get('title') : $params['title'];
+        $title = empty($params['title']) ? iaCore::instance()->iaView->get('meta_title',
+            iaCore::instance()->iaView->get('title')) : $params['title'];
 
         return iaSanitize::html($title . ' ' . $suffix);
     }

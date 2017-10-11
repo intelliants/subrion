@@ -1836,6 +1836,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('message_body','Message Body','admin'),
 ('meta_description','Meta-description','admin'),
 ('meta_keywords','Meta-keywords','admin'),
+('meta_title','Meta-title','admin'),
 ('migrations','Migrations','admin'),
 ('migration_already_applied','Migration has been applied.','admin'),
 ('migrations_not_applied','Non-applied migrations','admin'),

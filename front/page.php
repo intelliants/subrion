@@ -106,6 +106,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
         $pageTitle = $page_title_check ? $page_title_check : $iaDb->one('`value`', str_replace('{DATA_REPLACE}', 'title', $jt_where) . $iaCore->get('lang') . "'");
 
         $iaView->title($pageTitle);
+
+        $iaView->set('meta_title', iaLanguage::get('page_meta_title_' . $name));
     }
 
     if ($page && !$previewMode) {

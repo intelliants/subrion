@@ -338,12 +338,13 @@ SQL;
         $homePageTitle = $this->_iaDb->one_bind('value', '`key` = :key AND `category` = :category',
             ['key' => 'page_title_' . $this->_iaCore->get('home_page'), 'category' => iaLanguage::CATEGORY_PAGE], iaLanguage::getTable());
 
-        list($title, $content, $metaDescription, $metaKeywords) = $this->_loadMultilingualData($entryData['name']);
+        list($title, $content, $metaDescription, $metaKeywords, $metaTitles) = $this->_loadMultilingualData($entryData['name']);
 
         $iaView->assign('title', $title);
         $iaView->assign('content', $content);
         $iaView->assign('metaDescription', $metaDescription);
         $iaView->assign('metaKeywords', $metaKeywords);
+        $iaView->assign('metaTitles', $metaTitles);
 
         $iaView->assign('isHomePage', $isHomepage);
         $iaView->assign('homePageTitle', $homePageTitle);
@@ -473,14 +474,15 @@ SQL;
 
     private function _loadMultilingualData($pageName)
     {
-        $title = $content = $metaDescription = $metaKeywords = [];
+        $title = $content = $metaDescription = $metaKeywords = $metaTitles = [];
 
         if (isset($_POST['save'])) {
-            list($title, $content, $metaDescription, $metaKeywords) = [
+            list($title, $content, $metaDescription, $metaKeywords, $metaTitles) = [
                 $_POST['title'],
                 $_POST['content'],
                 $_POST['meta_description'],
-                $_POST['meta_keywords']
+                $_POST['meta_keywords'],
+                $_POST['meta_title']
             ];
         } elseif (iaCore::ACTION_EDIT == $this->_iaCore->iaView->get('action')) {
             $this->_iaDb->setTable(iaLanguage::getTable());
@@ -493,17 +495,19 @@ SQL;
                 "`key` = 'page_meta_description_{$pageName}' AND `category` = 'page'");
             $metaKeywords = $this->_iaDb->keyvalue(['code', 'value'],
                 "`key` = 'page_meta_keywords_{$pageName}' AND `category` = 'page'");
+            $metaTitles = $this->_iaDb->keyvalue(['code', 'value'],
+                "`key` = 'page_meta_title_{$pageName}' AND `category` = 'page'");
 
             $this->_iaDb->resetTable();
         }
 
-        return [$title, $content, $metaDescription, $metaKeywords];
+        return [$title, $content, $metaDescription, $metaKeywords, $metaTitles];
     }
 
     private function _saveMultilingualData($pageName, $module)
     {
         foreach ($this->_iaCore->languages as $iso => $language) {
-            foreach (['title', 'content', 'meta_description', 'meta_keywords'] as $key) {
+            foreach (['title', 'content', 'meta_description', 'meta_keywords', 'meta_title'] as $key) {
                 if (isset($_POST[$key][$iso])) {
                     $phraseKey = sprintf('page_%s_%s', $key, $pageName);
 

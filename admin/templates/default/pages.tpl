@@ -172,6 +172,42 @@
                 <div class="col col-lg-2">
                     {if count($core.languages) > 1}
                         <div class="btn-group btn-group-xs translate-group-actions">
+                            <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-meta_title"><span class="i-earth"></span></button>
+                            <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-meta_title"><span class="i-copy"></span></button>
+                        </div>
+                    {/if}
+                    <label class="control-label">{lang key='meta_title'}</label>
+                </div>
+                <div class="col col-lg-4">
+                    {if count($core.languages) > 1}
+                        <div class="translate-group" id="language-group-meta_title">
+                            <div class="translate-group__default">
+                                <div class="translate-group__item">
+                                    <input type="text" name="meta_title[{$core.language.iso}]"{if isset($metaTitles[$core.language.iso])} value="{$metaTitles[$core.language.iso]|escape}"{/if}>
+                                    <div class="translate-group__item__code">{$core.language.title|escape}</div>
+                                </div>
+                            </div>
+                            <div class="translate-group__langs">
+                                {foreach $core.languages as $iso => $language}
+                                    {if $iso != $core.language.iso}
+                                        <div class="translate-group__item">
+                                            <input type="text" name="meta_title[{$iso}]"{if isset($metaTitles.$iso)} value="{$metaTitles.$iso|escape}"{/if}>
+                                            <span class="translate-group__item__code">{$language.title|escape}</span>
+                                        </div>
+                                    {/if}
+                                {/foreach}
+                            </div>
+                        </div>
+                    {else}
+                        <input type="text" name="meta_title[{$core.language.iso}]"{if isset($metaTitles[$core.language.iso])} value="{$metaTitles[$core.language.iso]|escape}"{/if}>
+                    {/if}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col col-lg-2">
+                    {if count($core.languages) > 1}
+                        <div class="btn-group btn-group-xs translate-group-actions">
                             <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-meta_description"><span class="i-earth"></span></button>
                             <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-meta_description"><span class="i-copy"></span></button>
                         </div>

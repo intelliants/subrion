@@ -807,6 +807,8 @@ SQL;
         $pageParams['body'] = $pageParams['name'];
 
         if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()) {
+            $pageParams['meta_title'] = iaLanguage::get('page_meta_title_' . $pageParams['name'], $pageParams['title']);
+
             $key = 'page_meta_description_' . $pageParams['name'];
             $pageParams['description'] = iaLanguage::exists($key) ? iaLanguage::get($key) : null;
 
