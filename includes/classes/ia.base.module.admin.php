@@ -57,9 +57,6 @@ abstract class abstractModuleAdmin extends abstractCore
 
             $this->_activityLog['path'] = trim($this->getModuleUrl(), IA_URL_DELIMITER);
 
-            if (!isset($this->_activityLog['icon'])) {
-                $this->_activityLog['icon'] = $this->getItemName();
-            }
             if (!isset($this->_activityLog['item'])) {
                 $this->_activityLog['item'] = $this->getItemName();
             }

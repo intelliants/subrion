@@ -169,10 +169,10 @@ class iaLog extends abstractCore
                     ['action' => $actionsMap[$logEntry['action']], 'item' => ucfirst(iaLanguage::get($params['item'], $params['item']))]));
 
                 $icon = 'copy';
-                if (isset($params['icon'])) {
-                    $icon = $params['icon'];
-                } elseif (isset($iconsMap[$params['item']])) {
+                if (isset($iconsMap[$params['item']])) {
                     $icon = $iconsMap[$params['item']];
+                } elseif (isset($params['icon'])) {
+                    $icon = $params['icon'];
                 }
 
                 return [$action, $icon, $style];
