@@ -671,6 +671,7 @@ class iaModule extends abstractCore
             $iaDb->delete("`key` IN ('page_content_" . implode("','page_content_", $pagesList) . "')");
             $iaDb->delete("`key` IN ('page_meta_keywords_" . implode("','page_meta_keywords_", $pagesList) . "')");
             $iaDb->delete("`key` IN ('page_meta_description_" . implode("','page_meta_description_", $pagesList) . "')");
+            $iaDb->delete("`key` IN ('page_meta_title_" . implode("','page_meta_title_", $pagesList) . "')");
             $iaDb->resetTable();
         }
 
