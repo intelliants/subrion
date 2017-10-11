@@ -423,7 +423,10 @@ SQL;
             . '(SELECT COUNT(*) FROM `' . self::getTableFlat(true) . '` f WHERE f.`parent_id` = `id`) `children_count`';
 
         foreach ($this->iaDb->all($fields, $where) as $row) {
-            $entry = ['id' => $row['id'], 'text' => $row['title']];
+            $entry = [
+                'id' => $row['id'],
+                'text' => iaSanitize::html($row['title'])
+            ];
 
             if ($dynamicLoadMode) {
                 $entry['children'] = $row['id'] == $this->getRootId()
