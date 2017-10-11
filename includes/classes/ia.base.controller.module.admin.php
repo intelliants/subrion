@@ -57,13 +57,6 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
         $this->_moduleName = IA_CURRENT_MODULE;
 
-        if ($this->_activityLog) {
-            is_array($this->_activityLog) || $this->_activityLog = [];
-
-            $this->_activityLog['path'] = $this->getModuleName() . IA_URL_DELIMITER . $this->getName();
-            isset($this->_activityLog['item']) || $this->_activityLog['item'] = substr($this->getItemName(), 0, -1);
-        }
-
         if ($this->_helperName) {
             $helperClass = $this->_iaCore->factoryModule($this->_helperName, $this->getModuleName());
             $this->setHelper($helperClass);
@@ -79,6 +72,15 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
             //
             $this->_path = IA_ADMIN_URL . $this->getModuleName() . IA_URL_DELIMITER . $this->getName() . IA_URL_DELIMITER;
             $this->_template = 'form-' . $this->getName();
+        }
+
+        if ($this->_activityLog) {
+            is_array($this->_activityLog) || $this->_activityLog = [];
+
+            $this->_activityLog['path'] = $this->getModuleName() . IA_URL_DELIMITER . $this->getName();
+            if (!isset($this->_activityLog['item'])) {
+                $this->_activityLog['item'] = $this->getItemName();
+            }
         }
 
         $this->init();

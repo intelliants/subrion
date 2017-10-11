@@ -41,6 +41,13 @@ abstract class abstractModuleAdmin extends abstractCore
 
     public function init()
     {
+        parent::init();
+
+        // compatibility layer
+        $this->iaCore->factory('item');
+        $this->_itemName = iaItem::toSingular($this->_itemName);
+        //
+
         if (empty($this->_moduleUrl)) {
             $this->_moduleUrl = $this->getModuleName() . IA_URL_DELIMITER . $this->getItemName() . IA_URL_DELIMITER;
         }
@@ -50,15 +57,11 @@ abstract class abstractModuleAdmin extends abstractCore
 
             $this->_activityLog['path'] = trim($this->getModuleUrl(), IA_URL_DELIMITER);
 
-            $itemName = $this->getItemName();
-
             if (!isset($this->_activityLog['icon'])) {
-                $this->_activityLog['icon'] = $itemName;
+                $this->_activityLog['icon'] = $this->getItemName();
             }
             if (!isset($this->_activityLog['item'])) {
-                $itemName = substr($itemName, 0, -1);
-
-                $this->_activityLog['item'] = $itemName;
+                $this->_activityLog['item'] = $this->getItemName();
             }
         }
 
@@ -72,13 +75,6 @@ abstract class abstractModuleAdmin extends abstractCore
                 $this->dashboardStatistics['url'] = $this->getModuleUrl();
             }
         }
-
-        parent::init();
-
-        // compatibility layer
-        $this->iaCore->factory('item');
-        $this->_itemName = iaItem::toSingular($this->_itemName);
-        //
     }
 
     public function getModuleName()
@@ -88,9 +84,7 @@ abstract class abstractModuleAdmin extends abstractCore
 
     public function getItemName()
     {
-        iaCore::instance()->factory('item');
-        return iaItem::toSingular($this->_itemName); // compatibility layer
-        //return $this->_itemName;
+        return $this->_itemName;
     }
 
     public function getStatuses()
