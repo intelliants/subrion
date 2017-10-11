@@ -220,7 +220,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->getHelper()->update($entryData, $entryId);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($params['name'])) {
             $conditions[] = '(m.`name` LIKE :name OR p.`value` LIKE :name)';

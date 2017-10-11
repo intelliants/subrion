@@ -61,7 +61,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->_iaDb->getAll($sql);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($_GET['reference_id'])) {
             $conditions[] = 's.`reference_id` LIKE :reference';

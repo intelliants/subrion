@@ -148,16 +148,16 @@ class iaBackendController extends iaAbstractControllerBackend
                         }
                     }
 
-                    $this->_modifyGridParams($conditions, $values, $params);
+                    $this->_gridModifyParams($conditions, $values, $params);
 
                     $conditions || $conditions[] = iaDb::EMPTY_CONDITION;
                     $conditions = implode(' AND ', $conditions);
                     $this->_iaDb->bind($conditions, $values);
 
-                    $columns = $this->_unpackGridColumnsArray();
+                    $columns = $this->_gridUnpackColumnsArray();
 
                     if ($data = $this->_gridQuery($columns, $conditions, $order, 0, 2147483640, true)) {
-                        $this->_modifyGridResult($data);
+                        $this->_gridModifyOutput($data);
 
                         require_once IA_INCLUDES . 'utils/php-export-data.class.php';
                         $exportExcel = new ExportDataExcel('file', IA_TMP . 'transactions.xls');
@@ -230,7 +230,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->_iaDb->getAll($sql);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($params['item'])) {
             $conditions[] = ('members' == $params['item']) ? "(t.`item` = :item OR t.`item` = 'funds') " : 't.`item` = :item';

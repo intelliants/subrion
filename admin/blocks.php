@@ -79,7 +79,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->getHelper()->update($entryData, $entryId);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($params['pos'])) {
             $conditions[] = 'b.`position` = :position';

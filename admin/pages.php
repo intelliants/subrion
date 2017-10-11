@@ -66,7 +66,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return parent::_gridRead($params);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (isset($values['module']) && iaCore::CORE == strtolower($values['module'])) {
             $values['module'] = '';

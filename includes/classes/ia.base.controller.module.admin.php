@@ -144,7 +144,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         }
     }
 
-    protected function _unpackGridColumnsArray()
+    protected function _gridUnpackColumnsArray()
     {
         if (is_array($this->_gridColumns)
             && ($multilingualFields = $this->_iaField->getMultilingualFields($this->getItemName()))) {
@@ -156,7 +156,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
             }
         }
 
-        return parent::_unpackGridColumnsArray();
+        return parent::_gridUnpackColumnsArray();
     }
 
     protected function _gridGetSorting(array $params)

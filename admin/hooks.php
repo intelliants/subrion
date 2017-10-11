@@ -58,7 +58,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $output;
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (isset($_GET['item']) && $_GET['item']) {
             $value = ('core' == strtolower($_GET['item']) ? '' : iaSanitize::sql($_GET['item']));

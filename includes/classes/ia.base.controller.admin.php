@@ -333,13 +333,13 @@ abstract class iaAbstractControllerBackend
         $conditions = $values = [];
 
         $this->_gridApplyFilters($conditions, $values, $params);
-        $this->_modifyGridParams($conditions, $values, $params);
+        $this->_gridModifyParams($conditions, $values, $params);
 
         $conditions || $conditions[] = iaDb::EMPTY_CONDITION;
         $conditions = implode(' AND ', $conditions);
         $this->_iaDb->bind($conditions, $values);
 
-        $columns = $this->_unpackGridColumnsArray();
+        $columns = $this->_gridUnpackColumnsArray();
 
         $output = [
             'data' => $this->_gridQuery($columns, $conditions, $order, $start, $limit),
@@ -347,7 +347,8 @@ abstract class iaAbstractControllerBackend
         ];
 
         if ($output['data']) {
-            $this->_modifyGridResult($output['data']);
+            $this->_gridModifyOutput($output['data']);
+            $this->_gridEscapeOutput($output['data']);
         }
 
         return $output;
@@ -392,8 +393,12 @@ abstract class iaAbstractControllerBackend
     }
 
     // to be overloaded if required to modify the DB query params
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
+        // backward compatibility
+        if (is_callable([$this, '_modifyGridParams'])) {
+            $this->_modifyGridParams($conditions, $values, $params);
+        }
     }
 
     protected function _gridUpdate($params)
@@ -462,7 +467,7 @@ abstract class iaAbstractControllerBackend
         return $output;
     }
 
-    protected function _unpackGridColumnsArray()
+    protected function _gridUnpackColumnsArray()
     {
         $result = '';
 
@@ -491,9 +496,25 @@ abstract class iaAbstractControllerBackend
         return $this->_iaDb->all($columns, $where . $order, $start, $limit);
     }
 
-    // to be overloaded if required to modify the resulting array
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridEscapeOutput(array &$entries)
     {
+        // 'array_map()' may be used instead
+        foreach ($entries as &$entry) {
+            foreach ($entry as $key => &$value) {
+                if (!is_numeric($value)) {
+                    $value = iaSanitize::html($value);
+                }
+            }
+        }
+    }
+
+    // to be overloaded if required to modify the resulting array
+    protected function _gridModifyOutput(array &$entries)
+    {
+        // backward compatiblity
+        if (is_callable([$this, '_modifyGridResult'])) {
+            $this->_modifyGridResult($entries);
+        }
     }
 
     protected function _entryAdd(array $entryData)

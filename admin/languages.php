@@ -130,7 +130,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $output;
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($params['lang']) && array_key_exists($params['lang'], $this->_iaCore->languages)) {
             $conditions[] = '`code` = :language';
