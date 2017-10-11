@@ -856,8 +856,8 @@ SQL;
             }
         } else { // standard processing (original, thumbnail & large image)
             $imageTypes = [
-                ['name' => self::IMAGE_TYPE_THUMBNAIL, 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode']],
-                ['name' => self::IMAGE_TYPE_LARGE, 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode']]
+                ['name' => self::IMAGE_TYPE_THUMBNAIL, 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode'], 'watermark' => false],
+                ['name' => self::IMAGE_TYPE_LARGE, 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode'], 'watermark' => true]
             ];
 
             $allowedFileExtensions = $iaPicture->getSupportedImageTypes();
@@ -891,7 +891,7 @@ SQL;
             $destinationFile = $imageTypeFolder . $fileName;
 
             $result = $iaPicture->process($originalFile, $destinationFile, $mimeType, $imageType['width'],
-                $imageType['height'], $imageType['resize_mode'], true);
+                $imageType['height'], $imageType['resize_mode'], (isset($imageType['watermark']) ? $imageType['watermark'] : true));
 
             if (!$result) {
                 $this->setMessage($iaPicture->getMessage());
