@@ -2170,6 +2170,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('collapse_all','Collapse All','common'),
 ('common','Common','common'),
 ('confirm','Confirm','common'),
+('content','Content','common'),
 ('contributor','Contributor','common'),
 ('copy','Copy','common'),
 ('country','Country','common'),

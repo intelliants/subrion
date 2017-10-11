@@ -74,8 +74,13 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         if (!empty($params['title'])) {
-            $conditions[] = 'l.`value` LIKE :title';
+            $conditions[] = 'l1.`value` LIKE :title';
             $values['title'] = '%' . iaSanitize::sql($params['title']) . '%';
+        }
+
+        if (!empty($params['content'])) {
+            $conditions[] = 'l2.`value` LIKE :content';
+            $values['content'] = '%' . iaSanitize::sql($params['content']) . '%';
         }
 
         $conditions[] = 'p.`service` = 0';
@@ -85,12 +90,14 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $sql = <<<SQL
 SELECT :columns,
-  l.`value` `title`,
+  l1.`value` `title`,
+  l2.`value` `content`,
   IF(p.`custom_url` != '', `custom_url`, IF(p.`alias` != '', p.`alias`, CONCAT(p.`name`, '/'))) `url`,
   p.`id` `update`,
   IF(p.`readonly` = 0, 1, 0) `delete`
   FROM `:table_pages` p 
-LEFT JOIN `:table_phrases` l ON (l.`key` = CONCAT("page_title_", p.`name`) AND l.`category` = "page" AND l.`code` = ':code') 
+LEFT JOIN `:table_phrases` l1 ON (l1.`key` = CONCAT("page_title_", p.`name`) AND l1.`category` = "page" AND l1.`code` = ':code')
+LEFT JOIN `:table_phrases` l2 ON (l2.`key` = CONCAT("page_content_", p.`name`) AND l2.`category` = "page" AND l2.`code` = ':code')
 WHERE :where :order 
 LIMIT :start, :limit
 SQL;
@@ -106,6 +113,13 @@ SQL;
         ]);
 
         return $this->_iaDb->getAll($sql);
+    }
+
+    protected function _gridModifyOutput(array &$entries)
+    {
+        foreach ($entries as &$entry) {
+            $entry['content'] = iaSanitize::tags($entry['content']);
+        }
     }
 
     protected function _preSaveEntry(array &$entry, array $data, $action)

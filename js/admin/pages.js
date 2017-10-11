@@ -74,6 +74,11 @@ Ext.onReady(function () {
                     name: 'title',
                     listeners: intelli.gridHelper.listener.specialKey
                 }, {
+                    emptyText: _t('content'),
+                    xtype: 'textfield',
+                    name: 'content',
+                    listeners: intelli.gridHelper.listener.specialKey
+                }, {
                     emptyText: _t('module'),
                     xtype: 'combo',
                     typeAhead: true,
