@@ -30,8 +30,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected $_tooltipsEnabled = true;
 
-    protected $_gridColumns = "`id`, `name`, `status`, `last_updated`, IF(`custom_url` != '', `custom_url`, IF(`alias` != '', `alias`, CONCAT(`name`, '/'))) `url`, `id` `update`, IF(`readonly` = 0, 1, 0) `delete`";
+    protected $_gridColumns = ['name', 'status', 'last_updated'];
     protected $_gridFilters = ['name' => self::LIKE, 'module' => self::EQUAL];
+    protected $_gridQueryMainTableAlias = 'p';
 
     protected $_phraseAddSuccess = 'page_added';
 
@@ -72,30 +73,39 @@ class iaBackendController extends iaAbstractControllerBackend
             $values['module'] = '';
         }
 
-        $conditions[] = '`service` = 0';
+        if (!empty($params['title'])) {
+            $conditions[] = 'l.`value` LIKE :title';
+            $values['title'] = '%' . iaSanitize::sql($params['title']) . '%';
+        }
+
+        $conditions[] = 'p.`service` = 0';
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridQuery($columns, $where, $order, $start, $limit)
     {
-        $currentLanguage = $this->_iaCore->iaView->language;
+        $sql = <<<SQL
+SELECT :columns,
+  l.`value` `title`,
+  IF(p.`custom_url` != '', `custom_url`, IF(p.`alias` != '', p.`alias`, CONCAT(p.`name`, '/'))) `url`,
+  p.`id` `update`,
+  IF(p.`readonly` = 0, 1, 0) `delete`
+  FROM `:table_pages` p 
+LEFT JOIN `:table_phrases` l ON (l.`key` = CONCAT("page_title_", p.`name`) AND l.`category` = "page" AND l.`code` = ':code') 
+WHERE :where :order 
+LIMIT :start, :limit
+SQL;
+        $sql = iaDb::printf($sql, [
+            'table_pages' => $this->_iaDb->prefix . self::getTable(),
+            'table_phrases' => $this->_iaDb->prefix . iaLanguage::getTable(),
+            'code' => $this->_iaCore->language['iso'],
+            'columns' => $columns,
+            'where' => $where,
+            'order' => $order,
+            'start' => $start,
+            'limit' => $limit
+        ]);
 
-        $this->_iaDb->setTable(iaLanguage::getTable());
-        $pageTitles = $this->_iaDb->keyvalue(['key', 'value'],
-            "`key` LIKE('page_title_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
-        $pageContents = $this->_iaDb->keyvalue(['key', 'value'],
-            "`key` LIKE('page_content_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
-        $this->_iaDb->resetTable();
-
-        $defaultPage = $this->_iaCore->get('home_page');
-
-        foreach ($entries as &$entry) {
-            $entry['title'] = isset($pageTitles["page_title_{$entry['name']}"]) ? $pageTitles["page_title_{$entry['name']}"] : 'No title';
-            $entry['content'] = isset($pageContents["page_content_{$entry['name']}"]) ? $pageContents["page_content_{$entry['name']}"] : 'No content';
-
-            if ($defaultPage == $entry['name']) {
-                $entry['default'] = true;
-            }
-        }
+        return $this->_iaDb->getAll($sql);
     }
 
     protected function _preSaveEntry(array &$entry, array $data, $action)
