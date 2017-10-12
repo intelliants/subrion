@@ -25,93 +25,6 @@ Ext.onReady(function () {
         });
     });
 
-    var addPhrasePanel = new Ext.FormPanel({
-        frame: true,
-        title: _t('add_new_phrase'),
-        bodyStyle: 'padding: 5px 5px 0',
-        renderTo: 'js-add-phrase-dialog-placeholder',
-        id: 'add_phrase_panel',
-        hidden: true,
-        defaults: {labelWidth: 140},
-        items: [
-            {
-                fieldLabel: _t('key'),
-                name: 'key',
-                xtype: 'textfield',
-                allowBlank: false,
-                anchor: '50%'
-            }, {
-                fieldLabel: _t('category'),
-                name: 'category',
-                xtype: 'combo',
-                allowBlank: false,
-                editable: false,
-                lazyRender: true,
-                value: 'admin',
-                store: categoriesStore,
-                displayField: 'title',
-                valueField: 'value',
-                anchor: '50%'
-            }, {
-                fieldLabel: _t('force_replacement'),
-                name: 'force_replacement',
-                xtype: 'checkbox',
-                value: false
-            },
-            {
-                xtype: 'tabpanel',
-                plain: true,
-                activeTab: 0,
-                height: 130,
-                deferredRender: false,
-                bodyStyle: 'padding: 5px 5px 0',
-                items: tabs
-            }],
-        tools: [
-            {
-                id: 'close',
-                handler: function (event, tool, panel) {
-                    addPhrasePanel.hide();
-                }
-            }],
-        buttons: [
-            {
-                text: _t('add'),
-                handler: function () {
-                    addPhrasePanel.getForm().submit({
-                        url: intelli.config.admin_url + '/languages/add.json',
-                        method: 'POST',
-                        params: intelli.includeSecurityToken({}),
-                        failure: function (form, action) {
-                            intelli.notifBox({
-                                msg: ('undefined' === typeof action.result)
-                                    ? _t('error') : action.result.message, type: 'error', autohide: true
-                            });
-                        },
-                        success: function (form, action) {
-                            intelli.notifBox({msg: action.result.message, type: 'success', autohide: true});
-                            Ext.Msg.show({
-                                title: _t('add_new_phrase'),
-                                msg: _t('add_one_more_phrase'),
-                                buttons: Ext.Msg.YESNO,
-                                fn: function (btn) {
-                                    'yes' == btn || addPhrasePanel.hide();
-                                    form.reset();
-                                },
-                                icon: Ext.MessageBox.QUESTION
-                            });
-                        }
-                    });
-                }
-            }, {
-                text: _t('cancel'),
-                handler: function () {
-                    $('#js-add-phrase-dialog-placeholder').css('margin', '0');
-                    addPhrasePanel.hide();
-                }
-            }]
-    });
-
     if (Ext.get('js-grid-placeholder')) {
         intelli.language = new IntelliGrid({
             columns: [
@@ -274,12 +187,6 @@ Ext.onReady(function () {
 
         intelli.language.init();
     }
-
-    $('#js-add-phrase-cmd').click(function (e) {
-        e.preventDefault();
-        $('#js-add-phrase-dialog-placeholder').css({height: 'auto', margin: '10px 0 15px'});
-        Ext.getCmp('add_phrase_panel').show();
-    });
 
     $('.js-remove-lang-cmd').each(function () {
         $(this).on('click', function (e) {

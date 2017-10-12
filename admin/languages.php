@@ -30,7 +30,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected $_tooltipsEnabled = true;
 
-    protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `delete`";
+    protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `update`1 `delete`";
     protected $_gridFilters = ['key' => 'like', 'value' => 'like', 'category' => 'equal', 'module' => 'equal'];
 
     protected $_phraseAddSuccess = 'phrase_added';

@@ -100,7 +100,7 @@
                                     <span class="btn btn-default uploads-list-item__drag-handle"><i class="i-list-2"></i></span>
                                 </td>
                                 <td>
-                                    {$language.title} - <a href="{$smarty.const.IA_ADMIN_URL}languages/phrases/?language={$code}">{lang key='edit_phrases'}</a>
+                                    {$language.title} - <a href="{$smarty.const.IA_ADMIN_URL}phrases/?language={$code}">{lang key='edit_phrases'}</a>
                                 </td>
                                 <td class="iso-val">{$language.iso}</td>
                                 <td>{$language.locale}</td>

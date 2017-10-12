@@ -107,18 +107,17 @@ intelli.gridHelper = {
 
     store: {
         ajax: function (url) {
-            return Ext.create('Ext.data.JsonStore',
-                {
-                    fields: ['value', 'title'],
-                    proxy: {
-                        limitParam: null,
-                        pageParam: null,
-                        reader: {root: 'data', type: 'json'},
-                        startParam: null,
-                        type: 'ajax',
-                        url: url
-                    }
-                });
+            return Ext.create('Ext.data.JsonStore', {
+                fields: ['value', 'title'],
+                proxy: {
+                    limitParam: null,
+                    pageParam: null,
+                    reader: {root: 'data', type: 'json'},
+                    startParam: null,
+                    type: 'ajax',
+                    url: url
+                }
+            });
         }
     }
 };
@@ -215,6 +214,10 @@ function IntelliGrid(params, autoInit) {
                 if ('string' === typeof item) {
                     item = __getActionColumns(item);
                     if (!item) continue;
+                }
+                // add editable icon
+                if ('undefined' !== typeof item.editor) {
+                    item.title = item.title + ' <span class="i-edit" title="' + _t('editable') + '">';
                 }
                 var entry = ('undefined' === typeof item.$className) ? __prepareColumn(item) : item;
                 if (entry.dataIndex !== undefined) {
