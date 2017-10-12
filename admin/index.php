@@ -168,8 +168,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
         // twitter widget
         if ($customizationMode || !in_array('twitter', $disabledWidgets)) {
-            $data = iaUtil::getPageContent('https://tools.intelliants.com/timeline/');
-            $iaView->assign('timeline', json_decode($data, true));
+            // cache for 24 hours
+            $data = $this->_iaCore->iaCache->get('intelliants_twitter', 86400, true);
+            if (empty($data)) {
+                $data = iaUtil::getPageContent('https://tools.intelliants.com/timeline/');
+                $data = json_decode($data, true);
+
+                $this->_iaCore->iaCache->write('intelliants_twitter', $data);
+            }
+            $iaView->assign('timeline', $data);
         }
 
         if ($customizationMode || !in_array('recent-activity', $disabledWidgets)) {
