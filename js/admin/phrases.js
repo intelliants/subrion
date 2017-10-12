@@ -12,19 +12,6 @@ Ext.onReady(function () {
         data: [['admin', 'Administration Board'], ['frontend', 'User Frontend'], ['common', 'Common'], ['tooltip', 'Tooltip']]
     });
 
-    var tabs = [];
-    $.each(intelli.languages, function (code, language) {
-        tabs.push({
-            title: language.title,
-            layout: 'form',
-            defaults: {labelWidth: 135, fieldLabel: _t('value'), allowBlank: false},
-            defaultType: 'textarea',
-            items: [{
-                name: 'value[' + code + ']'
-            }]
-        });
-    });
-
     if (Ext.get('js-grid-placeholder')) {
         intelli.language = new IntelliGrid({
             columns: [
