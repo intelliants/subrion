@@ -392,6 +392,9 @@ SQL;
 
     protected function _updateParam($key, $value)
     {
+        // used for custom config processing
+        $this->_iaCore->startHook('phpCustomParamUpdate', ['key' => $key, 'value' => $value]);
+
         if (in_array($key, $this->_customConfigParams)) {
             if (!$this->_updateCustomParam($key, $value)) {
                 return;
