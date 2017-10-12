@@ -174,7 +174,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 $data = iaUtil::getPageContent('https://tools.intelliants.com/timeline/');
                 $data = json_decode($data, true);
 
-                $this->_iaCore->iaCache->write('intelliants_twitter', $data);
+                $data && $this->_iaCore->iaCache->write('intelliants_twitter', $data);
             }
             $iaView->assign('timeline', $data);
         }
