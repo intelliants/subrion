@@ -116,6 +116,26 @@ abstract class abstractModuleAdmin extends abstractCore
         return $row;
     }
 
+    public function getOne($where, $fields = '*')
+    {
+        $row = $this->iaDb->row($fields, $where, self::getTable());
+
+        $this->_processValues($row, true);
+
+        return $row;
+    }
+
+    public function getAll($where, $fields = null, $start = null, $limit = null)
+    {
+        is_null($fields) && $fields = iaDb::ALL_COLUMNS_SELECTION;
+
+        $rows = $this->iaDb->all($fields, $where, $start, $limit, self::getTable());
+
+        $this->_processValues($rows);
+
+        return $rows;
+    }
+
     public function getDashboardStatistics($defaultProcessing = true)
     {
         $statuses = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 = 1 GROUP BY `status`', self::getTable());
