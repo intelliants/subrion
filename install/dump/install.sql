@@ -2302,6 +2302,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('item','Item','common'),
 
 ('key','Key','common'),
+('keywords','Keywords','common'),
 
 ('language','Language','common'),
 ('languages','Languages','common'),

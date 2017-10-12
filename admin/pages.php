@@ -73,14 +73,9 @@ class iaBackendController extends iaAbstractControllerBackend
             $values['module'] = '';
         }
 
-        if (!empty($params['title'])) {
-            $conditions[] = 'l1.`value` LIKE :title';
-            $values['title'] = '%' . iaSanitize::sql($params['title']) . '%';
-        }
-
-        if (!empty($params['content'])) {
-            $conditions[] = 'l2.`value` LIKE :content';
-            $values['content'] = '%' . iaSanitize::sql($params['content']) . '%';
+        if (!empty($params['text'])) {
+            $conditions[] = 'l1.`value` LIKE :text OR l2.`value` LIKE :text';
+            $values['text'] = '%' . iaSanitize::sql($params['text']) . '%';
         }
 
         $conditions[] = 'p.`service` = 0';
