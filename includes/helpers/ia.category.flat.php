@@ -167,13 +167,13 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
         $result = parent::delete($itemId);
 
         if ($result) {
-            // TODO: improve (currently no assigned assets - images, files
-            // will be removed if assigned via standard core fields)
-
             // remove subcategories as well
             $where = sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)',
                 self::getTableFlat(true), $itemId);
-            $this->iaDb->delete($where, self::getTable());
+
+            foreach ($this->getAll($where, ['id']) as $item) {
+                $this->delete($item['id']);
+            }
         }
 
         return $result;
