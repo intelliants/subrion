@@ -1,5 +1,5 @@
 Ext.onReady(function () {
-    var selectedLanguage = (intelli.urlVal('language') === null) ? intelli.config.language : intelli.urlVal('language');
+    var selectedLanguage = (intelli.urlVal('language') === null) ? intelli.config.lang : intelli.urlVal('language');
 
     var languages = [], j = 0;
     for (var i in intelli.languages) {
@@ -179,7 +179,7 @@ Ext.onReady(function () {
                     id: 'languageFilter',
                     listeners: {
                         change: function () {
-                            window.location = intelli.config.admin_url + '/languages/phrases/?language=' + this.getSubmitValue();
+                            window.location = intelli.config.admin_url + '/phrases/?language=' + this.getSubmitValue();
                         }
                     }
                 }]
