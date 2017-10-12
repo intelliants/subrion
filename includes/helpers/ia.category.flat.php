@@ -40,6 +40,8 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
     protected $_recountEnabled = true;
     protected $_recountOptions = []; // this to be extended by ancestor
 
+    protected $_slugColumnName = 'slug';
+
     private $_defaultRecountOptions = [
         'listingsTable' => null,
         'activeStatus' => iaCore::STATUS_ACTIVE,
@@ -131,8 +133,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
     public function getRoot()
     {
         if (is_null($this->_root)) {
-            $this->_root = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds(self::ROOT_PARENT_ID, self::COL_PARENT_ID), self::getTable());
-            $this->_processValues($this->_root, true);
+            $this->_root = $this->getOne(iaDb::convertIds(self::ROOT_PARENT_ID, self::COL_PARENT_ID));
         }
 
         return $this->_root;
@@ -153,9 +154,20 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
     public function update(array $itemData, $id)
     {
+        // track slug changes
+        if (isset($itemData[$this->_slugColumnName])) {
+            $row = $this->getById($id);
+        }
+
         $this->_assignStructureData($itemData, iaCore::ACTION_EDIT);
 
-        return parent::update($itemData, $id);
+        $result = parent::update($itemData, $id);
+
+        if ($result && isset($row)) {
+            $this->validateSlug($id, $row[$this->_slugColumnName], $itemData[$this->_slugColumnName]);
+        }
+
+        return $result;
     }
 
     public function delete($itemId)
@@ -168,10 +180,7 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
 
         if ($result) {
             // remove subcategories as well
-            $where = sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)',
-                self::getTableFlat(true), $itemId);
-
-            foreach ($this->getAll($where, ['id']) as $item) {
+            foreach ($this->getChildren($itemId) as $item) {
                 $this->delete($item['id']);
             }
         }
@@ -184,6 +193,27 @@ abstract class iaAbstractHelperCategoryFlat extends abstractModuleAdmin implemen
         if (iaCore::ACTION_DELETE != $action) {
             $this->_updateFlatStructure($itemId);
         }
+    }
+
+    public function validateSlug($entryId, $slug, $newSlug)
+    {
+        if ($slug == $newSlug) {
+            return;
+        }
+
+        $stmtWhere = iaDb::printf('`id` != :id && `id` IN (SELECT DISTINCT `child_id` FROM `:table_flat` WHERE `parent_id` = :id)',
+            [
+                'table_flat' => $this->getTableFlat(true),
+                'id' => (int)$entryId
+            ]);
+
+        $stmtUpdate = iaDb::printf("REPLACE(`:column`, ':slug', ':new_slug')", [
+            'column' => $this->_slugColumnName,
+            'slug' => $slug,
+            'new_slug' => $newSlug
+        ]);
+
+        $this->iaDb->update(null, $stmtWhere, [$this->_slugColumnName => $stmtUpdate], self::getTable());
     }
 
     /**
@@ -452,10 +482,10 @@ SQL;
             return $this->iaDb->onefield(self::COL_PARENT_ID, iaDb::convertIds($entryId, 'child_id'),
                 null, null, self::getTableFlat());
         } else {
-            $query = sprintf('SELECT `parent_id` FROM `%s` WHERE `child_id` = %d',
+            $subQuery = sprintf('SELECT `parent_id` FROM `%s` WHERE `child_id` = %d',
                 self::getTableFlat(true), $entryId);
 
-            return $this->_get('`id` IN (' . $query . ')', 'ORDER BY `level`');
+            return $this->getAll('`id` IN (' . $subQuery . ') ORDER BY `level`');
         }
     }
 
@@ -464,17 +494,7 @@ SQL;
         $where = sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)',
             self::getTableFlat(true), $entryId);
 
-        return $this->_get($where);
-    }
-
-    // utility methods
-    protected function _get($where, $order = null, $start = null, $limit = null)
-    {
-        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . $order, $start, $limit, self::getTable());
-
-        $this->_processValues($rows);
-
-        return $rows;
+        return $this->getAll($where);
     }
 
     protected function _assignStructureData(array &$entryData, $action)
