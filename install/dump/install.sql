@@ -1144,9 +1144,9 @@ INSERT INTO `{install:prefix}fields_pages` (`page_name`,`field_id`) VALUES
 ('favorites',9),
 ('favorites',10),
 ('favorites',11),
-('member_registration',1),
-('member_registration',2),
-('member_registration',3),
+('registration',1),
+('registration',2),
+('registration',3),
 ('view_member',2),
 ('view_member',4),
 ('view_member',5),
@@ -1201,7 +1201,7 @@ INSERT INTO `{install:prefix}items_pages` (`page_name`,`item`) VALUES
 ('profile','member'),
 ('view_member','member'),
 ('favorites','member'),
-('member_registration','member');
+('registration','member');
 
 INSERT INTO `{install:prefix}members` (`usergroup_id`,`username`,`email`,`date_reg`,`date_update`,`fullname`,`email_language`) VALUES
 (1,'{install:admin_username}','{install:email}',NOW(),NOW(),'Administrator','en');
@@ -1239,7 +1239,7 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (3,'view_member',0,1,'member/',1,'','','members','members'),
 (3,'profile',0,1,'profile/',1,'','account','',''),
 (3,'member_funds',0,1,'profile/funds/',1,'transactions','account','profile',''),
-(3,'member_registration',0,1,'registration/',1,'registration','','',''),
+(3,'registration',0,1,'registration/',1,'registration','','',''),
 (3,'register_confirm',1,1,'confirm/',1,'registration','','',''),
 (3,'member_password_forgot',1,1,'forgot/',1,'registration','','',''),
 (2,'page',1,1,'',0,'page','','',''),
@@ -2687,7 +2687,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_pay','Pay','page'),
 ('page_title_policy','Privacy Policy','page'),
 ('page_title_profile','My Profile','page'),
-('page_title_member_registration','Registration','page'),
+('page_title_registration','Registration','page'),
 ('page_title_register_confirm','Registration Confirmation','page'),
 ('page_title_redirect','Redirecting','page'),
 ('page_title_search','Search','page'),

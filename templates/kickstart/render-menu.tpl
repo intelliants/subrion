@@ -21,7 +21,7 @@
     {else}
         <ul class="nav navbar-nav navbar-right">
             <li{if 'login' == $core.page.name} class="active"{/if}><a href="{$smarty.const.IA_URL}login/">{lang key='login'}</a></li>
-            <li{if 'member_registration' == $core.page.name} class="active"{/if}><a href="{$smarty.const.IA_URL}registration/">{lang key='register'}</a></li>
+            <li{if 'registration' == $core.page.name} class="active"{/if}><a href="{$smarty.const.IA_URL}registration/">{lang key='register'}</a></li>
         </ul>
     {/if}
 {elseif in_array($position, array('left', 'right', 'user1', 'user2', 'top'))}

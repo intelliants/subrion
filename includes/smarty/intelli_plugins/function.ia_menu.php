@@ -32,11 +32,11 @@ function smarty_function_ia_menu($params, Smarty_Internal_Template &$smarty)
             ));
             $params['menus'][0][] = array_merge($menuDefaults, array(
                 'id' => 0,
-                'page_name' => 'member_registration',
+                'page_name' => 'registration',
                 'new_window' => 0,
-                'text' => iaLanguage::get('page_title_member_registration'),
+                'text' => iaLanguage::get('page_title_registration'),
                 'url' => 'registration/',
-                'active' => ('member_registration' == $currentPage)
+                'active' => ('registration' == $currentPage)
             ));
         }
     }
