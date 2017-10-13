@@ -93,6 +93,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _preSaveEntry(array &$entry, array $data, $action)
     {
+        $entry['category'] = $data['category'];
+        $entry['value'] = $data['value'];
+
         if (iaCore::ACTION_ADD == $action) {
             $entry['module'] = $data['module'];
 
@@ -104,13 +107,14 @@ class iaBackendController extends iaAbstractControllerBackend
                 if (!$entry['key']) {
                     $this->addMessage('key_not_valid');
                 } elseif ($this->_phraseExists($entry)) {
-                    $this->addMessage('key_exists');
+                    $this->addMessage('phrase_exists');
                 }
             }
+        } else {
+            if (($this->_phrasesCount($entry) + 1) > count($this->_iaCore->languages)) {
+                $this->addMessage('phrase_exists');
+            }
         }
-
-        $entry['category'] = $data['category'];
-        $entry['value'] = $data['value'][iaLanguage::getMasterLanguage()->iso];
 
         return !$this->getMessages();
     }
@@ -118,9 +122,17 @@ class iaBackendController extends iaAbstractControllerBackend
     protected function _entryAdd(array $entryData)
     {
         $entryData['code'] = iaLanguage::getMasterLanguage()->iso;
+        $entryData['value'] = $entryData['value'][iaLanguage::getMasterLanguage()->iso];
         $entryData['original'] = $entryData['value'];
 
         return parent::_entryAdd($entryData);
+    }
+
+    protected function _entryUpdate(array $entryData, $entryId)
+    {
+        $entryData['value'] = $entryData['value'][iaLanguage::getMasterLanguage()->iso];
+
+        return parent::_entryUpdate($entryData, $entryId);
     }
 
     protected function _entryDelete($entryId)
@@ -150,11 +162,14 @@ class iaBackendController extends iaAbstractControllerBackend
 
     public function getById($id)
     {
-        if ($phrase = parent::getById($id)) {
-            $phrase['value'] = $this->_iaDb->keyvalue(['code', 'value'], iaDb::convertIds($phrase['key'], 'key'));
+        if ($entry = parent::getById($id)) {
+            $where = '`key` = :key AND `category` = :category AND `module` = :module';
+            $this->_iaDb->bind($where, $entry);
+
+            $entry['value'] = $this->_iaDb->keyvalue(['code', 'value'], $where);
         }
 
-        return $phrase;
+        return $entry;
     }
 
     protected function _assignValues(&$iaView, array &$entryData)
@@ -173,8 +188,19 @@ class iaBackendController extends iaAbstractControllerBackend
         $iaView->assign('modules', $modules);
     }
 
+    private function _phrasesCount(array $entry)
+    {
+        unset($entry['value']);
+
+        return (int)$this->_iaDb->one_bind(iaDb::STMT_COUNT_ROWS,
+            '`id` != :id AND `key` = :key AND `category` = :category AND `module` = :module',
+            array_merge($entry, ['id' => $this->getEntryId()]));
+    }
+
     private function _phraseExists(array $entry)
     {
-        return $this->_iaDb->exists('`key` = :key AND `category` = :category AND `module` = :module', $entry);
+        unset($entry['value']);
+
+        return (int)$this->_iaDb->exists('`key` = :key AND `category` = :category AND `module` = :module', $entry);
     }
 }

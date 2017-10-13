@@ -1786,7 +1786,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('just_now','just now','admin'),
 
-('key_exists','Phrase already exists.','admin'),
 ('key_not_valid','Key is invalid. Only alphanumeric and underscore characters allowed.','admin'),
 
 ('lang_incorrect','Please choose correct language.','admin'),
@@ -1931,6 +1930,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('permissions_members','Member permissions :member','admin'),
 ('permissions_usergroups','Usergroup permissions :usergroup','admin'),
 ('phrase_added','Phrase added.','admin'),
+('phrase_exists','Phrase exists.','admin'),
 ('phrase_manager','Phrase Manager','admin'),
 ('phrase_text','Phrase Text','admin'),
 ('place','Position in template','admin'),
