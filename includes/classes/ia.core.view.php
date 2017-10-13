@@ -101,7 +101,7 @@ class iaView extends abstractUtil
 
     public function get($key, $default = null)
     {
-        return (isset($this->_params[$key]) && $this->_params[$key]) ? $this->_params[$key] : $default;
+        return !empty($this->_params[$key]) ? $this->_params[$key] : $default;
     }
 
     public function name($value = false)
@@ -263,22 +263,22 @@ class iaView extends abstractUtil
 
         $result = [];
 
-        $extras = implode("','", $this->iaCore->get('module'));
-        $stmt = "`module` IN ('', '" . $extras . "')";
+        $modules = implode("','", $this->iaCore->get('module'));
+        $stmt = "`module` IN ('', '" . $modules . "')";
 
         $menuGroups = $iaDb->assoc(['id', 'name'], $stmt . ' ORDER BY `order`', 'admin_pages_groups');
 
         $sql = <<<SQL
 SELECT g.`name` `config`, e.`type`, p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`module` 
-	FROM `:prefix:table_admin_pages` p 
+  FROM `:prefix:table_admin_pages` p 
 LEFT JOIN `:prefix:table_config_groups` g ON 
-	(p.`module` IN (':module') AND p.`module` = g.`module`) 
+    (p.`module` IN (':module') AND p.`module` = g.`module`) 
 LEFT JOIN `:prefix:table_modules` e ON 
-	(p.`module` = e.`name`) 
+  (p.`module` = e.`name`) 
 WHERE p.`group` IN (:groups) 
-	AND FIND_IN_SET('menu', p.`menus`) 
-	AND p.`status` = ':status' 
-	AND p.`module` IN ('',':module') 
+  AND FIND_IN_SET('menu', p.`menus`) 
+  AND p.`status` = ':status' 
+  AND p.`module` IN ('',':module') 
 ORDER BY p.`order`
 SQL;
         $sql = iaDb::printf($sql, [
@@ -288,7 +288,7 @@ SQL;
             'table_modules' => iaItem::getModulesTable(),
             'groups' => implode(',', array_keys($menuGroups)),
             'status' => iaCore::STATUS_ACTIVE,
-            'module' => $extras
+            'module' => $modules,
         ]);
 
         foreach ($iaDb->getAll($sql) as $row) {
@@ -357,7 +357,7 @@ SQL;
                     if ($item['alias']) {
                         $data['url'] = IA_ADMIN_URL . $item['alias'];
                     }
-                    if (isset($item['attr']) && $item['attr']) {
+                    if (!empty($item['attr'])) {
                         $data['attr'] = $item['attr'];
                     }
                     if ($item['type'] != iaItem::TYPE_PACKAGE && !empty($item['config'])
@@ -384,7 +384,7 @@ SQL;
                 unset($menuEntry['items']);
             }
 
-            if (isset($menuEntry['items'][0]['name']) && $menuEntry['items'][0]['name']) {
+            if (!empty($menuEntry['items'][0]['name'])) {
                 $menuHeading = ['name' => null, 'title' => iaLanguage::get('global')];
                 if (iaItem::TYPE_PACKAGE == $item['type']) {
                     $menuHeading['config'] = $item['module'];
@@ -648,7 +648,7 @@ SQL;
                 $subpages = true;
                 if ($b['subpages']) {
                     $b['subpages'] = unserialize($b['subpages']);
-                    if (isset($b['subpages'][$pageName]) && $b['subpages'][$pageName]) {
+                    if (!empty($b['subpages'][$pageName])) {
                         $subpages = false;
                         $b['subpages'] = explode('-', $b['subpages'][$pageName]);
                         if ($subPage && in_array($subPage, $b['subpages'])) {
@@ -807,7 +807,9 @@ SQL;
         $pageParams['body'] = $pageParams['name'];
 
         if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()) {
-            $pageParams['meta_title'] = iaLanguage::get('page_meta_title_' . $pageParams['name'], $pageParams['title']);
+            if (iaLanguage::exists('page_meta_title_' . $pageParams['name'])) {
+                $pageParams['meta_title'] = iaLanguage::get('page_meta_title_' . $pageParams['name']);
+            }
 
             $key = 'page_meta_description_' . $pageParams['name'];
             $pageParams['description'] = iaLanguage::exists($key) ? iaLanguage::get($key) : null;
@@ -1164,9 +1166,7 @@ SQL;
             return $this->_outputValues;
         }
 
-        return isset($this->_outputValues[$key])
-            ? $this->_outputValues[$key]
-            : null;
+        return isset($this->_outputValues[$key]) ? $this->_outputValues[$key] : null;
     }
 
     public function getParams()

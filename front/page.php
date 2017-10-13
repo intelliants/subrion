@@ -52,7 +52,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $iaView->assign('content', $newPage['contents'][$iaView->language]);
                 }
             }
-            if (isset($newPage['passw']) && $newPage['passw']) {
+            if (!empty($newPage['passw'])) {
                 $iaView->assign('page_protect', iaLanguage::get('page_protected', 'Page protected'));
             }
         }
@@ -107,7 +107,9 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
         $iaView->title($pageTitle);
 
-        $iaView->set('meta_title', iaLanguage::get('page_meta_title_' . $name));
+        if (iaLanguage::exists('page_meta_title_' . $name)) {
+            $iaView->set('meta_title', iaLanguage::get('page_meta_title_' . $name));
+        }
     }
 
     if ($page && !$previewMode) {
