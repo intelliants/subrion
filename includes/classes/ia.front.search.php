@@ -378,12 +378,12 @@ class iaSearch extends abstractCore
     {
         $this->iaCore->factory('item');
 
-        $extras = $this->iaDb->all(['name', 'type', 'items'], "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, iaItem::getModulesTable());
+        $modules = $this->iaDb->all(['name', 'type', 'items'], "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, iaItem::getModulesTable());
 
         $results = [];
-        foreach ($extras as $extra) {
-            if ($extra['items']) {
-                $items = unserialize($extra['items']);
+        foreach ($modules as $module) {
+            if ($module['items']) {
+                $items = unserialize($module['items']);
                 foreach ($items as $entry) {
                     if ($this->_loadItemInstance($entry['item'])) {
                         if ($search = $this->_callInstanceMethod(false)) {
@@ -448,7 +448,7 @@ SQL;
         $blocks = [];
 
         if ($rows = $iaDb->getAll($sql)) {
-            $extras = $iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'modules');
+            $modules = $iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'modules');
 
             foreach ($rows as $row) {
                 $pageName = empty($row['page']) ? $iaCore->get('home_page') : $row['page'];
@@ -458,7 +458,7 @@ SQL;
                 }
 
                 if ($row['external']) {
-                    switch ($extras[$row['module']]) {
+                    switch ($modules[$row['module']]) {
                         case 'package':
                         case 'plugin':
                             $fileName = explode(':', $row['filename']);
