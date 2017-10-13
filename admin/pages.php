@@ -117,6 +117,24 @@ SQL;
         }
     }
 
+    protected function _setDefaultValues(array &$entry)
+    {
+        $entry = [
+            'name' => '',
+            'parent' => '',
+            'filename' => 'page',
+            'custom_tpl' => 0,
+            'template_filename' => '',
+            'alias' => '',
+            'module' => '',
+            'readonly' => false,
+            'service' => false,
+            'nofollow' => false,
+            'new_window' => false,
+            'status' => iaCore::STATUS_ACTIVE
+        ];
+    }
+
     protected function _preSaveEntry(array &$entry, array $data, $action)
     {
         $this->_iaCore->startHook('phpAdminAddPageValidation', ['entry' => &$entry]);
@@ -127,17 +145,14 @@ SQL;
             strtolower($data['name'] = !utf8_is_ascii($data['name']) ? utf8_to_ascii($data['name']) : $data['name']));
         $entry['status'] = isset($data['preview']) ? iaCore::STATUS_DRAFT : $data['status'];
 
+        if (empty($data['title'][iaLanguage::getMasterLanguage()->iso])) {
+            $this->addMessage(iaLanguage::getf('field_is_empty',
+                ['field' => iaLanguage::get('title')]), false);
+        }
+
         if (iaCore::ACTION_ADD == $action) {
             $entry['group'] = 2;
             $entry['filename'] = 'page';
-        }
-
-        foreach ($data['title'] as $key => $title) {
-            if (empty($title)) {
-                $this->addMessage(iaLanguage::getf('field_is_empty',
-                    ['field' => iaLanguage::get('title') . ' (' . $key . ')']), false);
-                break;
-            }
         }
 
         if (!isset($data['service']) || !$data['service']) {
@@ -203,24 +218,6 @@ SQL;
         return !$this->getMessages();
     }
 
-    protected function _setDefaultValues(array &$entry)
-    {
-        $entry = [
-            'name' => '',
-            'parent' => '',
-            'filename' => 'page',
-            'custom_tpl' => 0,
-            'template_filename' => '',
-            'alias' => '',
-            'module' => '',
-            'readonly' => false,
-            'service' => false,
-            'nofollow' => false,
-            'new_window' => false,
-            'status' => iaCore::STATUS_ACTIVE
-        ];
-    }
-
     protected function _entryAdd(array $entryData)
     {
         $order = $this->_iaDb->getMaxOrder() + 1;
@@ -261,7 +258,7 @@ SQL;
             }
         }
 
-        $this->_saveMultilingualData($entry['name'], $data['module']);
+        $this->_saveMultilingualData($entry, $data['module'], $action);
 
         // writing to log
         $pageTitle = $data['title'][$this->_iaCore->iaView->language];
@@ -502,14 +499,21 @@ SQL;
         return [$title, $content, $metaDescription, $metaKeywords, $metaTitles];
     }
 
-    private function _saveMultilingualData($pageName, $module)
+    private function _saveMultilingualData(array $pageEntry, $module, $action)
     {
+        $pageName = $pageEntry['name'];
+        $masterLangCode = iaLanguage::getMasterLanguage()->iso;
+
         foreach ($this->_iaCore->languages as $iso => $language) {
             foreach (['title', 'content', 'meta_description', 'meta_keywords', 'meta_title'] as $key) {
                 if (isset($_POST[$key][$iso])) {
                     $phraseKey = sprintf('page_%s_%s', $key, $pageName);
 
                     $value = $_POST[$key][$iso];
+                    if (!$value && iaCore::ACTION_ADD == $action) {
+                        $value = $_POST[$key][$masterLangCode];
+                    }
+
                     utf8_is_valid($value) || $value = utf8_bad_replace($value);
 
                     iaLanguage::addPhrase($phraseKey, $value, $iso, $module, iaLanguage::CATEGORY_PAGE, true);
