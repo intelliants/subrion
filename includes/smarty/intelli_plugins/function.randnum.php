@@ -9,12 +9,12 @@
 */
 function smarty_function_randnum($params, &$smarty)
 {
-	$floor = (array_key_exists('floor', $params)) ? $params['floor']:0;
-	$ceiling = (array_key_exists('ceiling', $params)) ? $params['ceiling']:1000;
+    $floor = (array_key_exists('floor', $params)) ? $params['floor']:0;
+    $ceiling = (array_key_exists('ceiling', $params)) ? $params['ceiling']:1000;
 
-	$result = rand($floor, $ceiling);
+    $result = rand($floor, $ceiling);
 
-	$smarty->assign('randnum', $result);
+    $smarty->assign('randnum', $result);
 
-	return $result;
+    return $result;
 }

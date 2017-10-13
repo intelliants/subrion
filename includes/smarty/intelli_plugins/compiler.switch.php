@@ -7,15 +7,15 @@
  *      you load smarty and create an instance of it in your source code.
  *
  * <code>
- *   $this->smartyObj->loadPlugin('smarty_compiler_switch');    
+ *   $this->smartyObj->loadPlugin('smarty_compiler_switch');
  * </code>
- * 
+ *
  * @author Jeremy Pyne <jeremy.pyne@gmail.com>
  * - Donations: Accepted via PayPal at the above address.
  * - Updated: 02/10/2010 - Version 3.2
  * - File: smarty/plugins/compiler.switch.php
  * - Licence: CC:BY/NC/SA  http://creativecommons.org/licenses/by-nc-sa/3.0/
- * 
+ *
  * - Updates
  *    Version 2:
  *       Changed the break attribute to cause a break to be printed before the next case, instead of before this
@@ -30,11 +30,11 @@
  *       $smarty->loadPlugin('smarty_compiler_switch');
  *    Version 3.2:
  *       Fixed a bug when chaining multiple {case} statements without a {break}.
- *    Version 3.5: 
- *       Updated to work with Smarty 3.0 release.  (Tested and working with 3.0.5, no longer compatible with 3.0rcx releases.)  
+ *    Version 3.5:
+ *       Updated to work with Smarty 3.0 release.  (Tested and working with 3.0.5, no longer compatible with 3.0rcx releases.)
  *    Version 3.6:
  *       Updated to work with Smarty 3.1 release.  (Tested and working on 3.1.3, No longer compatible with 3.0 releases.)
- * 
+ *
  * - Bugs/Notes:
  *
  * @package Smarty
@@ -98,26 +98,28 @@
 //Register the post and pre filters as they are not auto-registered.
 $this->registerFilter('post', 'smarty_postfilter_switch');
 
-class Smarty_Compiler_Switch extends Smarty_Internal_CompileBase {
+class Smarty_Compiler_Switch extends Smarty_Internal_CompileBase
+{
     public $required_attributes = array('var');
     public $optional_attributes = array();
     public $shorttag_order = array('var');
 
-/**
- * Start a new switch statement.
- *    A variable must be passed to switch on.
- *  Also, the switch can only directly contain {case} and {default} tags.
- *
- * @param string $tag_arg
- * @param Smarty_Compiler $smarty
- * @return string
- */
-    public function compile($args, $compiler){
+    /**
+     * Start a new switch statement.
+     *    A variable must be passed to switch on.
+     *  Also, the switch can only directly contain {case} and {default} tags.
+     *
+     * @param string $tag_arg
+     * @param Smarty_Compiler $smarty
+     * @return string
+     */
+    public function compile($args, $compiler)
+    {
         $this->compiler = $compiler;
         $attr = $this->getAttributes($compiler, $args);
-	$_output = '';
+        $_output = '';
 
-        $this->openTag($compiler, 'switch',array($compiler->tag_nocache));
+        $this->openTag($compiler, 'switch', array($compiler->tag_nocache));
 
         if (is_array($attr['var'])) {
             $_output .= "<?php if (!isset(\$_smarty_tpl->tpl_vars[".$attr['var']['var']."])) \$_smarty_tpl->tpl_vars[".$attr['var']['var']."] = new Smarty_Variable;";
@@ -125,37 +127,39 @@ class Smarty_Compiler_Switch extends Smarty_Internal_CompileBase {
         } else {
             $_output .= '<?php switch (' . $attr['var'] . '){?>';
         }
-	return $_output;
+        return $_output;
     }
 }
 
-class Smarty_Compiler_Case extends Smarty_Internal_CompileBase {
+class Smarty_Compiler_Case extends Smarty_Internal_CompileBase
+{
     public $required_attributes = array('value');
     public $optional_attributes = array('break');
     public $shorttag_order = array('value', 'break');
 
-/**
- * Print out a case line for this switch.
- *    A condition must be passed to match on.
- *    This can only go in {switch} tags.
- *    If break is passed, a {break} will be rendered before the next case.
- *
- * @param string $tag_arg
- * @param Smarty_Compiler $smarty
- * @return string
- */
-    public function compile($args, $compiler){
+    /**
+     * Print out a case line for this switch.
+     *    A condition must be passed to match on.
+     *    This can only go in {switch} tags.
+     *    If break is passed, a {break} will be rendered before the next case.
+     *
+     * @param string $tag_arg
+     * @param Smarty_Compiler $smarty
+     * @return string
+     */
+    public function compile($args, $compiler)
+    {
         $this->compiler = $compiler;
         $attr = $this->getAttributes($compiler, $args);
-	$_output = '';
+        $_output = '';
 
         list($last_tag, $last_attr) = $this->compiler->_tag_stack[count($this->compiler->_tag_stack) - 1];
 
-        if($last_tag == 'case')
-        {
-	    list($break, $compiler->tag_nocache) = $this->closeTag($compiler, array('case'));
-            if($last_attr[0])
+        if ($last_tag == 'case') {
+            list($break, $compiler->tag_nocache) = $this->closeTag($compiler, array('case'));
+            if ($last_attr[0]) {
                 $_output .= '<?php break;?>';
+            }
         }
         $this->openTag($compiler, 'case', array(isset($attr['break']) ? $attr['break'] : false, $compiler->tag_nocache));
 
@@ -165,60 +169,64 @@ class Smarty_Compiler_Case extends Smarty_Internal_CompileBase {
         } else {
             $_output .= '<?php case ' . $attr['value'] . ':?>';
         }
-	return $_output;
+        return $_output;
     }
 }
 
-class Smarty_Compiler_Default extends Smarty_Internal_CompileBase {
+class Smarty_Compiler_Default extends Smarty_Internal_CompileBase
+{
     public $required_attributes = array();
     public $optional_attributes = array('break');
     public $shorttag_order = array('break');
 
-/**
- * Print out a default line for this switch.
- *    This can only go in {switch} tags.
- *    If break is passed, a {break} will be rendered before the next case.
- *
- * @param string $tag_arg
- * @param Smarty_Compiler $smarty
- * @return string
- */
-    public function compile($args, $compiler){
+    /**
+     * Print out a default line for this switch.
+     *    This can only go in {switch} tags.
+     *    If break is passed, a {break} will be rendered before the next case.
+     *
+     * @param string $tag_arg
+     * @param Smarty_Compiler $smarty
+     * @return string
+     */
+    public function compile($args, $compiler)
+    {
         $this->compiler = $compiler;
         $attr = $this->getAttributes($compiler, $args);
-	$_output = '';
+        $_output = '';
 
         list($last_tag, $last_attr) = $this->compiler->_tag_stack[count($this->compiler->_tag_stack) - 1];
-        if($last_tag == 'case')
-        {
+        if ($last_tag == 'case') {
             list($break, $compiler->tag_nocache) = $this->closeTag($compiler, array('case'));
-            if($last_attr[0])
+            if ($last_attr[0]) {
                 $_output .= '<?php break;?>';
+            }
         }
         $this->openTag($compiler, 'case', array(isset($attr['break']) ? $attr['break'] : false, $compiler->tag_nocache));
 
         $_output .= '<?php default:?>';
 
-	return $_output;
+        return $_output;
     }
 }
 
 
-class Smarty_Compiler_Break extends Smarty_Internal_CompileBase { 
+class Smarty_Compiler_Break extends Smarty_Internal_CompileBase
+{
     public $required_attributes = array();
     public $optional_attributes = array();
     public $shorttag_order = array();
 
-/**
- * Print out a break command for the switch.
- *    This can only go inside of {case} tags.
- *
- * @param string $tag_arg
- * @param Smarty_Compiler $smarty
- * @return string
- */
+    /**
+     * Print out a break command for the switch.
+     *    This can only go inside of {case} tags.
+     *
+     * @param string $tag_arg
+     * @param Smarty_Compiler $smarty
+     * @return string
+     */
 
-    public function compile($args, $compiler){
+    public function compile($args, $compiler)
+    {
         $this->compiler = $compiler;
         $attr = $this->getAttributes($compiler, $args);
 
@@ -228,21 +236,23 @@ class Smarty_Compiler_Break extends Smarty_Internal_CompileBase {
     }
 }
 
-class Smarty_Compiler_Caseclose extends Smarty_Internal_CompileBase { 
+class Smarty_Compiler_Caseclose extends Smarty_Internal_CompileBase
+{
     public $required_attributes = array();
     public $optional_attributes = array();
     public $shorttag_order = array();
 
-/**
- * Print out a break command for the switch.
- *    This can only go inside of {case} tags.
- *
- * @param string $tag_arg
- * @param Smarty_Compiler $smarty
- * @return string
- */
+    /**
+     * Print out a break command for the switch.
+     *    This can only go inside of {case} tags.
+     *
+     * @param string $tag_arg
+     * @param Smarty_Compiler $smarty
+     * @return string
+     */
 
-    public function compile($args, $compiler){
+    public function compile($args, $compiler)
+    {
         $this->compiler = $compiler;
         $attr = $this->getAttributes($compiler, $args);
 
@@ -252,26 +262,29 @@ class Smarty_Compiler_Caseclose extends Smarty_Internal_CompileBase {
     }
 }
 
-class Smarty_Compiler_Switchclose extends Smarty_Internal_CompileBase { 
+class Smarty_Compiler_Switchclose extends Smarty_Internal_CompileBase
+{
     public $required_attributes = array();
     public $optional_attributes = array();
     public $shorttag_order = array();
 
-/**
- * End a switch statement.
- *
- * @param string $tag_arg
- * @param Smarty_Compiler $smarty
- * @return string
- */
+    /**
+     * End a switch statement.
+     *
+     * @param string $tag_arg
+     * @param Smarty_Compiler $smarty
+     * @return string
+     */
 
-    public function compile($args, $compiler){
+    public function compile($args, $compiler)
+    {
         $this->compiler = $compiler;
         $attr = $this->getAttributes($compiler, $args);
 
         list($last_tag, $last_attr) = $this->compiler->_tag_stack[count($this->compiler->_tag_stack) - 1];
-        if(($last_tag == 'case' || $last_tag == 'default'))
+        if (($last_tag == 'case' || $last_tag == 'default')) {
             list($break, $compiler->tag_nocache) = $this->closeTag($compiler, array('case'));
+        }
         list($compiler->tag_nocache) = $this->closeTag($compiler, array('switch'));
 
         return '<?php }?>';
@@ -281,14 +294,14 @@ class Smarty_Compiler_Switchclose extends Smarty_Internal_CompileBase {
 /**
  * Filter the template after it is generated to fix switch bugs.
  *    Remove any spaces after the 'switch () {' code and before the first case.  Any tabs or spaces
- *       for layout would cause php errors witch this reged will fix. 
+ *       for layout would cause php errors witch this reged will fix.
  *
  * @param string $compiled
  * @param Smarty_Compiler $smarty
  * @return string
  */
-function smarty_postfilter_switch($compiled, &$smarty) {
-        // Remove the extra spaces after the start of the switch tag and before the first case statement.
-        return preg_replace('/({ ?\?>)\s+(<\?php case)/', "$1\n$2", $compiled);
+function smarty_postfilter_switch($compiled, &$smarty)
+{
+    // Remove the extra spaces after the start of the switch tag and before the first case statement.
+    return preg_replace('/({ ?\?>)\s+(<\?php case)/', "$1\n$2", $compiled);
 }
-?>
