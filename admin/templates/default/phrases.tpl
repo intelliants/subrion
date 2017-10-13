@@ -59,11 +59,11 @@
                         {/if*}
                         <label class="control-label">{lang key='value'}</label>
                     </div>
-                    <div class="col col-lg-4">
+                    <div class="col col-lg-6">
                         <div class="translate-group" id="language-group-value">
                             {*<div class="translate-group__default">*}
                                 <div class="translate-group__item">
-                                    <textarea name="value[{$core.language.iso}]" rows="4">{if isset($item.value[$core.language.iso])}{$item.value[$core.language.iso]|escape}{/if}</textarea>
+                                    <textarea name="value[{$core.language.iso}]" rows="5">{if isset($item.value[$core.language.iso])}{$item.value[$core.language.iso]|escape}{/if}</textarea>
                                     <div class="translate-group__item__code">{$core.language.title|escape}</div>
                                 </div>
                             {*</div>*}
@@ -71,7 +71,7 @@
                                 {foreach $core.languages as $iso => $language}
                                     {if $iso != $core.language.iso}
                                         <div class="translate-group__item">
-                                            <textarea name="value[{$iso}]" rows="4">{if isset($item.value[$iso])}{$item.value[$iso]|escape}{/if}</textarea>
+                                            <textarea name="value[{$iso}]" rows="5">{if isset($item.value[$iso])}{$item.value[$iso]|escape}{/if}</textarea>
                                             <span class="translate-group__item__code">{$language.title|escape}</span>
                                         </div>
                                     {/if}
