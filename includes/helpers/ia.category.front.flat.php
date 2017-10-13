@@ -82,7 +82,7 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
     public function getByLevel($level, $fields = null)
     {
         $where = '`status` = :status and `level` = :level';
-        $this->iaDb->bind($where, ['status' => iaCOre::STATUS_ACTIVE, 'level' => $level]);
+        $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'level' => $level]);
 
         return $this->getAll($where, $fields);
     }
