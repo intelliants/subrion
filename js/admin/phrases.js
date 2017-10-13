@@ -13,46 +13,31 @@ Ext.onReady(function () {
     });
 
     if (Ext.get('js-grid-placeholder')) {
-        intelli.language = new IntelliGrid({
+        var grid = new IntelliGrid({
             columns: [
-                {
-                    name: 'key',
-                    title: _t('key'),
-                    width: 250,
-                    editor: 'text',
-                    renderer: function (value, metadata, row) {
-                        if (1 == row.data.modified) {
-                            metadata.css = 'grid-status-unconfirmed';
-                        }
-                        return value;
+                {name: 'key', title: _t('key'), width: 250, editor: 'text', renderer: function (value, metadata, row) {
+                    if (1 == row.data.modified) {
+                        metadata.css = 'grid-status-unconfirmed';
                     }
-                },
-                {name: 'original', title: _t('original'), width: 250, renderer: Ext.util.Format.htmlEncode},
-                {
-                    name: 'value',
-                    title: _t('value'),
-                    width: 1,
-                    editor: 'text-wide',
-                    renderer: Ext.util.Format.htmlEncode
-                },
+                    return value;
+                }},
+                {name: 'original', title: _t('original'), width: 250},
+                {name: 'value', title: _t('value'), width: 1, editor: 'text-wide'},
                 {name: 'code', title: _t('language'), width: 100, hidden: true},
-                {
-                    name: 'category', title: _t('category'), width: 100, editor: Ext.create('Ext.form.ComboBox',
-                    {
-                        typeAhead: true,
-                        editable: false,
-                        store: categoriesStore,
-                        value: 'admin',
-                        displayField: 'title',
-                        valueField: 'value'
-                    })
-                },
+                {name: 'category', title: _t('category'), width: 100, editor: Ext.create('Ext.form.ComboBox', {
+                    typeAhead: true,
+                    editable: false,
+                    store: categoriesStore,
+                    value: 'admin',
+                    displayField: 'title',
+                    valueField: 'value'
+                })},
                 'update',
-                'delete',
+                'delete'
             ],
             fields: ['original', 'modified'],
             storeParams: {lang: intelli.urlVal('language')},
-            texts: {delete_multiple: _t('are_you_sure_to_delete_selected_phrases')},
+            texts: {delete_multiple: _t('are_you_sure_to_delete_selected_phrases')}
         }, false);
         /*		intelli.language.bottomBar = ['-',
          {
@@ -110,7 +95,7 @@ Ext.onReady(function () {
          }
          }];*/
 
-        intelli.language.toolbar = Ext.create('Ext.Toolbar', {
+        grid.toolbar = Ext.create('Ext.Toolbar', {
             items: [
                 {
                     emptyText: _t('key'),
@@ -146,13 +131,13 @@ Ext.onReady(function () {
                     xtype: 'combo'
                 }, {
                     handler: function () {
-                        intelli.gridHelper.search(intelli.language)
+                        intelli.gridHelper.search(grid)
                     },
                     id: 'fltBtn',
                     text: '<i class="i-search"></i> ' + _t('search')
                 }, {
                     handler: function () {
-                        intelli.gridHelper.search(intelli.language, true)
+                        intelli.gridHelper.search(grid, true)
                     },
                     text: '<i class="i-close"></i> ' + _t('reset')
                 }, '->', {
@@ -172,7 +157,7 @@ Ext.onReady(function () {
                 }]
         });
 
-        intelli.language.init();
+        grid.init();
     }
 
     $('.js-remove-lang-cmd').each(function () {

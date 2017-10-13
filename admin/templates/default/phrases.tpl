@@ -47,7 +47,7 @@
                     </div>
                 </div>
 
-                {if iaCore::ACTION_ADD == $pageAction}
+                {* if iaCore::ACTION_ADD == $pageAction}
                     <div class="row">
                         <label class="col col-lg-2 control-label">{lang key='force_replacement'}</label>
 
@@ -55,7 +55,7 @@
                             {html_radio_switcher value=$item.force_replacement name='force_replacement'}
                         </div>
                     </div>
-                {/if}
+                {/if*}
 
                 <div class="row">
                     <div class="col col-lg-2">
