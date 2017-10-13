@@ -78,7 +78,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
     $stmt .= $letters['active'] ? ('0-9' == $letters['active'] ? "(`$filterBy` REGEXP '^[0-9]') AND " : "(`$filterBy` LIKE '{$letters['active']}%') AND ") : '';
     if ($letters['active']) {
-        $iaView->set('subpage', array_search($letters['active'], $letters) + 1);
+        $iaView->set('subpage', array_search($letters['active'], $letters['all']) + 1);
     }
 
     // gets current page and defines start position
