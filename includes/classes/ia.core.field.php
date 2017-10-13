@@ -1017,6 +1017,8 @@ SQL;
                     $this->alterColumnScheme($dbTable, $fieldData);
                 }
             }
+
+            $this->_copyContent($dbTable, $fieldName, $defaultLanguageCode);
         } else {
             $fieldData['name'] = $fieldName . '_' . $defaultLanguageCode;
             $this->alterColumnScheme($dbTable, $fieldData, $fieldName);
@@ -1089,6 +1091,17 @@ SQL;
     public function isRestrictedName($columnName)
     {
         return in_array($columnName, $this->_restrictedNames);
+    }
+
+    protected function _copyContent($dbTable, $columnName, $defaultLanguageCode)
+    {
+        $primaryLangCol = $columnName . '_' . $defaultLanguageCode;
+
+        $rawUpdateStmt = [];
+        foreach ($this->iaCore->languages as $code => $language)
+            $rawUpdateStmt[$columnName . '_' . $code] = '`' . $primaryLangCol . '`';
+
+        $this->iaDb->update(null, iaDb::EMPTY_CONDITION, $rawUpdateStmt, $dbTable);
     }
 
     private function _alterCmdBody(array $fieldData)
