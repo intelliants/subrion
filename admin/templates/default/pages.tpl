@@ -286,7 +286,7 @@
                             <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
                         </div>
                     {/if}
-                    <label class="control-label">{lang key='title'}</label>
+                    <label class="control-label">{lang key='title'} {lang key='field_required'}</label>
                 </div>
                 <div class="col col-lg-4">
                     {if count($core.languages) > 1}
