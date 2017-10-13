@@ -460,6 +460,7 @@ SQL;
                 if ($row['external']) {
                     switch ($extras[$row['module']]) {
                         case 'package':
+                        case 'plugin':
                             $fileName = explode(':', $row['filename']);
                             array_shift($fileName);
                             $fileName = explode('/', $fileName[0]);
@@ -701,11 +702,16 @@ SQL;
     {
         $iaSmarty = &$this->iaView->iaSmarty;
 
-        foreach ($params as $key => $value) {
-            $iaSmarty->assign($key, $value);
-        }
+        try {
+            foreach ($params as $key => $value) {
+                $iaSmarty->assign($key, $value);
+            }
 
-        return $iaSmarty->fetch($template);
+            return $iaSmarty->fetch($template);
+        } catch (Exception $e) {
+            iaDebug::debug($template, 'Error rendering TPL file used to search results output');
+            return '';
+        }
     }
 
     private function _extractSnippet($text)

@@ -693,7 +693,7 @@ class iaSmarty extends Smarty
             $smarty->assign('ismenu', isset($params['ismenu']) ? $params['ismenu'] : false);
             $smarty->assign('_block_content_', $content);
 
-            if (!isset($params['tpl']) || empty($params['tpl'])) {
+            if (empty($params['tpl'])) {
                 $params['tpl'] = 'block.tpl';
             }
 
