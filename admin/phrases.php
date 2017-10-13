@@ -86,7 +86,6 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $entry = [
             'key' => '',
-            'title' => '',
             'category' => 'common',
             'module' => 'core'
         ];
@@ -95,6 +94,8 @@ class iaBackendController extends iaAbstractControllerBackend
     protected function _preSaveEntry(array &$entry, array $data, $action)
     {
         if (iaCore::ACTION_ADD == $action) {
+            $entry['module'] = $data['module'];
+
             if (empty($data['key'])) {
                 $this->addMessage('incorrect_key');
             } else {
@@ -102,13 +103,24 @@ class iaBackendController extends iaAbstractControllerBackend
 
                 if (!$entry['key']) {
                     $this->addMessage('key_not_valid');
+                } elseif ($this->_phraseExists($entry)) {
+                    $this->addMessage('key_exists');
                 }
             }
         }
 
+        $entry['category'] = $data['category'];
         $entry['value'] = $data['value'][iaLanguage::getMasterLanguage()->iso];
 
         return !$this->getMessages();
+    }
+
+    protected function _entryAdd(array $entryData)
+    {
+        $entryData['code'] = iaLanguage::getMasterLanguage()->iso;
+        $entryData['original'] = $entryData['value'];
+
+        return parent::_entryAdd($entryData);
     }
 
     protected function _entryDelete($entryId)
@@ -154,10 +166,15 @@ class iaBackendController extends iaAbstractControllerBackend
             'tooltip' => 'Tooltip'
         ];
 
-        $modules = array_merge(['core' => 'Core'],
+        $modules = array_merge(['' => 'Core'],
             $this->_iaDb->keyvalue(['name', 'title'], null, 'modules'));
 
         $iaView->assign('categories', $categories);
         $iaView->assign('modules', $modules);
+    }
+
+    private function _phraseExists(array $entry)
+    {
+        return $this->_iaDb->exists('`key` = :key AND `category` = :category AND `module` = :module', $entry);
     }
 }

@@ -1786,7 +1786,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('just_now','just now','admin'),
 
-('key_exists','The phrase with similar key already exists.','admin'),
+('key_exists','Phrase already exists.','admin'),
 ('key_not_valid','Key is invalid. Only alphanumeric and underscore characters allowed.','admin'),
 
 ('lang_incorrect','Please choose correct language.','admin'),

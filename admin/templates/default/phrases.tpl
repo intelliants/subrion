@@ -27,7 +27,7 @@
                     <label class="col col-lg-2 control-label">{lang key='category'}</label>
 
                     <div class="col col-lg-4">
-                        <select name="category"{if iaCore::ACTION_EDIT == $pageAction} disabled{/if}>
+                        <select name="category">
                             {foreach $categories as $key => $category}
                                 <option value="{$key}"{if $key == $item.category} selected{/if}>{$category}</option>
                             {/foreach}
@@ -47,35 +47,27 @@
                     </div>
                 </div>
 
-                {* if iaCore::ACTION_ADD == $pageAction}
-                    <div class="row">
-                        <label class="col col-lg-2 control-label">{lang key='force_replacement'}</label>
-
-                        <div class="col col-lg-4">
-                            {html_radio_switcher value=$item.force_replacement name='force_replacement'}
-                        </div>
-                    </div>
-                {/if*}
+                <hr>
 
                 <div class="row">
                     <div class="col col-lg-2">
-                        {if count($core.languages) > 1}
+                        {* if count($core.languages) > 1}
                             <div class="btn-group btn-group-xs translate-group-actions">
                                 <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-value"><span class="i-earth"></span></button>
                                 <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-value"><span class="i-copy"></span></button>
                             </div>
-                        {/if}
+                        {/if*}
                         <label class="control-label">{lang key='value'}</label>
                     </div>
                     <div class="col col-lg-4">
                         <div class="translate-group" id="language-group-value">
-                            <div class="translate-group__default">
+                            {*<div class="translate-group__default">*}
                                 <div class="translate-group__item">
                                     <textarea name="value[{$core.language.iso}]" rows="4">{if isset($item.value[$core.language.iso])}{$item.value[$core.language.iso]|escape}{/if}</textarea>
                                     <div class="translate-group__item__code">{$core.language.title|escape}</div>
                                 </div>
-                            </div>
-                            <div class="translate-group__langs">
+                            {*</div>*}
+                            {*<div class="translate-group__langs">*}
                                 {foreach $core.languages as $iso => $language}
                                     {if $iso != $core.language.iso}
                                         <div class="translate-group__item">
@@ -84,7 +76,7 @@
                                         </div>
                                     {/if}
                                 {/foreach}
-                            </div>
+                            {*</div>*}
                         </div>
                     </div>
                 </div>
