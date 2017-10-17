@@ -161,7 +161,7 @@ class iaHelper
 
             date_default_timezone_set(empty($config['timezone']) ? 'UTC' : $config['timezone']);
 
-            define('IA_CLEAR_URL', $config['baseurl']);
+            define('IA_CLEAR_URL', (!empty($config['baseurl']) ? $config['baseurl'] : URL_HOME));
             define('IA_URL', IA_CLEAR_URL);
             define('IA_FRONT_TEMPLATES', IA_HOME . 'templates/');
             define('IA_TEMPLATES', IA_FRONT_TEMPLATES);
