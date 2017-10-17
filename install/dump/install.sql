@@ -1266,6 +1266,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('_page_removed_','-page removed-','admin'),
 
 ('access_denied','Access denied','admin'),
+('actions','Actions','admin'),
 ('action-add','Add action on ":page"','admin'),
 ('action-config','Configuration on ":page"','admin'),
 ('action-delete','Delete action on ":page"','admin'),
