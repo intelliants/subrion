@@ -1216,7 +1216,6 @@ INSERT INTO `{install:prefix}menus` (`parent_id`,`menu_id`,`el_id`,`page_name`) 
 ('0',5,'19_007','about'),
 ('0',5,'20_008','policy'),
 ('0',5,'21_009','terms'),
-('0',5,'23_010','advertise'),
 ('0',5,'22_011','help');
 
 INSERT INTO `{install:prefix}objects_pages` (`object_type`,`page_name`,`object`,`access`) VALUES
@@ -1246,8 +1245,7 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (2,'about',0,0,'about/',0,'page','','',''),
 (2,'policy',0,0,'policy/',0,'page','','',''),
 (2,'terms',0,0,'terms/',0,'page','','',''),
-(2,'help',0,0,'help/',0,'page','','',''),
-(2,'advertise',0,0,'advertise/',0,'page','','','');
+(2,'help',0,0,'help/',0,'page','','','');
 UPDATE `{install:prefix}pages` SET `status`='active',`last_updated`=NOW();
 
 INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`) VALUES
@@ -2670,7 +2668,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_xtns_empt','','admin'),
 
 ('page_content_about',"<p>Page 'About Us' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
-('page_content_advertise',"<p>Page 'Advertise Us' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
 ('page_content_help','<p>Help page content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>','page'),
 ('page_content_index','','page'),
 ('page_content_policy',"<p>Page 'Privacy Policy' content goes here. You can edit it in Admin Panel ->  Content -> Pages.</p>",'page'),
@@ -2679,7 +2676,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('page_title_about','About Us','page'),
 ('page_title_members','Members','page'),
 ('page_title_member_password_forgot','Forgot Password','page'),
-('page_title_advertise','Advertise Us','page'),
 ('page_title_favorites','Favorites','page'),
 ('page_title_index','Home','page'),
 ('page_title_help','Help','page'),
