@@ -168,7 +168,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
                 $params['sort'] .= '_' . $this->_iaCore->language['iso'];
             } elseif (isset($this->_gridSorting[$sorting])
                 && is_array($this->_gridSorting[$sorting])
-                && 3 == count($this->_gridSorting)) {
+                && 3 == count($this->_gridSorting[$sorting])) {
                 $joinFieldName = $this->_gridSorting[$sorting][0];
                 $joinedItemName = $this->_gridSorting[$sorting][2];
 
