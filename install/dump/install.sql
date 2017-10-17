@@ -2709,6 +2709,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('frontend_footer_code','Injected before closing BODY tag. HTML/JS code allowed.','tooltip'),
 
 ('https','Use secure HTTPS protocol for your site. Before enabling this, please make sure you have properly configured your hosting account and/or webserver.','tooltip'),
+('hybrid_enabled','Implements social signin on your website. You should configure API keys in includes/hybridauth.inc.php file.','tooltip'),
 
 ('lang','Select the preferred language of your site.','tooltip'),
 ('language_iso_code','ISO 639-1 two-letter lowercase abbreviation of your language. It is used in page URLs.','tooltip'),
