@@ -15,7 +15,7 @@
                         </h4>
 
                         <div class="ia-item__additional">
-                            <p>{$one_blog_entry.date_added|date_format:$core.config.date_format}</p>
+                            <p>{$one_blog_entry.date_added|date_format}</p>
                         </div>
 
                         <p>{$one_blog_entry.body|strip_tags|truncate:$core.config.blog_max_block:'...'}</p>

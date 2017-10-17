@@ -1,5 +1,4 @@
 <?php
-
 /******************************************************************************
  *
  * Subrion - open source content management system
@@ -24,6 +23,7 @@
  * @link https://subrion.org/
  *
  ******************************************************************************/
+
 class iaBlog extends abstractModuleAdmin
 {
     const ALIAS_SUFFIX = '.html';
@@ -115,7 +115,7 @@ SQL;
     {
         $sql = <<<SQL
 SELECT GROUP_CONCAT(`title`) 
-	FROM `:prefix:table_blog_tags` bt 
+    FROM `:prefix:table_blog_tags` bt 
 WHERE `id` IN (SELECT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id)
 SQL;
         $sql = iaDb::printf($sql, [

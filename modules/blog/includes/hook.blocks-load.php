@@ -28,7 +28,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     if ($iaView->blockExists('blogroll') || $iaView->blockExists('new_blog_posts')) {
         $sql = <<<SQL
 SELECT b.`id`, b.`title`, b.`date_added`, b.`alias`, b.`body`, b.`image`, m.`fullname` 
-	FROM `:prefix:table_blog_entries` b 
+    FROM `:prefix:table_blog_entries` b 
 LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
 WHERE b.`status` = ':status' && `lang` = ':language'
 ORDER BY b.`date_added` DESC
