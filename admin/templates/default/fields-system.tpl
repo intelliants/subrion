@@ -303,7 +303,8 @@ $(function()
 
 {if !isset($noControls)}
     <div class="form-actions inline">
-        <button type="submit" name="save" class="btn btn-primary form-actions__btn-submit js-btn-submit">
+        <input type="hidden" name="save" value="1">
+        <button type="submit" class="btn btn-primary form-actions__btn-submit js-btn-submit">
             {if iaCore::ACTION_ADD == $pageAction}{lang key='add'}{else}{lang key='save'}{/if}
         </button>
         {include 'goto.tpl'}
