@@ -1,8 +1,8 @@
-![logo](_media/icon.svg)
+![logo](_media/logo.png)
 
-# Subrion CMS <small>4.2.0</small>
+# SUBRION CMS <small>4.2.0</small>
 
-> Free open source content management system.
+> FREE OPEN SOURCE CONTENT MANAGEMENT SYSTEM
 
 - Perfect for agencies
 - Easy to extend
@@ -10,3 +10,4 @@
 
 
 [GitHub](https://github.com/intelliants/subrion/)
+[Get Started](#subrion-cms)

@@ -1,7 +1,7 @@
-- Getting started
-  - [Quick start](quickstart.md)
-  - [Installation](installation.md)
-  - [Configuration](configuration.md)
+- Общие сведения
+  - [Быстрый старт](quickstart.md)
+  - [Установка](installation.md)
+  - [Конфигурация](configuration.md)
 
 - Customization
 
