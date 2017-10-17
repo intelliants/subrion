@@ -83,9 +83,7 @@
                             {/if}
 
                             {if !empty($module.notes)}
-                                {foreach $module.notes as $note}
-                                    <span class="chip chip--danger js-tooltip" data-toggle="tooltip" title="{$note}"><span class="fa fa-warning"></span> {lang key='package_required'}</span>
-                                {/foreach}
+                                <span class="chip chip--danger js-tooltip" data-toggle="tooltip" data-html="true" title="{foreach $module.notes as $note}{$note|escape}<br>{/foreach}"><span class="fa fa-warning"></span> {lang key='module_required'}</span>
                             {/if}
 
                             {if !empty($module.remote) && $module.price > 0}
