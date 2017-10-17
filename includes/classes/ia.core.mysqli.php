@@ -68,7 +68,14 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         mysqli_report(MYSQLI_REPORT_STRICT);
 
         try {
-            mysqli_real_connect($this->_link, INTELLI_DBHOST, INTELLI_DBUSER, INTELLI_DBPASS, INTELLI_DBNAME, INTELLI_DBPORT);
+            mysqli_real_connect(
+                $this->_link,
+                INTELLI_DBHOST,
+                INTELLI_DBUSER,
+                INTELLI_DBPASS,
+                INTELLI_DBNAME,
+                INTELLI_DBPORT
+            );
         } catch (Exception $e) {
             $this->_link = false;
 
@@ -492,8 +499,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return is_bool($result) ? $result : array_shift($result);
     }
 
-    public function onefield($field = self::ID_COLUMN_SELECTION, $condition = null, $start = 0, $limit = null, $tableName = null)
-    {
+    public function onefield($field = self::ID_COLUMN_SELECTION, $condition = null, $start = 0, $limit = null, $tableName = null) {
         if (false !== strpos($field, ',')) {
             return false;
         }
@@ -533,8 +539,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function all($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $start = 0, $limit = null, $tableName = null)
-    {
+    public function all($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $start = 0, $limit = null, $tableName = null) {
         if (is_null($tableName)) {
             $result = $this->_get('all', $fields, $condition, $start, $limit);
         } else {
@@ -546,8 +551,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function assoc($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0, $limit = null)
-    {
+    public function assoc($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0, $limit = null) {
         if (is_null($tableName)) {
             $result = $this->_get('assoc', $fields, $condition, $start, $limit);
         } else {
@@ -559,8 +563,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function keyvalue($fields = self::ALL_COLUMNS_SELECTION, $condition = null, $tableName = null, $start = 0, $limit = null)
-    {
+    public function keyvalue($fields = self::ALL_COLUMNS_SELECTION, $condition = null, $tableName = null, $start = 0, $limit = null) {
         if (is_null($tableName)) {
             $result = $this->_get('keyval', $fields, $condition, $start, $limit);
         } else {
@@ -589,11 +592,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
     public function update($values, $condition = null, $rawValues = null, $tableName = null)
     {
-        if (empty($values) && empty($rawValues)) {
-            return false;
-        }
-
-        if (empty($this->_table) && empty($tableName)) {
+        if ((empty($values) && empty($rawValues)) || (empty($this->_table) && empty($tableName)) || empty($condition)) {
             return false;
         }
 
@@ -620,7 +619,10 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
     public function delete($condition, $tableName = null, $values = [])
     {
         if (empty($condition)) {
-            trigger_error(__METHOD__ . ' Parameters required "where clause"). All rows deletion is restricted.', E_USER_ERROR);
+            trigger_error(
+                __METHOD__ . ' Parameters required "where clause"). All rows deletion is restricted.',
+                E_USER_ERROR
+            );
         }
 
         if ($values) {
