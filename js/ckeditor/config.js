@@ -142,3 +142,5 @@ CKEDITOR.editorConfig = function (config) {
         useBeautify: false
     };
 };
+
+CKEDITOR.on('dialogDefinition',function(e){var t=e.data.name,n=e.data.definition;if('image'===t)for(var i=n.getContents('Upload'),o=0;o<i.elements.length;o++){var a=i.elements[o];'fileButton'===a.type&&(a.onClick=function(e){var t=this.getDialog(),n=t.getContentElement(this['for'][0],this['for'][1]),i=t.getParentEditor();return i._.filebrowserSe=this,$(n.getInputElement().getParent().$).append('<input type="hidden" name="'+intelli.securityTokenKey+'" value="'+intelli.securityToken+'">').submit(),!1})}});
