@@ -952,11 +952,10 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('members', 'gravatar_rating', 'g', '\'g\',\'pg\',\'r\',\'x\'', 'select', 14, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"gravatar_enabled|1\",\"multilingual\":\"0\"}'),
 ('members', 'gravatar_default_image', '', '', 'image', 16, 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"gravatar_enabled|1\",\"multilingual\":\"0\"}'),
 
-('mail', '', 'Addresses', '', 'divider', 1, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('mail', 'site_email', 'info@test.com', '1', 'text', 3, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('mail', 'bcc_email', '', '1', 'text', 6, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('mail', '', 'General', '1', 'divider', 9, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('mail', 'site_from_name', '{:en:}Subrion CMS', '1', 'text', 12, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"1\"}'),
+('mail', '', 'General', '1', 'divider', 1, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('mail', 'site_from_name', '{:en:}Subrion CMS', '1', 'text', 5, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"1\"}'),
+('mail', 'site_email', 'info@test.com', '1', 'text', 8, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
+('mail', 'bcc_email', '', '1', 'text', 10, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('mail', 'default_email_signature', '{:en:}<p>______________________________</p>\r\n<p>Thank you,<br>\r\n{%SITE_NAME%} Team<br>\r\n{%SITE_URL%}</p>', '1', 'textarea', 15, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"1\"}'),
 ('mail', 'mail_function', 'php mail', '\'php mail\',\'sendmail\',\'smtp\'', 'select', 18, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('mail', 'mail_test', '', 'admin/templates/default/configuration-test-email-btn.tpl', 'tpl', 21, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
@@ -2697,7 +2696,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('api_push_access_key','Google Cloud Messaging (GCM) is a free service that enables developers to send messages between servers and client apps. This includes downstream messages from servers to client apps, and upstream messages from client apps to servers.','tooltip'),
 
 ('backup','Folder name where your DB backups are saved.','tooltip'),
-('bcc_email','Email addresses to BCC all the outgoing messaging. To setup multiple emails, separate them by comma.','tooltip'),
+('bcc_email','Email addresses to BCC all the outgoing messaging. To configure multiple emails, separate them by comma.','tooltip'),
 
 ('caching','If you use a slow shared hosting, this will cache your pages for faster loading.','tooltip'),
 
@@ -2717,6 +2716,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('language_locale','Locale is an identifier used to get language, culture, or regionally-specific behavior. Contact your hosting to get the proper locale for your server.','tooltip'),
 ('language_switch','Allows users to choose a language on the frontend of your site.','tooltip'),
 
+('mail_function','For better delivery, it\'s highly recommended to configure sending via SMTP.','tooltip'),
 ('members_enabled','Enables members functionality for your Subrion CMS based website.','tooltip'),
 ('members_autoapproval','Members are activated automatically without administrator confirmation (email confirmation is still needed).','tooltip'),
 ('multilingual_field','Allows to have field value in different languages.','tooltip'),
@@ -2731,7 +2731,8 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('search_instant','If enabled, the search will begin immediately once an option clicked.','tooltip'),
 ('searchable','Specifies if the field is available to search by on Advanced Search page.','tooltip'),
 ('site','This will be your site name.','tooltip'),
-('site_email','Email address you wish to get member changes and notifications sent to.','tooltip'),
+('site_email','All system correspondence is sent from this email address.','tooltip'),
+('site_from_name','All system emails are from this name.','tooltip'),
 ('smarty_cache','Forces the template engine to rebuild the cache on every request. Increases the server load. It should only be used for debugging purposes.','tooltip'),
 ('smtp_password','Password for the username above.','tooltip'),
 ('smtp_server','That would be Ex. (smtp.yourdomain.com)','tooltip'),
