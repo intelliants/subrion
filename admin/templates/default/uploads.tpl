@@ -52,13 +52,14 @@
     {ia_print_css files='_IA_URL_js/jquery/plugins/elfinder/jquery-ui.min,_IA_URL_includes/elfinder/css/elfinder.min,_IA_URL_includes/elfinder/css/theme'}
 
 {ia_add_js}
-$(function()
-{
-    $('#elfinder').elfinder(
-    {
+$(function(){
+    var opts = {
+        customData: { },
         url : intelli.config.admin_url + '/uploads/read.json',
         height: 450
-    });
+    };
+    opts.customData[intelli.securityTokenKey] = intelli.securityToken;
+    $('#elfinder').elfinder(opts);
 });
 {/ia_add_js}
 {/if}
