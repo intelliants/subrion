@@ -3,8 +3,24 @@
   - [Installation](installation.md)
   - [Configuration](configuration.md)
 
-- Customization
+- Core
+  - [Structure](structure.md)
+  - [Hooks](hooks.md)
+  - [Database](database.md)
+  - [i18n](i18n.md)
+  - [Routes](routes.md)
+  - [Cache](cache.md)
+  - [Users](users.md)
+  - [Fields](fields.md)
+  - [ACL](acl.md)
+  - [Debug](debug.md)
 
-  - [Configuration](configuration.md)
+- Extensions
+  - [Modules](modules.md)
+  - [Templates](templates.md)
+
+- API
+  - [Overview](api/overview.md)
+  - [Users](api/users.md)
 
 - [Changelog](changelog.md)
