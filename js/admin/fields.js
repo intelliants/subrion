@@ -1,41 +1,36 @@
 Ext.onReady(function () {
     if ($('#js-grid-placeholder').length) {
-        var grid = new IntelliGrid(
-            {
-                columns: [
-                    'selection',
-                    {name: 'name', title: _t('name'), hidden: true, width: 160},
-                    {name: 'title', title: _t('title'), sortable: false, width: 2},
-                    {
-                        name: 'item', title: _t('item'), width: 100, renderer: function (value) {
-                        return _t(value, value);
-                    }
-                    },
-                    {name: 'group', title: _t('field_group'), width: 120},
-                    {
-                        name: 'type', title: _t('field_type'), width: 130, renderer: function (value) {
-                        return _t('field_type_' + value, value);
-                    }
-                    },
-                    {name: 'relation', title: _t('field_relation'), hidden: true, width: 80},
-                    {name: 'length', title: _t('field_length'), width: 80},
-                    {name: 'order', title: _t('order'), width: 50, editor: 'number'},
-                    'status',
-                    'update',
-                    'delete'
-                ],
-                events: {
-                    beforeedit: function (editor, e) {
-                        if (0 == e.record.get('delete')) {
-                            this.store.rejectChanges();
-                            e.cancel = true;
+        var grid = new IntelliGrid({
+            columns: [
+                'selection',
+                {name: 'name', title: _t('name'), hidden: true, width: 160},
+                {name: 'title', title: _t('title'), sortable: false, width: 2},
+                {name: 'item', title: _t('item'), width: 100, renderer: function (value) {
+                    return _t(value, value);
+                }},
+                {name: 'group', title: _t('field_group'), width: 120},
+                {name: 'type', title: _t('field_type'), width: 130, renderer: function (value) {
+                    return _t('field_type_' + value, value);
+                }},
+                {name: 'relation', title: _t('field_relation'), hidden: true, width: 80},
+                {name: 'length', title: _t('field_length'), width: 80},
+                {name: 'order', title: _t('order'), width: 50, editor: 'number'},
+                'status',
+                'update',
+                'delete'
+            ],
+            events: {
+                beforeedit: function (editor, e) {
+                    if (0 == e.record.get('delete')) {
+                        this.store.rejectChanges();
+                        e.cancel = true;
 
-                            intelli.notifFloatBox({autohide: true, msg: _t('status_change_not_allowed'), pause: 1400});
-                        }
+                        intelli.notifFloatBox({autohide: true, msg: _t('status_change_not_allowed'), pause: 1400});
                     }
-                },
-                texts: {delete_single: _t('are_you_sure_to_delete_field')}
-            }, false);
+                }
+            },
+            texts: {delete_single: _t('are_you_sure_to_delete_field')}
+        }, false);
 
         grid.toolbar = Ext.create('Ext.Toolbar', {
             items: [
@@ -88,61 +83,58 @@ intelli.translateTreeNode = function (o) {
         id: node.id
     };
 
-    $.ajax(
-        {
-            dataType: 'json',
-            url: intelli.config.admin_url + '/fields/tree.json',
-            data: data,
-            success: function (response) {
-                if (0 == response.length) {
-                    return;
-                }
-
-                var translationModal = new Ext.Window(
-                    {
-                        title: _t('translate'),
-                        layout: 'fit',
-                        width: 350,
-                        autoHeight: true,
-                        plain: true,
-                        items: [new Ext.FormPanel(
-                            {
-                                id: 'form-translate',
-                                labelWidth: 75,
-                                url: intelli.config.admin_url + '/fields/tree.json?item=' + data.item + '&field=' + data.field + '&id=' + data.id,
-                                frame: true,
-                                width: 350,
-                                autoHeight: true,
-                                defaults: {width: 230},
-                                defaultType: 'textfield',
-                                items: response,
-                                buttons: [
-                                    {
-                                        text: _t('save'),
-                                        handler: function () {
-                                            Ext.getCmp('form-translate').getForm().submit(
-                                                {
-                                                    waitMsg: _t('saving'),
-                                                    success: function () {
-                                                        var formText = Ext.getCmp('form-translate').getForm().getValues()[intelli.config.lang];
-                                                        if (formText == '') {
-                                                            return;
-                                                        }
-                                                        tree.rename_node(node, formText);
-                                                        translationModal.close();
-                                                    }
-                                                });
-                                        }
-                                    }, {
-                                        text: _t('cancel'),
-                                        handler: function () {
-                                            translationModal.close();
-                                        }
-                                    }]
-                            })]
-                    }).show();
+    $.ajax({
+        dataType: 'json',
+        url: intelli.config.admin_url + '/fields/tree.json',
+        data: data,
+        success: function (response) {
+            if (0 === response.length) {
+                return;
             }
-        });
+
+            response.push({xtype: 'hidden', name: intelli.securityTokenKey, value: intelli.securityToken});
+
+            var translationModal = new Ext.Window({
+                title: _t('translate'),
+                layout: 'fit',
+                width: 350,
+                autoHeight: true,
+                plain: true,
+                items: [new Ext.FormPanel({
+                    id: 'form-translate',
+                    labelWidth: 75,
+                    url: intelli.config.admin_url + '/fields/tree.json?item=' + data.item + '&field=' + data.field + '&id=' + data.id,
+                    frame: true,
+                    width: 350,
+                    autoHeight: true,
+                    defaults: {width: 230},
+                    defaultType: 'textfield',
+                    items: response,
+                    buttons: [{
+                        text: _t('save'),
+                        handler: function () {
+                            Ext.getCmp('form-translate').getForm().submit({
+                                waitMsg: _t('saving'),
+                                success: function () {
+                                    var formText = Ext.getCmp('form-translate').getForm().getValues()[intelli.config.lang];
+                                    if (formText == '') {
+                                        return;
+                                    }
+                                    tree.rename_node(node, formText);
+                                    translationModal.close();
+                                }
+                            });
+                        }
+                    }, {
+                        text: _t('cancel'),
+                        handler: function () {
+                            translationModal.close();
+                        }
+                    }]
+                })]
+            }).show();
+        }
+    });
 };
 
 $(function () {

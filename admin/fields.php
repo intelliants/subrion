@@ -154,6 +154,7 @@ class iaBackendController extends iaAbstractControllerBackend
             'imagetype_primary' => '',
             'imagetype_thumbnail' => '',
             'status' => iaCore::STATUS_ACTIVE,
+            'module' => '',
             // bundled info
             'pages' => []
         ];
@@ -832,7 +833,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 'key' => sprintf(
                         iaField::FIELD_TITLE_PHRASE_KEY, $itemName, $fieldName) . '+%'
             ]);
-
+_d($this->_values);die;
             foreach ($this->_values as $key => $phrases) {
                 foreach ($phrases as $iso => $phrase) {
                     iaLanguage::addPhrase(sprintf(iaField::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $key),
