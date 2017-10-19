@@ -16,26 +16,25 @@ function IntelliTree(params) {
 
     var self = this;
 
-    this.init = function () {
-        self.$tree = $(self.selector).jstree(
-            {
-                core: {
-                    data: {
-                        data: function (n) {
-                            var params = {};
-                            if (n.id !== '#') {
-                                params.id = n.id;
-                            }
+    this.init = function() {
+        self.$tree = $(self.selector).jstree({
+            core: {
+                data: {
+                    data: function (n) {
+                        var params = {};
+                        if (n.id !== '#') {
+                            params.id = n.id;
+                        }
 
-                            return params;
-                        },
-                        url: self.url
+                        return params;
                     },
-                    multiple: false
+                    url: self.url
                 },
-                plugins: ['search'],
-                search: {show_only_matches: true}
-            });
+                multiple: false
+            },
+            plugins: ['search'],
+            search: {show_only_matches: true}
+        });
 
         self.$tree.on('load_node.jstree after_open.jstree', _cascadeOpen);
         self.$tree.on('changed.jstree', this.onchange);
@@ -43,7 +42,7 @@ function IntelliTree(params) {
             self.$tree.on('click.jstree', params.onchange);
         }
 
-        $toggler.on('click', function (e) {
+        $toggler.on('click', function(e) {
             e.preventDefault();
 
             self.$tree.toggle();
@@ -71,7 +70,7 @@ function IntelliTree(params) {
             $label.val(path.join(' / '));
     };
 
-    var _cascadeOpen = function (e, o) {
+    var _cascadeOpen = function(e, o) {
         if (!params.nodeOpened) return;
 
         var nodes = o.node.children,
@@ -88,12 +87,12 @@ function IntelliTree(params) {
                     continue;
                 }
 
-                tree.load_node(nodes[i], function (n) {
+                tree.load_node(nodes[i], function(n) {
                     tree.open_node(n.id);
                 })
             }
         }
-    }
+    };
 
     this.init();
 }

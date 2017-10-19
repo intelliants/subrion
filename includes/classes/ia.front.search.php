@@ -448,7 +448,7 @@ SQL;
         $blocks = [];
 
         if ($rows = $iaDb->getAll($sql)) {
-            $modules = $iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'modules');
+            $modules = $iaDb->keyvalue(['name', 'module'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'modules');
 
             foreach ($rows as $row) {
                 $pageName = empty($row['page']) ? $iaCore->get('home_page') : $row['page'];
@@ -806,7 +806,13 @@ SQL;
                             }
                             $data[$key] = $value;
                             break;
+                        case iaField::TREE:
+                            $nodeId = array_shift($value);
+                            $captions[] = iaField::getFieldValue($this->_itemName, $key, $nodeId);
+                            break;
                         default:
+                            $value = array_shift($value);
+
                             $data[$key] = $value;
                             $captions[] = $value;
                     }
