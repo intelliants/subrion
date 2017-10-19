@@ -154,8 +154,12 @@ class iaBackendController extends iaAbstractControllerBackend
                     }
 
                     if ($key) {
-                        $titles = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = '$key' ORDER BY `code`", null,
+                        $where = '`key` = :key AND `category` = :category';
+                        $this->_iaDb->bind($where, ['key' => $key, 'category' => 'page']);
+
+                        $titles = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null,
                             null, iaLanguage::getTable());
+
                         foreach ($titles as $row) {
                             if (isset($languagesList[$row['code']])) {
                                 $output['languages'][] = [
