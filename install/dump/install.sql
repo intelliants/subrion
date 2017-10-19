@@ -2013,6 +2013,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('select_none','Select None','admin'),
 ('send_confirm','Are you sure you wish to send this feedback to the Subrion Team?','admin'),
 ('send_test_email','Send test email','admin'),
+('send_test_email_note','Test message will be sent to your current profile email address.','admin'),
 ('sending','Sending','admin'),
 ('seo','SEO','admin'),
 ('server_info','Server Info','admin'),
