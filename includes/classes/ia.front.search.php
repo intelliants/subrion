@@ -418,20 +418,20 @@ class iaSearch extends abstractCore
         $iaDb = &$this->iaDb;
 
         $sql = <<<SQL
-SELECT
-	b.`name`, b.`external`, b.`filename`, b.`module`, b.`sticky`, b.`type`, b.`header`, 
-	p1.`value` `title`,
-	IF(b.`external` = 1, '', p2.`value`) `contents`,
-	o.`page_name` `page` 
-	FROM `:prefix:table_blocks` b 
+SELECT 
+  b.`name`, b.`external`, b.`filename`, b.`module`, b.`sticky`, b.`type`, b.`header`, 
+  p1.`value` `title`,
+  IF(b.`external` = 1, '', p2.`value`) `contents`,
+  o.`page_name` `page` 
+  FROM `:prefix:table_blocks` b 
 LEFT JOIN `:prefix:table_objects` o ON (o.`object` = b.`id` AND o.`object_type` = 'blocks' AND o.`access` = 1) 
 LEFT JOIN `:prefix:table_phrases` p1 ON (p1.`key` = CONCAT('block_title_', b.`id`) AND p1.`code` = ':lang')
 LEFT JOIN `:prefix:table_phrases` p2 ON (p2.`key` = CONCAT('block_content_', b.`id`) AND p2.`code` = ':lang')
 WHERE b.`type` IN ('plain','smarty','html') 
-	AND b.`status` = ':status' 
-	AND b.`module` IN (':module') 
-	AND (b.`external` = 1 OR p2.`value` LIKE ':query' OR p1.`value` LIKE ':query')
-	AND o.`page_name` IS NOT NULL 
+  AND b.`status` = ':status' 
+  AND b.`module` IN (':module') 
+  AND (b.`external` = 1 OR p2.`value` LIKE ':query' OR p1.`value` LIKE ':query')
+  AND o.`page_name` IS NOT NULL 
 GROUP BY b.`id`
 SQL;
         $sql = iaDb::printf($sql, [
@@ -448,7 +448,7 @@ SQL;
         $blocks = [];
 
         if ($rows = $iaDb->getAll($sql)) {
-            $modules = $iaDb->keyvalue(['name', 'module'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'modules');
+            $modules = $iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'modules');
 
             foreach ($rows as $row) {
                 $pageName = empty($row['page']) ? $iaCore->get('home_page') : $row['page'];
