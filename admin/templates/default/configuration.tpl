@@ -47,7 +47,7 @@
                         <label class="control-label" for="{$entry.name}">
                             {$entry.description|escape}
                             {if isset($tooltips[$entry.name])}
-                                <a href="#" class="js-tooltip" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
+                                <a href="#" class="js-tooltip" data-html="true" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
                             {/if}
                         </label>
                     </div>

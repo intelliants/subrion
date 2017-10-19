@@ -24,7 +24,11 @@
  *
  ******************************************************************************/
 
-require_once IA_INCLUDES . 'phpmailer/class.phpmailer.php';
+use PHPMailer\PHPMailer\PHPMailer;
+
+require_once IA_INCLUDES . 'phpmailer/Exception.php';
+require_once IA_INCLUDES . 'phpmailer/PHPMailer.php';
+require_once IA_INCLUDES . 'phpmailer/SMTP.php';
 
 class iaMailer extends PHPMailer
 {
@@ -62,7 +66,6 @@ class iaMailer extends PHPMailer
 
         switch ($this->_iaCore->get('mail_function')) {
             case 'smtp':
-                require_once IA_INCLUDES . 'phpmailer/class.smtp.php';
 
                 $this->isSMTP();
 
@@ -71,7 +74,11 @@ class iaMailer extends PHPMailer
                 $this->Username = $this->_iaCore->get('smtp_user');
                 $this->Password = $this->_iaCore->get('smtp_password');
                 $this->SMTPSecure = strtolower($this->_iaCore->get('smtp_secure'));
-                $this->SMTPDebug = (bool)$this->_iaCore->get('smtp_debug') ? 3 : 0;
+
+                if ($this->_iaCore->get('smtp_debug')) {
+                    $this->SMTPDebug = 3;
+                    $this->Debugoutput = $this->_iaCore->get('smtp_debug_output', 'echo');
+                }
 
                 if ($port = $this->_iaCore->get('smtp_port')) {
                     $this->Port = (int)$port;
