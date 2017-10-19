@@ -1099,7 +1099,7 @@ SQL;
 
         switch ($iaView->getRequestType()) {
             case self::REQUEST_JSON:
-                $iaView->assign(['error' => true, 'message' => $message, 'code' => $errorCode]);
+                $iaView->assign(['error' => true, 'message' => $message, 'code' => $errorCode, 'result' => true]); // result necessary for compatibility
 
                 break;
 

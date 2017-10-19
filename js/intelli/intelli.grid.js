@@ -7,36 +7,35 @@ intelli.gridHelper = {
     },
 
     httpRequest: function (caller, data, action) {
-        $.ajax(
-            {
-                data: intelli.includeSecurityToken(data),
-                dataType: 'json',
-                failure: function () {
-                    Ext.MessageBox.alert(_t('error_saving_changes'));
-                },
-                type: 'POST',
-                url: caller.url + (action ? action : 'edit') + '.json',
-                success: function (response) {
-                    var result = false;
-                    switch (true) {
-                        case ('boolean' === typeof response.result):
-                            result = response.result;
-                            break;
-                        case ('boolean' === typeof response.error):
-                            result = !response.error;
-                    }
-
-                    result ? caller.store.reload() : caller.store.rejectChanges();
-
-                    if ('undefined' !== typeof response.message) {
-                        intelli.notifFloatBox({
-                            msg: response.message,
-                            type: result ? 'success' : 'error',
-                            autohide: true
-                        });
-                    }
+        $.ajax({
+            data: intelli.includeSecurityToken(data),
+            dataType: 'json',
+            failure: function () {
+                Ext.MessageBox.alert(_t('error_saving_changes'));
+            },
+            type: 'POST',
+            url: caller.url + (action ? action : 'edit') + '.json',
+            success: function (response) {
+                var result = false;
+                switch (true) {
+                    case ('boolean' === typeof response.result):
+                        result = response.result;
+                        break;
+                    case ('boolean' === typeof response.error):
+                        result = !response.error;
                 }
-            });
+
+                result ? caller.store.reload() : caller.store.rejectChanges();
+
+                if ('undefined' !== typeof response.message) {
+                    intelli.notifFloatBox({
+                        msg: response.message,
+                        type: result ? 'success' : 'error',
+                        autohide: true
+                    });
+                }
+            }
+        });
     },
 
     renderer: {
@@ -142,11 +141,10 @@ function IntelliGrid(params, autoInit) {
     this.params = params;
     this.plugins = [Ext.create('Ext.grid.plugin.CellEditing', {clicksToEdit: 2})];
     this.stores = {
-        paging: Ext.create('Ext.data.SimpleStore',
-            {
-                fields: ['value', 'title'],
-                data: [[10, '10'], [15, '15'], [20, '20'], [25, '25'], [30, '30'], [35, '35'], [40, '40'], [45, '45'], [50, '50']]
-            }),
+        paging: Ext.create('Ext.data.SimpleStore', {
+            fields: ['value', 'title'],
+            data: [[10, '10'], [15, '15'], [20, '20'], [25, '25'], [30, '30'], [35, '35'], [40, '40'], [45, '45'], [50, '50']]
+        }),
         statuses: null
     };
     this.store = null;
@@ -233,60 +231,59 @@ function IntelliGrid(params, autoInit) {
             self.fields = $.unique(self.fields.concat(self.params.fields));
         }
 
-        self.store = Ext.create('Ext.data.Store',
-            {
-                autoDestroy: true,
-                autoLoad: autoLoad,
-                currentPage: parseInt(self.storage('p')) || 1,
-                fields: self.fields,
-                pageSize: self.storage('n') || self.config.pageSize,
-                proxy: {
-                    buildRequest: function (operation) {
-                        var params = Ext.applyIf(operation.params || {}, this.extraParams || {}), request;
-                        params = Ext.applyIf(params, this.getParams(operation));
+        self.store = Ext.create('Ext.data.Store', {
+            autoDestroy: true,
+            autoLoad: autoLoad,
+            currentPage: parseInt(self.storage('p')) || 1,
+            fields: self.fields,
+            pageSize: self.storage('n') || self.config.pageSize,
+            proxy: {
+                buildRequest: function (operation) {
+                    var params = Ext.applyIf(operation.params || {}, this.extraParams || {}), request;
+                    params = Ext.applyIf(params, this.getParams(operation));
 
-                        if (operation.id && !params.id) {
-                            params.id = operation.id;
+                    if (operation.id && !params.id) {
+                        params.id = operation.id;
+                    }
+
+                    if (params.sort) {
+                        sortingParams = JSON.parse(params.sort);
+                        params.sort = sortingParams[0]['property'];
+                        params.dir = sortingParams[0]['direction'];
+                    }
+
+                    request = Ext.create('Ext.data.Request', {
+                        params: params,
+                        action: operation.action,
+                        records: operation.records,
+                        operation: operation,
+                        url: operation.url,
+                        success: function (response) {
+                            try {
+                                var respObj = JSON.parse(response.responseText);
+                            } catch (e) {
+                                return false;
+                            }
+
+                            if ('boolean' === typeof respObj.result && respObj.result) {
+                                window.location.href = respObj.redirect_url || intelli.config.admin_url + '/';
+                            }
                         }
+                    });
+                    request.url = this.buildUrl(request);
+                    operation.request = request;
 
-                        if (params.sort) {
-                            sortingParams = JSON.parse(params.sort);
-                            params.sort = sortingParams[0]['property'];
-                            params.dir = sortingParams[0]['direction'];
-                        }
-
-                        request = Ext.create('Ext.data.Request',
-                            {
-                                params: params,
-                                action: operation.action,
-                                records: operation.records,
-                                operation: operation,
-                                url: operation.url,
-                                success: function (response) {
-                                    try {
-                                        var respObj = JSON.parse(response.responseText);
-                                    } catch (e) {
-                                        return false;
-                                    }
-                                    if ('boolean' === typeof respObj.result && respObj.result) {
-                                        window.location.href = respObj.redirect_url;
-                                    }
-                                }
-                            });
-                        request.url = this.buildUrl(request);
-                        operation.request = request;
-
-                        return request;
-                    },
-                    extraParams: (self.params.storeParams !== undefined) ? self.params.storeParams : null,
-                    pageParam: null,
-                    reader: {type: 'json', root: 'data', totalProperty: 'total'},
-                    type: 'ajax',
-                    url: self.url + 'read.json'
+                    return request;
                 },
-                remoteSort: true,
-                sorters: (self.params.sorters !== undefined) ? self.params.sorters : null
-            });
+                extraParams: (self.params.storeParams !== undefined) ? self.params.storeParams : null,
+                pageParam: null,
+                reader: {type: 'json', root: 'data', totalProperty: 'total'},
+                type: 'ajax',
+                url: self.url + 'read.json'
+            },
+            remoteSort: true,
+            sorters: (self.params.sorters !== undefined) ? self.params.sorters : null
+        });
     };
 
     var _setupToolbar = function () {
@@ -341,67 +338,65 @@ function IntelliGrid(params, autoInit) {
         if ('undefined' === typeof self.config.bottomBar
             || ('boolean' === typeof self.config.bottomBar && self.config.bottomBar)) {
             if (self.fields.indexOf('delete') > -1) {
-                pagingBar.push('-',
-                    {
-                        disabled: true,
-                        handler: function () {
-                            var selection = self.grid.getSelectionModel().getSelection();
-                            Ext.Msg.show(
-                                {
-                                    title: _t('confirm'),
-                                    msg: selection.length > 1 ? self.texts.delete_multiple : self.texts.delete_single,
-                                    buttons: Ext.Msg.YESNO,
-                                    icon: Ext.Msg.QUESTION,
-                                    fn: function (btn) {
-                                        if ('yes' === btn) {
-                                            var ids = [];
-                                            for (var i = 0; i < selection.length; i++) {
-                                                if (1 == selection[i].data.delete) ids.push(selection[i].data.id);
-                                            }
-
-                                            intelli.gridHelper.httpRequest(self, {id: ids}, 'delete');
+                pagingBar.push('-', {
+                    disabled: true,
+                    handler: function () {
+                        var selection = self.grid.getSelectionModel().getSelection();
+                        Ext.Msg.show(
+                            {
+                                title: _t('confirm'),
+                                msg: selection.length > 1 ? self.texts.delete_multiple : self.texts.delete_single,
+                                buttons: Ext.Msg.YESNO,
+                                icon: Ext.Msg.QUESTION,
+                                fn: function (btn) {
+                                    if ('yes' === btn) {
+                                        var ids = [];
+                                        for (var i = 0; i < selection.length; i++) {
+                                            if (1 == selection[i].data.delete) ids.push(selection[i].data.id);
                                         }
+
+                                        intelli.gridHelper.httpRequest(self, {id: ids}, 'delete');
                                     }
-                                });
-                        },
-                        id: 'btnMassDelete',
-                        text: '<i class="i-close"></i> ' + _t('remove')
-                    });
+                                }
+                            });
+                    },
+                    id: 'btnMassDelete',
+                    text: '<i class="i-close"></i> ' + _t('remove')
+                });
             }
             if (self.fields.indexOf('status') > -1) {
-                pagingBar.push('-',
-                    {
-                        disabled: true,
-                        displayField: 'title',
-                        editable: false,
-                        emptyText: _t('status'),
-                        id: 'cmbStatus',
-                        lazyRender: true,
-                        listeners: {
-                            select: function (combo, records, eOpts) {
-                                var value = combo.getValue();
-                                var control = Ext.getCmp('btnMassStatusUpdate');
-                                value ? control.enable() : control.disable();
-                            }
-                        },
-                        store: self.stores.statuses,
-                        typeAhead: true,
-                        xtype: 'combo'
-                    }, {
-                        disabled: true,
-                        handler: function () {
-                            var selection = self.grid.getSelectionModel().getSelection();
-                            var ids = [];
-                            for (var i = 0; i < selection.length; i++) ids.push(selection[i].data.id);
+                pagingBar.push('-', {
+                    disabled: true,
+                    displayField: 'title',
+                    editable: false,
+                    emptyText: _t('status'),
+                    id: 'cmbStatus',
+                    lazyRender: true,
+                    listeners: {
+                        select: function (combo, records, eOpts) {
+                            var value = combo.getValue();
+                            var control = Ext.getCmp('btnMassStatusUpdate');
+                            value ? control.enable() : control.disable();
+                        }
+                    },
+                    store: self.stores.statuses,
+                    typeAhead: true,
+                    xtype: 'combo'
+                }, {
+                    disabled: true,
+                    handler: function () {
+                        var selection = self.grid.getSelectionModel().getSelection();
+                        var ids = [];
+                        for (var i = 0; i < selection.length; i++) ids.push(selection[i].data.id);
 
-                            intelli.gridHelper.httpRequest(self, {id: ids, status: Ext.getCmp('cmbStatus').getValue()});
+                        intelli.gridHelper.httpRequest(self, {id: ids, status: Ext.getCmp('cmbStatus').getValue()});
 
-                            Ext.getCmp('cmbStatus').reset();
-                            this.disable();
-                        },
-                        id: 'btnMassStatusUpdate',
-                        text: '<i class="i-checkmark"></i> ' + _t('go')
-                    });
+                        Ext.getCmp('cmbStatus').reset();
+                        this.disable();
+                    },
+                    id: 'btnMassStatusUpdate',
+                    text: '<i class="i-checkmark"></i> ' + _t('go')
+                });
             }
         }
 
@@ -411,121 +406,118 @@ function IntelliGrid(params, autoInit) {
 
         Ext.state.Manager.setProvider(Ext.create(Ext.supports.LocalStorage ? 'Ext.state.LocalStorageProvider' : 'Ext.state.CookieProvider'));
 
-        self.grid = Ext.create('Ext.grid.Panel',
-            {
-                allowDeselect: true,
-                bbar: Ext.create('Ext.PagingToolbar',
-                    {
-                        store: self.store,
-                        displayInfo: true,
-                        plugins: plugins,
-                        items: pagingBar,
-                        listeners: {
-                            change: function (paging, pageData, options) {
-                                self.storage('p', pageData ? pageData.currentPage : null);
-                            }
-                        }
-                    }),
-                columns: self.columns,
-                height: self.config.height,
-                minHeight: self.config.minHeight,
-                multiColumnSort: true,
-                plugins: self.plugins,
-                renderTo: self.config.target,
-                selType: self.config.selectionType,
-                selMode: {checkOnly: true},
-                stateful: true,
-                stateId: stateId,
+        self.grid = Ext.create('Ext.grid.Panel', {
+            allowDeselect: true,
+            bbar: Ext.create('Ext.PagingToolbar', {
                 store: self.store,
-                tbar: self.toolbar,
-                xtype: self.config.xtype,
-                frame: true,
-                title: self.config.title
-            });
+                displayInfo: true,
+                plugins: plugins,
+                items: pagingBar,
+                listeners: {
+                    change: function (paging, pageData, options) {
+                        self.storage('p', pageData ? pageData.currentPage : null);
+                    }
+                }
+            }),
+            columns: self.columns,
+            height: self.config.height,
+            minHeight: self.config.minHeight,
+            multiColumnSort: true,
+            plugins: self.plugins,
+            renderTo: self.config.target,
+            selType: self.config.selectionType,
+            selMode: {checkOnly: true},
+            stateful: true,
+            stateId: stateId,
+            store: self.store,
+            tbar: self.toolbar,
+            xtype: self.config.xtype,
+            frame: true,
+            title: self.config.title
+        });
 
         var events = (undefined === self.params.events) ? {} : self.params.events;
 
         self.grid.on('cellclick', events.click || function (view, cell, columnIndex, store, row, rowIndex, e) {
-                var field = view.getGridColumns()[columnIndex].dataIndex;
-                var record = view.getRecord(row);
+            var field = view.getGridColumns()[columnIndex].dataIndex;
+            var record = view.getRecord(row);
 
-                if (0 == record.get(field)) {
+            if (0 == record.get(field)) {
+                return;
+            }
+
+            switch (field) {
+                case 'update':
+                    window.location = self.url + 'edit/' + record.get('id') + '/';
                     return;
-                }
-
-                switch (field) {
-                    case 'update':
-                        window.location = self.url + 'edit/' + record.get('id') + '/';
-                        return;
-                    case 'delete':
-                        Ext.Msg.show(
-                            {
-                                title: _t('confirm'),
-                                msg: self.texts.delete_single,
-                                buttons: Ext.Msg.YESNO,
-                                icon: Ext.Msg.QUESTION,
-                                fn: function (btn) {
-                                    if ('yes' === btn) {
-                                        intelli.gridHelper.httpRequest(self, {id: [record.get('id')]}, 'delete');
-                                        self.storage('p', null);
-                                    }
-                                }
-                            });
-                        break;
-                    default:
-                        for (var column = null, i = self.columns.length - 1; i >= 0; i--) {
-                            if (field == self.columns[i].dataIndex) {
-                                column = self.columns[i];
-                                break;
+                case 'delete':
+                    Ext.Msg.show({
+                        title: _t('confirm'),
+                        msg: self.texts.delete_single,
+                        buttons: Ext.Msg.YESNO,
+                        icon: Ext.Msg.QUESTION,
+                        fn: function (btn) {
+                            if ('yes' === btn) {
+                                intelli.gridHelper.httpRequest(self, {id: [record.get('id')]}, 'delete');
+                                self.storage('p', null);
                             }
                         }
-
-                        if (!column) {
-                            return;
-                        }
-
-                        switch (true) {
-                            case ('string' === typeof column.href):
-                                window.location = column.href
-                                    .replace('{id}', record.get('id'))
-                                    .replace('{value}', record.get(field));
-                                return;
-                            case ('function' === typeof column.click):
-                                column.click(record, field);
-                                return;
-                        }
-                }
-            });
-
-        self.grid.on('selectionchange', events.select || function (model, selected, eOpts) {
-                var selection = model.getSelection();
-
-                var control = Ext.getCmp('cmbStatus');
-                if (control) {
-                    selection.length ? control.enable() : control.disable();
-                    0 < selection.length || Ext.getCmp('btnMassStatusUpdate').disable();
-                }
-
-                if (control = Ext.getCmp('btnMassDelete')) {
-                    var flag = false;
-                    for (var i = 0; i < selection.length; i++) {
-                        if (selection[i].data.delete == 1) {
-                            flag = true;
+                    });
+                    break;
+                default:
+                    for (var column = null, i = self.columns.length - 1; i >= 0; i--) {
+                        if (field == self.columns[i].dataIndex) {
+                            column = self.columns[i];
                             break;
                         }
                     }
 
-                    (flag && selection.length) ? control.enable() : control.disable();
+                    if (!column) {
+                        return;
+                    }
+
+                    switch (true) {
+                        case ('string' === typeof column.href):
+                            window.location = column.href
+                                .replace('{id}', record.get('id'))
+                                .replace('{value}', record.get(field));
+                            return;
+                        case ('function' === typeof column.click):
+                            column.click(record, field);
+                            return;
+                    }
+            }
+        });
+
+        self.grid.on('selectionchange', events.select || function (model, selected, eOpts) {
+            var selection = model.getSelection();
+
+            var control = Ext.getCmp('cmbStatus');
+            if (control) {
+                selection.length ? control.enable() : control.disable();
+                0 < selection.length || Ext.getCmp('btnMassStatusUpdate').disable();
+            }
+
+            if (control = Ext.getCmp('btnMassDelete')) {
+                var flag = false;
+                for (var i = 0; i < selection.length; i++) {
+                    if (selection[i].data.delete == 1) {
+                        flag = true;
+                        break;
+                    }
                 }
 
-                if (selection.length > 0 && self.config.rowselect) {
-                    self.config.rowselect(self);
-                }
+                (flag && selection.length) ? control.enable() : control.disable();
+            }
 
-                if (0 === selection.length && self.config.rowdeselect) {
-                    self.config.rowdeselect(self);
-                }
-            });
+            if (selection.length > 0 && self.config.rowselect) {
+                self.config.rowselect(self);
+            }
+
+            if (0 === selection.length && self.config.rowdeselect) {
+                self.config.rowdeselect(self);
+            }
+        });
 
         self.grid.on('edit', events.edit || function (editor, e) {
                 if (e.value == e.originalValue) {
