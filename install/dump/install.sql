@@ -969,7 +969,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('mail', 'smtp_user', '', '', 'text', 39, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"mail_function|smtp\",\"multilingual\":\"0\"}'),
 ('mail', 'smtp_password', '', '', 'password', 42, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"mail_function|smtp\",\"multilingual\":\"0\"}'),
 ('mail', '', 'Sendmail Settings', '', 'divider', 45, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"mail_function|sendmail\",\"multilingual\":\"0\"}'),
-('mail', 'sendmail_path', '/usr/bin/sendmail', '', 'text', 48, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"mail_function|sendmail\",\"multilingual\":\"0\"}'),
+('mail', 'sendmail_path', '/usr/sbin/sendmail', '', 'text', 48, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"mail_function|sendmail\",\"multilingual\":\"0\"}'),
 ('mail', 'mimetype', '1', '\'1\',\'0\'', 'radio', 51, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 
 ('system', '', 'Setup', '1', 'divider', 0, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
