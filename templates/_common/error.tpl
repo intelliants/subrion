@@ -4,7 +4,7 @@
             var GOOG_FIXURL_LANG = '{$smarty.const.IA_LANGUAGE}';
             var GOOG_FIXURL_SITE = '{$smarty.const.IA_URL}';
         </script>
-        <script type="text/javascript" src="http://linkhelp.clients.google.com/tbproxy/lh/wm/fixurl.js"></script>
+        <script type="text/javascript" src="//linkhelp.clients.google.com/tbproxy/lh/wm/fixurl.js"></script>
     </div>
 {/if}
 
