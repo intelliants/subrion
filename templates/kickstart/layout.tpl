@@ -179,7 +179,7 @@
 
             <div class="content">
                 <div class="container">
-                    {if in_array($core.page.name, array('login', 'registration'))}
+                    {if in_array($core.page.name, array('login', 'registration', 'profile'))}
                         <div class="page-system">
                             <div class="content__header">
                                 <h1>{$core.page.title|escape}</h1>
