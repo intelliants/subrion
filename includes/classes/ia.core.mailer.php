@@ -189,6 +189,8 @@ class iaMailer extends PHPMailer
      * Load email Subject & Body template
      *
      * @param string $name template name
+     *
+     * @return boolean
      */
     public function loadTemplate($name)
     {

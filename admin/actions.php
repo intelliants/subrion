@@ -150,10 +150,10 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $iaMailer = $this->_iaCore->factory('mailer');
 
-        $iaMailer->Subject = 'Subrion CMS Mailing test';
-        $iaMailer->Body = 'THIS IS A TEST EMAIL MESSAGE FROM ADMIN DASHBOARD.';
+        $iaMailer->setSubject('Subrion CMS Mailing test');
+        $iaMailer->setBody('THIS IS A TEST EMAIL MESSAGE FROM ADMIN DASHBOARD.');
 
-        $iaMailer->addAddress(iaUsers::getIdentity()->email);
+        $iaMailer->addAddressByMember(iaUsers::getIdentity(true));
 
         $result = $iaMailer->send();
 
