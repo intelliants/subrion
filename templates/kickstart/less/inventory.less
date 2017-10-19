@@ -1,5 +1,6 @@
 .inventory {
   background: @inventory-bg;
+  border-bottom: 1px solid @inventory-border-color;
 }
 
 
@@ -12,7 +13,8 @@
   margin: 0 20px 0 0;
   position: relative;
   padding: 0 0 0 15px;
-  background: fade(#fff, 3%);
+  border-right: 1px solid @inventory-border-color;
+  border-left: 1px solid @inventory-border-color;
 
   &.pull-right {
     margin: 0 0 0 20px;
@@ -26,7 +28,7 @@
     padding: 0;
     color: @inventory-text-color;
 
-    .placeholder(fade(@inventory-text-color, 20%));
+    .placeholder(fade(@inventory-text-color, 30%));
 
     &:focus {
       outline: 0 none;
@@ -45,12 +47,13 @@
     }
 
     &:hover {
-      background: fade(#fff, 3%);
+      background: none;
+      color: @inventory-link-hover-color;
     }
   }
 
   @media (max-width: @grid-float-breakpoint) {
-    
+
     &.pull-right {
       margin: 0 20px 0 0;
       float: left !important;
@@ -117,13 +120,20 @@
     margin: 0;
 
     > a {
-      padding: 0 15px;
-      border-left: 1px solid fade(#fff, 5%);
-      color: @inventory-social-link-color;
+      &,
+      &:focus {
+        padding: 0 15px;
+        text-align: center;
+        border-left: 1px solid fade(#000, 5%);
+        color: @inventory-social-link-color;
+        font-size: 15px;
+        min-width: 16px;
+        box-sizing: content-box;
+      }
     }
 
     &:last-child > a {
-      border-right: 1px solid fade(#fff, 5%);
+      border-right: 1px solid fade(#000, 5%);
     }
   }
 

@@ -4,7 +4,7 @@
 // --------------------------------------------------
 
 .header {
-  background: #2d2d30 url('../img/bg-header-3.jpg') 50% 50% no-repeat;
+  background: #2d2d30 url('../img/bg-header.jpeg') 50% 50% no-repeat;
   background-size: cover;
 }
 
@@ -21,8 +21,8 @@
     right: 0;
     top: 0;
     bottom: 0;
-    // background: fade(#000, 35%);
-    background: fade(#000, 35%) url(../img/dot3.png) 0 0;
+    background: #2a2d36;
+    opacity: .54;
   }
 
   > .container {
@@ -33,25 +33,25 @@
   h1,
   h2 {
     color: #fff;
-    font-weight: 700;
+    font-weight: 100;
     .font-normalize(28px);
   }
 
   h2 {
     .font-normalize(16px, 5px 0 0);
-    font-weight: 300;
+    font-weight: 100;
   }
 
   @media (min-width: @grid-float-breakpoint) {
-    padding: 160px 0;
+    padding: 250px 0;
 
     h1 {
-      .font-normalize(48px);
-      // text-transform: uppercase;
+      .font-normalize(65px);
+      font-weight: 100;
     }
 
     h2 {
-      .font-normalize(24px, 10px 0 0);
+      .font-normalize(35px, 20px 0 0);
     }
   }
 }
