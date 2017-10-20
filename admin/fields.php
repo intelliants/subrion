@@ -536,7 +536,7 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         // fetch children
-        $rows = $this->_iaDb->all(array('child', 'element'), iaDb::convertIds($this->getEntryId(), 'field_id'),
+        $rows = $this->_iaDb->all(['child', 'element'], iaDb::convertIds($this->getEntryId(), 'field_id'),
             null, null, iaField::getTableRelations());
 
         $titles = [];

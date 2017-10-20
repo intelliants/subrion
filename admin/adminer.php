@@ -70,7 +70,7 @@ if (iaCore::ACCESS_ADMIN == $iaCore->getAccessType()) {
             public function credentials()
             {
                 // server, username and password for connecting to database
-                return array(INTELLI_DBHOST, INTELLI_DBUSER, INTELLI_DBPASS);
+                return [INTELLI_DBHOST, INTELLI_DBUSER, INTELLI_DBPASS];
             }
 
             public function database()
