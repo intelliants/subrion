@@ -106,7 +106,9 @@ class iaPatchApplier
             }
         }
 
-        empty($patch['module']) || $this->_processModules($patch['module']);
+        if ($patch['modules']) {
+            $this->_processModules($patch['modules']);
+        }
 
         $patchVersion = $patch['header']['major'] . '.' . $patch['header']['minor'];
 
@@ -233,13 +235,10 @@ class iaPatchApplier
 
         foreach ($entries as $entry) {
             $friendlyName = ucfirst($entry['name']);
-            if ($entry['type'] == self::EXTRA_TYPE_PLUGIN) {
-                iaHelper::installRemotePlugin($entry['name'])
-                    ? $this->_logInfo('Installation of :name is successfully completed.', self::LOG_SUCCESS, ['name' => $friendlyName])
-                    : $this->_logInfo('Unable to install :name due to errors.', self::LOG_ERROR, ['name' => $friendlyName]);
-            } else {
-                $this->_logInfo('Installation of ":name" requested. Ignored since installation of this type is not currently implemented.', self::LOG_ALERT, ['name' => $friendlyName]);
-            }
+
+            iaHelper::installRemotePlugin($entry['name'])
+                ? $this->_logInfo('Installation of :name is successfully completed.', self::LOG_SUCCESS, ['name' => $friendlyName])
+                : $this->_logInfo('Unable to install :name due to errors.', self::LOG_ERROR, ['name' => $friendlyName]);
         }
     }
 
