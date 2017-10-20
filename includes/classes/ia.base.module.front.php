@@ -48,6 +48,10 @@ abstract class abstractModuleFront extends abstractCore
         $this->iaCore->factory('item');
         $this->_itemName = iaItem::toSingular($this->_itemName);
         //
+
+        if ($this->_itemName && !$this->_moduleName) {
+            $this->_moduleName = $this->iaCore->factory('item')->getModuleByItem($this->_itemName);
+        }
     }
 
     public function getModuleName()

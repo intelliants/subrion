@@ -48,6 +48,10 @@ abstract class abstractModuleAdmin extends abstractCore
         $this->_itemName = iaItem::toSingular($this->_itemName);
         //
 
+        if ($this->_itemName && !$this->_moduleName) {
+            $this->_moduleName = $this->iaCore->factory('item')->getModuleByItem($this->_itemName);
+        }
+
         if (empty($this->_moduleUrl)) {
             $this->_moduleUrl = $this->getModuleName() . IA_URL_DELIMITER . $this->getItemName() . IA_URL_DELIMITER;
         }
