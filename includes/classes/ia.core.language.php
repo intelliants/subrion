@@ -160,10 +160,18 @@ class iaLanguage
         return self::$_table;
     }
 
-    public static function addPhrase($key, $value, $languageCode = '', $plugin = '', $category = self::CATEGORY_COMMON, $forceReplacement = true)
+    public static function addPhrase($key, $value, $languageCode = null, $module = '', $category = self::CATEGORY_COMMON, $forceReplacement = true)
     {
         if (!in_array($category, self::$_validCategories)) {
             return false;
+        }
+
+        if (is_null($languageCode)) {
+            $result = [];
+            foreach (iaCore::instance()->languages as $code => $language)
+                $result[] = self::addPhrase($key, $value, $code, $module, $category, $forceReplacement);
+
+            return !in_array(false, $result, true);
         }
 
         $iaDb = iaCore::instance()->iaDb;
@@ -171,12 +179,12 @@ class iaLanguage
 
         $languageCode = empty($languageCode) ? iaCore::instance()->iaView->language : $languageCode;
 
-        $stmt = '`key` = :key AND `code` = :language AND `category` = :category AND `module` = :plugin';
+        $stmt = '`key` = :key AND `code` = :language AND `category` = :category AND `module` = :module';
         $iaDb->bind($stmt, [
             'key' => $key,
             'language' => $languageCode,
             'category' => $category,
-            'plugin' => $plugin
+            'module' => $module
         ]);
 
         $phrase = $iaDb->row(['original', 'value'], $stmt);
@@ -188,7 +196,7 @@ class iaLanguage
                 'value' => $value,
                 'code' => $languageCode,
                 'category' => $category,
-                'module' => $plugin
+                'module' => $module
             ]);
         } else {
             $result = ($forceReplacement || ($phrase['value'] == $phrase['original']))
