@@ -15,7 +15,6 @@ There are two ways to activate debug panel in Subrion CMS.
 You can simply enable global debug mode in **includes/config.inc.php** file. Find the line below and change `0` to `1`
 
 ```php
-...
 define("INTELLI_DEBUG", 0);
 ```
 
