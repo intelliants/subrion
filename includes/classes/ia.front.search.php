@@ -808,6 +808,7 @@ SQL;
                             break;
                         case iaField::TREE:
                             $nodeId = array_shift($value);
+                            $data[$key] = $nodeId;
                             $captions[] = iaField::getFieldValue($this->_itemName, $key, $nodeId);
                             break;
                         default:
