@@ -50,7 +50,7 @@ class iaModule extends abstractCore
 
     const INSTALL_FILE_NAME = 'install.xml';
 
-    const BLOCK_FILENAME_PATTERN = 'extra:%s/%s';
+    const BLOCK_FILENAME_PATTERN = 'module:%s/%s';
 
     protected static $_table = 'modules';
 
@@ -1689,10 +1689,16 @@ class iaModule extends abstractCore
                 if ($filename = $this->_attr('filename')) {
                     switch ($type) {
                         case 'php':
-                            $filename = 'modules/' . $this->itemData['name'] . '/includes/' . $filename . '.php';
+                            $filename = 'modules/' . $this->itemData['name'] . '/includes/' . $filename;
+                            // compatibility
+                            if ('.php' != substr($filename, -4)) $filename.= '.php';
+                            //
                             break;
                         case 'smarty':
                             $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+                            // compatibility
+                            if ('.tpl' != substr($filename, -4)) $filename.= '.tpl';
+                            //
                     }
                 }
 
@@ -1715,6 +1721,9 @@ class iaModule extends abstractCore
                     $filename = $this->_attr('filename');
                     if ($this->itemData['type'] != self::TYPE_TEMPLATE && $filename && 'smarty' == $this->_attr('type')) {
                         $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+                        // compatibility
+                        if ('.tpl' != substr($filename, -4)) $filename.= '.tpl';
+                        //
                     }
 
                     $this->itemData['blocks'][] = [

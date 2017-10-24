@@ -41,15 +41,10 @@ class Smarty_Resource_Module extends Smarty_Resource_Custom
         return filemtime($this->_translateName($name));
     }
 
-    protected function getBasename(Smarty_Template_Source $source)
-    {
-        return explode(':', $source->name)[1];
-    }
-
 
     private function _translateName($name)
     {
-        $array = explode(':', $name);
+        $array = explode('/', $name);
 
         $moduleName = array_shift($array);
 
