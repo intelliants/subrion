@@ -18,7 +18,7 @@ You can simply enable global debug mode in **includes/config.inc.php** file. Fin
 define("INTELLI_DEBUG", 0);
 ```
 
-_Please note_: this mode activates debug mode for the whole script and everybody, including unauthorized visitors, can see the debug information. Use it carefully on test sites only. It **MUST NOT** be used in production.
+!> **NOTE** This mode activates debug mode for the whole script and everybody, including unauthorized visitors, can see the debug information. Use it carefully on test sites only. It **MUST NOT** be used in production.
 
 ### User specific debug mode
 
