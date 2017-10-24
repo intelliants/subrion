@@ -1689,10 +1689,8 @@ class iaModule extends abstractCore
                 if ($filename = $this->_attr('filename')) {
                     switch ($type) {
                         case 'php':
-                            $filename = 'modules/' . $this->itemData['name'] . '/includes/' . $filename . iaSystem::EXECUTABLE_FILE_EXT;
-
+                            $filename = 'modules/' . $this->itemData['name'] . '/includes/' . $filename . '.php';
                             break;
-
                         case 'smarty':
                             $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
                     }
@@ -1709,6 +1707,7 @@ class iaModule extends abstractCore
                     'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
                     'order' => $this->_attr('order', 0)
                 ];
+
                 break;
 
             case 'block':

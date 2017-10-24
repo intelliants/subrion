@@ -736,11 +736,11 @@ SQL;
                 if ('php' == $hook['type']
                     && (empty($hook['pages']) || in_array($iaView->name(), $hook['pages']))) {
                     if ($hook['filename']) {
-                        if (!file_exists(IA_HOME . $hook['filename'])) {
+                        if (file_exists(IA_HOME . $hook['filename'])) {
+                            include IA_HOME . $hook['filename'];
+                        } else {
                             $message = sprintf('Can\'t start hook "%s". File does not exist: %s', $name, $hook['filename']);
                             iaDebug::debug($message, null, 'error');
-                        } else {
-                            include IA_HOME . $hook['filename'];
                         }
                     } else {
                         iaSystem::renderTime('START TIME ' . $name . ' ' . $extras);

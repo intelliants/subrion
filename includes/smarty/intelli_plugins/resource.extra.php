@@ -26,37 +26,40 @@
 
 class Smarty_Resource_Extra extends Smarty_Resource_Custom
 {
-    protected function fetch($name, &$source, &$modifiedTime)
-    {
-        $path = $this->_translateName($name);
-
-        $source = @file_get_contents($path);
-        $modifiedTime = @filemtime($path);
-    }
-
-    protected function fetchTimestamp($name)
-    {
-        return filemtime($this->_translateName($name));
-    }
 
 
-    private function _translateName($name)
-    {
-        $array = explode('/', $name);
+	protected function fetch($name, &$source, &$modifiedTime)
+	{
+		$path = $this->_translateName($name);
 
-        $moduleName = array_shift($array);
+		$source = @file_get_contents($path);
+		$modifiedTime = @filemtime($path);
 
-        $templateName = implode('.', $array) . iaView::TEMPLATE_FILENAME_EXT;
+		iaDebug::debug("Obsolete 'Extra' resource called: " . $name);
+	}
 
-        if (iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType()) {
-            $filePath = sprintf('modules/%s/templates/admin/%s', $moduleName, $templateName);
+	protected function fetchTimestamp($name)
+	{
+		return filemtime($this->_translateName($name));
+	}
 
-            return IA_HOME . $filePath;
-        }
 
-        $filePath = sprintf('templates/%s/modules/%s/%s', iaCore::instance()->get('tmpl'), $moduleName, $templateName);
-        is_file($filePath) || $filePath = sprintf('modules/%s/templates/front/%s', $moduleName, $templateName);
+	private function _translateName($name)
+	{
+		$array = explode('/', $name);
 
-        return IA_HOME . $filePath;
-    }
+		$moduleName = array_shift($array);
+		$templateName = implode('.', $array) . iaView::TEMPLATE_FILENAME_EXT;
+
+		if (iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType())
+		{
+			$filePath = sprintf('modules/%s/templates/admin/%s', $moduleName, $templateName);
+			return IA_HOME . $filePath;
+		}
+
+		$filePath = sprintf('templates/%s/modules/%s/%s', iaCore::instance()->get('tmpl'), $moduleName, $templateName);
+		is_file($filePath) || $filePath = sprintf('modules/%s/templates/front/%s', $moduleName, $templateName);
+
+		return IA_HOME . $filePath;
+	}
 }
