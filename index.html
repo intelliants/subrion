@@ -17,33 +17,34 @@
 </head>
 <body>
   <div id="app">Loading...</div>
-</body>
-<script>
-  window.$docsify = {
-    coverpage: true,
-    loadNavbar: true,
-    loadSidebar: true,
-    name: 'intelliants/subrion',
-    repo: 'https://github.com/intelliants/subrion/',
-    formatUpdated: '{DD}/{MM} {HH}:{mm}',
-    plugins: [
-      function(hook, vm) {
-        hook.beforeEach(function (html) {
-          var url = 'https://github.com/intelliants/subrion/blob/gh-pages/' + vm.route.file
-          var editHtml = '[:memo: Edit Document](' + url + ')\n'
 
-          return html
-            + '\n----\n'
-            + 'Last modified {docsify-updated} '
-            + editHtml
-        })
-      },
-    ]
-  }
-</script>
-<script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
-<script src="//unpkg.com/docsify/lib/plugins/search.min.js"></script>
-<script src="//unpkg.com/prismjs/components/prism-bash.min.js"></script>
-<script src="//unpkg.com/prismjs/components/prism-markdown.min.js"></script>
-<script src="//unpkg.com/prismjs/components/prism-nginx.min.js"></script
+    <script>
+window.$docsify = {
+  coverpage: true,
+  loadNavbar: true,
+  loadSidebar: true,
+  name: 'intelliants/subrion',
+  repo: 'https://github.com/intelliants/subrion/',
+  formatUpdated: '{DD}/{MM} {HH}:{mm}',
+  plugins: [
+    function(hook, vm) {
+      hook.beforeEach(function (html) {
+        var url = 'https://github.com/intelliants/subrion/blob/gh-pages/' + vm.route.file
+        var editHtml = '[:memo: Edit Document](' + url + ')\n'
+
+        return html
+          + '\n----\n'
+          + 'Last modified {docsify-updated} '
+          + editHtml
+      })
+    },
+  ]
+}
+    </script>
+    <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+    <script src="//unpkg.com/docsify/lib/plugins/search.min.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-bash.min.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-markdown.min.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-nginx.min.js"></script>
+  </body>
 </html>
