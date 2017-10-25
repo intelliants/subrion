@@ -34,7 +34,7 @@ This hook includes the file, called hook.blocks-load.php, located in modules/MOD
 
 ```xml
 <hooks>
-    <hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="hook.blocks-load"><![CDATA[]]></hook>
+    <hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="hook.blocks-load.php"><![CDATA[]]></hook>
 </hooks>
 ```
 
