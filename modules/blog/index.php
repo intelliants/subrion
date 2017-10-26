@@ -89,8 +89,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $messages[] = iaLanguage::get('title_is_empty');
                 }
 
-                $entry['body'] = $_POST['body'];
-                utf8_is_valid($entry['body']) || $entry['body'] = utf8_bad_replace($entry['body']);
+                $entry['body'] = iaUtil::safeHTML(utf8_bad_replace($_POST['body']));
 
                 if (empty($entry['body'])) {
                     $messages[] = iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('body')]);
@@ -151,11 +150,19 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                 return iaView::errorPage(iaView::ERROR_NOT_FOUND);
             }
 
+            if (!iaUsers::hasIdentity()) {
+                return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
+            }
+
             $id = (int)$iaCore->requestPath[0];
-            $entry = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
+            $entry = $iaBlog->getById($id);
 
             if (!$entry) {
                 return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+            }
+
+            if ($entry['member_id'] != iaUsers::getIdentity()->id) {
+                return iaView::errorPage(iaView::ERROR_FORBIDDEN);
             }
 
             $result = $iaBlog->delete($id);

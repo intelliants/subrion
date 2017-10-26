@@ -847,7 +847,8 @@ SQL;
         $rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit,
             self::getTable());
         $count = $this->iaDb->foundRows();
-        !$rows || $this->_processValues($rows);
+
+        $this->_processValues($rows);
 
         return [$count, $rows];
     }

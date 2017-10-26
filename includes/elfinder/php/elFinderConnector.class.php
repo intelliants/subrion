@@ -54,7 +54,7 @@ class elFinderConnector {
 		$this->elFinder = $elFinder;
 		$this->reqMethod = strtoupper($_SERVER["REQUEST_METHOD"]);
 		if ($debug) {
-			self::$contentType = 'Content-Type: text/html; charset=utf-8';
+			self::$contentType = 'Content-Type: text/plain; charset=utf-8';
 		}
 	}
 	
@@ -163,11 +163,19 @@ class elFinderConnector {
 	 * @author Dmitry (dio) Levashov
 	 **/
 	protected function output(array $data) {
+		// unlock session data for multiple access
+		$this->elFinder->getSession()->close();
+		// client disconnect should abort
+		ignore_user_abort(false);
+		
 		if ($this->header) {
 			self::sendHeader($this->header);
 		}
 		
 		if (isset($data['pointer'])) {
+			// set time limit to 0
+			elFinder::extendTimeLimit(0);
+			
 			// send optional header
 			if (!empty($data['header'])) {
 				self::sendHeader($data['header']);
@@ -224,11 +232,6 @@ class elFinderConnector {
 					}
 				}
 			}
-
-			// unlock session data for multiple access
-			$this->elFinder->getSession()->close();
-			// client disconnect should abort
-			ignore_user_abort(false);
 
 			if ($reqMethod !== 'HEAD') {
 				if ($toEnd) {

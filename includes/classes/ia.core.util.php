@@ -99,7 +99,7 @@ class iaUtil extends abstractUtil
         $config->set('Attr.AllowedRel', 'facebox,nofollow,print,ia_lightbox');
 
         // allow YouTube and Vimeo
-        $config->set('HTML.AllowedElements', array('iframe'));
+        //$config->set('HTML.AllowedElements', ['iframe']);
         $config->set('HTML.SafeIframe', true);
         $config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|www\.google\.com/maps/embed\?)%');
 

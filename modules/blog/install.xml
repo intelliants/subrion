@@ -31,9 +31,9 @@
 		<object meta_object="admin_page" id="blog" action="delete" access="1">Delete blog entry</object>
 
 		<object id="blog" access="1">View blog entries</object>
-		<object id="blog" action="add" access="0">Add blog entry</object>
-		<object id="blog" action="edit" access="0">Edit blog entry</object>
-		<object id="blog" action="delete" access="0">Delete blog entry</object>
+		<object id="blog" action="add" access="1">Add blog entry</object>
+		<object id="blog" action="edit" access="1">Edit blog entry</object>
+		<object id="blog" action="delete" access="1">Delete blog entry</object>
 	</permissions>
 
 	<phrases>

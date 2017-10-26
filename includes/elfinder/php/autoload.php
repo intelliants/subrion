@@ -7,6 +7,7 @@ function elFinderAutoloader($name) {
 		'elFinder' => ELFINDER_PHP_ROOT_PATH . '/elFinder.class.php',
 		'elFinderConnector' => ELFINDER_PHP_ROOT_PATH . '/elFinderConnector.class.php',
 		'elFinderLibGdBmp' => ELFINDER_PHP_ROOT_PATH . '/libs/GdBmp.php',
+		'elFinderPlugin' => ELFINDER_PHP_ROOT_PATH . '/elFinderPlugin.php',
 		'elFinderPluginAutoResize' => ELFINDER_PHP_ROOT_PATH . '/plugins/AutoResize/plugin.php',
 		'elFinderPluginAutoRotate' => ELFINDER_PHP_ROOT_PATH . '/plugins/AutoRotate/plugin.php',
 		'elFinderPluginNormalizer' => ELFINDER_PHP_ROOT_PATH . '/plugins/Normalizer/plugin.php',
@@ -23,6 +24,7 @@ function elFinderAutoloader($name) {
 		'elFinderVolumeGroup' => ELFINDER_PHP_ROOT_PATH . '/elFinderVolumeGroup.class.php',
 		'elFinderVolumeLocalFileSystem' => ELFINDER_PHP_ROOT_PATH . '/elFinderVolumeLocalFileSystem.class.php',
 		'elFinderVolumeMySQL' => ELFINDER_PHP_ROOT_PATH . '/elFinderVolumeMySQL.class.php',
+		'elFinderVolumeTrash' => ELFINDER_PHP_ROOT_PATH . '/elFinderVolumeTrash.class.php',
 	);
 	if (isset($map[$name])) {
 		return include_once($map[$name]);
