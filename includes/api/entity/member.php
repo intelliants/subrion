@@ -112,7 +112,7 @@ class iaApiEntityMember extends iaApiEntityAbstract
 
         $result = (0 === $this->iaDb->getErrorNumber());
 
-        if (self::KEYWORD_SELF == $id && $result) {
+        if ($id == iaUsers::getIdentity()->id && $result) {
             iaUsers::reloadIdentity();
         }
 
