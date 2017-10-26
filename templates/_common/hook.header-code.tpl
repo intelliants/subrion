@@ -16,3 +16,7 @@
 {if !isset($noImage) && $core.config.opengraph_image}
     <meta property="og:image" content="{$smarty.const.IA_URL}uploads/{$core.config.opengraph_image}">
 {/if}
+
+{ia_add_js}
+	intelli.securityToken = '{$securityToken}';
+{/ia_add_js}
