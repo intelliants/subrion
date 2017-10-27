@@ -49,6 +49,13 @@ class iaInvoice extends abstractCore
 
         $this->iaDb->insert($invoice, null, self::getTable());
 
+        $this->saveItems($id, [
+            'title' => [$transaction['operation']],
+            'price' => [$transaction['amount']],
+            'quantity' => [1],
+            'tax' => [0]
+        ]);
+
         if (0 === $this->iaDb->getErrorNumber()) {
             $this->_sendEmailNotification($invoice, $transaction);
 
