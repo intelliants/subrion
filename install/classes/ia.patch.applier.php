@@ -166,46 +166,27 @@ class iaPatchApplier
         $pathName = $entry['path'] . '/' . $entry['name'];
 
         switch (true) {
-            // file/directory removal task
-            case $entry['flags'] & self::FILE_ACTION_REMOVE:
-
-                if (!file_exists($pathName)) {
-                    $this->_logInfo('File/folder to be removed does already not exist: :file', self::LOG_SUCCESS, ['file' => $pathName]);
-                    break;
-                }
-                if (is_dir($pathName)) {
-                    $this->_recursivelyRemoveDirectory($pathName);
-                    clearstatcache();
-                    is_dir($pathName)
-                        ? $this->_logInfo('Removal of directory :directory', self::LOG_SUCCESS, ['directory' => $pathName])
-                        : $this->_logInfo('Unable to remove the directory: :directory', self::LOG_ERROR, ['directory' => $pathName]);
-                } else {
-                    @unlink($pathName)
-                        ? $this->_logInfo('Removal of single file: :file', self::LOG_SUCCESS, ['file' => $pathName])
-                        : $this->_logInfo('Unable to remove the file: :file', self::LOG_ERROR, ['file' => $pathName]);
-                }
-
-                break;
-
             // default case - file create/rewrite task
             case $entry['flags'] & self::FILE_ACTION_CREATE:
+                if (file_exists($pathName)
+                    && ($entry['flags'] & self::FILE_FORMAT_TEXT)
+                    && self::EMPTY_FILE_HASH != $entry['hash']) {
+                    $content = @file_get_contents($pathName);
 
-                if (file_exists($pathName)) {
-                    if (!$this->_forceMode) {
-                        if ($entry['flags'] & self::FILE_FORMAT_TEXT) {
-                            if (self::EMPTY_FILE_HASH != $entry['hash']) {
-                                $content = @file_get_contents($pathName);
+                    if (false === $content) {
+                        $this->_logInfo('Unable to get contents of the file to calculate the checksum: :file. Skipped', self::LOG_ERROR, ['file' => $pathName]);
+                        return;
+                    }
 
-                                if (false === $content) {
-                                    $this->_logInfo('Unable to get contents of the file to calculate the checksum: :file. Skipped', self::LOG_ERROR, ['file' => $pathName]);
-                                    return;
-                                }
+                    if (!$this->_checkTokenValidity($content, $entry['hash'])) {
+                        if ($this->_forceMode) {
+                            $newName = $pathName . '.v' . str_replace('.', '', IA_VERSION);
+                            rename($pathName, $newName);
 
-                                if (!$this->_checkTokenValidity($content, $entry['hash'])) {
-                                    $this->_logInfo('The checksum is not equal: :file (seems modified). Skipped', self::LOG_ERROR, ['file' => $pathName]);
-                                    return;
-                                }
-                            }
+                            $this->_logInfo('Renamed modified file :file to keep custom modifications', self::LOG_INFO, ['file' => $newName]);
+                        } else {
+                            $this->_logInfo('The checksum is not equal: :file (seems modified). Skipped', self::LOG_ERROR, ['file' => $pathName]);
+                            return;
                         }
                     }
                 }
@@ -226,6 +207,26 @@ class iaPatchApplier
                 is_writable($folder)
                     ? $this->_writeFile($pathName, $entry['contents'], $entry['flags'] & self::FILE_FORMAT_BINARY)
                     : $this->_logInfo('File is non-writable: :file. Skipped', self::LOG_ERROR, ['file' => $pathName]);
+
+                break;
+
+            // file/directory removal task
+            case $entry['flags'] & self::FILE_ACTION_REMOVE:
+                if (!file_exists($pathName)) {
+                    $this->_logInfo('File/folder to be removed already does not exist: :file', self::LOG_SUCCESS, ['file' => $pathName]);
+                    break;
+                }
+                if (is_dir($pathName)) {
+                    $this->_recursivelyRemoveDirectory($pathName);
+                    clearstatcache();
+                    is_dir($pathName)
+                        ? $this->_logInfo('Removal of directory :directory', self::LOG_SUCCESS, ['directory' => $pathName])
+                        : $this->_logInfo('Unable to remove the directory: :directory', self::LOG_ERROR, ['directory' => $pathName]);
+                } else {
+                    @unlink($pathName)
+                        ? $this->_logInfo('Removal of single file: :file', self::LOG_SUCCESS, ['file' => $pathName])
+                        : $this->_logInfo('Unable to remove the file: :file', self::LOG_ERROR, ['file' => $pathName]);
+                }
         }
     }
 
