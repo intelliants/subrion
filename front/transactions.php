@@ -54,11 +54,10 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['amount']))
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     $iaInvoice = $iaCore->factory('invoice');
+    $iaTransaction = $iaCore->factory('transaction');
 
     if (isset($iaCore->requestPath[0]) && 'invoice' == $iaCore->requestPath[0]) {
         if (isset($iaCore->requestPath[1])) {
-            $iaTransaction = $iaCore->factory('transaction');
-
             $transaction = $iaTransaction->getBy('sec_key', $iaCore->requestPath[1]);
 
             if (!$transaction) {
@@ -110,8 +109,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     $pagination['page'] = (isset($_GET['page']) && 1 < $_GET['page']) ? (int)$_GET['page'] : $pagination['page'];
     $pagination['page'] = ($pagination['page'] - 1) * $pagination['limit'];
 
-    $transactions = $iaDb->all('SQL_CALC_FOUND_ROWS *', '`member_id` = ' . iaUsers::getIdentity()->id . ' ORDER BY `status`', $pagination['page'], $pagination['limit'], iaTransaction::getTable());
-    $pagination['total'] = $iaDb->foundRows();
+    list($transactions, $pagination['total']) = $iaTransaction->getList();
 
     $iaView->caption($iaView->title() . ': ' . number_format(iaUsers::getIdentity()->funds, 2, '.', '') . ' ' . $iaCore->get('currency'));
 

@@ -162,9 +162,37 @@ class iaTransaction extends abstractCore
         return $this->getBy(iaDb::ID_COLUMN_SELECTION, $transactionId);
     }
 
-    public function getBy($key, $id)
+    public function getBy($key, $id, $countRows = false)
     {
-        return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id, $key), self::getTable());
+        return $this->iaDb->row(($countRows ? iaDb::STMT_CALC_FOUND_ROWS . ' ' : '') . iaDb::ALL_COLUMNS_SELECTION,
+            iaDb::convertIds($id, $key), self::getTable());
+    }
+
+    public function getList()
+    {
+        $rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION,
+            iaDb::convertIds(iaUsers::getIdentity()->id, 'member_id'), null, null, self::getTable());
+        $count = $this->iaDb->foundRows();
+
+        if ($rows) {
+            foreach ($rows as &$row) {
+                $row['gateway_title'] = iaLanguage::get($row['gateway'], $row['gateway']);
+                $row['gateway_icon'] = null;
+
+                $path = IA_HOME . 'modules/' . $row['gateway'] . '/templates/front/img/';
+                if (is_file($path . 'button.png')) {
+                    $row['gateway_icon'] = 'button.png';
+                } elseif (is_file($path . $row['gateway'] . '.png')) {
+                    $row['gateway_icon'] = $row['gateway'] . '.png';
+                }
+
+                if ($row['gateway_icon']) {
+                    $row['gateway_icon'] = IA_CLEAR_URL . 'modules/' . $row['gateway'] . '/templates/front/img/' . $row['gateway_icon'];
+                }
+            }
+        }
+
+        return [$rows, $count];
     }
 
     public function createIpn($transaction)

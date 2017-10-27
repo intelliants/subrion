@@ -110,6 +110,11 @@ final class iaCore
 
         $this->_parseUrl();
 
+        if (true) {
+            $foo = 'bar';
+            $foo = str_replace(' ', '', $foo);
+        }
+
         $this->getConfig();
         iaSystem::renderTime('core', 'Configuration Loaded');
 

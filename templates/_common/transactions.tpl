@@ -1,36 +1,37 @@
 {if $transactions}
     <h3>{lang key='current_assets'}</h3>
-    <table class="table table-striped table-bordered">
+    <table class="table table-striped">
     <thead>
         <tr>
-            <th>{lang key='reference_id'}</th>
             <th>{lang key='operation'}</th>
-            <th>{lang key='status'}</th>
-            <th>{lang key='date'}</th>
-            <th>{lang key='gateway'}</th>
             <th>{lang key='total'}</th>
-            <th>&nbsp;</th>
+            <th>{lang key='date'}</th>
+            <th>{lang key='status'}</th>
         </tr>
     </thead>
     <tbody>
     {foreach $transactions as $transaction}
         <tr>
-            <td>{$transaction.reference_id}</td>
-            <td>{$transaction.operation}</td>
-            <td class="{$transaction.status}">{$transaction.status}</td>
-            <td>{$transaction.date_created|date_format:$core.config.date_format}</td>
-            <td>{$transaction.gateway}</td>
-            <td>{$transaction.amount} {$transaction.currency}</td>
             <td>
+                <p><strong>{$transaction.operation}</strong></p>
+                {if $transaction.gateway_icon}<img src="{$transaction.gateway_icon}" alt="{$transaction.gateway_title|escape}" height="18">{/if}
+                {if $transaction.reference_id}
+                    {lang key='reference_id'}: <strong>{$transaction.reference_id}</strong>
+                {/if}
+            </td>
+            <td>{$transaction.amount} {$transaction.currency}</td>
+            <td>{$transaction.date_created|date_format:$core.config.date_format}</td>
+            <td class="{$transaction.status}">
+                <p>{lang key=$transaction.status default=$transaction.status}</p>
                 {if iaTransaction::PENDING == $transaction.status}
                     {if empty($transaction.gateway)}
-                        <a href="pay/{$transaction.sec_key}/" class="btn btn-mini btn-primary">{lang key='pay'}</a>
+                        <a href="pay/{$transaction.sec_key}/" class="btn btn-xs btn-primary">{lang key='pay'}</a>
                     {else}
-                        <a href="pay/{$transaction.sec_key}/?repay" class="btn btn-mini">{lang key='change_gateway'}</a>
+                        <a href="pay/{$transaction.sec_key}/?repay" class="btn btn-xs">{lang key='change_gateway'}</a>
                     {/if}
-                    <a href="pay/{$transaction.sec_key}/?delete" class="btn btn-mini btn-danger js-cancel-invoice">{lang key='cancel'}</a>
+                    <a href="pay/{$transaction.sec_key}/?delete" class="btn btn-xs btn-danger js-cancel-invoice">{lang key='cancel'}</a>
                 {elseif iaTransaction::PASSED == $transaction.status}
-                    <a href="{$smarty.const.IA_SELF}invoice/{$transaction.sec_key}/" class="btn btn-mini btn-info" target="_blank">{lang key='print_invoice'}</a>
+                    <a href="{$smarty.const.IA_SELF}invoice/{$transaction.sec_key}/" class="btn btn-xs btn-info" target="_blank">{lang key='print_invoice'}</a>
                 {/if}
             </td>
         </tr>
