@@ -204,9 +204,9 @@ $(function() {
                             </select>
                         </div>
                     {elseif $entry.type == 'itemscheckbox' && !$custom}
+                        <input type="hidden" name="v[{$entry.name}][]">
                         {if isset($entry.items[0])}
                             <div class="item-input">
-                                <input type="hidden" name="v[{$entry.name}][]">
                                 {foreach $entry.items[0] as $item}
                                     <p>
                                         <input type="checkbox" id="icb_{$entry.name}_{$item.name}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
@@ -220,7 +220,6 @@ $(function() {
                         {if isset($entry.items[1])}
                         <hr>
                         <div class="item-input">
-                            <input type="hidden" name="v[{$entry.name}][]">
                             {foreach $entry.items[1] as $item}
                                 <p>
                                     <input type="checkbox" id="icb_{$entry.name}_{$item.name}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
