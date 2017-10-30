@@ -204,18 +204,31 @@ $(function() {
                             </select>
                         </div>
                     {elseif $entry.type == 'itemscheckbox' && !$custom}
-                        {if isset($entry.items)}
+                        {if isset($entry.items[0])}
                             <div class="item-input">
                                 <input type="hidden" name="v[{$entry.name}][]">
-                                {foreach $entry.items as $item name=items}
+                                {foreach $entry.items[0] as $item}
                                     <p>
-                                        <input type="checkbox" id="icb_{$entry.name}_{$smarty.foreach.items.iteration}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
-                                        <label for="icb_{$entry.name}_{$smarty.foreach.items.iteration}">{$item.title}</label>
+                                        <input type="checkbox" id="icb_{$entry.name}_{$item.name}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
+                                        <label for="icb_{$entry.name}_{$item.name}">{$item.title}</label>
                                     </p>
                                 {/foreach}
                             </div>
                         {else}
                             <div class="alert alert-info">{lang key='no_implemented_packages'}</div>
+                        {/if}
+                        {if isset($entry.items[1])}
+                        <hr>
+                        <div class="item-input">
+                            <input type="hidden" name="v[{$entry.name}][]">
+                            {foreach $entry.items[1] as $item}
+                                <p>
+                                    <input type="checkbox" id="icb_{$entry.name}_{$item.name}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
+                                    <label for="icb_{$entry.name}_{$item.name}">{$item.title}</label>
+                                    <small class="text-muted">(not supported explicitly)</small>
+                                </p>
+                            {/foreach}
+                        </div>
                         {/if}
                     {/if}
                     </div> <!-- /.col -->

@@ -478,21 +478,22 @@ SQL;
                     break;
 
                 case self::TYPE_ITEMSCHECKBOX:
-                    $array = $this->_iaCore->get($entry['module'] . '_items_implemented');
-                    $array = $array ? explode(',', $array) : [];
-                    $array = array_values(array_intersect($array, $itemsList));
+                    $implementedItems = $this->_iaCore->get($entry['module'] . '_items_implemented');
+                    $implementedItems = $implementedItems ? explode(',', $implementedItems) : [];
 
-                    if ($array) {
-                        $enabledItems = $iaItem->getEnabledItemsForPlugin($entry['module']);
+                    $enabledItems = $iaItem->getEnabledItemsForPlugin($entry['module']);
 
-                        for ($i = 0; $i < count($array); $i++) {
-                            $array[$i] = trim($array[$i]);
-                            $entry['items'][] = [
-                                'name' => $array[$i],
-                                'title' => iaLanguage::get($array[$i]),
-                                'checked' => (int)in_array($array[$i], $enabledItems)
-                            ];
-                        }
+                    foreach ($itemsList as $itemName) {
+                        $itemEntry = [
+                            'name' => $itemName,
+                            'title' => iaLanguage::get($itemName),
+                            'checked' => in_array($itemName, $enabledItems)
+                        ];
+
+                        in_array($itemName, $implementedItems)
+                            ? ($entry['items'][0][] = $itemEntry)
+                            : ($entry['items'][1][] = $itemEntry);
+                        ;
                     }
             }
 
