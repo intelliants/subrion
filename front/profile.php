@@ -137,6 +137,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
         $iaView->assign('assignableGroups', $assignableGroups);
     }
 
+    $item['item'] = $itemName;
+
     $iaView->assign('sections', $sections);
     $iaView->assign('plans_count', (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, null, iaPlan::getTable()));
     $iaView->assign('item', $item);

@@ -131,7 +131,7 @@
         {/if}
 
         {* use this to exclude tabs where you don't need capture named __all__ *}
-        {append 'tabs_after' array('password', 'funds', 'plans') index='excludes'}
+        {append 'tabs_after' ['password', 'funds', 'plans'] index='excludes'}
 
         {capture append='tabs_after' name='__all__'}
             <div class="fieldset__actions">
