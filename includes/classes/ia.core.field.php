@@ -107,9 +107,9 @@ class iaField extends abstractCore
     }
 
 
-    public static function getLanguageValue($itemName, $fieldName, $value)
+    public static function getLanguageValue($itemName, $fieldName, $value, $default = null)
     {
-        return iaLanguage::get(sprintf(self::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $value));
+        return iaLanguage::get(sprintf(self::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $value), $default);
     }
 
     public static function getFieldTitle($itemName, $fieldName)

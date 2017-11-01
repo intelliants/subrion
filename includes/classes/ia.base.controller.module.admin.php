@@ -282,9 +282,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         $result = false;
 
         if ($entryData = $this->getById($entryId)) {
-            $result = $this->_delete($entryId);
-
-            if ($result) {
+            if ($result = $this->_delete($entryId)) {
                 $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
                 $this->updateCounters($entryId, $entryData, iaCore::ACTION_DELETE);
 

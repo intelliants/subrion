@@ -801,15 +801,18 @@ SQL;
                             break;
                         case iaField::COMBO:
                             foreach ($value as $v) {
-                                $title = iaLanguage::get(sprintf('field_%s_%s', $key, $v), false);
-                                empty($title) || $captions[] = $title;
+                                if ($title = iaField::getLanguageValue($this->_itemName, $key, $v, false)) {
+                                    $captions[] = $title;
+                                }
                             }
                             $data[$key] = $value;
                             break;
                         case iaField::TREE:
                             $nodeId = array_shift($value);
                             $data[$key] = $nodeId;
-                            $captions[] = iaField::getFieldValue($this->_itemName, $key, $nodeId);
+                            if ($title = iaField::getLanguageValue($this->_itemName, $key, $nodeId, false)) {
+                                $captions[] = $title;
+                            }
                             break;
                         default:
                             $value = array_shift($value);
