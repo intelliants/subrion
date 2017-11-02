@@ -444,9 +444,10 @@ CREATE TABLE `{install:prefix}language` (
 	`key` varchar(64) NOT NULL,
 	`original` text NOT NULL,
 	`value` text NOT NULL,
-	`category` enum('admin','frontend','common','page','tooltip') NOT NULL default 'frontend',
+	`category` enum('admin','frontend','common','page','tooltip','api') NOT NULL default 'frontend',
 	`code` char(2) NOT NULL,
 	`module` varchar(40) NOT NULL,
+	`api` tinyint(1) NOT NULL default 0,
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `UNIQUE` (`key`,`category`,`code`,`module`),
 	KEY `LANG` (`code`)
