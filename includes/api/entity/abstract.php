@@ -44,6 +44,8 @@ abstract class iaApiEntityAbstract extends abstractCore
     {
         parent::init();
 
+        $this->_name = strtolower(str_replace('iaApiEntity', '', static::class));
+
         $this->iaField = $this->iaCore->factory('field');
     }
 

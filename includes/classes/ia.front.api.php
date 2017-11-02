@@ -49,8 +49,6 @@ class iaApi
 
     protected $_mobilePush;
 
-    protected $_systemEntities = ['field', 'migration'];
-
 
     public function init()
     {
@@ -157,27 +155,23 @@ class iaApi
 
     protected function _loadEntity($name)
     {
-        $extras = iaCore::instance()->factory('item')->getModuleByItem($name);
+        $iaCore = iaCore::instance();
 
-        if (!$extras && !in_array($name, $this->_systemEntities)) {
-            throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
-        }
-
-        $entity = (iaCore::CORE == $extras || in_array($name, $this->_systemEntities))
-            ? $this->_loadCoreEntity($name)
-            : iaCore::instance()->factoryItem($name);
-
-        $entity->setRequest($this->_getRequest());
-        $entity->setResponse($this->_getResponse());
+        $entity = $iaCore->factory('item')->getModuleByItem($name)
+            ? $iaCore->factoryItem($name)
+            : $this->_loadSystemEntity($name);
 
         if (!$entity) {
             throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
         }
 
+        $entity->setRequest($this->_getRequest());
+        $entity->setResponse($this->_getResponse());
+
         return $entity;
     }
 
-    private function _loadCoreEntity($name)
+    private function _loadSystemEntity($name)
     {
         $fileName = IA_INCLUDES . 'api/entity/' . $name . iaSystem::EXECUTABLE_FILE_EXT;
 

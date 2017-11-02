@@ -26,8 +26,6 @@
 
 class iaApiEntityField extends iaApiEntityAbstract
 {
-    protected $_name = 'field';
-
     protected static $_table = 'fields';
 
     public $apiFilters = ['name', 'item', 'type', 'module', 'searchable', 'status'];

@@ -26,8 +26,6 @@
 
 class iaApiEntityMigration extends iaApiEntityAbstract
 {
-    protected $_name = 'migration';
-
     protected static $_table = 'migrations';
 
 

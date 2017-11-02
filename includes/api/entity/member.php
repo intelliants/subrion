@@ -28,8 +28,6 @@ class iaApiEntityMember extends iaApiEntityAbstract
 {
     const KEYWORD_SELF = 'self';
 
-    protected $_name = 'member';
-
     protected static $_table = 'members';
 
     protected $hiddenFields = ['password', 'sec_key'];
