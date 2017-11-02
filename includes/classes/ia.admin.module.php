@@ -1673,10 +1673,18 @@ class iaModule extends abstractCore
             case 'tooltip':
                 if ($this->_checkPath('phrases') || $this->_checkPath('tooltips')) {
                     if ($key = trim($this->_attr('key'))) {
-                        $category = ('phrase' == $this->_inTag) ? $this->_attr('category', iaLanguage::CATEGORY_COMMON) : $this->_inTag;
                         $phrases = &$this->itemData['phrases'];
 
-                        isset($phrases[$key]) || $phrases[$key] = ['values' => [], 'category' => $category];
+                        if (!isset($phrases[$key])) {
+                            $phrases[$key] = [
+                                'api' => $this->_attr('api',null),
+                                'category' => ('phrase' == $this->_inTag)
+                                    ? $this->_attr('category', iaLanguage::CATEGORY_COMMON)
+                                    : $this->_inTag,
+                                'values' => [],
+                            ];
+                        }
+
                         $phrases[$key]['values'][$this->_attr('code', $this->iaView->language)] = $text;
                     }
                 }
@@ -2004,7 +2012,13 @@ class iaModule extends abstractCore
                     ? $phrase['values'][$isoCode]
                     : $phrase['values'][$defaultLangCode];
 
-                iaLanguage::addPhrase($key, $value, $isoCode, $this->itemData['name'], $phrase['category'], false);
+                $api = $phrase['api'];
+                if (is_null($api)) {
+                    $api = ('api' == $phrase['category']);
+                }
+
+                iaLanguage::addPhrase($key, $value, $isoCode,
+                    $this->itemData['name'], $phrase['category'], false, $api);
             }
         }
     }

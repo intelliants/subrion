@@ -31,6 +31,7 @@ class iaLanguage
     const CATEGORY_FRONTEND = 'frontend';
     const CATEGORY_PAGE = 'page';
     const CATEGORY_TOOLTIP = 'tooltip';
+    const CATEGORY_API = 'api';
 
     protected static $_table = 'language';
     protected static $_languagesTable = 'languages';
@@ -39,7 +40,7 @@ class iaLanguage
 
     protected static $_columns = ['code', 'id', 'title', 'locale', 'date_format', 'time_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'];
 
-    protected static $_validCategories = [self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP];
+    protected static $_validCategories = [self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP, self::CATEGORY_API];
 
 
     public function __construct()
@@ -160,7 +161,7 @@ class iaLanguage
         return self::$_table;
     }
 
-    public static function addPhrase($key, $value, $languageCode = null, $module = '', $category = self::CATEGORY_COMMON, $forceReplacement = true)
+    public static function addPhrase($key, $value, $languageCode = null, $module = '', $category = self::CATEGORY_COMMON, $forceReplacement = true, $usedInApi = false)
     {
         if (!in_array($category, self::$_validCategories)) {
             return false;
@@ -196,7 +197,8 @@ class iaLanguage
                 'value' => $value,
                 'code' => $languageCode,
                 'category' => $category,
-                'module' => $module
+                'module' => $module,
+                'api' => $usedInApi
             ]);
         } else {
             $result = ($forceReplacement || ($phrase['value'] == $phrase['original']))
