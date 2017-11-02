@@ -157,7 +157,7 @@ class iaApi
     {
         $iaCore = iaCore::instance();
 
-        $entity = $iaCore->factory('item')->getModuleByItem($name)
+        $entity = iaCore::CORE != $iaCore->factory('item')->getModuleByItem($name)
             ? $iaCore->factoryItem($name)
             : $this->_loadSystemEntity($name);
 
