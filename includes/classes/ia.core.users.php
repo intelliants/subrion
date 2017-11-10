@@ -562,17 +562,17 @@ SQL;
         return $row;
     }
 
-    public function getAuth($userId, $user = null, $password = null, $remember = false)
+    public function getAuth($userId = null, $usernameOrEmail = null, $password = null, $remember = false)
     {
-        if ((int)$userId) {
+        if (!is_null($userId)) {
             $condition = sprintf('u.`id` = %d', $userId);
         } else {
             $condition = '(u.`username` = :username OR u.`email` = :email)' .
                 (self::USE_OBSOLETE_AUTH ? ' AND u.`password` = :password' : '');
             $this->iaDb->bind($condition, [
-                'username' => preg_replace('/[^a-zA-Z0-9.@_-]/', '', $user),
-                'email' => $user,
-                'password' => $this->encodePassword($password),
+                'username' => preg_replace('/[^a-zA-Z0-9.@_-]/', '', $usernameOrEmail),
+                'email' => $usernameOrEmail,
+                'password' => $this->encodePassword($password)
             ]);
         }
 
@@ -589,28 +589,23 @@ SQL;
             'table_groups' => self::getUsergroupsTable(),
             'condition' => $condition
         ]);
+
         $row = $this->iaDb->getRow($sql);
 
-        if (!self::USE_OBSOLETE_AUTH && (!$row || !password_verify($password, $row['password']))) {
+        if (!$row || (!self::USE_OBSOLETE_AUTH && $password && !password_verify($password, $row['password']))) {
             return false;
         }
 
         $this->_processValues($row, true);
 
-        if (iaCore::STATUS_ACTIVE == $row['status']) {
-            self::_setIdentity($row);
+        self::_setIdentity($row);
 
-            $this->iaDb->update(null, iaDb::convertIds($row['id']), ['date_logged' => iaDb::FUNCTION_NOW],
-                self::getTable());
+        $this->iaDb->update(null, iaDb::convertIds($row['id']), ['date_logged' => iaDb::FUNCTION_NOW], self::getTable());
 
-            $this->_assignItem($row, $remember);
+        $this->_assignItem($row, $remember);
+        $this->_assignFavorites();
 
-            $this->_assignFavorites();
-
-            return $row;
-        }
-
-        return false;
+        return $row;
     }
 
     public function registerVisitor()
