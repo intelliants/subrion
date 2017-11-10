@@ -130,7 +130,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _entryUpdate(array $entryData, $entryId)
     {
-        $entryData['value'] = $entryData['value'][iaLanguage::getMasterLanguage()->iso];
+        if (isset($entryData['value']) && is_array($entryData['value'])) {
+            $entryData['value'] = $entryData['value'][iaLanguage::getMasterLanguage()->iso];
+        }
 
         return parent::_entryUpdate($entryData, $entryId);
     }
