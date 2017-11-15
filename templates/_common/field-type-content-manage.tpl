@@ -93,7 +93,7 @@ $(function() {
                 {if is_string($value)}{$value = unserialize($value)}{/if}
                 <div class="thumbnail">
                     <div class="thumbnail__actions">
-                        <button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$value.file|escape}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+                        <button type="button" class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$value.file|escape}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
                     </div>
 
                     {if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
@@ -130,7 +130,7 @@ $(function() {
                             <div class="thumbnail upload-items__item">
                                 <div class="btn-group thumbnail__actions">
                                     <span class="btn btn-default btn-sm drag-handle"><span class="fa fa-arrows"></span></span>
-                                    <button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+                                    <button type="button" class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
                                 </div>
 
                                 <a class="thumbnail__image" href="{ia_image file=$entry field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
@@ -198,7 +198,7 @@ $(function() {
                             <div class="input-group-btn">
                                 <a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{lang key='download'}" download><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
                                 <span class="btn btn-default drag-handle"><span class="fa fa-arrows-v"></span></span>
-                                <button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file|escape}">{lang key='delete'}</button>
+                                <button type="button" class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file|escape}">{lang key='delete'}</button>
                             </div>
                         </div>
                     {/foreach}
