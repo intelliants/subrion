@@ -595,6 +595,11 @@ SQL;
 
     protected function _forgeryCheck()
     {
+        if (isset($_POST[self::SECURITY_TOKEN_FORM_KEY])) {
+            $tokenValue = $_POST[self::SECURITY_TOKEN_FORM_KEY];
+            unset($_POST[self::SECURITY_TOKEN_FORM_KEY]);
+        }
+
         if (!$_POST || !$this->get('prevent_csrf')) {
             return;
         }
@@ -603,17 +608,12 @@ SQL;
         //  - 'API' page - used to communicate with mobile apps
         //  - IPN/IRN/other payment notification receiving endpoints
         if ('api' == $this->iaView->name()
-            || (count($this->iaView->url) > 1 && 'ipn' == $this->iaView->url[0])) {
+            || ('ipn' == $this->iaView->url[0] && count($this->iaView->url) > 1)) {
             return;
         }
 
-        $tokenValid = false;
+        $tokenValid = isset($tokenValue) && $tokenValue === $this->getSecurityToken();
         $referrerValid = true;
-
-        if (isset($_POST[self::SECURITY_TOKEN_FORM_KEY])) {
-            $tokenValid = $_POST[self::SECURITY_TOKEN_FORM_KEY] === $this->getSecurityToken();
-            unset($_POST[self::SECURITY_TOKEN_FORM_KEY]);
-        }
 
         if (isset($_SERVER['HTTP_REFERER'])) {
             $wwwChunk = 'www.';
