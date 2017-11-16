@@ -741,6 +741,11 @@ SQL;
         return $this->iaDb->keyvalue(['id', 'name'], $stmt, self::getUsergroupsTable());
     }
 
+    public function getUsergroupByName($name)
+    {
+        return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($name, 'name'), $this->getUsergroupsTable());
+    }
+
     public function getDashboardStatistics()
     {
         // bars composition
