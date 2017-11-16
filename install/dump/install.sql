@@ -983,7 +983,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('system', 'display_changelog', '1', '\'1\',\'0\'', 'radio', 12, 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('system', 'display_twitter', '1', '\'1\',\'0\'', 'hidden', 13, 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('system', 'check_for_updates', '1', '\'1\',\'0\'', 'radio', 14, 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
-('system', 'auto_apply_critical_upgrades', '1', '\'1\',\'0\'', 'radio', 15, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"check_for_updates|1\",\"multilingual\":\"0\"}'),
+('system', 'auto_apply_critical_upgrades', '0', '\'1\',\'0\'', 'radio', 15, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"check_for_updates|1\",\"multilingual\":\"0\"}'),
 ('system', 'allow_remote_templates', '1', '\'1\',\'0\'', 'radio', 16, 0, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('system', 'sap_style', 'default', 'calmy,darkness,default,gebeus-waterfall,radiant-orchid,roseus', 'select', 17, 0, 1, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
 ('system', '', 'System configuration', '1', 'divider', 20, 1, 0, '{\"wysiwyg\":\"0\",\"code_editor\":\"0\",\"show\":\"\",\"multilingual\":\"0\"}'),
