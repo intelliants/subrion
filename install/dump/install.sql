@@ -1718,7 +1718,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('file_doesnt_exist','File does not exist.','admin'),
 ('file_format','File format','admin'),
 ('file_prefix','File Prefix','admin'),
-('filename_notification','<b>For templates:</b> type a name of your TPL file and place this file in your active template folder.<br />Example: <code>block.teaser.tpl</code><br><b>For plugins:</b> TPL file should be placed in plugins\' templates folder.<br />Example: <code>extra/plugin_name:block_file</code> (without extension)<br><b>For packages:</b> TPL file should be placed in packages\' templates folder.<br />Example: <code>extra/package_name:block_file</code> (without extension)','admin'),
+('filename_notification','<b>For templates:</b> type a name of your TPL file and place this file in your active template folder.<br />Example: <code>block.teaser.tpl</code><br><b>For plugins & packages:</b> TPL file should be placed in module\'s templates folder.<br />Example: <code>module/module_name:block_file.tpl</code>','admin'),
 ('fit','Fit','admin'),
 ('fit_tip','This mode attempts to resize an image proportionally in case it does not fit inner frame dimensions set by the administrator. If it fits the dimensions, an image will not be resized at all.','admin'),
 ('for_plan_only','For plans only','admin'),
