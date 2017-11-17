@@ -738,7 +738,7 @@ SQL;
     {
         $stmt = $visible ? iaDb::convertIds('1', 'visible') : null;
 
-        return $this->iaDb->keyvalue(['id', 'name'], $stmt, self::getUsergroupsTable());
+        return $this->iaDb->keyvalue(['id', 'name'], $stmt . ' ORDER BY `order`', self::getUsergroupsTable());
     }
 
     public function getUsergroupByName($name)

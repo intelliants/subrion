@@ -1108,6 +1108,7 @@ class iaModule extends abstractCore
             $this->iaCore->factory('acl');
 
             $iaDb->setTable(iaUsers::getUsergroupsTable());
+            $maxOrder = $iaDb->getMaxOrder();
             foreach ($this->itemData['usergroups'] as $item) {
                 if (!$iaDb->exists('`name` = :name', ['name' => $item['name']])) {
                     $configs = $item['configs'];
@@ -1118,8 +1119,8 @@ class iaModule extends abstractCore
                         'name' => $item['name'],
                         'system' => true,
                         'assignable' => $item['assignable'],
-                        'visible' => $item['visible']
-                    ]);
+                        'visible' => $item['visible'],
+                    ], ['order' => ++$maxOrder]);
 
                     // update language records
                     $this->_addPhrase('usergroup_' . $item['name'], $item['title']);

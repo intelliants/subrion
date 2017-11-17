@@ -53,6 +53,13 @@ class iaBackendController extends iaAbstractControllerBackend
             : parent::_gridRead($params);
     }
 
+    protected function _entryAdd(array $entryData)
+    {
+        $entryData['order'] = $this->_iaDb->getMaxOrder() + 1;
+
+        return parent::_entryAdd($entryData);
+    }
+
     protected function _entryDelete($entryId)
     {
         return $this->_iaUsers->deleteUsergroup($entryId);
@@ -92,6 +99,7 @@ SQL;
     {
         $entry['assignable'] = (int)$data['visible'];
         $entry['visible'] = (int)$data['visible'];
+        $entry['order'] = (int)$data['order'];
 
         if (iaCore::ACTION_ADD == $action) {
             if (empty($data['name'])) {

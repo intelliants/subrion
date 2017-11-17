@@ -729,6 +729,7 @@ CREATE TABLE `{install:prefix}usergroups` (
 	`system` tinyint(1) unsigned NOT NULL,
 	`assignable` tinyint(1) unsigned NOT NULL default 0,
 	`visible` tinyint(1) unsigned NOT NULL default 0,
+	`order` smallint(5) unsigned NOT NULL,
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
@@ -1249,11 +1250,11 @@ INSERT INTO `{install:prefix}pages` (`group`,`name`,`service`,`readonly`,`alias`
 (2,'help',0,0,'help/',0,'page','','','');
 UPDATE `{install:prefix}pages` SET `status`='active',`last_updated`=NOW();
 
-INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`) VALUES
-(1,'administrators',1, 0),
-(2,'moderators',1, 0),
-(4,'guests',1, 0),
-(8,'registered',1, 1);
+INSERT INTO `{install:prefix}usergroups` (`id`,`name`,`system`,`visible`, `order`) VALUES
+(1,'administrators',1, 0, 1),
+(2,'moderators',1, 0, 2),
+(4,'guests',1, 0, 3),
+(8,'registered',1, 1, 4);
 
 INSERT INTO `{install:prefix}languages` VALUES
 (null,'en','English','en_US','%e %B, %Y', '%H:%M', 'Intelliants LLC','ltr',1,1,1,'active','us.gif');
