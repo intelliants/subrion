@@ -736,7 +736,7 @@ SQL;
 
     public function getUsergroups($visible = false)
     {
-        $stmt = $visible ? iaDb::convertIds('1', 'visible') : null;
+        $stmt = $visible ? iaDb::convertIds('1', 'visible') : '1 = 1';
 
         return $this->iaDb->keyvalue(['id', 'name'], $stmt . ' ORDER BY `order`', self::getUsergroupsTable());
     }
