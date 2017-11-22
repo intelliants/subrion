@@ -18,7 +18,7 @@
                     <label class="col col-lg-2 control-label">{lang key='language_iso_code'} <a href="#" class="js-tooltip" title="{$tooltips.language_iso_code}"><i class="i-info"></i></a></label>
 
                     <div class="col col-lg-4">
-                        <input id="input-code" size="2" maxlength="2" type="text" name="code" value="{$item.code}">
+                        <input id="input-code" size="2" maxlength="2" type="text" name="code" value="{$item.code}"{if iaCore::ACTION_EDIT == $pageAction} disabled{/if}>
                     </div>
                 </div>
 

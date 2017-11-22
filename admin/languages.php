@@ -259,12 +259,17 @@ class iaBackendController extends iaAbstractControllerBackend
             $this->addMessage('title_incorrect');
         }
 
-        if (preg_match('/^[a-z]{2}$/i', $data['code'])) {
-            if (iaCore::ACTION_ADD == $action && array_key_exists($data['code'], $this->_iaCore->languages)) {
-                $this->addMessage('language_already_exists');
+        // iso code SHOULD NOT BE changed
+        if (iaCore::ACTION_ADD == $action) {
+            if (preg_match('/^[a-z]{2}$/i', $data['code'])) {
+                if (iaCore::ACTION_ADD == $action && array_key_exists($data['code'], $this->_iaCore->languages)) {
+                    $this->addMessage('language_already_exists');
+                }
+            } else {
+                $this->addMessage('bad_iso_code');
             }
-        } else {
-            $this->addMessage('bad_iso_code');
+
+            $entry['code'] = strtolower($data['code']);
         }
 
         if (empty($data['locale']) || !trim($data['locale'])) {
@@ -275,7 +280,6 @@ class iaBackendController extends iaAbstractControllerBackend
             $this->addMessage('language_date_format_incorrect');
         }
 
-        $entry['code'] = strtolower($data['code']);
         $entry['title'] = $data['title'];
         $entry['locale'] = $data['locale'];
         $entry['date_format'] = $data['date_format'];
