@@ -30,9 +30,13 @@ class iaInvoice extends abstractCore
     protected static $_tableItems = 'invoices_items';
 
 
-    public function create(array $transaction)
+    public function create(array $transaction, $transactionId)
     {
-        if ($invoiceId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($transaction['id'], 'transaction_id'), self::getTable())) {
+        if (!$transactionId) {
+            return false;
+        }
+
+        if ($invoiceId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($transactionId, 'transaction_id'), self::getTable())) {
             return $invoiceId;
         }
 
@@ -40,7 +44,7 @@ class iaInvoice extends abstractCore
 
         $invoice = [
             'id' => $id,
-            'transaction_id' => $transaction['id'],
+            'transaction_id' => $transactionId,
             'date_created' => date(iaDb::DATETIME_FORMAT),
             'date_due' => null,
             'fullname' => empty($transaction['fullname']) ? iaUsers::getIdentity()->fullname : $transaction['fullname'],
@@ -115,7 +119,7 @@ class iaInvoice extends abstractCore
         $iaTransaction = $this->iaCore->factory('transaction');
 
         $sql = <<<SQL
-SELECT SQL_CALC_FOUND_ROWS i.`address1`, i.`address2`, i.`zip`, i.`country` 
+SELECT i.`address1`, i.`address2`, i.`zip`, i.`country` 
 	FROM `:prefix:table_transactions` t 
 LEFT JOIN `:prefix:table_invoices` i ON (i.`transaction_id` = t.`id`) 
 WHERE t.`member_id` = :member AND i.`address1` != "" 
