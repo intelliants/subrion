@@ -122,7 +122,6 @@ class iaTransaction extends abstractCore
                     $transaction = $this->getById($id);
 
                     $this->_sendEmailNotification($transaction);
-                    empty($transaction['member_id']) || $this->_createInvoice($transaction);
 
                     $this->iaCore->factory('plan')->setPaid($transaction);
                 }
@@ -233,7 +232,7 @@ class iaTransaction extends abstractCore
 
         $transactionId = uniqid('t');
         $transaction = [
-            'member_id' => (int)(isset($itemData['member_id']) && $itemData['member_id'] ? $itemData['member_id'] : iaUsers::getIdentity()->id),
+            'member_id' => (int)(empty($itemData['member_id']) ? iaUsers::getIdentity()->id : $itemData['member_id']),
             'item' => $itemName,
             'item_id' => $itemData['id'],
             'amount' => $cost,
@@ -247,17 +246,18 @@ class iaTransaction extends abstractCore
         ];
 
         $result = $this->iaDb->insert($transaction, null, $this->getTable());
-        $result && $this->iaCore->startHook('phpTransactionCreated', ['id' => $result, 'transaction' => $transaction]);
+
+        if ($result) {
+            if ($transaction['member_id']) { // create corresponding invoice
+                $this->iaCore->factory('invoice')->create($transaction, $result);
+            }
+
+            $this->iaCore->startHook('phpTransactionCreated', ['id' => $result, 'transaction' => $transaction]);
+        }
+
         $return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 
         return $result ? $transactionId : false;
-    }
-
-    protected function _createInvoice($transaction)
-    {
-        $iaInvoice = $this->iaCore->factory('invoice');
-
-        return $iaInvoice->create($transaction);
     }
 
     public function getLatestTransactions($limit = 10)

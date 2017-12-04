@@ -182,7 +182,7 @@ $(function($)
             <div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
                 data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
                 data-imagetype-thumbnail="{$field.imagetype_thumbnail}" data-max_num="1" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
-                data-values='{if $value}{json_encode(array($value))}{/if}'></div>
+                data-values='{if $value}{json_encode(array($value), 4)}{/if}'></div>
             {ia_add_media files='css: _IA_URL_js/dropzone/dropzone'}
             {ia_print_js files='dropzone/dropzone'}
 
@@ -190,7 +190,7 @@ $(function($)
             <div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
                 data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
                 data-imagetype-thumbnail="{$field.imagetype_thumbnail}" data-max_num="{$field.length}" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
-                data-values='{if $value}{json_encode(array_values($value))}{/if}'></div>
+                data-values='{if $value}{json_encode(array_values($value), 4)}{/if}'></div>
             {ia_add_media files='css: _IA_URL_js/dropzone/dropzone'}
             {ia_print_js files='dropzone/dropzone'}
 

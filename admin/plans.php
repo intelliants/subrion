@@ -54,7 +54,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $this->_items = $this->_iaCore->factory('item')->getItems(true);
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         foreach ($entries as $key => &$entry) {
             $entry['title'] = iaLanguage::get(self::PATTERN_TITLE . $entry['id']);

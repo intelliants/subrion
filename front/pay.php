@@ -108,6 +108,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $gate = $_POST['payment_type'];
 
                     $iaDb->update(['gateway' => $gate, 'date_updated' => (new \DateTime())->format(iaDb::DATETIME_FORMAT)], iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
+
                     empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
 
                     // include pre form send files
