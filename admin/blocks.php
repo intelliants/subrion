@@ -124,13 +124,6 @@ SQL;
         return $this->_iaDb->getAll($sql);
     }
 
-    protected function _gridModifyOutput(array &$entries)
-    {
-        foreach ($entries as &$entry) {
-            $entry['contents'] = iaSanitize::html($entry['contents']);
-        }
-    }
-
     protected function _gridUpdate($params)
     {
         // custom permission should be checked
