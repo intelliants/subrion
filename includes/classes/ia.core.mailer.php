@@ -120,6 +120,7 @@ class iaMailer extends PHPMailer
                 break;
 
             case 2:
+            case 3:
                 $key = func_get_arg(0);
                 $value = func_get_arg(1);
 
@@ -128,7 +129,9 @@ class iaMailer extends PHPMailer
                 }
         }
 
-        self::_escapeTemplateVars($replacements);
+        if (3 !== func_num_args() || false !== func_get_arg(2)) {
+            self::_escapeTemplateVars($replacements);
+        }
 
         $this->_replacements = array_merge($this->_replacements, $replacements);
     }
