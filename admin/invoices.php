@@ -81,13 +81,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
-        if (!empty($_GET['gateway'])) {
+        if (!empty($params['gateway'])) {
             $conditions[] = 't.`gateway` = :gateway';
-            $values['gateway'] = $_GET['gateway'];
+            $values['gateway'] = $params['gateway'];
         }
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         foreach ($entries as &$entry) {
             $entry['plan'] = $entry['plan_id'] ? iaLanguage::get('plan_title_' . $entry['plan_id']) : $entry['operation'];

@@ -85,12 +85,12 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
-        if (!empty($_GET['name'])) {
-            $conditions[] = "CONCAT(`username`, `fullname`, `email`) LIKE '%" . iaSanitize::sql($_GET['name']) . "%'";
+        if (!empty($params['name'])) {
+            $conditions[] = "CONCAT(`username`, `fullname`, `email`) LIKE '%" . iaSanitize::sql($params['name']) . "%'";
         }
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         $userId = iaUsers::getIdentity()->id;
 

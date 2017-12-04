@@ -44,7 +44,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $this->setHelper($iaCron);
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         $format = $this->_iaCore->get('date_format') . ', %H:%M';
         if ('win' == strtolower(substr(PHP_OS, 0, 3))) {

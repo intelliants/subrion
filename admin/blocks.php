@@ -124,7 +124,7 @@ SQL;
         return $this->_iaDb->getAll($sql);
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         foreach ($entries as &$entry) {
             $entry['contents'] = iaSanitize::html($entry['contents']);

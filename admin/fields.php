@@ -124,7 +124,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return parent::_gridRead($params);
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         $groups = $this->_iaDb->keyvalue(['id', 'name'], '1 ORDER BY `item`, `name`', iaField::getTableGroups());
 
