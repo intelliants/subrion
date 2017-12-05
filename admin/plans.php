@@ -302,20 +302,18 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $result = [];
 
-        $iaItem = $this->_iaCore->factory('item');
-
         foreach ($this->_items as $itemName) {
             $statuses = [];
 
-            $className = ucfirst(substr($itemName, 0, -1));
             $itemClassInstance = (iaUsers::getItemName() == $itemName)
                 ? $this->_iaCore->factory('users')
-                : $this->_iaCore->factoryModule($className, $iaItem->getModuleByItem($itemName));
+                : $this->_iaCore->factoryItem($itemName);
+
             if ($itemClassInstance && method_exists($itemClassInstance, 'getStatuses')) {
                 $statuses = $itemClassInstance->getStatuses();
             }
 
-            $result[$itemName] = implode(',', $statuses);
+            $result[$itemName] = $statuses;
         }
 
         return $result;
