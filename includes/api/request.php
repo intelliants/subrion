@@ -77,7 +77,7 @@ class iaApiRequest
 
     private function _fetchContentType()
     {
-        $contentType = $_SERVER['CONTENT_TYPE'];
+        $contentType = $this->getServer('CONTENT_TYPE');
 
         if (false !== ($pos = stripos($contentType, ';'))) {
             $contentType = substr($contentType, 0, $pos);

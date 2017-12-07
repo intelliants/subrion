@@ -67,7 +67,7 @@ class iaApiEntityField extends iaApiEntityAbstract
         return (0 == $this->iaDb->getErrorNumber());
     }
 
-    public function apiDelete($id)
+    public function apiDelete($id, array $params)
     {
         throw new Exception('Field removal via API is restricted', iaApiResponse::NOT_ALLOWED);
     }

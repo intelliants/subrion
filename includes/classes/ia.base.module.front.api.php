@@ -35,6 +35,8 @@ abstract class abstractModuleFrontApiResponder extends abstractModuleFront
     protected $apiTimestampColumn;
     protected $apiTrackOwner = true;
 
+    public $apiSorters = [];
+
     protected $iaField;
 
 
