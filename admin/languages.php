@@ -357,7 +357,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _entryUpdate(array $entryData, $entryId)
     {
-        return $this->_iaDb->update($entryData, iaDb::convertIds($entryId), null, iaLanguage::getLanguagesTable());
+        $this->_iaDb->update($entryData, iaDb::convertIds($entryId), null, iaLanguage::getLanguagesTable());
+
+        return (0 === $this->_iaDb->getErrorNumber());
     }
 
     protected function _entryDelete($entryId)
