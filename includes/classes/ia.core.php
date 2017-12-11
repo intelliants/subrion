@@ -200,8 +200,16 @@ final class iaCore
 
         $iaView->assetsUrl = '//' . $domain . IA_URL_DELIMITER . FOLDER_URL;
         $iaView->domain = $domain;
-        $iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
         $iaView->language = $params['lang'];
+
+        if (isset($_SERVER['HTTP_CF_VISITOR'])) {
+            $visitor = json_decode($_SERVER['HTTP_CF_VISITOR']);
+            if ('https' == $visitor->scheme) {
+                $iaView->domainUrl = 'https:' . $iaView->assetsUrl;
+            }
+        } else {
+            $iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
+        }
 
         $doExit = false;
         $changeLang = false;
