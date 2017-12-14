@@ -255,15 +255,11 @@ class iaSmarty extends Smarty
         $params['text'] = iaLanguage::get($params['text'], $params['text']);
         $params['url'] = isset($params['data']['link']) ? $params['data']['link'] : '#';
 
-        // compatibility fallback
-        if (!isset($params['data']['link']) && isset($params['item'])) {
-            iaDebug::debug($params, 'Compatibitily fallback used in iaSmarty::ia_url()');
-
+        if (isset($params['item'])) {
             if ($itemInstance = iaCore::instance()->factoryItem($params['item'])) {
                 $params['url'] = $itemInstance->getUrl($params['data']);
             }
         }
-        //
 
         if (!isset($params['icon'])) {
             $params['icon'] = 'info';
