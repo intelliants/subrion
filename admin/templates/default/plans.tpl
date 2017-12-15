@@ -201,7 +201,7 @@
                 <label class="col col-lg-2 control-label">{lang key='change_status_to'}</label>
 
                 <div class="col col-lg-4">
-                    <select name="expiration_status"{foreach $expiration_statuses as $itemName => $statuses} data-{$itemName}="{$statuses|implode:','}"{/foreach}>
+                    <select name="expiration_status"{foreach $expiration_statuses as $itemName => $entry} data-{$itemName}="{$entry|implode:','}"{/foreach}>
                         <option value=""{if empty($item.expiration_status)} selected{/if}>{lang key='_do_not_change_'}</option>
                         {if iaCore::ACTION_EDIT == $pageAction && $item.item}
                             {foreach $expiration_statuses[$item.item] as $value}
