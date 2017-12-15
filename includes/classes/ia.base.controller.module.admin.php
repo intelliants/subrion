@@ -122,6 +122,10 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
     // multilingual fields support for package items
     protected function _gridApplyFilters(&$conditions, &$values, array $params)
     {
+        if (!is_array($this->_gridFilters) || !$this->_gridFilters) {
+            return;
+        }
+
         $multilingualFields = $this->_iaField->getMultilingualFields($this->getItemName());
 
         foreach ($this->_gridFilters as $name => $type) {

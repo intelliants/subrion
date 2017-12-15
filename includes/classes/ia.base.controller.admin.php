@@ -375,6 +375,10 @@ abstract class iaAbstractControllerBackend
 
     protected function _gridApplyFilters(&$conditions, &$values, array $params)
     {
+        if (!is_array($this->_gridFilters) || !$this->_gridFilters) {
+            return;
+        }
+
         foreach ($this->_gridFilters as $name => $type) {
             if (!empty($params[$name])) {
                 $value = $params[$name];
@@ -395,10 +399,7 @@ abstract class iaAbstractControllerBackend
     // to be overloaded if required to modify the DB query params
     protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
-        // backward compatibility
-        if (is_callable([$this, '_modifyGridParams'])) {
-            $this->_modifyGridParams($conditions, $values, $params);
-        }
+
     }
 
     protected function _gridUpdate($params)
@@ -511,10 +512,7 @@ abstract class iaAbstractControllerBackend
     // to be overloaded if required to modify the resulting array
     protected function _gridModifyOutput(array &$entries)
     {
-        // backward compatiblity
-        if (is_callable([$this, '_modifyGridResult'])) {
-            $this->_modifyGridResult($entries);
-        }
+
     }
 
     protected function _entryAdd(array $entryData)
