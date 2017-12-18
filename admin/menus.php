@@ -49,6 +49,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridRead($params)
     {
+        if (empty($params['action'])) {
+            return parent::_gridRead($params);
+        }
+
         $output = [];
 
         $iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
@@ -204,11 +208,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
                     $this->_iaCore->iaCache->remove('menu_' . $menu);
                 }
-
-                break;
-
-            default:
-                $output = parent::_gridRead($params);
         }
 
         return $output;

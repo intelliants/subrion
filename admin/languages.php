@@ -50,6 +50,14 @@ class iaBackendController extends iaAbstractControllerBackend
         $output = [];
         $iaDb = &$this->_iaDb;
 
+        if (empty($params['get'])) {
+            $params['lang'] = (isset($_GET['lang']) && array_key_exists($_GET['lang'], $this->_iaCore->languages))
+                ? $_GET['lang']
+                : $this->_iaCore->iaView->language;
+
+            return parent::_gridRead($params);
+        }
+
         switch ($params['get']) {
             case 'plugins':
                 if ($plugins = $this->_iaDb->onefield('name', null, null, null, 'module')) {
@@ -116,15 +124,6 @@ class iaBackendController extends iaAbstractControllerBackend
                         ];
                     }
                 }
-
-                break;
-
-            default:
-                $params['lang'] = (isset($_GET['lang']) && array_key_exists($_GET['lang'], $this->_iaCore->languages))
-                    ? $_GET['lang']
-                    : $this->_iaCore->iaView->language;
-
-                $output = parent::_gridRead($params);
         }
 
         return $output;
