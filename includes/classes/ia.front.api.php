@@ -346,15 +346,17 @@ class iaApi
     {
         if ($this->_getAuthServer()->verifyResourceRequest($this->_getRequest())) {
             if ($tokenInfo = $this->_getAuthServer()->getAccessTokenData($this->_getRequest())) {
+                if ($tokenInfo['session']) {
+                    $this->_getAuthServer()->setSession($tokenInfo);
+                }
+
                 if ($tokenInfo['member_id']) {
                     $iaUsers = iaCore::instance()->factory('users');
 
-                    $member = $iaUsers->getInfo($tokenInfo['member_id'], 'username');
-
-                    empty($member) || $iaUsers->getAuth($member['id']);
+                    if ($member = $iaUsers->getInfo($tokenInfo['member_id'])) {
+                        $iaUsers->getAuth($member['id'], null, null, true);
+                    }
                 }
-
-                empty($tokenInfo['session']) || $this->_getAuthServer()->setSession($tokenInfo);
 
                 return;
             }

@@ -42,8 +42,10 @@ class iaApiAuth extends abstractCore
         $this->iaUsers = $this->iaCore->factory('users');
     }
 
-    protected function _coreAuth($params)
+    protected function _coreAuth(iaApiRequest $request)
     {
+        $params = $request->getContent();
+
         if (empty($params['login']) || empty($params['password'])) {
             throw new Exception('Empty credentials', iaApiResponse::BAD_REQUEST);
         }
@@ -54,6 +56,13 @@ class iaApiAuth extends abstractCore
 
         if (!$this->iaUsers->getAuth(null, $params['login'], $params['password'], $remember)) {
             throw new Exception('Invalid credentials', iaApiResponse::FORBIDDEN);
+        }
+
+        $accessToken = $this->getAccessTokenData($request);
+
+        if ($accessToken['member_id'] != iaUsers::getIdentity()->id) {
+            $this->iaDb->update(['member_id' => iaUsers::getIdentity()->id],
+                iaDb::convertIds($accessToken['key'], 'key'), null, self::getTable());
         }
     }
 
@@ -71,7 +80,7 @@ class iaApiAuth extends abstractCore
         $params = $request->getParams();
 
         if (empty($params)) {
-            $this->_coreAuth($request->getContent());
+            $this->_coreAuth($request);
         } elseif ('logout' == $params[0]) {
             $this->_logout($request);
         } elseif (1 == count($params)) {
