@@ -403,12 +403,9 @@ SQL;
 
     private function _runClassMethod($itemName, $method, array $args = [])
     {
-        $iaItem = $this->iaCore->factory('item');
-
-        $className = ucfirst(substr($itemName, 0, -1));
-        $itemClassInstance = ($itemName == 'members')
+        $itemClassInstance = ($itemName == 'member')
             ? $this->iaCore->factory('users')
-            : $this->iaCore->factoryModule($className, $iaItem->getModuleByItem($itemName));
+            : $this->iaCore->factoryItem($itemName);
 
         if ($itemClassInstance && method_exists($itemClassInstance, $method)) {
             return call_user_func_array([$itemClassInstance, $method], $args);
