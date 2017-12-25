@@ -212,7 +212,7 @@
                 </div>
             </div>
 
-            <div class="js-items-list" id="js-item-members" style="display: none;">
+            <div class="js-items-list" id="js-item-member" style="display: none;">
                 <div class="row">
                     <label class="col col-lg-2 control-label">{lang key='change_usergroup_to'}</label>
 

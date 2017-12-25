@@ -541,8 +541,20 @@ SQL;
         $stmt = '`email` = :email AND `sec_key` = :key';
         $this->iaDb->bind($stmt, ['email' => $email, 'key' => $key]);
 
-        return (bool)$this->iaDb->update(['sec_key' => '', 'status' => $status], $stmt,
+        $result = (bool)$this->iaDb->update(['sec_key' => '', 'status' => $status], $stmt,
             ['date_update' => iaDb::FUNCTION_NOW], self::getTable());
+        if ($result) {
+            $member = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($email, 'email'), self::getTable());
+            $iaPlan = $this->iaCore->factory('plan');
+            if ($member['sponsored_plan_id']) {
+                $plan = $iaPlan->getById($member['sponsored_plan_id']);
+                if ($plan['id'] && empty(floatval($plan['cost']))) {
+                    $iaPlan->assignFreePlan($plan['id'], self::getItemName(), $member);
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function getById($id)
