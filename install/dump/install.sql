@@ -2483,7 +2483,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('change_gateway','Change gateway','frontend'),
 ('chars_left','Chars left','frontend'),
 ('choose_image_file','and choose image file on your computer.','frontend'),
-('confirmation_code_incorrect','Confirmation code is incorrect.','frontend'),
+('confirmation_code_incorrect','Captcha code is incorrect.','frontend'),
 ('confirmation_key_incorrect','Confirmation key is incorrect.','frontend'),
 ('current_assets','Current Assets','frontend'),
 ('current_password','Current Password','frontend'),
