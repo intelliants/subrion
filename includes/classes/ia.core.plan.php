@@ -334,8 +334,10 @@ SQL;
         // first, create corresponding transaction
         $transactionId = $iaTransaction->create(null, 0, $itemName, $itemData, '', (int)$planId, true);
 
+        $transaction = $iaTransaction->getBy('sec_key', $transactionId);
         // then mark it as paid
-        $this->setPaid($iaTransaction->getBy('sec_key', $transactionId));
+        $this->setPaid($transaction);
+        $this->iaDb->update(['status' => iaTransaction::PASSED], iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
     }
 
     public function calculateDates($duration, $unit)

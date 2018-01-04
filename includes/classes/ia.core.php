@@ -208,7 +208,7 @@ final class iaCore
                 $iaView->domainUrl = 'https:' . $iaView->assetsUrl;
             }
         } else {
-            $iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
+            $iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'off' != $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
         }
 
         $doExit = false;

@@ -548,11 +548,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
     public function update($values, $condition = null, $rawValues = null, $tableName = null)
     {
-        if (empty($values) && empty($rawValues)) {
-            return false;
-        }
-
-        if (empty($this->_table) && empty($tableName)) {
+        if ((empty($values) && empty($rawValues)) || (empty($this->_table) && empty($tableName))) {
             return false;
         }
 
@@ -562,6 +558,13 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         } elseif (isset($values['id'])) {
             $stmtWhere = 'WHERE `' . self::ID_COLUMN_SELECTION . "` = '" . $values['id'] . "'";
             unset($values['id']);
+        }
+
+        if (empty($stmtWhere)) {
+            trigger_error(
+                __METHOD__ . ' method requires WHERE clause to be not empty. All rows update is restricted.',
+                E_USER_ERROR
+            );
         }
 
         $stmtSet = $this->_wrapValues($values, $rawValues);
