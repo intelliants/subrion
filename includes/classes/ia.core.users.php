@@ -407,6 +407,12 @@ SQL;
             ? $this->createPassword()
             : $memberInfo['password'];
 
+        $socialProvider = null;
+        if (isset($memberInfo['social_provider'])) {
+            $socialProvider = $memberInfo['social_provider'];
+            unset($memberInfo['social_provider']);
+        }
+
         unset($memberInfo['disable_fields']);
 
         $password = $memberInfo['password'];
@@ -436,7 +442,7 @@ SQL;
                 $this->iaCore->startHook('memberAddEmailSubmission', ['member' => $memberInfo]);
 
                 // send email to a registered member
-                $this->sendRegistrationEmail($memberId, $password, $memberInfo);
+                $this->sendRegistrationEmail($memberId, $password, $memberInfo, $socialProvider);
             }
         }
 
@@ -447,11 +453,14 @@ SQL;
         return $memberId;
     }
 
-    public function sendRegistrationEmail($id, $password, array $memberInfo)
+    public function sendRegistrationEmail($id, $password, array $memberInfo, $socialProvider = null)
     {
         $iaMailer = $this->iaCore->factory('mailer');
 
-        $action = 'member_registration';
+        $action = is_null($socialProvider)
+            ? 'member_registration'
+            : 'member_registration_social';
+
         if ($iaMailer->loadTemplate($action) && $memberInfo['email']) {
             $iaMailer->addAddressByMember($memberInfo);
             $iaMailer->setReplacements([
@@ -461,6 +470,10 @@ SQL;
                 'password' => $password,
                 'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
             ]);
+
+            if ($socialProvider) {
+                $iaMailer->setReplacements('provider', $socialProvider);
+            }
 
             $iaMailer->send();
         }
@@ -889,13 +902,13 @@ SQL;
         return [$count, $rows];
     }
 
-    public function hybridAuth($providerName)
+    public function hybridAuth($providerId)
     {
         if (!$this->iaCore->get('hybrid_enabled')) {
             throw new Exception('HybridAuth is not enabled.');
         }
 
-        $providerName = strtolower($providerName);
+        $providerName = strtolower($providerId);
         $configFile = IA_INCLUDES . 'hybridauth.inc.php';
 
         require_once IA_INCLUDES . 'hybrid/Auth.php';
@@ -939,6 +952,7 @@ SQL;
                 $memberRegInfo['fullname'] = $user_profile->displayName;
                 // $memberRegInfo['avatar'] = $user_profile->photoURL;
                 $memberRegInfo['disable_fields'] = true;
+                $memberRegInfo['social_provider'] = $providerId;
 
                 $memberId = $this->register($memberRegInfo);
 
