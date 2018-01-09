@@ -1,6 +1,7 @@
 {$type = $field.type}
 {$fieldName = $field.name}
 {$name = "field_{$field.item}_{$field.name}"}
+{$value = $item[$fieldName]}
 
 {if isset($field_before[$fieldName])}{$field_before.$fieldName}{/if}
 
@@ -19,7 +20,7 @@
                 {lang key='image_dimensions'}: {$field.image_width}x{$field.image_height}
             </div>
         {/if}
-        {assign tooltip {lang key="field_tooltip_{$field.item}_{$field.name}" default=''}}
+        {$tooltip = {lang key="field_tooltip_{$field.item}_{$field.name}" default=''}}
         {if $tooltip}<div class="help-block">{$tooltip}</div>{/if}
     </div>
 
@@ -32,18 +33,6 @@
     {if isset($field_inner[$fieldName])}
         {$field_inner[$fieldName]}
     {else}
-
-    {if !empty($item[$fieldName])}
-        {if iaField::CHECKBOX == $type}
-            {$value = ','|explode:$item[$fieldName]}
-        {elseif in_array($type, [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])}
-            {$value = $item[$fieldName]|unserialize}
-        {else}
-            {$value = $item[$fieldName]}
-        {/if}
-    {else}
-        {$value = $field.default}
-    {/if}
 
     {switch $type}
         {case iaField::TEXT break}
@@ -67,7 +56,7 @@
                     </div>
                 </div>
             {else}
-                <input type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+                <input type="text" name="{$fieldName}" value="{$value|escape}" id="{$name}" maxlength="{$field.length}">
             {/if}
 
         {case iaField::DATE break}
@@ -79,7 +68,7 @@
             </div>
 
         {case iaField::NUMBER break}
-            <input class="js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.empty_field}{/if}" id="{$name}" maxlength="{$field.length}">
+            <input class="js-filter-numeric" type="text" name="{$fieldName}" value="{$value|escape}" id="{$name}" maxlength="{$field.length}">
 
         {case iaField::CURRENCY break}
             <div class="input-group col-md-8">
@@ -180,7 +169,7 @@ $(function($)
 
         {case iaField::IMAGE break}
             <div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
-                data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
+                data-item="{$field.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
                 data-imagetype-thumbnail="{$field.imagetype_thumbnail}" data-max_num="1" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
                 data-values='{if $value}{json_encode(array($value), 4)}{/if}'></div>
             {ia_add_media files='css: _IA_URL_js/dropzone/dropzone'}
@@ -188,7 +177,7 @@ $(function($)
 
         {case iaField::PICTURES break}
             <div id="{$fieldName}_dropzone" class="js-dropzone s-dropzone dropzone"
-                data-item="{$item.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
+                data-item="{$field.item}" data-item_id="{$id|default:''}" data-field="{$fieldName}" data-imagetype-primary="{$field.imagetype_primary}"
                 data-imagetype-thumbnail="{$field.imagetype_thumbnail}" data-max_num="{$field.length}" data-submit_btn_text="{if iaCore::ACTION_ADD == $pageAction}add{else}save{/if}"
                 data-values='{if $value}{json_encode(array_values($value), 4)}{/if}'></div>
             {ia_add_media files='css: _IA_URL_js/dropzone/dropzone'}

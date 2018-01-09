@@ -1407,6 +1407,40 @@ SQL;
             ['name' => $fieldName, 'item' => $itemName], self::getTable());
     }
 
+    /**
+     * @param $itemName
+     * @param array $itemData
+     *
+     * Different field types require different data transformations in order to be printed out
+     * This method applies field type specific conversions to array elements
+     */
+    public function unwrapItemValues($itemName, array &$itemData)
+    {
+        foreach ($this->get($itemName) as $field) {
+            $fieldName = $field['name'];
+
+            if (!isset($itemData[$fieldName])) {
+                $itemData[$fieldName] = $field['default'];
+                continue;
+            }
+
+            switch ($field['type']) {
+                case self::CHECKBOX:
+                    $itemData[$fieldName] = explode(',', $itemData[$fieldName]);
+                    break;
+                case self::IMAGE:
+                case self::PICTURES:
+                case self::STORAGE:
+                    $itemData[$fieldName] = $itemData[$fieldName] ? unserialize($itemData[$fieldName]) : [];
+                    break;
+                default:
+                    if (!$itemData[$fieldName] && !in_array($field['type'], [self::NUMBER, self::CURRENCY])) {
+                        $itemData[$fieldName] = $field['default'];
+                    }
+            }
+        }
+    }
+
     protected static function _processFileName(&$fileName)
     {
         // first, sanitize filename

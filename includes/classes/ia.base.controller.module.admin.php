@@ -197,13 +197,16 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
     {
         $this->_setSystemDefaults($entryData);
 
-        $entryData['item'] = $this->getItemName();
-
         $sections = $this->_iaField->getGroups($this->getItemName());
         $plans = $this->_getPlans();
 
         $iaView->assign('item_sections', $sections);
         $iaView->assign('plans', $plans);
+    }
+
+    protected function _unwrapValues(array &$entryData)
+    {
+        $this->_iaField->unwrapItemValues($this->getItemName(), $entryData);
     }
 
     protected function _getPlans()

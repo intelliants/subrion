@@ -14,7 +14,7 @@
     {$value = $field.default}
 {/if}
 
-{if isset($field.disabled) && $field.disabled}
+{if !empty($field.disabled)}
     <input type="hidden" name="{$fieldName}" value="{$value|escape}">
 {/if}
 
@@ -27,15 +27,15 @@
     {switch $type}
         {case iaField::TEXT break}
             {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
-            <input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+            <input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape}{else}{$field.default|escape}{/if}" id="{$name}" maxlength="{$field.length}">
 
         {case iaField::NUMBER break}
-            <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+            <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{$value|escape}" id="{$name}" maxlength="{$field.length}">
 
         {case iaField::CURRENCY break}
             <div class="input-group">
                 <div class="input-group-addon">{$core.defaultCurrency.code|escape}</div>
-                <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+                <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default|escape}{/if}" id="{$name}" maxlength="{$field.length}">
             </div>
 
         {case iaField::TEXTAREA break}

@@ -175,6 +175,7 @@ abstract class iaAbstractControllerBackend
 
                     empty($this->_permissionsEdit) || $this->_assignPermissionsValues($iaView, $entry);
 
+                    $this->_unwrapValues($entry);
                     $this->_defaultAssigns($iaView, $entry);
 
                     if ($this->_tooltipsEnabled) {
@@ -268,6 +269,10 @@ abstract class iaAbstractControllerBackend
     {
         $iaView->assign('id', $this->getEntryId());
         $iaView->assign('item', $entryData);
+    }
+
+    protected function _unwrapValues(array &$entryData)
+    {
     }
 
     protected function _setDefaultValues(array &$entry)
