@@ -284,6 +284,19 @@ class iaBackendController extends iaAbstractControllerBackend
                             ['type' => 'template', 'name' => $this->getHelper()->itemData['info']['title']]);
                     }
                 } elseif (iaModule::TYPE_PLUGIN == $this->_type) {
+                    if ($this->_installPlugin($module, $action, $_POST['remote'])) {
+                        // log this event
+                        $action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
+                        $iaLog->write($action, [
+                            'type' => iaModule::TYPE_PLUGIN,
+                            'name' => $module,
+                            'to' => $this->getHelper()->itemData['info']['version']
+                        ], $module);
+                        //
+
+                        $iaSitemap = $this->_iaCore->factory('sitemap', iaCore::ADMIN);
+                        $iaSitemap->generate();
+                    }
                 } elseif ($this->_install($module, $action, $iaView->domain)) {
                     // log this event
                     $action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
@@ -757,6 +770,11 @@ class iaBackendController extends iaAbstractControllerBackend
                         'name' => $iaModule->itemData['info']['title'],
                         'to' => $iaModule->itemData['info']['version']
                     ]);
+
+                    $messagePhrase = 'plugin_updated';
+                    $this->addMessage($messagePhrase);
+
+                    return true;
                 } else {
                     $result['groups'] = $iaModule->getMenuGroups();
                     $result['message'] = iaModule::ACTION_INSTALL == $action
