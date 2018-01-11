@@ -1063,6 +1063,11 @@ class iaBackendController extends iaAbstractControllerBackend
             $buttons['docs'] = 'https://subrion.org/plugin/' . $module['name'] . '.html';
             $buttons['readme'] = true;
 
+            if ($installed && $compatible &&
+                version_compare($module['info']['version'], $options['installed'][$module['name']]['version'], '>')) {
+                $buttons['upgrade'] = true;
+            }
+
             $module = [
                 'name' => $module['name'],
                 'title' => $module['info']['title'],
