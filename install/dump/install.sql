@@ -1549,6 +1549,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('copy_master_language_to','Copy master language [<b>:lang</b>] to ','admin'),
 ('copy_language','Copy Language','admin'),
 ('copy_privileges_from','Copy Privileges From','admin'),
+('core','Core','admin'),
 ('core_and_db_versions_mismatch','DB and core files versions mismatch.','admin'),
 ('cost','Cost','admin'),
 ('created','Created.','admin'),
