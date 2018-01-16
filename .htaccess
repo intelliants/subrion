@@ -1,5 +1,7 @@
-# Some servers require this option to be enabled
-Options -MultiViews
+# Some servers require this option to be enabled, negotiation module should be installed
+<IfModule mod_negotiation.c>
+    Options -MultiViews
+</IfModule>
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
