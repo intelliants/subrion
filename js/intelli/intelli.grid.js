@@ -409,6 +409,8 @@ function IntelliGrid(params, autoInit) {
         self.grid = Ext.create('Ext.grid.Panel', {
             allowDeselect: true,
             bbar: Ext.create('Ext.PagingToolbar', {
+                afterPageText: _t('grid_of'),
+                beforePageText: _t('page'),
                 store: self.store,
                 displayInfo: true,
                 plugins: plugins,

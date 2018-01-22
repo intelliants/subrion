@@ -1737,6 +1737,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('global','Global','admin'),
 ('go_to_config','View settings','admin'),
 ('go_to_list','Go to list','admin'),
+('grid_of','of {0}','admin'),
 
 ('hide','Hide','admin'),
 ('hour','hour','admin'),
