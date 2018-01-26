@@ -58,8 +58,15 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
             $iaTransaction->update(['status' => iaTransaction::FAILED], $transaction['id']);
         }
 
-        $iaView->setMessages(iaLanguage::get('payment_canceled'), iaView::SUCCESS);
-        iaUtil::go_to($iaPage->getUrlByName('member_funds'));
+        $iaView->setMessages(iaLanguage::get('payment_process_canceled'), iaView::ALERT);
+
+        if (iaUsers::hasIdentity()) {
+            iaUtil::go_to($iaPage->getUrlByName('member_funds'));
+        } else {
+            $iaView->title(iaLanguage::get('payment_cancellation'));
+            $iaView->display(iaView::NONE);
+            return;
+        }
     }
 
     // configure return url on payment success
