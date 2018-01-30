@@ -43,11 +43,6 @@ abstract class abstractModuleAdmin extends abstractCore
     {
         parent::init();
 
-        // compatibility layer
-        $this->iaCore->factory('item');
-        $this->_itemName = iaItem::toSingular($this->_itemName);
-        //
-
         if ($this->_itemName && !$this->_moduleName) {
             $this->_moduleName = $this->iaCore->factory('item')->getModuleByItem($this->_itemName);
         }
@@ -242,7 +237,7 @@ abstract class abstractModuleAdmin extends abstractCore
     {
         $result = false;
 
-        if ($entryData = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($itemId), self::getTable())) {
+        if ($entryData = $this->getById($itemId)) {
             $result = (bool)$this->iaDb->delete(iaDb::convertIds($itemId), self::getTable());
 
             if ($result) {

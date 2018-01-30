@@ -71,6 +71,11 @@ class iaUsers extends abstractCore
         return self::$_providersTable;
     }
 
+    public function getUrl(array $itemData)
+    {
+        return $this->url(null, $itemData);
+    }
+
     public function url($action, array $listingData)
     {
         $patterns = [

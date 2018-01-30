@@ -129,12 +129,6 @@ class iaSmarty extends Smarty
         $key = isset($params['key']) ? $params['key'] : '';
         $default = isset($params['default']) ? $params['default'] : null;
 
-        // compatibility layer
-        if (preg_match('#^field_([a-z]+?)s_(.*)$#', $key, $matches)) {
-            $default = iaLanguage::get('field_' . $matches[1] . '_' . $matches[2]);
-        }
-        //
-
         if (count($params) > 1 && !isset($params['default'])) {
             unset($params['key']);
 

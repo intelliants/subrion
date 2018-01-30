@@ -66,10 +66,6 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         }
 
         if ($this->_itemName) {
-            // compatibility layer
-            $this->_iaCore->factory('item');
-            $this->_itemName = iaItem::toSingular($this->_itemName);
-            //
             $this->_path = IA_ADMIN_URL . $this->getModuleName() . IA_URL_DELIMITER . $this->getName() . IA_URL_DELIMITER;
             $this->_template = 'form-' . $this->getName();
         }

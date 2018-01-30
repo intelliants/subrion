@@ -785,6 +785,10 @@ SQL;
 
     public function factoryItem($itemName, $type = null)
     {
+        if ($itemName == iaUsers::getItemName()) {
+            return $this->factory('users');
+        }
+
         return $this->factory('item')->factory($itemName, $type);
     }
 
@@ -837,13 +841,6 @@ SQL;
 
         if (file_exists($filePath)) {
             require_once $filePath;
-
-            // compatibility layer
-            // this code makes possible to use old-style "not camelcase'd" class names
-            if (!class_exists($className)) {
-                $className = self::CLASSNAME_PREFIX . ucfirst($name);
-            }
-            //
 
             $instance = $this->_classInstances[$className] = new $className();
             $instance->init();
