@@ -54,7 +54,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
         $iaView->grid('_IA_URL_modules/' . $this->getModuleName() . '/js/admin/index');
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($_GET['text'])) {
             $conditions[] = '(`title` LIKE :text OR `body` LIKE :text)';
