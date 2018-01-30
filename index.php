@@ -77,7 +77,7 @@ if ($performInstallation) {
     exit('Install directory was not found!');
 }
 
-$domain = explode(':', $_SERVER['HTTP_HOST']);
+/*$domain = explode(':', $_SERVER['HTTP_HOST']);
 $domain = reset($domain);
 
 if (strpos($domain, '.') && !filter_var($domain, FILTER_VALIDATE_IP)) {
@@ -92,7 +92,7 @@ if (strpos($domain, '.') && !filter_var($domain, FILTER_VALIDATE_IP)) {
         }
     }
     $domain = '.' . $domain;
-}
+}*/
 
 ini_set('session.gc_maxlifetime', 1800); // 30 minutes
 //session_set_cookie_params(1800, '/', $domain, false, true);
