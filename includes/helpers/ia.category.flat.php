@@ -404,6 +404,16 @@ SQL;
         return $this->iaDb->one(iaDb::STMT_COUNT_ROWS, null, self::getTable());
     }
 
+    public function getTopLevel()
+    {
+        return $this->getByLevel(1);
+    }
+
+    public function getByLevel($level)
+    {
+        return $this->getAll(iaDb::convertIds($level, 'level'));
+    }
+
     public function getTreeVars($id, array $entryData, $url)
     {
         $parent = empty($entryData[self::COL_PARENT_ID])
