@@ -291,6 +291,8 @@ class iaPatchApplier
             if ($link && mysqli_select_db($link, $this->_dbConnectionParams['database'])) {
                 $this->_dbConnectionParams['link'] = $link;
 
+                mysqli_query($this->_dbConnectionParams['link'], "SET sql_mode = ''");
+
                 return true;
             }
         }
