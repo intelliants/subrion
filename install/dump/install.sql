@@ -2717,7 +2717,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('extra_actions','This code is executed every time on field change. It can be used for validation or any other operation.','tooltip'),
 
 ('for_plan_only','Specifies if the field should be available only when plan chosen.','tooltip'),
-('frontend_header_code','This code is inserted before closing HEAD tag. HTML/JS code allowed.','tooltip'),
+('frontend_header_code','This code is inserted before closing HEAD tag. HTML/JS code allowed. (For example Google Analytics code)','tooltip'),
 ('frontend_footer_code','Injected before closing BODY tag. HTML/JS code allowed.','tooltip'),
 
 ('https','Use secure HTTPS protocol for your site. Before enabling this, please make sure you have properly configured your hosting account and/or webserver.','tooltip'),
