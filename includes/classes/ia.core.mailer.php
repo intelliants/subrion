@@ -236,7 +236,7 @@ class iaMailer extends PHPMailer
             $iaSmarty->assign('subject', $subject);
             $iaSmarty->assign('content', $iaSmarty->fetch('eval:' . $this->_bodies[$iso]));
 
-            $this->_subjects[$iso] = $subject;
+            $this->_subjects[$iso] = htmlspecialchars_decode($subject);
             $this->_bodies[$iso] = $iaSmarty->fetch(IA_HOME . 'admin/templates/emails/dist/email.layout.html');
         }
     }
