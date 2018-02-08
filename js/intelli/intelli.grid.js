@@ -342,23 +342,22 @@ function IntelliGrid(params, autoInit) {
                     disabled: true,
                     handler: function () {
                         var selection = self.grid.getSelectionModel().getSelection();
-                        Ext.Msg.show(
-                            {
-                                title: _t('confirm'),
-                                msg: selection.length > 1 ? self.texts.delete_multiple : self.texts.delete_single,
-                                buttons: Ext.Msg.YESNO,
-                                icon: Ext.Msg.QUESTION,
-                                fn: function (btn) {
-                                    if ('yes' === btn) {
-                                        var ids = [];
-                                        for (var i = 0; i < selection.length; i++) {
-                                            if (1 == selection[i].data.delete) ids.push(selection[i].data.id);
-                                        }
-
-                                        intelli.gridHelper.httpRequest(self, {id: ids}, 'delete');
+                        Ext.Msg.show({
+                            title: _t('confirm'),
+                            msg: selection.length > 1 ? self.texts.delete_multiple : self.texts.delete_single,
+                            buttons: Ext.Msg.YESNO,
+                            icon: Ext.Msg.QUESTION,
+                            fn: function (btn) {
+                                if ('yes' === btn) {
+                                    var ids = [];
+                                    for (var i = 0; i < selection.length; i++) {
+                                        if (1 == selection[i].data.delete) ids.push(selection[i].data.id);
                                     }
+
+                                    intelli.gridHelper.httpRequest(self, {id: ids}, 'delete');
                                 }
-                            });
+                            }
+                        });
                     },
                     id: 'btnMassDelete',
                     text: '<i class="i-close"></i> ' + _t('remove')
@@ -380,6 +379,7 @@ function IntelliGrid(params, autoInit) {
                         }
                     },
                     store: self.stores.statuses,
+                    valueField: 'value',
                     typeAhead: true,
                     xtype: 'combo'
                 }, {
