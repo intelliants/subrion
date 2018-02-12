@@ -193,9 +193,10 @@ SQL;
         is_null($pageName) && $pageName = $this->iaView->name();
         is_null($where) && $where = iaDb::EMPTY_CONDITION;
 
+        $where.= iaDb::printf(" && f.status = ':status'", ['status' => iaCore::STATUS_ACTIVE]);
         $where.= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
-            ? " AND (f.`plans` = '' OR FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`))"
-            : " AND f.`plans` = ''";
+            ? " && (f.`plans` = '' || FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`))"
+            : " && f.`plans` = ''";
 
         if (isset($cache[$pageName][$itemName][$where])) {
             $result = $cache[$pageName][$itemName][$where];
