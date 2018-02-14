@@ -18,19 +18,19 @@
                 <p><span class="fa fa-phone"></span> {$listing.phone|escape}</p>
             {/if}
             {if !empty($listing.website)}
-                <p><span class="fa fa-globe"></span> <a href="{$listing.website|escape:'url'}">{lang key='field_members_website'}</a></p>
+                <p><span class="fa fa-globe"></span> <a href="{$listing.website|escape:'url'}">{lang key='field_member_website'}</a></p>
             {/if}
             {if !empty($listing.facebook)}
-                <p><span class="fa fa-facebook"></span> <a href="{$listing.facebook|escape:'url'}">{lang key='field_members_facebook'}</a></p>
+                <p><span class="fa fa-facebook"></span> <a href="{$listing.facebook|escape:'url'}">{lang key='field_member_facebook'}</a></p>
             {/if}
             {if !empty($listing.twitter)}
-                <p><span class="fa fa-twitter"></span> <a href="{$listing.twitter|escape:'url'}">{lang key='field_members_twitter'}</a></p>
+                <p><span class="fa fa-twitter"></span> <a href="{$listing.twitter|escape:'url'}">{lang key='field_member_twitter'}</a></p>
             {/if}
             {if !empty($listing.gplus)}
-                <p><span class="fa fa-google-plus"></span> <a href="{$listing.gplus|escape:'url'}">{lang key='field_members_gplus'}</a></p>
+                <p><span class="fa fa-google-plus"></span> <a href="{$listing.gplus|escape:'url'}">{lang key='field_member_gplus'}</a></p>
             {/if}
             {if !empty($listing.linkedin)}
-                <p><span class="fa fa-linkedin"></span> <a href="{$listing.linkedin|escape:'url'}">{lang key='field_members_linkedin'}</a></p>
+                <p><span class="fa fa-linkedin"></span> <a href="{$listing.linkedin|escape:'url'}">{lang key='field_member_linkedin'}</a></p>
             {/if}
         </div>
 
