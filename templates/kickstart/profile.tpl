@@ -3,11 +3,11 @@
         <div class="col-md-3">
             <div class="ia-item-author">
                 <a href="{$smarty.const.IA_URL}profile/?edit" class="btn btn-default btn-sm ia-item-author__edit" title="{lang key='edit'}"><span class="fa fa-pencil"></span></a>
-                <a class="ia-item-author__image" href="{ia_url type='url' item='members' data=$member}">
+                <a class="ia-item-author__image" href="{ia_url type='url' item='member' data=$member}">
                     {ia_image file=$member.avatar type='thumbnail' width=120 alt=$member.fullname|default:$member.username gravatar=true email=$member.email}
                 </a>
                 <div class="ia-item-author__content">
-                    <h4 class="ia-item__title"><a href="{ia_url type='url' item='members' data=$member}">{$member.fullname|escape}</a></h4>
+                    <h4 class="ia-item__title"><a href="{ia_url type='url' item='member' data=$member}">{$member.fullname|escape}</a></h4>
                     {if $member.biography}
                         <p class="text-center text-fade-50">{$member.biography|strip_tags|truncate:100:'...':true}</p>
                     {/if}
