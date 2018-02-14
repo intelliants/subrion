@@ -507,7 +507,7 @@ abstract class iaAbstractControllerBackend
         // 'array_map()' may be used instead
         foreach ($entries as &$entry) {
             foreach ($entry as $key => &$value) {
-                if (!is_numeric($value)) {
+                if (is_string($value) && !is_numeric($value)) {
                     $value = iaSanitize::html($value);
                 }
             }
