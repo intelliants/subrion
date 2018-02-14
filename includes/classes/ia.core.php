@@ -972,9 +972,8 @@ SQL;
                     $options = empty($row['options']) ? [] : json_decode($row['options'], true);
 
                     if (isset($options['multilingual']) && $options['multilingual']) {
-                        $value = preg_match('#\{\:' . $currentLangCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
-                            ? $matches[1]
-                            : '';
+                        $value = json_decode($value, true);
+                        $value = isset($value[$currentLangCode]) ? $value[$currentLangCode] : '';
                     }
                 }
 

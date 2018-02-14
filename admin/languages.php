@@ -644,20 +644,18 @@ class iaBackendController extends iaAbstractControllerBackend
 
         $rows = $this->_iaDb->all(['name', 'value', 'options'], "`type` IN ('text', 'textarea')");
 
-        $defaultLanguage = $this->_iaDb->row(['code'], iaDb::convertIds(1, 'default'), iaLanguage::getLanguagesTable());
-
         foreach ($rows as $row) {
             $options = $row['options'] ? json_decode($row['options'], true) : [];
 
             if (isset($options['multilingual']) && $options['multilingual']) {
-                $id = '{:' . $langIsoCode . ':}';
+                $value = json_decode($row['value'], true);
 
-                if (false === strpos($row['value'], $id)) {
-                    preg_match('#\{\:' . $defaultLanguage['code'] . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $row['value'],
-                        $matches)
-                    && $row['value'] .= $id . $matches[1]; // copying value of the 'default' language
+                if (!isset($value[$langIsoCode])) {
+                    $value[$langIsoCode] = $value[iaLanguage::getMasterLanguage()->iso];
 
-                    $this->_iaDb->update(['value' => $row['value']], iaDb::convertIds($row['name'], 'name'));
+                    $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+                    $this->_iaDb->update(['value' => $value], iaDb::convertIds($row['name'], 'name'));
                 }
             }
         }

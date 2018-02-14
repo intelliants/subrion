@@ -466,10 +466,8 @@ SQL;
                     if (isset($entry['options']['multilingual']) && $entry['options']['multilingual']) {
                         $value = [];
                         foreach ($this->_iaCore->languages as $iso => $language) {
-                            $value[$iso] = preg_match('#\{\:' . $iso . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s',
-                                $entry['value'], $matches)
-                                ? $matches[1]
-                                : '';
+                            $array = json_decode($entry['value'], true);
+                            $value[$iso] = isset($array[$iso]) ? $array[$iso] : '';
                         }
 
                         $entry['value'] = $value;
@@ -534,12 +532,6 @@ SQL;
 
     protected static function _packMultilingualValue($value)
     {
-        $result = '';
-
-        foreach ($value as $k => $v) {
-            $result .= '{:' . $k . ':}' . $v;
-        }
-
-        return $result;
+        return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }
