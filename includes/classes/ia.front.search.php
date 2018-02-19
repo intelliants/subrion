@@ -732,7 +732,7 @@ SQL;
     private function _processSorting(array $sorting)
     {
         if ($sorting[0]) {
-            $field = $this->getOption('columnAlias')->{$sorting[0]}
+            $field = isset($this->getOption('columnAlias')->{$sorting[0]})
                 ? $this->getOption('columnAlias')->{$sorting[0]}
                 : iaSanitize::sql($sorting[0]);
             $order = (empty($sorting[1]) || !in_array($sorting[1], ['asc', 'desc']))
