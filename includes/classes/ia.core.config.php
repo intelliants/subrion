@@ -180,14 +180,12 @@ SQL;
 
         $result = ['group' => [], 'user' => [], 'plan' => []];
 
-        $currentLangCode = $this->iaView->language;
         foreach ($rows as $row) {
             $value = $row['value'];
 
             if (self::TYPE_TEXT == $row['config_type'] || self::TYPE_TEXTAREA == $row['config_type']) {
                 if ($this->unpackOptions($row['config_options'])['multilingual']) {
                     $value = $this->unpack($value);
-                    $value = isset($value[$currentLangCode]) ? $value[$currentLangCode] : '';
                 }
             }
 
@@ -215,6 +213,34 @@ SQL;
         }
 
         return (bool)$this->iaDb->update(['value' => $value], iaDb::convertIds($key, self::KEY_COLUMN), null, self::getTable());
+    }
+
+    public function saveCustom($data, $key, $value, $type, $typeId)
+    {
+        $where = sprintf("name = '%s' && type = '%s' && type_id = %d", $key, $type, $typeId);
+
+        $this->iaDb->setTable(self::getCustomConfigTable());
+
+        if ($data[$key]) {
+            $config = $this->getByKey($key);
+            if ($config && $this->unpackOptions($config['options'])['multilingual']) {
+                $value = $this->pack($value);
+            }
+
+            $entry = ['name' => $key, 'value' => $value, 'type' => $type, 'type_id' => $typeId];
+
+            if ($this->iaDb->exists($where)) {
+                unset($entry['value']);
+                $this->iaDb->bind($where, $entry);
+                $this->iaDb->update(['value' => $value], $where);
+            } else {
+                $this->iaDb->insert($entry);
+            }
+        } else {
+            $this->iaDb->delete($where);
+        }
+
+        $this->iaDb->resetTable();
     }
 
     public function getBy($key, $value)

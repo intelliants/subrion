@@ -318,31 +318,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 }
 
                 if ($this->_type) {
-                    $where = sprintf("`name` = '%s' && `type` = '%s' && `type_id` = %d", $key, $this->_type,
-                        $this->_typeId);
-
-                    $this->_iaDb->setTable(iaConfig::getCustomConfigTable());
-
-                    if ($_POST['c'][$key]) {
-                        $array = [
-                            'name' => $key,
-                            'value' => $value,
-                            'type' => $this->_type,
-                            'type_id' => $this->_typeId
-                        ];
-
-                        if ($this->_iaDb->exists($where)) {
-                            unset($array['value']);
-                            $this->_iaDb->bind($where, $array);
-                            $this->_iaDb->update(['value' => $value], $where);
-                        } else {
-                            $this->_iaDb->insert($array);
-                        }
-                    } else {
-                        $this->_iaDb->delete($where);
-                    }
-
-                    $this->_iaDb->resetTable();
+                    $this->iaConfig->saveCustom($_POST['c'], $key, $value, $this->_type, $this->_typeId);
                 } else {
                     $this->_updateParam($key, $value);
                 }
@@ -410,13 +386,13 @@ SQL;
 
     private function _getParams($groupName)
     {
-        $where = "`config_group` = '{$groupName}' && `type` != 'hidden' " . ($this->_type ? '&& `custom` = 1' : '');
+        $where = "config_group = '{$groupName}' && type != 'hidden' " . ($this->_type ? '&& custom = 1' : '');
         $params = $this->iaConfig->fetch($where);
 
         if ($this->_type) {
             $custom = ('user' == $this->_type)
-                ? $this->_iaCore->getCustomConfig($this->_typeId)
-                : $this->_iaCore->getCustomConfig(null, $this->_typeId);
+                ? $this->iaConfig->fetchCustom($this->_typeId)
+                : $this->iaConfig->fetchCustom(null, $this->_typeId);
             $custom2 = ('user' == $this->_type) ? $this->_getUsersSpecificConfig() : [];
         }
 
@@ -463,7 +439,6 @@ SQL;
                         in_array($itemName, $implementedItems)
                             ? ($entry['items'][0][] = $itemEntry)
                             : ($entry['items'][1][] = $itemEntry);
-                        ;
                     }
             }
 

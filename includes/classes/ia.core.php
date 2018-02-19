@@ -381,12 +381,10 @@ final class iaCore
             iaSystem::renderTime('config', 'Cached Configuration Loaded');
 
             if (empty($this->_config) || $reloadRequired) {
-                $iaConfig = $this->factory('config');
-
-                $this->_config = $iaConfig->fetchKeyValue();
+                $this->_config = $this->factory('config')->fetchKeyValue();
                 iaSystem::renderTime('config', 'Configuration loaded from DB');
 
-                $extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'modules');
+                $extras = $this->iaDb->onefield('name', iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), null, null, 'modules');
                 $extras[] = $this->_config['tmpl'];
 
                 $this->_config['module'] = $extras;
@@ -439,11 +437,19 @@ final class iaCore
             return $this->_customConfig;
         }
 
-        if ($local) {
-            $this->_customConfig = $this->factory('config')->fetchCustom($user, $group);
+        $result = [];
+        foreach ($this->factory('config')->fetchCustom($user, $group) as $key => $value) {
+            if (is_array($value)) {
+                $value = $value[$this->language['iso']];
+            }
+            $result[$key] = $value;
         }
 
-        return $this->_customConfig;
+        if ($local) {
+            $this->_customConfig = $result;
+        }
+
+        return $result;
     }
 
     /**
@@ -465,8 +471,9 @@ final class iaCore
         $result = $default;
 
         if ($db) {
-            if ($result = $this->factory('config')->fetch(iaDb::convertIds($key, 'name'))) {
-                $result = array_shift($result);
+            $value = $this->factory('config')->get($key);
+            if (false !== $value) {
+                $result = $value;
             }
         } else {
             if (isset($this->_config[$key])) {
