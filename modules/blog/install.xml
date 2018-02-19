@@ -79,13 +79,13 @@
     </tooltips>
 
     <blocks>
-        <block title="Blogroll" name="blogroll" position="verybottom" sticky="0" pages="index" order="1" type="smarty" filename="block.blogroll"><![CDATA[]]></block>
-        <block title="New blog posts" name="new_blog_posts" position="left" type="smarty" order="5" filename="block.new-posts"><![CDATA[]]></block>
-        <block title="Blogs Archive" name="blogs_archive" position="left" type="smarty" order="5" filename="block.blogs-archive"><![CDATA[]]></block>
+        <block title="Blogroll" name="blogroll" position="verybottom" sticky="0" pages="index" order="1" type="smarty" filename="block.blogroll.tpl"><![CDATA[]]></block>
+        <block title="New blog posts" name="new_blog_posts" position="left" type="smarty" order="5" filename="block.new-posts.tpl"><![CDATA[]]></block>
+        <block title="Blogs Archive" name="blogs_archive" position="left" type="smarty" order="5" filename="block.blogs-archive.tpl"><![CDATA[]]></block>
     </blocks>
 
     <hooks>
-        <hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="hook.blocks-load"><![CDATA[]]></hook>
+        <hook name="phpCoreBeforePageDisplay" type="php" page_type="front" filename="hook.blocks-load.php"><![CDATA[]]></hook>
         <hook name="adminDashboardStatistics" page_type="admin" pages="index"><![CDATA[$items['blog'] = 'blog';]]></hook>
         <hook name="sitemapGeneration" page_type="admin" pages="index,sitemap"><![CDATA[$items[] = 'blog:blog';]]></hook>
     </hooks>

@@ -24,14 +24,14 @@
  *
  ******************************************************************************/
 
-$iaBlog = $iaCore->factoryPlugin(IA_CURRENT_MODULE);
+$iaBlog = $iaCore->factoryModule('blog', IA_CURRENT_MODULE);
 
 $baseUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
 
 $iaDb->setTable($iaBlog::getTable());
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
-    if (isset($iaCore->requestPath[0]) && 'alias' == $iaCore->requestPath[0]) {
+    if (isset($iaCore->requestPath[0]) && 'slug' == $iaCore->requestPath[0]) {
         $output['url'] = $baseUrl . $iaDb->getNextId() . '-' . $iaBlog->titleAlias($_POST['title']);
 
         $iaView->assign($output);
