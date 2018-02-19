@@ -1049,12 +1049,11 @@ INSERT INTO `{install:prefix}config_groups` (`name`,`order`) VALUES
 ('general',1),
 ('members',2),
 ('mail',3),
-('email_templates',4),
-('system',5),
-('pictures',6),
-('miscellaneous',7),
-('financial',8),
-('api',9);
+('system',4),
+('pictures',5),
+('miscellaneous',6),
+('financial',7),
+('api',8);
 
 INSERT INTO `{install:prefix}cron` (`data`,`name`,`description`) VALUES
 ('1 1,12 * * * includes/cron/sitemap.php', 'Sitemap creation and update','Updates (or generates) the sitemap.xml file'),

@@ -58,10 +58,6 @@ final class iaCore
 
     private $_classInstances = [];
 
-    protected static $_configDbTable = 'config';
-    protected static $_configGroupsDbTable = 'config_groups';
-    protected static $_customConfigDbTable = 'config_custom';
-
     protected $_accessType = self::ACCESS_FRONT;
 
     protected $_hooks = [];
@@ -184,8 +180,7 @@ final class iaCore
     {
         $iaView = &$this->iaView;
 
-        $params = $this->iaDb->keyvalue(['name', 'value'],
-            "`name` IN('baseurl', 'admin_page', 'home_page', 'lang')", self::getConfigTable());
+        $params = $this->factory('config')->fetchKeyValue("`name` IN('baseurl', 'admin_page', 'home_page', 'lang')");
 
         $domain = preg_replace('#[^a-z_0-9-.:]#i', '', $_SERVER['HTTP_HOST']);
         $requestPath = ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER);
@@ -386,7 +381,9 @@ final class iaCore
             iaSystem::renderTime('config', 'Cached Configuration Loaded');
 
             if (empty($this->_config) || $reloadRequired) {
-                $this->_config = $this->fetchConfig();
+                $iaConfig = $this->factory('config');
+
+                $this->_config = $iaConfig->fetchKeyValue();
                 iaSystem::renderTime('config', 'Configuration loaded from DB');
 
                 $extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'modules');
@@ -442,58 +439,11 @@ final class iaCore
             return $this->_customConfig;
         }
 
-        $result = [];
-        $stmt = [];
-
-        if ($user) {
-            $stmt[] = "(cc.`type` = 'user' AND cc.`type_id` = $user) ";
-        }
-        if ($group) {
-            $stmt[] = "(cc.`type` = 'group' AND cc.`type_id` = $group) ";
-        }
-
-        $sql = <<<SQL
-SELECT 
-  cc.`name`, cc.`value`, cc.`type`,
-  c.`type` `config_type`, c.`options` `config_options`
-FROM `:prefix:table_config` c
-LEFT JOIN `:prefix:table_custom_config` cc ON (c.`name` = cc.`name`)
-WHERE :where
-SQL;
-        $sql = iaDb::printf($sql, ['prefix' => $this->iaDb->prefix, 'table_config' => self::getConfigTable(),
-            'table_custom_config' => self::getCustomConfigTable(), 'where' => implode(' OR ', $stmt)]);
-        $rows = $this->iaDb->getAll($sql);
-
-        if (empty($rows)) {
-            return $result;
-        }
-
-        $result = ['group' => [], 'user' => [], 'plan' => []];
-
-        $currentLangCode = $this->iaView->language;
-        foreach ($rows as $row) {
-            $value = $row['value'];
-
-            if ('text' == $row['config_type'] || 'textarea' == $row['config_type']) {
-                $options = empty($row['config_options']) ? [] : json_decode($row['config_options'], true);
-
-                if (isset($options['multilingual']) && $options['multilingual']) {
-                    $value = preg_match('#\{\:' . $currentLangCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
-                        ? $matches[1]
-                        : '';
-                }
-            }
-
-            $result[$row['type']][$row['name']] = $value;
-        }
-
-        $result = array_merge($result['group'], $result['user'], $result['plan']);
-
         if ($local) {
-            $this->_customConfig = $result;
+            $this->_customConfig = $this->factory('config')->fetchCustom($user, $group);
         }
 
-        return $result;
+        return $this->_customConfig;
     }
 
     /**
@@ -515,7 +465,7 @@ SQL;
         $result = $default;
 
         if ($db) {
-            if ($result = $this->fetchConfig(iaDb::convertIds($key, 'name'))) {
+            if ($result = $this->factory('config')->fetch(iaDb::convertIds($key, 'name'))) {
                 $result = array_shift($result);
             }
         } else {
@@ -554,7 +504,7 @@ SQL;
         $this->_config[$key] = $value;
 
         if ($permanent) {
-            $result = (bool)$this->iaDb->update(['value' => $value], iaDb::convertIds($key, 'name'), null, self::getConfigTable());
+            $result = $this->factory('config')->set($key, $value);
 
             $this->iaCache->clearConfigCache();
         }
@@ -852,36 +802,6 @@ SQL;
     }
 
     /**
-     * Get config table name
-     *
-     * @return string
-     */
-    public static function getConfigTable()
-    {
-        return self::$_configDbTable;
-    }
-
-    /**
-     * Get config groups table name
-     *
-     * @return string
-     */
-    public static function getConfigGroupsTable()
-    {
-        return self::$_configGroupsDbTable;
-    }
-
-    /**
-     * Get custom config table name
-     *
-     * @return string
-     */
-    public static function getCustomConfigTable()
-    {
-        return self::$_customConfigDbTable;
-    }
-
-    /**
      * Set constants
      */
     protected function _setConstants()
@@ -948,37 +868,6 @@ SQL;
         if (!$result) {
             iaDebug::debug('Unable to generate strong security token', 'Notice');
             $result = iaUtil::generateToken($length);
-        }
-
-        return $result;
-    }
-
-    public function fetchConfig($where = null)
-    {
-        $result = [];
-
-        is_null($where) && $where = iaDb::EMPTY_CONDITION;
-        $where.= " AND `type` != ':divider'";
-
-        $rows = $this->iaDb->all(['name', 'type', 'value', 'options'], $where, null, null, self::getConfigTable());
-
-        if ($rows) {
-            $currentLangCode = $this->iaView->language;
-
-            foreach ($rows as $row) {
-                $value = $row['value'];
-
-                if ('text' == $row['type'] || 'textarea' == $row['type']) {
-                    $options = empty($row['options']) ? [] : json_decode($row['options'], true);
-
-                    if (isset($options['multilingual']) && $options['multilingual']) {
-                        $value = json_decode($value, true);
-                        $value = isset($value[$currentLangCode]) ? $value[$currentLangCode] : '';
-                    }
-                }
-
-                $result[$row['name']] = $value;
-            }
         }
 
         return $result;

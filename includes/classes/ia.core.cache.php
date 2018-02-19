@@ -254,7 +254,7 @@ class iaCache extends abstractUtil
                 break;
 
             case 'config':
-                $config = $this->iaCore->fetchConfig("`private` = 0 AND `config_group` != 'email_templates'");
+                $config = $this->iaCore->factory('config')->fetchKeyValue('private = 0');
                 $config['ia_url'] = IA_CLEAR_URL; // TODO remove, left in compatibility purposes
                 $config['clear_url'] = IA_CLEAR_URL;
                 $config['packages'] = $this->iaCore->setPackagesData();

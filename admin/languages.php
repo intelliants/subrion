@@ -293,8 +293,8 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         if (iaCore::ACTION_ADD == $action) {
             $this->_iaCore->factory('field')->syncMultilingualFields();
+            $this->_iaCore->factory('config')->copyMultilingualKeys($entry['code']);
             $this->_syncMultilingualEntities($entry['code'], $action);
-            $this->_copyMultilingualConfigs($entry['code']);
 
             $this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, [
                 'item' => 'language',
@@ -636,31 +636,6 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         return [!$error, $messages, isset($languageCode) ? $languageCode : null];
-    }
-
-    protected function _copyMultilingualConfigs($langIsoCode)
-    {
-        $this->_iaDb->setTable(iaCore::getConfigTable());
-
-        $rows = $this->_iaDb->all(['name', 'value', 'options'], "`type` IN ('text', 'textarea')");
-
-        foreach ($rows as $row) {
-            $options = $row['options'] ? json_decode($row['options'], true) : [];
-
-            if (isset($options['multilingual']) && $options['multilingual']) {
-                $value = json_decode($row['value'], true);
-
-                if (!isset($value[$langIsoCode])) {
-                    $value[$langIsoCode] = $value[iaLanguage::getMasterLanguage()->iso];
-
-                    $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-                    $this->_iaDb->update(['value' => $value], iaDb::convertIds($row['name'], 'name'));
-                }
-            }
-        }
-
-        $this->_iaDb->resetTable();
     }
 
     protected function _syncMultilingualEntities($langCode, $action)

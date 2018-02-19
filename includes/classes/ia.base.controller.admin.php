@@ -66,6 +66,7 @@ abstract class iaAbstractControllerBackend
 
     protected $_processAdd = true;
     protected $_processEdit = true;
+    protected $_processDelete = true;
 
     protected $_systemFieldsEnabled = true;
     protected $_permissionsEdit = false;
@@ -478,7 +479,16 @@ abstract class iaAbstractControllerBackend
         $result = '';
 
         if (is_array($this->_gridColumns)) {
-            $this->_gridColumns = array_merge(['id', 'update' => 1, 'delete' => 1], $this->_gridColumns);
+            $persistentColumns = ['id'];
+
+            if ($this->_processEdit) {
+                $persistentColumns['update'] = 1;
+            }
+            if ($this->_processDelete) {
+                $persistentColumns['delete'] = 1;
+            }
+
+            $this->_gridColumns = array_merge($persistentColumns, $this->_gridColumns);
 
             foreach ($this->_gridColumns as $key => $field) {
                 $result.= is_int($key)

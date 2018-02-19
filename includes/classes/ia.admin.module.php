@@ -77,12 +77,16 @@ class iaModule extends abstractCore
     public $isUpgrade = false;
     public $isUpdate = false;
 
+    protected $iaConfig;
+
 
     public function init()
     {
         parent::init();
 
         $this->iaCore->factory(['acl', 'util', 'item']);
+        $this->iaConfig = $this->iaCore->factory('config');
+
     }
 
     protected function _resetValues()
@@ -385,17 +389,13 @@ class iaModule extends abstractCore
         }
 
         if ($this->itemData['config_groups']) {
-            $iaDb->setTable(iaCore::getConfigGroupsTable());
-            $iaDb->delete(iaDb::convertIds($this->itemData['name'], 'module'));
-
-            $maxOrder = $iaDb->getMaxOrder();
+            $this->iaConfig->deleteGroup('module', $this->itemData['name']);
 
             foreach ($this->itemData['config_groups'] as $title => $entry) {
-                $iaDb->insert($entry, ['order' => ++$maxOrder]);
-                $this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
+                if ($this->iaConfig->insertGroup($entry)) {
+                    $this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
+                }
             }
-
-            $iaDb->resetTable();
         }
 
         if ($this->itemData['objects']) {
@@ -680,9 +680,9 @@ class iaModule extends abstractCore
             'admin_pages',
             'acl_privileges',
             iaLanguage::getTable(),
-            iaCore::getConfigGroupsTable(),
-            iaCore::getConfigTable(),
-            iaCore::getCustomConfigTable(),
+            iaConfig::getTable(),
+            iaConfig::getCustomConfigTable(),
+            iaConfig::getConfigGroupsTable(),
             'email_templates',
             'pages',
             'hooks',
@@ -843,19 +843,16 @@ class iaModule extends abstractCore
 
         if (self::TYPE_TEMPLATE == $this->itemData['type']) {
             if (self::SETUP_REPLACE == $type) {
-                // $templateName = $iaDb->one('value', "`name` = 'tmpl'", iaCore::getConfigTable());
                 $templateName = $this->iaCore->get('tmpl');
 
-                $tablesList = ['hooks', 'blocks', iaLanguage::getTable(), 'pages', iaCore::getConfigTable(),
-                    iaCore::getConfigGroupsTable(), iaCore::getCustomConfigTable()];
+                $tablesList = ['hooks', 'blocks', iaLanguage::getTable(), 'pages', iaConfig::getTable(),
+                    iaConfig::getConfigGroupsTable(), iaConfig::getCustomConfigTable()];
 
                 $iaDb->cascadeDelete($tablesList, iaDb::convertIds($templateName, 'module'));
                 $iaDb->cascadeDelete($tablesList, iaDb::convertIds($this->itemData['name'], 'module'));
             }
 
-            $iaDb->update(['value' => $this->itemData['name']], "`name` = 'tmpl'", null, iaCore::getConfigTable());
             $this->iaCore->set('tmpl', $this->itemData['name'], true);
-
             $this->iaCore->set(self::CONFIG_LAYOUT_DATA, serialize($this->itemData['layout']), true);
         }
 
@@ -892,15 +889,11 @@ class iaModule extends abstractCore
         }
 
         if ($this->itemData['config_groups']) {
-            $iaDb->setTable(iaCore::getConfigGroupsTable());
-
-            $maxOrder = $iaDb->getMaxOrder();
             foreach ($this->itemData['config_groups'] as $title => $entry) {
-                $iaDb->insert($entry, ['order' => ++$maxOrder]);
-                $this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
+                if ($this->iaConfig->insertGroup($entry)) {
+                    $this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
+                }
             }
-
-            $iaDb->resetTable();
         }
 
         if ($this->itemData['objects']) {
@@ -1125,7 +1118,7 @@ class iaModule extends abstractCore
                     // update language records
                     $this->_addPhrase('usergroup_' . $item['name'], $item['title']);
 
-                    $iaDb->setTable(iaCore::getCustomConfigTable());
+                    $iaDb->setTable(iaConfig::getCustomConfigTable());
                     $iaDb->delete('`type` = :type AND `type_id` = :id', null, ['type' => iaAcl::GROUP, 'id' => $groupId]);
                     foreach ($configs as $config) {
                         $data = [
@@ -1903,43 +1896,40 @@ class iaModule extends abstractCore
 
             case 'lightbox':
             case 'captcha':
-                $configName = ('lightbox' == $entryData['category']) ? 'lightbox_name' : 'captcha_name';
+                $configKey = ('lightbox' == $entryData['category']) ? 'lightbox_name' : 'captcha_name';
 
-                $stmt = iaDb::convertIds($configName, 'name');
+                $iaConfig = $this->iaCore->factory('config');
 
-                $this->iaDb->setTable(iaCore::getConfigTable());
+                $config = $iaConfig->getByKey($configKey);
+
+                $values = $config['multiple_values'];
+                $values = $values ? explode(',', $values) : [];
 
                 if (self::ACTION_INSTALL == $action) {
-                    if ($currentValues = $this->iaDb->one('`multiple_values`', $stmt)) {
-                        $values = explode(',', $currentValues);
-                    }
-
                     $values[] = $entryData['name'];
 
-                    $this->iaDb->update(['multiple_values' => implode(',', $values)], $stmt);
+                    $iaConfig->update(['multiple_values' => implode(',', $values)], $configKey);
 
                     if (1 == count($values)) {
-                        $this->iaCore->set($configName, $entryData['name'], true);
+                        $this->iaCore->set($configKey, $entryData['name'], true);
                     }
                 } elseif (self::ACTION_UNINSTALL == $action) {
-                    // get possible values
-                    if ($values = explode(',', $this->iaDb->one('`multiple_values`', $stmt))) {
+                    if ($values) {
                         $installed = array_diff($values, [$entryData['name']]);
-                        $this->iaDb->update(['multiple_values' => implode(',', $installed)], $stmt);
 
-                        if ($this->iaCore->get($configName) == $entryData['name']) {
+                        $iaConfig->update(['multiple_values' => implode(',', $installed)], $configKey);
+
+                        if ($this->iaCore->get($configKey) == $entryData['name']) {
                             $value = empty($installed) ? '' : array_shift($installed);
 
                             if (in_array($entryData['name'], $this->_builtinPlugins)) {
                                 $value = $entryData['name'];
                             }
 
-                            $this->iaCore->set($configName, $value, true);
+                            $this->iaCore->set($configKey, $value, true);
                         }
                     }
                 }
-
-                $this->iaDb->resetTable();
         }
     }
 
@@ -2186,33 +2176,31 @@ class iaModule extends abstractCore
 
     protected function _processConfig(array $entries)
     {
-        $this->iaDb->setTable(iaCore::getConfigTable());
+        $iaConfig = $this->iaCore->factory('config');
 
-        $maxOrder = $this->iaDb->getMaxOrder();
+        $maxOrder = $this->iaDb->getMaxOrder($iaConfig::getTable());
+
         foreach ($entries as $entry) {
-            $id = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($entry['name'], 'name'));
+            $config = $iaConfig->getByKey($entry['name']);
 
             $entry['module'] = $this->itemData['name'];
             $entry['order'] = isset($entry['order']) ? $entry['order'] : ++$maxOrder;
-            $entry['options'] = json_encode($entry['options']);
 
             $description = $entry['description'];
             unset($entry['description']);
 
-            if (!$id || empty($entry['name'])) {
-                $this->iaDb->insert($entry);
-            } elseif ($id) {
+            if (!$config || empty($entry['name'])) {
+                $iaConfig->insert($entry);
+            } elseif ($config) {
                 if (isset($entry['value'])) {
                     unset($entry['value']);
                 }
 
-                $this->iaDb->update($entry, iaDb::convertIds($id));
+                $iaConfig->update($entry, $config['key']);
             }
 
             self::_addPhrase('config_' . $entry['name'], $description, iaLanguage::CATEGORY_ADMIN);
         }
-
-        $this->iaDb->resetTable();
     }
 
     protected function _processEmailTemplates(array $entries)

@@ -563,13 +563,12 @@ class iaBackendController extends iaAbstractControllerBackend
                                 $buttons['import'] = true;
                             }
 
-                            if ($extraConfig = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION,
-                                '`module` = :name ORDER BY `order` ASC', ['name' => $data['name']],
-                                iaCore::getConfigTable())
-                            ) {
+                            ;
+
+                            if ($extraConfig = $this->_iaCore->factory('config')->getBy($data['name'], 'module')) {
                                 $buttons['config'] = [
                                     'url' => $extraConfig['config_group'],
-                                    'anchor' => $extraConfig['name']
+                                    'anchor' => $extraConfig['key']
                                 ];
                             }
 
@@ -1047,8 +1046,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
             $installed = false;
             if (array_key_exists($module['name'], $options['installed'])) {
-
-                if ($row = $this->_iaDb->row_bind(['name', 'config_group'], '`module` = :plugin ORDER BY `order` ASC', ['plugin' => $module['name']], iaCore::getConfigTable())) {
+                if ($row = $this->_iaCore->factory('config')->getBy('module', $module['name'])) {
                     $buttons['config'] = [
                         'url' => $row['config_group'],
                         'anchor' => $row['name']

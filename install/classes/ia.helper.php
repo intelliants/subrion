@@ -150,7 +150,7 @@ class iaHelper
             $iaCore->iaCache = $iaCore->factory('cache');
 
             $config = ['baseurl', 'timezone', 'lang'];
-            $config = $iaCore->iaDb->keyvalue(['name', 'value'], "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
+            $config = $iaCore->factory('config')->fetch("`name` IN ('" . implode("','", $config) . "')");
 
             empty($iaCore->languages) && $iaCore->languages = [
                 'en' => ['title' => 'English', 'locale' => 'en_US', 'iso' => 'en', 'date_format' => '%b %e, %Y']];

@@ -340,7 +340,7 @@ SQL;
         $this->iaDb->update(['status' => iaTransaction::PASSED], iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
     }
 
-    public function calculateDates($duration, $unit)
+    public function calculateDates($duration, $unit, $startTs = null)
     {
         switch ($unit) {
             case self::UNIT_HOUR:
@@ -363,7 +363,9 @@ SQL;
                 $base = self::SECONDS_PER_DAY * $days;
         }
 
-        $dateStarted = time();
+        $dateStarted = is_null($startTs)
+            ? time()
+            : strtotime($startTs);
         $dateFinished = $dateStarted + ($base * $duration);
 
         return [

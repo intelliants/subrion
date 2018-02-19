@@ -269,26 +269,24 @@ class iaView extends abstractUtil
         $menuGroups = $iaDb->assoc(['id', 'name'], $stmt . ' ORDER BY `order`', 'admin_pages_groups');
 
         $sql = <<<SQL
-SELECT g.`name` `config`, e.`type`, p.`id`, p.`group`, p.`name`, p.`parent`, p.`attr`, p.`alias`, p.`module` 
+SELECT g.name config, e.type, p.id, p.group, p.name, p.parent, p.attr, p.alias, p.module 
   FROM `:prefix:table_admin_pages` p 
-LEFT JOIN `:prefix:table_config_groups` g ON 
-    (p.`module` IN (':module') AND p.`module` = g.`module`) 
-LEFT JOIN `:prefix:table_modules` e ON 
-  (p.`module` = e.`name`) 
-WHERE p.`group` IN (:groups) 
-  AND FIND_IN_SET('menu', p.`menus`) 
-  AND p.`status` = ':status' 
-  AND p.`module` IN ('',':module') 
-ORDER BY p.`order`
+LEFT JOIN `:prefix:table_config_groups` g ON (p.module IN (':module') AND p.module = g.module) 
+LEFT JOIN `:prefix:table_modules` e ON (p.module = e.name) 
+WHERE p.group IN (:groups) 
+  AND FIND_IN_SET('menu', p.menus) 
+  AND p.status = ':status' 
+  AND p.module IN ('',':module') 
+ORDER BY p.order
 SQL;
         $sql = iaDb::printf($sql, [
             'prefix' => $iaDb->prefix,
             'table_admin_pages' => 'admin_pages',
-            'table_config_groups' => iaCore::getConfigGroupsTable(),
+            'table_config_groups' => iaConfig::getConfigGroupsTable(),
             'table_modules' => iaItem::getModulesTable(),
             'groups' => implode(',', array_keys($menuGroups)),
             'status' => iaCore::STATUS_ACTIVE,
-            'module' => $modules,
+            'module' => $modules
         ]);
 
         foreach ($iaDb->getAll($sql) as $row) {
@@ -297,15 +295,14 @@ SQL;
         }
 
         $iaAcl = $this->iaCore->factory('acl');
+        $iaConfig = $this->iaCore->factory('config');
 
         // config groups to be included as menu items
-        $rows = $iaDb->all(['name', 'module'], "`name` != 'email_templates' AND " . $stmt . ' ORDER BY `order`', null, null, iaCore::getConfigGroupsTable());
+        $rows = $iaConfig->fetchGroups();
         $configGroups = [];
         $templateName = $this->iaCore->get('tmpl');
 
         foreach ($rows as $row) {
-            $row['title'] = iaLanguage::get('config_group_' . $row['name']);
-
             switch (true) {
                 case ($templateName == $row['module']):
                     $configGroups['template'] = $row['name'];
