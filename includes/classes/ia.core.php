@@ -472,12 +472,6 @@ final class iaCore
             if (isset($this->_config[$key])) {
                 return $this->_config[$key];
             }
-            // compatibility code
-            // @TODO remove once there are no references left
-            elseif ($emailTemplate = $this->iaDb->row(['active'], iaDb::convertIds($key, 'name'), 'email_templates')) {
-                return $emailTemplate['active'];
-            }
-            //
         }
 
         $this->_config[$key] = $result;
@@ -755,14 +749,6 @@ final class iaCore
 
         return $this->factoryClass($name, $type, $path);
     }
-
-    // obsolete. left in compatibility purposes
-    // TODO: remove
-    public function factoryPlugin($pluginName, $type = self::FRONT, $className = null)
-    {
-        return $this->factoryModule(is_null($className) ? $pluginName : $className, $pluginName, $type);
-    }
-    //
 
     public function factoryClass($name, $type = null, $path = null)
     {

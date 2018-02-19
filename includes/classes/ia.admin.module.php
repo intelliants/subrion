@@ -1283,11 +1283,6 @@ class iaModule extends abstractCore
             $this->itemData['type'] = $this->_attributes['type'];
             $this->itemData['name'] = $this->_attributes['name'];
         }
-        // FIXME: used for < 4.1.x compatibility, get rid of it once all plugins are updated
-        elseif (in_array($this->_inTag, [self::TYPE_PACKAGE, self::TYPE_PLUGIN, self::TYPE_TEMPLATE]) && isset($attributes['name'])) {
-            $this->itemData['type'] = $name;
-            $this->itemData['name'] = $attributes['name'];
-        }
 
         if ('usergroup' == $name) {
             $this->itemData['usergroups'][] = [
@@ -1692,15 +1687,9 @@ class iaModule extends abstractCore
                     switch ($type) {
                         case 'php':
                             $filename = 'modules/' . $this->itemData['name'] . '/includes/' . $filename;
-                            // compatibility
-                            if ('.php' != substr($filename, -4)) $filename.= '.php';
-                            //
                             break;
                         case 'smarty':
                             $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-                            // compatibility
-                            if ('.tpl' != substr($filename, -4)) $filename.= '.tpl';
-                            //
                     }
                 }
 
@@ -1723,9 +1712,6 @@ class iaModule extends abstractCore
                     $filename = $this->_attr('filename');
                     if ($this->itemData['type'] != self::TYPE_TEMPLATE && $filename && 'smarty' == $this->_attr('type')) {
                         $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-                        // compatibility
-                        if ('.tpl' != substr($filename, -4)) $filename.= '.tpl';
-                        //
                     }
 
                     $this->itemData['blocks'][] = [
