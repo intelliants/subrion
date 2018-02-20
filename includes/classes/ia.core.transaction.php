@@ -400,7 +400,7 @@ SQL;
             return false;
         }
 
-        $gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common');
+        $gatewayInstance = $this->iaCore->factoryModule($gatewayName, $gatewayName, 'common');
 
         if ($gatewayInstance && method_exists($gatewayInstance, self::GATEWAY_CALLBACK_NAME)) {
             return call_user_func([$gatewayInstance, self::GATEWAY_CALLBACK_NAME], $transaction);
@@ -419,7 +419,7 @@ SQL;
 
         $gatewayName = $transaction['gateway'];
 
-        $gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common', $gatewayName);
+        $gatewayInstance = $this->iaCore->factoryModule($gatewayName, $gatewayName, 'common');
 
         if ($gatewayInstance && method_exists($gatewayInstance, 'refund')) {
             try {

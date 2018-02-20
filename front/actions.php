@@ -125,7 +125,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
             }
 
             if ($captchaName = $iaCore->get('captcha_name')) {
-                $iaCaptcha = $iaCore->factoryPlugin($captchaName, iaCore::FRONT, 'captcha');
+                $iaCaptcha = $iaCore->factoryModule('captcha', $captchaName);
                 if (!$iaCaptcha->validate()) {
                     $output['message'][] = iaLanguage::get('confirmation_code_incorrect');
                 }

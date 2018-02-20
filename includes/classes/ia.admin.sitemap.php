@@ -165,7 +165,7 @@ class iaSitemap extends abstractCore
                 if (is_array($itemsList) && $itemsList) {
                     foreach ($itemsList as $item) {
                         $array = explode(':', $item);
-                        $pluginInstance = $this->iaCore->factoryPlugin($array[0], iaCore::ADMIN, isset($array[1]) ? $array[1] : null);
+                        $pluginInstance = $this->iaCore->factoryModule($array[0], isset($array[1]) ? $array[1] : null, iaCore::ADMIN);
 
                         if (method_exists($pluginInstance, self::GETTER_METHOD_NAME)) {
                             $entries = call_user_func([$pluginInstance, self::GETTER_METHOD_NAME]);
