@@ -3,7 +3,7 @@ function dialog_package(type, url, module) {
 
     var defaultPackage =
         '<div class="alert alert-info">' + _t('root_old').replace(/:name/gi, intelli.config.default_package) + '</div>' +
-        '<p><code>' + intelli.config.ia_url + '</code> <input type="text" name="url[0]" class="common"> <code>/</code></p>';
+        '<p><code>' + intelli.config.clear_url + '</code> <input type="text" name="url[0]" class="common"> <code>/</code></p>';
     var formText =
         '<div class="url_type">' +
         '<label for="subdomain_type"><input type="radio" value="1" name="type" id="subdomain_type"> ' + _t('subdomain_title') + '</label>' +
@@ -11,7 +11,7 @@ function dialog_package(type, url, module) {
         '</div>' +
         '<div class="url_type">' +
         '<label for="subdirectory_type"><input type="radio" value="2" name="type"' + (intelli.config.default_package ? ' checked' : '') + ' id="subdirectory_type"> ' + _t('subdirectory_title') + '</label>' +
-        '<div class="url_type_info"><p>' + _t('subdirectory_about') + '</p><code>' + intelli.config.ia_url + '</code> <input type="text" value="' + module + '" name="url[2]" class="common"> <code>/</code></div>' +
+        '<div class="url_type_info"><p>' + _t('subdirectory_about') + '</p><code>' + intelli.config.clear_url + '</code> <input type="text" value="' + module + '" name="url[2]" class="common"> <code>/</code></div>' +
         '</div>';
 
     if (intelli.setupDialog) {

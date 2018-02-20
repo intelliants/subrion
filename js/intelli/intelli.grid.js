@@ -157,7 +157,7 @@ function IntelliGrid(params, autoInit) {
 
     var stateId = window.location.href,
         bases = document.getElementsByTagName('base'),
-        urlBase = bases.length > 0 ? bases[0].href : intelli.config.ia_url;
+        urlBase = bases.length > 0 ? bases[0].href : intelli.config.clear_url;
     stateId = stateId.replace(urlBase, '');
     stateId = stateId.replace(/\//g, '');
 

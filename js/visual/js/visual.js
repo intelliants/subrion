@@ -1,5 +1,5 @@
 $(function () {
-    intelli.visualModeUrl = intelli.config.ia_url + $('#js-config-admin-page').val() + '/visual-mode.json';
+    intelli.visualModeUrl = intelli.config.url + $('#js-config-admin-page').val() + '/visual-mode.json';
 
     $('body').addClass('visual-mode').css('overflow-x', 'visible');
     $('body > *:not(.sb-left, .vm-bar, .sb-slide, #debug-toggle, #debug)').wrapAll('<div id="sb-site"></div>');

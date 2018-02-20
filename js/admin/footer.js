@@ -581,7 +581,7 @@ $(function () {
                                 '<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + response.path + '">'
                                 + '<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.file + '">'
                                 + '<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">',
-                            htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>';
+                            htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.clear_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>';
 
                         $preview.append(htmlInputs).find('.dz-details').append(htmlFancybox);
                         $('[data-dz-name]', $preview).text(response.file);
@@ -662,13 +662,13 @@ $(function () {
                 mock = {name: entry.file, size: entry.size};
 
                 dropZone.emit('addedfile', mock);
-                dropZone.createThumbnailFromUrl(mock, intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.thumbnail + '/' + entry.file);
+                dropZone.createThumbnailFromUrl(mock, intelli.config.clear_url + 'uploads/' + entry.path + imageTypes.thumbnail + '/' + entry.file);
 
                 var htmlInputs =
                         '<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + entry.path + '">'
                         + '<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + entry.file + '">'
                         + '<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + entry.size + '">',
-                    htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.primary + '/' + entry.file + '"><span class="fa fa-search-plus"></span></a>';
+                    htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.clear_url + 'uploads/' + entry.path + imageTypes.primary + '/' + entry.file + '"><span class="fa fa-search-plus"></span></a>';
 
                 $(mock.previewElement).append(htmlInputs).find('.dz-details').append(htmlFancybox);
 

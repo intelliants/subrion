@@ -183,7 +183,7 @@ intelli = {
         }
 
         params = params || {};
-        params.baseHref = intelli.config.ia_url;
+        params.baseHref = intelli.config.clear_url;
 
         CKEDITOR.replace(name, params);
     },
