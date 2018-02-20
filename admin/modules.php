@@ -563,9 +563,7 @@ class iaBackendController extends iaAbstractControllerBackend
                                 $buttons['import'] = true;
                             }
 
-                            ;
-
-                            if ($extraConfig = $this->_iaCore->factory('config')->getBy($data['name'], 'module')) {
+                            if ($extraConfig = $this->_iaCore->factory('config')->getBy('module', $data['name'])) {
                                 $buttons['config'] = [
                                     'url' => $extraConfig['config_group'],
                                     'anchor' => $extraConfig['key']

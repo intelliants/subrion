@@ -259,7 +259,7 @@ SQL;
         $row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($value, $key), self::getTable());
 
         if ($row) {
-            $row[self::KEY_COLUMN] = $row['name'];
+            $row['key'] = $row[self::KEY_COLUMN];
         }
 
         return $row;
