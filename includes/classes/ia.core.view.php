@@ -926,6 +926,8 @@ SQL;
                 if (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType()) {
                     $adminActions = (self::PAGE_ERROR == $pageName) ? [] : $this->_getAdminToolbarActions();
                     $this->set('toolbarActions', $adminActions);
+
+                    header('X-Robots-Tag: noindex');
                 }
 
                 $iaSmarty->assign('member', iaUsers::hasIdentity() ? iaUsers::getIdentity(true) : []);

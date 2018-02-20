@@ -6,6 +6,7 @@
         <title>{ia_print_title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="generator" content="Subrion CMS &middot; {$core.config.version}">
+        <meta name="robots" content="noindex">
         <base href="{$smarty.const.IA_ADMIN_URL}">
 
         <!--[if lt IE 9]>
