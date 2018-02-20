@@ -28,10 +28,21 @@ class iaConfig extends abstractCore
 {
     const KEY_COLUMN = 'name';
 
+    const TYPE_HIDDEN = 'hidden';
+
     const TYPE_DIVIDER = 'divider';
 
+    const TYPE_COMBO = 'combo';
+    const TYPE_CHECKBOX = 'checkbox';
+    const TYPE_COLORPICKER = 'colorpicker';
+    const TYPE_IMAGE = 'image';
+    const TYPE_ITEMSCHECKBOX = 'itemscheckbox';
+    const TYPE_PASSWORD = 'password';
+    const TYPE_RADIO = 'radio';
+    const TYPE_SELECT = 'select';
     const TYPE_TEXT = 'text';
     const TYPE_TEXTAREA = 'textarea';
+    const TYPE_TPL = 'tpl';
 
     protected static $_table = 'config';
     protected static $_customConfigDbTable = 'config_custom';

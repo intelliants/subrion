@@ -26,13 +26,6 @@
 
 class iaBackendController extends iaAbstractControllerBackend
 {
-    const TYPE_DIVIDER = 'divider';
-    const TYPE_IMAGE = 'image';
-    const TYPE_SELECT = 'select';
-    const TYPE_TEXT = 'text';
-    const TYPE_TEXTAREA = 'textarea';
-    const TYPE_ITEMSCHECKBOX = 'itemscheckbox';
-
     protected $_name = 'configuration';
 
     protected $_customConfigParams = ['admin_page', 'https'];
@@ -281,7 +274,7 @@ class iaBackendController extends iaAbstractControllerBackend
                     trigger_error('Bad UTF-8 detected (replacing with "?") in configuration', E_USER_NOTICE);
                 }
 
-                if (self::TYPE_IMAGE == $params[$key]['type']) {
+                if (iaConfig::TYPE_IMAGE == $params[$key]['type']) {
                     if (isset($_POST['delete'][$key])) {
                         $value = '';
                     } elseif (!empty($_FILES[$key]['name'])) {
@@ -339,13 +332,13 @@ class iaBackendController extends iaAbstractControllerBackend
     private function _getUsersSpecificConfig()
     {
         $sql = <<<SQL
-SELECT c.`name`, c.`value` 
+SELECT c.name, c.value 
   FROM `:prefix:table_custom_config` c, `:prefix:table_members` m 
-WHERE c.`type` = ':type' && c.`type_id` = m.`usergroup_id` && m.`id` = :id
+WHERE c.type = ':type' && c.type_id = m.usergroup_id && m.id = :id
 SQL;
         $sql = iaDb::printf($sql, [
             'prefix' => $this->_iaDb->prefix,
-            'table_custom_config' => iaCore::getCustomConfigTable(),
+            'table_custom_config' => iaConfig::getCustomConfigTable(),
             'table_members' => iaUsers::getTable(),
             'id' => $this->_typeId
         ]);
@@ -407,7 +400,7 @@ SQL;
             if ($this->_type) {
                 $className = 'custom';
 
-                if (self::TYPE_DIVIDER != $entry['type']) {
+                if (iaConfig::TYPE_DIVIDER != $entry['type']) {
                     if (isset($custom2[$entry['name']])) {
                         $entry['default'] = $custom2[$entry['name']];
                         $entry['value'] = $custom2[$entry['name']];
@@ -423,7 +416,7 @@ SQL;
             }
 
             switch ($entry['type']) {
-                case self::TYPE_ITEMSCHECKBOX:
+                case iaConfig::TYPE_ITEMSCHECKBOX:
                     $implementedItems = $this->_iaCore->get($entry['module'] . '_items_implemented');
                     $implementedItems = $implementedItems ? explode(',', $implementedItems) : [];
 
@@ -442,7 +435,7 @@ SQL;
                     }
             }
 
-            if (self::TYPE_SELECT == $entry['type']) {
+            if (iaConfig::TYPE_SELECT == $entry['type']) {
                 switch ($entry['name']) {
                     case 'timezone':
                         $entry['values'] = iaUtil::getFormattedTimezones();
