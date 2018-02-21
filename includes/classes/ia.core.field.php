@@ -166,13 +166,13 @@ class iaField extends abstractCore
         $sql = <<<SQL
 SELECT f.* 
 	FROM `:prefix:table_fields` f 
-LEFT JOIN `:prefix:table_pages` fp ON (fp.`field_id` = f.`id`) 
-WHERE fp.`page_name` = ':page' 
-	AND f.`item` = ':item' 
-	AND f.`adminonly` = 0 
+LEFT JOIN `:prefix:table_pages` fp ON (fp.field_id = f.id) 
+WHERE fp.page_name = ':page' 
+	AND f.item = ':item' 
+	AND f.adminonly = 0 
 	AND :where 
-GROUP BY f.`id` 
-ORDER BY f.`order`
+GROUP BY f.id 
+ORDER BY f.order
 SQL;
         $sql = iaDb::printf($sql, [
             'prefix' => $this->iaDb->prefix,
@@ -183,7 +183,7 @@ SQL;
             'where' => $where
         ]);
 
-        return $this->iaDb->getAll($sql);
+        $r= $this->iaDb->getAll($sql); if ('venue'==$itemName) _d($r, 'FIELD FOR PAGE ' . $pageName);return $r;
     }
 
     public function filter($itemName, array &$itemData, $pageName = null, $where = null)
@@ -195,8 +195,8 @@ SQL;
 
         $where.= iaDb::printf(" && f.status = ':status'", ['status' => iaCore::STATUS_ACTIVE]);
         $where.= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
-            ? " && (f.`plans` = '' || FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`))"
-            : " && f.`plans` = ''";
+            ? " && (f.plans = '' || FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.plans))"
+            : " && f.plans = ''";
 
         if (isset($cache[$pageName][$itemName][$where])) {
             $result = $cache[$pageName][$itemName][$where];

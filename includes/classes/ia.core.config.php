@@ -108,7 +108,9 @@ class iaConfig extends abstractCore
     {
         $maxOrder = $this->iaDb->getMaxOrder(self::getConfigGroupsTable());
 
-        return $this->iaDb->insert(array_merge($data, ['order' => ++$maxOrder]), null, self::getConfigGroupsTable());
+        $this->iaDb->insert($data, ['order' => ++$maxOrder], self::getConfigGroupsTable());
+
+        return 0 === $this->iaDb->getErrorNumber();
     }
 
     public function deleteGroup($key, $value)
@@ -118,6 +120,8 @@ class iaConfig extends abstractCore
 
     public function fetch($where)
     {
+        $where.= 'ORDER BY `order`';
+
         $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTable());
 
         foreach ($rows as &$row) {
@@ -324,6 +328,6 @@ SQL;
             if (is_array($data['options'])) {
                 $data['options'] = json_encode($data['options'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             }
-        }
+        } iaDebug::log('CONFIG ITEM: ' . var_export($data, true));
     }
 }
