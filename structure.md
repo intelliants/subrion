@@ -1,1 +1,1 @@
-# Configuration
+# Structure

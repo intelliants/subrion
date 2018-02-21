@@ -10,6 +10,7 @@
   - [i18n](i18n.md)
   - [Routes](routes.md)
   - [Cache](cache.md)
+  - [Config](config.md)
   - [Users](users.md)
   - [Fields](fields.md)
   - [ACL](acl.md)
