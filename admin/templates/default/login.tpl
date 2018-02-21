@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=Edge">
         <title>{ia_print_title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="generator" content="Subrion CMS &middot; {$core.config.version}">
+        <meta name="generator" content="Subrion CMS - Open Source Content Management System">
         <meta name="robots" content="noindex">
         <base href="{$smarty.const.IA_ADMIN_URL}">
 
@@ -18,7 +18,6 @@
         <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{$img}ico/apple-touch-icon-114-precomposed.png">
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{$img}ico/apple-touch-icon-72-precomposed.png">
         <link rel="apple-touch-icon-precomposed" href="{$img}ico/apple-touch-icon-57-precomposed.png">
-        <link rel="shortcut icon" href="{$img}ico/favicon.png">
         <link rel="shortcut icon" href="{$img}ico/favicon.ico">
 
         {ia_print_css files="bootstrap-{$core.config.sap_style}" order=0}
@@ -28,11 +27,7 @@
 
         {ia_print_css display='on'}
 
-        {ia_add_js order=0}
-            {foreach $core.customConfig as $key => $value}
-                intelli.config.{$key} = '{$value}';
-            {/foreach}
-        {/ia_add_js}
+        {include 'custom-config.tpl'}
     </head>
 
     <body class="page-login">
