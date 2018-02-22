@@ -56,15 +56,15 @@ final class iaCore
 
     private static $_instance;
 
-    private $_classInstances = [];
+    private $classInstances = [];
 
-    protected $_accessType = self::ACCESS_FRONT;
+    protected $accessType = self::ACCESS_FRONT;
 
-    protected $_hooks = [];
-    protected $_config = [];
-    protected $_customConfig;
+    protected $hooks = [];
+    protected $config = [];
+    protected $customConfig;
 
-    protected $_checkDomain;
+    protected $checkDomain;
 
     protected $baseUrl = '';
 
@@ -177,7 +177,7 @@ final class iaCore
 
     public function getAccessType()
     {
-        return $this->_accessType;
+        return $this->accessType;
     }
 
     protected function _parseUrl()
@@ -229,7 +229,7 @@ final class iaCore
 
             switch (true) {
                 case ($params['admin_page'] == $value): // admin panel
-                    $this->_accessType = self::ACCESS_ADMIN;
+                    $this->accessType = self::ACCESS_ADMIN;
                     continue 2;
                 case ('logout' == $value): // logging out
                     define('IA_EXIT', true);
@@ -372,23 +372,23 @@ final class iaCore
      */
     public function getConfig($reloadRequired = false)
     {
-        if (empty($this->_config) || $reloadRequired) {
+        if (empty($this->config) || $reloadRequired) {
             $key = 'config_' . $this->iaView->language;
 
-            $this->_config = $this->iaCache->get($key, 604800, true);
+            $this->config = $this->iaCache->get($key, 604800, true);
             iaSystem::renderTime('config', 'Cached Configuration Loaded');
 
-            if (empty($this->_config) || $reloadRequired) {
-                $this->_config = $this->factory('config')->fetchKeyValue();
+            if (empty($this->config) || $reloadRequired) {
+                $this->config = $this->factory('config')->fetchKeyValue();
                 iaSystem::renderTime('config', 'Configuration loaded from DB');
 
                 $extras = $this->iaDb->onefield('name', iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), null, null, 'modules');
-                $extras[] = $this->_config['tmpl'];
+                $extras[] = $this->config['tmpl'];
 
-                $this->_config['module'] = $extras;
-                $this->_config['block_positions'] = $this->iaView->positions;
+                $this->config['module'] = $extras;
+                $this->config['block_positions'] = $this->iaView->positions;
 
-                $this->iaCache->write($key, $this->_config);
+                $this->iaCache->write($key, $this->config);
                 iaSystem::renderTime('config', 'Configuration written to cache file');
             }
 
@@ -403,7 +403,7 @@ final class iaCore
             $this->set('locale', $this->language['locale']);
         }
 
-        return $this->_config;
+        return $this->config;
     }
 
     /**
@@ -431,8 +431,8 @@ final class iaCore
             }
         }
 
-        if ($local && !is_null($this->_customConfig)) {
-            return $this->_customConfig;
+        if ($local && !is_null($this->customConfig)) {
+            return $this->customConfig;
         }
 
         $result = [];
@@ -444,7 +444,7 @@ final class iaCore
         }
 
         if ($local) {
-            $this->_customConfig = $result;
+            $this->customConfig = $result;
         }
 
         return $result;
@@ -462,8 +462,8 @@ final class iaCore
      */
     public function get($key, $default = false, $custom = true, $db = false)
     {
-        if ($custom && isset($this->_customConfig[$key])) {
-            return $this->_customConfig[$key];
+        if ($custom && isset($this->customConfig[$key])) {
+            return $this->customConfig[$key];
         }
 
         $result = $default;
@@ -474,12 +474,12 @@ final class iaCore
                 $result = $value;
             }
         } else {
-            if (isset($this->_config[$key])) {
-                return $this->_config[$key];
+            if (isset($this->config[$key])) {
+                return $this->config[$key];
             }
         }
 
-        $this->_config[$key] = $result;
+        $this->config[$key] = $result;
 
         return $result;
     }
@@ -500,7 +500,7 @@ final class iaCore
         }
 
         $result = true;
-        $this->_config[$key] = $value;
+        $this->config[$key] = $value;
 
         if ($permanent) {
             $result = $this->factory('config')->set($key, $value);
@@ -518,7 +518,7 @@ final class iaCore
      */
     public function getHooks()
     {
-        return $this->_hooks;
+        return $this->hooks;
     }
 
     /**
@@ -535,7 +535,7 @@ final class iaCore
 
         if ($rows = $this->iaDb->all($columns, $stmt, null, null, 'hooks')) {
             foreach ($rows as $row) {
-                $this->_hooks[$row['name']][$row['module']] = [
+                $this->hooks[$row['name']][$row['module']] = [
                     'pages' => empty($row['pages']) ? [] : explode(',', $row['pages']),
                     'code' => $row['code'],
                     'type' => $row['type'],
@@ -621,14 +621,14 @@ final class iaCore
 
     public function checkDomain()
     {
-        if (is_null($this->_checkDomain)) {
+        if (is_null($this->checkDomain)) {
             $dbUrl = str_replace(['http://www.', 'http://'], '', $this->get('baseurl'));
             $codeUrl = str_replace(['http://www.', 'http://'], '', $this->iaView->domainUrl);
 
-            $this->_checkDomain = ($dbUrl == $codeUrl);
+            $this->checkDomain = ($dbUrl == $codeUrl);
         }
 
-        return $this->_checkDomain;
+        return $this->checkDomain;
     }
 
     public function setPackagesData($regenerate = false)
@@ -675,13 +675,13 @@ final class iaCore
 
         iaDebug::debug('php', $name, 'hooks');
 
-        if (!isset($this->_hooks[$name])) {
+        if (!isset($this->hooks[$name])) {
             return false;
         }
 
         iaSystem::renderTime('hook', $name);
 
-        if (count($this->_hooks[$name]) > 0) {
+        if (count($this->hooks[$name]) > 0) {
             $variablesList = array_keys($params);
             extract($params, EXTR_REFS | EXTR_SKIP);
 
@@ -689,7 +689,7 @@ final class iaCore
             $iaView = &$this->iaView;
             $iaDb = &$this->iaDb;
 
-            foreach ($this->_hooks[$name] as $extras => $hook) {
+            foreach ($this->hooks[$name] as $extras => $hook) {
                 if ('php' == $hook['type']
                     && (empty($hook['pages']) || in_array($iaView->name(), $hook['pages']))) {
                     if ($hook['filename']) {
@@ -767,8 +767,8 @@ final class iaCore
             ucwords(str_replace('_', ' ', $name)));
         $className = self::CLASSNAME_PREFIX . ucfirst($className);
 
-        if (isset($this->_classInstances[$className])) {
-            return $this->_classInstances[$className];
+        if (isset($this->classInstances[$className])) {
+            return $this->classInstances[$className];
         }
 
         iaSystem::renderTime('class', 'Loading class ' . $className);
@@ -783,7 +783,7 @@ final class iaCore
         if (file_exists($filePath)) {
             require_once $filePath;
 
-            $instance = $this->_classInstances[$className] = new $className();
+            $instance = $this->classInstances[$className] = new $className();
             $instance->init();
 
             return $instance;
@@ -870,6 +870,6 @@ final class iaCore
         $this->currencies = $iaCurrency->fetch();
         $this->currency = $iaCurrency->get();
 
-        $this->_config['currency'] = $this->currency['code']; // compatibility fallback
+        $this->config['currency'] = $this->currency['code']; // compatibility fallback
     }
 }
