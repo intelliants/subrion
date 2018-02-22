@@ -66,6 +66,10 @@ final class iaCore
 
     protected $_checkDomain;
 
+    protected $baseUrl = '';
+
+    public $domain = '';
+
     public $iaDb;
     public $iaView;
     public $iaCache;
@@ -178,37 +182,6 @@ final class iaCore
 
     protected function _parseUrl()
     {
-        $iaView = &$this->iaView;
-
-        $params = $this->factory('config')->fetchKeyValue("`name` IN('baseurl', 'admin_page', 'home_page', 'lang')");
-
-        $domain = preg_replace('#[^a-z_0-9-.:]#i', '', $_SERVER['HTTP_HOST']);
-        $requestPath = ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER);
-
-        if (!preg_match('#^www\.#', $domain) && preg_match('#:\/\/www\.#', $params['baseurl'])) {
-            $domain = preg_replace('#^#', 'www.', $domain);
-            $this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
-        } elseif (preg_match('#^www\.#', $domain) && !preg_match('#:\/\/www\.#', $params['baseurl'])) {
-            $domain = preg_replace('#^www\.#', '', $domain);
-            $this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
-        }
-
-        $iaView->assetsUrl = '//' . $domain . IA_URL_DELIMITER . FOLDER_URL;
-        $iaView->domain = $domain;
-        $iaView->language = $params['lang'];
-
-        if (isset($_SERVER['HTTP_CF_VISITOR'])) {
-            $visitor = json_decode($_SERVER['HTTP_CF_VISITOR']);
-            if ('https' == $visitor->scheme) {
-                $iaView->domainUrl = 'https:' . $iaView->assetsUrl;
-            }
-        } else {
-            $iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'off' != $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
-        }
-
-        $doExit = false;
-        $changeLang = false;
-
         if (isset($_GET['_p'])) {
             $url = $_GET['_p'];
             unset($_GET['_p']);
@@ -219,13 +192,14 @@ final class iaCore
             $url = substr($url, strlen(FOLDER) + 1);
         }
 
-        $extension = IA_URL_DELIMITER;
-
         $url = explode('?', $url);
         $url = array_shift($url);
         $url = explode(IA_URL_DELIMITER, iaSanitize::htmlInjectionFilter(trim($url, IA_URL_DELIMITER)));
 
+        $iaView = &$this->iaView;
+
         $lastChunk = end($url);
+        $extension = IA_URL_DELIMITER;
         if ($pos = strrpos($lastChunk, '.')) {
             $extension = substr($lastChunk, $pos + 1);
             switch ($extension) {
@@ -241,16 +215,15 @@ final class iaCore
         }
         $iaView->set('extension', $extension);
 
-        if (isset($_POST['_lang']) && isset($this->languages[$_POST['_lang']])) {
-            $iaView->language = $_POST['_lang'];
-            $changeLang = true;
-        }
+        $params = $this->factory('config')->fetchKeyValue("name IN ('baseurl', 'admin_page', 'home_page', 'lang')");
+
+        $iaView->language = $params['lang'];
 
         $isSystemChunk = true;
-        $array = [];
+        $requestPath = [];
         foreach ($url as $value) {
             if (!$isSystemChunk) {
-                $array[] = $value;
+                $requestPath[] = $value;
                 continue;
             }
 
@@ -259,11 +232,11 @@ final class iaCore
                     $this->_accessType = self::ACCESS_ADMIN;
                     continue 2;
                 case ('logout' == $value): // logging out
-                    $doExit = true;
+                    define('IA_EXIT', true);
                     continue 2;
                 case (2 == strlen($value)): // current language
                     if (isset($this->languages[$value])) {
-                        $changeLang || $iaView->language = $value;
+                        $iaView->language = $value;
                         array_shift($url); // #1715
                         continue 2;
                     }
@@ -273,6 +246,28 @@ final class iaCore
             }
         }
 
+        $this->baseUrl = trim($params['baseurl'], IA_URL_DELIMITER) . IA_URL_DELIMITER;
+        $this->requestPath = $requestPath;
+        $this->language = $this->languages[$iaView->language];
+
+        $this->domain = preg_replace('#[^a-z_0-9-.:]#i', '', $_SERVER['HTTP_HOST']);
+        $setupHost = parse_url($this->baseUrl, PHP_URL_HOST);
+        if ($this->domain != $setupHost) {
+            // handling cases when script is running on domain differ from configured
+            switch ($this->getAccessType()) {
+                case self::ACCESS_FRONT:
+                    // on frontend, just redirect to the same URL on the valid domain
+                    $this->factory('util')->go_to($this->baseUrl . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER));
+                case self::ACCESS_ADMIN:
+                    // on backend, make possible to open Admin Panel from every hostname possible
+                    $this->baseUrl = str_replace($setupHost, $this->domain, $this->baseUrl);
+            }
+        }
+
+        if (isset($_POST['_lang']) && isset($this->languages[$_POST['_lang']])) {
+            $iaView->language = $_POST['_lang'];
+        }
+
         if (self::ACCESS_ADMIN == $this->getAccessType()) {
             if ($isSystemChunk && $params['home_page'] == $iaView->name()) {
                 $iaView->name(iaView::DEFAULT_HOMEPAGE);
@@ -280,12 +275,15 @@ final class iaCore
         }
 
         $iaView->url = empty($url[0]) ? [] : $url;
-        $this->requestPath = $array;
+        $iaView->assetsUrl = '//' . $this->domain . IA_URL_DELIMITER . FOLDER_URL;
+        $iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'off' != $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
 
-        // set system language
-        $this->language = $this->languages[$this->iaView->language];
-
-        define('IA_EXIT', $doExit);
+        if (isset($_SERVER['HTTP_CF_VISITOR'])) {
+            $visitor = json_decode($_SERVER['HTTP_CF_VISITOR']);
+            if (isset($visitor->scheme) && 'https' == $visitor->scheme) {
+                $iaView->domainUrl = 'https:' . $iaView->assetsUrl;
+            }
+        }
     }
 
     protected function _defineModule()
@@ -804,10 +802,9 @@ final class iaCore
         $languagesEnabled = (iaCore::ACCESS_FRONT == $this->getAccessType())
             ? ($this->get('language_switch') && count($this->languages) > 1)
             : (count($this->languages) > 1);
-        $baseUrl = trim($this->get('baseurl'), IA_URL_DELIMITER) . IA_URL_DELIMITER;
 
-        define('IA_CANONICAL', preg_replace('/\?(.*)/', '', $baseUrl . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
-        define('IA_CLEAR_URL', $baseUrl);
+        define('IA_CANONICAL', preg_replace('/\?(.*)/', '', $this->baseUrl . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
+        define('IA_CLEAR_URL', $this->baseUrl);
         define('IA_LANGUAGE', $iaView->language);
         define('IA_TEMPLATES', IA_HOME . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . 'templates/');
         define('IA_URL_LANG', $languagesEnabled ? $iaView->language . IA_URL_DELIMITER : '');

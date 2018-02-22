@@ -125,7 +125,7 @@ class iaUsers extends abstractCore
 
         $isBackend = (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType());
 
-        if (IA_EXIT && $authorized != 2) {
+        if (defined('IA_EXIT') && $authorized != 2) {
             // use this hook to logout
             $this->iaCore->startHook('phpUserLogout', ['userInfo' => iaUsers::getIdentity(true)]);
 
@@ -137,7 +137,6 @@ class iaUsers extends abstractCore
 
             iaUsers::clearIdentity();
 
-            unset($_SESSION['_achkych']);
             if (strpos($_SERVER['HTTP_REFERER'], $this->iaView->domainUrl) === 0) {
                 if ($isBackend) {
                     $_SESSION['IA_EXIT'] = true;
@@ -161,7 +160,6 @@ class iaUsers extends abstractCore
                     $this->iaView->name('login');
                 }
             } else {
-                unset($_SESSION['_achkych']);
                 if (isset($_SESSION['referrer'])) { // this variable is set by Login page handler
                     header('Location: ' . $_SESSION['referrer']);
                     unset($_SESSION['referrer']);

@@ -262,7 +262,7 @@ class iaBackendController extends iaAbstractControllerBackend
                     return iaView::accessDenied();
                 }
 
-                $error = !$this->_reset($iaView->domain);
+                $error = !$this->_reset($this->_iaCore->domain);
 
                 break;
 
@@ -297,7 +297,7 @@ class iaBackendController extends iaAbstractControllerBackend
                         $iaSitemap = $this->_iaCore->factory('sitemap', iaCore::ADMIN);
                         $iaSitemap->generate();
                     }
-                } elseif ($this->_install($module, $action, $iaView->domain)) {
+                } elseif ($this->_install($module, $action, $this->_iaCore->domain)) {
                     // log this event
                     $action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
                     $iaLog->write($action, [

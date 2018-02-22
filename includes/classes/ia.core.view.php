@@ -69,7 +69,6 @@ class iaView extends abstractUtil
     public $blocks = [];
 
     public $assetsUrl;
-    public $domain = 'localhost';
     public $domainUrl;
     public $extrasUrl;
     public $packageUrl;
