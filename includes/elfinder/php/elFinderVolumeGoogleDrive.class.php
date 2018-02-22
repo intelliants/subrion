@@ -452,8 +452,10 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
      */
     protected function _gd_getLink($file)
     {
-        if ($url = $file->getWebContentLink()) {
-            return str_replace('export=download', 'export=media', $url);
+        if (strpos($file->mimeType, 'application/vnd.google-apps.') !== 0) {
+            if ($url = $file->getWebContentLink()) {
+                return str_replace('export=download', 'export=media', $url);
+            }
         }
         if ($url = $file->getWebViewLink()) {
             return $url;
@@ -471,7 +473,7 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
      */
     protected function _gd_getDownloadUrl($file)
     {
-        if (strpos($file->mimeType, 'application/vnd.google-apps') !== 0) {
+        if (strpos($file->mimeType, 'application/vnd.google-apps.') !== 0) {
             return 'https://www.googleapis.com/drive/v3/files/'.$file->getId().'?alt=media';
         } else {
             $mimeMap = $this->options['appsExportMap'];
@@ -670,7 +672,7 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
                 }
             }
 
-            if ($options['user'] === 'init') {
+            if (isset($options['user']) && $options['user'] === 'init') {
                 if (empty($options['url'])) {
                     $options['url'] = elFinder::getConnectorUrl();
                 }
@@ -902,8 +904,8 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
 
             $errors = [];
             if (!$this->service) {
-                if ($this->options['googleApiClient'] && !class_exists('Google_Client')) {
-                    include_once $this->options['googleApiClient'];
+                if (($this->options['googleApiClient'] || defined('ELFINDER_GOOGLEDRIVE_GOOGLEAPICLIENT')) && !class_exists('Google_Client')) {
+                    include_once $this->options['googleApiClient'] ? $this->options['googleApiClient'] : ELFINDER_GOOGLEDRIVE_GOOGLEAPICLIENT;
                 }
                 if (!class_exists('Google_Client')) {
                     return $this->setError('Class Google_Client not found.');
@@ -989,6 +991,7 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
 
         if ($this->options['useGoogleTmb']) {
             $this->options['tmbURL'] = 'https://';
+            $this->options['tmbPath'] = '';
         }
 
         return true;
@@ -1567,7 +1570,26 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
 
         if ($file = $this->_gd_getFile($path)) {
             if (isset($file['imageMediaMetadata'])) {
-                return $file['imageMediaMetadata']['width'].'x'.$file['imageMediaMetadata']['height'];
+                $ret = array('dim' => $file['imageMediaMetadata']['width'].'x'.$file['imageMediaMetadata']['height']);
+                if (func_num_args() > 2) {
+                    $args = func_get_arg(2);
+                } else {
+                    $args = array();
+                }
+                if (!empty($args['substitute'])) {
+                    $tmbSize = intval($args['substitute']);
+                    $srcSize = explode('x', $ret['dim']);
+                    if ($srcSize[0] && $srcSize[1]) {
+                        if (min(($tmbSize / $srcSize[0]), ($tmbSize / $srcSize[1])) < 1) {
+                            if ($this->_gd_isPublished($file)) {
+                                $tmbSize = strval($tmbSize);
+                                $ret['url'] = 'https://drive.google.com/thumbnail?authuser=0&sz=s'.$tmbSize.'&id='.$file['id'];
+                            } elseif ($subImgLink = $this->getSubstituteImgLink(elFinder::$currentArgs['target'], $srcSize)) {
+                                $ret['url'] = $subImgLink;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1705,7 +1727,7 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
      **/
     protected function _mkfile($path, $name)
     {
-        return $this->_save(tmpfile(), $path, $name, []);
+        return $this->_save($this->tmpfile(), $path, $name, []);
     }
 
     /**
@@ -1909,8 +1931,8 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
             $chunkSizeBytes = 100 * 1024 * 1024;
             if ($size > 0) {
                 $memory = elFinder::getIniBytes('memory_limit');
-                if ($memory) {
-                    $chunkSizeBytes = min([$chunkSizeBytes, (intval($memory / 4 / 256) * 256)]);
+                if ($memory > 0) {
+                    $chunkSizeBytes = max(262144, min([$chunkSizeBytes, (intval($memory / 4 / 256) * 256)]));
                 }
             }
 
@@ -1935,7 +1957,7 @@ class elFinderVolumeGoogleDrive extends elFinderVolumeDriver
                 // complete.
                 $status = false;
                 while (!$status && !feof($fp)) {
-                    elFinder::extendTimeLimit();
+                    elFinder::checkAborted();
                     // read until you get $chunkSizeBytes from TESTFILE
                     // fread will never return more than 8192 bytes if the stream is read buffered and it does not represent a plain file
                     // An example of a read buffered file is when reading from a URL

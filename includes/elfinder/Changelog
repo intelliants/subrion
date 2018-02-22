@@ -1,3 +1,149 @@
+2017-12-27  Naoki Sawada  <hypweb@gmail.com>
+
+	* elFinder (2.1.31):
+		- [ui:dialog] bugfix that used dialog is not removed
+		- [cmd:rename,resources:mixin] bugfix that can't access filename edit area with mobile devices
+		- [ui:cwd,ui:tree] Fixed #2303 UX at rename is not good
+		- [cmd:rename] Fixed #2308 rename multiple items at once 
+		- [cmd:rename] Fixed #2315 add batch rename function
+		- [js:core] Fixed #2320 problem that rename on upload don't work with FormData
+		- [cmd:rm] fix problem of contentmenu extra button "Remove" not work on tree
+		- [cmd:quicklook] add "RAR Archive" preview
+		- [js:core] bugfix of registration `of fm.decodeRawString` by `fm.options.rawStringDecoder`
+		- [php:core] Fixed #2312 can't upload by "paste url or images" on IE
+		- [cmd:mkdir] fixed #2326 became can not be create folder on the tree
+		- [VD:abstract] Fixed #2329 problem of getFullPath() with without folder name
+		- [js:core] Fixed #2332 CORS detection gives false positive on IE11
+		- [ui:dialog] Fixed #2331 add CSS class name to dialog buttons
+		- [cmd:quicklook] show file size of the Archive preview
+		- [js:core] fix problem that options.drawString encoder does not effect
+		- Fixed #2336 'jp' isn't a Japanese in ISO-639 correctly it's a 'ja'
+		- [js:core] Fixed #2337 prevent request initial request is completed
+		- [js:options] allow empty value of cdns to disable it
+		- [js:resouces,cmd:rename] Fixed #2343 can't close error dialog in item name editing
+		- And some minor bug fixes
+
+
+2017-11-29  Naoki Sawada  <hypweb@gmail.com>
+
+	* elFinder (2.1.30):
+		- [js:core] Fixed #2238 always same filename on upload with some iOS devices
+		- [js:core] Fixed #2240 correspond to parallel request in "Cancel" in notify dialog
+		- [VD:FTP] Fixed #2243 problem of symlink handling
+		- [ui:cwd] bug fix of contextmenu on the "Old School"
+		- [cmd:quicklook] Fixed #2249 close-able docked preview window
+		- [api] cmd `size` can return size infomation of each targets as `sizes`
+		- [api] accept HTTP header "X-elFinderReqid"
+		- [cmd:quicklook:plain text] show all contents with click an element `charsLeft`
+		- [VD:abstract] Fixed #2253 `elFinderVolumeDriver::getWorkFile()` dose not work
+		- [cmd:resize] Fixed #2251 add an option `commandsOptions.resize.getDimThreshold` for rapid starting
+		- [VD:abstract] Fixed #2257 save as progressive JPEG on image editing
+		- [VD:abstract] bug fix of detecting of `tmpLinkPath` and `tmpLinkUrl`
+		- [cmd:resize] Fixed #2265 show the jpeg image save file size
+		- [ui:dialog] Fixed #2264 add an option `uiOptions.dualog.focusOnMouseOver`
+		- [cmd:resize] make rotatable directly with mobile devices
+		- [js:options] change default value of `commandsOptions.resize.grid8px` to 'disable'
+		- [ui:cwd] Fixed #2271 JavaScript stops when adding item count exceeding the option showFiles
+		- [api] add an cmd `editor` that getway for custom contents editor
+		- [cmd:edit] Fixed #2280 add plugin to edit with Zoho Office Editor
+		- [VD:GoogleDrive] Fixed #2281 class load error with constant `ELFINDER_GOOGLEDRIVE_GOOGLEAPICLIENT`
+		- [js:core] Fixed #2283 thumbnails not displayed with newAPI
+		- [VD:FTP] Fixed #2289 add support for FTP+SSL
+		- [cmd:help] Fixed #2286 add user preferences "Action when select file", "Open with the editor used last time"
+		- And some minor bug fixes
+
+
+2017-10-07  Naoki Sawada  <hypweb@gmail.com>
+
+	* elFinder (2.1.29):
+		- [cmd:quicklook.plugins] Fixed #2149 support Data URI scheme contents of the text file
+		- [cmd:quicklook] Fixed #2151 tmb icon don't appear at file addition
+		- [ui:cwd] Fixed #2152 table header position unmatch in the rtl language
+		- [jquery.elfinder] add jQuery function `$.fn.scrollRight()`
+		- [ui:navbar] correction position of navbar resize handle in 
+		- [js:core] Fixed #2153 correction of `mime2class()`  also give sub-type of "image/*"
+		- [ui:cwd] Fixed #2158 add file type badge in icons view with CSS
+		- [VD:abstract,plugin] Fixed #2160 animation of apng is lost
+		- [php:core] bugfix of passing tagetHash to callback 'upload.presave'
+		- [api] configurable MIME-types to handle as text on the connector side
+		- [VD:MySQL] Fixed #2164, Fixed #2166 problem with MySQL > 5.6
+		- [ui:navbar,cmd:quicklook] Fixed #2171 allow to display the preview on the navbar
+		- [js:options] add an option `fileFilter` cf. #2176, #2178
+		- [ui:contextmenu] Fixed #2183 problem of selecting submenu on touch devices
+		- [js:core] add a unique query param to thumbnail url
+		- [cmd:quicklook] Fixed #2191 add an option `commandsOptions.quicklook.contain`
+		- [cmd:quicklook] Fixed #2192 show cwd info when unselect item
+		- [cmd:quicklook] add PSD preview plugin
+		- [VD:FTP] Fixed the permissions when the ftp deamon uses a Virtual User that it isn't a passwd user
+		- [php:plugins] Fixed #2198 AutoResize/AutoRotate/Watermark fail if php fileinfo module not loaded
+		- [php:core,VD:abstarct] Fixed #2199 remove `create_function()` for PHP>=7.2
+		- [js:core] Fixed #2201 bugfix that language setting of options stores in browser
+		- [ui:dialog] Fixed #2203 option `dialogContained` to contained in the elFinder node
+		- [js:core] Fixed #2210 send `mimes` as Array (not Object) on upload
+		- [VD:FTP] Fixed Using epsv4 off with Pure-ftpd servers creates a timeout
+		- [js:core] Fixed #2216 to destruction completely of used XHR objects
+		- [cmd:quicklook,rm] Fixed #2221 show folder size info into the each
+		- [api] Fixed #2222 abort on the client side then notify it to the connector side
+		- [js:cwd] Fixed #2224 problems that cause discrepancies on displaying
+		- [VD:LocalFileSystem] Fixed #2226 problem on save empty file
+		- [i18n:LANG] add "Sum" for the caption of recursive folder size
+		- [cmd:download] bugfix of non-alphabetic characters in download filename
+		- [php:core] add a main option `connectionFlagsPath`
+		- [i18n:LANG] add "Sum" for the caption of recursive folder size
+		- [js:core] Fixed #2236 show target path in upload confirm dialog at non-cwd
+		- And some minor bug fixes
+
+
+2017-08-16  Naoki Sawada  <hypweb@gmail.com>
+
+	* elFinder (2.1.28):
+		- [ui:cwd] Fixed #2140 sync problem of col-width of table header when item add/remove
+		- [cmd] Fixed #2144 add cmds `select(all|none|invert)`
+		- [php:core] Fixed #2143 locale dependent version number problem
+		- And some minor bug fixes
+
+
+2017-08-10  Naoki Sawada  <hypweb@gmail.com>
+
+	* elFinder (2.1.27):
+		- [php:core] Fixed #2104 notice error in `getIniBytes()` with php 7.1
+		- [cmd:download] Fixed #2106 add an option `commandOptions.download.minFilesZipdl`
+		- [VD:abstract] enable to specify the path of server commands as constant
+		- [cmd:quicklook] Fixed #2108 support HLS, DASH video preview
+		- [cmd:open,quicklook] MIME type determination to case incentive
+		- [cmd:undo,redo] Fixed #2115 implement the Undo/Redo command
+		- [VD] Fixed #2120 item copy between volumes is incomplete
+		- [VD:Box,OneDrive] Fixed #2122 to be able to know the access token in debug mode
+		- [VD:abstract] Fixed #2107 do clearstatcache() in abstract class
+		- [cmd:help] Fixed #2118 controling to show/hide toolbar icons in preference tab
+		- [ui:dialog] Fixed #2123 problem in maximaize on fullscreen mode
+		- [ui:toolbar] add an option `showPreferenceButton`
+		- [cmd:rm] Fixed #2087 rm command not disable on unselect items
+		- [ui:dialog] Fixed #2124 missing dialog on fullscreen mode
+		- [cmd:resize] Fixed #2127 don't show "SaveAs" if new image saving is not allowed
+		- [VD:OneDrive] Fixed #2131 causes an infinite loop at the copy command
+		- And some minor bug fixes
+
+
+2017-07-17  Naoki Sawada  <hypweb@gmail.com>
+
+	* elFinder (2.1.26):
+		- [php:core] Fixed #2069 add static method `elFinder::getApiFullVersion()`
+		- [js:core] Fixed #2073 auto loading of language files implemented in core
+		- [cmd:help] Fixed #2074 add the Preference tab
+		- [js:core] Fixed #2079 lost binded user functions with node.elfinder('reload')
+		- [cmd:help] Fixed #2076 problem of content area height synchronization
+		- [js:core] Fixed #2081 problem that updating of `uiCmdMap`
+		- [cmd:resize] Fixed #2085 "Save As" dose not work in 2.1.25
+		- [cmd:rm] Fixed #2086 problem of cmd mode sync on the item selected
+		- [js:core] Fixed #2076 cancel full screen mode on `destroy`
+		- [cmd:rm] Fixed #2087 JavaScript error when hide `rm` icon in toolbar
+		- [cmd:netmount] Fixed #2088 problem of shows error dialog behind this dialog
+		- [cmd:rm] Fixed #2087 button icon label is wrong until boot up
+		- [php:connector] Supports X-Sendfile and similar file-download accelerators
+		- And some minor bug fixes
+
+
 2017-06-23  Naoki Sawada  <hypweb@gmail.com>
 
 	* elFinder (2.1.25):

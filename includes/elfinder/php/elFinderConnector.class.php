@@ -66,7 +66,7 @@ class elFinderConnector {
 	 **/
 	public function run() {
 		$isPost = $this->reqMethod === 'POST';
-		$src    = $isPost ? $_POST : $_GET;
+		$src    = $isPost ? array_merge($_GET, $_POST) : $_GET;
 		$maxInputVars = (! $src || isset($src['targets']))? ini_get('max_input_vars') : null;
 		if ((! $src || $maxInputVars) && $rawPostData = file_get_contents('php://input')) {
 			// for max_input_vars and supports IE XDomainRequest()
@@ -152,7 +152,14 @@ class elFinderConnector {
 			$args['FILES'] = $_FILES;
 		}
 		
-		$this->output($this->elFinder->exec($cmd, $args));
+		try {
+			$this->output($this->elFinder->exec($cmd, $args));
+		} catch (elFinderAbortException $e) {
+			// connection aborted
+			// unlock session data for multiple access
+			$this->elFinder->getSession()->close();
+			exit();
+		}
 	}
 	
 	/**
@@ -186,7 +193,8 @@ class elFinderConnector {
 			
 			$toEnd = true;
 			$fp = $data['pointer'];
-			if (($this->reqMethod === 'GET' || $this->reqMethod === 'HEAD')
+			$sendData = !($this->reqMethod === 'HEAD' || !empty($data['info']['xsendfile']));
+			if (($this->reqMethod === 'GET' || !$sendData)
 					&& elFinder::isSeekableStream($fp)
 					&& (array_search('Accept-Ranges: none', headers_list()) === false)) {
 				header('Accept-Ranges: bytes');
@@ -215,11 +223,24 @@ class elFinderConnector {
 							header('Content-Length: ' . $psize);
 							header('Content-Range: bytes ' . $start . '-' . $end . '/' . $size);
 							
-							fseek($fp, $start);
+							// Apache mod_xsendfile dose not support range request
+							if (isset($data['info']['xsendfile']) && strtolower($data['info']['xsendfile']) === 'x-sendfile') {
+								if (function_exists('header_remove')) {
+									header_remove($data['info']['xsendfile']);
+								} else {
+									header($data['info']['xsendfile'] . ':');
+								}
+								unset($data['info']['xsendfile']);
+								if ($this->reqMethod !== 'HEAD') {
+									$sendData = true;
+								}
+							}
+							
+							$sendData && fseek($fp, $start);
 						}
 					}
 				}
-				if (is_null($psize)){
+				if ($sendData && is_null($psize)){
 					elFinder::rewind($fp);
 				}
 			} else {
@@ -233,7 +254,7 @@ class elFinderConnector {
 				}
 			}
 
-			if ($reqMethod !== 'HEAD') {
+			if ($sendData) {
 				if ($toEnd) {
 					fpassthru($fp);
 				} else {
@@ -303,7 +324,7 @@ class elFinderConnector {
 		
 		unset($data['header']);
 		
-		if (!empty($data['raw']) && !empty($data['error'])) {
+		if (!empty($data['raw']) && isset($data['error'])) {
 			$out = $data['error'];
 		} else {
 			if (isset($data['debug']) && isset($data['debug']['phpErrors'])) {

@@ -6,23 +6,17 @@
 		elFinder.prototype._options.commandsOptions.edit.editors = optEditors.concat(editors(elFinder));
 	}
 }(function(elFinder) {
-	var // get query of getfile
+	"use strict";
+	var apps = {},
+		// get query of getfile
 		getfile = window.location.search.match(/getfile=([a-z]+)/),
-		// cdns location
-		cdns = {
-			ace        : '//cdnjs.cloudflare.com/ajax/libs/ace/1.2.6',
-			codemirror : '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.26.0',
-			ckeditor   : '//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.0',
-			tinymce    : '//cdnjs.cloudflare.com/ajax/libs/tinymce/4.6.3',
-			simplemde  : '//cdnjs.cloudflare.com/ajax/libs/simplemde/1.11.2'
-		},
-		useRequire = (typeof define === 'function' && define.amd),
+		useRequire = elFinder.hasRequire,
 		hasFlash = (function() {
 			var hasFlash;
 			try {
 				hasFlash = !!(new ActiveXObject('ShockwaveFlash.ShockwaveFlash'));
 			} catch (e) {
-				hasFlash = !!(navigator && navigator.mimeTypes["application/x-shockwave-flash"]);
+				hasFlash = !!(typeof window.orientation === 'undefined' || (navigator && navigator.mimeTypes["application/x-shockwave-flash"]));
 			}
 			return hasFlash;
 		})(),
@@ -79,11 +73,11 @@
 				return;
 			}
 			var pixlr = window.location.search.match(/[?&]pixlr=([^&]+)/),
-			image = window.location.search.match(/[?&]image=([^&]+)/),
-			p, ifm, url, node;
+				image = window.location.search.match(/[?&]image=([^&]+)/),
+				p, ifm, url, node;
 			if (pixlr) {
 				// case of redirected from pixlr.com
-				p = window.parent
+				p = window.parent;
 				ifm = p.$('#'+pixlr[1]+'iframe').hide();
 				node = p.$('#'+pixlr[1]).data('resizeoff')();
 				if (image[1].substr(0, 4) === 'http') {
@@ -101,9 +95,9 @@
 				}
 				ifm.remove();
 			}
-		};
+		},
 		pixlrSetup = function(opts, fm) {
-			if (!hasFlash) {
+			if (!hasFlash || fm.UA.ltIE8) {
 				this.disabled = true;
 			}
 		},
@@ -123,18 +117,19 @@
 				file = this.file,
 				src = 'https://pixlr.com/'+mode+'/?s=c',
 				myurl = window.location.href.toString().replace(/#.*$/, ''),
-				error = function() {
+				error = function(error) {
 					container.remove();
 					node.data('loading')(true);
-					fm.error('Can not launch Pixlr.');
+					fm.error(error || 'Can not launch Pixlr.');
 				},
 				launch = function() {
 					errtm = setTimeout(error, 10000);
 					myurl += (myurl.indexOf('?') === -1? '?' : '&') + 'pixlr='+node.attr('id');
-					src += '&referrer=elFinder&locktitle=true&locktype=true';
+					src += '&referrer=elFinder&locktitle=true';
 					src += '&exit='+encodeURIComponent(myurl+'&image=0');
 					src += '&target='+encodeURIComponent(myurl);
 					src += '&title='+encodeURIComponent(file.name);
+					src += '&locktype='+encodeURIComponent(file.mime === 'image/png'? 'png' : 'jpg');
 					src += '&image='+encodeURIComponent(node.attr('src'));
 					container
 						.attr('id', node.attr('id')+'iframe')
@@ -151,6 +146,12 @@
 						})
 						.on('load', function() {
 							errtm && clearTimeout(errtm);
+							setTimeout(function() {
+								if (container.is(':hidden')) {
+									error('Please disable your ad blocker.');
+								}
+							}, 1000);
+							fm.toFront(container);
 						})
 						.on('error', error)
 						.appendTo(elfNode.hasClass('elfinder-fullscreen')? elfNode : 'body');
@@ -203,7 +204,7 @@
 			// MIME types to accept
 			mimes : ['image/jpeg', 'image/png'],
 			// HTML of this editor
-			html : '<div style="width:100%;height:300px;text-align:center;"><img/></div>',
+			html : '<div style="width:100%;height:300px;max-height:100%;text-align:center;"><img/></div>',
 			// called on initialization of elFinder cmd edit (this: this editor's config object)
 			setup : function(opts, fm) {
 				pixlrSetup.call(this, opts, fm);
@@ -221,10 +222,7 @@
 				pixlrLoad.call(this, 'editor', base);
 			},
 			save : function(base) {},
-			// unbind resize event function
-			close : function(base) {
-				//$(window).off('resize.'+$(base).children('img:first').attr('id'));
-			}
+			close : function(base) {}
 		},
 		{
 			// Pixlr Express
@@ -236,9 +234,9 @@
 				single: true
 			},
 			// MIME types to accept
-			mimes : ['image/jpeg', 'image/png'],
+			mimes : ['image/jpeg'],
 			// HTML of this editor
-			html : '<div style="width:100%;height:300px;text-align:center;"><img/></div>',
+			html : '<div style="width:100%;height:300px;max-height:100%;text-align:center;"><img/></div>',
 			// called on initialization of elFinder cmd edit (this: this editor's config object)
 			setup : function(opts, fm) {
 				pixlrSetup.call(this, opts, fm);
@@ -255,10 +253,7 @@
 				pixlrLoad.call(this, 'express', base);
 			},
 			save : function(base) {},
-			// unbind resize event function
-			close : function(base) {
-				//$(window).off('resize.'+$(base).children('img:first').attr('id'));
-			}
+			close : function(base) {}
 		},
 		{
 			// Adobe Creative SDK Creative Tools Image Editor UI
@@ -271,7 +266,7 @@
 			},
 			mimes : ['image/jpeg', 'image/png'],
 			// HTML of this editor
-			html : '<div style="width:100%;height:300px;text-align:center;"><img/></div>',
+			html : '<div style="width:100%;height:300px;max-height:100%;text-align:center;"><img/></div>',
 			// called on initialization of elFinder cmd edit (this: this editor's config object)
 			setup : function(opts, fm) {
 				if (fm.UA.ltIE8 || !opts.extraOptions || !opts.extraOptions.creativeCloudApiKey) {
@@ -299,7 +294,6 @@
 					init = function(onload) {
 						var getLang = function() {
 								var langMap = {
-									'jp' : 'ja',
 									'zh_TW' : 'zh_HANT',
 									'zh_CN' : 'zh_HANS'
 								};
@@ -321,6 +315,8 @@
 							});
 							// bind switch fullscreen event
 							elfNode.on('resize.'+fm.namespace, function(e, data) {
+								e.preventDefault();
+								e.stopPropagation();
 								data && data.fullscreen && container.appendTo(data.fullscreen === 'on'? elfNode : 'body');
 							});
 							fm.bind('destroy', function() {
@@ -349,6 +345,7 @@
 							maxSize: 2048,
 							language: getLang()
 						});
+						container.css('z-index', $(base).closest('.elfinder-dialog').css('z-index'));
 						// return editor instance
 						dfrd.resolve(featherEditor);
 					},
@@ -366,7 +363,7 @@
 				if (typeof Aviary === 'undefined') {
 					fm.loadScript(['https://dme0ih8comzn4.cloudfront.net/imaging/v3/editor.js'], function() {
 						init(launch);
-					});
+					}, {loadType: 'tag'});
 				} else {
 					init();
 					launch();
@@ -383,6 +380,12 @@
 		},
 		{
 			// ACE Editor
+			// called on initialization of elFinder cmd edit (this: this editor's config object)
+			setup : function(opts, fm) {
+				if (fm.UA.ltIE8 || !fm.options.cdns.ace) {
+					this.disabled = true;
+				}
+			},
 			// `mimes` is not set for support everything kind of text file
 			info : {
 				name : 'ACE Editor',
@@ -391,7 +394,7 @@
 			load : function(textarea) {
 				var self = this,
 					dfrd = $.Deferred(),
-					cdn  = cdns.ace,
+					cdn  = this.fm.options.cdns.ace,
 					start = function() {
 						var editor, editorBase, mode,
 						ta = $(textarea),
@@ -568,13 +571,19 @@
 		},
 		{
 			// CodeMirror
+			// called on initialization of elFinder cmd edit (this: this editor's config object)
+			setup : function(opts, fm) {
+				if (fm.UA.ltIE10 || !fm.options.cdns.codemirror) {
+					this.disabled = true;
+				}
+			},
 			// `mimes` is not set for support everything kind of text file
 			info : {
 				name : 'CodeMirror',
 				iconImg : 'img/edit_codemirror.png'
 			},
 			load : function(textarea) {
-				var cmUrl = cdns.codemirror,
+				var cmUrl = this.fm.options.cdns.codemirror,
 					dfrd = $.Deferred(),
 					self = this,
 					start = function(CodeMirror) {
@@ -676,12 +685,15 @@
 						});
 					} else {
 						self.fm.loadScript([
-							cmUrl + '/codemirror.min.js',
-							cmUrl + '/addon/mode/loadmode.min.js',
-							cmUrl + '/mode/meta.min.js'
+							cmUrl + '/codemirror.min.js'
 						], function() {
-							self.confObj.loader.resolve(CodeMirror);
-						}, void 0, {obj: window, name: 'CodeMirror'});
+							self.fm.loadScript([
+								cmUrl + '/addon/mode/loadmode.min.js',
+								cmUrl + '/mode/meta.min.js'
+							], function() {
+								self.confObj.loader.resolve(CodeMirror);
+							});
+						}, {loadType: 'tag'});
 					}
 					self.fm.loadCss(cmUrl + '/codemirror.css');
 				}
@@ -703,6 +715,12 @@
 		},
 		{
 			// SimpleMDE
+			// called on initialization of elFinder cmd edit (this: this editor's config object)
+			setup : function(opts, fm) {
+				if (fm.UA.ltIE10 || !fm.options.cdns.simplemde) {
+					this.disabled = true;
+				}
+			},
 			info : {
 				name : 'SimpleMDE',
 				iconImg : 'img/edit_simplemde.png'
@@ -712,14 +730,15 @@
 				var self = this,
 					base = $(textarea).parent(),
 					dfrd = $.Deferred(),
+					cdn  = this.fm.options.cdns.simplemde,
 					start = function(SimpleMDE) {
 						var h     = base.height(),
 							delta = base.outerHeight(true) - h + 14,
 							editor, editorBase;
 						
 						// fit height function
-						textarea._setHeight = function(h) {
-							var h    = h || base.height(),
+						textarea._setHeight = function(height) {
+							var h    = height || base.height(),
 								ctrH = 0,
 								areaH;
 							base.children('.editor-toolbar,.editor-statusbar').each(function() {
@@ -753,17 +772,17 @@
 				// check SimpleMDE & start
 				if (!self.confObj.loader) {
 					self.confObj.loader = $.Deferred();
-					self.fm.loadCss(cdns.simplemde+'/simplemde.min.css');
+					self.fm.loadCss(cdn+'/simplemde.min.css');
 					if (useRequire) {
 						require([
-							cdns.simplemde+'/simplemde.min.js'
+							cdn+'/simplemde.min.js'
 						], function(SimpleMDE) {
 							self.confObj.loader.resolve(SimpleMDE);
 						});
 					} else {
-						self.fm.loadScript([cdns.simplemde+'/simplemde.min.js'], function() {
+						self.fm.loadScript([cdn+'/simplemde.min.js'], function() {
 							self.confObj.loader.resolve(SimpleMDE);
-						}, void 0, {obj: window, name: 'SimpleMDE'});
+						}, {loadType: 'tag'});
 					}
 				}
 				self.confObj.loader.done(start);
@@ -792,8 +811,12 @@
 			},
 			exts  : ['htm', 'html', 'xhtml'],
 			setup : function(opts, fm) {
-				if (opts.extraOptions && opts.extraOptions.managerUrl) {
-					this.managerUrl = opts.extraOptions.managerUrl;
+				if (!fm.options.cdns.ckeditor) {
+					this.disabled = true;
+				} else {
+					if (opts.extraOptions && opts.extraOptions.managerUrl) {
+						this.managerUrl = opts.extraOptions.managerUrl;
+					}
 				}
 			},
 			load : function(textarea) {
@@ -843,17 +866,17 @@
 						CKEDITOR.on('dialogDefinition', function(e) {
 							var dlg = e.data.definition.dialog;
 							dlg.on('show', function(e) {
-								fm.getUI().append($('.cke_dialog_background_cover')).append(this.getElement().$)
+								fm.getUI().append($('.cke_dialog_background_cover')).append(this.getElement().$);
 							});
 							dlg.on('hide', function(e) {
-								$('body:first').append($('.cke_dialog_background_cover')).append(this.getElement().$)
+								$('body:first').append($('.cke_dialog_background_cover')).append(this.getElement().$);
 							});
 						});
 					};
 
 				if (!self.confObj.loader) {
 					self.confObj.loader = $.Deferred();
-					$.getScript(cdns.ckeditor + '/ckeditor.js', function() {
+					$.getScript(fm.options.cdns.ckeditor + '/ckeditor.js', function() {
 						self.confObj.loader.resolve();
 					});
 				}
@@ -886,8 +909,12 @@
 			},
 			exts  : ['htm', 'html', 'xhtml'],
 			setup : function(opts, fm) {
-				if (opts.extraOptions && opts.extraOptions.managerUrl) {
-					this.managerUrl = opts.extraOptions.managerUrl;
+				if (!fm.options.cdns.tinymce) {
+					this.disabled = true;
+				} else {
+					if (opts.extraOptions && opts.extraOptions.managerUrl) {
+						this.managerUrl = opts.extraOptions.managerUrl;
+					}
 				}
 			},
 			load : function(textarea) {
@@ -902,9 +929,9 @@
 						// set base height
 						base.height(h);
 						// fit height function
-						textarea._setHeight = function(h) {
+						textarea._setHeight = function(height) {
 							var base = $(this).parent(),
-								h    = h || base.height(),
+								h    = height || base.height(),
 								ctrH = 0,
 								areaH;
 							base.find('.mce-container-body:first').children('.mce-toolbar,.mce-toolbar-grp,.mce-statusbar').each(function() {
@@ -991,7 +1018,7 @@
 				
 				if (!self.confObj.loader) {
 					self.confObj.loader = $.Deferred();
-					$.getScript(cdns.tinymce + '/tinymce.min.js', function() {
+					$.getScript(fm.options.cdns.tinymce + '/tinymce.min.js', function() {
 						setTimeout(function() {
 							self.confObj.loader.resolve();
 						}, 0);
@@ -1011,7 +1038,127 @@
 			},
 			resize : function(textarea, instance, e, data) {
 				// fit height to base node on dialog resize
-				textarea._setHeight();
+				instance && textarea._setHeight();
+			}
+		},
+		{
+			info : {
+				name : 'Zoho Editor',
+				iconImg : 'img/edit_zohooffice.png',
+				cmdCheck : 'ZohoOffice',
+				preventGet: true,
+				hideButtons: true
+			},
+			mimes : [
+				'application/msword',
+				'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+				//'application/pdf',
+				'application/vnd.oasis.opendocument.text',
+				'application/rtf',
+				'text/html',
+				'application/vnd.ms-excel',
+				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				'application/vnd.oasis.opendocument.spreadsheet',
+				'application/vnd.sun.xml.calc',
+				'text/csv',
+				'text/tab-separated-values',
+				'application/vnd.ms-powerpoint',
+				'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+				'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+				'application/vnd.oasis.opendocument.presentation',
+				'application/vnd.sun.xml.impress'
+			],
+			html : '<iframe style="width:100%;max-height:100%;border:none;"></iframe>',
+			// setup on elFinder bootup
+			setup : function(opts, fm) {
+				if (fm.UA.Mobile || fm.UA.ltIE8) {
+					this.disabled = true;
+				}
+			},
+			// Prepare on before show dialog
+			prepare : function(base, dialogOpts, file) {
+				var elfNode = base.editor.fm.getUI();
+				$(base).height(elfNode.height());
+				dialogOpts.width = Math.max(dialogOpts.width, elfNode.width() * 0.8);
+			},
+			// Initialization of editing node (this: this editors HTML node)
+			init : function(id, file, dum, fm) {
+				var ta = this,
+					ifm = $(this).hide(),
+					spnr = $('<div/>')
+						.css({
+							position: 'absolute',
+							top: '50%',
+							textAlign: 'center',
+							width: '100%',
+							fontSize: '16pt'
+						})
+						.html(fm.i18n('nowLoading') + '<span class="elfinder-spinner"/>')
+						.appendTo(ifm.parent()),
+					cdata = function() {
+						var data = '';
+						$.each(fm.options.customData, function(key, val) {
+							data += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(val);
+						});
+						return data;
+					};
+				
+				$(ta).data('xhr', fm.request({
+					data: {
+						cmd: 'editor',
+						name: 'ZohoOffice',
+						method: 'init',
+						'args[target]': file.hash,
+						'args[lang]' : fm.lang,
+						'args[cdata]' : cdata
+					},
+					preventDefault : true
+				}).done(function(data) {
+					if (data.zohourl) {
+						ifm.attr('src', data.zohourl).show().height('100%');
+					} else {
+						data.error && fm.error(data.error);
+						ta.elfinderdialog('destroy');
+					}
+				}).fail(function(error) {
+					error && fm.error(error);
+					ta.elfinderdialog('destroy');
+				}).always(function() {
+					spnr.remove();
+				}));
+			},
+			load : function() {},
+			getContent : function() {},
+			save : function() {},
+			// Before dialog close
+			beforeclose : function(base) {
+				var dfd = $.Deferred(),
+					ab = 'about:blank';
+				base.src = ab;
+				setTimeout(function() {
+					var src;
+					try {
+						src = base.contentWindow.location.href;
+					} catch(e) {
+						src = null;
+					}
+					if (src === ab) {
+						dfd.resolve();
+					} else {
+						dfd.reject();
+					}
+				}, 10);
+				return dfd;
+			},
+			// On dialog closed
+			close : function(ta) {
+				var fm = this.fm,
+					xhr = $(ta).data('xhr');
+				if (xhr.state() === 'pending') {
+					xhr.reject();
+				} else {
+					fm.sync(fm.cwd().hash);
+				}
 			}
 		},
 		{
