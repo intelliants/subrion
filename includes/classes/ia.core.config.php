@@ -120,7 +120,7 @@ class iaConfig extends abstractCore
 
     public function fetch($where)
     {
-        $where.= 'ORDER BY `order`';
+        $where.= ' ORDER BY `order`';
 
         $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTable());
 
@@ -212,8 +212,8 @@ SQL;
 
     public function get($key)
     {
-        return ($row = $this->fetch(iaDb::convertIds($key, self::KEY_COLUMN)))
-            ? $row[$key]
+        return ($rows = $this->fetch(iaDb::convertIds($key, self::KEY_COLUMN)))
+            ? $rows[0]['value']
             : false;
     }
 

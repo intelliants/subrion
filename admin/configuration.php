@@ -28,7 +28,7 @@ class iaBackendController extends iaAbstractControllerBackend
 {
     protected $_name = 'configuration';
 
-    protected $_customConfigParams = ['admin_page', 'https'];
+    protected $_customConfigParams = ['baseurl', 'admin_page', 'https'];
 
     protected $_redirectUrl;
 
@@ -363,8 +363,16 @@ SQL;
     protected function _updateCustomParam($key, $value)
     {
         switch ($key) { // exit with false in case if config should not be updated
+            case 'baseurl':
+                if (!iaValidate::isUrl($value)) {
+                    $this->_iaCore->iaView->setMessages(iaLanguage::get('invalid_base_url'));
+                    return false;
+                }
+
+                break;
+
             case 'https':
-                $baseUrl = $this->_iaCore->get('baseurl');
+                $baseUrl = $this->iaConfig->get('baseurl');
                 $newBaseUrl = 'http' . ($value ? 's' : '') . substr($baseUrl, strpos($baseUrl, '://'));
                 $this->_iaCore->set('baseurl', $newBaseUrl, true);
 
