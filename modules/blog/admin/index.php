@@ -46,7 +46,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     {
         parent::__construct();
 
-        $this->setHelper($this->_iaCore->factoryModule($this->getModuleName(), iaCore::ADMIN));
+        $this->setHelper($this->_iaCore->factoryModule($this->getModuleName(), $this->getModuleName()));
     }
 
     protected function _indexPage(&$iaView)
