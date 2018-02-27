@@ -1,66 +1,70 @@
-function dialog_package(type, url, module) {
-    intelli.config.default_package = $('#js-default-package-value').val();
+function setupDialog(type, url, module) {
+    var defaultPackage = $('#js-default-package-value').val();
 
-    var defaultPackage =
-        '<div class="alert alert-info">' + _t('root_old').replace(/:name/gi, intelli.config.default_package) + '</div>' +
+    var htmlDefaultPackage =
+        '<div class="alert alert-info">' + _t('root_old').replace(/:name/gi, defaultPackage) + '</div>' +
         '<p><code>' + intelli.config.clear_url + '</code> <input type="text" name="url[0]" class="common"> <code>/</code></p>';
-    var formText =
+    var htmlFormText =
         '<div class="url_type">' +
-        '<label for="subdomain_type"><input type="radio" value="1" name="type" id="subdomain_type"> ' + _t('subdomain_title') + '</label>' +
-        '<div class="url_type_info"><p>' + _t('subdomain_about') + '</p><code>http://</code> <input type="text" value="' + module + '" name="url[1]" class="common"> <code>.' + location.hostname + '/</code></div>' +
+            '<label for="subdomain_type"><input type="radio" value="1" name="type" id="subdomain_type"> ' + _t('subdomain_title') + '</label>' +
+            '<div class="url_type_info"><p>' + _t('subdomain_about') + '</p><code>http://</code> <input type="text" value="' + module + '" name="url[1]" class="common"> <code>.' + location.hostname + '/</code></div>' +
         '</div>' +
         '<div class="url_type">' +
-        '<label for="subdirectory_type"><input type="radio" value="2" name="type"' + (intelli.config.default_package ? ' checked' : '') + ' id="subdirectory_type"> ' + _t('subdirectory_title') + '</label>' +
-        '<div class="url_type_info"><p>' + _t('subdirectory_about') + '</p><code>' + intelli.config.clear_url + '</code> <input type="text" value="' + module + '" name="url[2]" class="common"> <code>/</code></div>' +
+            '<label for="subdirectory_type"><input type="radio" value="2" name="type"' + (defaultPackage ? ' checked' : '') + ' id="subdirectory_type"> ' + _t('subdirectory_title') + '</label>' +
+            '<div class="url_type_info"><p>' + _t('subdirectory_about') + '</p><code>' + intelli.config.clear_url + '</code> <input type="text" value="' + module + '" name="url[2]" class="common"> <code>/</code></div>' +
         '</div>';
+
+    var html = '';
+
+    switch (type) {
+        case 'install':
+            html = '<div class="url_type"><label for="root_type"><input type="radio" value="0" name="type" id="root_type"'
+                + (defaultPackage ? '' : ' checked') + '> ' + _t('root_title') + '</label><div class="url_type_info"><p>' + _t('root_about') + '</p>'
+                + (defaultPackage ? htmlDefaultPackage : '') +
+                '</div></div>' + htmlFormText;
+            break;
+
+        case 'set_default':
+            if (!defaultPackage) {
+                window.location = url;
+                return false;
+            }
+
+            html = '<div class="url_type">' + htmlDefaultPackage + '</div>';
+            break;
+
+        case 'reset':
+            html = '<div class="url_type">' + _t('reset_default_package') + '</div>' + htmlFormText;
+    }
+
+    html = '<form action="' + url + '" id="package_form">' + html + '</form>';
 
     if (intelli.setupDialog) {
         intelli.setupDialog.remove();
     }
-    var html = '';
 
-    if ('install' === type) {
-        html = '<div class="url_type"><label for="root_type"><input type="radio" value="0" name="type" id="root_type"'
-            + (intelli.config.default_package ? '' : ' checked') + '> ' + _t('root_title') + '</label><div class="url_type_info"><p>' + _t('root_about') + '</p>'
-            + (intelli.config.default_package ? defaultPackage : '') +
-            '</div></div>' + formText;
-    }
-    else if ('set_default' === type) {
-        if (intelli.config.default_package) {
-            html = '<div class="url_type">' + defaultPackage + '</div>';
-        }
-        else {
-            return false;
-        }
-    }
-    else if ('reset' === type) {
-        html = '<div class="url_type">' + _t('reset_default_package') + '</div>' + formText;
-    }
-    html = '<form action="' + url + '" id="package_form">' + html + '</form>';
+    intelli.setupDialog = new Ext.Window({
+        title: _t('module_installation'),
+        closable: true,
+        html: html,
+        maxWidth: 600,
+        bodyPadding: 10,
+        autoScroll: true,
+        buttons: [
+            {
+                text: _t(type),
+                handler: function () {
+                    $('#package_form').submit();
+                }
+            }, {
+                text: _t('cancel'),
+                handler: function () {
+                    intelli.setupDialog.hide();
+                }
+            }]
+    }).show();
 
-    intelli.setupDialog = new Ext.Window(
-        {
-            title: _t('module_installation'),
-            closable: true,
-            html: html,
-            maxWidth: 600,
-            bodyPadding: 10,
-            autoScroll: true,
-            buttons: [
-                {
-                    text: _t(type),
-                    handler: function () {
-                        $('#package_form').submit();
-                    }
-                }, {
-                    text: _t('cancel'),
-                    handler: function () {
-                        intelli.setupDialog.hide();
-                    }
-                }]
-        }).show();
-
-    $('input[name="url[2]"]').on('change', function () {
+    $('input[name="url[2]"]').on('change', function() {
         $('#subdirectory_type').prop('checked', true);
     });
 
@@ -71,12 +75,6 @@ function dialog_package(type, url, module) {
             $('input[type="radio"]:checked', '#package_form').parent().addClass('selected');
         }
     });
-}
-function setDefault(item) {
-    dialog_package('set_default', $(item).data('url'), intelli.config.default_package);
-}
-function resetUrl(item, packageName) {
-    dialog_package('reset', $(item).data('url'), packageName);
 }
 
 intelli.modules = {
@@ -93,19 +91,25 @@ intelli.modules = {
     }
 };
 
-Ext.onReady(function () {
-    $('.js-install').on('click', function (e) {
+Ext.onReady(function(){
+    $('.js-cmd-reset').on('click', function(e){
+        e.preventDefault();
+
+        var data = $(this).data();
+        setupDialog(data.action, data.url, data.module);
+    });
+
+    $('.js-cmd-install').on('click', function(e){
         e.preventDefault();
 
         var $this = $(this),
             module = $this.data('module'),
             type = $this.data('type'),
-            remote = $this.data['remote'],
-            url = $this.attr('href');
+            remote = $this.data('remote'),
+            url = $this.data('url');
 
         if ('packages' === type) {
-            dialog_package('install', url, module);
-
+            setupDialog('install', url, module);
             return;
         }
         else if ('templates' === type) {
@@ -115,8 +119,7 @@ Ext.onReady(function () {
                 buttons: Ext.Msg.YESNO,
                 icon: Ext.Msg.QUESTION,
                 fn: function (btn) {
-                    if ('yes' != btn) return;
-
+                    if ('yes' !== btn) return;
                     document.location = url;
                 }
             });
@@ -142,13 +145,10 @@ Ext.onReady(function () {
         });
     });
 
-    $('.js-reinstall').on('click', function (e) {
+    $('.js-cmd-reinstall').on('click', function(e){
         e.preventDefault();
 
-        var $this = $(this),
-            module = $this.data('module'),
-            type = $this.data('type'),
-            url = $this.attr('href');
+        var data = $(this).data();
 
         Ext.Msg.show({
             title: _t('confirm'),
@@ -160,30 +160,31 @@ Ext.onReady(function () {
                     return;
                 }
 
-                if ('templates' === type) {
-                    document.location = url;
+                if ('templates' === data.type) {
+                    window.location = data.url;
                     return;
                 }
 
                 $.ajax({
-                    data: intelli.includeSecurityToken({name: module}),
+                    data: intelli.includeSecurityToken({name: data.module}),
                     failure: intelli.modules.failure,
                     type: 'POST',
-                    url: intelli.modules.url + type + '/' + module + '/reinstall.json',
+                    url: intelli.modules.url + data.type + '/' + data.module + '/reinstall.json',
                     success: intelli.modules.refresh
                 });
             }
         });
     });
 
-    $('.js-uninstall').click(function (e) {
+    $('.js-cmd-uninstall').on('click', function(e){
         e.preventDefault();
 
-        var $this = $(this),
-            module = $this.data('module'),
-            type = $this.data('type'),
-            remote = $this.data['remote'],
-            url = $this.attr('href');
+        var data = $(this).data();
+
+        var module = data.module,
+            type = data.type,
+            remote = data.remote,
+            url = data.url;
 
         if ('packages' === type) {
             Ext.Msg.show({
@@ -235,19 +236,17 @@ Ext.onReady(function () {
         }
     });
 
-    $('.js-readme').on('click', function (e) {
+    $('.js-cmd-readme').on('click', function(e){
         e.preventDefault();
-
-        var module = $(this).data('module');
 
         Ext.Ajax.request({
             url: window.location.href + 'documentation.json',
             method: 'GET',
-            params: {name: module},
-            failure: function () {
+            params: {name: $(this).data('module')},
+            failure: function() {
                 Ext.MessageBox.alert(_t('error_while_doc_tabs'));
             },
-            success: function (response) {
+            success: function(response){
                 response = Ext.decode(response.responseText);
                 var tabs = response.tabs;
                 var info = response.info;
@@ -321,7 +320,7 @@ Ext.onReady(function () {
             type = $this.data('type'),
             filtered = $this.data('filtered');
 
-        if (filtered == 'no') {
+        if ('no' === filtered) {
             $this.data('filtered', 'yes');
             $('.card--' + type).hide();
         } else {
@@ -332,7 +331,7 @@ Ext.onReady(function () {
         $('.fa', $this).toggleClass('fa-circle-thin fa-check');
     });
 
-    $('.js-filter-modules-reset').click(function (e) {
+    $('.js-filter-modules-reset').click(function(e) {
         e.preventDefault();
 
         $('.js-filter-modules-text').val('').trigger('keyup');

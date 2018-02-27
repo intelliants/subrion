@@ -14,12 +14,12 @@
                                 {/if}
 
                                 {if !empty($module.buttons.readme)}
-                                    <li><a href="#" class="js-readme" data-module="{$module.name}"><span class="fa fa-book"></span> {lang key='documentation'}</a></li>
+                                    <li><a href="#" class="js-cmd-readme" data-module="{$module.name}"><span class="fa fa-book"></span> {lang key='documentation'}</a></li>
                                 {/if}
 
                                 {if !empty($module.buttons.reinstall)}
                                     <li>
-                                        <a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/reinstall/" class="js-reinstall" data-module="{$module.name}" data-type="{$core.page.name}"><span class="fa fa-refresh"></span> {lang key='reinstall'}</a>
+                                        <a href="#" class="js-cmd-reinstall" data-url="{$smarty.const.IA_SELF}{$module.name}/reinstall/" data-module="{$module.name}" data-type="{$core.page.name}"><span class="fa fa-refresh"></span> {lang key='reinstall'}</a>
                                     </li>
                                 {/if}
 
@@ -38,34 +38,34 @@
                                 {if !empty($module.buttons.set_default)}
                                     {access object='admin_page' id=$core.page.name action='set_default'}
                                         {if $core.config.default_package != $module.name}
-                                            <li><a data-url="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/set_default/" href="javascript:;" onclick="setDefault(this)"><span class="fa fa-refresh"></span> {lang key='set_as_default_package'}</a></li>
+                                            <li><a data-url="{$smarty.const.IA_SELF}{$module.name}/set_default/" data-action="set_default" href="#" class="js-cmd-reset"><span class="fa fa-refresh"></span> {lang key='set_as_default_package'}</a></li>
                                         {else}
-                                            <li><a data-url="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/reset/" href="javascript:;" onclick="resetUrl(this,'{$module.name}')"><span class="fa fa-refresh"></span> {lang key='reset_default'}</a></li>
+                                            <li><a data-url="{$smarty.const.IA_SELF}{$module.name}/reset/" data-action="reset" data-module="{$module.name}" href="#" class="js-cmd-reset"><span class="fa fa-refresh"></span> {lang key='reset_default'}</a></li>
                                         {/if}
                                     {/access}
                                 {/if}
 
                                 {if !empty($module.buttons.upgrade)}
                                     {access object='admin_page' id=$core.page.name action='upgrade'}
-                                        <li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/upgrade/"><span class="fa fa-arrow-circle-o-up"></span> {lang key='upgrade'}</a></li>
+                                        <li><a href="{$smarty.const.IA_SELF}{$module.name}/upgrade/"><span class="fa fa-arrow-circle-o-up"></span> {lang key='upgrade'}</a></li>
                                     {/access}
                                 {/if}
 
                                 {if !empty($module.buttons.deactivate)}
                                     {access object='admin_page' id=$core.page.name action='activate'}
-                                        <li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/deactivate/"><span class="fa fa-power-off"></span> {lang key='deactivate'}</a></li>
+                                        <li><a href="{$smarty.const.IA_SELF}{$module.name}/deactivate/"><span class="fa fa-power-off"></span> {lang key='deactivate'}</a></li>
                                     {/access}
                                 {/if}
 
                                 {if !empty($module.buttons.activate)}
                                     {access object='admin_page' id=$core.page.name action='activate'}
-                                        <li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/activate/"><span class="fa fa-check-circle"></span> {lang key='activate'}</a></li>
+                                        <li><a href="{$smarty.const.IA_SELF}{$module.name}/activate/"><span class="fa fa-check-circle"></span> {lang key='activate'}</a></li>
                                     {/access}
                                 {/if}
 
                                 {if !empty($module.buttons.uninstall)}
                                     {access object='admin_page' id=$core.page.name action='uninstall'}
-                                        <li><a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/uninstall/" class="js-uninstall" data-module="{$module.name}" data-type="{$core.page.name}"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
+                                        <li><a href="#" class="js-cmd-uninstall" data-url="{$smarty.const.IA_SELF}{$module.name}/uninstall/" data-module="{$module.name}" data-type="{$core.page.name}"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
                                     {/access}
                                 {/if}
                             </ul>
@@ -101,14 +101,14 @@
 
                     {if !empty($module.buttons.install)}
                         {access object='admin_page' id=$core.page.name action='install'}
-                            <a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/install/" class="btn btn-success btn-xs pull-right js-install" data-module="{$module.name}" data-type="{$core.page.name}" data-remote="{$module.remote}">{lang key='install'}</a>
+                            <a href="#" class="btn btn-success btn-xs pull-right js-cmd-install" data-url="{$smarty.const.IA_SELF}{$module.name}/install/" data-module="{$module.name}" data-type="{$core.page.name}" data-remote="{$module.remote}">{lang key='install'}</a>
                         {/access}
                     {elseif !empty($module.buttons.reinstall)}
                         <span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
                     {elseif !empty($module.buttons.activate)}
                         <span class="card__actions__status card__actions__status--inactive"><span class="fa fa-info-circle"></span> {lang key='deactivated'}</span>
                     {elseif !empty($module.buttons.download)}
-                        <a href="{$smarty.const.IA_ADMIN_URL}modules/{$core.page.name}/{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
+                        <a href="{$smarty.const.IA_SELF}{$module.name}/download/" class="btn btn-primary btn-xs pull-right"><i class="i-box-add"></i> {lang key='download'}</a>
                     {elseif $module.price > 0}
                         <a href="{$module.url}" target="_blank" class="btn btn-default btn-xs pull-right">{lang key='view'}</a>
                     {elseif empty($module.buttons.download)}
