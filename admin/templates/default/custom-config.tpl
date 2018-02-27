@@ -1,4 +1,5 @@
 {ia_add_js order=0}
+    intelli.pageName = '{$core.page.name}';
     {foreach $core.customConfig as $key => $value}
         intelli.config.{$key} = '{$value}';
     {/foreach}

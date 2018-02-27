@@ -78,7 +78,7 @@ function setupDialog(type, url, module) {
 }
 
 intelli.modules = {
-    url: intelli.config.admin_url + '/modules/',
+    url: window.location.href,
     failure: function () {
         intelli.notifFloatBox({msg: _t('error_saving_changes'), type: 'error', autohide: true});
     },
@@ -99,50 +99,49 @@ Ext.onReady(function(){
         setupDialog(data.action, data.url, data.module);
     });
 
-    $('.js-cmd-install').on('click', function(e){
+    $('.cards').on('click', '.js-cmd-install', function(e){
         e.preventDefault();
 
         var $this = $(this),
             module = $this.data('module'),
-            type = $this.data('type'),
             remote = $this.data('remote'),
             url = $this.data('url');
 
-        if ('packages' === type) {
-            setupDialog('install', url, module);
-            return;
+        switch (intelli.pageName) {
+            case 'packages':
+                setupDialog('install', url, module);
+                break;
+            case 'templates':
+                Ext.Msg.show({
+                    title: _t('confirm'),
+                    msg: _t('are_you_sure_install_template'),
+                    buttons: Ext.Msg.YESNO,
+                    icon: Ext.Msg.QUESTION,
+                    fn: function (btn) {
+                        if ('yes' === btn) {
+                            document.location = url;
+                        }
+                    }
+                });
+                break;
+            default:
+                $.ajax({
+                    data: intelli.includeSecurityToken({name: module, type: intelli.pageName, remote: remote}),
+                    failure: intelli.modules.failure,
+                    type: 'POST',
+                    url: intelli.modules.url + module + '/install.json',
+                    success: function (response) {
+                        intelli.modules.refresh(response);
+
+                        if (response.result) {
+                            var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
+
+                            $this.closest('.card').addClass('card--active');
+                            $this.replaceWith(installedStatusHtml);
+                        }
+                    }
+                });
         }
-        else if ('templates' === type) {
-            Ext.Msg.show({
-                title: _t('confirm'),
-                msg: _t('are_you_sure_install_template'),
-                buttons: Ext.Msg.YESNO,
-                icon: Ext.Msg.QUESTION,
-                fn: function (btn) {
-                    if ('yes' !== btn) return;
-                    document.location = url;
-                }
-            });
-
-            return;
-        }
-
-        $.ajax({
-            data: intelli.includeSecurityToken({name: module, type: type, remote: remote}),
-            failure: intelli.modules.failure,
-            type: 'POST',
-            url: intelli.modules.url + type + '/' + module + '/install.json',
-            success: function (response) {
-                intelli.modules.refresh(response);
-
-                if (response.result) {
-                    var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
-
-                    $this.closest('.card').addClass('card--active');
-                    $this.replaceWith(installedStatusHtml);
-                }
-            }
-        });
     });
 
     $('.js-cmd-reinstall').on('click', function(e){
@@ -160,7 +159,7 @@ Ext.onReady(function(){
                     return;
                 }
 
-                if ('templates' === data.type) {
+                if ('templates' === intelli.pageName) {
                     window.location = data.url;
                     return;
                 }
@@ -169,7 +168,7 @@ Ext.onReady(function(){
                     data: intelli.includeSecurityToken({name: data.module}),
                     failure: intelli.modules.failure,
                     type: 'POST',
-                    url: intelli.modules.url + data.type + '/' + data.module + '/reinstall.json',
+                    url: intelli.modules.url + data.module + '/reinstall.json',
                     success: intelli.modules.refresh
                 });
             }
@@ -179,21 +178,21 @@ Ext.onReady(function(){
     $('.js-cmd-uninstall').on('click', function(e){
         e.preventDefault();
 
-        var data = $(this).data();
+        var $this = $(this),
+            data = $this.data();
 
         var module = data.module,
-            type = data.type,
             remote = data.remote,
             url = data.url;
 
-        if ('packages' === type) {
+        if ('packages' === intelli.pageName) {
             Ext.Msg.show({
                 title: _t('confirm'),
                 msg: _t('are_you_sure_to_uninstall_selected_package'),
                 buttons: Ext.Msg.YESNO,
                 icon: Ext.Msg.QUESTION,
                 fn: function (btn) {
-                    if ('yes' == btn) {
+                    if ('yes' === btn) {
                         document.location = url;
                     }
                 }
@@ -215,18 +214,18 @@ Ext.onReady(function(){
                         data: intelli.includeSecurityToken({name: module}),
                         failure: intelli.modules.failure,
                         type: 'POST',
-                        url: intelli.modules.url + type + '/' + module + '/uninstall.json',
+                        url: intelli.modules.url + module + '/uninstall.json',
                         success: function (response) {
                             intelli.modules.refresh(response);
 
                             if (response.result) {
-                                var installBtnHtml = '<a href="' + intelli.modules.url + type + '/' + module + '/install/" class="btn btn-success btn-xs pull-right js-install" data-module="' + module + '" data-type="' + type + '" data-remote="' + remote + '">' + _t('install') + '</a>';
+                                var installBtnHtml = '<a href="#" class="btn btn-success btn-xs pull-right js-cmd-install" data-url="' + intelli.modules.url + module + '/install/" data-module="' + module + '" data-remote="' + remote + '">' + _t('install') + '</a>';
 
                                 $this.closest('.card').removeClass('card--active')
                                     .find('.card__actions__status').replaceWith(installBtnHtml);
 
                                 // hide buttons
-                                $this.closest('ul').find('.js-reinstall').hide();
+                                $this.closest('ul').find('.js-cmd-reinstall').hide();
                                 $this.closest('li').hide();
                             }
                         }

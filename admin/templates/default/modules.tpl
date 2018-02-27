@@ -19,7 +19,7 @@
 
                                 {if !empty($module.buttons.reinstall)}
                                     <li>
-                                        <a href="#" class="js-cmd-reinstall" data-url="{$smarty.const.IA_SELF}{$module.name}/reinstall/" data-module="{$module.name}" data-type="{$core.page.name}"><span class="fa fa-refresh"></span> {lang key='reinstall'}</a>
+                                        <a href="#" class="js-cmd-reinstall" data-url="{$smarty.const.IA_SELF}{$module.name}/reinstall/" data-module="{$module.name}"><span class="fa fa-refresh"></span> {lang key='reinstall'}</a>
                                     </li>
                                 {/if}
 
@@ -65,7 +65,7 @@
 
                                 {if !empty($module.buttons.uninstall)}
                                     {access object='admin_page' id=$core.page.name action='uninstall'}
-                                        <li><a href="#" class="js-cmd-uninstall" data-url="{$smarty.const.IA_SELF}{$module.name}/uninstall/" data-module="{$module.name}" data-type="{$core.page.name}"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
+                                        <li><a href="#" class="js-cmd-uninstall" data-url="{$smarty.const.IA_SELF}{$module.name}/uninstall/" data-module="{$module.name}"><span class="fa fa-remove"></span> {lang key='uninstall'}</a></li>
                                     {/access}
                                 {/if}
                             </ul>
@@ -101,7 +101,7 @@
 
                     {if !empty($module.buttons.install)}
                         {access object='admin_page' id=$core.page.name action='install'}
-                            <a href="#" class="btn btn-success btn-xs pull-right js-cmd-install" data-url="{$smarty.const.IA_SELF}{$module.name}/install/" data-module="{$module.name}" data-type="{$core.page.name}" data-remote="{$module.remote}">{lang key='install'}</a>
+                            <a href="#" class="btn btn-success btn-xs pull-right js-cmd-install" data-url="{$smarty.const.IA_SELF}{$module.name}/install/" data-module="{$module.name}" data-remote="{$module.remote}">{lang key='install'}</a>
                         {/access}
                     {elseif !empty($module.buttons.reinstall)}
                         <span class="card__actions__status"><span class="fa fa-check"></span> {lang key='installed'}</span>
