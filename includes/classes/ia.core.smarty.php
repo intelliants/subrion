@@ -760,7 +760,7 @@ class iaSmarty extends Smarty
         $iaCore = iaCore::instance();
 
         if ($captchaName = $iaCore->get('captcha_name')) {
-            $iaCaptcha = $iaCore->factoryModule('captcha', $captchaName);
+            $iaCaptcha = $iaCore->factoryModule('captcha', $captchaName, iaCore::FRONT);
 
             return $preview
                 ? $iaCaptcha->getPreview()
