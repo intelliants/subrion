@@ -58,11 +58,11 @@
                                 <input type="password" id="dummy_password" name="password" placeholder="{lang key='password'}">
                             </p>
                             <div class="checkbox">
-                                <label><input type="checkbox" name="remember"{if isset($smarty.post.remember)} checked{/if} tabindex="1"> {lang key='remember_me'}</label>
+                                <label><input type="checkbox" name="remember"{if isset($smarty.post.remember)} checked{/if}> {lang key='remember_me'}</label>
                             </div>
                             {if count($core.languages) > 1}
                             <p>
-                                <select name="_lang" id="_lang" tabindex="1">
+                                <select name="_lang" id="_lang">
                                     {foreach $core.languages as $code => $language}
                                         <option value="{$code}"{if $code == $smarty.const.IA_LANGUAGE} selected{/if}>{$language.title}</option>
                                     {/foreach}

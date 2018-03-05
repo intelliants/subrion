@@ -161,7 +161,7 @@
 
     <div class="form-actions">
         <a href="<?= URL_INSTALL ?><?= $this->module ?>/license/" class="btn btn-lg btn-default" tabindex="-1"><i class="i-chevron-left"></i> Back</a>
-        <button type="submit" class="btn btn-lg btn-primary" tabindex="1">Install <i class="i-checkmark"></i></button>
+        <button type="submit" class="btn btn-lg btn-primary">Install <i class="i-checkmark"></i></button>
     </div>
 </form>
 
