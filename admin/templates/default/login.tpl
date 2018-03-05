@@ -52,24 +52,24 @@
                         <form method="post" class="sap-form">
                             {preventCsrf}
                             <p>
-                                <input type="text" id="username" name="username" tabindex="1" value="{if isset($smarty.post.username)}{$smarty.post.username|escape:"html"}{/if}" autofocus placeholder="{lang key='login'}">
+                                <input type="text" id="username" name="username" value="{if isset($smarty.post.username)}{$smarty.post.username|escape:"html"}{/if}" autofocus placeholder="{lang key='login'}">
                             </p>
                             <p>
-                                <input type="password" id="dummy_password" name="password" tabindex="2" placeholder="{lang key='password'}">
+                                <input type="password" id="dummy_password" name="password" placeholder="{lang key='password'}">
                             </p>
                             <div class="checkbox">
-                                <label><input type="checkbox" name="remember"{if isset($smarty.post.remember)} checked{/if} tabindex="3"> {lang key='remember_me'}</label>
+                                <label><input type="checkbox" name="remember"{if isset($smarty.post.remember)} checked{/if} tabindex="1"> {lang key='remember_me'}</label>
                             </div>
                             {if count($core.languages) > 1}
                             <p>
-                                <select name="_lang" id="_lang" tabindex="4">
+                                <select name="_lang" id="_lang" tabindex="1">
                                     {foreach $core.languages as $code => $language}
                                         <option value="{$code}"{if $code == $smarty.const.IA_LANGUAGE} selected{/if}>{$language.title}</option>
                                     {/foreach}
                                 </select>
                             </p>
                             {/if}
-                            <input type="submit" class="btn btn-primary" tabindex="5" value="{lang key='login'}">
+                            <input type="submit" class="btn btn-primary" value="{lang key='login'}">
                             <a href="#" class="btn btn-link" id="js-forgot-dialog">{lang key='forgot_password'}</a>
                         </form>
                     </div>
@@ -79,10 +79,10 @@
                             {preventCsrf}
                             <p class="help-block">{lang key='restore_password'}</p>
                             <p>
-                                <input type="text" id="email" name="email" tabindex="1" placeholder="{lang key='type_email_here'}">
+                                <input type="text" id="email" name="email" placeholder="{lang key='type_email_here'}">
                             </p>
-                            <input id="js-forgot-submit" type="submit" class="btn btn-primary" tabindex="2" value="{lang key='go'}">
-                            <input  id="js-forgot-dialog-close" type="submit" class="btn btn-link" tabindex="3" value="{lang key='cancel'}">
+                            <input id="js-forgot-submit" type="submit" class="btn btn-primary" value="{lang key='go'}">
+                            <input  id="js-forgot-dialog-close" type="submit" class="btn btn-link" value="{lang key='cancel'}">
                         </form>
                     </div>
                     <div class="copyright">

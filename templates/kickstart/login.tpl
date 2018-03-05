@@ -3,11 +3,11 @@
         {preventCsrf}
 
         <div class="form-group">
-            <input class="form-control input-lg" type="text" tabindex="4" name="username" value="{if isset($smarty.post.username)}{$smarty.post.username|escape}{/if}" placeholder="{lang key='username_or_email'}">
+            <input class="form-control input-lg" type="text" name="username" value="{if isset($smarty.post.username)}{$smarty.post.username|escape}{/if}" placeholder="{lang key='username_or_email'}">
         </div>
 
         <div class="form-group">
-            <input class="form-control input-lg" type="password" tabindex="5" name="password" placeholder="{lang key='password'}">
+            <input class="form-control input-lg" type="password" name="password" placeholder="{lang key='password'}">
         </div>
 
         <div class="form-group">
@@ -24,7 +24,7 @@
         </div>
 
         <div class="form-group">
-            <button class="btn btn-success btn-block btn-lg" type="submit" tabindex="6" name="login">{lang key='login'}</button>
+            <button class="btn btn-success btn-block btn-lg" type="submit" name="login">{lang key='login'}</button>
         </div>
 
         <p class="text-center  m-b-0">

@@ -10,8 +10,8 @@
     <form action="{$smarty.const.IA_SELF}" method="post" class="form-inline">
         {preventCsrf}
         <label>{lang key='password'}:
-            <input type="password" tabindex="5" name="password" value="">
-            <button type="submit" tabindex="6" name="login" value="" class="btn btn-primary">{lang key='view'}</button>
+            <input type="password" name="password" value="">
+            <button type="submit" name="login" value="" class="btn btn-primary">{lang key='view'}</button>
         </label>
     </form>
 {/if}
