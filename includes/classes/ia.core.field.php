@@ -183,7 +183,7 @@ SQL;
             'where' => $where
         ]);
 
-        $r= $this->iaDb->getAll($sql); if ('venue'==$itemName) _d($r, 'FIELD FOR PAGE ' . $pageName);return $r;
+        return $this->iaDb->getAll($sql);
     }
 
     public function filter($itemName, array &$itemData, $pageName = null, $where = null)
