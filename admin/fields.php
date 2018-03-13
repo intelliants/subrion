@@ -249,8 +249,6 @@ class iaBackendController extends iaAbstractControllerBackend
         if ($fieldTypes['values'] && !in_array($entry['type'], $fieldTypes['values'])) {
             $this->addMessage('field_type_invalid');
         } else {
-            empty($entry['length']) && $entry['length'] = iaField::DEFAULT_LENGTH;
-
             switch ($entry['type']) {
                 case iaField::TEXT:
                     $entry['length'] = min(255, max(1, $data['text_length']));
