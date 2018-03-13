@@ -2052,20 +2052,32 @@ class iaModule extends abstractCore
             $className = $entry['class_name'];
             $parents = $entry['parent'];
 
-            if (iaField::TREE == $entry['type']) {
-                $entry['timepicker'] = $entry['multiselection'];
-            } elseif (iaField::IMAGE == $entry['type'] || iaField::PICTURES == $entry['type']) {
-                if ($entry['timepicker'] = (bool)$imageTypes) {
-                    $entry['imagetype_primary'] = isset($imageTypes[1]) ? $imageTypes[1] : $imageTypes[0];
-                    $entry['imagetype_thumbnail'] = $imageTypes[0];
-                } else {
-                    $entry['imagetype_primary'] = iaField::IMAGE_TYPE_LARGE;
-                    $entry['imagetype_thumbnail'] = iaField::IMAGE_TYPE_THUMBNAIL;
-                }
+            switch ($entry['type']) {
+                case iaField::TREE:
+                    $entry['timepicker'] = $entry['multiselection'];
 
-                if (iaField::IMAGE == $entry['type'] && !$entry['length']) {
-                    $entry['length'] = 1;
-                }
+                    break;
+
+                case iaField::IMAGE:
+                case iaField::PICTURES:
+                    if ($entry['timepicker'] = (bool)$imageTypes) {
+                        $entry['imagetype_primary'] = isset($imageTypes[1]) ? $imageTypes[1] : $imageTypes[0];
+                        $entry['imagetype_thumbnail'] = $imageTypes[0];
+                    } else {
+                        $entry['imagetype_primary'] = iaField::IMAGE_TYPE_LARGE;
+                        $entry['imagetype_thumbnail'] = iaField::IMAGE_TYPE_THUMBNAIL;
+                    }
+
+                    if (iaField::IMAGE == $entry['type'] && !$entry['length']) {
+                        $entry['length'] = 1;
+                    }
+
+                    break;
+
+                case iaField::TEXT:
+                    if (!$entry['length']) {
+                        $entry['length'] = iaField::DEFAULT_LENGTH;
+                    }
             }
 
             unset($entry['item_pages'], $entry['table_name'], $entry['class_name'], $entry['parent'],
