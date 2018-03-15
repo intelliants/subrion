@@ -620,7 +620,9 @@ SQL;
 
         $row = $this->iaDb->getRow($sql);
 
-        if (!$row || (!self::USE_OBSOLETE_AUTH && $password && !password_verify($password, $row['password']))) {
+        if (!$row
+            || iaCore::STATUS_ACTIVE != $row['status']
+            || (!self::USE_OBSOLETE_AUTH && $password && !password_verify($password, $row['password']))) {
             return false;
         }
 
