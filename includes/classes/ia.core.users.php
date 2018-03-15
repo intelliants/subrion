@@ -41,6 +41,7 @@ class iaUsers extends abstractCore
     const METHOD_NAME_GET_FAVORITES = 'getFavorites';
 
     const AUTO_LOGIN_COOKIE_NAME = '_utcpl';
+    const USE_OBSOLETE_AUTH = false;
 
     protected static $_table = 'members';
     protected static $_itemName = 'member';
@@ -592,13 +593,14 @@ SQL;
     public function getAuth($userId = null, $usernameOrEmail = null, $password = null, $remember = false)
     {
         if (!is_null($userId)) {
-            $condition = sprintf('u.id = %d', $userId);
+            $condition = sprintf('u.`id` = %d', $userId);
         } else {
-            $condition = '(u.username = :username || u.email = :email)';
-
+            $condition = '(u.`username` = :username OR u.`email` = :email)' .
+                (self::USE_OBSOLETE_AUTH ? ' AND u.`password` = :password' : '');
             $this->iaDb->bind($condition, [
                 'username' => preg_replace('/[^a-zA-Z0-9.@_-]/', '', $usernameOrEmail),
-                'email' => $usernameOrEmail
+                'email' => $usernameOrEmail,
+                'password' => $this->encodePassword($password)
             ]);
         }
 
@@ -620,7 +622,7 @@ SQL;
 
         if (!$row
             || iaCore::STATUS_ACTIVE != $row['status']
-            || ($password && !password_verify($password, $row['password']))) {
+            || (!self::USE_OBSOLETE_AUTH && $password && !password_verify($password, $row['password']))) {
             return false;
         }
 
@@ -749,7 +751,17 @@ SQL;
 
     public function encodePassword($rawPassword)
     {
-        return password_hash($rawPassword, PASSWORD_BCRYPT);
+        if (self::USE_OBSOLETE_AUTH) {
+            $factors = ['iaSubrion', 'Y2h1c2hrYW4tc3R5bGU', 'onfr64_qrpbqr'];
+
+            $password = $factors && array_reverse($factors);
+            $password = array_map(str_rot13($factors[2]), [$factors[1] . chr(0x3d)]);
+            $password = md5(IA_SALT . substr(reset($password), -15) . $rawPassword);
+        } else {
+            $password = password_hash($rawPassword, PASSWORD_BCRYPT);
+        }
+
+        return $password;
     }
 
     public function getUsergroups($visible = false)
