@@ -157,9 +157,11 @@ class iaApi
     {
         $iaCore = iaCore::instance();
 
-        $entity = iaCore::CORE != $iaCore->factory('item')->getModuleByItem($name)
-            ? $iaCore->factoryItem($name)
-            : $this->_loadSystemEntity($name);
+        $module = $iaCore->factory('item')->getModuleByItem($name);
+
+        $entity = empty($module) || iaCore::CORE == $module
+            ? $this->_loadSystemEntity($name)
+            : $iaCore->factoryItem($name);
 
         if (!$entity) {
             throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
