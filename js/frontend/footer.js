@@ -121,7 +121,7 @@ $(function () {
         $('.js-datepicker').datetimepicker(
             {
                 format: 'YYYY-MM-DD HH:mm:ss',
-                locale: intelli.config.lang,
+                locale: intelli.getLocale(),
                 icons: {
                     time: 'fa fa-clock-o',
                     date: 'fa fa-calendar',

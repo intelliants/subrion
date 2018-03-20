@@ -243,14 +243,15 @@ class iaCache extends abstractUtil
 
                 // get list of languages
                 $languagesList = $iaDb->assoc(
-                    ['code', 'title', 'direction', 'flagicon', 'iso' => 'code'],
+                    ['code', 'title', 'direction', 'flagicon', 'iso' => 'code', 'locale'],
                     ('admin_lang' == $type ? null : "`status` = 'active'"),
-                    'languages'
+                    iaLanguage::getLanguagesTable()
                 );
 
                 $fileContent = 'intelli.' . ('admin_lang' == $type ? 'admin.' : '') . 'lang = '
                     . json_encode($phrases) . ';'
                     . 'intelli.languages = ' . json_encode($languagesList) . ';';
+
                 break;
 
             case 'config':
