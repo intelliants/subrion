@@ -39,12 +39,12 @@ class iaApiEntityMigration extends iaApiEntityAbstract
         throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
     }
 
-    public function apiDelete($id)
+    public function apiDelete($id, array $params)
     {
         throw new Exception('Method not allowed', iaApiResponse::NOT_ALLOWED);
     }
 
-    public function apiInsert(array $data)
+    public function apiInsert($data)
     {
         if (isset($data['action'])) {
             if ($data['action'] == 'migrate') {
@@ -60,7 +60,7 @@ class iaApiEntityMigration extends iaApiEntityAbstract
         $appliedMigrations = [];
         $newMigrations = [];
 
-        $migrations = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, $this->getTable());
+        $migrations = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, '', 0, null, self::getTable());
         foreach ($migrations as $migration) {
             $appliedMigrations[] = $migration['name'];
         }
@@ -124,7 +124,7 @@ class iaApiEntityMigration extends iaApiEntityAbstract
                 $migrationProcessed['data'] = json_encode($migrationProcessed['data']);
             }
 
-            $this->iaDb->insert($migrationProcessed, null, 'migrations');
+            $this->iaDb->insert($migrationProcessed, null, self::getTable());
         }
 
         $this->iaCore->iaCache->clearAll();
