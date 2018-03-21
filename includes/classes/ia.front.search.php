@@ -461,12 +461,7 @@ SQL;
                     switch ($modules[$row['module']]) {
                         case 'package':
                         case 'plugin':
-                            $fileName = explode(':', $row['filename']);
-                            array_shift($fileName);
-                            $fileName = explode('/', $fileName[0]);
-                            array_shift($fileName);
-
-                            $fileName = $fileName[0] . iaView::TEMPLATE_FILENAME_EXT;
+                            $fileName = explode('/', $row['filename'])[1];
 
                             $tpl = IA_HOME . sprintf('templates/%s/modules/%s/%s',
                                     iaCore::instance()->get('tmpl'), $row['module'], $fileName);
