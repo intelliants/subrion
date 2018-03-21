@@ -113,7 +113,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $member['items'][$itemName] = $result;
                     $member['items'][$itemName]['fields'] = $iaField->filter($itemName, $member['items'][$itemName]['items']);
                     $member['items'][$itemName]['tpl'] = isset($itemsList[$itemName])
-                        ? sprintf('extra:%s/search.%s', $itemsList[$itemName], iaItem::toPlural($itemName))
+                        ? sprintf('module:%s/search.%s.tpl', $itemsList[$itemName], iaItem::toPlural($itemName))
                         : 'search.' . iaItem::toPlural($itemName) . '.tpl';
                 }
             }

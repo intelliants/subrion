@@ -127,7 +127,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
             $favorites[$itemName]['fields'] = $iaField->filter($itemName, $data['items']);
             $favorites[$itemName]['tpl'] = iaCore::CORE == $itemsList[$itemName]
                 ? 'search.' . iaItem::toPlural($itemName) . '.tpl'
-                : sprintf('extra:%s/search.%s', $module, iaItem::toPlural($itemName));
+                : sprintf('module:%s/search.%s.tpl', $module, iaItem::toPlural($itemName));
 
             $iaCore->startHook('phpFavoritesAfterGetExtraItems', ['favorites' => &$data, 'item' => $itemName]);
         } else {
