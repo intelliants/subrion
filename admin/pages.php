@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -30,8 +30,9 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected $_tooltipsEnabled = true;
 
-    protected $_gridColumns = "`id`, `name`, `status`, `last_updated`, IF(`custom_url` != '', `custom_url`, IF(`alias` != '', `alias`, CONCAT(`name`, '/'))) `url`, `id` `update`, IF(`readonly` = 0, 1, 0) `delete`";
+    protected $_gridColumns = ['name', 'status', 'last_updated'];
     protected $_gridFilters = ['name' => self::LIKE, 'module' => self::EQUAL];
+    protected $_gridQueryMainTableAlias = 'p';
 
     protected $_phraseAddSuccess = 'page_added';
 
@@ -66,36 +67,72 @@ class iaBackendController extends iaAbstractControllerBackend
         return parent::_gridRead($params);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (isset($values['module']) && iaCore::CORE == strtolower($values['module'])) {
             $values['module'] = '';
         }
 
-        $conditions[] = '`service` = 0';
+        if (!empty($params['text'])) {
+            $conditions[] = 'l1.`value` LIKE :text OR l2.`value` LIKE :text';
+            $values['text'] = '%' . iaSanitize::sql($params['text']) . '%';
+        }
+
+        $conditions[] = 'p.`service` = 0';
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridQuery($columns, $where, $order, $start, $limit)
     {
-        $currentLanguage = $this->_iaCore->iaView->language;
+        $sql = <<<SQL
+SELECT :columns,
+  l1.`value` `title`,
+  l2.`value` `content`,
+  IF(p.`custom_url` != '', `custom_url`, IF(p.`alias` != '', p.`alias`, CONCAT(p.`name`, '/'))) `url`,
+  p.`id` `update`,
+  IF(p.`readonly` = 0, 1, 0) `delete`
+  FROM `:table_pages` p 
+LEFT JOIN `:table_phrases` l1 ON (l1.`key` = CONCAT("page_title_", p.`name`) AND l1.`category` = "page" AND l1.`code` = ':code')
+LEFT JOIN `:table_phrases` l2 ON (l2.`key` = CONCAT("page_content_", p.`name`) AND l2.`category` = "page" AND l2.`code` = ':code')
+WHERE :where :order 
+LIMIT :start, :limit
+SQL;
+        $sql = iaDb::printf($sql, [
+            'table_pages' => $this->_iaDb->prefix . self::getTable(),
+            'table_phrases' => $this->_iaDb->prefix . iaLanguage::getTable(),
+            'code' => $this->_iaCore->language['iso'],
+            'columns' => $columns,
+            'where' => $where,
+            'order' => $order,
+            'start' => $start,
+            'limit' => $limit
+        ]);
 
-        $this->_iaDb->setTable(iaLanguage::getTable());
-        $pageTitles = $this->_iaDb->keyvalue(['key', 'value'],
-            "`key` LIKE('page_title_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
-        $pageContents = $this->_iaDb->keyvalue(['key', 'value'],
-            "`key` LIKE('page_content_%') AND `category` = 'page' AND `code` = '$currentLanguage'");
-        $this->_iaDb->resetTable();
+        return $this->_iaDb->getAll($sql);
+    }
 
-        $defaultPage = $this->_iaCore->get('home_page');
-
+    protected function _gridModifyOutput(array &$entries)
+    {
         foreach ($entries as &$entry) {
-            $entry['title'] = isset($pageTitles["page_title_{$entry['name']}"]) ? $pageTitles["page_title_{$entry['name']}"] : 'No title';
-            $entry['content'] = isset($pageContents["page_content_{$entry['name']}"]) ? $pageContents["page_content_{$entry['name']}"] : 'No content';
-
-            if ($defaultPage == $entry['name']) {
-                $entry['default'] = true;
-            }
+            $entry['content'] = iaSanitize::tags($entry['content']);
         }
+    }
+
+    protected function _setDefaultValues(array &$entry)
+    {
+        $entry = [
+            'name' => '',
+            'parent' => '',
+            'filename' => 'page',
+            'custom_tpl' => 0,
+            'template_filename' => '',
+            'alias' => '',
+            'module' => '',
+            'readonly' => false,
+            'service' => false,
+            'nofollow' => false,
+            'new_window' => false,
+            'status' => iaCore::STATUS_ACTIVE
+        ];
     }
 
     protected function _preSaveEntry(array &$entry, array $data, $action)
@@ -108,17 +145,14 @@ class iaBackendController extends iaAbstractControllerBackend
             strtolower($data['name'] = !utf8_is_ascii($data['name']) ? utf8_to_ascii($data['name']) : $data['name']));
         $entry['status'] = isset($data['preview']) ? iaCore::STATUS_DRAFT : $data['status'];
 
+        if (empty($data['title'][iaLanguage::getMasterLanguage()->iso])) {
+            $this->addMessage(iaLanguage::getf('field_is_empty',
+                ['field' => iaLanguage::get('title')]), false);
+        }
+
         if (iaCore::ACTION_ADD == $action) {
             $entry['group'] = 2;
             $entry['filename'] = 'page';
-        }
-
-        foreach ($data['title'] as $key => $title) {
-            if (empty($title)) {
-                $this->addMessage(iaLanguage::getf('field_is_empty',
-                    ['field' => iaLanguage::get('title') . ' (' . $key . ')']), false);
-                break;
-            }
         }
 
         if (!isset($data['service']) || !$data['service']) {
@@ -184,24 +218,6 @@ class iaBackendController extends iaAbstractControllerBackend
         return !$this->getMessages();
     }
 
-    protected function _setDefaultValues(array &$entry)
-    {
-        $entry = [
-            'name' => '',
-            'parent' => '',
-            'filename' => 'page',
-            'custom_tpl' => 0,
-            'template_filename' => '',
-            'alias' => '',
-            'module' => '',
-            'readonly' => false,
-            'service' => false,
-            'nofollow' => false,
-            'new_window' => false,
-            'status' => iaCore::STATUS_ACTIVE
-        ];
-    }
-
     protected function _entryAdd(array $entryData)
     {
         $order = $this->_iaDb->getMaxOrder() + 1;
@@ -242,7 +258,7 @@ class iaBackendController extends iaAbstractControllerBackend
             }
         }
 
-        $this->_saveMultilingualData($entry['name'], $data['module']);
+        $this->_saveMultilingualData($entry, $data['module'], $action);
 
         // writing to log
         $pageTitle = $data['title'][$this->_iaCore->iaView->language];
@@ -268,13 +284,16 @@ class iaBackendController extends iaAbstractControllerBackend
                     'id' => (int)$entryId
                 ]);
 
-                // remove associated entries as well
-                $this->_iaDb->delete("`key` IN ('page_title_{$pageName}', 'page_content_{$pageName}')",
-                    iaLanguage::getTable());
+                // remove associated phrases
+                $this->_iaDb->setTable(iaLanguage::getTable());
+                foreach(['title', 'content', 'meta_keywords', 'meta_description', 'meta_title'] as $type) {
+                    $this->_iaDb->delete(sprintf("`key` IN ('page_%s_%s')", $type, $pageName));
+                }
+                $this->_iaDb->resetTable();
 
+                // remove associated blocks
                 $this->_iaCore->factory('block', iaCore::ADMIN);
                 $this->_iaDb->delete('`page_name` = :page', iaBlock::getMenusTable(), ['page' => $pageName]);
-                //
             }
         }
 
@@ -314,12 +333,13 @@ class iaBackendController extends iaAbstractControllerBackend
         $homePageTitle = $this->_iaDb->one_bind('value', '`key` = :key AND `category` = :category',
             ['key' => 'page_title_' . $this->_iaCore->get('home_page'), 'category' => iaLanguage::CATEGORY_PAGE], iaLanguage::getTable());
 
-        list($title, $content, $metaDescription, $metaKeywords) = $this->_loadMultilingualData($entryData['name']);
+        list($title, $content, $metaDescription, $metaKeywords, $metaTitles) = $this->_loadMultilingualData($entryData['name']);
 
         $iaView->assign('title', $title);
         $iaView->assign('content', $content);
         $iaView->assign('metaDescription', $metaDescription);
         $iaView->assign('metaKeywords', $metaKeywords);
+        $iaView->assign('metaTitles', $metaTitles);
 
         $iaView->assign('isHomePage', $isHomepage);
         $iaView->assign('homePageTitle', $homePageTitle);
@@ -341,7 +361,7 @@ class iaBackendController extends iaAbstractControllerBackend
         if ($this->_iaCore->factory('acl')->isAccessible($this->getName(), iaCore::ACTION_ADD)) {
             $sql = <<<SQL
 SELECT m.`removable`, m.`id`, p.`value` `title` 
-	FROM `:prefix:table_menus` m 
+  FROM `:prefix:table_menus` m 
 LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT('block_title_', m.`id`) && p.`code` = ':lang') 
 WHERE m.`type` = 'menu' 
 ORDER BY `title`
@@ -449,14 +469,15 @@ SQL;
 
     private function _loadMultilingualData($pageName)
     {
-        $title = $content = $metaDescription = $metaKeywords = [];
+        $title = $content = $metaDescription = $metaKeywords = $metaTitles = [];
 
         if (isset($_POST['save'])) {
-            list($title, $content, $metaDescription, $metaKeywords) = [
+            list($title, $content, $metaDescription, $metaKeywords, $metaTitles) = [
                 $_POST['title'],
                 $_POST['content'],
                 $_POST['meta_description'],
-                $_POST['meta_keywords']
+                $_POST['meta_keywords'],
+                $_POST['meta_title']
             ];
         } elseif (iaCore::ACTION_EDIT == $this->_iaCore->iaView->get('action')) {
             $this->_iaDb->setTable(iaLanguage::getTable());
@@ -469,21 +490,30 @@ SQL;
                 "`key` = 'page_meta_description_{$pageName}' AND `category` = 'page'");
             $metaKeywords = $this->_iaDb->keyvalue(['code', 'value'],
                 "`key` = 'page_meta_keywords_{$pageName}' AND `category` = 'page'");
+            $metaTitles = $this->_iaDb->keyvalue(['code', 'value'],
+                "`key` = 'page_meta_title_{$pageName}' AND `category` = 'page'");
 
             $this->_iaDb->resetTable();
         }
 
-        return [$title, $content, $metaDescription, $metaKeywords];
+        return [$title, $content, $metaDescription, $metaKeywords, $metaTitles];
     }
 
-    private function _saveMultilingualData($pageName, $module)
+    private function _saveMultilingualData(array $pageEntry, $module, $action)
     {
+        $pageName = $pageEntry['name'];
+        $masterLangCode = iaLanguage::getMasterLanguage()->iso;
+
         foreach ($this->_iaCore->languages as $iso => $language) {
-            foreach (['title', 'content', 'meta_description', 'meta_keywords'] as $key) {
+            foreach (['title', 'content', 'meta_description', 'meta_keywords', 'meta_title'] as $key) {
                 if (isset($_POST[$key][$iso])) {
                     $phraseKey = sprintf('page_%s_%s', $key, $pageName);
 
                     $value = $_POST[$key][$iso];
+                    if (!$value && iaCore::ACTION_ADD == $action) {
+                        $value = $_POST[$key][$masterLangCode];
+                    }
+
                     utf8_is_valid($value) || $value = utf8_bad_replace($value);
 
                     iaLanguage::addPhrase($phraseKey, $value, $iso, $module, iaLanguage::CATEGORY_PAGE, true);

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -38,7 +38,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
     protected $_table;
 
-    public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8';
+    public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8mb4';
     public $prefix;
 
 
@@ -64,21 +64,39 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
             die('Setting MYSQLI_OPT_CONNECT_TIMEOUT failed.');
         }
 
-        if (!mysqli_real_connect($this->_link, INTELLI_DBHOST, INTELLI_DBUSER, INTELLI_DBPASS, INTELLI_DBNAME, INTELLI_DBPORT)) {
-            $page = [
-                'title' => $_SERVER['SERVER_NAME'],
-                'content' => 'Maintenance ongoing, please try later.',
-            ];
+        // throw exceptions
+        mysqli_report(MYSQLI_REPORT_STRICT);
 
-            require_once IA_HOME . 'templates/_common/offline.tpl';
-            die();
+        try {
+            mysqli_real_connect(
+                $this->_link,
+                INTELLI_DBHOST,
+                INTELLI_DBUSER,
+                INTELLI_DBPASS,
+                INTELLI_DBNAME,
+                INTELLI_DBPORT
+            );
+        } catch (Exception $e) {
+            $this->_link = false;
+
+            if (!defined('INSTALL')) {
+                $page = [
+                    'title' => $_SERVER['SERVER_NAME'],
+                    'content' => 'Incorrect database details, please try later.',
+                ];
+
+                require_once IA_HOME . 'templates/_common/offline.tpl';
+                die();
+            }
         }
 
-        // set active database again
-        mysqli_select_db($this->_link, INTELLI_DBNAME);
+        if ($this->_link) {
+            // set active database again
+            mysqli_select_db($this->_link, INTELLI_DBNAME);
 
-        $this->query("SET NAMES 'utf8'");
-        $this->query("SET sql_mode = ''");
+            $this->query("SET NAMES 'utf8mb4'");
+            $this->query("SET sql_mode = ''");
+        }
     }
 
     public function setTimezoneOffset($offset)
@@ -98,7 +116,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
      */
     public function sql($string = '')
     {
-        return mysqli_real_escape_string($this->_link, $string);
+        return $this->_link ? mysqli_real_escape_string($this->_link, $string) : '';
     }
 
     /**
@@ -136,32 +154,32 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
     {
         if (!$this->_link) {
             $this->_connect();
+        } else {
+            $timeStart = explode(' ', microtime());
+            $result = mysqli_query($this->_link, $sql);
+
+            $timeEnd = explode(' ', microtime());
+
+            $start = $timeStart[1] + $timeStart[0];
+            $end = $timeEnd[1] + $timeEnd[0];
+            $times = number_format($end - $start, 5, '.', '');
+
+            $this->_counter++;
+            $this->_lastQuery = $sql;
+            if (INTELLI_DEBUG || defined('INTELLI_QDEBUG')) {
+                $this->_queryList[] = [$sql, $times];
+            }
+
+            // 2013 - lost connection during the execution
+            if (!$result && 2013 != mysqli_errno($this->_link)) {
+                $error = $this->getError();
+                $error .= PHP_EOL . $sql;
+
+                trigger_error($error, E_USER_WARNING);
+            }
+
+            return $result;
         }
-
-        $timeStart = explode(' ', microtime());
-        $result = mysqli_query($this->_link, $sql);
-
-        $timeEnd = explode(' ', microtime());
-
-        $start = $timeStart[1] + $timeStart[0];
-        $end = $timeEnd[1] + $timeEnd[0];
-        $times = number_format($end - $start, 5, '.', '');
-
-        $this->_counter++;
-        $this->_lastQuery = $sql;
-        if (INTELLI_DEBUG) {
-            $this->_queryList[] = [$sql, $times];
-        }
-
-        // 2013 - lost connection during the execution
-        if (!$result && 2013 != mysqli_errno($this->_link)) {
-            $error = $this->getError();
-            $error .= PHP_EOL . $sql;
-
-            trigger_error($error, E_USER_WARNING);
-        }
-
-        return $result;
     }
 
     public function getLastQuery()
@@ -481,8 +499,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return is_bool($result) ? $result : array_shift($result);
     }
 
-    public function onefield($field = self::ID_COLUMN_SELECTION, $condition = null, $start = 0, $limit = null, $tableName = null)
-    {
+    public function onefield($field = self::ID_COLUMN_SELECTION, $condition = null, $start = 0, $limit = null, $tableName = null) {
         if (false !== strpos($field, ',')) {
             return false;
         }
@@ -522,8 +539,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function all($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $start = 0, $limit = null, $tableName = null)
-    {
+    public function all($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $start = 0, $limit = null, $tableName = null) {
         if (is_null($tableName)) {
             $result = $this->_get('all', $fields, $condition, $start, $limit);
         } else {
@@ -535,8 +551,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function assoc($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0, $limit = null)
-    {
+    public function assoc($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0, $limit = null) {
         if (is_null($tableName)) {
             $result = $this->_get('assoc', $fields, $condition, $start, $limit);
         } else {
@@ -548,8 +563,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function keyvalue($fields = self::ALL_COLUMNS_SELECTION, $condition = null, $tableName = null, $start = 0, $limit = null)
-    {
+    public function keyvalue($fields = self::ALL_COLUMNS_SELECTION, $condition = null, $tableName = null, $start = 0, $limit = null) {
         if (is_null($tableName)) {
             $result = $this->_get('keyval', $fields, $condition, $start, $limit);
         } else {
@@ -578,11 +592,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
     public function update($values, $condition = null, $rawValues = null, $tableName = null)
     {
-        if (empty($values) && empty($rawValues)) {
-            return false;
-        }
-
-        if (empty($this->_table) && empty($tableName)) {
+        if ((empty($values) && empty($rawValues)) || (empty($this->_table) && empty($tableName))) {
             return false;
         }
 
@@ -592,6 +602,13 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         } elseif (isset($values['id'])) {
             $stmtWhere = 'WHERE `' . self::ID_COLUMN_SELECTION . "` = '" . $values['id'] . "'";
             unset($values['id']);
+        }
+
+        if (empty($stmtWhere)) {
+            trigger_error(
+                __METHOD__ . ' method requires WHERE clause to be not empty. All rows update is restricted.',
+                E_USER_ERROR
+            );
         }
 
         $stmtSet = $this->_wrapValues($values, $rawValues);
@@ -609,7 +626,10 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
     public function delete($condition, $tableName = null, $values = [])
     {
         if (empty($condition)) {
-            trigger_error(__METHOD__ . ' Parameters required "where clause"). All rows deletion is restricted.', E_USER_ERROR);
+            trigger_error(
+                __METHOD__ . ' Parameters required "where clause"). All rows deletion is restricted.',
+                E_USER_ERROR
+            );
         }
 
         if ($values) {

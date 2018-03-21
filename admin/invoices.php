@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -79,15 +79,15 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->_iaDb->getAll($sql);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
-        if (!empty($_GET['gateway'])) {
+        if (!empty($params['gateway'])) {
             $conditions[] = 't.`gateway` = :gateway';
-            $values['gateway'] = $_GET['gateway'];
+            $values['gateway'] = $params['gateway'];
         }
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         foreach ($entries as &$entry) {
             $entry['plan'] = $entry['plan_id'] ? iaLanguage::get('plan_title_' . $entry['plan_id']) : $entry['operation'];

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -157,7 +157,7 @@ class iaPicture extends abstractCore
             $path = pathinfo($destinationFile, PATHINFO_DIRNAME);
             $file = pathinfo($destinationFile, PATHINFO_BASENAME);
 
-            $image->save($path, $file);
+            $image->save($path, $file, true, null, $this->iaCore->get('image_quality', 75));
 
             $result = true;
         } catch (Exception $e) {

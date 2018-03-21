@@ -96,9 +96,7 @@ intelli.handlerSaveHook = function () {
         code: editAreaLoader.getValue('codeContainer')
     };
 
-    params = intelli.includeSecurityToken(params, $('input:first', '#js-token').val());
-
-    $.post(window.location.href + 'set.json', params, function (response) {
+    intelli.post(window.location.href + 'set.json', params, function (response) {
         intelli.notifFloatBox({msg: response.message, type: response.result ? 'success' : 'error', autohide: true});
     });
 };
@@ -120,8 +118,7 @@ $(function () {
     $('#js-close-cmd').on('click', function () {
         var hooks = editAreaLoader.getAllFiles('codeContainer');
         if (hooks) {
-            var hook;
-            for (hook in hooks) {
+            for (var hook in hooks) {
                 editAreaLoader.closeFile('codeContainer', hook);
             }
         }

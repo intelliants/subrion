@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -30,14 +30,16 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     }
 
     $iaField = $iaCore->factory('field');
+    $iaPlan = $iaCore->factory('plan');
     $iaUsers = $iaCore->factory('users');
 
-    $itemName = $tableName = iaUsers::getTable();
+    $itemName = $iaUsers->getitemName();
+    $tableName = iaUsers::getTable();
+
     $messages = [];
 
     $assignableGroups = $iaDb->keyvalue(['id', 'name'], '`assignable` = 1', iaUsers::getUsergroupsTable());
 
-    $iaPlan = $iaCore->factory('plan');
     $plans = $iaPlan->getPlans($iaUsers->getItemName());
 
     $iaDb->setTable($tableName);
@@ -48,7 +50,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
         $error = false;
         $newPassword = empty($_POST['new']) ? false : $_POST['new'];
         // checks for current password
-        if (iaUsers::getIdentity()->password != $iaUsers->encodePassword($_POST['current'])) {
+        if (!password_verify($_POST['current'], iaUsers::getIdentity()->password)) {
             $error = true;
             $messages[] = iaLanguage::get('password_incorrect');
         }
@@ -114,6 +116,19 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
     $sections = $iaField->getTabs($itemName, $item);
 
+    foreach ($sections['common'][0]['fields'] as &$field) {
+        if ('email_language' == $field['name']) {
+            $field['type'] = iaField::RADIO;
+            $field['default'] = iaLanguage::getMasterLanguage()->iso;
+            $field['values'] = [];
+            foreach ($iaCore->languages as $iso => $language) {
+                $field['values'][$iso] = $language['title'];
+            }
+            break;
+        }
+    }
+
+
     $extraTabs = [];
     $iaCore->startHook('phpFrontEditProfileExtraTabs', ['tabs' => &$extraTabs, 'item' => &$item]);
     $sections = array_merge($sections, $extraTabs);
@@ -121,6 +136,8 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     if (iaUsers::MEMBERSHIP_ADMINISTRATOR != iaUsers::getIdentity()->usergroup_id) {
         $iaView->assign('assignableGroups', $assignableGroups);
     }
+
+    $item['item'] = $itemName;
 
     $iaView->assign('sections', $sections);
     $iaView->assign('plans_count', (int)$iaDb->one(iaDb::STMT_COUNT_ROWS, null, iaPlan::getTable()));

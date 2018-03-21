@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -99,7 +99,7 @@ class iaUtil extends abstractUtil
         $config->set('Attr.AllowedRel', 'facebox,nofollow,print,ia_lightbox');
 
         // allow YouTube and Vimeo
-        $config->set('HTML.AllowedElements', array('iframe'));
+        //$config->set('HTML.AllowedElements', ['iframe']);
         $config->set('HTML.SafeIframe', true);
         $config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|www\.google\.com/maps/embed\?)%');
 

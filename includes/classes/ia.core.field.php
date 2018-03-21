@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -28,6 +28,7 @@ class iaField extends abstractCore
 {
     const CHECKBOX = 'checkbox';
     const COMBO = 'combo';
+    const CURRENCY = 'currency';
     const DATE = 'date';
     const ICONPICKER = 'iconpicker';
     const IMAGE = 'image';
@@ -106,9 +107,9 @@ class iaField extends abstractCore
     }
 
 
-    public static function getLanguageValue($itemName, $fieldName, $value)
+    public static function getLanguageValue($itemName, $fieldName, $value, $default = null)
     {
-        return iaLanguage::get(sprintf(self::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $value));
+        return iaLanguage::get(sprintf(self::FIELD_VALUE_PHRASE_KEY, $itemName, $fieldName, $value), $default);
     }
 
     public static function getFieldTitle($itemName, $fieldName)
@@ -131,6 +132,20 @@ class iaField extends abstractCore
         return iaLanguage::get(sprintf(self::FIELDGROUP_TITLE_PHRASE_KEY, $itemName, $fieldName));
     }
 
+    public function fetch($where = null, $order = null, $start = null, $limit = null)
+    {
+        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . $order, $start, $limit, self::getTable());
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['id']] = $row;
+        }
+
+        self::_unpackValues($result);
+
+        return $result;
+    }
+
     /**
      * Returns fields by item name
      *
@@ -140,19 +155,10 @@ class iaField extends abstractCore
      */
     public function get($itemName)
     {
-        $fields = [];
-
         $where = '`status` = :status && `item` = :item' . (!$this->iaCore->get('api_enabled') ? " && `fieldgroup_id` != 3 " : '') . ' ORDER BY `order`';
         $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'item' => $itemName]);
 
-        if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTable())) {
-            foreach ($rows as $row) {
-                $fields[$row['id']] = $row;
-            }
-            self::_unpackValues($fields);
-        }
-
-        return $fields;
+        return $this->fetch($where);
     }
 
     protected function _fetchVisibleFieldsForPage($pageName, $itemName, $where)
@@ -160,13 +166,13 @@ class iaField extends abstractCore
         $sql = <<<SQL
 SELECT f.* 
 	FROM `:prefix:table_fields` f 
-LEFT JOIN `:prefix:table_pages` fp ON (fp.`field_id` = f.`id`) 
-WHERE fp.`page_name` = ':page' 
-	AND f.`item` = ':item' 
-	AND f.`adminonly` = 0 
+LEFT JOIN `:prefix:table_pages` fp ON (fp.field_id = f.id) 
+WHERE fp.page_name = ':page' 
+	AND f.item = ':item' 
+	AND f.adminonly = 0 
 	AND :where 
-GROUP BY f.`id` 
-ORDER BY f.`order`
+GROUP BY f.id 
+ORDER BY f.order
 SQL;
         $sql = iaDb::printf($sql, [
             'prefix' => $this->iaDb->prefix,
@@ -187,9 +193,10 @@ SQL;
         is_null($pageName) && $pageName = $this->iaView->name();
         is_null($where) && $where = iaDb::EMPTY_CONDITION;
 
+        $where.= iaDb::printf(" && f.status = ':status'", ['status' => iaCore::STATUS_ACTIVE]);
         $where.= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
-            ? " AND (f.`plans` = '' OR FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.`plans`))"
-            : " AND f.`plans` = ''";
+            ? " && (f.plans = '' || FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.plans))"
+            : " && f.plans = ''";
 
         if (isset($cache[$pageName][$itemName][$where])) {
             $result = $cache[$pageName][$itemName][$where];
@@ -559,6 +566,7 @@ SQL;
                     break;
 
                 case self::NUMBER:
+                case self::CURRENCY:
                     $item[$fieldName] = (float)str_replace(' ', '', $value);
 
                     break;
@@ -831,6 +839,8 @@ SQL;
 
     protected function _processImageField(array $field, $tmpFile, $path, $fileName, $mimeType)
     {
+        $this->_message = null;
+
         $iaPicture = $this->iaCore->factory('picture');
 
         if (isset($field['timepicker']) && $field['timepicker']) { // image types enabled field
@@ -847,8 +857,8 @@ SQL;
             }
         } else { // standard processing (original, thumbnail & large image)
             $imageTypes = [
-                ['name' => self::IMAGE_TYPE_THUMBNAIL, 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode']],
-                ['name' => self::IMAGE_TYPE_LARGE, 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode']]
+                ['name' => self::IMAGE_TYPE_THUMBNAIL, 'width' => $field['thumb_width'], 'height' => $field['thumb_height'], 'resize_mode' => $field['resize_mode'], 'watermark' => false],
+                ['name' => self::IMAGE_TYPE_LARGE, 'width' => $field['image_width'], 'height' => $field['image_height'], 'resize_mode' => $field['resize_mode'], 'watermark' => true]
             ];
 
             $allowedFileExtensions = $iaPicture->getSupportedImageTypes();
@@ -881,8 +891,12 @@ SQL;
 
             $destinationFile = $imageTypeFolder . $fileName;
 
-            $iaPicture->process($originalFile, $destinationFile, $mimeType, $imageType['width'],
-                $imageType['height'], $imageType['resize_mode'], true);
+            $result = $iaPicture->process($originalFile, $destinationFile, $mimeType, $imageType['width'],
+                $imageType['height'], $imageType['resize_mode'], (isset($imageType['watermark']) ? $imageType['watermark'] : true));
+
+            if (!$result) {
+                $this->setMessage($iaPicture->getMessage());
+            }
         }
     }
 
@@ -919,6 +933,11 @@ SQL;
     public function getMultilingualFields($itemName)
     {
         return $this->_getFieldNames($itemName, iaDb::convertIds(1, 'multilingual'));
+    }
+
+    public function getFieldsByType($itemName, $fieldType)
+    {
+        return $this->_getFieldNames($itemName, iaDb::convertIds($fieldType, 'type'));
     }
 
     protected function _getFieldNames($itemName, $condition)
@@ -999,6 +1018,8 @@ SQL;
                     $this->alterColumnScheme($dbTable, $fieldData);
                 }
             }
+
+            $this->_copyContent($dbTable, $fieldName, $defaultLanguageCode);
         } else {
             $fieldData['name'] = $fieldName . '_' . $defaultLanguageCode;
             $this->alterColumnScheme($dbTable, $fieldData, $fieldName);
@@ -1073,6 +1094,17 @@ SQL;
         return in_array($columnName, $this->_restrictedNames);
     }
 
+    protected function _copyContent($dbTable, $columnName, $defaultLanguageCode)
+    {
+        $primaryLangCol = $columnName . '_' . $defaultLanguageCode;
+
+        $rawUpdateStmt = [];
+        foreach ($this->iaCore->languages as $code => $language)
+            $rawUpdateStmt[$columnName . '_' . $code] = '`' . $primaryLangCol . '`';
+
+        $this->iaDb->update(null, iaDb::EMPTY_CONDITION, $rawUpdateStmt, $dbTable);
+    }
+
     private function _alterCmdBody(array $fieldData)
     {
         $result = '';
@@ -1101,6 +1133,9 @@ SQL;
             case self::TEXTAREA:
                 $result.= 'MEDIUMTEXT ';
                 break;
+            case self::CURRENCY:
+                $result.= 'DECIMAL(' . ($fieldData['length'] + 2) . ',2) unsigned ';
+                break;
             default:
                 if (isset($fieldData['values'])) {
                     $values = explode(',', $fieldData['values']);
@@ -1114,7 +1149,6 @@ SQL;
                 }
         }
 
-        //$result.= in_array($fieldData['type'], [self::COMBO, self::RADIO]) ? 'NULL' : 'NOT NULL';
         $result.= $fieldData['allow_null'] ? 'NULL' : 'NOT NULL';
 
         return $result;
@@ -1255,12 +1289,12 @@ SQL;
     {
         if ($uploadFields = $this->getUploadFields($itemName)) {
             foreach ($uploadFields as $fieldName) {
-                empty($itemData[$fieldName]) || $this->_deleteFilesByFieldName($fieldName, $itemName, $itemData[$fieldName]);
+                empty($itemData[$fieldName]) || $this->deleteFilesByFieldName($fieldName, $itemName, $itemData[$fieldName]);
             }
         }
     }
 
-    protected function _deleteFilesByFieldName($fieldName, $itemName, $files)
+    public function deleteFilesByFieldName($fieldName, $itemName, $files)
     {
         if (!$files || !is_string($files)) {
             return false;
@@ -1290,6 +1324,7 @@ SQL;
 
     public function deleteUploadedFile($fieldName, $itemName, $itemId, $fileName = null, $checkOwnership = false)
     {
+        $fieldName = iaSanitize::paranoid($fieldName);
         $tableName = $this->iaCore->factory('item')->getItemTable($itemName);
 
         if ($checkOwnership) {
@@ -1371,6 +1406,40 @@ SQL;
     {
         return $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name AND `item` = :item',
             ['name' => $fieldName, 'item' => $itemName], self::getTable());
+    }
+
+    /**
+     * @param $itemName
+     * @param array $itemData
+     *
+     * Different field types require different data transformations in order to be printed out
+     * This method applies field type specific conversions to array elements
+     */
+    public function unwrapItemValues($itemName, array &$itemData)
+    {
+        foreach ($this->get($itemName) as $field) {
+            $fieldName = $field['name'];
+
+            if (!isset($itemData[$fieldName])) {
+                $itemData[$fieldName] = $field['default'];
+                continue;
+            }
+
+            switch ($field['type']) {
+                case self::CHECKBOX:
+                    $itemData[$fieldName] = explode(',', $itemData[$fieldName]);
+                    break;
+                case self::IMAGE:
+                case self::PICTURES:
+                case self::STORAGE:
+                    $itemData[$fieldName] = $itemData[$fieldName] ? unserialize($itemData[$fieldName]) : [];
+                    break;
+                default:
+                    if (!$itemData[$fieldName] && !in_array($field['type'], [self::NUMBER, self::CURRENCY])) {
+                        $itemData[$fieldName] = $field['default'];
+                    }
+            }
+        }
     }
 
     protected static function _processFileName(&$fileName)

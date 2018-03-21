@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -147,10 +147,8 @@ class iaValidate extends abstractUtil
 
         $result = true;
         if ($iaCore->get('captcha')) {
-            if ($pluginName = $iaCore->get('captcha_name')) {
-                $iaCaptcha = $iaCore->factoryPlugin($pluginName, iaCore::FRONT, 'captcha');
-
-                $result = (bool)$iaCaptcha->validate();
+            if ($moduleName = $iaCore->get('captcha_name')) {
+                $result = (bool)$iaCore->factoryModule('captcha', $moduleName)->validate();
             }
         }
 

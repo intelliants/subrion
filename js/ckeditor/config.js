@@ -6,7 +6,7 @@
 CKEDITOR.editorConfig = function (config) {
     config.language = 'en';
     config.skin = intelli.config.ckeditor_skin || 'moono-lisa';
-    config.filebrowserImageUploadUrl = intelli.config.ia_url + 'actions/?action=ckeditor_upload&Type=Image';
+    config.filebrowserImageUploadUrl = intelli.config.url + 'actions/?action=ckeditor_upload&Type=Image';
     config.allowedContent = true;
     config.extraPlugins = 'embedbase,embedsemantic,embed,autoembed,codemirror,youtube';
     config.extraAllowedContent = 'a[rel]';
@@ -142,3 +142,5 @@ CKEDITOR.editorConfig = function (config) {
         useBeautify: false
     };
 };
+
+CKEDITOR.on('dialogDefinition',function(e){var t=e.data.name,n=e.data.definition;if('image'===t)for(var i=n.getContents('Upload'),a=0;a<i.elements.length;a++){var l=i.elements[a];'fileButton'===l.type&&(l.onClick=function(){var e=this.getDialog(),t=e.getContentElement(this['for'][0],this['for'][1]),n=e.getParentEditor();n._.filebrowserSe=this;var i=$(t.getInputElement().getParent().$);return $('input[type="file"]',i).get(0).files.length?(i.append('<input type="hidden" name="'+intelli.securityTokenKey+'" value="'+intelli.securityToken+'">'),!0):!1})}});

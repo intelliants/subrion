@@ -20,6 +20,9 @@
         {case iaField::NUMBER break}
             {$item.$name|escape}
 
+        {case iaField::CURRENCY break}
+            {$item["{$name}_formatted"]}
+
         {case iaField::CHECKBOX break}
             {arrayToLang values=$item.$name item=$field.item name=$name}
 

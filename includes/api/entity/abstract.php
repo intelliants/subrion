@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -24,34 +24,29 @@
  *
  ******************************************************************************/
 
-abstract class iaApiEntityAbstract
+abstract class iaApiEntityAbstract extends abstractCore
 {
     protected $_name;
 
-    protected $_table;
+    protected $request;
+    protected $response;
 
-    protected $_request;
-    protected $_response;
+    protected $iaField;
 
-    protected $_iaCore;
-    protected $_iaDb;
+    protected $hiddenFields = [];
+    protected $protectedFields = [];
+
+    public $apiFilters = [];
+    public $apiSorters = [];
 
 
     public function init()
     {
-    }
+        parent::init();
 
-    public function __construct()
-    {
-        $iaCore = iaCore::instance();
+        $this->_name = strtolower(str_replace('iaApiEntity', '', static::class));
 
-        $this->_iaCore = $iaCore;
-        $this->_iaDb = &$iaCore->iaDb;
-    }
-
-    public function getTable()
-    {
-        return $this->_table;
+        $this->iaField = $this->iaCore->factory('field');
     }
 
     public function getName()
@@ -72,15 +67,23 @@ abstract class iaApiEntityAbstract
     // actions
     public function apiList($start, $limit, $where, $order)
     {
-        return $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . ' ' . $order, $start, $limit, $this->getTable());
+        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where . ' ' . $order, $start, $limit, $this->getTable());
+
+        $this->_filterHiddenFields($rows);
+
+        return $rows;
     }
 
     public function apiGet($id)
     {
-        return $this->_iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), $this->getTable());
+        $row = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), $this->getTable());
+
+        $this->_filterHiddenFields($row, true);
+
+        return $row;
     }
 
-    public function apiDelete($id)
+    public function apiDelete($id, array $params)
     {
         $resource = $this->apiGet($id);
 
@@ -92,10 +95,14 @@ abstract class iaApiEntityAbstract
             throw new Exception('Resource may be removed by owner only', iaApiResponse::FORBIDDEN);
         }
 
-        return (bool)$this->_iaDb->delete(iaDb::convertIds($id), $this->getTable());
+        if (1 == count($params)) {
+            return $this->_apiResetSingleField($params[0], $id);
+        }
+
+        return (bool)$this->iaDb->delete(iaDb::convertIds($id), $this->getTable());
     }
 
-    public function apiUpdate(array $data, $id, array $params)
+    public function apiUpdate($data, $id, array $params)
     {
         $resource = $this->apiGet($id);
 
@@ -107,12 +114,18 @@ abstract class iaApiEntityAbstract
             throw new Exception('Resource may be edited by owner only', iaApiResponse::FORBIDDEN);
         }
 
-        $this->_iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
+        if (1 == count($params)) {
+            return $this->_apiUpdateSingleField($params[0], $id, $data);
+        }
 
-        return (0 == $this->_iaDb->getErrorNumber());
+        $this->_apiProcessFields($data);
+
+        $this->iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
+
+        return (0 == $this->iaDb->getErrorNumber());
     }
 
-    public function apiInsert(array $data)
+    public function apiInsert($data)
     {
         if (!iaUsers::hasIdentity()) {
             throw new Exception('Guests not allowed to post data', iaApiResponse::UNAUTHORIZED);
@@ -120,14 +133,45 @@ abstract class iaApiEntityAbstract
 
         $data['member_id'] = iaUsers::getIdentity()->id;
 
-        return $this->_iaDb->insert($data, null, $this->getTable());
+        return $this->iaDb->insert($data, null, $this->getTable());
     }
 
-    protected function _processFields(array &$data)
+    protected function _filterHiddenFields(&$rows, $singleRow = false)
     {
-        $iaField = $this->_iaCore->factory('field');
+        if (!$rows) {
+            return;
+        }
 
-        $fields = $iaField->get($this->getName());
+        $singleRow && $rows = [$rows];
+
+        foreach ($rows as &$row) {
+            if (!is_array($row)) {
+                break;
+            }
+
+            foreach ($this->hiddenFields as $fieldName) {
+                if (isset($row[$fieldName])) {
+                    unset($row[$fieldName]);
+                }
+            }
+        }
+
+        $singleRow && $rows = array_shift($rows);
+    }
+
+    protected function _apiProcessFields(&$data)
+    {
+        if (!is_array($data)) {
+            throw new Exception('Invalid data (array expected)', iaApiResponse::BAD_REQUEST);
+        }
+
+        foreach ($this->protectedFields as $protectedFieldName) {
+            if (isset($data[$protectedFieldName])) {
+                unset($data[$protectedFieldName]);
+            }
+        }
+
+        $fields = $this->iaCore->factory('field')->get($this->getName());
 
         foreach ($fields as $field) {
             $fieldName = $field['name'];
@@ -138,120 +182,140 @@ abstract class iaApiEntityAbstract
 
             switch ($field['type']) {
                 case iaField::IMAGE:
-                    $image = base64_decode($data[$fieldName]);
-                    list(, $data[$fieldName]) = $this->_processImageField($image, $field);
-                    break;
                 case iaField::PICTURES:
-                    // TODO: define the format
-                    break;
                 case iaField::STORAGE:
-                    // TODO: define the format
+                    $image = base64_decode($data[$fieldName]);
+                    $data[$fieldName] = serialize($this->_apiProcessUploadField($image, $field));
             }
         }
     }
 
-    protected function _apiUpdateField($fieldName, $entryId, $content)
+    protected function _fetchFieldByName($name)
     {
-        $iaField = $this->_iaCore->factory('field');
+        $fieldData = $this->iaCore->factory('field')->getField($name, $this->getName());
 
-        $fieldParams = $this->_iaDb->row_bind(['type', 'required', 'image_width', 'image_height', 'thumb_width', 'thumb_height', 'resize_mode'],
-            '`name` = :field AND `item` = :item', ['field' => $fieldName, 'item' => $this->getName()], $iaField::getTable());
-
-        if (!$fieldParams) {
+        if (!$fieldData) {
             throw new Exception('No field to update', iaApiResponse::NOT_FOUND);
         }
 
-        if ($fieldParams['required'] && !$content) {
+        return $fieldData;
+    }
+
+    protected function _apiResetSingleField($fieldName, $entryId)
+    {
+        $field = $this->_fetchFieldByName($fieldName);
+
+        if (in_array($fieldName, $this->protectedFields)) {
+            throw new Exception('Field is protected', iaApiResponse::FORBIDDEN);
+        }
+
+        $value = $this->iaDb->one($fieldName, iaDb::convertIds($entryId), self::getTable());
+
+        if ($value) {
+            if (in_array($field['type'], [iaField::IMAGE, iaField::PICTURES, iaField::STORAGE])) {
+                $this->iaCore->factory('field')->deleteFilesByFieldName($fieldName, $this->getName(), $value);
+            }
+
+            $this->iaDb->update([$fieldName => ''], iaDb::convertIds($entryId), null, self::getTable());
+
+            if (0 !== $this->iaDb->getErrorNumber()) {
+                throw new Exception('DB error', iaApiResponse::INTERNAL_ERROR);
+            }
+        }
+
+        return true;
+    }
+
+    protected function _apiUpdateSingleField($fieldName, $entryId, $content)
+    {
+        $field = $this->_fetchFieldByName($fieldName);
+
+        if ($field['required'] && !$content) {
             throw new Exception('Empty value is not accepted', iaApiResponse::UNPROCESSABLE_ENTITY);
         }
 
-        switch ($fieldParams['type']) {
+        switch ($field['type']) {
             case iaField::IMAGE:
-                list($output, $value) = $this->_processImageField($content, $fieldParams);
-                break;
             case iaField::PICTURES:
-                //$content = $this->_processPicturesField($content, $fieldParams);
-                break;
             case iaField::STORAGE:
-                //$content = $this->_processStorageField($content, $fieldParams);
+                if (!is_string($content)) {
+                    throw new Exception('Invalid image', iaApiResponse::BAD_REQUEST);
+                }
+
+                $upload = $this->_apiProcessUploadField($content, $field);
+
+                $initialValue = $this->iaDb->one($fieldName, iaDb::convertIds($entryId), self::getTable());
+                $initialValue = empty($initialValue)
+                    ? []
+                    : unserialize($initialValue);
+
+                $value = $field['type'] == iaField::IMAGE
+                    ? $upload
+                    : array_merge($initialValue, [$upload]);
+                $value = serialize($value);
+
+                $imageType = $field['timepicker'] ? $field['imagetype_thumbnail'] : iaField::IMAGE_TYPE_THUMBNAIL;
+
+                $output = IA_CLEAR_URL . 'uploads/' . $upload['path'] . $imageType . '/' . $upload['file'];
+
                 break;
+
             default:
                 $output = '';
                 $value = $content;
         }
 
-        $this->_iaDb->update([$fieldName => $value], iaDb::convertIds($entryId), null, $this->getTable());
+        $this->iaDb->update([$fieldName => $value], iaDb::convertIds($entryId), null, self::getTable());
 
-        if (0 !== $this->_iaDb->getErrorNumber()) {
+        if (0 !== $this->iaDb->getErrorNumber()) {
             throw new Exception('DB error', iaApiResponse::INTERNAL_ERROR);
+        }
+
+        // remove previously assigned resource for 'image' field
+        if (iaField::IMAGE == $field['type'] && !empty($initialValue)) {
+            // remove previously assigned resource
+            $this->iaField->deleteUploadedFile($fieldName, $this->getName(), $entryId,
+                $initialValue['file']);
         }
 
         return $output;
     }
 
-    protected function _processImageField($content, array $field)
+    protected function _apiProcessUploadField($content, array $field)
     {
-        $tempFile = self::_getTempFileName();
+        $tempFile = self::_getTempFile();
         file_put_contents($tempFile, $content);
 
-        // image processing
-        $iaPicture = $this->_iaCore->factory('picture');
+        // TODO: implement previous uploads removal
 
-        $file = [
-            'type' => $_SERVER['CONTENT_TYPE'],
-            'tmp_name' => $tempFile
-        ];
+        $result = $this->iaField->processUploadedFile($tempFile, $field,
+            self::_getUniqueFileName($_SERVER['CONTENT_TYPE']), $_SERVER['CONTENT_TYPE']);
 
-        $path = iaUtil::getAccountDir();
-        $name = self::_generateFileName();
-
-        $imagePath = $iaPicture->processImage($file, $path, $name, $field);
-
-        if (!$imagePath) {
-            throw new Exception('Error processing image: ' . $iaPicture->getMessage(), iaApiResponse::INTERNAL_ERROR);
+        if ($message = $this->iaField->getMessage()) {
+            throw new Exception($message, iaApiResponse::INTERNAL_ERROR);
         }
 
-        $result = ['path' => $imagePath, 'title' => ''];
-        $result = serialize($result);
-
-        // TODO: implement previous image removal
-
-        return [IA_CLEAR_URL . 'uploads/' . $imagePath, $result];
+        return $result;
     }
 
-    protected function _processPicturesField($content, array $field)
-    {
-        return $content; // TODO: implement
-    }
-
-    protected function _processStorageField($content, array $field)
-    {
-        return $content; // TODO: implement
-    }
-
-    protected static function _generateFileName()
-    {
-        if (empty($filename)) {
-            return iaUtil::generateToken();
-        }
-
-        $extension = '';
-        if (false !== strpos($filename, '.')) {
-            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-            $filename = pathinfo($filename, PATHINFO_FILENAME);
-
-            if (false !== strpos($filename, '.')) {
-                $filename = str_replace(['.', '~'], '-', $filename);
-            }
-        }
-
-        $filename = iaSanitize::alias($filename) . '_'. iaUtil::generateToken(5);
-
-        return $filename . '.' . $extension;
-    }
-
-    protected static function _getTempFileName()
+    private static function _getTempFile()
     {
         return tempnam(sys_get_temp_dir(), 'api');
+    }
+
+    private static function _getUniqueFileName($contentType)
+    {
+        $contentTypeToExtensionMap = [
+            'image/png' => 'png',
+            'image/jpeg' => 'jpg',
+            'image/jpg' => 'jpg',
+            'image/gif' => 'gif'
+        ];
+
+        $suffix = isset($contentTypeToExtensionMap[$contentType])
+            ? '.' . $contentTypeToExtensionMap[$contentType]
+            : '';
+
+        return uniqid(mt_rand(), true) . $suffix;
     }
 }

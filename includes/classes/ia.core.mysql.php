@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -38,7 +38,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
     protected $_table;
 
-    public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8';
+    public $tableOptions = 'ENGINE = MyISAM DEFAULT CHARSET = utf8mb4';
     public $prefix;
 
 
@@ -61,7 +61,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
             die($message);
         }
 
-        $this->query("SET NAMES 'utf8'");
+        $this->query("SET NAMES 'utf8mb4'");
 
         if (!mysql_select_db(INTELLI_DBNAME, $this->_link)) {
             trigger_error('An error occurred while selecting database: ' . mysql_error($this->_link), E_USER_ERROR);
@@ -183,7 +183,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
         $this->_counter++;
         $this->_lastQuery = $sql;
-        if (INTELLI_DEBUG) {
+        if (INTELLI_DEBUG || defined('INTELLI_QDEBUG')) {
             $this->_queryList[] = [$sql, $times];
         }
 
@@ -548,11 +548,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
     public function update($values, $condition = null, $rawValues = null, $tableName = null)
     {
-        if (empty($values) && empty($rawValues)) {
-            return false;
-        }
-
-        if (empty($this->_table) && empty($tableName)) {
+        if ((empty($values) && empty($rawValues)) || (empty($this->_table) && empty($tableName))) {
             return false;
         }
 
@@ -562,6 +558,13 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         } elseif (isset($values['id'])) {
             $stmtWhere = 'WHERE `' . self::ID_COLUMN_SELECTION . "` = '" . $values['id'] . "'";
             unset($values['id']);
+        }
+
+        if (empty($stmtWhere)) {
+            trigger_error(
+                __METHOD__ . ' method requires WHERE clause to be not empty. All rows update is restricted.',
+                E_USER_ERROR
+            );
         }
 
         $stmtSet = $this->_wrapValues($values, $rawValues);

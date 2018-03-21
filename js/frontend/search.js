@@ -39,11 +39,6 @@ $(function () {
     if ($filtersForm.length > 0) {
         $('select.js-interactive', $filtersForm).select2();
 
-        $filtersForm.on('submit', function (e) {
-            e.preventDefault();
-            intelli.search.run();
-        });
-
         if ($applyBtn.length) {
             $('input[type="checkbox"], input[type="radio"]', $filtersForm).not('.no-js').on('click', function () {
                 $applyBtn.appendTo($(this).closest('.checkbox')).show();
@@ -69,6 +64,11 @@ $(function () {
         }
 
         intelli.search.initFilters();
+
+        $filtersForm.on('submit', function (e) {
+            e.preventDefault();
+            intelli.search.run();
+        });
 
         intelli.search.bindEvents(
             function () {
@@ -107,7 +107,7 @@ $(function () {
 
             var data = {action: 'save', params: window.location.href, item: $filtersForm.data('item'), name: name};
 
-            $.post(intelli.config.ia_url + 'search.json', data, function (response) {
+            intelli.post(intelli.config.url + 'search.json', data, function (response) {
                 if ('boolean' === typeof response.result && response.result) {
                     intelli.notifFloatBox({msg: response.message, type: 'success'});
                     window.location.reload();

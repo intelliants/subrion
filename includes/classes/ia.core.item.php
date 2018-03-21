@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -35,6 +35,16 @@ class iaItem extends abstractCore
 
     private $_itemTools;
 
+    protected $items;
+
+
+    public function init()
+    {
+        parent::init();
+
+        $this->items = $this->iaDb->assoc(['item', 'id', 'module', 'instantiable', 'payable', 'searchable', 'table_name'],
+            null, self::getTable());
+    }
 
     public static function getFavoritesTable()
     {
@@ -44,6 +54,80 @@ class iaItem extends abstractCore
     public static function getModulesTable()
     {
         return self::$_modulesTable;
+    }
+
+    // compatibility layer helpers
+    public static function toPlural($input)
+    {
+        switch (true) {
+            case 'y' == substr($input, -1):
+                return substr($input, 0, -1) . 'ies';
+            case 's' != substr($input, -1):
+                return $input . 's';
+            default:
+                return $input;
+        }
+    }
+
+    public static function toSingular($input)
+    {
+        $ex = ['news'];
+
+        if ('s' == substr($input, -1)
+            && !in_array($input, $ex)) {
+            $input = substr($input, 0, -1);
+            if ('ie' == substr($input, -2)) {
+                $input = substr($input, 0, -2) . 'y';
+            }
+        }
+
+        return $input;
+    }
+    //
+
+    public function factory($itemName, $type)
+    {
+        try {
+            if (!$itemName) {
+                throw new Exception('No item name provided');
+            }
+
+            $itemName = self::toSingular($itemName);
+
+            if (!isset($this->items[$itemName])) {
+                throw new Exception(sprintf('Item not found (%s)', $itemName));
+            }
+
+            $item = $this->items[$itemName];
+
+            if ($item['instantiable']) {
+                $result = $this->iaCore->factoryModule($itemName, $item['module'], $type);
+
+                if (!$result) {
+                    throw new Exception(sprintf('Unable to instantiate item class (%s)', $itemName));
+                }
+            } else {
+                $result = $this->_instantiateItemModel($item, $type);
+            }
+
+            return $result;
+        } catch (Exception $e) {
+            iaDebug::debug($e->getMessage());
+
+            return false;
+        }
+    }
+
+    protected function _instantiateItemModel(array $item, $type)
+    {
+        $itemModel = (iaCore::FRONT == $type)
+            ? new itemModelFront()
+            : new itemModelAdmin();
+
+        $itemModel->init();
+        $itemModel->setParams($item);
+
+        return $itemModel;
     }
 
     public function getFavoritesByMemberId($memberId)
@@ -163,14 +247,14 @@ class iaItem extends abstractCore
     /**
      * Returns item table name
      *
-     * @param $item item name
+     * @param $itemName string item name
      *
      * @return string
      */
-    public function getItemTable($item)
+    public function getItemTable($itemName)
     {
-        $result = $this->iaDb->one_bind('table_name', '`item` = :item', ['item' => $item], self::getTable());
-        $result || $result = $item;
+        $result = $this->iaDb->one_bind('table_name', '`item` = :item', ['item' => $itemName], self::getTable());
+        $result || $result = self::toPlural($itemName);
 
         return $result;
     }
@@ -230,7 +314,7 @@ class iaItem extends abstractCore
             $itemsList = [];
             foreach ($listings as $entry) {
                 if (
-                    ('members' == $itemName && $entry['id'] != iaUsers::getIdentity()->id) ||
+                    (iaUsers::getItemName() == $itemName && $entry['id'] != iaUsers::getIdentity()->id) ||
                     (isset($entry['member_id']) && $entry['member_id'] != iaUsers::getIdentity()->id)
                 ) {
                     $itemsList[] = $entry['id'];

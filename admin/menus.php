@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -49,6 +49,10 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridRead($params)
     {
+        if (empty($params['action'])) {
+            return parent::_gridRead($params);
+        }
+
         $output = [];
 
         $iaPage = $this->_iaCore->factory('page', iaCore::ADMIN);
@@ -154,8 +158,12 @@ class iaBackendController extends iaAbstractControllerBackend
                     }
 
                     if ($key) {
-                        $titles = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "`key` = '$key' ORDER BY `code`", null,
+                        $where = '`key` = :key AND `category` = :category';
+                        $this->_iaDb->bind($where, ['key' => $key, 'category' => 'page']);
+
+                        $titles = $this->_iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null,
                             null, iaLanguage::getTable());
+
                         foreach ($titles as $row) {
                             if (isset($languagesList[$row['code']])) {
                                 $output['languages'][] = [
@@ -200,11 +208,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
                     $this->_iaCore->iaCache->remove('menu_' . $menu);
                 }
-
-                break;
-
-            default:
-                $output = parent::_gridRead($params);
         }
 
         return $output;
@@ -220,7 +223,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->getHelper()->update($entryData, $entryId);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($params['name'])) {
             $conditions[] = '(m.`name` LIKE :name OR p.`value` LIKE :name)';
@@ -233,13 +236,12 @@ class iaBackendController extends iaAbstractControllerBackend
     protected function _gridQuery($columns, $where, $order, $start, $limit)
     {
         $sql = <<<SQL
-	SELECT :columns, p.`value` `title`
-	FROM `:prefix:table_menus` m
-	LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT('block_title_', m.`id`) AND p.`code` = ':lang')
-	WHERE :where :order
-	LIMIT :start, :limit
+SELECT :columns, p.`value` `title`
+  FROM `:prefix:table_menus` m
+LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT('block_title_', m.`id`) AND p.`code` = ':lang')
+WHERE :where :order
+LIMIT :start, :limit
 SQL;
-
         $sql = iaDb::printf($sql, [
             'prefix' => $this->_iaDb->prefix,
             'table_menus' => $this->getTable(),
@@ -278,6 +280,7 @@ SQL;
         $entry['header'] = (int)$data['header'];
         $entry['collapsible'] = (int)$data['collapsible'];
         $entry['collapsed'] = (int)$data['collapsed'];
+        $entry['status'] = $data['status'];
 
         // bundled data
         $entry['title'] = $data['title'];
@@ -384,7 +387,7 @@ SQL;
     {
         $sql = <<<SQL
 SELECT DISTINCTROW p.*, IF(t.`value` is null, p.`name`, t.`value`) `title` 
-	FROM `:prefixpages` p 
+  FROM `:prefixpages` p 
 LEFT JOIN `:prefix:table_language` t ON (`key` = CONCAT('page_title_', p.`name`) AND t.`code` = ':language') 
 WHERE p.`status` = ':status' AND p.`service` = 0 
 ORDER BY t.`value`

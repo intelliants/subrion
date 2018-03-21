@@ -26,11 +26,13 @@ class elFinderVolumeGroup extends elFinderVolumeDriver {
 		$this->options['path'] = '/';
 		$this->options['dirUrlOwn'] = true;
 		$this->options['syncMinMs'] = 0;
+		$this->options['tmbPath'] = '';
 		$this->options['disabled'] = array(
 			'archive',
 			'cut',
 			'duplicate',
 			'edit',
+			'empty',
 			'extract',
 			'getfile',
 			'mkdir',

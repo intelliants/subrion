@@ -134,25 +134,23 @@ $(function () {
         intelli.calculateItems($(this));
     });
 
-    $('input[name="fullname"]').typeahead(
-        {
+    $('input[name="fullname"]').typeahead({
             source: function (query, process) {
-                $.ajax(
-                    {
-                        url: intelli.config.ia_url + 'actions.json',
-                        type: 'get',
-                        dataType: 'json',
-                        data: {q: query, action: 'assign-owner'},
-                        success: function (response) {
-                            objects = items = [];
-                            $.each(response, function (i, object) {
-                                items[object.fullname] = object;
-                                objects.push(object.fullname);
-                            });
+                $.ajax({
+                    url: intelli.config.url + 'actions.json',
+                    type: 'get',
+                    dataType: 'json',
+                    data: {q: query, action: 'assign-owner'},
+                    success: function (response) {
+                        objects = items = [];
+                        $.each(response, function (i, object) {
+                            items[object.fullname] = object;
+                            objects.push(object.fullname);
+                        });
 
-                            return process(objects);
-                        }
-                    })
+                        return process(objects);
+                    }
+                });
             },
             updater: function (item) {
                 $('#member-id').val(items[item].id);

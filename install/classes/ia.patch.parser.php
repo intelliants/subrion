@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -39,16 +39,11 @@ class iaPatchParser
 
     const MAX_QUERIES_NUMBER = 1000000;
 
-    const EXTRA_TYPE_PLUGIN = true;
-    const EXTRA_TYPE_PACKAGE = false;
-
     const PHRASE_CATEGORY_ADMIN = 'admin';
     const PHRASE_CATEGORY_FRONTEND = 'frontend';
     const PHRASE_CATEGORY_COMMON = 'common';
     const PHRASE_CATEGORY_PAGE = 'page';
     const PHRASE_CATEGORY_TOOLTIP = 'tooltip';
-
-    protected $_extraTypesMap = [self::EXTRA_TYPE_PLUGIN => 'plugin', self::EXTRA_TYPE_PACKAGE => 'package'];
 
     protected $_phraseCategoriesMap = [
         1 => self::PHRASE_CATEGORY_ADMIN,
@@ -73,7 +68,7 @@ class iaPatchParser
         $this->patch['info'] = $this->_parseSectionInfo();
         $this->patch['files'] = $this->_parseSectionFiles();
         $this->patch['queries'] = $this->_parseSectionQueries();
-        $this->patch['module'] = $this->_parseSectionModules();
+        $this->patch['modules'] = $this->_parseSectionModules();
         $this->patch['executables'] = $this->_parseSectionExecutables();
         $this->patch['phrases'] = $this->_parseSectionPhrases();
     }
@@ -166,8 +161,8 @@ class iaPatchParser
     protected function _parseSectionInfo()
     {
         $infoHeaderFormats = [
-            '3.0' => 'Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_extras/lcompilation_date/a34author/Smagic',
-            '4.0' => 'Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_extras/Snum_phrases/lcompilation_date/a34author/Smagic'
+            '3.0' => 'Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_modules/lcompilation_date/a34author/Smagic',
+            '4.0' => 'Sversion_from/Sversion_to/lnum_files/lnum_queries/Cnum_modules/Snum_phrases/lcompilation_date/a34author/Smagic'
         ];
 
         $info = $this->_read($infoHeaderFormats[$this->_version]);
@@ -260,12 +255,11 @@ class iaPatchParser
         $index = (int)0;
         $items = [];
 
-        while ($index < $this->patch['info']['num_extras']) {
-            list($l, $type) = [$this->_read('C'), $this->_read('C')];
+        while ($index < $this->patch['info']['num_modules']) {
+            $l = $this->_read('C');
 
             if ($name = $this->_read(self::FORMAT_RAW, $l)) {
                 $items[] = [
-                    'type' => $this->_extraTypesMap[(bool)$type],
                     'name' => $name
                 ];
             }

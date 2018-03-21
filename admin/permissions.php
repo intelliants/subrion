@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -236,7 +236,7 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $sql = <<<SQL
 SELECT u.`id`, u.`name`, IF(u.`id` = 1, 1, p.`access`) `admin_access` 
-	FROM `:prefix:table_usergroups` u 
+  FROM `:prefix:table_usergroups` u 
 LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = u.`id` AND p.`type` = 'group' AND p.`object` = 'admin_access')
 SQL;
         $sql = iaDb::printf($sql, [
@@ -252,7 +252,7 @@ SQL;
     {
         $sql = <<<SQL
 SELECT m.`id`, m.`fullname`, g.`name` `usergroup`, IF(m.`usergroup_id` = 1, 1, p.`access`) `admin_access` 
-	FROM `:prefix:table_members` m 
+  FROM `:prefix:table_members` m 
 LEFT JOIN `:prefix:table_groups` g ON (m.`usergroup_id` = g.`id`) 
 LEFT JOIN `:prefix:table_privileges` p ON (p.`type_id` = m.`id` AND p.`type` = 'user' AND p.`object` = 'admin_access')
 WHERE m.`id` IN (SELECT DISTINCT `type_id` FROM `:prefix:table_privileges` WHERE `type` = 'user')

@@ -2,105 +2,120 @@
  * Japanese translation
  * @author Tomoaki Yoshida <info@yoshida-studio.jp>
  * @author Naoki Sawada <hypweb@gmail.com>
- * @version 2016-11-13
+ * @version 2017-12-08
  */
-if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object') {
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(['elfinder'], factory);
+	} else if (typeof exports !== 'undefined') {
+		module.exports = factory(require('elfinder'));
+	} else {
+		factory(root.elFinder);
+	}
+}(this, function(elFinder) {
 	elFinder.prototype.i18.jp = {
 		translator : 'Tomoaki Yoshida &lt;info@yoshida-studio.jp&gt;, Naoki Sawada &lt;hypweb@gmail.com&gt;',
 		language   : 'Japanese',
 		direction  : 'ltr',
 		dateFormat : 'Y/m/d h:i A', // Mar 13, 2012 05:27 PM
 		fancyDateFormat : '$1 h:i A', // will produce smth like: Today 12:25 PM
+		nonameDateFormat : 'ymd-His', // to apply if upload file is noname: 120513172700
 		messages   : {
 
 			/********************************** errors **********************************/
 			'error'                : 'エラー',
-			'errUnknown'           : '不明なエラーです',
-			'errUnknownCmd'        : '不明なコマンドです',
-			'errJqui'              : '無効なjQuery UI コンフィグレーションです。セレクタブルコンポーネント、ドラッガブルコンポーネント、ドロッパブルコンポーネントがあるかを確認して下さい',
-			'errNode'              : 'elFinderはDOM Elementが必要です',
-			'errURL'               : '無効なelFinder コンフィグレーションです! URLを設定してください',
-			'errAccess'            : 'アクセスが拒否されました',
-			'errConnect'           : 'バックエンドとの接続ができません',
-			'errAbort'             : '接続が中断されました',
-			'errTimeout'           : '接続がタイムアウトしました.',
-			'errNotFound'          : 'バックエンドが見つかりません',
-			'errResponse'          : '無効なバックエンドレスポンスです',
-			'errConf'              : 'バックエンドの設定が有効ではありません',
-			'errJSON'              : 'PHP JSON モジュールがインストールされていません',
-			'errNoVolumes'         : '読み込み可能なボリュームが入手できません',
-			'errCmdParams'         : 'コマンド "$1"のパラメーターが無効です',
-			'errDataNotJSON'       : 'JSONデータではありません',
-			'errDataEmpty'         : '空のデータです',
-			'errCmdReq'            : 'バックエンドリクエストがコマンド名を要求しています',
-			'errOpen'              : '"$1"を開くことができません',
-			'errNotFolder'         : 'オブジェクトがフォルダーではありません',
-			'errNotFile'           : 'オブジェクトがファイルではありません',
-			'errRead'              : '"$1"を読むことができません',
-			'errWrite'             : '"$1"に書きこむことができません',
-			'errPerm'              : '権限がありません',
-			'errLocked'            : '"$1" はロックされているので名前の変更、移動、削除ができません',
-			'errExists'            : '"$1"というファイル名はすでに存在しています',
-			'errInvName'           : '無効なファイル名です',
-			'errFolderNotFound'    : 'フォルダーが見つかりません',
-			'errFileNotFound'      : 'ファイルが見つかりません',
-			'errTrgFolderNotFound' : 'ターゲットとするフォルダー "$1" が見つかりません',
-			'errPopup'             : 'ポップアップウィンドウが開けません。ファイルを開くにはブラウザの設定を変更してください',
-			'errMkdir'             : '"$1"フォルダーを作成することができません',
-			'errMkfile'            : '"$1"ファイルを作成することができません',
-			'errRename'            : '"$1"の名前を変更することができません',
-			'errCopyFrom'          : '"$1"からのファイルコピーが許可されていません',
-			'errCopyTo'            : '"$1"へのファイルコピーが許可されていません',
-			'errMkOutLink'         : 'ボリュームルート外へのリンクを作成することはできません', // from v2.1 added 03.10.2015
+			'errUnknown'           : '不明なエラーです。',
+			'errUnknownCmd'        : '不明なコマンドです。',
+			'errJqui'              : '無効な jQuery UI 設定です。Selectable, Draggable, Droppable コンポーネントを含める必要があります。',
+			'errNode'              : 'elFinder は DOM Element が必要です。',
+			'errURL'               : '無効な elFinder 設定です！ URLを設定されていません。',
+			'errAccess'            : 'アクセスが拒否されました。',
+			'errConnect'           : 'バックエンドとの接続ができません。',
+			'errAbort'             : '接続が中断されました。',
+			'errTimeout'           : '接続がタイムアウトしました。',
+			'errNotFound'          : 'バックエンドが見つかりません。',
+			'errResponse'          : '無効なバックエンドレスポンスです。',
+			'errConf'              : 'バックエンドの設定が有効ではありません。',
+			'errJSON'              : 'PHP JSON モジュールがインストールされていません。',
+			'errNoVolumes'         : '読み込み可能なボリュームがありません。',
+			'errCmdParams'         : 'コマンド "$1"のパラメーターが無効です。',
+			'errDataNotJSON'       : 'JSONデータではありません。',
+			'errDataEmpty'         : '空のデータです。',
+			'errCmdReq'            : 'バックエンドリクエストはコマンド名が必要です。',
+			'errOpen'              : '"$1" を開くことができません。',
+			'errNotFolder'         : 'オブジェクトがフォルダではありません。',
+			'errNotFile'           : 'オブジェクトがファイルではありません。',
+			'errRead'              : '"$1" を読み込むことができません。',
+			'errWrite'             : '"$1" に書き込むことができません。',
+			'errPerm'              : '権限がありません。',
+			'errLocked'            : '"$1" はロックされているので名前の変更、移動、削除ができません。',
+			'errExists'            : '"$1" というアイテム名はすでに存在しています。',
+			'errInvName'           : '無効なファイル名です。',
+			'errInvDirname'        : '無効なフォルダ名です。',  // from v2.1.24 added 12.4.2017
+			'errFolderNotFound'    : 'フォルダが見つかりません。',
+			'errFileNotFound'      : 'ファイルが見つかりません。',
+			'errTrgFolderNotFound' : 'ターゲットとするフォルダ "$1" が見つかりません。',
+			'errPopup'             : 'ポップアップウィンドウが開けません。ファイルを開くにはブラウザの設定を変更してください。',
+			'errMkdir'             : 'フォルダ "$1" を作成することができません。',
+			'errMkfile'            : 'ファイル "$1" を作成することができません。',
+			'errRename'            : '"$1" の名前を変更することができません。',
+			'errCopyFrom'          : '"$1" からのファイルコピーは許可されていません。',
+			'errCopyTo'            : '"$1" へのファイルコピーは許可されていません。',
+			'errMkOutLink'         : 'ボリュームルート外へのリンクを作成することはできません。', // from v2.1 added 03.10.2015
 			'errUpload'            : 'アップロードエラー',  // old name - errUploadCommon
-			'errUploadFile'        : '"$1"がアップロードできません', // old name - errUpload
-			'errUploadNoFiles'     : 'アップロードされたファイルはありません',
-			'errUploadTotalSize'   : 'データが許容サイズを超えています', // old name - errMaxSize
-			'errUploadFileSize'    : 'ファイルが許容サイズを超えています', //  old name - errFileMaxSize
-			'errUploadMime'        : '許可されていないファイル形式です',
-			'errUploadTransfer'    : '"$1" 転送エラーです',
-			'errUploadTemp'        : 'アップロード用一時ファイルが作成できません', // from v2.1 added 26.09.2015
-			'errNotReplace'        : 'アイテム "$1" は、すでにこの場所にありますがアイテムのタイプが違うので置き換えることはできません', // new
-			'errReplace'           : '"$1"を置き換えることができません',
-			'errSave'              : '"$1"を保存することができません',
-			'errCopy'              : '"$1"をコピーすることができません',
-			'errMove'              : '"$1"を移動することができません',
-			'errCopyInItself'      : '"$1"をそれ自身の中にコピーすることはできません',
-			'errRm'                : '"$1"を削除することができません',
-			'errRmSrc'             : '元ファイルを削除することができません',
-			'errExtract'           : '"$1"を解凍することができません',
-			'errArchive'           : 'アーカイブを作成することができません',
-			'errArcType'           : 'サポート外のアーカイブ形式です',
-			'errNoArchive'         : 'アーカイブでないかサポートされていないアーカイブ形式です',
-			'errCmdNoSupport'      : 'サポートされていないコマンドです',
-			'errReplByChild'       : 'フォルダ "$1" に含まれてるアイテムを置き換えることはできません',
-			'errArcSymlinks'       : 'シンボリックリンクまたは許容されないファイル名を含むアーカイブはセキュリティ上、解凍できません', // edited 24.06.2012
-			'errArcMaxSize'        : 'アーカイブが許容されたサイズを超えています',
-			'errResize'            : '"$1"をリサイズできません',
-			'errResizeDegree'      : 'イメージの回転角度が不正です',  // added 7.3.2013
-			'errResizeRotate'      : 'イメージを回転できません',  // added 7.3.2013
-			'errResizeSize'        : '指定されたイメージサイズが不正です',  // added 7.3.2013
-			'errResizeNoChange'    : 'イメージサイズなどの変更点がありません',  // added 7.3.2013
-			'errUsupportType'      : 'このファイルタイプはサポートされません',
-			'errNotUTF8Content'    : 'ファイル "$1" には UTF-8 以外の文字が含まれているので編集できません',  // added 9.11.2011
-			'errNetMount'          : '"$1"をマウントできません', // added 17.04.2012
-			'errNetMountNoDriver'  : 'サポートされていないプロトコルです',     // added 17.04.2012
-			'errNetMountFailed'    : 'マウントに失敗しました',         // added 17.04.2012
-			'errNetMountHostReq'   : 'ホスト名は必須です', // added 18.04.2012
-			'errSessionExpires'    : 'アクションがなかったため、セッションが期限切れになりました',
+			'errUploadFile'        : '"$1" をアップロードすることができません。', // old name - errUpload
+			'errUploadNoFiles'     : 'アップロードされたファイルはありません。',
+			'errUploadTotalSize'   : 'データが許容サイズを超えています。', // old name - errMaxSize
+			'errUploadFileSize'    : 'ファイルが許容サイズを超えています。', //  old name - errFileMaxSize
+			'errUploadMime'        : '許可されていないファイル形式です。',
+			'errUploadTransfer'    : '"$1" 転送エラーです。',
+			'errUploadTemp'        : 'アップロード用一時ファイルを作成できません。', // from v2.1 added 26.09.2015
+			'errNotReplace'        : 'アイテム "$1" はすでにこの場所にあり、アイテムのタイプが違うので置き換えることはできません。', // new
+			'errReplace'           : '"$1" を置き換えることができません。',
+			'errSave'              : '"$1" を保存することができません。',
+			'errCopy'              : '"$1" をコピーすることができません。',
+			'errMove'              : '"$1" を移動することができません。',
+			'errCopyInItself'      : '"$1" をそれ自身の中にコピーすることはできません。',
+			'errRm'                : '"$1" を削除することができません。',
+			'errTrash'             : 'ごみ箱に入れることができません。', // from v2.1.24 added 30.4.2017
+			'errRmSrc'             : '元ファイルを削除することができません。',
+			'errExtract'           : '"$1" を解凍することができません。',
+			'errArchive'           : 'アーカイブを作成することができません。',
+			'errArcType'           : 'サポート外のアーカイブ形式です。',
+			'errNoArchive'         : 'アーカイブでないかサポートされていないアーカイブ形式です。',
+			'errCmdNoSupport'      : 'サポートされていないコマンドです。',
+			'errReplByChild'       : 'フォルダ "$1" に含まれてるアイテムを置き換えることはできません。',
+			'errArcSymlinks'       : 'シンボリックリンクまたは許容されないファイル名を含むアーカイブはセキュリティ上、解凍できません。', // edited 24.06.2012
+			'errArcMaxSize'        : 'アーカイブが許容されたサイズを超えています。',
+			'errResize'            : '"$1" のリサイズまたは回転ができません。',
+			'errResizeDegree'      : 'イメージの回転角度が不正です。',  // added 7.3.2013
+			'errResizeRotate'      : 'イメージを回転できません。',  // added 7.3.2013
+			'errResizeSize'        : '指定されたイメージサイズが不正です。',  // added 7.3.2013
+			'errResizeNoChange'    : 'イメージサイズなどの変更点がありません。',  // added 7.3.2013
+			'errUsupportType'      : 'このファイルタイプはサポートされていません。',
+			'errNotUTF8Content'    : 'ファイル "$1" には UTF-8 以外の文字が含まれているので編集できません。',  // added 9.11.2011
+			'errNetMount'          : '"$1" をマウントできません。', // added 17.04.2012
+			'errNetMountNoDriver'  : 'サポートされていないプロトコルです。',     // added 17.04.2012
+			'errNetMountFailed'    : 'マウントに失敗しました。',         // added 17.04.2012
+			'errNetMountHostReq'   : 'ホスト名は必須です。', // added 18.04.2012
+			'errSessionExpires'    : 'アクションがなかったため、セッションが期限切れになりました。',
 			'errCreatingTempDir'   : '一時ディレクトリを作成できません："$1"',
 			'errFtpDownloadFile'   : 'FTP からファイルをダウンロードできません："$1"',
 			'errFtpUploadFile'     : 'FTP へファイルをアップロードできません："$1"',
 			'errFtpMkdir'          : 'FTP にリモートディレクトリを作成できません："$1"',
 			'errArchiveExec'       : 'ファイルのアーカイブ中にエラーが発生しました："$1"',
 			'errExtractExec'       : 'ファイルの抽出中にエラーが発生しました："$1"',
-			'errNetUnMount'        : 'アンマウントできません', // from v2.1 added 30.04.2012
-			'errConvUTF8'          : 'UTF-8 に変換できませんでした', // from v2.1 added 08.04.2014
-			'errFolderUpload'      : 'フォルダをアップロードしたいのであれば、Google Chrome を使用してください', // from v2.1 added 26.6.2015
-			'errSearchTimeout'     : '"$1"を検索中にタイムアウトしました。検索結果は部分的です。', // from v2.1 added 12.1.2016
-			'errReauthRequire'     : '再認可が必要です', // from v2.1.10 added 24.3.2016
-			'errMaxTargets'        : '選択可能な最大アイテム数は $1 個です', // from v2.1.17 added 17.10.2016
-
+			'errNetUnMount'        : 'アンマウントできません。', // from v2.1 added 30.04.2012
+			'errConvUTF8'          : 'UTF-8 に変換できませんでした。', // from v2.1 added 08.04.2014
+			'errFolderUpload'      : 'フォルダをアップロードしたいのであれば、モダンブラウザを試してください。', // from v2.1 added 26.6.2015
+			'errSearchTimeout'     : '"$1" を検索中にタイムアウトしました。検索結果は部分的です。', // from v2.1 added 12.1.2016
+			'errReauthRequire'     : '再認可が必要です。', // from v2.1.10 added 24.3.2016
+			'errMaxTargets'        : '選択可能な最大アイテム数は $1 個です。', // from v2.1.17 added 17.10.2016
+			'errRestore'           : '宛先の特定ができないため、ごみ箱から戻せません。', // from v2.1.24 added 3.5.2017
+			'errEditorNotFound'    : 'このファイルタイプのエディターがありません。', // from v2.1.25 added 23.5.2017
+			'errServerError'       : 'サーバー側でエラーが発生しました。', // from v2.1.25 added 16.6.2017
+			'errEmpty'             : 'フォルダ"$1"を空にすることができません。', // from v2.1.25 added 22.6.2017
+			
 			/******************************* commands names ********************************/
 			'cmdarchive'   : 'アーカイブ作成',
 			'cmdback'      : '戻る',
@@ -113,10 +128,10 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'cmdforward'   : '進む',
 			'cmdgetfile'   : 'ファイル選択',
 			'cmdhelp'      : 'このソフトウェアについて',
-			'cmdhome'      : 'ホーム',
+			'cmdhome'      : 'ルート',
 			'cmdinfo'      : '情報',
-			'cmdmkdir'     : '新規フォルダー',
-			'cmdmkdirin'   : '新規フォルダーへ', // from v2.1.7 added 19.2.2016
+			'cmdmkdir'     : '新規フォルダ',
+			'cmdmkdirin'   : '新規フォルダへ', // from v2.1.7 added 19.2.2016
 			'cmdmkfile'    : '新規テキストファイル',
 			'cmdopen'      : '開く',
 			'cmdpaste'     : 'ペースト',
@@ -124,8 +139,10 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'cmdreload'    : 'リロード',
 			'cmdrename'    : 'リネーム',
 			'cmdrm'        : '削除',
+			'cmdtrash'     : 'ごみ箱へ', //from v2.1.24 added 29.4.2017
+			'cmdrestore'   : '復元', //from v2.1.24 added 3.5.2017
 			'cmdsearch'    : 'ファイルを探す',
-			'cmdup'        : '親ディレクトリーへ移動',
+			'cmdup'        : '親フォルダへ移動',
 			'cmdupload'    : 'ファイルアップロード',
 			'cmdview'      : 'ビュー',
 			'cmdresize'    : 'リサイズと回転',
@@ -138,7 +155,14 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'cmdcolwidth'  : '列幅リセット', // from v2.1.13 added 12.06.2016
 			'cmdfullscreen': 'フルスクリーン', // from v2.1.15 added 03.08.2016
 			'cmdmove'      : '移動', // from v2.1.15 added 21.08.2016
-			
+			'cmdempty'     : 'フォルダを空に', // from v2.1.25 added 22.06.2017
+			'cmdundo'      : '元に戻す', // from v2.1.27 added 31.07.2017
+			'cmdredo'      : 'やり直し', // from v2.1.27 added 31.07.2017
+			'cmdpreference': '環境設定', // from v2.1.27 added 03.08.2017
+			'cmdselectall' : 'すべて選択', // from v2.1.28 added 15.08.2017
+			'cmdselectnone': '選択解除', // from v2.1.28 added 15.08.2017
+			'cmdselectinvert': '選択を反転', // from v2.1.28 added 15.08.2017
+
 			/*********************************** buttons ***********************************/
 			'btnClose'  : '閉じる',
 			'btnSave'   : '保存',
@@ -158,17 +182,22 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'btnFileName':'ファイル名',  // from v2.1 added 22.5.2015
 			'btnSaveClose': '保存して閉じる', // from v2.1 added 12.6.2015
 			'btnBackup' : 'バックアップ', // fromv2.1 added 28.11.2015
+			'btnRename'    : 'リネーム',      // from v2.1.24 added 6.4.2017
+			'btnRenameAll' : 'リネーム(全て)', // from v2.1.24 added 6.4.2017
+			'btnPrevious' : '前へ ($1/$2)', // from v2.1.24 added 11.5.2017
+			'btnNext'     : '次へ ($1/$2)', // from v2.1.24 added 11.5.2017
+			'btnSaveAs'   : '別名保存', // from v2.1.25 added 24.5.2017
 
 			/******************************** notifications ********************************/
-			'ntfopen'     : 'フォルダーを開いています',
+			'ntfopen'     : 'フォルダを開いています',
 			'ntffile'     : 'ファイルを開いています',
-			'ntfreload'   : 'フォルダーを再読込しています',
-			'ntfmkdir'    : 'ディレクトリーを作成しています',
+			'ntfreload'   : 'フォルダを再読込しています',
+			'ntfmkdir'    : 'フォルダを作成しています',
 			'ntfmkfile'   : 'ファイルを作成しています',
-			'ntfrm'       : 'ファイルを削除しています',
-			'ntfcopy'     : 'ファイルをコピーしています',
-			'ntfmove'     : 'ファイルを移動しています',
-			'ntfprepare'  : 'ファイルコピーを準備しています',
+			'ntfrm'       : 'アイテムを削除しています',
+			'ntfcopy'     : 'アイテムをコピーしています',
+			'ntfmove'     : 'アイテムを移動しています',
+			'ntfprepare'  : '既存アイテムを確認しています',
 			'ntfrename'   : 'ファイル名を変更しています',
 			'ntfupload'   : 'ファイルをアップロードしています',
 			'ntfdownload' : 'ファイルをダウンロードしています',
@@ -182,13 +211,21 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'ntfnetmount' : 'ネットボリュームをマウント中', // added 18.04.2012
 			'ntfnetunmount': 'ネットボリュームをアンマウント中', // from v2.1 added 30.04.2012
 			'ntfdim'      : '画像サイズを取得しています', // added 20.05.2013
-			'ntfreaddir'  : 'ホルダ情報を読み取っています', // from v2.1 added 01.07.2013
+			'ntfreaddir'  : 'フォルダ情報を読み取っています', // from v2.1 added 01.07.2013
 			'ntfurl'      : 'リンクURLを取得しています', // from v2.1 added 11.03.2014
 			'ntfchmod'    : 'ファイル属性を変更しています', // from v2.1 added 20.6.2015
 			'ntfpreupload': 'アップロードファイル名を検証中', // from v2.1 added 31.11.2015
 			'ntfzipdl'    : 'ダウンロード用ファイルを作成中', // from v2.1.7 added 23.1.2016
 			'ntfparents'  : 'パス情報を取得しています', // from v2.1.17 added 2.11.2016
 			'ntfchunkmerge': 'アップロード済みファイルを処理中', // from v2.1.17 added 2.11.2016
+			'ntftrash'    : 'ごみ箱に入れています', // from v2.1.24 added 2.5.2017
+			'ntfrestore'  : 'ごみ箱から元に戻しています', // from v2.1.24 added 2.5.2017
+			'ntfchkdir'   : '宛先フォルダを確認しています', // from v2.1.24 added 3.5.2017
+			'ntfundo'     : '前の操作を取り消して元に戻しています', // from v2.1.27 added 31.07.2017
+			'ntfredo'     : '元に戻した操作をやり直しています', // from v2.1.27 added 31.07.2017
+
+			/*********************************** volumes *********************************/
+			'volume_Trash' : 'ごみ箱', //from v2.1.24 added 29.4.2017
 
 			/************************************ dates **********************************/
 			'dateUnknown' : '不明',
@@ -239,10 +276,10 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'sortsize'          : 'サイズ順',
 			'sortdate'          : '日付順',
 			'sortFoldersFirst'  : 'フォルダ優先',
-			'sortperm'          : '権限順',      // from v2.1.13 added 13.06.2016
-			'sortmode'          : '属性順',      // from v2.1.13 added 13.06.2016
-			'sortowner'         : 'オーナー順',  // from v2.1.13 added 13.06.2016
-			'sortgroup'         : 'グループ順',  // from v2.1.13 added 13.06.2016
+			'sortperm'          : '権限順', // from v2.1.13 added 13.06.2016
+			'sortmode'          : '属性順',       // from v2.1.13 added 13.06.2016
+			'sortowner'         : 'オーナー順',      // from v2.1.13 added 13.06.2016
+			'sortgroup'         : 'グループ順',      // from v2.1.13 added 13.06.2016
 			'sortAlsoTreeview'  : 'ツリービューも',  // from v2.1.15 added 01.08.2016
 
 			/********************************** new items **********************************/
@@ -252,10 +289,13 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 
 			/********************************** messages **********************************/
 			'confirmReq'      : '処理を実行しますか？',
-			'confirmRm'       : '本当にファイルを削除しますか?<br/>この操作は取り消せません！',
-			'confirmRepl'     : '古いファイルを新しいファイルで上書きしますか？',
+			'confirmRm'       : 'アイテムを完全に削除してもよろしいですか？<br/>この操作は取り消しできません！',
+			'confirmRepl'     : '古いアイテムを新しいアイテムで上書きしますか？',
+			'confirmRest'     : '既存のアイテムをごみ箱のアイテムで上書きしますか？', // fromv2.1.24 added 5.5.2017
 			'confirmConvUTF8' : 'UTF-8 以外の文字が含まれています。<br/>UTF-8  に変換しますか？<br/>変換後の保存でコンテンツは UTF-8 になります。', // from v2.1 added 08.04.2014
+			'confirmNonUTF8'  : 'このファイルの文字エンコーディングを判別できませんでした。編集するには一時的に UTF-8 に変換する必要があります。<br/>文字エンコーディングを指定してください。', // from v2.1.19 added 28.11.2016
 			'confirmNotSave'  : '変更されています。<br/>保存せずに閉じると編集内容が失われます。', // from v2.1 added 15.7.2015
+			'confirmTrash'    : 'アイテムをごみ箱に移動してもよろしいですか？', //from v2.1.24 added 29.4.2017
 			'apllyAll'        : '全てに適用します',
 			'name'            : '名前',
 			'size'            : 'サイズ',
@@ -267,10 +307,10 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'noaccess'        : 'アクセス禁止',
 			'and'             : ',',
 			'unknown'         : '不明',
-			'selectall'       : '全てのファイルを選択',
-			'selectfiles'     : 'ファイル選択',
-			'selectffile'     : '最初のファイルを選択',
-			'selectlfile'     : '最後のファイルを選択',
+			'selectall'       : 'すべてのアイテムを選択',
+			'selectfiles'     : 'アイテム選択',
+			'selectffile'     : '最初のアイテムを選択',
+			'selectlfile'     : '最後のアイテムを選択',
 			'viewlist'        : 'リスト形式で表示',
 			'viewicons'       : 'アイコン形式で表示',
 			'places'          : 'お気に入り',
@@ -280,14 +320,14 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'locked'          : 'ロック',
 			'dim'             : 'サイズ',
 			'files'           : 'ファイル',
-			'folders'         : 'フォルダー',
+			'folders'         : 'フォルダ',
 			'items'           : 'アイテム',
 			'yes'             : 'はい',
 			'no'              : 'いいえ',
 			'link'            : 'リンク',
 			'searcresult'     : '検索結果',
 			'selected'        : '選択されたアイテム',
-			'about'           : 'アバウト',
+			'about'           : '概要',
 			'shortcuts'       : 'ショートカット',
 			'help'            : 'ヘルプ',
 			'webfm'           : 'ウェブファイルマネージャー',
@@ -309,9 +349,10 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'shortcutsof'     : 'ショートカットは利用できません',
 			'dropFiles'       : 'ここにファイルをドロップ',
 			'or'              : 'または',
-			'selectForUpload' : 'アップロードするファイルを選択',
-			'moveFiles'       : 'ファイルを移動',
-			'copyFiles'       : 'ファイルをコピー',
+			'selectForUpload' : 'ファイルを選択',
+			'moveFiles'       : 'アイテムを移動',
+			'copyFiles'       : 'アイテムをコピー',
+			'restoreFiles'    : 'アイテムを元に戻す', // from v2.1.24 added 5.5.2017
 			'rmFromPlaces'    : 'ここから削除',
 			'aspectRatio'     : '縦横比維持',
 			'scale'           : '表示縮尺',
@@ -332,7 +373,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'confirmUnmount'      : '$1をアンマウントしますか?',  // from v2.1 added 30.04.2012
 			'dropFilesBrowser': 'ブラウザからファイルをドロップまたは貼り付け', // from v2.1 added 30.05.2012
 			'dropPasteFiles'  : 'ここにファイルをドロップ または URLリスト, 画像(クリップボード) を貼り付け', // from v2.1 added 07.04.2014
-			'encoding'        : '文字コード', // from v2.1 added 19.12.2014
+			'encoding'        : 'エンコーディング', // from v2.1 added 19.12.2014
 			'locale'          : 'ロケール',   // from v2.1 added 19.12.2014
 			'searchTarget'    : '検索範囲: $1',                // from v2.1 added 22.5.2015
 			'searchMime'      : '指定した MIME タイプで検索', // from v2.1 added 22.5.2015
@@ -357,10 +398,10 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'openMulti'       : '複数ファイルオープン', // from v2.1.12 added 5.14.2016
 			'openMultiConfirm': '$1 個のファイルを開こうとしています。このままブラウザで開きますか？', // from v2.1.12 added 5.14.2016
 			'emptySearch'     : '検索対象に該当するアイテムはありません。', // from v2.1.12 added 5.16.2016
-			'editingFile'     : 'ファイルを編集中です', // from v2.1.13 added 6.3.2016
-			'hasSelected'     : '$1 個のアイテムを選択中です', // from v2.1.13 added 6.3.2016
-			'hasClipboard'    : '$1 個のアイテムがクリップボードに入っています', // from v2.1.13 added 6.3.2016
-			'incSearchOnly'   : '逐次検索対象は現在のビューのみです', // from v2.1.13 added 6.30.2016
+			'editingFile'     : 'ファイルを編集中です。', // from v2.1.13 added 6.3.2016
+			'hasSelected'     : '$1 個のアイテムを選択中です。', // from v2.1.13 added 6.3.2016
+			'hasClipboard'    : '$1 個のアイテムがクリップボードに入っています。', // from v2.1.13 added 6.3.2016
+			'incSearchOnly'   : '逐次検索対象は現在のビューのみです。', // from v2.1.13 added 6.30.2016
 			'reinstate'       : '元に戻す', // from v2.1.15 added 3.8.2016
 			'complete'        : '$1 完了', // from v2.1.15 added 21.8.2016
 			'contextmenu'     : 'コンテキストメニュー', // from v2.1.15 added 9.9.2016
@@ -373,13 +414,42 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'enabled'         : '有効', // from v2.1.16 added 4.10.2016
 			'disabled'        : '無効', // from v2.1.16 added 4.10.2016
 			'emptyIncSearch'  : '現在のビュー内に該当するアイテムはありません。\\A[Enter]キーで検索対象を拡げます。', // from v2.1.16 added 5.10.2016
+			'emptyLetSearch'  : '現在のビュー内に指定された文字で始まるアイテムはありません。', // from v2.1.23 added 24.3.2017
 			'textLabel'       : 'テキストラベル', // from v2.1.17 added 13.10.2016
 			'minsLeft'        : '残り$1分', // from v2.1.17 added 13.11.2016
+			'openAsEncoding'  : '選択したエンコーディングで開き直す', // from v2.1.19 added 2.12.2016
+			'saveAsEncoding'  : '選択したエンコーディングで保存', // from v2.1.19 added 2.12.2016
+			'selectFolder'    : 'フォルダを選択', // from v2.1.20 added 13.12.2016
+			'firstLetterSearch': '一文字目で検索', // from v2.1.23 added 24.3.2017
+			'presets'         : 'プリセット', // from v2.1.25 added 26.5.2017
+			'tooManyToTrash'  : 'アイテム数が多すぎるのでごみ箱に入れられません。', // from v2.1.25 added 9.6.2017
+			'TextArea'        : 'テキストエリア', // from v2.1.25 added 14.6.2017
+			'folderToEmpty'   : 'フォルダ"$1"を空にします。', // from v2.1.25 added 22.6.2017
+			'filderIsEmpty'   : 'フォルダ"$1"にアイテムはありません。', // from v2.1.25 added 22.6.2017
+			'preference'      : '環境設定', // from v2.1.26 added 28.6.2017
+			'language'        : '言語設定', // from v2.1.26 added 28.6.2017
+			'clearBrowserData': 'ブラウザに保存された設定を初期化する', // from v2.1.26 added 28.6.2017
+			'toolbarPref'     : 'ツールバー設定', // from v2.1.27 added 2.8.2017
+			'charsLeft'       : '... 残り $1 文字',  // from v2.1.29 added 30.8.2017
+			'sum'             : '合計', // from v2.1.29 added 28.9.2017
+			'roughFileSize'   : '大まかなファイルサイズ', // from v2.1.30 added 2.11.2017
+			'autoFocusDialog' : 'マウスオーバーでダイアログの要素にフォーカスする',  // from v2.1.30 added 2.11.2017
+			'select'          : '選択', // from v2.1.30 added 23.11.2017
+			'selectAction'    : 'ファイル選択時の動作', // from v2.1.30 added 23.11.2017
+			'useStoredEditor' : '前回使用したエディターで開く', // from v2.1.30 added 23.11.2017
+			'selectinvert'    : '選択アイテムを反転', // from v2.1.30 added 25.11.2017
+			'renameMultiple'  : '選択した $1 個のアイテムを $2 のようにリネームしますか？<br/>この操作は取り消しできません！', // from v2.1.31 added 4.12.2017
+			'batchRename'     : '一括リネーム', // from v2.1.31 added 8.12.2017
+			'plusNumber'      : '+ 連番', // from v2.1.31 added 8.12.2017
+			'asPrefix'        : '先頭に追加', // from v2.1.31 added 8.12.2017
+			'asSuffix'        : '末尾に追加', // from v2.1.31 added 8.12.2017
+			'changeExtention' : '拡張子変更', // from v2.1.31 added 8.12.2017
 
 			/********************************** mimetypes **********************************/
 			'kindUnknown'     : '不明',
 			'kindRoot'        : 'ボリュームルート', // from v2.1.16 added 16.10.2016
-			'kindFolder'      : 'フォルダー',
+			'kindFolder'      : 'フォルダ',
+			'kindSelects'     : '複数選択', // from v2.1.29 added 29.8.2017
 			'kindAlias'       : '別名',
 			'kindAliasBroken' : '宛先不明の別名',
 			// applications
@@ -458,5 +528,5 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'kindVideoOGG'    : 'Ogg ムービー'
 		}
 	};
-}
+}));
 

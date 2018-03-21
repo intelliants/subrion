@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -44,7 +44,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $this->setHelper($iaCron);
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         $format = $this->_iaCore->get('date_format') . ', %H:%M';
         if ('win' == strtolower(substr(PHP_OS, 0, 3))) {

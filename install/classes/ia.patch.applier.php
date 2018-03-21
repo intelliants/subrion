@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -106,7 +106,9 @@ class iaPatchApplier
             }
         }
 
-        empty($patch['module']) || $this->_processModules($patch['module']);
+        if ($patch['modules']) {
+            $this->_processModules($patch['modules']);
+        }
 
         $patchVersion = $patch['header']['major'] . '.' . $patch['header']['minor'];
 
@@ -143,7 +145,7 @@ class iaPatchApplier
 
     protected function _processQuery($query, $log = true)
     {
-        $options = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
+        $options = 'ENGINE=MyISAM DEFAULT CHARSET=utf8mb4';
 
         $query = str_replace(
             ['{prefix}', '{db.options}'],
@@ -164,46 +166,27 @@ class iaPatchApplier
         $pathName = $entry['path'] . '/' . $entry['name'];
 
         switch (true) {
-            // file/directory removal task
-            case $entry['flags'] & self::FILE_ACTION_REMOVE:
-
-                if (!file_exists($pathName)) {
-                    $this->_logInfo('File/folder to be removed does already not exist: :file', self::LOG_SUCCESS, ['file' => $pathName]);
-                    break;
-                }
-                if (is_dir($pathName)) {
-                    $this->_recursivelyRemoveDirectory($pathName);
-                    clearstatcache();
-                    is_dir($pathName)
-                        ? $this->_logInfo('Removal of directory :directory', self::LOG_SUCCESS, ['directory' => $pathName])
-                        : $this->_logInfo('Unable to remove the directory: :directory', self::LOG_ERROR, ['directory' => $pathName]);
-                } else {
-                    @unlink($pathName)
-                        ? $this->_logInfo('Removal of single file: :file', self::LOG_SUCCESS, ['file' => $pathName])
-                        : $this->_logInfo('Unable to remove the file: :file', self::LOG_ERROR, ['file' => $pathName]);
-                }
-
-                break;
-
             // default case - file create/rewrite task
             case $entry['flags'] & self::FILE_ACTION_CREATE:
+                if (file_exists($pathName)
+                    && ($entry['flags'] & self::FILE_FORMAT_TEXT)
+                    && self::EMPTY_FILE_HASH != $entry['hash']) {
+                    $content = @file_get_contents($pathName);
 
-                if (file_exists($pathName)) {
-                    if (!$this->_forceMode) {
-                        if ($entry['flags'] & self::FILE_FORMAT_TEXT) {
-                            if (self::EMPTY_FILE_HASH != $entry['hash']) {
-                                $content = @file_get_contents($pathName);
+                    if (false === $content) {
+                        $this->_logInfo('Unable to get contents of the file to calculate the checksum: :file. Skipped', self::LOG_ERROR, ['file' => $pathName]);
+                        return;
+                    }
 
-                                if (false === $content) {
-                                    $this->_logInfo('Unable to get contents of the file to calculate the checksum: :file. Skipped', self::LOG_ERROR, ['file' => $pathName]);
-                                    return;
-                                }
+                    if (!$this->_checkTokenValidity($content, $entry['hash'])) {
+                        if ($this->_forceMode) {
+                            $newName = $pathName . '.v' . str_replace('.', '', IA_VERSION);
+                            rename($pathName, $newName);
 
-                                if (!$this->_checkTokenValidity($content, $entry['hash'])) {
-                                    $this->_logInfo('The checksum is not equal: :file (seems modified). Skipped', self::LOG_ERROR, ['file' => $pathName]);
-                                    return;
-                                }
-                            }
+                            $this->_logInfo('Renamed modified file :file to keep custom modifications', self::LOG_INFO, ['file' => $newName]);
+                        } else {
+                            $this->_logInfo('The checksum is not equal: :file (seems modified). Skipped', self::LOG_ERROR, ['file' => $pathName]);
+                            return;
                         }
                     }
                 }
@@ -224,6 +207,26 @@ class iaPatchApplier
                 is_writable($folder)
                     ? $this->_writeFile($pathName, $entry['contents'], $entry['flags'] & self::FILE_FORMAT_BINARY)
                     : $this->_logInfo('File is non-writable: :file. Skipped', self::LOG_ERROR, ['file' => $pathName]);
+
+                break;
+
+            // file/directory removal task
+            case $entry['flags'] & self::FILE_ACTION_REMOVE:
+                if (!file_exists($pathName)) {
+                    $this->_logInfo('File/folder to be removed already does not exist: :file', self::LOG_SUCCESS, ['file' => $pathName]);
+                    break;
+                }
+                if (is_dir($pathName)) {
+                    $this->_recursivelyRemoveDirectory($pathName);
+                    clearstatcache();
+                    is_dir($pathName)
+                        ? $this->_logInfo('Removal of directory :directory', self::LOG_SUCCESS, ['directory' => $pathName])
+                        : $this->_logInfo('Unable to remove the directory: :directory', self::LOG_ERROR, ['directory' => $pathName]);
+                } else {
+                    @unlink($pathName)
+                        ? $this->_logInfo('Removal of single file: :file', self::LOG_SUCCESS, ['file' => $pathName])
+                        : $this->_logInfo('Unable to remove the file: :file', self::LOG_ERROR, ['file' => $pathName]);
+                }
         }
     }
 
@@ -233,13 +236,10 @@ class iaPatchApplier
 
         foreach ($entries as $entry) {
             $friendlyName = ucfirst($entry['name']);
-            if ($entry['type'] == self::EXTRA_TYPE_PLUGIN) {
-                iaHelper::installRemotePlugin($entry['name'])
-                    ? $this->_logInfo('Installation of :name is successfully completed.', self::LOG_SUCCESS, ['name' => $friendlyName])
-                    : $this->_logInfo('Unable to install :name due to errors.', self::LOG_ERROR, ['name' => $friendlyName]);
-            } else {
-                $this->_logInfo('Installation of ":name" requested. Ignored since installation of this type is not currently implemented.', self::LOG_ALERT, ['name' => $friendlyName]);
-            }
+
+            iaHelper::installRemotePlugin($entry['name'])
+                ? $this->_logInfo('Installation of :name is successfully completed.', self::LOG_SUCCESS, ['name' => $friendlyName])
+                : $this->_logInfo('Unable to install :name due to errors.', self::LOG_ERROR, ['name' => $friendlyName]);
         }
     }
 
@@ -290,6 +290,8 @@ class iaPatchApplier
 
             if ($link && mysqli_select_db($link, $this->_dbConnectionParams['database'])) {
                 $this->_dbConnectionParams['link'] = $link;
+
+                mysqli_query($this->_dbConnectionParams['link'], "SET sql_mode = ''");
 
                 return true;
             }

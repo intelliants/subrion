@@ -34,61 +34,55 @@
 */
 function smarty_modifier_add_url_param($url, $parameter, $paramValue = null)
 {
+    if ($paramValue !== null) {
 
-	if ($paramValue !== null) {
+        // we were passed the parameter and value as
+        // separate plug-in parameters, so just apply
+        // them to the URL.
+        $url = _addURLParameter($url, $parameter, $paramValue);
+    } elseif (is_array($parameter)) {
 
-		// we were passed the parameter and value as
-		// separate plug-in parameters, so just apply
-		// them to the URL.
-		$url = _addURLParameter ($url, $parameter, $paramValue);
+        // we were passed an assoc. array containing
+        // parameter names and parameter values, so
+        // apply them all to the URL.
+        foreach ($parameter as $paramName => $paramValue) {
+            $url = _addURLParameter($url, $paramName, $paramValue);
+        }
+    } else {
 
-	} elseif (is_array($parameter)) {
+        // was passed a string containing at least one parameter
+        // so parse out those passed and apply them separately
+        // to the URL.
 
-		// we were passed an assoc. array containing
-		// parameter names and parameter values, so
-		// apply them all to the URL.
-		foreach ($parameter as $paramName => $paramValue) {
-			$url = _addURLParameter ($url, $paramName, $paramValue);
-		}
+        $numParams = preg_match_all('/([^=?&]+?)=([^&]*)/', $parameter, $matches, PREG_SET_ORDER);
 
-	} else {
+        foreach ($matches as $match) {
+            $url = _addURLParameter($url, $match[1], $match[2]);
+        }
+    }
 
-		// was passed a string containing at least one parameter
-		// so parse out those passed and apply them separately
-		// to the URL.
-
-		$numParams = preg_match_all('/([^=?&]+?)=([^&]*)/', $parameter, $matches, PREG_SET_ORDER);
-
-		foreach ($matches as $match) {
-			$url = _addURLParameter ($url, $match[1], $match[2]);
-		}
-
-	}
-
-	return $url;
+    return $url;
 }
 
-function _addURLParameter ($url, $paramName, $paramValue)
+function _addURLParameter($url, $paramName, $paramValue)
 {
 
-	// first check whether the parameter is already
-	// defined in the URL so that we can just update
-	// the value if that's the case.
+    // first check whether the parameter is already
+    // defined in the URL so that we can just update
+    // the value if that's the case.
 
-	if (preg_match('/[?&](' . $paramName . ')=[^&]*/', $url)) {
+    if (preg_match('/[?&](' . $paramName . ')=[^&]*/', $url)) {
 
-		// parameter is already defined in the URL, so
-		// replace the parameter value, rather than
-		// append it to the end.
-		$url = preg_replace('/([?&]' . $paramName . ')=[^&]*/', '$1=' . $paramValue, $url);
-
-	} else {
-		// can simply append to the end of the URL, once
-		// we know whether this is the only parameter in
-		// there or not.
-		$url .= strpos($url, '?') ? '&amp;' : '?';
-		$url .= $paramName . '=' . $paramValue;
-
-	}
-	return $url;
+        // parameter is already defined in the URL, so
+        // replace the parameter value, rather than
+        // append it to the end.
+        $url = preg_replace('/([?&]' . $paramName . ')=[^&]*/', '$1=' . $paramValue, $url);
+    } else {
+        // can simply append to the end of the URL, once
+        // we know whether this is the only parameter in
+        // there or not.
+        $url .= strpos($url, '?') ? '&amp;' : '?';
+        $url .= $paramName . '=' . $paramValue;
+    }
+    return $url;
 }

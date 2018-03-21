@@ -201,11 +201,10 @@
                 <label class="col col-lg-2 control-label">{lang key='change_status_to'}</label>
 
                 <div class="col col-lg-4">
-                    <select name="expiration_status"{foreach $expiration_statuses as $key => $value} data-{$key}="{$value}"{/foreach}>
+                    <select name="expiration_status"{foreach $expiration_statuses as $itemName => $entry} data-{$itemName}="{$entry|implode:','}"{/foreach}>
                         <option value=""{if empty($item.expiration_status)} selected{/if}>{lang key='_do_not_change_'}</option>
                         {if iaCore::ACTION_EDIT == $pageAction && $item.item}
-                            {assign values ','|explode:$expiration_statuses[$item.item]}
-                            {foreach $values as $value}
+                            {foreach $expiration_statuses[$item.item] as $value}
                                 <option value="{$value}"{if $item.expiration_status == $value} selected{/if}>{lang key=$value}</option>
                             {/foreach}
                         {/if}
@@ -213,7 +212,7 @@
                 </div>
             </div>
 
-            <div class="js-items-list" id="js-item-members" style="display: none;">
+            <div class="js-items-list" id="js-item-member" style="display: none;">
                 <div class="row">
                     <label class="col col-lg-2 control-label">{lang key='change_usergroup_to'}</label>
 

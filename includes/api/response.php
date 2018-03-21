@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -28,6 +28,8 @@ class iaApiResponse
 {
     const OK = 200;
     const CREATED = 201;
+    const ACCEPTED = 202;
+    const NO_CONTENT = 204;
 
     const BAD_REQUEST = 400;
     const UNAUTHORIZED = 401;
@@ -39,6 +41,7 @@ class iaApiResponse
     const TOO_MANY_REQUESTS = 429;
 
     const INTERNAL_ERROR = 500;
+    const SERVICE_UNAVAILABLE = 503;
 
     protected $_code = self::OK;
     protected $_body;

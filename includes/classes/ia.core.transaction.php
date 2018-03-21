@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -122,7 +122,6 @@ class iaTransaction extends abstractCore
                     $transaction = $this->getById($id);
 
                     $this->_sendEmailNotification($transaction);
-                    empty($transaction['member_id']) || $this->_createInvoice($transaction);
 
                     $this->iaCore->factory('plan')->setPaid($transaction);
                 }
@@ -162,9 +161,37 @@ class iaTransaction extends abstractCore
         return $this->getBy(iaDb::ID_COLUMN_SELECTION, $transactionId);
     }
 
-    public function getBy($key, $id)
+    public function getBy($key, $id, $countRows = false)
     {
-        return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id, $key), self::getTable());
+        return $this->iaDb->row(($countRows ? iaDb::STMT_CALC_FOUND_ROWS . ' ' : '') . iaDb::ALL_COLUMNS_SELECTION,
+            iaDb::convertIds($id, $key), self::getTable());
+    }
+
+    public function getList()
+    {
+        $rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION,
+            iaDb::convertIds(iaUsers::getIdentity()->id, 'member_id'), null, null, self::getTable());
+        $count = $this->iaDb->foundRows();
+
+        if ($rows) {
+            foreach ($rows as &$row) {
+                $row['gateway_title'] = iaLanguage::get($row['gateway'], $row['gateway']);
+                $row['gateway_icon'] = null;
+
+                $path = IA_HOME . 'modules/' . $row['gateway'] . '/templates/front/img/';
+                if (is_file($path . 'button.png')) {
+                    $row['gateway_icon'] = 'button.png';
+                } elseif (is_file($path . $row['gateway'] . '.png')) {
+                    $row['gateway_icon'] = $row['gateway'] . '.png';
+                }
+
+                if ($row['gateway_icon']) {
+                    $row['gateway_icon'] = IA_CLEAR_URL . 'modules/' . $row['gateway'] . '/templates/front/img/' . $row['gateway_icon'];
+                }
+            }
+        }
+
+        return [$rows, $count];
     }
 
     public function createIpn($transaction)
@@ -205,7 +232,7 @@ class iaTransaction extends abstractCore
 
         $transactionId = uniqid('t');
         $transaction = [
-            'member_id' => (int)(isset($itemData['member_id']) && $itemData['member_id'] ? $itemData['member_id'] : iaUsers::getIdentity()->id),
+            'member_id' => (int)(empty($itemData['member_id']) ? iaUsers::getIdentity()->id : $itemData['member_id']),
             'item' => $itemName,
             'item_id' => $itemData['id'],
             'amount' => $cost,
@@ -219,17 +246,18 @@ class iaTransaction extends abstractCore
         ];
 
         $result = $this->iaDb->insert($transaction, null, $this->getTable());
-        $result && $this->iaCore->startHook('phpTransactionCreated', ['id' => $result, 'transaction' => $transaction]);
+
+        if ($result) {
+            if ($transaction['member_id']) { // create corresponding invoice
+                $this->iaCore->factory('invoice')->create($transaction, $result);
+            }
+
+            $this->iaCore->startHook('phpTransactionCreated', ['id' => $result, 'transaction' => $transaction]);
+        }
+
         $return || iaUtil::go_to(IA_URL . 'pay' . IA_URL_DELIMITER . $transactionId . IA_URL_DELIMITER);
 
         return $result ? $transactionId : false;
-    }
-
-    protected function _createInvoice($transaction)
-    {
-        $iaInvoice = $this->iaCore->factory('invoice');
-
-        return $iaInvoice->create($transaction);
     }
 
     public function getLatestTransactions($limit = 10)
@@ -372,7 +400,7 @@ SQL;
             return false;
         }
 
-        $gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common');
+        $gatewayInstance = $this->iaCore->factoryModule($gatewayName, $gatewayName, 'common');
 
         if ($gatewayInstance && method_exists($gatewayInstance, self::GATEWAY_CALLBACK_NAME)) {
             return call_user_func([$gatewayInstance, self::GATEWAY_CALLBACK_NAME], $transaction);
@@ -391,7 +419,7 @@ SQL;
 
         $gatewayName = $transaction['gateway'];
 
-        $gatewayInstance = $this->iaCore->factoryPlugin($gatewayName, 'common', $gatewayName);
+        $gatewayInstance = $this->iaCore->factoryModule($gatewayName, $gatewayName, 'common');
 
         if ($gatewayInstance && method_exists($gatewayInstance, 'refund')) {
             try {

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -36,6 +36,7 @@ $iaView->disableLayout();
 $iaView->display(iaView::NONE);
 
 $iaView->set('nodebug', 1);
+$iaView->set('nocsrf', 1);
 
 $iaCore->factory('api', iaCore::FRONT)->process($iaCore->requestPath);
 

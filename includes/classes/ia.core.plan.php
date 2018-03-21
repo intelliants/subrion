@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -301,6 +301,10 @@ SQL;
         $plan = $this->getById($transaction['plan_id']);
 
         if ($plan && $item && !empty($transaction['item_id'])) {
+            if ($plan['cost'] > $transaction['amount']) {
+                return false;
+            }
+
             list($dateStarted, $dateFinished) = $this->calculateDates($plan['duration'], $plan['unit']);
 
             $values = [
@@ -311,8 +315,8 @@ SQL;
                 'status' => iaCore::STATUS_ACTIVE
             ];
 
-            $iaItem = $this->iaCore->factory('item');
-            $result = $this->iaDb->update($values, iaDb::convertIds($transaction['item_id']), null, $iaItem->getItemTable($item));
+            $result = $this->iaDb->update($values, iaDb::convertIds($transaction['item_id']),
+                null, $this->iaCore->factory('item')->getItemTable($item));
         }
 
         $this->_sendEmailNotification('activated', $plan, $transaction['member_id']);
@@ -323,7 +327,20 @@ SQL;
         return $result;
     }
 
-    public function calculateDates($duration, $unit)
+    public function assignFreePlan($planId, $itemName, array $itemData)
+    {
+        $iaTransaction = $this->iaCore->factory('transaction');
+
+        // first, create corresponding transaction
+        $transactionId = $iaTransaction->create(null, 0, $itemName, $itemData, '', (int)$planId, true);
+
+        $transaction = $iaTransaction->getBy('sec_key', $transactionId);
+        // then mark it as paid
+        $this->setPaid($transaction);
+        $this->iaDb->update(['status' => iaTransaction::PASSED], iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
+    }
+
+    public function calculateDates($duration, $unit, $startTs = null)
     {
         switch ($unit) {
             case self::UNIT_HOUR:
@@ -346,7 +363,9 @@ SQL;
                 $base = self::SECONDS_PER_DAY * $days;
         }
 
-        $dateStarted = time();
+        $dateStarted = is_null($startTs)
+            ? time()
+            : strtotime($startTs);
         $dateFinished = $dateStarted + ($base * $duration);
 
         return [
@@ -359,22 +378,20 @@ SQL;
     {
         $notificationType = 'plan_' . $type;
 
-        if (empty($plan) || empty($memberId) || !$this->iaCore->get($notificationType)) {
+        if (empty($plan) || empty($memberId)) {
             return false;
         }
 
         $iaUsers = $this->iaCore->factory('users');
+        $iaMailer = $this->iaCore->factory('mailer');
 
         $member = $iaUsers->getById($memberId);
 
-        if (!$member) {
+        if (!$member || !$iaMailer->loadTemplate($notificationType)) {
             return false;
         }
 
-        $iaMailer = $this->iaCore->factory('mailer');
-
-        $iaMailer->loadTemplate($notificationType);
-        $iaMailer->addAddress($member['email']);
+        $iaMailer->addAddressByMember($member);
 
         $iaMailer->setReplacements($plan);
         $iaMailer->setReplacements([
@@ -390,12 +407,9 @@ SQL;
 
     private function _runClassMethod($itemName, $method, array $args = [])
     {
-        $iaItem = $this->iaCore->factory('item');
-
-        $className = ucfirst(substr($itemName, 0, -1));
-        $itemClassInstance = ($itemName == 'members')
+        $itemClassInstance = ($itemName == 'member')
             ? $this->iaCore->factory('users')
-            : $this->iaCore->factoryModule($className, $iaItem->getModuleByItem($itemName));
+            : $this->iaCore->factoryItem($itemName);
 
         if ($itemClassInstance && method_exists($itemClassInstance, $method)) {
             return call_user_func_array([$itemClassInstance, $method], $args);

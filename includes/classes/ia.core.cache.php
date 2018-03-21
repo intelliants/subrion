@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -243,19 +243,20 @@ class iaCache extends abstractUtil
 
                 // get list of languages
                 $languagesList = $iaDb->assoc(
-                    ['code', 'title', 'direction', 'flagicon', 'iso' => 'code'],
+                    ['code', 'title', 'direction', 'flagicon', 'iso' => 'code', 'locale'],
                     ('admin_lang' == $type ? null : "`status` = 'active'"),
-                    'languages'
+                    iaLanguage::getLanguagesTable()
                 );
 
                 $fileContent = 'intelli.' . ('admin_lang' == $type ? 'admin.' : '') . 'lang = '
                     . json_encode($phrases) . ';'
                     . 'intelli.languages = ' . json_encode($languagesList) . ';';
+
                 break;
 
             case 'config':
-                $config = $this->iaCore->fetchConfig("`private` = 0 AND `config_group` != 'email_templates'");
-                $config['ia_url'] = IA_CLEAR_URL;
+                $config = $this->iaCore->factory('config')->fetchKeyValue('private = 0');
+                $config['clear_url'] = IA_CLEAR_URL;
                 $config['packages'] = $this->iaCore->setPackagesData();
                 $config['items'] = [];
                 $config['module'] = [['core', iaLanguage::get('core', 'Core')]];
@@ -266,7 +267,7 @@ class iaCache extends abstractUtil
                     $config['modules'][] = [$item['name'], $item['title']];
                 }
 
-                $array = $iaDb->onefield('`item`', "`item` != 'transactions'", null, null, 'items');
+                $array = $iaDb->onefield('`item`', "`item` != 'transaction'", null, null, 'items');
                 foreach ($array as $item) {
                     $config['items'][] = [$item, iaLanguage::get($item, $item)];
                 }

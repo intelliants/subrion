@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -82,8 +82,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
         ]);
     }
 
-    $members = $iaItem->updateItemsFavorites([$member], $member['item']);
-    $member = array_shift($members);
     $member['items'] = [];
 
     // get all items added by this account
@@ -100,10 +98,11 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
     if (count($itemsFlat) > 0) {
         $limit = $iaCore->get('num_items_perpage');
+
         foreach ($itemsFlat as $itemName) {
-            if ($class = $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName)) {
-                $result = method_exists($class, iaUsers::METHOD_NAME_GET_LISTINGS)
-                    ? $class->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit)
+            if ($itemInstance = $iaCore->factoryItem($itemName)) {
+                $result = method_exists($itemInstance, iaUsers::METHOD_NAME_GET_LISTINGS)
+                    ? $itemInstance->{iaUsers::METHOD_NAME_GET_LISTINGS}($member['id'], $start, $limit)
                     : null;
 
                 if (!is_null($result)) {
@@ -112,8 +111,10 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     }
 
                     $member['items'][$itemName] = $result;
-                    $member['items'][$itemName]['package'] = isset($itemsList[$itemName]) ? $itemsList[$itemName] : '';
                     $member['items'][$itemName]['fields'] = $iaField->filter($itemName, $member['items'][$itemName]['items']);
+                    $member['items'][$itemName]['tpl'] = isset($itemsList[$itemName])
+                        ? sprintf('module:%s/search.%s.tpl', $itemsList[$itemName], iaItem::toPlural($itemName))
+                        : 'search.' . iaItem::toPlural($itemName) . '.tpl';
                 }
             }
         }

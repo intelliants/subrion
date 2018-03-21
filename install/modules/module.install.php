@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VER', '415');
+define('IA_VER', '420');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
@@ -118,7 +118,6 @@ switch ($step) {
 
         $recommendedSettings = [
             ['File Uploads', 'file_uploads', 'ON'],
-            ['Magic Quotes GPC', 'magic_quotes_gpc', 'OFF'],
             ['Register Globals', 'register_globals', 'OFF']
         ];
         foreach ($recommendedSettings as $item) {
@@ -260,7 +259,7 @@ switch ($step) {
                 }
 
                 if (!$error) {
-                    $dbOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8';
+                    $dbOptions = 'ENGINE=MyISAM DEFAULT CHARSET=utf8mb4';
                     $dumpFile = IA_INSTALL . 'dump/install.sql';
 
                     if (!file_exists($dumpFile)) {
@@ -287,7 +286,7 @@ switch ($step) {
                     $counter = 0;
                     $file = file($dumpFile);
                     if (count($file) > 0) {
-                        mysqli_query($link, "SET NAMES 'utf8'");
+                        mysqli_query($link, "SET NAMES 'utf8mb4'");
 
                         foreach ($file as $s) {
                             $s = trim($s);
@@ -485,7 +484,7 @@ HTML;
         header('Content-Type: text/x-delimtext; name="config.inc.php"');
         header('Content-disposition: attachment; filename="config.inc.php"');
 
-        echo get_magic_quotes_gpc() ? stripslashes($_POST['config_content']) : $_POST['config_content'];
+        echo $_POST['config_content'];
         exit;
 
     case 'plugins':

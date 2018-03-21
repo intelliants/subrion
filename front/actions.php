@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -125,7 +125,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
             }
 
             if ($captchaName = $iaCore->get('captcha_name')) {
-                $iaCaptcha = $iaCore->factoryPlugin($captchaName, iaCore::FRONT, 'captcha');
+                $iaCaptcha = $iaCore->factoryModule('captcha', $captchaName);
                 if (!$iaCaptcha->validate()) {
                     $output['message'][] = iaLanguage::get('confirmation_code_incorrect');
                 }
@@ -136,15 +136,24 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
 
                 $subject = iaLanguage::getf('author_contact_request', ['title' => $_POST['regarding']]);
 
-                $iaMailer->FromName = $_POST['from_name'];
-                $iaMailer->From = $_POST['from_email'];
+                // for better delivery we cannot send from customers email, so we add it here
+                $body = '<br>' . $_POST['from_name'] . '<br>' . $_POST['from_email'] . '<br>' . $_POST['email_body'];
+
                 $iaMailer->AddAddress($memberInfo['email'], $memberInfo['fullname']);
                 $iaMailer->Subject = $subject;
-                $iaMailer->Body = strip_tags($_POST['email_body']);
+                $iaMailer->Body = strip_tags($body);
 
-                $output['error'] = !$iaMailer->Send();
+                $output['error'] = !$iaMailer->send();
                 $output['message'][] = iaLanguage::get($output['error'] ? 'unable_to_send_email' : 'mail_sent');
             }
+
+            break;
+
+        case 'set-currency':
+            $iaCore->factoryModule('currency', IA_CURRENT_MODULE)->set($_POST['code']);
+
+            $output['error'] = false;
+            unset($output['message']);
 
             break;
 
@@ -201,7 +210,7 @@ if (isset($_GET) && isset($_GET['action'])) {
                     $iaDb->bind($stmt, ['name' => $_GET['q'] . '%', 'status' => iaCore::STATUS_ACTIVE]);
 
                     $sql = <<<SQL
-SELECT `id`, CONCAT (`fullname`, ' (', `email`, ')') `fullname` 
+SELECT `id`, CONCAT(`fullname`, ' (', `email`, ')') `fullname` 
   FROM :table_members 
 WHERE :conditions 
 LIMIT 0, 20

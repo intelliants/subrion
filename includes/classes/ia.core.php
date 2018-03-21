@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -56,26 +56,29 @@ final class iaCore
 
     private static $_instance;
 
-    private $_classInstances = [];
+    private $classInstances = [];
 
-    protected static $_configDbTable = 'config';
-    protected static $_configGroupsDbTable = 'config_groups';
-    protected static $_customConfigDbTable = 'config_custom';
+    protected $accessType = self::ACCESS_FRONT;
 
-    protected $_accessType = self::ACCESS_FRONT;
+    protected $hooks = [];
+    protected $config = [];
+    protected $customConfig;
 
-    protected $_hooks = [];
-    protected $_config = [];
-    protected $_customConfig;
+    protected $checkDomain;
 
-    protected $_checkDomain;
+    protected $baseUrl = '';
+
+    public $domain = '';
 
     public $iaDb;
     public $iaView;
     public $iaCache;
 
+    public $currencies = [];
+    public $currency = null;
+
     public $languages = [];
-    public $language = [];
+    public $language = null;
 
     public $modulesData = [];
     public $requestPath = [];
@@ -110,6 +113,8 @@ final class iaCore
         $this->getConfig();
         iaSystem::renderTime('core', 'Configuration Loaded');
 
+        $this->_fetchCurrencies();
+
         iaSystem::setDebugMode();
 
         // we can only load strings when we know if a specific language is requested based on URL
@@ -127,13 +132,14 @@ final class iaCore
         $iaUsers = $this->factory('users');
         $iaUsers->authorize();
 
-        $this->_forgeryCheck();
         $this->getCustomConfig();
 
         $this->startHook('phpCoreBeforePageDefine');
 
         $this->iaView->definePage();
         $this->iaView->loadSmarty();
+
+        $this->_forgeryCheck();
 
         $this->startHook('bootstrap');
 
@@ -159,7 +165,8 @@ final class iaCore
 
     public function __destruct()
     {
-        if (INTELLI_DEBUG || INTELLI_QDEBUG) { // output the debug info if enabled
+        if ((defined('INTELLI_DEBUG') && INTELLI_DEBUG)
+            || (defined('INTELLI_QDEBUG') && INTELLI_QDEBUG)) { // output the debug info if enabled
             if (is_object($this->iaView) && iaView::REQUEST_HTML == $this->iaView->getRequestType()) {
                 if (!$this->iaView->get('nodebug')) {
                     new iaDebug();
@@ -170,35 +177,11 @@ final class iaCore
 
     public function getAccessType()
     {
-        return $this->_accessType;
+        return $this->accessType;
     }
 
     protected function _parseUrl()
     {
-        $iaView = &$this->iaView;
-
-        $params = $this->iaDb->keyvalue(['name', 'value'],
-            "`name` IN('baseurl', 'admin_page', 'home_page', 'lang')", self::getConfigTable());
-
-        $domain = preg_replace('#[^a-z_0-9-.:]#i', '', $_SERVER['HTTP_HOST']);
-        $requestPath = ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER);
-
-        if (!preg_match('#^www\.#', $domain) && preg_match('#:\/\/www\.#', $params['baseurl'])) {
-            $domain = preg_replace('#^#', 'www.', $domain);
-            $this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
-        } elseif (preg_match('#^www\.#', $domain) && !preg_match('#:\/\/www\.#', $params['baseurl'])) {
-            $domain = preg_replace('#^www\.#', '', $domain);
-            $this->factory('util')->go_to('http://' . $domain . IA_URL_DELIMITER . $requestPath);
-        }
-
-        $iaView->assetsUrl = '//' . $domain . IA_URL_DELIMITER . FOLDER_URL;
-        $iaView->domain = $domain;
-        $iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
-        $iaView->language = $params['lang'];
-
-        $doExit = false;
-        $changeLang = false;
-
         if (isset($_GET['_p'])) {
             $url = $_GET['_p'];
             unset($_GET['_p']);
@@ -209,13 +192,14 @@ final class iaCore
             $url = substr($url, strlen(FOLDER) + 1);
         }
 
-        $extension = IA_URL_DELIMITER;
-
         $url = explode('?', $url);
         $url = array_shift($url);
         $url = explode(IA_URL_DELIMITER, iaSanitize::htmlInjectionFilter(trim($url, IA_URL_DELIMITER)));
 
+        $iaView = &$this->iaView;
+
         $lastChunk = end($url);
+        $extension = IA_URL_DELIMITER;
         if ($pos = strrpos($lastChunk, '.')) {
             $extension = substr($lastChunk, $pos + 1);
             switch ($extension) {
@@ -231,29 +215,28 @@ final class iaCore
         }
         $iaView->set('extension', $extension);
 
-        if (isset($_POST['_lang']) && isset($this->languages[$_POST['_lang']])) {
-            $iaView->language = $_POST['_lang'];
-            $changeLang = true;
-        }
+        $params = $this->factory('config')->fetchKeyValue("name IN ('baseurl', 'admin_page', 'home_page', 'lang')");
+
+        $iaView->language = $params['lang'];
 
         $isSystemChunk = true;
-        $array = [];
+        $requestPath = [];
         foreach ($url as $value) {
             if (!$isSystemChunk) {
-                $array[] = $value;
+                $requestPath[] = $value;
                 continue;
             }
 
             switch (true) {
                 case ($params['admin_page'] == $value): // admin panel
-                    $this->_accessType = self::ACCESS_ADMIN;
+                    $this->accessType = self::ACCESS_ADMIN;
                     continue 2;
                 case ('logout' == $value): // logging out
-                    $doExit = true;
+                    define('IA_EXIT', true);
                     continue 2;
                 case (2 == strlen($value)): // current language
                     if (isset($this->languages[$value])) {
-                        $changeLang || $iaView->language = $value;
+                        $iaView->language = $value;
                         array_shift($url); // #1715
                         continue 2;
                     }
@@ -263,6 +246,28 @@ final class iaCore
             }
         }
 
+        $this->baseUrl = trim($params['baseurl'], IA_URL_DELIMITER) . IA_URL_DELIMITER;
+        $this->requestPath = $requestPath;
+        $this->language = $this->languages[$iaView->language];
+
+        $this->domain = preg_replace('#[^a-z_0-9-.:]#i', '', $_SERVER['HTTP_HOST']);
+        $setupHost = parse_url($this->baseUrl, PHP_URL_HOST);
+        if ($this->domain != $setupHost) {
+            // handling cases when script is running on domain differ from configured
+            switch ($this->getAccessType()) {
+                case self::ACCESS_FRONT:
+                    // on frontend, just redirect to the same URL on the valid domain
+                    $this->factory('util')->go_to($this->baseUrl . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER));
+                case self::ACCESS_ADMIN:
+                    // on backend, make possible to open Admin Panel from every hostname possible
+                    $this->baseUrl = str_replace($setupHost, $this->domain, $this->baseUrl);
+            }
+        }
+
+        if (isset($_POST['_lang']) && isset($this->languages[$_POST['_lang']])) {
+            $iaView->language = $_POST['_lang'];
+        }
+
         if (self::ACCESS_ADMIN == $this->getAccessType()) {
             if ($isSystemChunk && $params['home_page'] == $iaView->name()) {
                 $iaView->name(iaView::DEFAULT_HOMEPAGE);
@@ -270,12 +275,15 @@ final class iaCore
         }
 
         $iaView->url = empty($url[0]) ? [] : $url;
-        $this->requestPath = $array;
+        $iaView->assetsUrl = '//' . $this->domain . IA_URL_DELIMITER . FOLDER_URL;
+        $iaView->domainUrl = 'http' . (isset($_SERVER['HTTPS']) && 'off' != $_SERVER['HTTPS'] ? 's' : '') . ':' . $iaView->assetsUrl;
 
-        // set system language
-        $this->language = $this->languages[$this->iaView->language];
-
-        define('IA_EXIT', $doExit);
+        if (isset($_SERVER['HTTP_CF_VISITOR'])) {
+            $visitor = json_decode($_SERVER['HTTP_CF_VISITOR']);
+            if (isset($visitor->scheme) && 'https' == $visitor->scheme) {
+                $iaView->domainUrl = 'https:' . $iaView->assetsUrl;
+            }
+        }
     }
 
     protected function _defineModule()
@@ -364,23 +372,23 @@ final class iaCore
      */
     public function getConfig($reloadRequired = false)
     {
-        if (empty($this->_config) || $reloadRequired) {
+        if (empty($this->config) || $reloadRequired) {
             $key = 'config_' . $this->iaView->language;
 
-            $this->_config = $this->iaCache->get($key, 604800, true);
+            $this->config = $this->iaCache->get($key, 604800, true);
             iaSystem::renderTime('config', 'Cached Configuration Loaded');
 
-            if (empty($this->_config) || $reloadRequired) {
-                $this->_config = $this->fetchConfig();
+            if (empty($this->config) || $reloadRequired) {
+                $this->config = $this->factory('config')->fetchKeyValue();
                 iaSystem::renderTime('config', 'Configuration loaded from DB');
 
-                $extras = $this->iaDb->onefield('name', "`status` = 'active'", null, null, 'modules');
-                $extras[] = $this->_config['tmpl'];
+                $extras = $this->iaDb->onefield('name', iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), null, null, 'modules');
+                $extras[] = $this->config['tmpl'];
 
-                $this->_config['module'] = $extras;
-                $this->_config['block_positions'] = $this->iaView->positions;
+                $this->config['module'] = $extras;
+                $this->config['block_positions'] = $this->iaView->positions;
 
-                $this->iaCache->write($key, $this->_config);
+                $this->iaCache->write($key, $this->config);
                 iaSystem::renderTime('config', 'Configuration written to cache file');
             }
 
@@ -395,7 +403,7 @@ final class iaCore
             $this->set('locale', $this->language['locale']);
         }
 
-        return $this->_config;
+        return $this->config;
     }
 
     /**
@@ -423,59 +431,20 @@ final class iaCore
             }
         }
 
-        if ($local && !is_null($this->_customConfig)) {
-            return $this->_customConfig;
+        if ($local && !is_null($this->customConfig)) {
+            return $this->customConfig;
         }
 
         $result = [];
-        $stmt = [];
-
-        if ($user) {
-            $stmt[] = "(cc.`type` = 'user' AND cc.`type_id` = $user) ";
-        }
-        if ($group) {
-            $stmt[] = "(cc.`type` = 'group' AND cc.`type_id` = $group) ";
-        }
-
-        $sql = <<<SQL
-SELECT 
-  cc.`name`, cc.`value`, cc.`type`,
-  c.`type` `config_type`, c.`options` `config_options`
-FROM `:prefix:table_config` c
-LEFT JOIN `:prefix:table_custom_config` cc ON (c.`name` = cc.`name`)
-WHERE :where
-SQL;
-        $sql = iaDb::printf($sql, ['prefix' => $this->iaDb->prefix, 'table_config' => self::getConfigTable(),
-            'table_custom_config' => self::getCustomConfigTable(), 'where' => implode(' OR ', $stmt)]);
-        $rows = $this->iaDb->getAll($sql);
-
-        if (empty($rows)) {
-            return $result;
-        }
-
-        $result = ['group' => [], 'user' => [], 'plan' => []];
-
-        $currentLangCode = $this->iaView->language;
-        foreach ($rows as $row) {
-            $value = $row['value'];
-
-            if ('text' == $row['config_type'] || 'textarea' == $row['config_type']) {
-                $options = empty($row['config_options']) ? [] : json_decode($row['config_options'], true);
-
-                if (isset($options['multilingual']) && $options['multilingual']) {
-                    $value = preg_match('#\{\:' . $currentLangCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
-                        ? $matches[1]
-                        : '';
-                }
+        foreach ($this->factory('config')->fetchCustom($user, $group) as $key => $value) {
+            if (is_array($value)) {
+                $value = $value[$this->language['iso']];
             }
-
-            $result[$row['type']][$row['name']] = $value;
+            $result[$key] = $value;
         }
-
-        $result = array_merge($result['group'], $result['user'], $result['plan']);
 
         if ($local) {
-            $this->_customConfig = $result;
+            $this->customConfig = $result;
         }
 
         return $result;
@@ -493,23 +462,24 @@ SQL;
      */
     public function get($key, $default = false, $custom = true, $db = false)
     {
-        if ($custom && isset($this->_customConfig[$key])) {
-            return $this->_customConfig[$key];
+        if ($custom && isset($this->customConfig[$key])) {
+            return $this->customConfig[$key];
         }
 
         $result = $default;
 
         if ($db) {
-            if ($result = $this->fetchConfig(iaDb::convertIds($key, 'name'))) {
-                $result = array_shift($result);
+            $value = $this->factory('config')->get($key);
+            if (false !== $value) {
+                $result = $value;
             }
         } else {
-            if (isset($this->_config[$key])) {
-                return $this->_config[$key];
+            if (isset($this->config[$key])) {
+                return $this->config[$key];
             }
         }
 
-        $this->_config[$key] = $result;
+        $this->config[$key] = $result;
 
         return $result;
     }
@@ -530,10 +500,10 @@ SQL;
         }
 
         $result = true;
-        $this->_config[$key] = $value;
+        $this->config[$key] = $value;
 
         if ($permanent) {
-            $result = (bool)$this->iaDb->update(['value' => $value], iaDb::convertIds($key, 'name'), null, self::getConfigTable());
+            $result = $this->factory('config')->set($key, $value);
 
             $this->iaCache->clearConfigCache();
         }
@@ -548,7 +518,7 @@ SQL;
      */
     public function getHooks()
     {
-        return $this->_hooks;
+        return $this->hooks;
     }
 
     /**
@@ -565,7 +535,7 @@ SQL;
 
         if ($rows = $this->iaDb->all($columns, $stmt, null, null, 'hooks')) {
             foreach ($rows as $row) {
-                $this->_hooks[$row['name']][$row['module']] = [
+                $this->hooks[$row['name']][$row['module']] = [
                     'pages' => empty($row['pages']) ? [] : explode(',', $row['pages']),
                     'code' => $row['code'],
                     'type' => $row['type'],
@@ -577,49 +547,88 @@ SQL;
 
     protected function _forgeryCheck()
     {
-        if ($_POST && $this->get('prevent_csrf') && !$this->iaView->get('nocsrf')) {
-            $referrerValid = false;
-            $tokenValid = true;//(isset($_POST[self::SECURITY_TOKEN_FORM_KEY]) && $this->getSecurityToken() == $_POST[self::SECURITY_TOKEN_FORM_KEY]);
+        if (isset($_POST[self::SECURITY_TOKEN_FORM_KEY])) {
+            $tokenValue = $_POST[self::SECURITY_TOKEN_FORM_KEY];
+            unset($_POST[self::SECURITY_TOKEN_FORM_KEY]);
+        }
 
-            if (isset($_SERVER['HTTP_REFERER'])) {
-                $wwwChunk = 'www.';
+        if (!$_POST || !$this->get('prevent_csrf')) {
+            return;
+        }
 
-                $referrerDomain = explode(IA_URL_DELIMITER, $_SERVER['HTTP_REFERER']);
-                $referrerDomain = strtolower($referrerDomain[2]);
-                $referrerDomain = str_replace($wwwChunk, '', $referrerDomain);
+        // no need to test this for the several endpoints:
+        //  - 'API' page - used to communicate with mobile apps
+        //  - IPN/IRN/other payment notification receiving endpoints
+        if ('api' == $this->iaView->name()
+            || ('ipn' == $this->iaView->url[0] && count($this->iaView->url) > 1)) {
+            return;
+        }
 
-                $domain = explode(IA_URL_DELIMITER, $this->get('baseurl'));
-                $domain = strtolower($domain[2]);
-                $domain = str_replace($wwwChunk, '', $domain);
+        $tokenValid = isset($tokenValue) && $tokenValue === $this->getSecurityToken();
+        $referrerValid = true;
 
-                if ($referrerDomain === $domain) {
-                    $referrerValid = true;
-                }
-            } else {
-                $referrerValid = true; // sad, but no other way
-            }
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            $wwwChunk = 'www.';
 
-            if (!$referrerValid || !$tokenValid) {
-                header('HTTP/1.1 203'); // reply with 203 "Non-Authoritative Information" status
+            $referrerDomain = explode(IA_URL_DELIMITER, $_SERVER['HTTP_REFERER']);
+            $referrerDomain = strtolower($referrerDomain[2]);
+            $referrerDomain = str_replace($wwwChunk, '', $referrerDomain);
 
-                $this->iaView->set('nodebug', true);
-                die('Request treated as a potential CSRF attack.');
+            $domain = explode(IA_URL_DELIMITER, $this->get('baseurl'));
+            $domain = strtolower($domain[2]);
+            $domain = str_replace($wwwChunk, '', $domain);
+
+            if ($referrerDomain === $domain) {
+                $referrerValid = true;
             }
         }
 
-        unset($_POST[self::SECURITY_TOKEN_FORM_KEY]);
+        if (!$referrerValid || !$tokenValid) {
+            header('HTTP/1.1 203'); // reply with 203 "Non-Authoritative Information" status
+
+            $contentType = 'text/html';
+            $message = 'Request treated as a potential CSRF attack.';
+
+            switch ($this->iaView->getRequestType()) {
+                case iaView::REQUEST_JSON:
+                    $contentType = 'application/json';
+
+                    $output = json_encode(['result' => false, 'message' => $message]);
+
+                    break;
+
+                case iaView::REQUEST_XML:
+                    $contentType = 'text/xml';
+
+                    $xmlObject = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>');
+                    $xmlObject->addChild('result', false);
+                    $xmlObject->addChild('message', $message);
+
+                    $output = $xmlObject->asXML();
+
+                    break;
+
+                default:
+                    $output = $message;
+            }
+
+            $this->iaView->set('nodebug', true);
+
+            header('Content-Type: ' . $contentType);
+            die($output);
+        }
     }
 
     public function checkDomain()
     {
-        if (is_null($this->_checkDomain)) {
+        if (is_null($this->checkDomain)) {
             $dbUrl = str_replace(['http://www.', 'http://'], '', $this->get('baseurl'));
             $codeUrl = str_replace(['http://www.', 'http://'], '', $this->iaView->domainUrl);
 
-            $this->_checkDomain = ($dbUrl == $codeUrl);
+            $this->checkDomain = ($dbUrl == $codeUrl);
         }
 
-        return $this->_checkDomain;
+        return $this->checkDomain;
     }
 
     public function setPackagesData($regenerate = false)
@@ -666,13 +675,13 @@ SQL;
 
         iaDebug::debug('php', $name, 'hooks');
 
-        if (!isset($this->_hooks[$name])) {
+        if (!isset($this->hooks[$name])) {
             return false;
         }
 
         iaSystem::renderTime('hook', $name);
 
-        if (count($this->_hooks[$name]) > 0) {
+        if (count($this->hooks[$name]) > 0) {
             $variablesList = array_keys($params);
             extract($params, EXTR_REFS | EXTR_SKIP);
 
@@ -680,15 +689,15 @@ SQL;
             $iaView = &$this->iaView;
             $iaDb = &$this->iaDb;
 
-            foreach ($this->_hooks[$name] as $extras => $hook) {
+            foreach ($this->hooks[$name] as $extras => $hook) {
                 if ('php' == $hook['type']
                     && (empty($hook['pages']) || in_array($iaView->name(), $hook['pages']))) {
                     if ($hook['filename']) {
-                        if (!file_exists(IA_HOME . $hook['filename'])) {
+                        if (file_exists(IA_HOME . $hook['filename'])) {
+                            include IA_HOME . $hook['filename'];
+                        } else {
                             $message = sprintf('Can\'t start hook "%s". File does not exist: %s', $name, $hook['filename']);
                             iaDebug::debug($message, null, 'error');
-                        } else {
-                            include IA_HOME . $hook['filename'];
                         }
                     } else {
                         iaSystem::renderTime('START TIME ' . $name . ' ' . $extras);
@@ -710,155 +719,77 @@ SQL;
         return false;
     }
 
-    public function factory($name, $type = self::CORE)
+    public function factory($className, $type = self::CORE)
     {
-        $result = null;
-        if (is_string($name)) {
-            $className = self::CLASSNAME_PREFIX . ucfirst(strtolower($name));
-            if (isset($this->_classInstances[$className])) {
-                $result = $this->_classInstances[$className];
-            } else {
-                iaSystem::renderTime('class', 'Loading class ' . $className);
-                $fileSize = $this->loadClass($type, (strtolower($name) == 'db') ? INTELLI_CONNECT : $name);
-                if (false === $fileSize) {
-                    return false;
-                }
-
-                iaDebug::debug('ia.' . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
-
-                $result = new $className();
-                $result->init();
-
-                $this->_classInstances[$className] = $result;
-            }
-        } elseif (is_array($name)) {
+        if (is_array($className)) {
             $result = [];
-            foreach ($name as $className) {
-                $result[] = $this->factory($className, $type);
-            }
+            foreach ($className as $class)
+                $result[] = $this->factory($class, $type);
+
+            return $result;
         }
 
-        return $result;
+        return $this->factoryClass($className, $type);
     }
 
-    public function factoryModule($name, $module, $type = self::FRONT, $params = null)
+    public function factoryItem($itemName, $type = null)
     {
-        if ('item' == $name && $params) {
-            $name = substr($params, 0, -1);
-            $class = self::CLASSNAME_PREFIX . ucfirst(strtolower($name));
-            $params = null;
-        } else {
-            $class = self::CLASSNAME_PREFIX . ucfirst(strtolower($name));
+        if ($itemName == iaUsers::getItemName()) {
+            return $this->factory('users');
         }
 
-        if (!isset($this->_classInstances[$class])) {
-            $moduleInterface = IA_MODULES . $module . '/includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
-            if (is_file($moduleInterface)) {
-                require_once $moduleInterface;
-            }
+        return $this->factory('item')->factory($itemName, $type);
+    }
 
-            $fileSize = $this->loadClass($type, $name, $module);
-            if (false === $fileSize) {
-                return false;
-            }
+    public function factoryModule($name, $module, $type = null)
+    {
+        $path = IA_MODULES . $module . '/includes/classes/';
 
-            iaDebug::debug('<b>package:</b> ia.' . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
+        // TODO: review
+        $moduleInterface = IA_MODULES . $module . '/includes/classes/ia.base.module' . iaSystem::EXECUTABLE_FILE_EXT;
+        if (is_file($moduleInterface)) {
+            require_once $moduleInterface;
+        }
+        //
 
-            $this->_classInstances[$class] = new $class();
-            $this->_classInstances[$class]->init();
+        return $this->factoryClass($name, $type, $path);
+    }
+
+    public function factoryClass($name, $type = null, $path = null)
+    {
+        $name = strtolower($name);
+
+        if (is_null($type)) {
+            $type = iaCore::ACCESS_FRONT == $this->getAccessType() ? iaCore::FRONT : iaCore::ADMIN;
         }
 
-        return $this->_classInstances[$class];
-    }
+        $className = str_replace(' ', '', // 'camelize' class name
+            ucwords(str_replace('_', ' ', $name)));
+        $className = self::CLASSNAME_PREFIX . ucfirst($className);
 
-    protected static function _toClassName($name)
-    {
-        // from plural to singular
-        $result = self::_toSingular($name);
-
-        // camelize
-        $result = str_replace(' ', '', ucwords(str_replace('_', ' ', $result)));
-
-        return $result;
-    }
-
-    protected static function _toSingular($name)
-    {
-        return 's' == $name[strlen($name) - 1] && !in_array($name, ['news'])
-            ? substr($name, 0, -1)
-            : $name;
-    }
-
-    public function factoryPlugin($pluginName, $type = self::FRONT, $className = null)
-    {
-        empty($className) && $className = self::_toSingular($pluginName);
-
-        $class = self::CLASSNAME_PREFIX . self::_toClassName($className);
-
-        if (!isset($this->_classInstances[$class])) {
-            $fileSize = $this->loadClass($type, $className, $pluginName);
-
-            if (false === $fileSize) {
-                return false;
-            }
-
-            iaDebug::debug('<b>plugin:</b> ia.' . $type . '.' . $className . ' (' . iaSystem::byteView($fileSize) . ')', 'Initialized Classes List', 'info');
-
-            $this->_classInstances[$class] = new $class();
-            $this->_classInstances[$class]->init();
+        if (isset($this->classInstances[$className])) {
+            return $this->classInstances[$className];
         }
 
-        return $this->_classInstances[$class];
-    }
+        iaSystem::renderTime('class', 'Loading class ' . $className);
 
-    public function loadClass($type = self::CORE, $className = '', $moduleName = null)
-    {
-        $name = strtolower($className);
-        $filename = iaSystem::CLASSES_PREFIX . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT;
-
-        if ($moduleName) {
-            $classFile = IA_MODULES . $moduleName . '/includes/classes/' . $filename;
-        } else {
-            $classFile = IA_CLASSES . $filename;
+        if ('db' == $name) { // can't we get rid of this?
+            $name = INTELLI_CONNECT;
         }
 
-        if (file_exists($classFile)) {
-            include_once $classFile;
+        $fileName = iaSystem::CLASSES_PREFIX . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT;
+        $filePath = (is_null($path) ? IA_CLASSES : $path) . $fileName;
 
-            return filesize($classFile);
+        if (file_exists($filePath)) {
+            require_once $filePath;
+
+            $instance = $this->classInstances[$className] = new $className();
+            $instance->init();
+
+            return $instance;
         }
 
         return false;
-    }
-
-    /**
-     * Get config table name
-     *
-     * @return string
-     */
-    public static function getConfigTable()
-    {
-        return self::$_configDbTable;
-    }
-
-    /**
-     * Get config groups table name
-     *
-     * @return string
-     */
-    public static function getConfigGroupsTable()
-    {
-        return self::$_configGroupsDbTable;
-    }
-
-    /**
-     * Get custom config table name
-     *
-     * @return string
-     */
-    public static function getCustomConfigTable()
-    {
-        return self::$_customConfigDbTable;
     }
 
     /**
@@ -871,10 +802,9 @@ SQL;
         $languagesEnabled = (iaCore::ACCESS_FRONT == $this->getAccessType())
             ? ($this->get('language_switch') && count($this->languages) > 1)
             : (count($this->languages) > 1);
-        $baseUrl = trim($this->get('baseurl'), IA_URL_DELIMITER) . IA_URL_DELIMITER;
 
-        define('IA_CANONICAL', preg_replace('/\?(.*)/', '', $baseUrl . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
-        define('IA_CLEAR_URL', $baseUrl);
+        define('IA_CANONICAL', preg_replace('/\?(.*)/', '', $this->baseUrl . ltrim($_SERVER['REQUEST_URI'], IA_URL_DELIMITER)));
+        define('IA_CLEAR_URL', $this->baseUrl);
         define('IA_LANGUAGE', $iaView->language);
         define('IA_TEMPLATES', IA_HOME . (self::ACCESS_ADMIN == $this->getAccessType() ? 'admin' . IA_DS : '') . 'templates/');
         define('IA_URL_LANG', $languagesEnabled ? $iaView->language . IA_URL_DELIMITER : '');
@@ -905,38 +835,41 @@ SQL;
 
     public function getSecurityToken()
     {
-        return isset($_SESSION[self::SECURITY_TOKEN_MEMORY_KEY]) ? $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] : null;
+        if (!isset($_SESSION[self::SECURITY_TOKEN_MEMORY_KEY])) {
+            $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY] = $this->_generateSecurityToken(40);
+        }
+
+        return $_SESSION[self::SECURITY_TOKEN_MEMORY_KEY];
     }
 
-    public function fetchConfig($where = null)
+    private function _generateSecurityToken($length)
     {
-        $result = [];
+        $result = null;
 
-        is_null($where) && $where = iaDb::EMPTY_CONDITION;
-        $where.= " AND `type` != ':divider'";
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            $result = openssl_random_pseudo_bytes($length * 2);
 
-        $rows = $this->iaDb->all(['name', 'type', 'value', 'options'], $where, null, null, self::getConfigTable());
-
-        if ($rows) {
-            $currentLangCode = $this->iaView->language;
-
-            foreach ($rows as $row) {
-                $value = $row['value'];
-
-                if ('text' == $row['type'] || 'textarea' == $row['type']) {
-                    $options = empty($row['options']) ? [] : json_decode($row['options'], true);
-
-                    if (isset($options['multilingual']) && $options['multilingual']) {
-                        $value = preg_match('#\{\:' . $currentLangCode . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $value, $matches)
-                            ? $matches[1]
-                            : '';
-                    }
-                }
-
-                $result[$row['name']] = $value;
+            if (false !== $result) {
+                $result = substr(str_replace(['/', '+', '='], '', base64_encode($result)), 0, $length);
             }
         }
 
+        // fallback to built-in method if cryptographic solution is unavailable
+        if (!$result) {
+            iaDebug::debug('Unable to generate strong security token', 'Notice');
+            $result = iaUtil::generateToken($length);
+        }
+
         return $result;
+    }
+
+    protected function _fetchCurrencies()
+    {
+        $iaCurrency = $this->factory('currency');
+
+        $this->currencies = $iaCurrency->fetch();
+        $this->currency = $iaCurrency->get();
+
+        $this->config['currency'] = $this->currency['code']; // compatibility fallback
     }
 }

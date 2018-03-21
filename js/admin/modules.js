@@ -1,66 +1,70 @@
-function dialog_package(type, module, url) {
-    intelli.config.default_package = $('#js-default-package-value').val();
+function setupDialog(type, url, module) {
+    var defaultPackage = $('#js-default-package-value').val();
 
-    var defaultPackage =
-        '<div class="alert alert-info">' + _t('root_old').replace(/:name/gi, intelli.config.default_package) + '</div>' +
-        '<p><code>' + intelli.config.ia_url + '</code> <input type="text" name="url[0]" class="common"> <code>/</code></p>';
-    var formText =
+    var htmlDefaultPackage =
+        '<div class="alert alert-info">' + _t('root_old').replace(/:name/gi, defaultPackage) + '</div>' +
+        '<p><code>' + intelli.config.clear_url + '</code> <input type="text" name="url[0]" class="common"> <code>/</code></p>';
+    var htmlFormText =
         '<div class="url_type">' +
-        '<label for="subdomain_type"><input type="radio" value="1" name="type" id="subdomain_type"> ' + _t('subdomain_title') + '</label>' +
-        '<div class="url_type_info"><p>' + _t('subdomain_about') + '</p><code>http://</code> <input type="text" value="' + module + '" name="url[1]" class="common"> <code>.' + location.hostname + '/</code></div>' +
+            '<label for="subdomain_type"><input type="radio" value="1" name="type" id="subdomain_type"> ' + _t('subdomain_title') + '</label>' +
+            '<div class="url_type_info"><p>' + _t('subdomain_about') + '</p><code>http://</code> <input type="text" value="' + module + '" name="url[1]" class="common"> <code>.' + location.hostname + '/</code></div>' +
         '</div>' +
         '<div class="url_type">' +
-        '<label for="subdirectory_type"><input type="radio" value="2" name="type"' + (intelli.config.default_package ? ' checked' : '') + ' id="subdirectory_type"> ' + _t('subdirectory_title') + '</label>' +
-        '<div class="url_type_info"><p>' + _t('subdirectory_about') + '</p><code>' + intelli.config.ia_url + '</code> <input type="text" value="' + module + '" name="url[2]" class="common"> <code>/</code></div>' +
+            '<label for="subdirectory_type"><input type="radio" value="2" name="type"' + (defaultPackage ? ' checked' : '') + ' id="subdirectory_type"> ' + _t('subdirectory_title') + '</label>' +
+            '<div class="url_type_info"><p>' + _t('subdirectory_about') + '</p><code>' + intelli.config.clear_url + '</code> <input type="text" value="' + module + '" name="url[2]" class="common"> <code>/</code></div>' +
         '</div>';
+
+    var html = '';
+
+    switch (type) {
+        case 'install':
+            html = '<div class="url_type"><label for="root_type"><input type="radio" value="0" name="type" id="root_type"'
+                + (defaultPackage ? '' : ' checked') + '> ' + _t('root_title') + '</label><div class="url_type_info"><p>' + _t('root_about') + '</p>'
+                + (defaultPackage ? htmlDefaultPackage : '') +
+                '</div></div>' + htmlFormText;
+            break;
+
+        case 'set_default':
+            if (!defaultPackage) {
+                window.location = url;
+                return false;
+            }
+
+            html = '<div class="url_type">' + htmlDefaultPackage + '</div>';
+            break;
+
+        case 'reset':
+            html = '<div class="url_type">' + _t('reset_default_package') + '</div>' + htmlFormText;
+    }
+
+    html = '<form action="' + url + '" id="package_form">' + html + '</form>';
 
     if (intelli.setupDialog) {
         intelli.setupDialog.remove();
     }
-    var html = '';
 
-    if ('install' == type) {
-        html = '<div class="url_type"><label for="root_type"><input type="radio" value="0" name="type" id="root_type"'
-            + (intelli.config.default_package ? '' : ' checked') + '> ' + _t('root_title') + '</label><div class="url_type_info"><p>' + _t('root_about') + '</p>'
-            + (intelli.config.default_package ? defaultPackage : '') +
-            '</div></div>' + formText;
-    }
-    else if ('set_default' == type) {
-        if (intelli.config.default_package != '') {
-            html = '<div class="url_type">' + defaultPackage + '</div>';
-        }
-        else {
-            return false;
-        }
-    }
-    else if ('reset' == type) {
-        html = '<div class="url_type">' + _t('reset_default_package') + '</div>' + formText;
-    }
-    html = '<form action="' + url + '" id="package_form">' + html + '</form>';
+    intelli.setupDialog = new Ext.Window({
+        title: _t('module_installation'),
+        closable: true,
+        html: html,
+        maxWidth: 600,
+        bodyPadding: 10,
+        autoScroll: true,
+        buttons: [
+            {
+                text: _t(type),
+                handler: function () {
+                    $('#package_form').submit();
+                }
+            }, {
+                text: _t('cancel'),
+                handler: function () {
+                    intelli.setupDialog.hide();
+                }
+            }]
+    }).show();
 
-    intelli.setupDialog = new Ext.Window(
-        {
-            title: _t('module_installation'),
-            closable: true,
-            html: html,
-            maxWidth: 600,
-            bodyPadding: 10,
-            autoScroll: true,
-            buttons: [
-                {
-                    text: _t(type),
-                    handler: function () {
-                        $('#package_form').submit();
-                    }
-                }, {
-                    text: _t('cancel'),
-                    handler: function () {
-                        intelli.setupDialog.hide();
-                    }
-                }]
-        }).show();
-
-    $('input[name="url[2]"]').on('change', function () {
+    $('input[name="url[2]"]').on('change', function() {
         $('#subdirectory_type').prop('checked', true);
     });
 
@@ -72,15 +76,9 @@ function dialog_package(type, module, url) {
         }
     });
 }
-function setDefault(item) {
-    dialog_package('set_default', item, intelli.config.default_package);
-}
-function resetUrl(item, packageName) {
-    dialog_package('reset', item, packageName);
-}
 
 intelli.modules = {
-    url: intelli.config.admin_url + '/modules/',
+    url: window.location.href,
     failure: function () {
         intelli.notifFloatBox({msg: _t('error_saving_changes'), type: 'error', autohide: true});
     },
@@ -93,68 +91,118 @@ intelli.modules = {
     }
 };
 
-Ext.onReady(function () {
+Ext.onReady(function(){
+    $('.js-cmd-reset').on('click', function(e){
+        e.preventDefault();
 
-    $('.js-install').on('click', function (e) {
+        var data = $(this).data();
+        setupDialog(data.action, data.url, data.module);
+    });
+
+    $('.cards').on('click', '.js-cmd-install', function(e){
         e.preventDefault();
 
         var $this = $(this),
             module = $this.data('module'),
-            type = $this.data('type'),
-            remote = $this.data['remote'],
-            url = $this.attr('href');
+            remote = $this.data('remote'),
+            url = $this.data('url');
 
-        if ('packages' == type) {
-            dialog_package('install', module, url);
+        switch (intelli.pageName) {
+            case 'packages':
+                setupDialog('install', url, module);
+                break;
+            case 'templates':
+                Ext.Msg.show({
+                    title: _t('confirm'),
+                    msg: _t('are_you_sure_install_template'),
+                    buttons: Ext.Msg.YESNO,
+                    icon: Ext.Msg.QUESTION,
+                    fn: function (btn) {
+                        if ('yes' === btn) {
+                            document.location = url;
+                        }
+                    }
+                });
+                break;
+            default:
+                $.ajax({
+                    data: intelli.includeSecurityToken({name: module, type: intelli.pageName, remote: remote}),
+                    failure: intelli.modules.failure,
+                    type: 'POST',
+                    url: intelli.modules.url + module + '/install.json',
+                    success: function (response) {
+                        intelli.modules.refresh(response);
 
-            return;
+                        if (response.result) {
+                            var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
+
+                            $this.closest('.card').addClass('card--active');
+                            $this.replaceWith(installedStatusHtml);
+                        }
+                    }
+                });
         }
-        else if ('templates' == type) {
-            Ext.Msg.show({
-                title: _t('confirm'),
-                msg: _t('are_you_sure_install_module'),
-                buttons: Ext.Msg.YESNO,
-                icon: Ext.Msg.QUESTION,
-                fn: function (btn) {
-                    if ('yes' != btn) return;
+    });
 
-                    document.location = url;
+    $('.js-cmd-reinstall').on('click', function(e){
+        e.preventDefault();
+
+        var data = $(this).data();
+
+        Ext.Msg.show({
+            title: _t('confirm'),
+            msg: _t('are_you_sure_reinstall_module'),
+            buttons: Ext.Msg.YESNO,
+            icon: Ext.Msg.QUESTION,
+            fn: function (btn) {
+                if ('yes' != btn) {
+                    return;
                 }
-            });
 
-            return;
-        }
-
-        $.ajax({
-            data: {name: module, type: type, remote: remote},
-            failure: intelli.modules.failure,
-            type: 'POST',
-            url: intelli.modules.url + type + '/' + module + '/install.json',
-            success: function (response) {
-                intelli.modules.refresh(response);
-
-                if (response.result) {
-                    var installedStatusHtml = '<span class="card__actions__status"><span class="fa fa-check"></span> ' + _t('installed') + '</span>';
-
-                    $this.closest('.card').addClass('card--active');
-                    $this.replaceWith(installedStatusHtml);
+                if ('templates' === intelli.pageName) {
+                    window.location = data.url;
+                    return;
                 }
+
+                $.ajax({
+                    data: intelli.includeSecurityToken({name: data.module}),
+                    failure: intelli.modules.failure,
+                    type: 'POST',
+                    url: intelli.modules.url + data.module + '/reinstall.json',
+                    success: intelli.modules.refresh
+                });
             }
         });
     });
 
-    $('.js-reinstall').on('click', function (e) {
+    $('.js-cmd-uninstall').on('click', function(e){
         e.preventDefault();
 
         var $this = $(this),
-            module = $this.data('module'),
-            type = $this.data('type'),
-            url = $this.attr('href');
+            data = $this.data();
 
-        Ext.Msg.show(
-            {
+        var module = data.module,
+            remote = data.remote,
+            url = data.url;
+
+        if ('packages' === intelli.pageName) {
+            Ext.Msg.show({
                 title: _t('confirm'),
-                msg: _t('are_you_sure_reinstall_module'),
+                msg: _t('are_you_sure_to_uninstall_selected_package'),
+                buttons: Ext.Msg.YESNO,
+                icon: Ext.Msg.QUESTION,
+                fn: function (btn) {
+                    if ('yes' === btn) {
+                        document.location = url;
+                    }
+                }
+            });
+
+            return;
+        } else {
+            Ext.Msg.show({
+                title: _t('confirm'),
+                msg: _t('are_you_sure_to_uninstall_selected_plugin'),
                 buttons: Ext.Msg.YESNO,
                 icon: Ext.Msg.QUESTION,
                 fn: function (btn) {
@@ -162,162 +210,86 @@ Ext.onReady(function () {
                         return;
                     }
 
-                    if ('templates' == type) {
-                        document.location = url;
-                        return;
-                    }
+                    $.ajax({
+                        data: intelli.includeSecurityToken({name: module}),
+                        failure: intelli.modules.failure,
+                        type: 'POST',
+                        url: intelli.modules.url + module + '/uninstall.json',
+                        success: function (response) {
+                            intelli.modules.refresh(response);
 
-                    $.ajax(
-                        {
-                            data: {name: module},
-                            failure: intelli.modules.failure,
-                            type: 'POST',
-                            url: intelli.modules.url + type + '/' + module + '/reinstall.json',
-                            success: intelli.modules.refresh
-                        });
-                }
-            });
-    });
+                            if (response.result) {
+                                var installBtnHtml = '<a href="#" class="btn btn-success btn-xs pull-right js-cmd-install" data-url="' + intelli.modules.url + module + '/install/" data-module="' + module + '" data-remote="' + remote + '">' + _t('install') + '</a>';
 
-    $('.js-uninstall').click(function (e) {
-        e.preventDefault();
+                                $this.closest('.card').removeClass('card--active')
+                                    .find('.card__actions__status').replaceWith(installBtnHtml);
 
-        var $this = $(this),
-            module = $this.data('module'),
-            type = $this.data('type'),
-            remote = $this.data['remote'],
-            url = $this.attr('href');
-
-        if ('packages' == type) {
-            Ext.Msg.show({
-                title: _t('confirm'),
-                msg: _t('are_you_sure_to_uninstall_selected_package'),
-                buttons: Ext.Msg.YESNO,
-                icon: Ext.Msg.QUESTION,
-                fn: function (btn) {
-                    if ('yes' == btn) {
-                        document.location = url;
-                    }
-                }
-            });
-
-            return;
-        }
-        else {
-            Ext.Msg.show(
-                {
-                    title: _t('confirm'),
-                    msg: _t('are_you_sure_to_uninstall_selected_plugin'),
-                    buttons: Ext.Msg.YESNO,
-                    icon: Ext.Msg.QUESTION,
-                    fn: function (btn) {
-                        if ('yes' != btn) {
-                            return;
+                                // hide buttons
+                                $this.closest('ul').find('.js-cmd-reinstall').hide();
+                                $this.closest('li').hide();
+                            }
                         }
-
-                        $.ajax(
-                            {
-                                data: {name: module},
-                                failure: intelli.modules.failure,
-                                type: 'POST',
-                                url: intelli.modules.url + type + '/' + module + '/uninstall.json',
-                                success: function (response) {
-                                    intelli.modules.refresh(response);
-
-                                    if (response.result) {
-                                        var installBtnHtml = '<a href="' + intelli.modules.url + type + '/' + module + '/install/" class="btn btn-success btn-xs pull-right js-install" data-module="' + module + '" data-type="' + type + '" data-remote="' + remote + '">' + _t('install') + '</a>';
-
-                                        $this.closest('.card').removeClass('card--active')
-                                            .find('.card__actions__status').replaceWith(installBtnHtml);
-
-                                        // hide buttons
-                                        $this.closest('ul').find('.js-reinstall').hide();
-                                        $this.closest('li').hide();
-                                    }
-                                }
-                            });
-                    }
-                });
+                    });
+                }
+            });
         }
     });
 
-    $('.js-upgrade').on('click', function (e) {
+    $('.js-cmd-readme').on('click', function(e){
         e.preventDefault();
 
-        var module = $(this).data('module');
+        Ext.Ajax.request({
+            url: window.location.href + 'documentation.json',
+            method: 'GET',
+            params: {name: $(this).data('module')},
+            failure: function() {
+                Ext.MessageBox.alert(_t('error_while_doc_tabs'));
+            },
+            success: function(response){
+                response = Ext.decode(response.responseText);
+                var tabs = response.tabs;
+                var info = response.info;
 
-        $.ajax({
-            data: {action: 'install', name: record.get('file')},
-            failure: intelli.plugins.failure,
-            type: 'POST',
-            url: intelli.plugins.url + 'install.json',
-            success: intelli.plugins.refresh
-        });
-    });
+                if (tabs) {
+                    var packageTabs = new Ext.TabPanel({
+                        region: 'center',
+                        bodyStyle: 'padding: 5px;',
+                        activeTab: 0,
+                        defaults: {autoScroll: true},
+                        items: tabs
+                    });
 
-    $('.js-readme').on('click', function (e) {
-        e.preventDefault();
+                    var packageInfo = new Ext.Panel({
+                        region: 'east',
+                        split: true,
+                        minWidth: 200,
+                        collapsible: true,
+                        html: info,
+                        bodyStyle: 'padding: 5px;'
+                    });
 
-        var module = $(this).data('module');
+                    var win = new Ext.Window({
+                        title: _t('module_documentation'),
+                        closable: true,
+                        width: 800,
+                        height: 550,
+                        border: false,
+                        plain: true,
+                        layout: 'border',
+                        items: [packageTabs, packageInfo]
+                    });
 
-        Ext.Ajax.request(
-            {
-                url: window.location.href + 'documentation.json',
-                method: 'GET',
-                params: {name: module},
-                failure: function () {
-                    Ext.MessageBox.alert(_t('error_while_doc_tabs'));
-                },
-                success: function (response) {
-                    response = Ext.decode(response.responseText);
-                    var tabs = response.tabs;
-                    var info = response.info;
-
-                    if (null != tabs) {
-                        var packageTabs = new Ext.TabPanel(
-                            {
-                                region: 'center',
-                                bodyStyle: 'padding: 5px;',
-                                activeTab: 0,
-                                defaults: {autoScroll: true},
-                                items: tabs
-                            });
-
-                        var packageInfo = new Ext.Panel(
-                            {
-                                region: 'east',
-                                split: true,
-                                minWidth: 200,
-                                collapsible: true,
-                                html: info,
-                                bodyStyle: 'padding: 5px;'
-                            });
-
-                        var win = new Ext.Window(
-                            {
-                                title: _t('module_documentation'),
-                                closable: true,
-                                width: 800,
-                                height: 550,
-                                border: false,
-                                plain: true,
-                                layout: 'border',
-                                items: [packageTabs, packageInfo]
-                            });
-
-                        win.show();
-                    }
-                    else {
-                        Ext.Msg.show(
-                            {
-                                title: _t('error'),
-                                msg: _t('documentation_not_available'),
-                                buttons: Ext.Msg.OK,
-                                icon: Ext.Msg.ERROR
-                            });
-                    }
+                    win.show();
+                } else {
+                    Ext.Msg.show({
+                        title: _t('error'),
+                        msg: _t('documentation_not_available'),
+                        buttons: Ext.Msg.OK,
+                        icon: Ext.Msg.ERROR
+                    });
                 }
-            });
+            }
+        });
     });
 
     // Live filter on Modules pages
@@ -347,7 +319,7 @@ Ext.onReady(function () {
             type = $this.data('type'),
             filtered = $this.data('filtered');
 
-        if (filtered == 'no') {
+        if ('no' === filtered) {
             $this.data('filtered', 'yes');
             $('.card--' + type).hide();
         } else {
@@ -358,7 +330,7 @@ Ext.onReady(function () {
         $('.fa', $this).toggleClass('fa-circle-thin fa-check');
     });
 
-    $('.js-filter-modules-reset').click(function (e) {
+    $('.js-filter-modules-reset').click(function(e) {
         e.preventDefault();
 
         $('.js-filter-modules-text').val('').trigger('keyup');
@@ -369,16 +341,16 @@ Ext.onReady(function () {
     });
 });
 
-var synchronizeAdminMenu = function (currentPage, extensionGroups) {
+var synchronizeAdminMenu = function(currentPage, extensionGroups) {
     currentPage = currentPage || 'plugins';
 
-    $.ajax({
-        data: {action: 'menu', page: currentPage},
-        success: function (response) {
+    intelli.post(intelli.config.admin_url + '/index/read.json',
+        {action: 'menu', page: currentPage},
+        function (response) {
             var $menuSection = $('#panel-center'),
                 $menus = $(response.menus);
 
-            if (typeof extensionGroups != 'undefined') {
+            if (typeof extensionGroups !== 'undefined') {
                 $.each(extensionGroups, function (i, val) {
                     $('#menu-section-' + val + ' a').append('<span class="menu-updated animated bounceIn"></span>');
                 });
@@ -386,8 +358,6 @@ var synchronizeAdminMenu = function (currentPage, extensionGroups) {
 
             $('ul', $menuSection).remove();
             $menus.appendTo($menuSection);
-        },
-        type: 'POST',
-        url: intelli.config.admin_url + '/index/read.json'
-    });
+        }
+    );
 };

@@ -6,19 +6,19 @@
             <div class="wrap-group-heading">{lang key='configuration'}</div>
 
             <div class="row">
-                <label class="col col-lg-2 control-label" for="input-id">{lang key='email'}</label>
+                <label class="col col-lg-2 control-label" for="input-name">{lang key='email'}</label>
                 <div class="col col-lg-4">
-                    <select id="input-id" name="id">
+                    <select id="input-name" name="name">
                         <option value="">{lang key='_select_'}</option>
                         {foreach $templates as $entry}
-                            {if 'divider' == $entry.type}
-                                {if isset($previous_group)}
+                            {if $entry.divider}
+                                {if isset($previousGroup)}
                                     </optgroup>
                                 {/if}
-                                <optgroup label="{lang key="config_{$entry.name}"}">
-                                {assign previous_group $entry.name}
+                                <optgroup label="{lang key="email_template_{$entry.name}"}">
+                                {$previousGroup = $entry.name}
                             {else}
-                                <option value="{$entry.name}">{lang key="config_{$entry.name}"}</option>
+                                <option value="{$entry.name}">{lang key="email_template_{$entry.name}"}</option>
                             {/if}
                         {/foreach}
                         </optgroup>
@@ -26,24 +26,10 @@
                 </div>
             </div>
 
-            <div class="row" id="enable_sending" style="display: none;">
+            <div class="row" id="input-active" style="display: none;">
                 <label class="col col-lg-2 control-label">{lang key='enable_template_sending'}</label>
                 <div class="col col-lg-4">
-                    {html_radio_switcher value=1 name='enable_template'}
-                </div>
-            </div>
-
-            <div class="row" id="use_signature" style="display: none;">
-                <label class="col col-lg-2 control-label">{lang key='use_custom_signature'}</label>
-                <div class="col col-lg-4">
-                    {html_radio_switcher value=1 name='enable_signature'}
-                </div>
-            </div>
-
-            <div class="row">
-                <label class="col col-lg-2 control-label" for="input-subject">{lang key='subject'}</label>
-                <div class="col col-lg-4">
-                    <input type="text" name="subject" id="input-subject" disabled>
+                    {html_radio_switcher value=1 name='active'}
                 </div>
             </div>
 
@@ -51,10 +37,67 @@
                 <label class="col col-lg-2 control-label">{lang key='available_patterns'}</label>
                 <div class="col col-lg-4"></div>
             </div>
+
+            <div class="row" id="row-subject">
+                <div class="col col-lg-2">
+                    {if count($core.languages) > 1}
+                    <div class="btn-group btn-group-xs translate-group-actions">
+                        <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-subject"><span class="i-earth"></span></button>
+                        <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-subject"><span class="i-copy"></span></button>
+                    </div>
+                    {/if}
+                    <label class="control-label">{lang key='subject'}</label>
+                </div>
+                <div class="col col-lg-4">
+                    <div class="translate-group" id="language-group-subject">
+                        <div class="translate-group__default">
+                            <div class="translate-group__item">
+                                <input type="text" name="subject_{$core.masterLanguage.iso}" id="input-subject-{$core.masterLanguage.iso}" disabled>
+                                {if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>{/if}
+                            </div>
+                        </div>
+                        <div class="translate-group__langs">
+                            {foreach $core.languages as $iso => $language}
+                                {if $iso != $core.masterLanguage.code}
+                                    <div class="translate-group__item">
+                                        <input type="text" name="subject_{$iso}" id="input-subject-{$iso}" disabled>
+                                        <span class="translate-group__item__code">{$language.title|escape}</span>
+                                    </div>
+                                {/if}
+                            {/foreach}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
-                <label class="col col-lg-2 control-label">{lang key='body'}</label>
+                <div class="col col-lg-2">
+                    {if count($core.languages) > 1}
+                    <div class="btn-group btn-group-xs translate-group-actions">
+                        <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-body"><span class="i-earth"></span></button>
+                        <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-body"><span class="i-copy"></span></button>
+                    </div>
+                    {/if}
+                    <label class="control-label">{lang key='body'}</label>
+                </div>
                 <div class="col col-lg-8">
-                    {ia_wysiwyg name='body'}
+                    <div class="translate-group" id="language-group-body">
+                        <div class="translate-group__default">
+                            <div class="translate-group__item">
+                                {ia_wysiwyg name="body_{$core.masterLanguage.iso}" source=true}
+                                {if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>{/if}
+                        </div>
+                        <div class="translate-group__langs">
+                            {foreach $core.languages as $iso => $language}
+                                {if $iso != $core.masterLanguage.iso}
+                                <div class="translate-group__item">
+                                    {ia_wysiwyg name="body_{$iso}" source=true}
+                                    <span class="translate-group__item__code">{$language.title|escape}</span>
+                                </div>
+                                {/if}
+                            {/foreach}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -70,9 +113,9 @@
 
     <h4>{lang key='common'}</h4>
     <ul class="js-tags">
-        <li><a href="#">{literal}{%SITE_NAME%}{/literal}</a> - <span>{$core.config.site}</span></li>
-        <li><a href="#">{literal}{%SITE_URL%}{/literal}</a> - <span>{$smarty.const.IA_URL}</span></li>
-        <li><a href="#">{literal}{%SITE_EMAIL%}{/literal}</a> - <span>{$core.config.site_email}</span></li>
+        <li><strong>{literal}{$siteName}{/literal}</strong> - <span>{$core.config.site}</span></li>
+        <li><strong>{literal}{$siteUrl}{/literal}</strong> - <span>{$smarty.const.IA_URL}</span></li>
+        <li><strong>{literal}{$siteEmail}{/literal}</strong> - <span>{$core.config.site_email}</span></li>
     </ul>
 </div>
 {ia_add_media files='js:admin/email-templates'}

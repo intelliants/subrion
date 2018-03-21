@@ -14,7 +14,7 @@
     {$value = $field.default}
 {/if}
 
-{if isset($field.disabled) && $field.disabled}
+{if !empty($field.disabled)}
     <input type="hidden" name="{$fieldName}" value="{$value|escape}">
 {/if}
 
@@ -27,10 +27,16 @@
     {switch $type}
         {case iaField::TEXT break}
             {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
-            <input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+            <input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape}{else}{$field.default|escape}{/if}" id="{$name}" maxlength="{$field.length}">
 
         {case iaField::NUMBER break}
-            <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default}{/if}" id="{$name}" maxlength="{$field.length}">
+            <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{$value|escape}" id="{$name}" maxlength="{$field.length}">
+
+        {case iaField::CURRENCY break}
+            <div class="input-group">
+                <div class="input-group-addon">{$core.defaultCurrency.code|escape}</div>
+                <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default|escape}{/if}" id="{$name}" maxlength="{$field.length}">
+            </div>
 
         {case iaField::TEXTAREA break}
             {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
@@ -38,10 +44,8 @@
                 <textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape}</textarea>
                 {if $field.length > 0}
                     {ia_add_js}
-$(function()
-{
-    $('#{$name}').dodosTextCounter({$field.length},
-    {
+$(function() {
+    $('#{$name}').dodosTextCounter({$field.length}, {
         counterDisplayElement: 'span',
         counterDisplayClass: 'textcounter_{$fieldName}'
     });
@@ -89,7 +93,7 @@ $(function()
                 {if is_string($value)}{$value = unserialize($value)}{/if}
                 <div class="thumbnail">
                     <div class="thumbnail__actions">
-                        <button class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$value.file|escape}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+                        <button type="button" class="btn btn-danger btn-sm js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$value.file|escape}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
                     </div>
 
                     {if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
@@ -126,7 +130,7 @@ $(function()
                             <div class="thumbnail upload-items__item">
                                 <div class="btn-group thumbnail__actions">
                                     <span class="btn btn-default btn-sm drag-handle"><span class="fa fa-arrows"></span></span>
-                                    <button class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
+                                    <button type="button" class="btn btn-sm btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file}" title="{lang key='delete'}"><span class="fa fa-times"></span></button>
                                 </div>
 
                                 <a class="thumbnail__image" href="{ia_image file=$entry field=$field url=true large=true}" rel="ia_lightbox[{$fieldName}]">
@@ -147,8 +151,7 @@ $(function()
                 </div>
 
                 {ia_add_js}
-$(function()
-{
+$(function() {
     var params = {
         handle: '.drag-handle'
     }
@@ -195,7 +198,7 @@ $(function()
                             <div class="input-group-btn">
                                 <a class="btn btn-default" href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}" title="{lang key='download'}" download><span class="fa fa-cloud-download"></span> {lang key='download'}</a>
                                 <span class="btn btn-default drag-handle"><span class="fa fa-arrows-v"></span></span>
-                                <button class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file|escape}">{lang key='delete'}</button>
+                                <button type="button" class="btn btn-danger js-delete-file" data-item="{$field.item}" data-field="{$fieldName}" data-item-id="{$item.id|default:''}" data-file="{$entry.file|escape}">{lang key='delete'}</button>
                             </div>
                         </div>
                     {/foreach}
@@ -239,20 +242,17 @@ $(function()
             <div class="js-tree categories-tree" data-field="{$fieldName}" data-nodes="{$field.values|escape}" data-multiple="{$field.timepicker}"></div>
             {ia_add_media files='tree'}
             {ia_add_js order=5}
-$(function()
-{
+$(function() {
     'use strict';
 
-    $('.js-tree').each(function()
-    {
+    $('.js-tree').each(function() {
         var data = $(this).data(),
             options = { core: { data: data.nodes, multiple: data.multiple } };
 
         if (data.multiple) options.plugins = ['checkbox'];
 
         $(this).jstree(options)
-        .on('changed.jstree', function(e, d)
-        {
+        .on('changed.jstree', function(e, d) {
             var nodes = [], ids = [];
             for (var i = 0; i < d.selected.length; i++)
             {
@@ -266,12 +266,10 @@ $(function()
             $('#label-' + fieldName).val(nodes.join(', '));
             $('#input-' + fieldName).val(ids.join(', '));
         })
-        .on('ready.jstree', function(e, d)
-        {
+        .on('ready.jstree', function(e, d) {
             var nodes = $('#input-' + $(this).data('field')).val().split(',');
             d.instance.open_all();
-            for (var i in nodes)
-            {
+            for (var i in nodes) {
                 d.instance.select_node(nodes[i]);
             }
         })
@@ -290,20 +288,16 @@ $(function()
 
             {if $field.relation == 'parent' && $field.children}
                 {ia_add_js order=5}
-$(function()
-{
+$(function() {
 $('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
-$('#{$name}').on('change', function()
-{
+$('#{$name}').on('change', function() {
     var value = $(this).val();
     $('.hide_{$fieldName}').hide();
     {foreach $field.children as $_field => $_values}
     if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();
     {/foreach}
-    $('fieldset').show().each(function(index, item)
-    {
-        if ($('.fieldset-wrapper', item).length > 0)
-        {
+    $('fieldset').show().each(function(index, item) {
+        if ($('.fieldset-wrapper', item).length > 0) {
             $('.fieldset-wrapper div.fieldzone:visible, .fieldset-wrapper div.fieldzone.regular', item).length == 0
                 ? $(this).hide()
                 : $(this).show();
@@ -324,26 +318,20 @@ $('#{$name}').on('change', function()
 
             {if $field.relation == 'parent' && $field.children}
                 {ia_add_js order=5}
-$(function()
-{
+$(function() {
     $('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
 
-    $('input[name="{$fieldName}"]').on('change', function()
-    {
+    $('input[name="{$fieldName}"]').on('change', function() {
         var $this = $(this),
             value = $(this).val();
 
-        if ($this.is(':checked'))
-        {
+        if ($this.is(':checked')) {
             $('hide_{$fieldName}').hide();
 
             {foreach $field.children as $_field => $_values}
-                if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1)
-                {
+                if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}]) != -1) {
                     $('#{$_field}_fieldzone').show();
-                }
-                else
-                {
+                } else {
                     $('#{$_field}_fieldzone').hide();
                 }
             {/foreach}
@@ -363,14 +351,11 @@ $(function()
 
             {if $field.relation == 'parent' && $field.children}
             {ia_add_js order=5}
-$(function()
-{
+$(function() {
     $('{foreach $field.children as $_field => $_values}#{$_field}_fieldzone{if !$_values@last}, {/if}{/foreach}').addClass('hide_{$fieldName}');
-    $('input[name="{$fieldName}[]"]').on('change', function()
-    {
+    $('input[name="{$fieldName}[]"]').on('change', function() {
         $('.hide_{$fieldName}').hide();
-        $('input[type="checkbox"]:checked', '#type_fieldzone').each(function()
-        {
+        $('input[type="checkbox"]:checked', '#type_fieldzone').each(function() {
             var value = $(this).val();
             {foreach $field.children as $_field => $_values}
             if ($.inArray(value, [{foreach $_values as $_value}'{$_value}'{if !$_value@last},{/if}{/foreach}])!=-1) $('#{$_field}_fieldzone').show();

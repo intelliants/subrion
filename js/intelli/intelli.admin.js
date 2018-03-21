@@ -100,11 +100,11 @@ intelli.admin = function () {
 
         removeFile: function (file, link, item, field, itemid) {
             Ext.Msg.confirm(_t('confirm'), _t('sure_rm_file'), function (btn, text) {
-                if (btn == 'yes') {
-                    $.post(intelli.config.admin_url + '/actions/read.json',
+                if ('yes' === btn) {
+                    intelli.post(intelli.config.admin_url + '/actions/read.json',
                         {action: 'delete-file', item: item, field: field, file: file, itemid: itemid},
                         function (data) {
-                            if ('boolean' == typeof data.error && !data.error) {
+                            if ('boolean' === typeof data.error && !data.error) {
                                 if ($(link).closest('.input-group').hasClass('thumbnail-single')) {
                                     $('#field_' + field).closest('.input-group').find('input[type="text"]').attr('placeholder', _t('file_click_to_upload'));
                                     $(link).closest('.input-group').remove();
@@ -124,6 +124,8 @@ intelli.admin = function () {
                                 }
 
                                 intelli.notifFloatBox({msg: data.message, type: 'success', autohide: true});
+                            } else {
+                                intelli.notifFloatBox({msg: data.message, type: response.result ? 'success' : 'error', autohide: true});
                             }
                         }
                     );

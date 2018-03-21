@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -58,7 +58,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $output;
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (isset($_GET['item']) && $_GET['item']) {
             $value = ('core' == strtolower($_GET['item']) ? '' : iaSanitize::sql($_GET['item']));

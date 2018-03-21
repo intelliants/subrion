@@ -3,7 +3,7 @@ Ext.onReady(function () {
         {
             columns: [
                 'selection',
-                {name: 'id', title: _t('id'), width: 50},
+                {name: 'id', title: _t('id'), width: 80},
                 {name: 'username', title: _t('username'), width: 150, editor: 'text'},
                 {name: 'fullname', title: _t('fullname'), width: 1, editor: 'text'},
                 {

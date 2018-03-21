@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -75,7 +75,6 @@ class iaSmarty extends Smarty
         $this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_page_url', [__CLASS__, 'ia_page_url']);
         $this->registerPlugin(self::PLUGIN_FUNCTION, 'lang', [__CLASS__, 'lang']);
         $this->registerPlugin(self::PLUGIN_FUNCTION, 'preventCsrf', [__CLASS__, 'preventCsrf']);
-        $this->registerPlugin(self::PLUGIN_FUNCTION, 'printImage', [__CLASS__, 'printImage']);
         $this->registerPlugin(self::PLUGIN_FUNCTION, 'ia_image', [__CLASS__, 'ia_image']);
 
         $this->registerPlugin(self::PLUGIN_BLOCK, 'access', [__CLASS__, 'access']);
@@ -93,6 +92,8 @@ class iaSmarty extends Smarty
             $this->registerPlugin(self::PLUGIN_FUNCTION, 'displayTreeNodes', [__CLASS__, 'displayTreeNodes']);
 
             $this->registerPlugin(self::PLUGIN_BLOCK, 'ia_block', [__CLASS__, 'ia_block']);
+
+            $this->registerPlugin(self::PLUGIN_MODIFIER, 'currency_format', [__CLASS__, 'currency_format']);
         }
 
         // uncomment this to get rid of useless whitespaces in html
@@ -130,6 +131,7 @@ class iaSmarty extends Smarty
 
         if (count($params) > 1 && !isset($params['default'])) {
             unset($params['key']);
+
             return iaLanguage::getf($key, $params);
         }
 
@@ -153,15 +155,21 @@ class iaSmarty extends Smarty
         $name = $params['name'];
         $id = isset($params['id']) ? $params['id'] : $name;
         $value = isset($params['value']) ? iaSanitize::html($params['value']) : '';
-        $toolbar = (isset($params['toolbar']) && in_array($params['toolbar'], ['simple', 'dashboard', 'extended']))
-            ? ",{toolbar:'{$params['toolbar']}'}"
-            : '';
+
+        $options = [];
+        if (isset($params['toolbar']) && in_array($params['toolbar'], ['simple', 'dashboard', 'extended'])) {
+            $options['toolbar'] = $params['toolbar'];
+        }
+        if (isset($params['source'])) {
+            $options['startupMode'] = 'source';
+        }
+        $options = json_encode($options);
 
         $iaView = iaCore::instance()->iaView;
 
         $iaView->add_js('ckeditor/ckeditor');
         $iaView->resources->js->{'code:$(function(){if(!window.CKEDITOR)'
-        . "$('textarea[id=\"{$id}\"]').show();else CKEDITOR.replace('{$id}'$toolbar);});"} = iaView::RESOURCE_ORDER_REGULAR;
+        . "$('textarea[id=\"{$id}\"]').show();else CKEDITOR.replace('{$id}',{$options});});"} = iaView::RESOURCE_ORDER_REGULAR;
 
         return sprintf(
             '<textarea style="display: none;" name="%s" id="%s">%s</textarea>',
@@ -229,45 +237,22 @@ class iaSmarty extends Smarty
 
     public static function ia_url($params)
     {
-        if (empty($params['item'])) {
-            return '#';
-        }
-
-        $result = '';
-
         $defaults = [
-            'url' => '',
-            'action' => 'view',
-            'item' => '',
             'attr' => '',
             'text' => 'details',
             'type' => 'link',
             'data' => []
         ];
+
         $params = array_merge($defaults, $params);
+
         $params['text'] = iaLanguage::get($params['text'], $params['text']);
-        $classname = isset($params['classname']) ? $params['classname'] : '';
+        $params['url'] = isset($params['data']['link']) ? $params['data']['link'] : '#';
 
-        switch ($params['item']) {
-            case iaUsers::getItemName():
-
-                $params['url'] = iaCore::instance()->factory('users')->url($params['action'], $params['data']);
-
-                break;
-
-            default:
-                $iaCore = iaCore::instance();
-                $iaItem = $iaCore->factory('item');
-                $package = $iaItem->getModuleByItem($params['item']);
-                if (empty($package)) {
-                    return $result;
-                }
-                $iaPackage = $iaCore->factoryModule('item', $package, iaCore::FRONT, $params['item']);
-
-                if (empty($iaPackage)) {
-                    return $result;
-                }
-                $params['url'] = $iaPackage->url($params['action'], $params['data']);
+        if (isset($params['item'])) {
+            if ($itemInstance = iaCore::instance()->factoryItem($params['item'])) {
+                $params['url'] = $itemInstance->getUrl($params['data']);
+            }
         }
 
         if (!isset($params['icon'])) {
@@ -276,17 +261,17 @@ class iaSmarty extends Smarty
         $params['icon'] = '<span class="fa fa-' . $params['icon'] . '"></span>';
 
         switch ($params['type']) {
+            default:
+                $result = $params['url'];
+                break;
             case 'link':
                 $result = '<a href="' . $params['url'] . '" ' . $params['attr'] . '>' . iaSanitize::html($params['text']) . '</a>';
                 break;
             case 'icon':
             case 'icon_text':
                 $params['text'] = ($params['type'] == 'icon') ? $params['icon'] : $params['icon'] . ' ' . iaSanitize::html($params['text']);
-
+                $classname = isset($params['classname']) ? $params['classname'] : '';
                 $result = '<a href="' . $params['url'] . '" ' . $params['attr'] . ' class="btn btn-sm btn-default ' . $classname . '">' . $params['text'] . '</a>';
-                break;
-            case 'url':
-                $result = $params['url'];
         }
 
         return $result;
@@ -387,8 +372,10 @@ class iaSmarty extends Smarty
                     $compress = false;
                     $url = $filename;
                 } elseif (strstr($filename, '_IA_TPL_')) {
-                    $url = str_replace('_IA_TPL_', IA_TPL_URL . 'js' . IA_URL_DELIMITER, $filename) . self::EXTENSION_JS;
-                    $file = str_replace('_IA_TPL_', IA_HOME . 'templates/' . $iaCore->get('tmpl')  . '/js/', $filename) . self::EXTENSION_JS;
+                    $url = str_replace('_IA_TPL_', IA_TPL_URL . 'js' . IA_URL_DELIMITER,
+                            $filename) . self::EXTENSION_JS;
+                    $file = str_replace('_IA_TPL_', IA_HOME . 'templates/' . $iaCore->get('tmpl') . '/js/',
+                            $filename) . self::EXTENSION_JS;
                     $tmp = str_replace('_IA_TPL_', 'compress/', $filename);
                 } elseif (strstr($filename, '_IA_URL_')) {
                     $url = str_replace('_IA_URL_', $iaView->assetsUrl, $filename) . self::EXTENSION_JS;
@@ -423,9 +410,7 @@ class iaSmarty extends Smarty
                         // modified time of the compressed file
                         if (file_exists($minifiedFilename)) {
                             $minifiedLastModifiedTime = filemtime($minifiedFilename);
-                        }
-
-                        // create directory for compressed files
+                        } // create directory for compressed files
                         else {
                             $compileDir = IA_TMP . implode(IA_DS, array_slice(explode(IA_DS, $tmp), 0, -1));
                             iaCore::util()->makeDirCascade($compileDir, 0777, true);
@@ -437,7 +422,8 @@ class iaSmarty extends Smarty
 
                         if (($lastModified > $minifiedLastModifiedTime || $minifiedLastModifiedTime == 0) && $lastModified != 0) {
                             // need to compress
-                            iaDebug::debug($minifiedFilename . ' - ' . $lastModified . ' - ' . $minifiedLastModifiedTime, 'compress', 'info');
+                            iaDebug::debug($minifiedFilename . ' - ' . $lastModified . ' - ' . $minifiedLastModifiedTime,
+                                'compress', 'info');
 
                             require_once IA_INCLUDES . 'utils/Minifier.php';
                             $minifiedCode = \JShrink\Minifier::minify(file_get_contents($file));
@@ -575,28 +561,14 @@ class iaSmarty extends Smarty
         if (isset($params['title'])) {
             $title = iaSanitize::html($params['title']);
             $alt || $alt = $title;
-            $attr.= ' title="' . $title . '"';
+            $attr .= ' title="' . $title . '"';
         }
 
-        empty($params['width']) || $attr.= ' width="' . $params['width'] . '"';
-        empty($params['height']) || $attr.= ' height="' . $params['height'] . '"';
-        empty($params['class']) || $attr.= ' class="' . $params['class'] . '"';
+        empty($params['width']) || $attr .= ' width="' . $params['width'] . '"';
+        empty($params['height']) || $attr .= ' height="' . $params['height'] . '"';
+        empty($params['class']) || $attr .= ' class="' . $params['class'] . '"';
 
         return sprintf('<img src="%s" alt="%s"%s>', $url, $alt, $attr);
-    }
-
-    /**
-     * Prints picture in the box uses for display listing thumbnails, listing full picture, member avatar
-     *
-     * @param array $params image params
-     *
-     * @return string
-     */
-    public static function printImage($params)
-    {
-        iaDebug::debug("'printImage' obsolete method call: " . $params['imgfile'], 'Notice');
-
-        return self::ia_image(array_merge($params, ['file' => $params['imgfile']]));
     }
 
     /**
@@ -624,7 +596,7 @@ class iaSmarty extends Smarty
         // generate replacements array
         $_replace = [
             'id' => (int)$params['item']['id'],
-            'item' => $params['itemtype'],
+            'item' => empty($params['item']['item']) ? $params['itemtype'] : $params['item']['item'],
             'class' => isset($params['classname']) ? $params['classname'] : '',
             'guests' => isset($params['guests']) ? (bool)$params['guests'] : false,
             'action' => (isset($params['item']['favorite']) && $params['item']['favorite'] == '1') ? 'delete' : 'add'
@@ -640,17 +612,18 @@ class iaSmarty extends Smarty
 
     public static function accountActions($params)
     {
-        if (!iaUsers::hasIdentity()
-            || empty($params['item'])
-            || empty($params['itemtype'])
-            || (iaUsers::getItemName() == $params['itemtype'] && iaUsers::getIdentity()->id != $params['item']['id'])
-            || (iaUsers::getItemName() != $params['itemtype'] && isset($params['item']['member_id']) && iaUsers::getIdentity()->id != $params['item']['member_id'])
-        ) {
+        if (!iaUsers::hasIdentity() || empty($params['item'])) {
+            return '';
+        }
+
+        $item = empty($params['item']['item']) ? $params['itemtype'] : $params['item']['item'];
+
+        if ((iaUsers::getItemName() == $item && iaUsers::getIdentity()->id != $params['item']['id'])
+            || (iaUsers::getItemName() != $item && isset($params['item']['member_id']) && iaUsers::getIdentity()->id != $params['item']['member_id'])) {
             return '';
         }
 
         $iaCore = iaCore::instance();
-        $iaItem = $iaCore->factory('item');
 
         $params['img'] = $img = IA_CLEAR_URL . 'templates/' . $iaCore->iaView->theme . '/img/';
         $classname = isset($params['classname']) ? $params['classname'] : '';
@@ -660,26 +633,30 @@ class iaSmarty extends Smarty
         $extraActions = '';
         $output = '';
 
-        if (iaUsers::getItemName() == $params['itemtype']) {
+        if (iaUsers::getItemName() == $item) {
             $editUrl = IA_URL . 'profile/';
         } else {
-            $item = $iaItem->getModuleByItem($params['itemtype']);
-            if (empty($item)) {
+            $itemInstance = $iaCore->factoryItem($item);
+
+            if (!$itemInstance) {
                 return '';
             }
-            $iaPackage = $iaCore->factoryModule('item', $item, iaCore::FRONT, $params['itemtype']);
-            if (empty($iaPackage)) {
-                return '';
+            if (method_exists($itemInstance, __FUNCTION__)) {
+                list($editUrl, $upgradeUrl) = $itemInstance->{__FUNCTION__}($params);
             }
-            if (method_exists($iaPackage, __FUNCTION__)) {
-                list($editUrl, $upgradeUrl) = $iaPackage->{__FUNCTION__}($params);
-            }
-            if (method_exists($iaPackage, 'extraActions')) {
-                $extraActions = $iaPackage->extraActions($params['item']);
+            if (method_exists($itemInstance, 'extraActions')) {
+                $extraActions = $itemInstance->extraActions($params['item']);
             }
         }
+
         $iaCore->startHook('phpSmartyAccountActionsBeforeShow',
-            ['params' => &$params, 'type' => $params['itemtype'], 'upgrade_url' => &$upgradeUrl, 'edit_url' => &$editUrl, 'output' => &$output]);
+            [
+                'params' => &$params,
+                'type' => $item,
+                'upgrade_url' => &$upgradeUrl,
+                'edit_url' => &$editUrl,
+                'output' => &$output
+            ]);
 
         if ($editUrl) {
             $output .= '<a rel="nofollow" href="' . $editUrl . '" class="' . $classname . '" title="' . iaLanguage::get('edit') . '"><span class="fa fa-pencil"></span> ' . iaLanguage::get('edit') . '</a>';
@@ -706,7 +683,7 @@ class iaSmarty extends Smarty
             $smarty->assign('ismenu', isset($params['ismenu']) ? $params['ismenu'] : false);
             $smarty->assign('_block_content_', $content);
 
-            if (!isset($params['tpl']) || empty($params['tpl'])) {
+            if (empty($params['tpl'])) {
                 $params['tpl'] = 'block.tpl';
             }
 
@@ -783,7 +760,7 @@ class iaSmarty extends Smarty
         $iaCore = iaCore::instance();
 
         if ($captchaName = $iaCore->get('captcha_name')) {
-            $iaCaptcha = $iaCore->factoryPlugin($captchaName, iaCore::FRONT, 'captcha');
+            $iaCaptcha = $iaCore->factoryModule('captcha', $captchaName, iaCore::FRONT);
 
             return $preview
                 ? $iaCaptcha->getPreview()
@@ -991,7 +968,8 @@ class iaSmarty extends Smarty
     public static function ia_print_title($params)
     {
         $suffix = iaCore::instance()->get('suffix');
-        $title = empty($params['title']) ? iaCore::instance()->iaView->get('title') : $params['title'];
+        $title = empty($params['title']) ? iaCore::instance()->iaView->get('meta_title',
+            iaCore::instance()->iaView->get('title')) : $params['title'];
 
         return iaSanitize::html($title . ' ' . $suffix);
     }
@@ -1010,5 +988,10 @@ class iaSmarty extends Smarty
         }
 
         return implode(', ', $result);
+    }
+
+    public static function currency_format($number)
+    {
+        return iaCore::instance()->factory('currency')->format($number);
     }
 }

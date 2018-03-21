@@ -1,5 +1,5 @@
 $(function () {
-    intelli.visualModeUrl = intelli.config.ia_url + $('#js-config-admin-page').val() + '/visual-mode.json';
+    intelli.visualModeUrl = intelli.config.url + $('#js-config-admin-page').val() + '/visual-mode.json';
 
     $('body').addClass('visual-mode').css('overflow-x', 'visible');
     $('body > *:not(.sb-left, .vm-bar, .sb-slide, #debug-toggle, #debug)').wrapAll('<div id="sb-site"></div>');
@@ -148,7 +148,7 @@ function closeSlideBar(bar, type, btn) {
         pageVisibility ? $('#block_' + name).removeClass('box-visual--hidden') : $('#block_' + name).addClass('box-visual--hidden');
     }
 
-    $.post(intelli.visualModeUrl, {
+    intelli.post(intelli.visualModeUrl, {
             action: 'save',
             type: type,
             global: globalVisibility,
@@ -158,7 +158,7 @@ function closeSlideBar(bar, type, btn) {
         },
         function (data) {
             // TODO: reserved for notifications
-            if ('boolean' == typeof data.error && !data.error) {
+            if ('boolean' === typeof data.error && !data.error) {
             }
         }
     );

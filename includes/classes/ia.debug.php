@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -62,31 +62,39 @@ class iaDebug
 
     protected function _debugCss()
     {
-        if (defined('INSTALL')) {
-            $assetsUrl = URL_HOME;
-        } else {
-            $assetsUrl = &iaCore::instance()->iaView->assetsUrl;
-        }
+        $assetsUrl = defined('INSTALL') ? URL_HOME : iaCore::instance()->iaView->assetsUrl;
+        echo <<<OUTPUT
 
-        echo '
-<link href="' . $assetsUrl . 'js/debug/hl.css" type="text/css" rel="stylesheet">
-<link href="' . $assetsUrl . 'js/debug/debug.css" type="text/css" rel="stylesheet">
-<script type="text/javascript" src="' . $assetsUrl . 'js/debug/hl.js"></script>
-<script type="text/javascript" src="' . $assetsUrl . 'js/debug/debug.js"></script>
-';
+
+<!-- START DEBUG MODE -->
+<link href="{$assetsUrl}js/debug/hl.css" type="text/css" rel="stylesheet">
+<link href="{$assetsUrl}js/debug/debug.css" type="text/css" rel="stylesheet">
+
+<script type="text/javascript" src="{$assetsUrl}js/debug/hl.js"></script>
+<script type="text/javascript" src="{$assetsUrl}js/debug/debug.js"></script>
+
+
+OUTPUT;
     }
 
     protected function _box($type = 'info', $debug = 'none')
     {
-        echo
-            '<div class="debug-modal" id="dtext-'.$type.'">
-			<a class="debug-btn-close" data-toggle="'.$type.'">&times;</a>
-			<div class="debug-text">';
+        $capitalized = ucfirst($type);
+        $functionName = '_debug' . $capitalized;
 
-        $func = '_debug'.ucfirst($type);
-        $text = $this->$func();
+        ob_start();
+        $text = $this->$functionName();
+        if ($output = ob_get_clean()) {
+            $output = <<<OUTPUT
+<div class="debug-modal" id="dtext-{$type}">
+    <a class="debug-btn-close" data-toggle="{$type}">&times;</a>
+    <div class="debug-text">{$output}</div>
+</div>
+<a class="debug-btn" data-toggle="{$type}"> {$capitalized} {$text} </a>
+OUTPUT;
+        }
 
-        echo '</div></div><a class="debug-btn" data-toggle="'.$type.'">'.ucfirst($type).($text ? ' '.$text.' ' : '').'</a>';
+        echo $output;
     }
 
     protected function _debugInfo()
@@ -144,7 +152,7 @@ class iaDebug
         self::dump($_SESSION, '$_SESSION');
         self::dump($_COOKIE, '$_COOKIE');
 
-        return '[' . $iaCore->iaView->name() . ']';
+        return '[' . $iaCore->iaView->get('name', 'no name') . ']';
     }
 
     protected function _debugSql()
@@ -221,6 +229,10 @@ class iaDebug
 
         $listLoaded = iaCore::instance()->getHooks();
         $listUnused = $listLoaded; // needs to be pre-populated
+
+        if (empty(self::$_data['hooks'])) {
+            return '';
+        }
 
         foreach (self::$_data['hooks'] as $name => $type) {
             $i++;

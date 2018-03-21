@@ -5,7 +5,7 @@
             <div class="wrap-group-heading">{lang key='options'}</div>
 
             <div class="row">
-                <label class="col col-lg-2 control-label">{lang key='name'}</label>
+                <label class="col col-lg-2 control-label">{lang key='name'} {lang key='field_required'}</label>
 
                 <div class="col col-lg-4">
                     {if iaCore::ACTION_ADD == $pageAction}
@@ -19,7 +19,7 @@
             </div>
 
             <div class="row">
-                <label class="col col-lg-2 control-label">{lang key='item'}</label>
+                <label class="col col-lg-2 control-label">{lang key='item'} {lang key='field_required'}</label>
 
                 <div class="col col-lg-4">
                     {if iaCore::ACTION_ADD == $pageAction}
@@ -79,7 +79,7 @@
                             <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-title"><span class="i-copy"></span></button>
                         </div>
                     {/if}
-                    <label class="control-label">{lang key='title'}</label>
+                    <label class="control-label">{lang key='title'} {lang key='field_required'}</label>
                 </div>
                 <div class="col col-lg-4">
                     {if count($core.languages) > 1}

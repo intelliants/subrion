@@ -6,7 +6,7 @@ $(function () {
             data = $this.data(),
             id = data.id;
 
-        $.post(intelli.config.ia_url + 'search.json', {action: 'delete', id: id}, function (data) {
+        intelli.post(intelli.config.url + 'search.json', {action: 'delete', id: id}, function (data) {
             if (Boolean(data.result)) {
                 var $wrap = $this.closest('.modal-body'),
                     itemsCount = $('tr', $wrap).length;
@@ -33,6 +33,16 @@ $(function () {
 
         window.print();
     });
+
+    $('.dropdown-menu a', '#js-currencies-list').on('click', function(e) {
+        e.preventDefault();
+
+        intelli.post(intelli.config.url + 'actions.json', {action: 'set-currency', code: $(this).data('code')}, function(response) {
+            if (!response.error) {
+                window.location.reload(true);
+            }
+        })
+    })
 
     $('body').on('click', '.js-favorites', function (e) {
         e.preventDefault();
@@ -64,7 +74,7 @@ $(function () {
                     }
                     else {
                         intelli.notifFloatBox({msg: data.message, type: 'error', autohide: true});
-                        window.location.href = intelli.config.ia_url + 'login/';
+                        window.location.href = intelli.config.url + 'login/';
                     }
                 }
             });
@@ -103,7 +113,7 @@ $(function () {
         $(this).parent().removeClass('focused');
     });
 
-    if ('function' == typeof $.fn.numeric) {
+    if ('function' === typeof $.fn.numeric) {
         $('.js-filter-numeric').numeric();
     }
 
@@ -111,7 +121,7 @@ $(function () {
         $('.js-datepicker').datetimepicker(
             {
                 format: 'YYYY-MM-DD HH:mm:ss',
-                locale: intelli.config.lang,
+                locale: intelli.getLocale(),
                 icons: {
                     time: 'fa fa-clock-o',
                     date: 'fa fa-calendar',
@@ -140,36 +150,35 @@ $(function () {
             '<button type="button" class="btn btn-default btn-sm editable-cancel"><span class="fa fa-times"></span></button>';
 
         if ($pictureTitles.length) {
-            $pictureTitles.editable(
-                {
-                    url: intelli.config.ia_url + 'actions.json',
-                    type: 'text',
-                    params: function (params) {
-                        var $self = $(this);
+            $pictureTitles.editable({
+                url: intelli.config.url + 'actions.json',
+                type: 'text',
+                params: function (params) {
+                    var $self = $(this);
 
-                        params.action = 'edit-picture-title';
-                        params.field = $self.data('field');
-                        params.item = $self.data('item');
-                        params.itemid = $self.data('item-id');
-                        params.path = $self.data('picture-path');
+                    params.action = 'edit-picture-title';
+                    params.field = $self.data('field');
+                    params.item = $self.data('item');
+                    params.itemid = $self.data('item-id');
+                    params.path = $self.data('picture-path');
 
-                        return params;
-                    },
-                    success: function (response, newValue) {
-                        var $self = $(this),
-                            success = ('boolean' == typeof response.error && !response.error);
+                    return params;
+                },
+                success: function (response, newValue) {
+                    var $self = $(this),
+                        success = ('boolean' == typeof response.error && !response.error);
 
-                        intelli.notifFloatBox({
-                            msg: success ? _t('saved') : response.message,
-                            type: success ? 'success' : 'error',
-                            autohide: true
-                        });
+                    intelli.notifFloatBox({
+                        msg: success ? _t('saved') : response.message,
+                        type: success ? 'success' : 'error',
+                        autohide: true
+                    });
 
-                        if (success) {
-                            $self.closest('.gallery').find('input[name*="title"]').val(newValue)
-                        }
+                    if (success) {
+                        $self.closest('.gallery').find('input[name*="title"]').val(newValue)
                     }
-                });
+                }
+            });
         }
     }
 
@@ -186,7 +195,7 @@ $(function () {
 
         intelli.confirm(_t('sure_rm_file'), '', function (result) {
             if (result) {
-                $.post(intelli.config.ia_url + 'actions/read.json', {
+                intelli.post(intelli.config.url + 'actions/read.json', {
                     action: 'delete-file',
                     item: item,
                     field: field,

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -53,6 +53,13 @@ class iaBackendController extends iaAbstractControllerBackend
             : parent::_gridRead($params);
     }
 
+    protected function _entryAdd(array $entryData)
+    {
+        $entryData['order'] = $this->_iaDb->getMaxOrder() + 1;
+
+        return parent::_entryAdd($entryData);
+    }
+
     protected function _entryDelete($entryId)
     {
         return $this->_iaUsers->deleteUsergroup($entryId);
@@ -62,10 +69,10 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $sql = <<<SQL
 SELECT u.*, IF(u.`id` = 1, 0, u.`id`) `permissions`, u.`id` `config`, IF(u.`system` = 1, 0, 1) `delete`, 
-	IF(u.`id` = 1, 1, p.`access`) `admin`, 
-	(SELECT GROUP_CONCAT(m.`fullname` SEPARATOR ', ') FROM `:table_members` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id` LIMIT 10) `members`,
-	(SELECT COUNT(m.`id`) FROM `:table_members` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id`) `count`
-	FROM `:table_usergroups` u
+  IF(u.`id` = 1, 1, p.`access`) `admin`, 
+  (SELECT GROUP_CONCAT(m.`fullname` SEPARATOR ', ') FROM `:table_members` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id` LIMIT 10) `members`,
+  (SELECT COUNT(m.`id`) FROM `:table_members` m WHERE m.`usergroup_id` = u.`id` GROUP BY m.`usergroup_id`) `count`
+  FROM `:table_usergroups` u
 LEFT JOIN `:table_privileges` p ON (p.`type` = 'group' AND p.`type_id` = u.`id` AND `object` = 'admin_access' AND `action` = 'read')
 WHERE :conditions
 LIMIT :start, :limit
@@ -92,6 +99,7 @@ SQL;
     {
         $entry['assignable'] = (int)$data['visible'];
         $entry['visible'] = (int)$data['visible'];
+        $entry['order'] = (int)$data['order'];
 
         if (iaCore::ACTION_ADD == $action) {
             if (empty($data['name'])) {

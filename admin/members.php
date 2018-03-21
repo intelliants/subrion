@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -83,14 +83,14 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->getHelper()->delete($stmt);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
-        if (!empty($_GET['name'])) {
-            $conditions[] = "CONCAT(`username`, `fullname`, `email`) LIKE '%" . iaSanitize::sql($_GET['name']) . "%'";
+        if (!empty($params['name'])) {
+            $conditions[] = "CONCAT(`username`, `fullname`, `email`) LIKE '%" . iaSanitize::sql($params['name']) . "%'";
         }
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         $userId = iaUsers::getIdentity()->id;
 
@@ -126,7 +126,21 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         $iaField = $this->_iaCore->factory('field');
+
         $sections = $iaField->getGroups($this->_itemName);
+        $iaField->unwrapItemValues($this->_itemName, $entryData);
+
+        foreach ($sections[0]['fields'] as &$field) {
+            if ('email_language' == $field['name']) {
+                $field['type'] = iaField::RADIO;
+                $field['default'] = iaLanguage::getMasterLanguage()->iso;
+                $field['values'] = [];
+                foreach ($this->_iaCore->languages as $iso => $language) {
+                    $field['values'][$iso] = $language['title'];
+                }
+                break;
+            }
+        }
 
         unset($this->_userGroups[iaUsers::MEMBERSHIP_GUEST]);
 
@@ -212,7 +226,7 @@ class iaBackendController extends iaAbstractControllerBackend
                     $this->addMessage('error_password_empty');
                 } elseif (!utf8_is_ascii($entry['password'])) {
                     $this->addMessage(iaLanguage::get('password') . ': ' . iaLanguage::get('ascii_required'));
-                } elseif ($entry['password'] != $this->getHelper()->encodePassword($data['_password2'])) {
+                } elseif (!password_verify($data['_password2'], $entry['password'])) {
                     $this->addMessage('error_password_match');
                 }
             }
@@ -235,12 +249,10 @@ class iaBackendController extends iaAbstractControllerBackend
         ]);
 
         if (iaCore::ACTION_ADD == $action) {
-            $action = 'member_registration';
-            if ($this->_iaCore->get($action)) {
-                $iaMailer = $this->_iaCore->factory('mailer');
+            $iaMailer = $this->_iaCore->factory('mailer');
 
-                $iaMailer->loadTemplate($action . '_notification');
-                $iaMailer->addAddress($entry['email']);
+            if ($iaMailer->loadTemplate('member_registration_notification')) {
+                $iaMailer->addAddressByMember($entry);
                 $iaMailer->setReplacements([
                     'fullname' => $entry['fullname'],
                     'username' => $entry['username'],

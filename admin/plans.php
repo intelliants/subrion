@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -54,7 +54,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $this->_items = $this->_iaCore->factory('item')->getItems(true);
     }
 
-    protected function _modifyGridResult(array &$entries)
+    protected function _gridModifyOutput(array &$entries)
     {
         foreach ($entries as $key => &$entry) {
             $entry['title'] = iaLanguage::get(self::PATTERN_TITLE . $entry['id']);
@@ -302,20 +302,18 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $result = [];
 
-        $iaItem = $this->_iaCore->factory('item');
-
         foreach ($this->_items as $itemName) {
             $statuses = [];
 
-            $className = ucfirst(substr($itemName, 0, -1));
             $itemClassInstance = (iaUsers::getItemName() == $itemName)
                 ? $this->_iaCore->factory('users')
-                : $this->_iaCore->factoryModule($className, $iaItem->getModuleByItem($itemName));
+                : $this->_iaCore->factoryItem($itemName);
+
             if ($itemClassInstance && method_exists($itemClassInstance, 'getStatuses')) {
                 $statuses = $itemClassInstance->getStatuses();
             }
 
-            $result[$itemName] = implode(',', $statuses);
+            $result[$itemName] = $statuses;
         }
 
         return $result;

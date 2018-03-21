@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -79,7 +79,7 @@ class iaBackendController extends iaAbstractControllerBackend
         return $this->getHelper()->update($entryData, $entryId);
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($params['pos'])) {
             $conditions[] = 'b.`position` = :position';
@@ -101,14 +101,13 @@ class iaBackendController extends iaAbstractControllerBackend
     protected function _gridQuery($columns, $where, $order, $start, $limit)
     {
         $sql = <<<SQL
-	SELECT :columns, p.`value` `title`,
-		IF(b.`type` = 'php' OR b.`type` = 'smarty', b.`contents`,
-			(SELECT `value` FROM `:prefix:table_phrases` WHERE `key` = CONCAT('block_content_', b.`id`) AND `code` = ':lang')
-		) `contents`
-	FROM `:prefix:table_blocks` b
-	LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT('block_title_', b.`id`) AND p.`code` = ':lang')
-	WHERE :where :order
-	LIMIT :start, :limit
+SELECT :columns, p.`value` `title`, IF(b.`type` = 'php' OR b.`type` = 'smarty', b.`contents`,
+    (SELECT `value` FROM `:prefix:table_phrases` WHERE `key` = CONCAT('block_content_', b.`id`) AND `code` = ':lang')
+  ) `contents`
+  FROM `:prefix:table_blocks` b
+LEFT JOIN `:prefix:table_phrases` p ON (p.`key` = CONCAT('block_title_', b.`id`) AND p.`code` = ':lang')
+WHERE :where :order
+LIMIT :start, :limit
 SQL;
         $sql = iaDb::printf($sql, [
             'prefix' => $this->_iaDb->prefix,
@@ -123,13 +122,6 @@ SQL;
         ]);
 
         return $this->_iaDb->getAll($sql);
-    }
-
-    protected function _modifyGridResult(array &$entries)
-    {
-        foreach ($entries as &$entry) {
-            $entry['contents'] = iaSanitize::html($entry['contents']);
-        }
     }
 
     protected function _gridUpdate($params)
@@ -302,9 +294,9 @@ SQL;
 
         $sql = <<<SQL
 SELECT DISTINCTROW p.*, IF(l.`value` IS NULL, p.`name`, l.`value`) `title` 
-	FROM `:prefix:table_pages` p 
+  FROM `:prefix:table_pages` p 
 LEFT JOIN `:prefix:table_phrases` l 
-	ON (`key` = CONCAT('page_title_', p.`name`) AND l.`code` = ':lang' AND l.`category` = ':category') 
+  ON (`key` = CONCAT('page_title_', p.`name`) AND l.`code` = ':lang' AND l.`category` = ':category') 
 WHERE p.`status` = ':status' AND p.`service` = 0 
 GROUP BY p.`name` 
 ORDER BY l.`value`

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -53,7 +53,7 @@ class iaLog extends abstractCore
     ];
 
 
-    public function write($actionCode, $params = null, $pluginName = null)
+    public function write($actionCode, $params = null, $moduleName = null)
     {
         if (!in_array($actionCode, $this->_validActions)) {
             return false;
@@ -72,25 +72,22 @@ class iaLog extends abstractCore
             'params' => serialize($params)
         ];
 
-        if ($pluginName) {
-            $row['module'] = $pluginName;
-        } else {
-            $iaView = &iaCore::instance()->iaView;
-            if ($value = $iaView->get('module')) {
-                $row['module'] = $value;
-            }
+        if ($moduleName) {
+            $row['module'] = $moduleName;
+        } elseif ($module = iaCore::instance()->iaView->get('module')) {
+            $row['module'] = $module;
         }
 
         return (bool)$this->iaDb->insert($row, null, self::getTable());
     }
 
-    public function get($extra = null)
+    public function get($module = null)
     {
         $result = [];
 
         $stmt = iaDb::EMPTY_CONDITION;
-        $stmt.= $extra ? ' AND `module` = :plugin' : '';
-        $this->iaDb->bind($stmt, ['plugin' => $extra]);
+        $stmt.= $module ? ' AND `module` = :module' : '';
+        $this->iaDb->bind($stmt, ['module' => $module]);
 
         if ($rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $stmt . ' ORDER BY `date` DESC', 0, 20, self::getTable())) {
             foreach ($rows as $row) {
@@ -168,11 +165,17 @@ class iaLog extends abstractCore
                     }
                 }
 
-                return [
-                    iaDb::printf(':item :name :actiond by :user.', array_merge($params, ['action' => $actionsMap[$logEntry['action']], 'item' => ucfirst(iaLanguage::get($params['item'], $params['item']))])),
-                    isset($iconsMap[$params['item']]) ? $iconsMap[$params['item']] : 'copy',
-                    $style
-                ];
+                $action = iaDb::printf(':item :name :actiond by :user.', array_merge($params,
+                    ['action' => $actionsMap[$logEntry['action']], 'item' => ucfirst(iaLanguage::get($params['item'], $params['item']))]));
+
+                $icon = 'copy';
+                if (isset($iconsMap[$params['item']])) {
+                    $icon = $iconsMap[$params['item']];
+                } elseif (isset($params['icon'])) {
+                    $icon = $params['icon'];
+                }
+
+                return [$action, $icon, $style];
 
             case self::ACTION_LOGIN:
                 $text = ':user logged in <small class="text-muted"><em>from :ip.</em></small>';

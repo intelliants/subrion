@@ -81,87 +81,85 @@ Ext.onReady(function () {
                 var text = selectedNode.data.text.replace(/ \(custom\)/, '').replace(nolinkRegExp, '');
                 var win, form;
 
-                $.ajax(
-                    {
-                        dataType: 'json',
-                        url: intelli.config.admin_url + '/menus/read.json',
-                        data: {
-                            action: 'titles',
-                            id: selectedNode.data.id,
-                            current: text,
-                            menu: $('#input-name').val(),
-                            'new': (menu == 'add') ? 1 : 0
-                        },
-                        success: function (response) {
-                            if (!response.languages || response.length == 0) {
-                                return false;
-                            }
+                $.ajax({
+                    dataType: 'json',
+                    url: intelli.config.admin_url + '/menus/read.json',
+                    data: {
+                        action: 'titles',
+                        id: selectedNode.data.id,
+                        current: text,
+                        menu: $('#input-name').val(),
+                        'new': (menu == 'add') ? 1 : 0
+                    },
+                    success: function (response) {
+                        if (!response.languages || response.length == 0) {
+                            return false;
+                        }
 
-                            var nodeId = ('add' == menu)
-                                ? 'node_' + Math.floor(Math.random(1000) * 100000)
-                                : selectedNode.data.id;
+                        var nodeId = ('add' == menu)
+                            ? 'node_' + Math.floor(Math.random(1000) * 100000)
+                            : selectedNode.data.id;
 
-                            win = new Ext.Window(
+                        win = new Ext.Window({
+                            title: _t('edit_page_title'),
+                            layout: 'fit',
+                            width: 350,
+                            autoHeight: true,
+                            plain: true,
+                            items: [new Ext.FormPanel(
                                 {
-                                    title: _t('edit_page_title'),
-                                    layout: 'fit',
+                                    id: 'form-panel',
+                                    labelWidth: 75,
+                                    url: intelli.config.admin_url + '/menus/read.json?action=save&menu=' + $('#input-name').val() + '&node=' + nodeId,
+                                    frame: true,
                                     width: 350,
                                     autoHeight: true,
-                                    plain: true,
-                                    items: [new Ext.FormPanel(
+                                    defaults: {width: 230},
+                                    defaultType: 'textfield',
+                                    items: response.languages,
+                                    buttons: [
                                         {
-                                            id: 'form-panel',
-                                            labelWidth: 75,
-                                            url: intelli.config.admin_url + '/menus/read.json?action=save&menu=' + $('#input-name').val() + '&node=' + nodeId,
-                                            frame: true,
-                                            width: 350,
-                                            autoHeight: true,
-                                            defaults: {width: 230},
-                                            defaultType: 'textfield',
-                                            items: response.languages,
-                                            buttons: [
-                                                {
-                                                    text: _t('save'),
-                                                    handler: function () {
-                                                        changed = true;
-                                                        Ext.getCmp('form-panel').getForm().submit(
-                                                            {
-                                                                waitMsg: _t('saving'),
-                                                                success: function () {
-                                                                    var formText = Ext.getCmp('form-panel').getForm().getValues()[intelli.config.lang];
-                                                                    if (formText == '') {
-                                                                        return;
-                                                                    }
-                                                                    if ('add' == menu) {
-                                                                        var target = selectedNode.data.leaf
-                                                                            ? selectedNode.data.parentNode
-                                                                            : selectedNode;
+                                            text: _t('save'),
+                                            handler: function () {
+                                                changed = true;
+                                                Ext.getCmp('form-panel').getForm().submit({
+                                                    params: intelli.includeSecurityToken({}),
+                                                    waitMsg: _t('saving'),
+                                                    success: function () {
+                                                        var formText = Ext.getCmp('form-panel').getForm().getValues()[intelli.config.lang];
+                                                        if (formText == '') {
+                                                            return;
+                                                        }
+                                                        if ('add' == menu) {
+                                                            var target = selectedNode.data.leaf
+                                                                ? selectedNode.data.parentNode
+                                                                : selectedNode;
 
-                                                                        target.appendChild({
-                                                                            id: nodeId,
-                                                                            text: formText + ' (no link)',
-                                                                            leaf: true,
-                                                                            cls: 'folder'
-                                                                        });
-                                                                        target.expand();
-                                                                    }
-                                                                    else {
-                                                                        selectedNode.set('text', formText + (selectedNode.data.text.match(nolinkRegExp) ? ' (no link)' : ' (custom)'));
-                                                                    }
-                                                                    win.close();
-                                                                }
+                                                            target.appendChild({
+                                                                id: nodeId,
+                                                                text: formText + ' (no link)',
+                                                                leaf: true,
+                                                                cls: 'folder'
                                                             });
-                                                    }
-                                                }, {
-                                                    text: _t('cancel'),
-                                                    handler: function () {
+                                                            target.expand();
+                                                        }
+                                                        else {
+                                                            selectedNode.set('text', formText + (selectedNode.data.text.match(nolinkRegExp) ? ' (no link)' : ' (custom)'));
+                                                        }
                                                         win.close();
                                                     }
-                                                }]
-                                        })]
-                                }).show();
-                        }
-                    });
+                                                });
+                                            }
+                                        }, {
+                                            text: _t('cancel'),
+                                            handler: function () {
+                                                win.close();
+                                            }
+                                        }]
+                                })]
+                        }).show();
+                    }
+                });
             }
         };
 
@@ -186,79 +184,77 @@ Ext.onReady(function () {
                     }]
             });
 
-        var menus = new Ext.tree.TreePanel(
-            {
-                id: 'menus',
-                listeners: {
-                    itemcontextmenu: function (view, record, item, index, e) {
-                        contextMenu.showAt(e.getXY());
-                        e.stopEvent();
-                    }
-                },
-                renderTo: 'js-placeholder-menus',
-                root: {id: 0, text: _t('menus'), expanded: true},
-                store: Ext.create('Ext.data.TreeStore',
-                    {
-                        proxy: {
-                            type: 'ajax',
-                            url: intelli.config.admin_url + '/menus/read.json?id=' + $('#js-input-id').val() + '&action=menus'
-                        }
-                    }),
-                viewConfig: {
-                    listeners: {
-                        beforedrop: function (node, data, overModel, dropPosition, dropFunction) {
-                            if (data.view.panel.id != this.panel.id) // copy the node if dropped to another tree, just move otherwise
-                            {
-                                if (!data.records[0].data.leaf) // we permit the drop of pages group
-                                {
-                                    return false;
-                                }
-
-                                data.copy = true; // mark that node should be copied
-
-                                // we have to actually copy the node instead of just cloning it
-                                var record = data.records[0].copy();
-
-                                record.data.id += '_' + Math.floor(Math.random(1000) * 10000);
-                                record.data.leaf = false;
-
-                                data.records[0] = record;
-                            }
-
-                            return true;
-                        }
-                    },
-                    plugins: {ptype: 'treeviewdragdrop', allowContainerDrops: true}
+        var menus = new Ext.tree.TreePanel({
+            id: 'menus',
+            listeners: {
+                itemcontextmenu: function (view, record, item, index, e) {
+                    contextMenu.showAt(e.getXY());
+                    e.stopEvent();
                 }
-            });
-
-        var pages = new Ext.tree.TreePanel(
-            {
-                id: 'pages',
-                renderTo: 'js-placeholder-pages',
-                rootVisible: false,
-                singleExpand: true,
-                store: Ext.create('Ext.data.TreeStore',
-                    {
-                        proxy: {
-                            type: 'ajax',
-                            url: intelli.config.admin_url + '/menus/read.json?action=pages'
-                        }
-                    }),
-                viewConfig: {
-                    listeners: {
-                        beforedrop: function (node, data, overModel, dropPosition, dropFunction) {
-                            if (data.view.panel.id == this.panel.id) // permit the movement between nodes of this tree
+            },
+            renderTo: 'js-placeholder-menus',
+            root: {id: 0, text: _t('menus'), expanded: true},
+            store: Ext.create('Ext.data.TreeStore',
+                {
+                    proxy: {
+                        type: 'ajax',
+                        url: intelli.config.admin_url + '/menus/read.json?id=' + $('#js-input-id').val() + '&action=menus'
+                    }
+                }),
+            viewConfig: {
+                listeners: {
+                    beforedrop: function (node, data, overModel, dropPosition, dropFunction) {
+                        if (data.view.panel.id != this.panel.id) // copy the node if dropped to another tree, just move otherwise
+                        {
+                            if (!data.records[0].data.leaf) // we permit the drop of pages group
                             {
                                 return false;
                             }
 
-                            return true;
+                            data.copy = true; // mark that node should be copied
+
+                            // we have to actually copy the node instead of just cloning it
+                            var record = data.records[0].copy();
+
+                            record.data.id += '_' + Math.floor(Math.random(1000) * 10000);
+                            record.data.leaf = false;
+
+                            data.records[0] = record;
                         }
-                    },
-                    plugins: {ptype: 'treeviewdragdrop'}
-                }
-            });
+
+                        return true;
+                    }
+                },
+                plugins: {ptype: 'treeviewdragdrop', allowContainerDrops: true}
+            }
+        });
+
+        var pages = new Ext.tree.TreePanel({
+            id: 'pages',
+            renderTo: 'js-placeholder-pages',
+            rootVisible: false,
+            singleExpand: true,
+            store: Ext.create('Ext.data.TreeStore',
+                {
+                    proxy: {
+                        type: 'ajax',
+                        url: intelli.config.admin_url + '/menus/read.json?action=pages'
+                    }
+                }),
+            viewConfig: {
+                listeners: {
+                    beforedrop: function (node, data, overModel, dropPosition, dropFunction) {
+                        if (data.view.panel.id == this.panel.id) // permit the movement between nodes of this tree
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                },
+                plugins: {ptype: 'treeviewdragdrop'}
+            }
+        });
 
         /* TEMPORARILY DISABLED FOR FUTURE IMPLEMENTATION
 

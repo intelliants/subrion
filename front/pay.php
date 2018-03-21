@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -58,8 +58,15 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
             $iaTransaction->update(['status' => iaTransaction::FAILED], $transaction['id']);
         }
 
-        $iaView->setMessages(iaLanguage::get('payment_canceled'), iaView::SUCCESS);
-        iaUtil::go_to($iaPage->getUrlByName('member_funds'));
+        $iaView->setMessages(iaLanguage::get('payment_process_canceled'), iaView::ALERT);
+
+        if (iaUsers::hasIdentity()) {
+            iaUtil::go_to($iaPage->getUrlByName('member_funds'));
+        } else {
+            $iaView->title(iaLanguage::get('payment_cancellation'));
+            $iaView->display(iaView::NONE);
+            return;
+        }
     }
 
     // configure return url on payment success
@@ -108,6 +115,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $gate = $_POST['payment_type'];
 
                     $iaDb->update(['gateway' => $gate, 'date_updated' => (new \DateTime())->format(iaDb::DATETIME_FORMAT)], iaDb::convertIds($transaction['id']), null, iaTransaction::getTable());
+
                     empty($_POST['invaddr']) || $iaCore->factory('invoice')->updateAddress($transaction['id'], $_POST['invaddr']);
 
                     // include pre form send files

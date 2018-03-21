@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -82,7 +82,7 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
     public function getByLevel($level, $fields = null)
     {
         $where = '`status` = :status and `level` = :level';
-        $this->iaDb->bind($where, ['status' => iaCOre::STATUS_ACTIVE, 'level' => $level]);
+        $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'level' => $level]);
 
         return $this->getAll($where, $fields);
     }

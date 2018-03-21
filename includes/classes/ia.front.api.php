@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -40,7 +40,7 @@ class iaApi
 
     const ENDPOINT_AUTH = 'auth';
 
-    protected $_authEndpoints = ['token', 'auth'];
+    protected $_authEndpoints = ['token', 'auth', 'password'];
 
     protected $_authServer;
 
@@ -48,8 +48,6 @@ class iaApi
     protected $_response;
 
     protected $_mobilePush;
-
-    protected $_systemEntities = ['migrations'];
 
 
     public function init()
@@ -85,7 +83,7 @@ class iaApi
         $this->_getResponse()->emit();
     }
 
-    protected function _action(iaApiEntityAbstract $entity)
+    protected function _action($entity)
     {
         $params = $this->_getRequest()->getParams();
 
@@ -123,11 +121,13 @@ class iaApi
                 return $this->addResource($entity);
 
             case iaApiRequest::METHOD_DELETE:
-                if (1 != count($params)) {
+                if (!$params) {
                     throw new Exception('Resource ID must be specified', iaApiResponse::BAD_REQUEST);
                 }
 
-                return $this->deleteResource($entity, $params[0]);
+                $resourceId = array_shift($params);
+
+                return $this->deleteResource($entity, $resourceId, $params);
 
             default:
                 throw new Exception('Invalid request method', iaApiResponse::NOT_ALLOWED);
@@ -155,27 +155,25 @@ class iaApi
 
     protected function _loadEntity($name)
     {
-        $extras = iaCore::instance()->factory('item')->getModuleByItem($name);
+        $iaCore = iaCore::instance();
 
-        if (!$extras && !in_array($name, $this->_systemEntities)) {
-            throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
-        }
+        $module = $iaCore->factory('item')->getModuleByItem($name);
 
-        $entity = (iaCore::CORE == $extras || in_array($name, $this->_systemEntities))
-            ? $this->_loadCoreEntity($name)
-            : $this->_loadPackageEntity($extras, $name);
-
-        $entity->setRequest($this->_getRequest());
-        $entity->setResponse($this->_getResponse());
+        $entity = empty($module) || iaCore::CORE == $module
+            ? $this->_loadSystemEntity($name)
+            : $iaCore->factoryItem($name);
 
         if (!$entity) {
             throw new Exception('Invalid resource', iaApiResponse::BAD_REQUEST);
         }
 
+        $entity->setRequest($this->_getRequest());
+        $entity->setResponse($this->_getResponse());
+
         return $entity;
     }
 
-    private function _loadCoreEntity($name)
+    private function _loadSystemEntity($name)
     {
         $fileName = IA_INCLUDES . 'api/entity/' . $name . iaSystem::EXECUTABLE_FILE_EXT;
 
@@ -185,18 +183,14 @@ class iaApi
             $className = 'iaApiEntity' . ucfirst($name);
 
             if (class_exists($className)) {
-                return new $className();
+                $instance = new $className();
+                $instance->init();
+
+                return $instance;
             }
         }
 
         return false;
-    }
-
-    private function _loadPackageEntity($packageName, $name)
-    {
-        require_once IA_CLASSES . iaSystem::CLASSES_PREFIX . 'base.package.front.api' . iaSystem::EXECUTABLE_FILE_EXT;
-
-        return iaCore::instance()->factoryModule('item', $packageName, iaCore::FRONT, $name);
     }
 
     protected function _paginate(array $params)
@@ -225,10 +219,8 @@ class iaApi
         // where
         $where = iaDb::EMPTY_CONDITION;
 
-        foreach ($entity->apiFilters as $filterName) {
-            if (isset($params[$filterName][0]) && is_string($params[$filterName])) {
-                $where.= sprintf(" AND `%s` = '%s'", $filterName, iaSanitize::sql($params[$filterName]));
-            }
+        if (isset($params['filter']) && is_array($params['filter'])) {
+            $where = self::_getArrayToSqlWhere($params['filter'], $entity);
         }
 
         // order
@@ -246,6 +238,28 @@ class iaApi
         $order = sprintf(' ORDER BY `%s` %s', $sorting, $order);
 
         return [$where, $order];
+    }
+
+    protected static function _getArrayToSqlWhere(array $filters, $entity)
+    {
+        $where = iaDb::EMPTY_CONDITION;
+
+        $kwToConditionMap = ['eq' => '=', 'lt' => '<', 'gt' => '>'];
+
+        foreach ($filters as $filter) {
+            $array = explode(',', $filter);
+            if (3 == count($array)) {
+                list($column, $condition, $value) = $array;
+                if (isset($kwToConditionMap[$condition]) && in_array($column, $entity->apiFilters)) {
+                    $column = iaSanitize::sql($column);
+                    $value = iaSanitize::sql($value);
+
+                    $where.= sprintf(" AND `%s` %s '%s'", $column, $kwToConditionMap[$condition], $value);
+                }
+            }
+        }
+
+        return $where;
     }
 
     // oauth2
@@ -322,6 +336,11 @@ class iaApi
             case 'token':
                 //$this->_getAuthServer()->handleTokenRequest($authRequest)->send();
                 $this->_getAuthServer()->handleTokenRequest($this->_getRequest(), $this->_getResponse());
+
+                break;
+
+            case 'password':
+                $this->_getAuthServer()->passwordReset($this->_getRequest(), $this->_getResponse());
         }
     }
 
@@ -329,15 +348,17 @@ class iaApi
     {
         if ($this->_getAuthServer()->verifyResourceRequest($this->_getRequest())) {
             if ($tokenInfo = $this->_getAuthServer()->getAccessTokenData($this->_getRequest())) {
+                if ($tokenInfo['session']) {
+                    $this->_getAuthServer()->setSession($tokenInfo);
+                }
+
                 if ($tokenInfo['member_id']) {
                     $iaUsers = iaCore::instance()->factory('users');
 
-                    $member = $iaUsers->getInfo($tokenInfo['member_id'], 'username');
-
-                    empty($member) || $iaUsers->getAuth($member['id']);
+                    if ($member = $iaUsers->getInfo($tokenInfo['member_id'])) {
+                        $iaUsers->getAuth($member['id'], null, null, true);
+                    }
                 }
-
-                empty($tokenInfo['session']) || $this->_getAuthServer()->setSession($tokenInfo);
 
                 return;
             }
@@ -363,11 +384,13 @@ class iaApi
         return $resource;
     }
 
-    public function deleteResource($entity, $id)
+    public function deleteResource($entity, $id, array $params)
     {
-        if (!$entity->apiDelete($id)) {
+        if (!$entity->apiDelete($id, $params)) {
             throw new Exception('Could not delete a resource', iaApiResponse::INTERNAL_ERROR);
         }
+
+        $this->_getResponse()->setCode(iaApiResponse::NO_CONTENT);
 
         return null;
     }

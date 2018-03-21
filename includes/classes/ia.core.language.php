@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -31,6 +31,7 @@ class iaLanguage
     const CATEGORY_FRONTEND = 'frontend';
     const CATEGORY_PAGE = 'page';
     const CATEGORY_TOOLTIP = 'tooltip';
+    const CATEGORY_API = 'api';
 
     protected static $_table = 'language';
     protected static $_languagesTable = 'languages';
@@ -39,7 +40,7 @@ class iaLanguage
 
     protected static $_columns = ['code', 'id', 'title', 'locale', 'date_format', 'time_format', 'direction', 'master', 'default', 'flagicon', 'iso' => 'code', 'status'];
 
-    protected static $_validCategories = [self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP];
+    protected static $_validCategories = [self::CATEGORY_ADMIN, self::CATEGORY_COMMON, self::CATEGORY_FRONTEND, self::CATEGORY_PAGE, self::CATEGORY_TOOLTIP, self::CATEGORY_API];
 
 
     public function __construct()
@@ -160,10 +161,18 @@ class iaLanguage
         return self::$_table;
     }
 
-    public static function addPhrase($key, $value, $languageCode = '', $plugin = '', $category = self::CATEGORY_COMMON, $forceReplacement = true)
+    public static function addPhrase($key, $value, $languageCode = null, $module = '', $category = self::CATEGORY_COMMON, $forceReplacement = true, $usedInApi = false)
     {
         if (!in_array($category, self::$_validCategories)) {
             return false;
+        }
+
+        if (is_null($languageCode)) {
+            $result = [];
+            foreach (iaCore::instance()->languages as $code => $language)
+                $result[] = self::addPhrase($key, $value, $code, $module, $category, $forceReplacement);
+
+            return !in_array(false, $result, true);
         }
 
         $iaDb = iaCore::instance()->iaDb;
@@ -171,12 +180,12 @@ class iaLanguage
 
         $languageCode = empty($languageCode) ? iaCore::instance()->iaView->language : $languageCode;
 
-        $stmt = '`key` = :key AND `code` = :language AND `category` = :category AND `module` = :plugin';
+        $stmt = '`key` = :key AND `code` = :language AND `category` = :category AND `module` = :module';
         $iaDb->bind($stmt, [
             'key' => $key,
             'language' => $languageCode,
             'category' => $category,
-            'plugin' => $plugin
+            'module' => $module
         ]);
 
         $phrase = $iaDb->row(['original', 'value'], $stmt);
@@ -188,7 +197,8 @@ class iaLanguage
                 'value' => $value,
                 'code' => $languageCode,
                 'category' => $category,
-                'module' => $plugin
+                'module' => $module,
+                'api' => $usedInApi
             ]);
         } else {
             $result = ($forceReplacement || ($phrase['value'] == $phrase['original']))

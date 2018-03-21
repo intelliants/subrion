@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -77,7 +77,7 @@ class iaApiRequest
 
     private function _fetchContentType()
     {
-        $contentType = $_SERVER['CONTENT_TYPE'];
+        $contentType = $this->getServer('CONTENT_TYPE');
 
         if (false !== ($pos = stripos($contentType, ';'))) {
             $contentType = substr($contentType, 0, $pos);

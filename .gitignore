@@ -3,7 +3,6 @@
 backup/*
 !backup/.htaccess
 includes/config.inc.php
-includes/custom.inc.php
 modules/*
 !modules/blog
 !modules/fancybox

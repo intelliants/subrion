@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -142,12 +142,9 @@ class iaSitemap extends abstractCore
                 break;
 
             case self::LINKS_SET_PACKAGES:
-                foreach ($iaItem->getModuleItems() as $itemName => $package) {
-                    if (iaCore::CORE != $package) {
-                        $itemClassInstance = $this->iaCore->factoryModule('item', $package, iaCore::ADMIN, $itemName);
-                        if (empty($itemClassInstance)) {
-                            $itemClassInstance = $this->iaCore->factoryModule('item', $package, 'common', $itemName);
-                        }
+                foreach ($iaItem->getModuleItems() as $itemName => $module) {
+                    if (iaCore::CORE != $module) {
+                        $itemClassInstance = $this->iaCore->factoryItem($itemName);
 
                         if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME)) {
                             $entries = call_user_func([$itemClassInstance, self::GETTER_METHOD_NAME]);
@@ -168,7 +165,7 @@ class iaSitemap extends abstractCore
                 if (is_array($itemsList) && $itemsList) {
                     foreach ($itemsList as $item) {
                         $array = explode(':', $item);
-                        $pluginInstance = $this->iaCore->factoryPlugin($array[0], iaCore::ADMIN, isset($array[1]) ? $array[1] : null);
+                        $pluginInstance = $this->iaCore->factoryModule($array[0], isset($array[1]) ? $array[1] : null, iaCore::ADMIN);
 
                         if (method_exists($pluginInstance, self::GETTER_METHOD_NAME)) {
                             $entries = call_user_func([$pluginInstance, self::GETTER_METHOD_NAME]);

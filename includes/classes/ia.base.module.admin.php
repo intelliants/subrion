@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -41,6 +41,12 @@ abstract class abstractModuleAdmin extends abstractCore
 
     public function init()
     {
+        parent::init();
+
+        if ($this->_itemName && !$this->_moduleName) {
+            $this->_moduleName = $this->iaCore->factory('item')->getModuleByItem($this->_itemName);
+        }
+
         if (empty($this->_moduleUrl)) {
             $this->_moduleUrl = $this->getModuleName() . IA_URL_DELIMITER . $this->getItemName() . IA_URL_DELIMITER;
         }
@@ -50,15 +56,8 @@ abstract class abstractModuleAdmin extends abstractCore
 
             $this->_activityLog['path'] = trim($this->getModuleUrl(), IA_URL_DELIMITER);
 
-            $itemName = $this->getItemName();
-
-            if (!isset($this->_activityLog['icon'])) {
-                $this->_activityLog['icon'] = $itemName;
-            }
             if (!isset($this->_activityLog['item'])) {
-                $itemName = substr($itemName, 0, -1);
-
-                $this->_activityLog['item'] = $itemName;
+                $this->_activityLog['item'] = $this->getItemName();
             }
         }
 
@@ -72,8 +71,6 @@ abstract class abstractModuleAdmin extends abstractCore
                 $this->dashboardStatistics['url'] = $this->getModuleUrl();
             }
         }
-
-        parent::init();
     }
 
     public function getModuleName()
@@ -118,6 +115,26 @@ abstract class abstractModuleAdmin extends abstractCore
         return $row;
     }
 
+    public function getOne($where, $fields = '*')
+    {
+        $row = $this->iaDb->row($fields, $where, self::getTable());
+
+        $this->_processValues($row, true);
+
+        return $row;
+    }
+
+    public function getAll($where, $fields = null, $start = null, $limit = null)
+    {
+        is_null($fields) && $fields = iaDb::ALL_COLUMNS_SELECTION;
+
+        $rows = $this->iaDb->all($fields, $where, $start, $limit, self::getTable());
+
+        $this->_processValues($rows);
+
+        return $rows;
+    }
+
     public function getDashboardStatistics($defaultProcessing = true)
     {
         $statuses = $this->iaDb->keyvalue('`status`, COUNT(*)', '1 = 1 GROUP BY `status`', self::getTable());
@@ -160,7 +177,7 @@ abstract class abstractModuleAdmin extends abstractCore
                 ? ['array' => implode('|', $data), 'max' => $max, 'statuses' => implode('|', $stArray)]
                 : implode(',', $statuses),
             'rows' => $statuses,
-            'item' => $this->getItemName(),
+            'item' => $this->getItemName() . 's',
             'total' => number_format($total)
         ], $this->dashboardStatistics);
     }
@@ -220,7 +237,7 @@ abstract class abstractModuleAdmin extends abstractCore
     {
         $result = false;
 
-        if ($entryData = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($itemId), self::getTable())) {
+        if ($entryData = $this->getById($itemId)) {
             $result = (bool)$this->iaDb->delete(iaDb::convertIds($itemId), self::getTable());
 
             if ($result) {

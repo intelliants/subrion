@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -35,6 +35,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
             }
 
             $url = str_replace(IA_URL, '', $_POST['params']);
+
             $result = $iaSearch->save($_POST['item'], $url, $_POST['name']);
 
             $iaView->assign('result', $result);

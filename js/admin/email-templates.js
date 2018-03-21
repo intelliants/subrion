@@ -1,36 +1,36 @@
-$(function () {
-    var tagsWindow = new Ext.Window(
-        {
-            title: _t('email_templates_tags'),
-            layout: 'fit',
-            modal: false,
-            closeAction: 'hide',
-            contentEl: 'template-tags',
-            buttons: [
-                {
-                    text: _t('close'),
-                    handler: function () {
-                        tagsWindow.hide();
-                    }
-                }]
-        });
+$(function() {
+    var tagsWindow = new Ext.Window({
+        title: _t('email_templates_tags'),
+        layout: 'fit',
+        modal: false,
+        closeAction: 'hide',
+        contentEl: 'template-tags',
+        buttons: [
+            {
+                text: _t('close'),
+                handler: function () {
+                    tagsWindow.hide();
+                }
+            }]
+    });
 
-    $('#js-view-tags').on('click', function (e) {
+    $('#js-view-tags').on('click', function(e) {
         e.preventDefault();
         tagsWindow.show();
     });
 
-    $('#input-id').on('change', function (e) {
-        var id = $(this).val();
-        var $switchers = $('#enable_sending, #use_signature'),
+    $('#input-name').on('change', function() {
+        var name = $(this).val();
+
+        var $active = $('#input-active'),
             $patterns = $('#js-patterns'),
-            $subject = $('#input-subject');
+            $subject = $('input', '#row-subject');
 
         // hide if none selected
-        if (!id) {
+        if (!name) {
             $subject.val('').prop('disabled', true);
             CKEDITOR.instances.body.setData('');
-            $switchers.hide();
+            $active.hide();
             $patterns.hide();
             $('button[type="submit"]', '#js-email-template-form').prop('disabled', true);
 
@@ -38,58 +38,58 @@ $(function () {
         }
 
         // get actual values
-        $.get(window.location.href + 'read.json', {id: id}, function (response) {
-                $subject.val(response.subject);
-                CKEDITOR.instances.body.setData(response.body);
+        $.get(window.location.href + 'read.json', {name: name}, function(response) {
+            $('#input-active').bootstrapSwitch('setState', response.active);
+            $subject.prop('disabled', false);
 
-                $('#enable_sending').bootstrapSwitch('setState', response.config);
-                $('#use_signature').bootstrapSwitch('setState', response.signature);
+            for (var iso in response.body) {
+                $('#input-subject-' + iso).val(response.subject[iso]);
+                CKEDITOR.instances['body_' + iso].setData(response.body[iso]);
+            }
 
-                if ('undefined' != typeof response.patterns) {
-                    var i, html = '';
-                    for (i in response.patterns) {
-                        if (i != '') html += '<strong>{%' + i.toUpperCase() + '%}</strong>' + ' — ' + response.patterns[i] + '<br>';
-                    }
-
-                    $('div:first', $patterns).html(html);
-                    $patterns.show()
+            if ('undefined' !== typeof response.variables) {
+                var i, html = '';
+                for (i in response.variables) {
+                    if (i !== '') html += '<strong>{$' + i + '}</strong>' + ' — ' + response.variables[i] + '<br>';
                 }
-                else {
-                    $patterns.hide();
-                    $('div:first', $patterns).html('');
-                }
-            },
-            'json');
 
-        $switchers.show();
+                $('div:first', $patterns).html(html);
+                $patterns.show()
+            }
+            else {
+                $('div:first', $patterns).html('');
+                $patterns.hide();
+            }
+        },
+        'json');
+
+        $active.show();
+
         $('#input-subject, #js-email-template-form button[type="submit"]').prop('disabled', false);
     });
 
-    $('#js-email-template-form').on('submit', function (e) {
+    $('#js-email-template-form').on('submit', function(e) {
         e.preventDefault();
 
-        if ('object' == typeof CKEDITOR.instances.body) {
-            CKEDITOR.instances.body.updateElement();
+        for (var iso in intelli.languages) {
+            if ('object' === typeof CKEDITOR.instances['body_' + iso]) {
+                CKEDITOR.instances['body_' + iso].updateElement();
+            }
         }
 
         var data = {};
-        $(this).serializeArray().map(function (x) {
+        $(this).serializeArray().map(function(x) {
             data[x.name] = x.value;
         });
 
-        if ('' == data.id) {
+        if (!data.name) {
             return;
         }
 
-        $.post(window.location.href + 'edit.json', data, function (response) {
+        $.post(window.location.href + 'edit.json', data, function(response) {
             if (response.result) {
                 intelli.notifFloatBox({msg: _t('saved'), type: 'success', autohide: true, pause: 1500});
             }
         });
-    });
-
-    $('ul.js-tags a').on('click', function (e) {
-        e.preventDefault();
-        CKEDITOR.instances.body.insertHtml($(this).text());
     });
 });

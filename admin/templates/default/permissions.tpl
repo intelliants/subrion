@@ -195,6 +195,5 @@ $(function()
         </div>
         {/foreach}
     </div>
-    <div id="js-security-token">{preventCsrf}</div>
     {ia_add_media files='js:admin/permissions'}
 {/if}

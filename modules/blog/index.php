@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -24,14 +24,14 @@
  *
  ******************************************************************************/
 
-$iaBlog = $iaCore->factoryPlugin(IA_CURRENT_MODULE);
+$iaBlog = $iaCore->factoryModule('blog', IA_CURRENT_MODULE);
 
 $baseUrl = $iaCore->factory('page', iaCore::FRONT)->getUrlByName('blog');
 
 $iaDb->setTable($iaBlog::getTable());
 
 if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
-    if (isset($iaCore->requestPath[0]) && 'alias' == $iaCore->requestPath[0]) {
+    if (isset($iaCore->requestPath[0]) && 'slug' == $iaCore->requestPath[0]) {
         $output['url'] = $baseUrl . $iaDb->getNextId() . '-' . $iaBlog->titleAlias($_POST['title']);
 
         $iaView->assign($output);
@@ -89,8 +89,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $messages[] = iaLanguage::get('title_is_empty');
                 }
 
-                $entry['body'] = $_POST['body'];
-                utf8_is_valid($entry['body']) || $entry['body'] = utf8_bad_replace($entry['body']);
+                $entry['body'] = iaUtil::safeHTML(utf8_bad_replace($_POST['body']));
 
                 if (empty($entry['body'])) {
                     $messages[] = iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('body')]);
@@ -151,11 +150,19 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                 return iaView::errorPage(iaView::ERROR_NOT_FOUND);
             }
 
+            if (!iaUsers::hasIdentity()) {
+                return iaView::errorPage(iaView::ERROR_UNAUTHORIZED);
+            }
+
             $id = (int)$iaCore->requestPath[0];
-            $entry = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
+            $entry = $iaBlog->getById($id);
 
             if (!$entry) {
                 return iaView::errorPage(iaView::ERROR_NOT_FOUND);
+            }
+
+            if ($entry['member_id'] != iaUsers::getIdentity()->id) {
+                return iaView::errorPage(iaView::ERROR_FORBIDDEN);
             }
 
             $result = $iaBlog->delete($id);

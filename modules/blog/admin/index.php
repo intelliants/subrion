@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -46,7 +46,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     {
         parent::__construct();
 
-        $this->setHelper($this->_iaCore->factoryPlugin($this->getModuleName(), iaCore::ADMIN));
+        $this->setHelper($this->_iaCore->factoryModule($this->getModuleName(), $this->getModuleName()));
     }
 
     protected function _indexPage(&$iaView)
@@ -54,7 +54,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
         $iaView->grid('_IA_URL_modules/' . $this->getModuleName() . '/js/admin/index');
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($_GET['text'])) {
             $conditions[] = '(`title` LIKE :text OR `body` LIKE :text)';

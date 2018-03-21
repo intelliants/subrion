@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -107,8 +107,9 @@ class iaBlock extends abstractCore
         empty($blockData['filename']) || $blockData['external'] = true;
         isset($blockData['header']) || $blockData['header'] = true;
 
-        $order = (int)$this->iaDb->getMaxOrder(self::getTable());
-        $blockData['order'] = ++$order;
+        if (empty($blockData['order'])) {
+            $blockData['order'] = (int)$this->iaDb->getMaxOrder(self::getTable()) + 1;
+        }
 
         $bundle = $this->_fetchBundledData($blockData);
 

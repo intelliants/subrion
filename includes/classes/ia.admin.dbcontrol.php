@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -87,8 +87,8 @@ class iaDbControl extends abstractCore
                     if (preg_match('#' . preg_quote($delimiter, '~') . '\s*$#iS', end($query)) === 1) {
                         $query = trim(implode('', $query));
                         $query = str_replace(
-                            ['{prefix}', '{mysql_version}', '{db_options}'],
-                            [$this->iaDb->prefix, $this->iaDb->tableOptions, $this->iaDb->tableOptions],
+                            ['{prefix}', '{mysql_version}', '{db_options}', '{lang}'],
+                            [$this->iaDb->prefix, $this->iaDb->tableOptions, $this->iaDb->tableOptions, iaLanguage::getMasterLanguage()->iso],
                             $query
                         );
 
@@ -133,9 +133,14 @@ class iaDbControl extends abstractCore
                 $output .= ' NOT NULL';
             }
             if ($value['Default']) {
-                $output .= is_numeric($value['Default'])
-                    ? ' default ' . $value['Default']
-                    : " default '" . $value['Default'] . "'";
+                if (0 === strpos($value['Type'], 'enum')) {
+                    $output .= " default '{$value['Default']}'";
+                }
+                else {
+                    $output .= is_numeric($value['Default']) || ('CURRENT_TIMESTAMP' == $value['Default'])
+                        ? ' default ' . $value['Default']
+                        : " default '{$value['Default']}'";
+                }
             }
             if ($value['Extra']) {
                 $output .= " {$value['Extra']}";
@@ -178,11 +183,11 @@ class iaDbControl extends abstractCore
             }
         }
 
-        $output = substr($output, 0, -2);
+        $output = substr($output, 0, -3);
         $output .= PHP_EOL . ')';
 
         if ($collation = $this->_getTableCollation($tableName)) {
-            $output .= ' DEFAULT CHARSET = `' . $collation . '`;';
+            $output .= ' ENGINE=MyISAM DEFAULT CHARSET = `' . $collation . '`;';
         }
 
         return stripslashes($output);

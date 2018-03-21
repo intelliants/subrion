@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -41,9 +41,10 @@ class iaUsers extends abstractCore
     const METHOD_NAME_GET_FAVORITES = 'getFavorites';
 
     const AUTO_LOGIN_COOKIE_NAME = '_utcpl';
+    const USE_OBSOLETE_AUTH = false;
 
     protected static $_table = 'members';
-    protected static $_itemName = 'members';
+    protected static $_itemName = 'member';
 
     protected static $_usergroupTable = 'usergroups';
     protected static $_providersTable = 'members_auth_providers';
@@ -68,6 +69,11 @@ class iaUsers extends abstractCore
     public static function getProvidersTable()
     {
         return self::$_providersTable;
+    }
+
+    public function getUrl(array $itemData)
+    {
+        return $this->url(null, $itemData);
     }
 
     public function url($action, array $listingData)
@@ -119,7 +125,7 @@ class iaUsers extends abstractCore
 
         $isBackend = (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType());
 
-        if (IA_EXIT && $authorized != 2) {
+        if (defined('IA_EXIT') && $authorized != 2) {
             // use this hook to logout
             $this->iaCore->startHook('phpUserLogout', ['userInfo' => iaUsers::getIdentity(true)]);
 
@@ -131,7 +137,6 @@ class iaUsers extends abstractCore
 
             iaUsers::clearIdentity();
 
-            unset($_SESSION['_achkych']);
             if (strpos($_SERVER['HTTP_REFERER'], $this->iaView->domainUrl) === 0) {
                 if ($isBackend) {
                     $_SESSION['IA_EXIT'] = true;
@@ -155,7 +160,6 @@ class iaUsers extends abstractCore
                     $this->iaView->name('login');
                 }
             } else {
-                unset($_SESSION['_achkych']);
                 if (isset($_SESSION['referrer'])) { // this variable is set by Login page handler
                     header('Location: ' . $_SESSION['referrer']);
                     unset($_SESSION['referrer']);
@@ -177,8 +181,6 @@ class iaUsers extends abstractCore
         } elseif (isset($_COOKIE[self::AUTO_LOGIN_COOKIE_NAME])) {
             $this->_checkAutoLoginCookie();
         }
-
-        $this->iaCore->getSecurityToken() || $_SESSION[iaCore::SECURITY_TOKEN_MEMORY_KEY] = $this->iaCore->factory('util')->generateToken(92);
     }
 
     public static function getAuthProviders()
@@ -321,11 +323,12 @@ SQL;
         $result = $this->iaDb->delete($statement, self::getTable());
 
         if ($result) {
-            $actionName = 'member_removal';
-            $emailNotificationEnabled = $this->iaCore->get($actionName);
-
+            $this->iaCore->factory('util');
             $iaMailer = $this->iaCore->factory('mailer');
             $iaLog = $this->iaCore->factory('log');
+
+            $actionName = 'member_removal';
+            $emailNotificationEnabled = $iaMailer->loadTemplate($actionName);
 
             foreach ($rows as $entry) {
                 // delete associated auth providers
@@ -341,8 +344,7 @@ SQL;
                 $this->iaCore->startHook('phpUserDelete', ['userInfo' => $entry]);
 
                 if ($emailNotificationEnabled) {
-                    $iaMailer->loadTemplate($actionName);
-                    $iaMailer->addAddress($entry['email'], $entry['fullname']);
+                    $iaMailer->addAddressByMember($entry);
                     $iaMailer->setReplacements('fullname', $entry['fullname']);
 
                     $iaMailer->send();
@@ -382,7 +384,7 @@ SQL;
             $iaMailer = $this->iaCore->factory('mailer');
 
             $iaMailer->loadTemplate('password_changement');
-            $iaMailer->addAddress($memberInfo['email'], $memberInfo['fullname']);
+            $iaMailer->addAddressByMember($memberInfo);
             $iaMailer->setReplacements([
                 'fullname' => $memberInfo['fullname'],
                 'username' => $memberInfo['username'],
@@ -408,6 +410,12 @@ SQL;
             ? $this->createPassword()
             : $memberInfo['password'];
 
+        $socialProvider = null;
+        if (isset($memberInfo['social_provider'])) {
+            $socialProvider = $memberInfo['social_provider'];
+            unset($memberInfo['social_provider']);
+        }
+
         unset($memberInfo['disable_fields']);
 
         $password = $memberInfo['password'];
@@ -416,6 +424,7 @@ SQL;
         $memberInfo['sec_key'] = md5($this->createPassword());
         $memberInfo['status'] = self::STATUS_UNCONFIRMED;
         $memberInfo['password'] = $this->encodePassword($password);
+        $memberInfo['email_language'] = $this->iaCore->language['iso'];
 
         // according to DB table scheme we have to ensure that username field will contain unique data
         if (empty($memberInfo['username'])) {
@@ -436,7 +445,7 @@ SQL;
                 $this->iaCore->startHook('memberAddEmailSubmission', ['member' => $memberInfo]);
 
                 // send email to a registered member
-                $this->sendRegistrationEmail($memberId, $password, $memberInfo);
+                $this->sendRegistrationEmail($memberId, $password, $memberInfo, $socialProvider);
             }
         }
 
@@ -447,14 +456,16 @@ SQL;
         return $memberId;
     }
 
-    public function sendRegistrationEmail($id, $password, array $memberInfo)
+    public function sendRegistrationEmail($id, $password, array $memberInfo, $socialProvider = null)
     {
         $iaMailer = $this->iaCore->factory('mailer');
 
-        $action = 'member_registration';
-        if ($this->iaCore->get($action) && $memberInfo['email']) {
-            $iaMailer->loadTemplate($action);
-            $iaMailer->addAddress($memberInfo['email']);
+        $action = is_null($socialProvider)
+            ? 'member_registration'
+            : 'member_registration_social';
+
+        if ($iaMailer->loadTemplate($action) && $memberInfo['email']) {
+            $iaMailer->addAddressByMember($memberInfo);
             $iaMailer->setReplacements([
                 'fullname' => $memberInfo['fullname'],
                 'username' => $memberInfo['username'],
@@ -463,12 +474,15 @@ SQL;
                 'link' => IA_URL . 'confirm/?email=' . $memberInfo['email'] . '&key=' . $memberInfo['sec_key']
             ]);
 
+            if ($socialProvider) {
+                $iaMailer->setReplacements('provider', $socialProvider);
+            }
+
             $iaMailer->send();
         }
 
         $action = 'member_registration_admin';
-        if ($this->iaCore->get($action) && $memberInfo['email']) {
-            $iaMailer->loadTemplate($action);
+        if ($iaMailer->loadTemplate($action) && $memberInfo['email']) {
             $iaMailer->setReplacements([
                 'id' => $id,
                 'username' => $memberInfo['username'],
@@ -509,6 +523,33 @@ SQL;
         return $password;
     }
 
+    public function sendPasswordResetEmail(array $member)
+    {
+        if (empty($member['email']) || empty($member['id']) || empty($member['fullname'])) {
+            return false;
+        }
+
+        $email = $member['email'];
+        $token = $this->iaCore->factory('util')->generateToken();
+
+        $this->iaDb->update(['id' => $member['id'], 'sec_key' => $token], null, null, self::getTable());
+
+        $confirmationUrl = IA_URL . "forgot/?email={$email}&code={$token}";
+
+        $iaMailer = $this->iaCore->factory('mailer');
+
+        $iaMailer->loadTemplate('password_restoration');
+        $iaMailer->addAddressByMember($member);
+        $iaMailer->setReplacements([
+            'fullname' => $member['fullname'],
+            'url' => $confirmationUrl,
+            'code' => $token,
+            'email' => $email
+        ]);
+
+        return $iaMailer->send();
+    }
+
     public function confirmation($email, $key)
     {
         $status = $this->iaCore->get('members_autoapproval') ? iaCore::STATUS_ACTIVE : iaCore::STATUS_APPROVAL;
@@ -516,8 +557,20 @@ SQL;
         $stmt = '`email` = :email AND `sec_key` = :key';
         $this->iaDb->bind($stmt, ['email' => $email, 'key' => $key]);
 
-        return (bool)$this->iaDb->update(['sec_key' => '', 'status' => $status], $stmt,
+        $result = (bool)$this->iaDb->update(['sec_key' => '', 'status' => $status], $stmt,
             ['date_update' => iaDb::FUNCTION_NOW], self::getTable());
+        if ($result) {
+            $member = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($email, 'email'), self::getTable());
+            $iaPlan = $this->iaCore->factory('plan');
+            if ($member['sponsored_plan_id']) {
+                $plan = $iaPlan->getById($member['sponsored_plan_id']);
+                if ($plan['id'] && empty(floatval($plan['cost']))) {
+                    $iaPlan->assignFreePlan($plan['id'], self::getItemName(), $member);
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function getById($id)
@@ -527,24 +580,26 @@ SQL;
 
     public function getInfo($id, $key = 'id')
     {
-        in_array($key, ['id', 'username', 'email']) || $key = 'id';
+        in_array($key, ['id', 'username', 'email', 'sec_key']) || $key = 'id';
 
         $row = $this->iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`' . $key . '` = :id AND `status` = :status',
             ['id' => $id, 'status' => iaCore::STATUS_ACTIVE], self::getTable());
-        !$row || $this->_processValues($row, true);
+
+        $this->_processValues($row, true);
 
         return $row;
     }
 
-    public function getAuth($userId, $user = null, $password = null, $remember = false)
+    public function getAuth($userId = null, $usernameOrEmail = null, $password = null, $remember = false)
     {
-        if ((int)$userId) {
+        if (!is_null($userId)) {
             $condition = sprintf('u.`id` = %d', $userId);
         } else {
-            $condition = '(u.`username` = :username OR u.`email` = :email) AND u.`password` = :password';
+            $condition = '(u.`username` = :username OR u.`email` = :email)' .
+                (self::USE_OBSOLETE_AUTH ? ' AND u.`password` = :password' : '');
             $this->iaDb->bind($condition, [
-                'username' => preg_replace('/[^a-zA-Z0-9.@_-]/', '', $user),
-                'email' => $user,
+                'username' => preg_replace('/[^a-zA-Z0-9.@_-]/', '', $usernameOrEmail),
+                'email' => $usernameOrEmail,
                 'password' => $this->encodePassword($password)
             ]);
         }
@@ -562,23 +617,25 @@ SQL;
             'table_groups' => self::getUsergroupsTable(),
             'condition' => $condition
         ]);
+
         $row = $this->iaDb->getRow($sql);
-        !$row || $this->_processValues($row, true);
 
-        if (iaCore::STATUS_ACTIVE == $row['status']) {
-            self::_setIdentity($row);
-
-            $this->iaDb->update(null, iaDb::convertIds($row['id']), ['date_logged' => iaDb::FUNCTION_NOW],
-                self::getTable());
-
-            $this->_assignItem($row, $remember);
-
-            $this->_assignFavorites();
-
-            return $row;
+        if (!$row
+            || iaCore::STATUS_ACTIVE != $row['status']
+            || (!self::USE_OBSOLETE_AUTH && $password && !password_verify($password, $row['password']))) {
+            return false;
         }
 
-        return false;
+        $this->_processValues($row, true);
+
+        self::_setIdentity($row);
+
+        $this->iaDb->update(null, iaDb::convertIds($row['id']), ['date_logged' => iaDb::FUNCTION_NOW], self::getTable());
+
+        $this->_assignItem($row, $remember);
+        $this->_assignFavorites();
+
+        return $row;
     }
 
     public function registerVisitor()
@@ -694,20 +751,29 @@ SQL;
 
     public function encodePassword($rawPassword)
     {
-        $factors = ['iaSubrion', 'Y2h1c2hrYW4tc3R5bGU', 'onfr64_qrpbqr'];
+        if (self::USE_OBSOLETE_AUTH) {
+            $factors = ['iaSubrion', 'Y2h1c2hrYW4tc3R5bGU', 'onfr64_qrpbqr'];
 
-        $password = $factors && array_reverse($factors);
-        $password = array_map(str_rot13($factors[2]), [$factors[1] . chr(0x3d)]);
-        $password = md5(IA_SALT . substr(reset($password), -15) . $rawPassword);
+            $password = $factors && array_reverse($factors);
+            $password = array_map(str_rot13($factors[2]), [$factors[1] . chr(0x3d)]);
+            $password = md5(IA_SALT . substr(reset($password), -15) . $rawPassword);
+        } else {
+            $password = password_hash($rawPassword, PASSWORD_BCRYPT);
+        }
 
         return $password;
     }
 
     public function getUsergroups($visible = false)
     {
-        $stmt = $visible ? iaDb::convertIds('1', 'visible') : null;
+        $stmt = $visible ? iaDb::convertIds('1', 'visible') : iaDb::EMPTY_CONDITION;
 
-        return $this->iaDb->keyvalue(['id', 'name'], $stmt, self::getUsergroupsTable());
+        return $this->iaDb->keyvalue(['id', 'name'], $stmt . ' ORDER BY `order`', self::getUsergroupsTable());
+    }
+
+    public function getUsergroupByName($name)
+    {
+        return $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($name, 'name'), $this->getUsergroupsTable());
     }
 
     public function getDashboardStatistics()
@@ -847,18 +913,19 @@ SQL;
         $rows = $this->iaDb->all(iaDb::STMT_CALC_FOUND_ROWS . ' ' . iaDb::ALL_COLUMNS_SELECTION, $stmt, $start, $limit,
             self::getTable());
         $count = $this->iaDb->foundRows();
-        !$rows || $this->_processValues($rows);
+
+        $this->_processValues($rows);
 
         return [$count, $rows];
     }
 
-    public function hybridAuth($providerName)
+    public function hybridAuth($providerId)
     {
         if (!$this->iaCore->get('hybrid_enabled')) {
             throw new Exception('HybridAuth is not enabled.');
         }
 
-        $providerName = strtolower($providerName);
+        $providerName = strtolower($providerId);
         $configFile = IA_INCLUDES . 'hybridauth.inc.php';
 
         require_once IA_INCLUDES . 'hybrid/Auth.php';
@@ -902,6 +969,7 @@ SQL;
                 $memberRegInfo['fullname'] = $user_profile->displayName;
                 // $memberRegInfo['avatar'] = $user_profile->photoURL;
                 $memberRegInfo['disable_fields'] = true;
+                $memberRegInfo['social_provider'] = $providerId;
 
                 $memberId = $this->register($memberRegInfo);
 
@@ -930,42 +998,44 @@ SQL;
      * @param boolean $singleRow true when item is passed as one row
      * @param array $fieldNames list of custom serialized fields
      */
-    protected function _processValues(array &$rows, $singleRow = false, $fieldNames = [])
+    protected function _processValues(&$rows, $singleRow = false, $fieldNames = [])
     {
         if (!$rows) {
             return;
         }
 
         $iaField = $this->iaCore->factory('field');
+        $iaItem = $this->iaCore->factory('item');
 
         $serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
         $multilingualFields = $iaField->getMultilingualFields($this->getItemName());
 
         $singleRow && $rows = [$rows];
 
-        if ($serializedFields || $multilingualFields) {
-            foreach ($rows as &$row) {
-                if (!is_array($row)) {
-                    break;
-                }
+        $rows = $iaItem->updateItemsFavorites($rows, $this->getItemName());
 
-                $iaField->filter($this->getItemName(), $row);
-
-                foreach ($serializedFields as $fieldName) {
-                    if (isset($row[$fieldName])) {
-                        $row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
-                    }
-                }
-
-                $currentLangCode = $this->iaCore->language['iso'];
-                foreach ($multilingualFields as $fieldName) {
-                    if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
-                        $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
-                    }
-                }
-
-                $row['link'] = $this->url('view', $row);
+        foreach ($rows as &$row) {
+            if (!is_array($row)) {
+                break;
             }
+
+            $iaField->filter($this->getItemName(), $row);
+
+            foreach ($serializedFields as $fieldName) {
+                if (isset($row[$fieldName])) {
+                    $row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
+                }
+            }
+
+            $currentLangCode = $this->iaCore->language['iso'];
+            foreach ($multilingualFields as $fieldName) {
+                if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
+                    $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
+                }
+            }
+
+            $row['item'] = self::getItemName();
+            $row['link'] = $this->url('view', $row);
         }
 
         $singleRow && $rows = array_shift($rows);
@@ -980,10 +1050,9 @@ SQL;
      */
     public function getFavorites($ids)
     {
-        $memberIds = implode(",", $ids);
-        $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION . ', 1 `favorite` ', "`id` IN ({$memberIds})", 0, 50, self::getTable());
-        !$rows || $this->_processValues($rows);
+        $where = iaDb::printf("`id` IN (:ids) AND `status` = ':status'",
+            ['ids' => implode(',', $ids), 'status' => iaCore::STATUS_ACTIVE]);
 
-        return $rows;
+        return $this->coreSearch($where, 0, 50, null)[1];
     }
 }

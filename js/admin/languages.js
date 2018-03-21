@@ -7,11 +7,10 @@ Ext.onReady(function () {
     }
 
     var languagesStore = new Ext.data.SimpleStore({fields: ['value', 'title'], data: languages});
-    var categoriesStore = new Ext.data.SimpleStore(
-        {
-            fields: ['value', 'title'],
-            data: [['admin', 'Administration Board'], ['frontend', 'User Frontend'], ['common', 'Common'], ['tooltip', 'Tooltip']]
-        });
+    var categoriesStore = new Ext.data.SimpleStore({
+        fields: ['value', 'title'],
+        data: [['admin', 'Administration Board'], ['frontend', 'User Frontend'], ['common', 'Common'], ['tooltip', 'Tooltip']]
+    });
 
     var tabs = [];
     $.each(intelli.languages, function (code, language) {
@@ -26,139 +25,135 @@ Ext.onReady(function () {
         });
     });
 
-    var addPhrasePanel = new Ext.FormPanel(
-        {
-            frame: true,
-            title: _t('add_new_phrase'),
-            bodyStyle: 'padding: 5px 5px 0',
-            renderTo: 'js-add-phrase-dialog-placeholder',
-            id: 'add_phrase_panel',
-            hidden: true,
-            defaults: {labelWidth: 140},
-            items: [
-                {
-                    fieldLabel: _t('key'),
-                    name: 'key',
-                    xtype: 'textfield',
-                    allowBlank: false,
-                    anchor: '50%'
-                }, {
-                    fieldLabel: _t('category'),
-                    name: 'category',
-                    xtype: 'combo',
-                    allowBlank: false,
-                    editable: false,
-                    lazyRender: true,
-                    value: 'admin',
-                    store: categoriesStore,
-                    displayField: 'title',
-                    valueField: 'value',
-                    anchor: '50%'
-                }, {
-                    fieldLabel: _t('force_replacement'),
-                    name: 'force_replacement',
-                    xtype: 'checkbox',
-                    value: false
-                },
-                {
-                    xtype: 'tabpanel',
-                    plain: true,
-                    activeTab: 0,
-                    height: 130,
-                    deferredRender: false,
-                    bodyStyle: 'padding: 5px 5px 0',
-                    items: tabs
-                }],
-            tools: [
-                {
-                    id: 'close',
-                    handler: function (event, tool, panel) {
-                        addPhrasePanel.hide();
-                    }
-                }],
-            buttons: [
-                {
-                    text: _t('add'),
-                    handler: function () {
-                        addPhrasePanel.getForm().submit(
-                            {
-                                url: intelli.config.admin_url + '/languages/add.json',
-                                method: 'POST',
-                                params: {prevent_csrf: $('input[name="prevent_csrf"]', '#js-add-phrase-dialog-placeholder').val()},
-                                failure: function (form, action) {
-                                    intelli.notifBox({
-                                        msg: ('undefined' == typeof action.result)
-                                            ? _t('error') : action.result.message, type: 'error', autohide: true
-                                    });
-                                },
-                                success: function (form, action) {
-                                    intelli.notifBox({msg: action.result.message, type: 'success', autohide: true});
-                                    Ext.Msg.show(
-                                        {
-                                            title: _t('add_new_phrase'),
-                                            msg: _t('add_one_more_phrase'),
-                                            buttons: Ext.Msg.YESNO,
-                                            fn: function (btn) {
-                                                'yes' == btn || addPhrasePanel.hide();
-                                                form.reset();
-                                            },
-                                            icon: Ext.MessageBox.QUESTION
-                                        });
-                                }
+    var addPhrasePanel = new Ext.FormPanel({
+        frame: true,
+        title: _t('add_new_phrase'),
+        bodyStyle: 'padding: 5px 5px 0',
+        renderTo: 'js-add-phrase-dialog-placeholder',
+        id: 'add_phrase_panel',
+        hidden: true,
+        defaults: {labelWidth: 140},
+        items: [
+            {
+                fieldLabel: _t('key'),
+                name: 'key',
+                xtype: 'textfield',
+                allowBlank: false,
+                anchor: '50%'
+            }, {
+                fieldLabel: _t('category'),
+                name: 'category',
+                xtype: 'combo',
+                allowBlank: false,
+                editable: false,
+                lazyRender: true,
+                value: 'admin',
+                store: categoriesStore,
+                displayField: 'title',
+                valueField: 'value',
+                anchor: '50%'
+            }, {
+                fieldLabel: _t('force_replacement'),
+                name: 'force_replacement',
+                xtype: 'checkbox',
+                value: false
+            },
+            {
+                xtype: 'tabpanel',
+                plain: true,
+                activeTab: 0,
+                height: 130,
+                deferredRender: false,
+                bodyStyle: 'padding: 5px 5px 0',
+                items: tabs
+            }],
+        tools: [
+            {
+                id: 'close',
+                handler: function (event, tool, panel) {
+                    addPhrasePanel.hide();
+                }
+            }],
+        buttons: [
+            {
+                text: _t('add'),
+                handler: function () {
+                    addPhrasePanel.getForm().submit({
+                        url: intelli.config.admin_url + '/languages/add.json',
+                        method: 'POST',
+                        params: intelli.includeSecurityToken({}),
+                        failure: function (form, action) {
+                            intelli.notifBox({
+                                msg: ('undefined' === typeof action.result)
+                                    ? _t('error') : action.result.message, type: 'error', autohide: true
                             });
-                    }
-                }, {
-                    text: _t('cancel'),
-                    handler: function () {
-                        $('#js-add-phrase-dialog-placeholder').css('margin', '0');
-                        addPhrasePanel.hide();
-                    }
-                }]
-        });
+                        },
+                        success: function (form, action) {
+                            intelli.notifBox({msg: action.result.message, type: 'success', autohide: true});
+                            Ext.Msg.show({
+                                title: _t('add_new_phrase'),
+                                msg: _t('add_one_more_phrase'),
+                                buttons: Ext.Msg.YESNO,
+                                fn: function (btn) {
+                                    'yes' == btn || addPhrasePanel.hide();
+                                    form.reset();
+                                },
+                                icon: Ext.MessageBox.QUESTION
+                            });
+                        }
+                    });
+                }
+            }, {
+                text: _t('cancel'),
+                handler: function () {
+                    $('#js-add-phrase-dialog-placeholder').css('margin', '0');
+                    addPhrasePanel.hide();
+                }
+            }]
+    });
 
     if (Ext.get('js-grid-placeholder')) {
-        intelli.language = new IntelliGrid(
-            {
-                columns: [
-                    {
-                        name: 'key',
-                        title: _t('key'),
-                        width: 250,
-                        editor: 'text',
-                        renderer: function (value, metadata, row) {
-                            if (1 == row.data.modified) {
-                                metadata.css = 'grid-status-unconfirmed';
-                            }
-                            return value;
+        intelli.language = new IntelliGrid({
+            columns: [
+                {
+                    name: 'key',
+                    title: _t('key'),
+                    width: 250,
+                    editor: 'text',
+                    renderer: function (value, metadata, row) {
+                        if (1 == row.data.modified) {
+                            metadata.css = 'grid-status-unconfirmed';
                         }
-                    },
-                    {name: 'original', title: _t('original'), width: 250, renderer: Ext.util.Format.htmlEncode},
+                        return value;
+                    }
+                },
+                {name: 'original', title: _t('original'), width: 250, renderer: Ext.util.Format.htmlEncode},
+                {
+                    name: 'value',
+                    title: _t('value'),
+                    width: 1,
+                    editor: 'text-wide',
+                    renderer: Ext.util.Format.htmlEncode
+                },
+                {name: 'code', title: _t('language'), width: 100, hidden: true},
+                {
+                    name: 'category', title: _t('category'), width: 100, editor: Ext.create('Ext.form.ComboBox',
                     {
-                        name: 'value',
-                        title: _t('value'),
-                        width: 1,
-                        editor: 'text-wide',
-                        renderer: Ext.util.Format.htmlEncode
-                    },
-                    {name: 'code', title: _t('language'), width: 100, hidden: true},
-                    {
-                        name: 'category', title: _t('category'), width: 100, editor: Ext.create('Ext.form.ComboBox',
-                        {
-                            typeAhead: true,
-                            editable: false,
-                            store: categoriesStore,
-                            value: 'admin',
-                            displayField: 'title',
-                            valueField: 'value'
-                        })
-                    },
-                    'delete'
-                ],
-                fields: ['original', 'modified'],
-                storeParams: {lang: intelli.urlVal('language')},
-                texts: {delete_multiple: _t('are_you_sure_to_delete_selected_phrases')},
-                url: intelli.config.admin_url + '/languages/'
-            }, false);
+                        typeAhead: true,
+                        editable: false,
+                        store: categoriesStore,
+                        value: 'admin',
+                        displayField: 'title',
+                        valueField: 'value'
+                    })
+                },
+                'update',
+                'delete',
+            ],
+            fields: ['original', 'modified'],
+            storeParams: {lang: intelli.urlVal('language')},
+            texts: {delete_multiple: _t('are_you_sure_to_delete_selected_phrases')},
+        }, false);
         /*		intelli.language.bottomBar = ['-',
          {
          emptyText: _t('category'),
@@ -311,15 +306,15 @@ Ext.onReady(function () {
         intelli.sortable('languagesList', {
             handle: '.uploads-list-item__drag-handle',
             animation: 150,
-            onEnd: function (e) {
+            onEnd: function() {
                 var langs = $('.iso-val').map(function () {
                     return $(this).text();
                 }).get();
 
-                $.post(window.location.href + 'add.json', {sorting: 'save', langs: langs}, function (response) {
+                intelli.post(window.location.href + 'add.json', {sorting: 'save', langs: langs}, function(response) {
                     intelli.notifFloatBox({
                         msg: response.message,
-                        type: (response.success ? 'success' : 'error'),
+                        type: (response.result ? 'success' : 'error'),
                         autohide: true,
                         pause: 1500
                     });

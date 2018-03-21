@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -150,7 +150,7 @@ class iaHelper
             $iaCore->iaCache = $iaCore->factory('cache');
 
             $config = ['baseurl', 'timezone', 'lang'];
-            $config = $iaCore->iaDb->keyvalue(['name', 'value'], "`name` IN ('" . implode("','", $config) . "')", iaCore::getConfigTable());
+            $config = $iaCore->factory('config')->fetch("`name` IN ('" . implode("','", $config) . "')");
 
             empty($iaCore->languages) && $iaCore->languages = [
                 'en' => ['title' => 'English', 'locale' => 'en_US', 'iso' => 'en', 'date_format' => '%b %e, %Y']];
@@ -161,7 +161,7 @@ class iaHelper
 
             date_default_timezone_set(empty($config['timezone']) ? 'UTC' : $config['timezone']);
 
-            define('IA_CLEAR_URL', $config['baseurl']);
+            define('IA_CLEAR_URL', (!empty($config['baseurl']) ? $config['baseurl'] : URL_HOME));
             define('IA_URL', IA_CLEAR_URL);
             define('IA_FRONT_TEMPLATES', IA_HOME . 'templates/');
             define('IA_TEMPLATES', IA_FRONT_TEMPLATES);

@@ -23,7 +23,7 @@ function fillUrlBox() {
 function sendQuery(params) {
     $.get(intelli.pagesUrl + 'url.json', params, function (response) {
         var $placeholder = $('.text-danger', '#js-alias-placeholder');
-        if ('string' == typeof response.url) {
+        if ('string' === typeof response.url) {
             $placeholder
                 .text(response.url)
                 .fadeIn();
@@ -40,27 +40,26 @@ function sendQuery(params) {
 
 Ext.onReady(function () {
     if (Ext.get('js-grid-placeholder')) {
-        var grid = new IntelliGrid(
-            {
-                columns: [
-                    'selection',
-                    'expander',
-                    {name: 'name', title: _t('name'), width: 150},
-                    {name: 'title', id: 'titleCol', title: _t('title'), width: 1, sortable: false},
-                    {name: 'url', title: _t('url'), width: 1},
-                    'status',
-                    {name: 'last_updated', title: _t('last_updated'), width: 170},
-                    'update',
-                    'delete'
-                ],
-                expanderTemplate: '{content}',
-                fields: ['content', 'default'],
-                statuses: ['active', 'inactive', 'draft'],
-                texts: {
-                    delete_single: _t('are_you_sure_to_delete_this_page'),
-                    delete_multiple: _t('are_you_sure_to_delete_selected_pages')
-                }
-            }, false);
+        var grid = new IntelliGrid({
+            columns: [
+                'selection',
+                'expander',
+                {name: 'name', title: _t('name'), width: 150},
+                {name: 'title', id: 'titleCol', title: _t('title'), width: 1, sortable: false},
+                {name: 'url', title: _t('url'), width: 1},
+                'status',
+                {name: 'last_updated', title: _t('last_updated'), width: 170},
+                'update',
+                'delete'
+            ],
+            expanderTemplate: '{content}',
+            fields: ['content', 'default'],
+            statuses: ['active', 'inactive', 'draft'],
+            texts: {
+                delete_single: _t('are_you_sure_to_delete_this_page'),
+                delete_multiple: _t('are_you_sure_to_delete_selected_pages')
+            }
+        }, false);
 
         grid.toolbar = new Ext.Toolbar({
             items: [
@@ -68,6 +67,11 @@ Ext.onReady(function () {
                     emptyText: _t('name'),
                     xtype: 'textfield',
                     name: 'name',
+                    listeners: intelli.gridHelper.listener.specialKey
+                }, {
+                    emptyText: _t('keywords'),
+                    xtype: 'textfield',
+                    name: 'text',
                     listeners: intelli.gridHelper.listener.specialKey
                 }, {
                     emptyText: _t('module'),
@@ -107,7 +111,7 @@ Ext.onReady(function () {
 $(function () {
     $('#js-delete-page').on('click', function () {
         Ext.Msg.confirm(_t('confirm'), _t('are_you_sure_to_delete_this_page'), function (btn, text) {
-            if (btn == 'yes') {
+            if (btn === 'yes') {
                 $.ajax(
                     {
                         data: {'id[]': $('input[name="id"]').val()},

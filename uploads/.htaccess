@@ -1,7 +1,18 @@
+# Make sure you disable PHP files execution in uploads/ folder
+# It might depend on your server configuration, but generally these instructions might help
+
+# Disables PHP engine, allowed on some permissive servers
+# php_flag engine off
+
+# Comment this line if you cannot see uploaded images
 Options -ExecCGI
 
-<FilesMatch "(?i)\.(php5|php4|php|php3|php2|phtml|pl|py|jsp|asp|htm|shtml|sh|cgi)$">
-	ForceType text/plain
+# Deny files access for some file extensions
+<FilesMatch "(?i)\.(php|php5|php4|php3|php2|phtml|pl|py|jsp|asp|htm|shtml|sh|cgi)$">
+    ForceType text/plain
+    Order Deny,Allow
+    Deny from All
 </FilesMatch>
 
-AddHandler default-handler .php5 .php4 .php .php3 .php2 .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi
+# Process script files as plain text
+AddHandler default-handler .php .php5 .php4 .php3 .php2 .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi

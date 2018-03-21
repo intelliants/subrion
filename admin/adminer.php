@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -43,21 +43,57 @@ if (isset($_GET['file'])) {
             echo file_get_contents(IA_INCLUDES . 'adminer/' . $_GET['file']);
             break;
     }
+    die();
 }
 
 if (iaCore::ACCESS_ADMIN == $iaCore->getAccessType()) {
-    define('SID', true);
-
     $_GET['username'] = INTELLI_DBUSER;
     $_GET['server'] = INTELLI_DBHOST;
-    $_GET['driver'] = INTELLI_CONNECT;
     $_GET['db'] = INTELLI_DBNAME;
-    $_SESSION['pwds']['server'][INTELLI_DBHOST][INTELLI_DBUSER] = INTELLI_DBPASS;
+    $_GET['driver'] = INTELLI_CONNECT;
 
     $iaView->set('nodebug', 1);
     $iaView->disableLayout();
 
     $iaView->display(iaView::NONE);
 
-    include IA_INCLUDES . 'adminer/adminer.script' . iaSystem::EXECUTABLE_FILE_EXT;
+    function adminer_object()
+    {
+        class AdminerSoftware extends Adminer
+        {
+            public function name()
+            {
+                // custom name in title and heading
+                return 'Subrion DB';
+            }
+
+            public function credentials()
+            {
+                // server, username and password for connecting to database
+                return [INTELLI_DBHOST, INTELLI_DBUSER, INTELLI_DBPASS];
+            }
+
+            public function database()
+            {
+                // database name, will be escaped by Adminer
+                return INTELLI_DBNAME;
+            }
+
+            public function databases()
+            {
+                // database name, will be escaped by Adminer
+                return [INTELLI_DBNAME];
+            }
+
+            public function login($login, $password)
+            {
+                // validate user submitted credentials
+                return true;
+            }
+        }
+
+        return new AdminerSoftware;
+    }
+
+    include IA_INCLUDES . 'adminer/adminer.script.inc';
 }

@@ -17,7 +17,7 @@
 
                         <div class="form-group">
                             <label for="input-alias">{lang key='title_alias'}</label>
-                            <input class="form-control" type="text" name="alias" id="input-alias"
+                            <input class="form-control" type="text" name="alias" id="input-slug"
                                    value="{if isset($item.alias)}{$item.alias}{/if}">
                             <p class="help-block text-break-word" id="title_box"
                                style="display: none;">{lang key='page_url_will_be'}: <span id="title_url" class="text-danger">{$smarty.const.IA_URL}</span>

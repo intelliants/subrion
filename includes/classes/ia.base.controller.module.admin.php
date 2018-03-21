@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -57,6 +57,14 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
         $this->_moduleName = IA_CURRENT_MODULE;
 
+        if ($this->_helperName) {
+            $helperClass = $this->_iaCore->factoryModule($this->_helperName, $this->getModuleName());
+            $this->setHelper($helperClass);
+
+            $this->_itemName || $this->_setItemName($helperClass->getItemName());
+            $this->setTable($helperClass::getTable());
+        }
+
         if ($this->_itemName) {
             $this->_path = IA_ADMIN_URL . $this->getModuleName() . IA_URL_DELIMITER . $this->getName() . IA_URL_DELIMITER;
             $this->_template = 'form-' . $this->getName();
@@ -66,15 +74,9 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
             is_array($this->_activityLog) || $this->_activityLog = [];
 
             $this->_activityLog['path'] = $this->getModuleName() . IA_URL_DELIMITER . $this->getName();
-            isset($this->_activityLog['item']) || $this->_activityLog['item'] = substr($this->getItemName(), 0, -1);
-        }
-
-        if ($this->_helperName) {
-            $helperClass = $this->_iaCore->factoryModule($this->_helperName, $this->getModuleName(), iaCore::ADMIN);
-            $this->setHelper($helperClass);
-
-            $this->getItemName() || $this->_setItemName($helperClass->getItemName());
-            $this->setTable($helperClass::getTable());
+            if (!isset($this->_activityLog['item'])) {
+                $this->_activityLog['item'] = $this->getItemName();
+            }
         }
 
         $this->init();
@@ -116,7 +118,11 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
     // multilingual fields support for package items
     protected function _gridApplyFilters(&$conditions, &$values, array $params)
     {
-        $multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
+        if (!is_array($this->_gridFilters) || !$this->_gridFilters) {
+            return;
+        }
+
+        $multilingualFields = $this->_iaField->getMultilingualFields($this->getItemName());
 
         foreach ($this->_gridFilters as $name => $type) {
             if (!empty($params[$name])) {
@@ -138,10 +144,10 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         }
     }
 
-    protected function _unpackGridColumnsArray()
+    protected function _gridUnpackColumnsArray()
     {
         if (is_array($this->_gridColumns)
-            && ($multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName()))) {
+            && ($multilingualFields = $this->_iaField->getMultilingualFields($this->getItemName()))) {
             foreach ($this->_gridColumns as $key => &$field) {
                 if (in_array($field, $multilingualFields)) {
                     unset($this->_gridColumns[$key]);
@@ -150,15 +156,27 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
             }
         }
 
-        return parent::_unpackGridColumnsArray();
+        return parent::_gridUnpackColumnsArray();
     }
 
     protected function _gridGetSorting(array $params)
     {
-        if ($params['sort']) {
-            $multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName());
-            if (in_array($params['sort'], $multilingualFields)) {
-                $params['sort'].= '_' . $this->_iaCore->language['iso'];
+        if (!empty($params['sort']) && is_string($params['sort'])) {
+            $sorting = $params['sort'];
+
+            if (in_array($sorting, $this->_iaField->getMultilingualFields($this->getItemName()))) {
+                $params['sort'] .= '_' . $this->_iaCore->language['iso'];
+            } elseif (isset($this->_gridSorting[$sorting])
+                && is_array($this->_gridSorting[$sorting])
+                && 3 == count($this->_gridSorting[$sorting])) {
+                $joinFieldName = $this->_gridSorting[$sorting][0];
+                $joinedItemName = $this->_gridSorting[$sorting][2];
+
+                $multilingualFields = $this->_iaField->getMultilingualFields($joinedItemName);
+
+                if (in_array($joinFieldName, $multilingualFields)) {
+                    $this->_gridSorting[$sorting][0] .= '_' . $this->_iaCore->language['iso'];
+                }
             }
         }
 
@@ -175,13 +193,16 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
     {
         $this->_setSystemDefaults($entryData);
 
-        $entryData['item'] = $this->getItemName();
-
         $sections = $this->_iaField->getGroups($this->getItemName());
         $plans = $this->_getPlans();
 
         $iaView->assign('item_sections', $sections);
         $iaView->assign('plans', $plans);
+    }
+
+    protected function _unwrapValues(array &$entryData)
+    {
+        $this->_iaField->unwrapItemValues($this->getItemName(), $entryData);
     }
 
     protected function _getPlans()
@@ -264,13 +285,11 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
         $result = false;
 
         if ($entryData = $this->getById($entryId)) {
-            $result = $this->_delete($entryId);
-
-            if ($result) {
+            if ($result = $this->_delete($entryId)) {
                 $this->_writeLog(iaCore::ACTION_DELETE, $entryData, $entryId);
                 $this->updateCounters($entryId, $entryData, iaCore::ACTION_DELETE);
 
-                $this->_iaCore->factory('field')->cleanUpItemFiles($this->getItemName(), $entryData);
+                $this->_iaField->cleanUpItemFiles($this->getItemName(), $entryData);
 
                 $this->_iaCore->startHook('phpListingRemoved', [
                     'itemId' => $entryId,
@@ -369,7 +388,7 @@ abstract class iaAbstractControllerModuleBackend extends iaAbstractControllerBac
 
     protected function _validateMultilingualFieldsKeys(array $data)
     {
-        if ($multilingualFields = $this->_iaCore->factory('field')->getMultilingualFields($this->getItemName())) {
+        if ($multilingualFields = $this->_iaField->getMultilingualFields($this->getItemName())) {
             foreach ($data as $key => $value) {
                 if (in_array($key, $multilingualFields)) {
                     $data[$key . '_' . $this->_iaCore->language['iso']] = $value;

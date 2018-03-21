@@ -3,33 +3,33 @@
         <div class="col-md-3">
             <div class="ia-item-author">
                 <a href="{$smarty.const.IA_URL}profile/?edit" class="btn btn-default btn-sm ia-item-author__edit" title="{lang key='edit'}"><span class="fa fa-pencil"></span></a>
-                <a class="ia-item-author__image" href="{ia_url type='url' item='members' data=$member}">
+                <a class="ia-item-author__image" href="{ia_url type='url' item='member' data=$member}">
                     {ia_image file=$member.avatar type='thumbnail' width=120 alt=$member.fullname|default:$member.username gravatar=true email=$member.email}
                 </a>
                 <div class="ia-item-author__content">
-                    <h4 class="ia-item__title"><a href="{ia_url type='url' item='members' data=$member}">{$member.fullname|escape}</a></h4>
+                    <h4 class="ia-item__title"><a href="{ia_url type='url' item='member' data=$member}">{$member.fullname|escape}</a></h4>
                     {if $member.biography}
                         <p class="text-center text-fade-50">{$member.biography|strip_tags|truncate:100:'...':true}</p>
                     {/if}
                     {if $member.phone}
                     <div class="ia-item__additional">
-                        <p><span class="fa fa-phone"></span> {lang key='field_members_phone'}: {$member.phone|escape}</p>
+                        <p><span class="fa fa-phone"></span> {lang key='field_member_phone'}: {$member.phone|escape}</p>
                     </div>
                     {/if}
                 </div>
                 {if $member.facebook || $member.twitter || $member.gplus || $member.linkedin}
                     <p class="text-center">
                         {if !empty($member.facebook)}
-                            <a href="{$member.facebook|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-facebook fa-stack-1x fa-inverse"></i></a>
+                            <a href="{$member.facebook|escape:'url'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-facebook fa-stack-1x fa-inverse"></i></a>
                         {/if}
                         {if !empty($member.twitter)}
-                            <a href="{$member.twitter|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-twitter fa-stack-1x fa-inverse"></i></a>
+                            <a href="{$member.twitter|escape:'url'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-twitter fa-stack-1x fa-inverse"></i></a>
                         {/if}
                         {if !empty($member.gplus)}
-                            <a href="{$member.gplus|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-google-plus fa-stack-1x fa-inverse"></i></a>
+                            <a href="{$member.gplus|escape:'url'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-google-plus fa-stack-1x fa-inverse"></i></a>
                         {/if}
                         {if !empty($member.linkedin)}
-                            <a href="{$member.linkedin|escape}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-linkedin fa-stack-1x fa-inverse"></i></a>
+                            <a href="{$member.linkedin|escape:'url'}" class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-linkedin fa-stack-1x fa-inverse"></i></a>
                         {/if}
                     </p>
                 {/if}
@@ -131,7 +131,7 @@
         {/if}
 
         {* use this to exclude tabs where you don't need capture named __all__ *}
-        {append 'tabs_after' array('password', 'funds', 'plans') index='excludes'}
+        {append 'tabs_after' ['password', 'funds', 'plans'] index='excludes'}
 
         {capture append='tabs_after' name='__all__'}
             <div class="fieldset__actions">

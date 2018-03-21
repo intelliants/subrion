@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -92,7 +92,6 @@ class iaBackendController extends iaAbstractControllerBackend
                 break;
 
             case 'plugins':
-
                 $installedPlugins = $this->_iaDb->assoc(['name', 'status', 'version'],
                     iaDb::convertIds(iaModule::TYPE_PLUGIN, 'type'));
                 $this->_getLocal(IA_MODULES, ['installed' => $installedPlugins]);
@@ -100,7 +99,6 @@ class iaBackendController extends iaAbstractControllerBackend
                 break;
 
             case 'templates':
-
                 $this->_getTemplatesList();
                 if ($this->_messages) {
                     $iaView->setMessages($this->_messages);
@@ -110,6 +108,7 @@ class iaBackendController extends iaAbstractControllerBackend
             default:
                 return iaView::accessDenied();
         }
+
         $iaView->assign('modules', $this->_modules);
 
         $iaView->display($this->_template);
@@ -140,14 +139,13 @@ class iaBackendController extends iaAbstractControllerBackend
 
                     $result = $this->_installPlugin($this->_iaCore->requestPath[0], $action, $_POST['remote']);
                     break;
-                case 'uninstall':
 
+                case 'uninstall':
                     if (!$iaAcl->isAccessible($this->_iaCore->requestPath[0], $this->_iaCore->requestPath[1])) {
                         return iaView::accessDenied();
                     }
 
                     $result = $this->_uninstallPlugin($this->_iaCore->requestPath[0]);
-                    break;
             }
         } else {
             $result = [];
@@ -264,7 +262,7 @@ class iaBackendController extends iaAbstractControllerBackend
                     return iaView::accessDenied();
                 }
 
-                $error = !$this->_reset($iaView->domain);
+                $error = !$this->_reset($this->_iaCore->domain);
 
                 break;
 
@@ -286,7 +284,20 @@ class iaBackendController extends iaAbstractControllerBackend
                             ['type' => 'template', 'name' => $this->getHelper()->itemData['info']['title']]);
                     }
                 } elseif (iaModule::TYPE_PLUGIN == $this->_type) {
-                } elseif ($this->_install($module, $action, $iaView->domain)) {
+                    if ($this->_installPlugin($module, $action, $_POST['remote'])) {
+                        // log this event
+                        $action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
+                        $iaLog->write($action, [
+                            'type' => iaModule::TYPE_PLUGIN,
+                            'name' => $module,
+                            'to' => $this->getHelper()->itemData['info']['version']
+                        ], $module);
+                        //
+
+                        $iaSitemap = $this->_iaCore->factory('sitemap', iaCore::ADMIN);
+                        $iaSitemap->generate();
+                    }
+                } elseif ($this->_install($module, $action, $this->_iaCore->domain)) {
                     // log this event
                     $action = $this->getHelper()->isUpgrade ? iaLog::ACTION_UPGRADE : iaLog::ACTION_INSTALL;
                     $iaLog->write($action, [
@@ -413,7 +424,6 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         if ($url) {
-            $url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
             $this->_changeDefault($url);
 
             $this->addMessage('reset_default_success');
@@ -436,8 +446,7 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         $this->getHelper()->getFromPath($installFile);
-//		$this->getHelper()->setUrl(IA_URL_DELIMITER);
-//		$this->getHelper()->setXml(file_get_contents($installFile));
+        $this->getHelper()->setUrl(IA_URL_DELIMITER);
         $this->getHelper()->parse();
         $this->getHelper()->checkValidity();
 
@@ -456,42 +465,43 @@ class iaBackendController extends iaAbstractControllerBackend
         return true;
     }
 
-    private function _changeDefault($url = '', $module = '')
+    private function _changeDefault($url, $module = '')
     {
-        $iaDb = &$this->_iaDb;
-
         $defaultPackage = $this->_iaCore->get('default_package');
 
-        if ($defaultPackage != $module) {
-            if ($defaultPackage) {
-                $oldModule = $this->_iaCore->factory('module', iaCore::ADMIN);
-
-//				$oldModule->setUrl(trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER);
-//				$oldModule->setXml(file_get_contents($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME));
-                $this->getHelper()->getFromPath($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME);
-                $oldModule->parse();
-                $oldModule->checkValidity();
-
-                $iaDb->update(['url' => $oldModule->getUrl()], iaDb::convertIds($defaultPackage, 'name'));
-
-                if ($oldModule->itemData['pages']['front']) {
-                    $iaDb->setTable('pages');
-                    foreach ($oldModule->itemData['pages']['front'] as $page) {
-                        $iaDb->update(['alias' => $page['alias']],
-                            "`name` = '{$page['name']}' AND `module` = '$defaultPackage'");
-                    }
-                    $iaDb->resetTable();
-                }
-            }
-
-            $iaDb->update(['url' => IA_URL_DELIMITER], iaDb::convertIds($module, 'name'));
-            $this->_iaCore->set('default_package', $module, true);
-
-            $iaDb->setTable('hooks');
-            $iaDb->update(['status' => iaCore::STATUS_INACTIVE], "`name` = 'phpCoreUrlRewrite'");
-            $iaDb->update(['status' => iaCore::STATUS_ACTIVE], "`name` = 'phpCoreUrlRewrite' AND `module` = '$module'");
-            $iaDb->resetTable();
+        if ($defaultPackage == $module) {
+            return;
         }
+
+        $iaDb = &$this->_iaDb;
+
+        if ($defaultPackage) {
+            $url = trim($url, IA_URL_DELIMITER) . IA_URL_DELIMITER;
+
+            $this->getHelper()->setUrl($url);
+            $this->getHelper()->getFromPath($this->_folder . $defaultPackage . IA_DS . iaModule::INSTALL_FILE_NAME);
+            $this->getHelper()->parse();
+            $this->getHelper()->checkValidity();
+
+            $iaDb->update(['url' => $url], iaDb::convertIds($defaultPackage, 'name'));
+
+            if ($this->getHelper()->itemData['pages']['front']) {
+                $iaDb->setTable('pages');
+                foreach ($this->getHelper()->itemData['pages']['front'] as $page) {
+                    $iaDb->update(['alias' => $page['alias']],
+                        "`name` = '{$page['name']}' AND `module` = '$defaultPackage'");
+                }
+                $iaDb->resetTable();
+            }
+        }
+
+        $iaDb->update(['url' => IA_URL_DELIMITER], iaDb::convertIds($module, 'name'));
+        $this->_iaCore->set('default_package', $module, true);
+
+        $iaDb->setTable('hooks');
+        $iaDb->update(['status' => iaCore::STATUS_INACTIVE], "`name` = 'phpCoreUrlRewrite'");
+        $iaDb->update(['status' => iaCore::STATUS_ACTIVE], "`name` = 'phpCoreUrlRewrite' AND `module` = '$module'");
+        $iaDb->resetTable();
     }
 
     private function _getList()
@@ -553,13 +563,10 @@ class iaBackendController extends iaAbstractControllerBackend
                                 $buttons['import'] = true;
                             }
 
-                            if ($extraConfig = $this->_iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION,
-                                '`module` = :name ORDER BY `order` ASC', ['name' => $data['name']],
-                                iaCore::getConfigTable())
-                            ) {
+                            if ($extraConfig = $this->_iaCore->factory('config')->getBy('module', $data['name'])) {
                                 $buttons['config'] = [
                                     'url' => $extraConfig['config_group'],
-                                    'anchor' => $extraConfig['name']
+                                    'anchor' => $extraConfig['key']
                                 ];
                             }
 
@@ -760,6 +767,11 @@ class iaBackendController extends iaAbstractControllerBackend
                         'name' => $iaModule->itemData['info']['title'],
                         'to' => $iaModule->itemData['info']['version']
                     ]);
+
+                    $messagePhrase = 'plugin_updated';
+                    $this->addMessage($messagePhrase);
+
+                    return true;
                 } else {
                     $result['groups'] = $iaModule->getMenuGroups();
                     $result['message'] = iaModule::ACTION_INSTALL == $action
@@ -954,7 +966,7 @@ class iaBackendController extends iaAbstractControllerBackend
                 return (bool)$result;
             } else {
                 $this->error = true;
-                $this->addMessage(iaLanguage::getf('upload_module_error', ['module' => $this->_folder]));
+                $this->addMessage(iaLanguage::getf('upload_module_error', ['module' => $this->_folder]), false);
             }
         }
 
@@ -1032,8 +1044,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
             $installed = false;
             if (array_key_exists($module['name'], $options['installed'])) {
-
-                if ($row = $this->_iaDb->row_bind(['name', 'config_group'], '`module` = :plugin ORDER BY `order` ASC', ['plugin' => $module['name']], iaCore::getConfigTable())) {
+                if ($row = $this->_iaCore->factory('config')->getBy('module', $module['name'])) {
                     $buttons['config'] = [
                         'url' => $row['config_group'],
                         'anchor' => $row['name']
@@ -1065,6 +1076,11 @@ class iaBackendController extends iaAbstractControllerBackend
             $buttons['install'] = $compatible && !isset($buttons['reinstall']);
             $buttons['docs'] = 'https://subrion.org/plugin/' . $module['name'] . '.html';
             $buttons['readme'] = true;
+
+            if ($installed && $compatible &&
+                version_compare($module['info']['version'], $options['installed'][$module['name']]['version'], '>')) {
+                $buttons['upgrade'] = true;
+            }
 
             $module = [
                 'name' => $module['name'],

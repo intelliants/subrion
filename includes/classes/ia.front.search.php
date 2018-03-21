@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -32,9 +32,6 @@ class iaSearch extends abstractCore
     const ITEM_SEARCH_METHOD = 'coreSearch';
     const ITEM_COLUMN_TRANSLATION_METHOD = 'coreSearchTranslateColumn';
 
-    const SEARCH_PLUGIN = 'plugin';
-    const SEARCH_PACKAGE = 'package';
-
     const GET_PARAM_PAGE = '__p';
     const GET_PARAM_SORTING_FIELD = '__s';
     const GET_PARAM_SORTING_ORDER = '__so';
@@ -53,12 +50,12 @@ class iaSearch extends abstractCore
 
     protected $_caption = '';
 
-    protected $_extrasName;
+    protected $_module;
     protected $_options = [];
 
     protected $_itemInstance;
 
-    private $_fieldTypes = [];
+    private $_fields = [];
     private $_smartyVarsAssigned = false;
 
 
@@ -78,7 +75,6 @@ class iaSearch extends abstractCore
         $results = ['pages' => $this->_searchByPages()];
         $results = array_merge($results, $this->_searchByItems());
         $results[iaUsers::getItemName()] = $this->_searchByMembers();
-        $results = array_merge($results, $this->_searchByPlugins());
 
         return $results;
     }
@@ -233,19 +229,14 @@ class iaSearch extends abstractCore
             $this->_smartyVarsAssigned = true;
         }
 
-        $result = '';
-
-        if (self::SEARCH_PACKAGE == $this->_type) {
-            $result = $this->_render(sprintf('extra:%s/search.%s', $this->_extrasName, $this->_itemName),
-                ['listings' => $rows]);
-        } elseif (self::SEARCH_PLUGIN == $this->_type) {
-            $result = $this->_render(sprintf('extra:%s/search', $this->_extrasName),
-                ['entries' => $rows]);
-        } elseif (iaUsers::getItemName() == $this->_itemName) {
+        if ($this->_itemName != iaUsers::getItemName()) {
+            $result = $this->_render(sprintf('module:%s/search.%s.tpl', $this->_module,
+                iaItem::toPlural($this->_itemName)), ['listings' => $rows]);
+        } else {
             $array = [];
-            $fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, 'members');
+            $fields = $this->iaCore->factory('field')->filter($this->_itemName, $array, iaUsers::getTable());
 
-            $result = $this->_render('search.members' . iaView::TEMPLATE_FILENAME_EXT,
+            $result = $this->_render('search.members.tpl',
                 ['fields' => $fields, 'listings' => $rows]);
         }
 
@@ -286,6 +277,7 @@ class iaSearch extends abstractCore
                         break;
 
                     case iaField::NUMBER:
+                    case iaField::CURRENCY:
                         $numberFields[] = $row['name'];
 //                        $phraseKey = sprintf('field_%s_range_', $row['name']);
 //
@@ -307,7 +299,7 @@ class iaSearch extends abstractCore
                 $stmt = '';
 
                 foreach ($numberFields as $fieldName) {
-                    $stmt.= iaDb::printf('MIN(`:field`) `:field_min`,MAX(`:field`) `:field_max`,', ['field' => $fieldName]);
+                    $stmt.= iaDb::printf('FLOOR(MIN(`:field`)) `:field_min`, CEIL(MAX(`:field`)) `:field_max`,', ['field' => $fieldName]);
                 }
                 $stmt = substr($stmt, 0, -1);
 
@@ -386,12 +378,12 @@ class iaSearch extends abstractCore
     {
         $this->iaCore->factory('item');
 
-        $extras = $this->iaDb->all(['name', 'type', 'items'], "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, iaItem::getModulesTable());
+        $modules = $this->iaDb->all(['name', 'type', 'items'], "`status` = 'active' AND `items` != '' AND `name` != 'core'", null, null, iaItem::getModulesTable());
 
         $results = [];
-        foreach ($extras as $extra) {
-            if ($extra['items']) {
-                $items = unserialize($extra['items']);
+        foreach ($modules as $module) {
+            if ($module['items']) {
+                $items = unserialize($module['items']);
                 foreach ($items as $entry) {
                     if ($this->_loadItemInstance($entry['item'])) {
                         if ($search = $this->_callInstanceMethod(false)) {
@@ -417,32 +409,6 @@ class iaSearch extends abstractCore
         return false;
     }
 
-    protected function _searchByPlugins()
-    {
-        $iaItem = $this->iaCore->factory('item');
-
-        $where = '`type` = :type AND `status` = :status';
-        $this->iaDb->bind($where, ['type' => 'plugin', 'status' => iaCore::STATUS_ACTIVE]);
-
-        $result = [];
-        $plugins = $this->iaDb->onefield('name', $where, null, null, $iaItem::getModulesTable());
-
-        foreach ($plugins as $pluginName) {
-            if ($this->_loadPluginInstance($pluginName)) {
-                $search = call_user_func_array([$this->_itemInstance, self::ITEM_SEARCH_METHOD], [
-                    $this->_query,
-                    $this->_start,
-                    $this->_limit,
-                    $this->_sorting
-                ]);
-
-                $result[$pluginName] = [$search[0], $this->_renderResults($search[1])];
-            }
-        }
-
-        return $result;
-    }
-
     /**
      * @return array
      */
@@ -452,20 +418,20 @@ class iaSearch extends abstractCore
         $iaDb = &$this->iaDb;
 
         $sql = <<<SQL
-SELECT
-	b.`name`, b.`external`, b.`filename`, b.`module`, b.`sticky`, b.`type`, b.`header`, 
-	p1.`value` `title`,
-	IF(b.`external` = 1, '', p2.`value`) `contents`,
-	o.`page_name` `page` 
-	FROM `:prefix:table_blocks` b 
+SELECT 
+  b.`name`, b.`external`, b.`filename`, b.`module`, b.`sticky`, b.`type`, b.`header`, 
+  p1.`value` `title`,
+  IF(b.`external` = 1, '', p2.`value`) `contents`,
+  o.`page_name` `page` 
+  FROM `:prefix:table_blocks` b 
 LEFT JOIN `:prefix:table_objects` o ON (o.`object` = b.`id` AND o.`object_type` = 'blocks' AND o.`access` = 1) 
 LEFT JOIN `:prefix:table_phrases` p1 ON (p1.`key` = CONCAT('block_title_', b.`id`) AND p1.`code` = ':lang')
 LEFT JOIN `:prefix:table_phrases` p2 ON (p2.`key` = CONCAT('block_content_', b.`id`) AND p2.`code` = ':lang')
 WHERE b.`type` IN ('plain','smarty','html') 
-	AND b.`status` = ':status' 
-	AND b.`module` IN (':module') 
-	AND (b.`external` = 1 OR p2.`value` LIKE ':query' OR p1.`value` LIKE ':query')
-	AND o.`page_name` IS NOT NULL 
+  AND b.`status` = ':status' 
+  AND b.`module` IN (':module') 
+  AND (b.`external` = 1 OR p2.`value` LIKE ':query' OR p1.`value` LIKE ':query')
+  AND o.`page_name` IS NOT NULL 
 GROUP BY b.`id`
 SQL;
         $sql = iaDb::printf($sql, [
@@ -482,7 +448,7 @@ SQL;
         $blocks = [];
 
         if ($rows = $iaDb->getAll($sql)) {
-            $extras = $iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'modules');
+            $modules = $iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), 'modules');
 
             foreach ($rows as $row) {
                 $pageName = empty($row['page']) ? $iaCore->get('home_page') : $row['page'];
@@ -492,15 +458,10 @@ SQL;
                 }
 
                 if ($row['external']) {
-                    switch ($extras[$row['module']]) {
+                    switch ($modules[$row['module']]) {
                         case 'package':
                         case 'plugin':
-                            $fileName = explode(':', $row['filename']);
-                            array_shift($fileName);
-                            $fileName = explode('/', $fileName[0]);
-                            array_shift($fileName);
-
-                            $fileName = $fileName[0] . iaView::TEMPLATE_FILENAME_EXT;
+                            $fileName = explode('/', $row['filename'])[1];
 
                             $tpl = IA_HOME . sprintf('templates/%s/modules/%s/%s',
                                     iaCore::instance()->get('tmpl'), $row['module'], $fileName);
@@ -565,7 +526,7 @@ SQL;
             $condition = '=';
             $val = is_string($value) ? "'" . iaSanitize::sql($value) . "'" : '';
 
-            switch ($this->_fieldTypes[$fieldName]) {
+            switch ($this->_fields[$fieldName]['type']) {
                 case iaField::CHECKBOX:
                     is_string($value) && $value = [$value];
 
@@ -577,8 +538,25 @@ SQL;
                     continue 2;
 
                 case iaField::NUMBER:
-                    empty($value['f']) || $statements[] = ['col' => $column, 'cond' => '>=', 'val' => (float)$value['f'], 'field' => $fieldName];
-                    empty($value['t']) || $statements[] = ['col' => $column, 'cond' => '<=', 'val' => (float)$value['t'], 'field' => $fieldName];
+                case iaField::CURRENCY:
+                    $d = 1;
+
+                    if (iaField::CURRENCY == $this->_fields[$fieldName]['type']) {
+                        $currency = $this->iaCore->factory('currency')->get();
+                        if (!$currency['default']) {
+                            $d = $currency['rate'];
+                        }
+                    }
+
+                    if (!empty($value['f']) && is_numeric($value['f'])) {
+                        $value['f'] = round($value['f'] / $d, 2);
+                        $statements[] = ['col' => $column, 'cond' => '>=', 'val' => $value['f'], 'field' => $fieldName];
+                    }
+
+                    if (!empty($value['t']) && is_numeric($value['t'])) {
+                        $value['t'] = round($value['t'] / $d, 2);
+                        $statements[] = ['col' => $column, 'cond' => '<=', 'val' => $value['t'], 'field' => $fieldName];
+                    }
 
                     continue 2;
 
@@ -601,6 +579,12 @@ SQL;
 
                 case iaField::TEXT:
                 case iaField::TEXTAREA:
+                    if ($this->_fields[$fieldName]['multilingual']) {
+                        $fieldName .= '_' . $this->iaCore->language['iso'];
+                    }
+
+                    // BREAK stmt missing intentionally
+
                 case iaField::URL:
                     $condition = 'LIKE';
                     $val = "'%" . iaSanitize::sql($value) . "%'";
@@ -664,16 +648,22 @@ SQL;
         $tableAlias = $this->getOption('tableAlias') ? $this->getOption('tableAlias') . '.' : '';
         $escapedQuery = iaSanitize::sql($this->_query);
 
-        foreach ($this->_fieldTypes as $fieldName => $type) {
-            switch ($type) {
+        foreach ($this->_fields as $fieldName => $field) {
+            switch ($field['type']) {
+                case iaField::TEXT:
+                case iaField::TEXTAREA:
+                    $statements[] = sprintf("%s LIKE '%s'", $tableAlias . $fieldName, '%' . $escapedQuery . '%');
+                    break;
                 case iaField::NUMBER:
                     if (is_numeric($this->_query)) {
                         $statements[] = sprintf('%s = %s', $tableAlias . $fieldName, (int)$this->_query);
                     }
                     break;
-                case iaField::TEXT:
-                case iaField::TEXTAREA:
-                    $statements[] = sprintf("%s LIKE '%s'", $tableAlias . $fieldName, '%' . $escapedQuery . '%');
+                case iaField::CURRENCY:
+                    if (is_numeric($this->_query)) {
+                        // TODO: implement currency rates conversion
+                        $statements[] = sprintf('%s = %s', $tableAlias . $fieldName, (int)$this->_query);
+                    }
                     break;
                 default:
                     $statements[] = sprintf("%s LIKE '%s'", $tableAlias . $fieldName, '%' . $escapedQuery . '%');
@@ -707,11 +697,16 @@ SQL;
     {
         $iaSmarty = &$this->iaView->iaSmarty;
 
-        foreach ($params as $key => $value) {
-            $iaSmarty->assign($key, $value);
-        }
+        try {
+            foreach ($params as $key => $value) {
+                $iaSmarty->assign($key, $value);
+            }
 
-        return $iaSmarty->fetch($template);
+            return $iaSmarty->fetch($template);
+        } catch (Exception $e) {
+            iaDebug::debug($template, 'Error rendering TPL file used to search results output');
+            return '';
+        }
     }
 
     private function _extractSnippet($text)
@@ -732,7 +727,7 @@ SQL;
     private function _processSorting(array $sorting)
     {
         if ($sorting[0]) {
-            $field = $this->getOption('columnAlias')->{$sorting[0]}
+            $field = isset($this->getOption('columnAlias')->{$sorting[0]})
                 ? $this->getOption('columnAlias')->{$sorting[0]}
                 : iaSanitize::sql($sorting[0]);
             $order = (empty($sorting[1]) || !in_array($sorting[1], ['asc', 'desc']))
@@ -753,14 +748,19 @@ SQL;
         $stmt = '`item` = :item AND `searchable` = 1';
         $this->iaDb->bind($stmt, ['item' => $this->_itemName]);
 
-        $this->_fieldTypes = $this->iaDb->keyvalue(['name', 'type'], $stmt, iaField::getTable());
+        $fields = $this->iaDb->all(['name', 'type', 'multilingual'], $stmt, null, null, iaField::getTable());
+        foreach ($fields as $field) {
+            $this->_fields[$field['name']] = $field;
+        }
 
         if ($params && is_array($params)) {
             foreach ($params as $fieldName => $value) {
-                empty($this->getOption('columnAlias')->$fieldName) || ($fieldName = $this->getOption('columnAlias')->$fieldName);
+                $fieldName = empty($this->getOption('columnAlias')->$fieldName)
+                    ? iaSanitize::paranoid($fieldName)
+                    : $this->getOption('columnAlias')->$fieldName;
 
                 if (empty($value) ||
-                    (!isset($this->_fieldTypes[$fieldName]) && ($this->getOption('customColumns') && !in_array($fieldName, $this->_options['customColumns'])))) {
+                    (!isset($this->_fields[$fieldName]) && ($this->getOption('customColumns') && !in_array($fieldName, $this->_options['customColumns'])))) {
                     continue;
                 }
 
@@ -782,9 +782,10 @@ SQL;
                 $key = array_shift($value);
                 empty($this->getOption('columnAlias')->$key) || $key = $this->getOption('columnAlias')->$key;
 
-                if ($value && isset($this->_fieldTypes[$key])) {
-                    switch ($this->_fieldTypes[$key]) {
+                if ($value && isset($this->_fields[$key])) {
+                    switch ($this->_fields[$key]['type']) {
                         case iaField::NUMBER:
+                        case iaField::CURRENCY:
                             if (count($value) > 1) {
                                 $data[$key] = ['f' => (int)$value[0], 't' => (int)$value[1]];
                                 $captions[] = sprintf('%d-%d', $value[0], $value[1]);
@@ -795,12 +796,22 @@ SQL;
                             break;
                         case iaField::COMBO:
                             foreach ($value as $v) {
-                                $title = iaLanguage::get(sprintf('field_%s_%s', $key, $v), false);
-                                empty($title) || $captions[] = $title;
+                                if ($title = iaField::getLanguageValue($this->_itemName, $key, $v, false)) {
+                                    $captions[] = $title;
+                                }
                             }
                             $data[$key] = $value;
                             break;
+                        case iaField::TREE:
+                            $nodeId = array_shift($value);
+                            $data[$key] = $nodeId;
+                            if ($title = iaField::getLanguageValue($this->_itemName, $key, $nodeId, false)) {
+                                $captions[] = $title;
+                            }
+                            break;
                         default:
+                            $value = array_shift($value);
+
                             $data[$key] = $value;
                             $captions[] = $value;
                     }
@@ -823,49 +834,26 @@ SQL;
         return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', http_build_query($params));
     }
 
-    protected function _loadPluginInstance($pluginName)
-    {
-        $instance = $this->iaCore->factoryPlugin($pluginName);
-
-        if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED})
-            && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) {
-            $this->_type = self::SEARCH_PLUGIN;
-            $this->_itemInstance = &$instance;
-            $this->_extrasName = $pluginName;
-            $this->_options = [];
-
-            return true;
-        }
-
-        return false;
-    }
-
     protected function _loadItemInstance($itemName)
     {
         $this->_itemName = $itemName;
 
         if (iaUsers::getItemName() == $this->_itemName) {
-            $this->_type = null;
             $this->_itemInstance = $this->iaCore->factory('users');
-            $this->_extrasName = null;
+            $this->_module = null;
             $this->_options = $this->_itemInstance->{self::ITEM_SEARCH_PROPERTY_OPTIONS};
 
             return true;
         }
 
-        $itemData = $this->iaDb->row(['module'], iaDb::convertIds($this->_itemName, 'item'), iaItem::getTable());
+        $instance = $this->iaCore->factoryItem($this->_itemName);
 
-        if ($itemData && iaCore::CORE != $itemData['module']) {
-            $instance = $this->iaCore->factoryModule('item', $itemData['module'], iaCore::FRONT, $this->_itemName);
+        if ($instance && $instance->isSearchable()) {
+            $this->_itemInstance = &$instance;
+            $this->_module = $instance->getModuleName();
+            $this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : [];
 
-            if (isset($instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) && true === $instance->{self::ITEM_SEARCH_PROPERTY_ENABLED}) {
-                $this->_type = self::SEARCH_PACKAGE;
-                $this->_itemInstance = &$instance;
-                $this->_extrasName = $itemData['module'];
-                $this->_options = isset($instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS}) ? $instance->{self::ITEM_SEARCH_PROPERTY_OPTIONS} : [];
-
-                return true;
-            }
+            return true;
         }
 
         return false;

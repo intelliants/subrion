@@ -128,50 +128,40 @@
 
     {ia_add_media files='moment, datepicker'}
     {ia_add_js}
-$(function()
-{
+$(function(){
     var $sponsoredEnd = $('input[name="sponsored_end"]'),
         $inputPlan = $('#input-plan');
 
-    $inputPlan.on('change', function()
-    {
-        $sponsoredEnd.data("DateTimePicker").date($('option:selected', this).data('date'));
+    $inputPlan.on('change', function(){
+        $sponsoredEnd.data('DateTimePicker').date($('option:selected', this).data('date'));
     });
 
-    if ('' == $sponsoredEnd.val())
-    {
+    if ('' == $sponsoredEnd.val()){
         $inputPlan.trigger('change');
     }
     // sponsored switchers
-    $('input[name="sponsored"]').on('change', function()
-    {
+    $('input[name="sponsored"]').on('change', function(){
         (1 == this.value) ? $('#plans, #js-row-sponsored-end').show() : $('#plans, #js-row-sponsored-end').hide();
     });
 
     // featured switchers
-    $('input[name="featured"]').on('change', function()
-    {
+    $('input[name="featured"]').on('change', function(){
         (1 == this.value) ? $('#js-row-featured-end').show() : $('#js-row-featured-end').hide();
     });
 
     var objects = [];
         var items = [];
 
-    $('#js-owner-autocomplete').typeahead(
-    {
-        source: function(query, process)
-        {
-            $.ajax(
-            {
-                url: intelli.config.ia_url + 'actions.json',
+    $('#js-owner-autocomplete').typeahead({
+        source: function(query, process){
+            $.ajax({
+                url: intelli.config.url + 'actions.json',
                 type: 'get',
                 dataType: 'json',
                 data: { q: query, action: 'assign-owner' },
-                success: function(response)
-                {
+                success: function(response){
                     objects = items = [];
-                    $.each(response, function(i, object)
-                    {
+                    $.each(response, function(i, object){
                         items[object.fullname] = object;
                         objects.push(object.fullname);
                     });
@@ -180,13 +170,11 @@ $(function()
                 }
             })
         },
-        updater: function(item)
-        {
+        updater: function(item){
             $('#member-id').val(items[item].id);
             return item;
         },
-        matcher: function()
-        {
+        matcher: function(){
             return true;
         }
     });
@@ -224,33 +212,26 @@ $(function()
     </div>
 </div>
 {ia_add_js}
-$(function()
-{
+$(function(){
     var usergroupAccess = { };
 
-    $('#input-ugp-default').on('click', function()
-    {
+    $('#input-ugp-default').on('click', function(){
         var setDefaults = $(this).prop('checked');
         var $section = $('#widget-permissions');
         var $togglers = $('.js-toggler-group', $section);
         var $actions = $('.widget-system-panel a', $section);
 
-        if (setDefaults)
-        {
-            $togglers.each(function()
-            {
+        if (setDefaults){
+            $togglers.each(function(){
                 var id = $(this).data('id');
                 usergroupAccess[id] = $('#js-ugp-' + id).val();
             });
             setTogglerValue();
             $actions.addClass('disabled');
-        }
-        else
-        {
-            $togglers.each(function()
-            {
+        } else {
+            $togglers.each(function() {
                 var id = $(this).data('id');
-                var value = ('undefined' == typeof usergroupAccess[id])
+                var value = ('undefined' === typeof usergroupAccess[id])
                     ? $('#js-ugp-' + id).val()
                     : usergroupAccess[id];
 
@@ -260,20 +241,16 @@ $(function()
         }
     });
 
-    $('.widget-system-panel a', '#widget-permissions').on('click', function(e)
-    {
+    $('.widget-system-panel a', '#widget-permissions').on('click', function(e){
         e.preventDefault();
         $(this).hasClass('disabled') || setTogglerValue($(this).attr('rel'));
     });
 
-    function setTogglerValue(value, $toggler)
-    {
+    function setTogglerValue(value, $toggler){
         $toggler = $toggler || $('#widget-permissions').find('.js-toggler-group');
 
-        if ('undefined' != typeof value)
-        {
-            $toggler.each(function()
-            {
+        if ('undefined' !== typeof value){
+            $toggler.each(function(){
                 $('#js-ugp-' + $(this).data('id')).val(value);
                 var status = (1 == value);
 
@@ -284,17 +261,14 @@ $(function()
                     .removeClass((status ? 'label-danger' : 'label-default') + ' disabled')
                     .addClass(status ? 'label-default' : 'label-danger');
             });
-        }
-        else
-        {
+        } else {
             $toggler.find('span')
                 .removeClass('label-success label-danger')
                 .addClass('label-default disabled');
         }
     }
 
-    $('.label', '#widget-permissions').on('click', function(e)
-    {
+    $('.label', '#widget-permissions').on('click', function(){
         $(this).hasClass('disabled') || setTogglerValue($(this).data('access'), $(this).parent());
     });
 });
@@ -303,7 +277,8 @@ $(function()
 
 {if !isset($noControls)}
     <div class="form-actions inline">
-        <button type="submit" name="save" class="btn btn-primary form-actions__btn-submit js-btn-submit">
+        <input type="hidden" name="save" value="1">
+        <button type="submit" class="btn btn-primary form-actions__btn-submit js-btn-submit">
             {if iaCore::ACTION_ADD == $pageAction}{lang key='add'}{else}{lang key='save'}{/if}
         </button>
         {include 'goto.tpl'}

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -34,7 +34,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
     $output = ['error' => true, 'message' => iaLanguage::get('invalid_parameters')];
 
     if (isset($_GET['item']) && $_GET['item_id']) {
-        $itemName = in_array($_GET['item'], array_keys($itemsList)) ? $_GET['item'] : $iaUsers->getItemName();
+        $itemName = isset($itemsList[$_GET['item']]) ? $_GET['item'] : $iaUsers->getItemName();
         $itemId = (int)$_GET['item_id'];
 
         switch ($_GET['action']) {
@@ -52,13 +52,13 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
                     // $output['error'] = !(bool)$iaDb->getAffected();
                 } else {
                     // initialize necessary class
-                    $class = (iaCore::CORE != $itemsList[$itemName])
-                            ? $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName)
+                    $itemInstance = (iaCore::CORE != $itemsList[$itemName])
+                            ? $iaCore->factoryItem($itemName)
                             : $iaCore->factory($iaUsers->getItemName() == $itemName ? 'users' : $itemName);
 
                     // get listing information
                     $array = (array)$_SESSION[iaUsers::SESSION_FAVORITES_KEY][$itemName];
-                    if ($listing = $class->getById($itemId)) {
+                    if ($listing = $itemInstance->getById($itemId)) {
                         if (!array_key_exists($listing['id'], $array['items'])) {
                             $listing['favorite'] = 1;
                             $array['items'][$listing['id']] = $listing;
@@ -92,57 +92,46 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_GET['action']))
 }
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
-    $itemInfo = $fields = [];
     $iaField = $iaCore->factory('field');
 
+    $favorites = [];
+    $fields = [];
+
     if ($iaUsers->hasIdentity()) {
-        if ($favorites = $iaItem->getFavoritesByMemberId(iaUsers::getIdentity()->id)) {
-            foreach ($favorites as $itemName => $ids) {
-                $fields = ['id'];
+        $favorites = $iaItem->getFavoritesByMemberId(iaUsers::getIdentity()->id);
 
-                $class = (iaCore::CORE != $itemsList[$itemName])
-                        ? $iaCore->factoryModule('item', $itemsList[$itemName], iaCore::FRONT, $itemName)
-                        : $iaCore->factory('members' == $itemName ? 'users' : $itemName);
+        foreach ($favorites as $itemName => $ids) {
+            $fields = ['id'];
 
-                if ($class && method_exists($class, iaUsers::METHOD_NAME_GET_FAVORITES)) {
-                    $favorites[$itemName]['items'] = $class->{iaUsers::METHOD_NAME_GET_FAVORITES}($ids);
-                } else {
-                    if ($itemName == $iaUsers->getItemName()) {
-                        $fields[] = 'username';
-                        $fields[] = 'fullname';
-                        $fields[] = 'avatar';
-                        $fields[] = 'id` `member_id';
-                    } else {
-                        $fields[] = 'member_id';
-                    }
+            $itemInstance = (iaCore::CORE != $itemsList[$itemName])
+                ? $iaCore->factoryItem($itemName)
+                : $iaCore->factory(iaUsers::getItemName() == $itemName ? 'users' : $itemName);
 
-                    $stmt = iaDb::printf("`id` IN (:ids) && `status` = ':status'", ['ids' => implode(',', $ids), 'status' => iaCore::STATUS_ACTIVE]);
-                    $favorites[$itemName]['items'] = $iaDb->all('*, 1 `favorite`', $stmt, null, null, $iaItem->getItemTable($itemName));
-                }
+            if ($itemInstance && method_exists($itemInstance, iaUsers::METHOD_NAME_GET_FAVORITES)) {
+                $favorites[$itemName]['items'] = $itemInstance->{iaUsers::METHOD_NAME_GET_FAVORITES}($ids);
+            } else {
+                $fields[] = 'member_id';
 
-                // we need this to generate correct template filename
-                $favorites[$itemName]['package'] = (iaCore::CORE == $itemsList[$itemName]) ? '' : $itemsList[$itemName];
-
-                // filter values
-                $favorites[$itemName]['fields'] = $iaField->filter($itemName, $favorites[$itemName]['items']);
+                $stmt = iaDb::printf("`id` IN (:ids) && `status` = ':status'", ['ids' => implode(',', $ids), 'status' => iaCore::STATUS_ACTIVE]);
+                $favorites[$itemName]['items'] = $iaDb->all('*, 1 `favorite`', $stmt, null, null, $iaItem->getItemTable($itemName));
             }
         }
-    } else {
-        $favorites = isset($_SESSION[iaUsers::SESSION_FAVORITES_KEY]) ? (array)$_SESSION[iaUsers::SESSION_FAVORITES_KEY] : [];
+    } elseif (isset($_SESSION[iaUsers::SESSION_FAVORITES_KEY])) {
+        $favorites = (array)$_SESSION[iaUsers::SESSION_FAVORITES_KEY];
+    }
 
-        // populate visible fields
-        foreach ($favorites as $itemName => &$items) {
-            if (isset($items['items']) && $items['items']) {
-                // generate correct fields array
-                $favorites[$itemName]['fields'] = $iaField->filter($itemName, $items['items']);
+    foreach ($favorites as $itemName => &$data) {
+        if (!empty($data['items'])) {
+            $module = iaCore::CORE == $itemsList[$itemName] ? '' : $itemsList[$itemName];
 
-                // generate correct template filename
-                $favorites[$itemName]['package'] = iaCore::CORE == $itemsList[$itemName] ? '' : $itemsList[$itemName];
+            $favorites[$itemName]['fields'] = $iaField->filter($itemName, $data['items']);
+            $favorites[$itemName]['tpl'] = iaCore::CORE == $itemsList[$itemName]
+                ? 'search.' . iaItem::toPlural($itemName) . '.tpl'
+                : sprintf('module:%s/search.%s.tpl', $module, iaItem::toPlural($itemName));
 
-                $iaCore->startHook('phpFavoritesAfterGetExtraItems', ['favorites' => &$items, 'item' => $itemName]);
-            } else {
-                unset($favorites[$itemName]);
-            }
+            $iaCore->startHook('phpFavoritesAfterGetExtraItems', ['favorites' => &$data, 'item' => $itemName]);
+        } else {
+            unset($favorites[$itemName]);
         }
     }
 

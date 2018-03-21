@@ -15,7 +15,7 @@ intelli = {
      *  @return {Boolean}
      */
     inArray: function (val, arr) {
-        if (typeof arr == 'object' && arr) {
+        if (typeof arr === 'object' && arr) {
             for (var i = 0; i < arr.length; i++) {
                 if (arr[i] == val) {
                     return true;
@@ -183,7 +183,7 @@ intelli = {
         }
 
         params = params || {};
-        params.baseHref = intelli.config.ia_url;
+        params.baseHref = intelli.config.clear_url;
 
         CKEDITOR.replace(name, params);
     },
@@ -484,12 +484,45 @@ intelli = {
         });
     },
 
-    includeSecurityToken: function (params, tokenValue) {
-        if ('object' == typeof params) {
-            params[this.securityTokenKey] = tokenValue;
+    includeSecurityToken: function(params) {
+        if ('object' === typeof params) {
+            params[this.securityTokenKey] = intelli.securityToken;
         }
 
-        return params
+        return params;
+    },
+
+    post: function(url, data, success, dataType) {
+        return $.post(url, this.includeSecurityToken(data), success, dataType);
+    },
+
+    getLocale: function() {
+        if ('function' === typeof moment) {
+            var existLocales = moment.locales();
+
+            var locales = [
+                intelli.languages[intelli.config.lang].locale.replace('_', '-'),
+                intelli.config.lang
+            ];
+
+            var map = {
+                zh: 'zh-cn'
+            };
+
+            for (var i in locales) {
+                var locale = locales[i];
+
+                if (typeof map[locale] !== 'undefined') {
+                    locale = map[locale];
+                }
+
+                if (-1 !== $.inArray(locale, existLocales)) {
+                    return locale;
+                }
+            }
+        }
+
+        return 'en';
     }
 };
 

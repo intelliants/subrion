@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -150,10 +150,10 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $iaMailer = $this->_iaCore->factory('mailer');
 
-        $iaMailer->Subject = 'Subrion CMS Mailing test';
-        $iaMailer->Body = 'THIS IS A TEST EMAIL MESSAGE FROM ADMIN DASHBOARD.';
+        $iaMailer->setSubject('Subrion CMS Mailing test');
+        $iaMailer->setBody('THIS IS A TEST EMAIL MESSAGE FROM ADMIN DASHBOARD.');
 
-        $iaMailer->addAddress(iaUsers::getIdentity()->email);
+        $iaMailer->addAddressByMember(iaUsers::getIdentity(true));
 
         $result = $iaMailer->send();
 
@@ -175,9 +175,8 @@ class iaBackendController extends iaAbstractControllerBackend
                 $this->_iaCore->factory('page', iaCore::ADMIN);
 
                 $sql = <<<SQL
-SELECT IF(p.`module` = '', 'core', p.`module`) `value`, 
-	IF(p.`module` = '', 'Core', g.`title`) `title` 
-	FROM `:prefix:table_pages` p 
+SELECT IF(p.`module` = '', 'core', p.`module`) `value`, IF(p.`module` = '', 'Core', g.`title`) `title` 
+  FROM `:prefix:table_pages` p 
 LEFT JOIN `:prefix:table_modules` g ON (g.`name` = p.`module`) 
 GROUP BY p.`module`
 SQL;

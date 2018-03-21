@@ -47,7 +47,7 @@
                         <label class="control-label" for="{$entry.name}">
                             {$entry.description|escape}
                             {if isset($tooltips[$entry.name])}
-                                <a href="#" class="js-tooltip" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
+                                <a href="#" class="js-tooltip" data-html="true" title="{$tooltips[$entry.name]}"><i class="i-info"></i></a>
                             {/if}
                         </label>
                     </div>
@@ -189,7 +189,7 @@ $(function() {
                         <div class="item-input">
                             <select name="v[{$entry.name}]" id="{$entry.name}"{if 1 == count($entry.values)} disabled{/if}>
                                 {foreach $entry.values as $k => $v}
-                                    {if 'lang' == $entry.name}
+                                    {if 'lang' == $entry.name || 'currency' == $entry.name}
                                         <option value="{$k}"{if $k == $entry.value || $v == $entry.value} selected{/if}>{$v.title|escape}</option>
                                     {elseif is_array($v)}
                                         <optgroup label="{$k}">
@@ -204,18 +204,30 @@ $(function() {
                             </select>
                         </div>
                     {elseif $entry.type == 'itemscheckbox' && !$custom}
-                        {if isset($entry.items)}
+                        <input type="hidden" name="v[{$entry.name}][]">
+                        {if isset($entry.items[0])}
                             <div class="item-input">
-                                <input type="hidden" name="v[{$entry.name}][]">
-                                {foreach $entry.items as $item name=items}
+                                {foreach $entry.items[0] as $item}
                                     <p>
-                                        <input type="checkbox" id="icb_{$entry.name}_{$smarty.foreach.items.iteration}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
-                                        <label for="icb_{$entry.name}_{$smarty.foreach.items.iteration}">{$item.title}</label>
+                                        <input type="checkbox" id="icb_{$entry.name}_{$item.name}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
+                                        <label for="icb_{$entry.name}_{$item.name}">{$item.title}</label>
                                     </p>
                                 {/foreach}
                             </div>
                         {else}
                             <div class="alert alert-info">{lang key='no_implemented_packages'}</div>
+                        {/if}
+                        {if isset($entry.items[1])}
+                        <hr>
+                        <div class="item-input">
+                            {foreach $entry.items[1] as $item}
+                                <p>
+                                    <input type="checkbox" id="icb_{$entry.name}_{$item.name}" name="v[{$entry.name}][]" value="{$item.name}"{if $item.checked} checked{/if}>
+                                    <label for="icb_{$entry.name}_{$item.name}">{$item.title}</label>
+                                    <small class="text-muted">(not supported explicitly)</small>
+                                </p>
+                            {/foreach}
+                        </div>
                         {/if}
                     {/if}
                     </div> <!-- /.col -->

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -30,9 +30,13 @@ class iaInvoice extends abstractCore
     protected static $_tableItems = 'invoices_items';
 
 
-    public function create(array $transaction)
+    public function create(array $transaction, $transactionId)
     {
-        if ($invoiceId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($transaction['id'], 'transaction_id'), self::getTable())) {
+        if (!$transactionId) {
+            return false;
+        }
+
+        if ($invoiceId = $this->iaDb->one(iaDb::ID_COLUMN_SELECTION, iaDb::convertIds($transactionId, 'transaction_id'), self::getTable())) {
             return $invoiceId;
         }
 
@@ -40,7 +44,7 @@ class iaInvoice extends abstractCore
 
         $invoice = [
             'id' => $id,
-            'transaction_id' => $transaction['id'],
+            'transaction_id' => $transactionId,
             'date_created' => date(iaDb::DATETIME_FORMAT),
             'date_due' => null,
             'fullname' => empty($transaction['fullname']) ? iaUsers::getIdentity()->fullname : $transaction['fullname'],
@@ -48,6 +52,13 @@ class iaInvoice extends abstractCore
         ];
 
         $this->iaDb->insert($invoice, null, self::getTable());
+
+        $this->saveItems($id, [
+            'title' => [$transaction['operation']],
+            'price' => [$transaction['amount']],
+            'quantity' => [1],
+            'tax' => [0]
+        ]);
 
         if (0 === $this->iaDb->getErrorNumber()) {
             $this->_sendEmailNotification($invoice, $transaction);
@@ -108,7 +119,7 @@ class iaInvoice extends abstractCore
         $iaTransaction = $this->iaCore->factory('transaction');
 
         $sql = <<<SQL
-SELECT SQL_CALC_FOUND_ROWS i.`address1`, i.`address2`, i.`zip`, i.`country` 
+SELECT i.`address1`, i.`address2`, i.`zip`, i.`country` 
 	FROM `:prefix:table_transactions` t 
 LEFT JOIN `:prefix:table_invoices` i ON (i.`transaction_id` = t.`id`) 
 WHERE t.`member_id` = :member AND i.`address1` != "" 
@@ -166,22 +177,16 @@ SQL;
 
     protected function _sendEmailNotification(array $invoice, array $transaction)
     {
-        if (!$this->iaCore->get('invoice_created')) {
-            return true;
-        }
-
         $iaUsers = $this->iaCore->factory('users');
+        $iaMailer = $this->iaCore->factory('mailer');
 
         $member = $iaUsers->getById($transaction['member_id']);
 
-        if (!$member) {
+        if (!$member || !$iaMailer->loadTemplate('invoice_created')) {
             return false;
         }
 
-        $iaMailer = $this->iaCore->factory('mailer');
-
-        $iaMailer->loadTemplate('invoice_created');
-        $iaMailer->addAddress($member['email']);
+        $iaMailer->addAddressByMember($member);
 
         $iaMailer->setReplacements($transaction);
         $iaMailer->setReplacements([

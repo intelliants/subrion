@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -32,59 +32,36 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType()) {
     if (isset($_GET['email'])) {
         $code = isset($_GET['code']) ? trim($_GET['code']) : false;
         $email = isset($_POST['email']) ? $_POST['email'] : (isset($_GET['email']) ? $_GET['email'] : '');
-        $error = false;
-        $message = [];
+        $message = null;
 
         if ($email) {
-            if (!iaValidate::isEmail($email)) {
-                $error = true;
+            if (iaValidate::isEmail($email)) {
+                $member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
+
+                if (!$member) {
+                    $message = iaLanguage::get('error_no_member_email');
+                } elseif (false !== $code && $member['sec_key'] != $code) {
+                    $message = iaLanguage::get('confirmation_code_incorrect');
+                }
+            } else {
                 $message = iaLanguage::get('error_email_incorrect');
             }
-            $email = iaSanitize::sql($email);
 
-            $member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
-            if (empty($member)) {
-                $error = true;
-                $message = iaLanguage::get('error_no_member_email');
-            }
-            if (false !== $code && $member['sec_key'] != $code) {
-                $error = true;
-                $message = iaLanguage::get('confirmation_code_incorrect');
-            }
-
-            if (!$error && false === $code) {
-                $mail = [];
-                $token = $iaCore->factory('util')->generateToken();
-                $confirmationUrl = IA_URL . "forgot/?email=$email&code=$token";
-
-                $iaMailer = $iaCore->factory('mailer');
-
-                $iaMailer->loadTemplate('password_restoration');
-                $iaMailer->addAddress($member['email'], $member['fullname']);
-                $iaMailer->setReplacements([
-                    'fullname' => $member['fullname'],
-                    'url' => $confirmationUrl,
-                    'code' => $token,
-                    'email' => $email
-                ]);
-
-                $iaMailer->send();
+            if (!$message && false === $code) {
+                $iaUsers->sendPasswordResetEmail($member);
 
                 $message = iaLanguage::get('restore_pass_confirm');
-                $iaDb->update(['id' => $member['id'], 'sec_key' => $token], null, null, iaUsers::getTable());
-            } elseif (!$error && $code) {
+            } elseif (!$message && $code) {
                 $iaUsers->changePassword($member);
 
-                $error = false;
                 $message = iaLanguage::get('new_password_sent');
             }
         } elseif ($_POST && empty($_POST['email'])) {
-            $error = true;
             $message = iaLanguage::get('error_email_incorrect');
         }
 
         $iaView->assign('message', $message);
-        $iaView->assign('result', !$error);
+        $iaView->assign('result', empty($message));
     }
 }
 
@@ -123,7 +100,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
             if (!$error) {
                 $member = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`email` = :email', ['email' => $email]);
 
-                if (empty($member)) {
+                if (!$member) {
                     $error = true;
                     $messages[] = iaLanguage::get('error_no_member_email');
                 } elseif (in_array($member['status'], [iaUsers::STATUS_SUSPENDED, iaUsers::STATUS_UNCONFIRMED])) {
@@ -143,7 +120,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $iaMailer = $iaCore->factory('mailer');
 
                     $iaMailer->loadTemplate('password_restoration');
-                    $iaMailer->addAddress($member['email'], $member['fullname']);
+                    $iaMailer->addAddressByMember($member);
                     $iaMailer->setReplacements([
                         'fullname' => $member['fullname'],
                         'url' => $confirmationUrl,

@@ -245,19 +245,19 @@
             type="text"
             order="4002"
             show="website_social|1"
-            description="Twitter Link">https://twitter.com/IntelliantsLLC</config>
+            description="Twitter Link">#</config>
     <config group="template_kickstart"
             name="website_social_f"
             type="text"
             order="4003"
             show="website_social|1"
-            description="Facebook Link">https://www.facebook.com/Intelliants</config>
+            description="Facebook Link">#</config>
     <config group="template_kickstart"
             name="website_social_g"
             type="text"
             order="4004"
             show="website_social|1"
-            description="Google+ Link">https://plus.google.com/102500660503219569194/posts</config>
+            description="Google+ Link">#</config>
     <config group="template_kickstart"
             name="website_social_i"
             type="text"
@@ -268,6 +268,7 @@
     <config group="template_kickstart"
             name="ckeditor_css"
             type="hidden"
+            private="0"
             description="CKEditor CSS"
             order="5000">ckeditor.css</config>
 
@@ -294,7 +295,7 @@
             <![CDATA[
 <div class="teaser">
     <div class="container">
-        <h1>The greatest place<br>to <span class="text-warning">kickstart anything</span></h1>
+        <h1>The greatest place<br>to kickstart anything</h1>
         <h2>You will love how easy<br>it is to manage your content</h2>
     </div>
 </div>
@@ -312,25 +313,24 @@
                classname="section section-what"
                order="200">
             <![CDATA[
-<p class="lead text-center">This is your Subrion CMS. Start editing your content right away!</p>
 <div class="row text-center m-t-md">
     <div class="col-md-4">
-        <img src="{$img}icon-monitor.png" width="100" alt=""/>
-        <h3>Landing page</h3>
-        <p class="text-fade-50">This is a starting page for your website. You can change it (switch off) to display content and blocks. This can be done on Template configuration page in Admin Dashboard.</p>
+        <img src="{$img}browser.png" width="64" alt=""/>
+        <h4 class="m-t">Landing page</h4>
+        <p class="text-fade-75">This is a starting page for your website. You can change it (switch off) to display content and blocks. This can be done on Template configuration page.</p>
     </div>
     <div class="col-md-4">
-        <img src="{$img}icon-sliders.png" width="100" alt=""/>
-        <h3>Configuration options</h3>
-        <p class="text-fade-50"><b>Kickstart</b> template has many configuration options to play with. Go to admin panel and try to change, for example, background of header block.</p>
+        <img src="{$img}computer.png" width="64" alt=""/>
+        <h4 class="m-t">Configuration options</h4>
+        <p class="text-fade-75"><b>Kickstart</b> template has many configuration options to play with. Go to admin panel and try to change, for example, background of header block.</p>
     </div>
     <div class="col-md-4">
-        <img src="{$img}icon-browser.png" width="100" alt=""/>
-        <h3>Blocks management</h3>
-        <p class="text-fade-50">Each section on this page can be changed in Admin Dashboard in Blocks section, as well as all other blocks on all pages. Go give it a try!</p>
+        <img src="{$img}computer2.png" width="64" alt=""/>
+        <h4 class="m-t">Blocks management</h4>
+        <p class="text-fade-75">Each section on this page can be changed in Admin Dashboard in Blocks section, as well as all other blocks on all pages. Go give it a try!</p>
     </div>
 </div>
-<div class="text-center m-t">
+<div class="text-center m-t-lg">
     <a class="btn btn-primary text-uppercase" href="{$smarty.const.IA_ADMIN_URL}">Go to admin dashboard</a>
 </div>
             ]]>
@@ -355,7 +355,7 @@
             </div>
             <div class="b-feature__body">
                 <h3>Free & open source</h3>
-                <p>You don't need to pay a single penny to start using Subrion CMS. It's not encrypted in any way so you can customize it per your needs.</p>
+                <p class="text-fade-75">You don't need to pay a single penny to start using Subrion CMS. It's not encrypted in any way so you can customize it per your needs.</p>
             </div>
         </div>
     </div>
@@ -366,7 +366,7 @@
             </div>
             <div class="b-feature__body">
                 <h3>Extremely easy to extend</h3>
-                <p>Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
+                <p class="text-fade-75">Forget the hours of programming simple things. Use Subrion framework API to add extra stuff using hooks, plugins, & packages.</p>
             </div>
         </div>
     </div>
@@ -379,7 +379,7 @@
             </div>
             <div class="b-feature__body">
                 <h3>Templates and plugins</h3>
-                <p>No need to search. Plugins and templates are available straight from your admin dashboard with one click installation process.</p>
+                <p class="text-fade-75">No need to search. Plugins and templates are available straight from your admin dashboard with one click installation process.</p>
             </div>
         </div>
     </div>
@@ -390,7 +390,7 @@
             </div>
             <div class="b-feature__body">
                 <h3>Powerful admin dashboard</h3>
-                <p>It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
+                <p class="text-fade-75">It's done to focus on the content management process. Start it hassle-free within just a few minutes and take care of the content. It's easy!</p>
             </div>
         </div>
     </div>
@@ -403,7 +403,7 @@
             </div>
             <div class="b-feature__body">
                 <h3>Blog in the box</h3>
-                <p>Bring your online presence to a whole new level with the extensive blog functionality that comes in the version by default.</p>
+                <p class="text-fade-75">Bring your online presence to a whole new level with the extensive blog functionality that comes in the version by default.</p>
             </div>
         </div>
     </div>
@@ -414,7 +414,7 @@
             </div>
             <div class="b-feature__body">
                 <h3>Multilingual CMS</h3>
-                <p>Use ready translation or translate the system into your language. It provides all the functionality to become a multilingual solution.</p>
+                <p class="text-fade-75">Use ready translation or translate the system into your language. It provides all the functionality to become a multilingual solution.</p>
             </div>
         </div>
     </div>
@@ -434,18 +434,12 @@
                order="202">
             <![CDATA[
 <div class="row">
-    <div class="col-md-4 col-md-offset-2">
+    <div class="col-md-6 col-md-offset-2">
         <div class="section-mobile__text">
             <h2>{$block.title}</h2>
             <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ipsa distinctio vel aspernatur, reiciendis excepturi.</p>
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. At animi corporis laboriosam. Maiores voluptatibus dicta ea, quo repellendus eum officiis enim non? Porro aut harum pariatur sit adipisci accusantium rem!
             </p>
-            <p class="m-t"><a href="#" class="btn btn-warning text-uppercase">Learn more</a> <a href="#" class="btn btn-link">Contact us</a></p>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="section-mobile__image">
-            <img class="img-responsive center-block" src="{$img}section-mobile.png" alt=""/>
         </div>
     </div>
 </div>

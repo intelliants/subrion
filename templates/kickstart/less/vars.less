@@ -1,9 +1,9 @@
 
 //
 // Vars
-// 
+//
 // you can also redefine bootstrap vars here
-// 
+//
 // it is always better to copy bootstrap vars here
 // so that you will know where it is.
 // --------------------------------------------------
@@ -20,12 +20,12 @@
 
 // rhythm
 @vertical-rhythm:  30px;
-@sections-v-pad:   100px;
+@sections-v-pad:   150px;
 
 // font
-@import url('//fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i,800&subset=cyrillic');
+@import url('//fonts.googleapis.com/css?family=Roboto:100,400,400i,700,700i&subset=cyrillic');
 
-@font-family-base: 'Open Sans', @font-family-sans-serif;
+@font-family-base: 'Roboto', @font-family-sans-serif;
 
 @border-radius-base:        3px;
 @border-radius-large:       4px;
@@ -37,13 +37,15 @@
 // Inventory
 // --------------------------------------------------
 
-@inventory-bg:                 @brand-dark;
+@inventory-bg:                 #fff;
 @inventory-height:             50px;
-@inventory-link-color:         fade(#fff, 45%);
-@inventory-link-hover-color:   fade(#fff, 50%);
-@inventory-link-active-color:  fade(#fff, 70%);
-@inventory-social-link-color:  fade(#fff, 70%);
-@inventory-text-color:         fade(#fff, 30%);
+@inventory-border-color:       #eee;
+@inventory-base-color:         #000;
+@inventory-link-color:         fade(@inventory-base-color, 45%);
+@inventory-link-hover-color:   fade(@inventory-base-color, 50%);
+@inventory-link-active-color:  fade(@inventory-base-color, 70%);
+@inventory-social-link-color:  fade(@inventory-base-color, 70%);
+@inventory-text-color:         fade(@inventory-base-color, 30%);
 
 
 
@@ -51,10 +53,11 @@
 // Navbar
 // --------------------------------------------------
 
-@navbar-height:                    80px;
+@navbar-height:                    100px;
 @navbar-padding-horizontal:        floor((@grid-gutter-width / 2));
 @navbar-padding-vertical:          ((@navbar-height - @line-height-computed) / 2);
 @navbar-default-bg:                #fff;
+@navbar-default-border:            #eee;
 
 // Navbar links
 @navbar-default-link-color:                fade(@brand-dark, 80%);

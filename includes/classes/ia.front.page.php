@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -52,7 +52,7 @@ class iaPage extends abstractCore
         );
 
         if ($row) {
-            foreach (['meta_description', 'meta_keywords'] as $key) {
+            foreach (['meta_description', 'meta_keywords', 'meta_title'] as $key) {
                 $phraseKey = sprintf('page_%s_%s', $key, $row['name']);
                 $row[$key] = iaLanguage::exists($phraseKey) ? iaLanguage::get($phraseKey) : null;
             }

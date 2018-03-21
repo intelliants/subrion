@@ -32,7 +32,8 @@
 
         {ia_add_js}
             intelli.pageName = '{$core.page.name}';
-
+            intelli.securityToken = '{$securityToken}';
+            intelli.config.url = '{$smarty.const.IA_URL}';
             {foreach $core.customConfig as $key => $value}
                 intelli.config.{$key} = '{$value}';
             {/foreach}
@@ -109,6 +110,7 @@
                     </form>
                 {/if}
                 {include 'language-selector.tpl'}
+                {include 'currency-selector.tpl'}
                 {ia_blocks block='inventory'}
             </div>
         </div>
@@ -177,7 +179,7 @@
 
             <div class="content">
                 <div class="container">
-                    {if in_array($core.page.name, array('login', 'member_registration'))}
+                    {if in_array($core.page.name, array('login', 'registration', 'profile'))}
                         <div class="page-system">
                             <div class="content__header">
                                 <h1>{$core.page.title|escape}</h1>

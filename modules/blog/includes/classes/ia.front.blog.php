@@ -1,9 +1,8 @@
 <?php
-
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -24,6 +23,7 @@
  * @link https://subrion.org/
  *
  ******************************************************************************/
+
 class iaBlog extends abstractModuleFront
 {
     const ALIAS_SUFFIX = '.html';
@@ -74,7 +74,7 @@ class iaBlog extends abstractModuleFront
 
         $sql = <<<SQL
 SELECT SQL_CALC_FOUND_ROWS b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname` 
-	FROM `:prefix:table_blog_entries` b 
+  FROM `:prefix:table_blog_entries` b 
 LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
 WHERE :where 
 GROUP BY b.`id` 
@@ -98,7 +98,7 @@ SQL;
     {
         $sql = <<<SQL
 SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname`, b.`member_id` 
-	FROM `:prefix:table_blog_entries` b 
+  FROM `:prefix:table_blog_entries` b 
 LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
 WHERE b.`id` = :id AND b.`status` = ':status'
 SQL;
@@ -156,7 +156,7 @@ SQL;
     {
         $sql = <<<SQL
 SELECT DISTINCT bt.`title`, bt.`alias`
-	FROM `:prefix:table_blog_tags` bt 
+  FROM `:prefix:table_blog_tags` bt 
 LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) 
 WHERE bet.`blog_id` = :id
 SQL;
@@ -174,7 +174,7 @@ SQL;
     {
         $sql = <<<SQL
 SELECT GROUP_CONCAT(`title`) 
-	FROM `:prefix:table_blog_tags` bt 
+  FROM `:prefix:table_blog_tags` bt 
 WHERE `id` IN (SELECT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id)
 SQL;
         $sql = iaDb::printf($sql, [
@@ -191,7 +191,7 @@ SQL;
     {
         $sql = <<<SQL
 SELECT bt.`title`, bt.`alias`, bet.`blog_id` 
-	FROM `:prefix:table_blog_tags` bt 
+  FROM `:prefix:table_blog_tags` bt 
 LEFT JOIN `:prefix:table_blog_entries_tags` bet ON (bt.`id` = bet.`tag_id`) 
 ORDER BY bt.`title`
 SQL;
@@ -213,10 +213,10 @@ SQL;
         $sql = <<<SQL
 DELETE FROM `:prefix:table_blog_tags` 
 WHERE `id` IN (
-	SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` 
-	WHERE `tag_id` IN (SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id) 
-	GROUP BY 1 
-	HAVING COUNT(*) = 1)
+  SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` 
+  WHERE `tag_id` IN (SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags` WHERE `blog_id` = :id) 
+  GROUP BY 1 
+  HAVING COUNT(*) = 1)
 SQL;
         $sql = iaDb::printf($sql, [
             'prefix' => $this->iaDb->prefix,

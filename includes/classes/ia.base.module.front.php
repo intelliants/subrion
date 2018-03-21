@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -35,6 +35,19 @@ abstract class abstractModuleFront extends abstractCore
     public $coreSearchEnabled = false;
     public $coreSearchOptions = [];
 
+    public $guestAccessCookieName = '__ga';
+
+    private $_foundRows;
+
+
+    public function init()
+    {
+        parent::init();
+
+        if ($this->_itemName && !$this->_moduleName) {
+            $this->_moduleName = $this->iaCore->factory('item')->getModuleByItem($this->_itemName);
+        }
+    }
 
     public function getModuleName()
     {
@@ -46,6 +59,16 @@ abstract class abstractModuleFront extends abstractCore
         return $this->_itemName;
     }
 
+    public function getFoundRows()
+    {
+        return $this->_foundRows;
+    }
+
+    public function isSearchable()
+    {
+        return $this->coreSearchEnabled;
+    }
+
     public function getStatuses()
     {
         return $this->_statuses;
@@ -53,12 +76,17 @@ abstract class abstractModuleFront extends abstractCore
 
     public function url($action, array $data)
     {
-        return '#';
+        return $this->getUrl($data);
     }
 
-    public function getUrl(array $itemData)
+    public function getActionUrl($action, array $data)
     {
-        return $this->getInfo($this->getModuleName()) . '#';
+        return $this->getInfo('url') . $action . '/' . $data['id'] . '/';
+    }
+
+    public function getUrl(array $data)
+    {
+        return '#';
     }
 
     public function getInfo($key)
@@ -115,6 +143,10 @@ abstract class abstractModuleFront extends abstractCore
                 'itemName' => $this->getItemName(),
                 'itemData' => $itemData
             ]);
+
+            if (!iaUsers::hasIdentity()) {
+                $this->rememberGuestListing(array_merge($itemData, ['id' => $itemId]));
+            }
         }
 
         return $itemId;
@@ -232,38 +264,44 @@ abstract class abstractModuleFront extends abstractCore
         // process favorites
         $rows = $this->iaCore->factory('item')->updateItemsFavorites($rows, $this->getItemName());
 
-        // get serialized field names
         $iaField = $this->iaCore->factory('field');
+        $iaCurrency = $this->iaCore->factory('currency');
 
+        // fields require processing
         $serializedFields = array_merge($fieldNames, $iaField->getSerializedFields($this->getItemName()));
         $multilingualFields = $iaField->getMultilingualFields($this->getItemName());
+        $currencyFields = $iaField->getFieldsByType($this->getItemName(), iaField::CURRENCY);
 
-        if ($serializedFields || $multilingualFields) {
-            foreach ($rows as &$row) {
-                if (!is_array($row)) {
-                    break;
-                }
-
-                // filter fields
-                $iaField->filter($this->getItemName(), $row);
-
-                foreach ($serializedFields as $fieldName) {
-                    if (isset($row[$fieldName])) {
-                        $row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
-                    }
-                }
-
-                $currentLangCode = $this->iaCore->language['iso'];
-                foreach ($multilingualFields as $fieldName) {
-                    if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
-                        $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
-                    }
-                }
-
-                // mandatory keys
-                $row['item'] = $this->getItemName();
-                $row['link'] = $this->url('view', $row);
+        foreach ($rows as &$row) {
+            if (!is_array($row)) {
+                break;
             }
+
+            // filter fields
+            $iaField->filter($this->getItemName(), $row);
+
+            foreach ($serializedFields as $fieldName) {
+                if (isset($row[$fieldName])) {
+                    $row[$fieldName] = $row[$fieldName] ? unserialize($row[$fieldName]) : [];
+                }
+            }
+
+            $currentLangCode = $this->iaCore->language['iso'];
+            foreach ($multilingualFields as $fieldName) {
+                if (isset($row[$fieldName . '_' . $currentLangCode]) && !isset($row[$fieldName])) {
+                    $row[$fieldName] = $row[$fieldName . '_' . $currentLangCode];
+                }
+            }
+
+            foreach ($currencyFields as $fieldName) {
+                if (isset($row[$fieldName])) {
+                    $row[$fieldName . '_formatted'] = $iaCurrency->format($row[$fieldName]);
+                }
+            }
+
+            // mandatory keys
+            $row['item'] = $this->getItemName();
+            $row['link'] = $this->getUrl($row);
         }
 
         $singleRow && $rows = array_shift($rows);
@@ -279,6 +317,25 @@ abstract class abstractModuleFront extends abstractCore
         return $affected > 0;
     }
 
+    protected function rememberGuestListing(array $itemData)
+    {
+        $ids = isset($_COOKIE[$this->guestAccessCookieName])
+            ? explode(',', $_COOKIE[$this->guestAccessCookieName])
+            : [];
+        $ids[] = $this->generateGuestAccessId($itemData);
+        $ids = implode(',', $ids);
+
+        $lifetime = 60 * 60 * 24 * 365 * 2; // 2 years
+
+        setcookie($this->guestAccessCookieName, $ids, time() + $lifetime, '/');
+    }
+
+    // this method to be overloaded
+    // each item class should use own token generation logic because of specific set of fields
+    public function generateGuestAccessId(array $itemData)
+    {
+        throw new Exception('No guest access key generator method');
+    }
 
     protected function _checkIfCountersNeedUpdate($action, array $itemData, $previousData, $categoryClassInstance)
     {

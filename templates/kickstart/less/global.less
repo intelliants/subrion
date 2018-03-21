@@ -45,11 +45,22 @@ body {
 // --------------------------------------------------
 
 .breadcrumbs {
-  background: #f6f6f6;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-  padding-top: 15px;
-  padding-bottom: 15px;
+  padding-top: @breadcrumb-padding-vertical;
+  padding-bottom: @breadcrumb-padding-vertical;
+
+  > .container {
+    position: relative;
+
+    &::before {
+      display: block;
+      position: absolute;
+      left: 15px;
+      bottom: -@breadcrumb-padding-vertical;
+      right: 15px;
+      height: 1px;
+      background: #eee;
+    }
+  }
 
   .breadcrumb {
     float: left;

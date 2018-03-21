@@ -1,7 +1,7 @@
 .landing {
 
-  .box+.box,
-  .box+div {
+  .box + .box,
+  .box + div {
     margin: 0;
   }
 }
@@ -19,23 +19,9 @@
 
     &__caption {
       text-align: center;
-      text-transform: uppercase;
-      font-size: 30px;
-      font-weight: 800;
-      letter-spacing: 2px;
+      font-size: 40px;
+      font-weight: 100;
       margin-bottom: @sections-v-pad/2;
-
-      &::after {
-        display: block;
-        content: '';
-        width: 100px;
-        height: 2px;
-        background: fade(#000, 10%);
-        position: absolute;
-        left: 50%;
-        bottom: -30px;
-        margin-left: -50px;
-      }
     }
 
     &__content {
@@ -55,7 +41,7 @@
   > .container > .box {
 
     &__content {
-      
+
     }
   }
 }
@@ -67,23 +53,7 @@
 // --------------------------------------------------
 
 .section-features {
-  background: #232323 url('../img/bg-section-features.jpg') 50% 50% no-repeat;
-  background-size: cover;
-
-  > .container > .box {
-
-    &__caption {
-      color: #fff;
-
-      &::after {
-        background: fade(#fff, 10%);
-      }
-    }
-
-    &__content {
-      color: #fff;
-    }
-  }
+  background: #f2f2f2;
 
   .row + .row {
     margin-top: @sections-v-pad/2;
@@ -96,20 +66,19 @@
 
 .b-feature {
   .clearfix();
-  padding-left: 20px;
+  padding-left: 40px;
 
   &__img {
     float: left;
-    width: 60px;
-    height: 60px;
-    line-height: 60px;
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
     text-align: center;
-    background: #fff;
     border-radius: 50%;
-    font-size: 36px;
-    color: @text-color;
+    font-size: 30px;
+    border: 1px solid fade(#000, 10%);
+    color: @brand-primary;
     margin-right: 20px;
-    margin-top: 10px;
   }
 
   &__body {
@@ -121,20 +90,6 @@
 
     p:last-child {
       margin-bottom: 0;
-    }
-  }
-
-  &--right {
-    padding-right: 20px;
-
-    .b-feature__img {
-      float: right;
-      margin-right: 0;
-      margin-left: 20px;
-    }
-
-    .b-feature__body {
-      text-align: right;
     }
   }
 
@@ -150,19 +105,6 @@
     &__body {
       text-align: center;
     }
-
-    &--right {
-      padding-right: 0;
-
-      .b-feature__img {
-        float: none;
-        margin: 0 auto 10px;
-      }
-
-      .b-feature__body {
-        text-align: center;
-      }
-    }
   }
 }
 
@@ -173,12 +115,32 @@
 // --------------------------------------------------
 
 .section-mobile {
-  
-  &__text {
-    margin-top: 85px;
+  background: #2d2d30 url('../img/bg-section-mobile.jpeg') 50% 50% no-repeat;
+  background-size: cover;
+  position: relative;
 
-    @media (max-width: @grid-float-breakpoint) {
-      margin-top: 0;
+  &::after {
+    display: block;
+    content: '';
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: #2a2d36;
+    opacity: .54;
+  }
+
+  > .container {
+    position: relative;
+    z-index: 15;
+  }
+
+  &__text {
+    h2,
+    p {
+      color: #fff;
     }
   }
 }

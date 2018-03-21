@@ -32,8 +32,8 @@ $(function () {
 
         if (intelli.is_email($('#email').val())) {
             alertBox.fadeOut();
-            $.get(intelli.config.ia_url + 'registration.json', form.serialize(), function (response) {
-                if ('boolean' == typeof response.result && response.result) {
+            $.get(intelli.config.url + 'registration.json', form.serialize(), function (response) {
+                if ('boolean' === typeof response.result && response.result) {
                     alertBox.fadeOut().removeClass('alert-danger').addClass('alert-success').text(response.message);
                     alertBox.fadeIn();
                 }

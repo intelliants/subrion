@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -30,7 +30,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected $_tooltipsEnabled = true;
 
-    protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `delete`";
+    protected $_gridColumns = "`id`, `key`, `original`, `value`, `code`, `category`, IF(`original` != `value`, 1, 0) `modified`, 1 `update`1 `delete`";
     protected $_gridFilters = ['key' => 'like', 'value' => 'like', 'category' => 'equal', 'module' => 'equal'];
 
     protected $_phraseAddSuccess = 'phrase_added';
@@ -49,6 +49,14 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $output = [];
         $iaDb = &$this->_iaDb;
+
+        if (empty($params['get'])) {
+            $params['lang'] = (isset($_GET['lang']) && array_key_exists($_GET['lang'], $this->_iaCore->languages))
+                ? $_GET['lang']
+                : $this->_iaCore->iaView->language;
+
+            return parent::_gridRead($params);
+        }
 
         switch ($params['get']) {
             case 'plugins':
@@ -116,21 +124,12 @@ class iaBackendController extends iaAbstractControllerBackend
                         ];
                     }
                 }
-
-                break;
-
-            default:
-                $params['lang'] = (isset($_GET['lang']) && array_key_exists($_GET['lang'], $this->_iaCore->languages))
-                    ? $_GET['lang']
-                    : $this->_iaCore->iaView->language;
-
-                $output = parent::_gridRead($params);
         }
 
         return $output;
     }
 
-    protected function _modifyGridParams(&$conditions, &$values, array $params)
+    protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($params['lang']) && array_key_exists($params['lang'], $this->_iaCore->languages)) {
             $conditions[] = '`code` = :language';
@@ -145,7 +144,7 @@ class iaBackendController extends iaAbstractControllerBackend
     protected function _jsonAction(&$iaView)
     {
         $error = false;
-        $output = ['message' => iaLanguage::get('invalid_parameters'), 'success' => false];
+        $output = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 
         if (isset($_POST['sorting']) && 'save' == $_POST['sorting']) {
             if (count($_POST['langs']) > 1) {
@@ -155,7 +154,7 @@ class iaBackendController extends iaAbstractControllerBackend
                         iaLanguage::getLanguagesTable());
                 }
 
-                $output = ['message' => iaLanguage::get('saved'), 'success' => true];
+                $output = ['result' => true, 'message' => iaLanguage::get('saved')];
             }
         } else {
             if (empty($_POST['key'])) {
@@ -193,22 +192,11 @@ class iaBackendController extends iaAbstractControllerBackend
                     }
                 }
 
-                $output['message'] = $output['success'] = iaLanguage::get($this->_phraseAddSuccess);
+                $output['result'] = true;
+                $output['message'] = iaLanguage::get($this->_phraseAddSuccess);
 
                 $this->getHelper()->createJsCache(true);
             }
-        }
-
-
-        return $output;
-    }
-
-    protected function _gridDelete($params)
-    {
-        $output = parent::_gridDelete($params);
-
-        if ($output['result']) {
-            $this->getHelper()->createJsCache(true);
         }
 
         return $output;
@@ -270,12 +258,17 @@ class iaBackendController extends iaAbstractControllerBackend
             $this->addMessage('title_incorrect');
         }
 
-        if (preg_match('/^[a-z]{2}$/i', $data['code'])) {
-            if (iaCore::ACTION_ADD == $action && array_key_exists($data['code'], $this->_iaCore->languages)) {
-                $this->addMessage('language_already_exists');
+        // iso code SHOULD NOT BE changed
+        if (iaCore::ACTION_ADD == $action) {
+            if (preg_match('/^[a-z]{2}$/i', $data['code'])) {
+                if (iaCore::ACTION_ADD == $action && array_key_exists($data['code'], $this->_iaCore->languages)) {
+                    $this->addMessage('language_already_exists');
+                }
+            } else {
+                $this->addMessage('bad_iso_code');
             }
-        } else {
-            $this->addMessage('bad_iso_code');
+
+            $entry['code'] = strtolower($data['code']);
         }
 
         if (empty($data['locale']) || !trim($data['locale'])) {
@@ -286,7 +279,6 @@ class iaBackendController extends iaAbstractControllerBackend
             $this->addMessage('language_date_format_incorrect');
         }
 
-        $entry['code'] = strtolower($data['code']);
         $entry['title'] = $data['title'];
         $entry['locale'] = $data['locale'];
         $entry['date_format'] = $data['date_format'];
@@ -301,7 +293,8 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         if (iaCore::ACTION_ADD == $action) {
             $this->_iaCore->factory('field')->syncMultilingualFields();
-            $this->_copyMultilingualConfigs($entry['code']);
+            $this->_iaCore->factory('config')->copyMultilingualKeys($entry['code']);
+            $this->_syncMultilingualEntities($entry['code'], $action);
 
             $this->_iaCore->factory('log')->write(iaLog::ACTION_CREATE, [
                 'item' => 'language',
@@ -310,6 +303,8 @@ class iaBackendController extends iaAbstractControllerBackend
             ]);
 
             $this->_phraseAddSuccess = null;
+
+            $this->getHelper()->clearAll();
         }
     }
 
@@ -356,15 +351,29 @@ class iaBackendController extends iaAbstractControllerBackend
         $this->_iaCore->iaView->setMessages(iaLanguage::getf('language_copied', ['count' => $counter]),
             iaView::SUCCESS);
 
-        // clear language cache
-        $this->getHelper()->clearAll();
-
         return $result;
     }
 
     protected function _entryUpdate(array $entryData, $entryId)
     {
-        return $this->_iaDb->update($entryData, iaDb::convertIds($entryId), null, iaLanguage::getLanguagesTable());
+        $this->_iaDb->update($entryData, iaDb::convertIds($entryId), null, iaLanguage::getLanguagesTable());
+
+        return (0 === $this->_iaDb->getErrorNumber());
+    }
+
+    protected function _entryDelete($entryId)
+    {
+        $where = iaDb::convertIds($entryId, 'code');
+
+        if ($result = $this->_iaDb->delete($where, iaLanguage::getLanguagesTable())) {
+            $this->_iaDb->delete($where);
+
+            $this->_syncMultilingualEntities($entryId, iaCore::ACTION_DELETE);
+
+            $this->getHelper()->clearAll();
+        }
+
+        return $result;
     }
 
     protected function _indexPage(&$iaView)
@@ -472,14 +481,9 @@ class iaBackendController extends iaAbstractControllerBackend
             return;
         }
 
-        $where = iaDb::convertIds($this->_iaCore->requestPath[1], 'code');
-
-        $this->_iaDb->delete($where);
-        $this->_iaDb->delete($where, iaLanguage::getLanguagesTable());
+        $this->_entryDelete($this->_iaCore->requestPath[1]);
 
         $iaView->setMessages(iaLanguage::get($this->_phraseGridEntryDeleted), iaView::SUCCESS);
-
-        $this->getHelper()->clearAll();
     }
 
     private function _downloadLanguage(&$iaView)
@@ -634,30 +638,36 @@ class iaBackendController extends iaAbstractControllerBackend
         return [!$error, $messages, isset($languageCode) ? $languageCode : null];
     }
 
-    protected function _copyMultilingualConfigs($langIsoCode)
+    protected function _syncMultilingualEntities($langCode, $action)
     {
-        $this->_iaDb->setTable(iaCore::getConfigTable());
+        $systemEntities = [
+            'email_templates' => [
+                'subject' => 'varchar(191) NOT NULL',
+                'body' => 'text NOT NULL'
+            ]
+        ];
 
-        $rows = $this->_iaDb->all(['name', 'value', 'options'], "`type` IN ('text', 'textarea')");
+        foreach ($systemEntities as $entity => $columns) {
+            foreach ($columns as $columnName => $scheme) {
+                $columnNameIso = $columnName . '_' . $langCode;
 
-        $defaultLanguage = $this->_iaDb->row(['code'], iaDb::convertIds(1, 'default'), iaLanguage::getLanguagesTable());
+                $sql = iaCore::ACTION_ADD == $action
+                    ? 'ALTER TABLE `:table` ADD `:column` :scheme'
+                    : 'ALTER TABLE `:table` DROP `:column`';
 
-        foreach ($rows as $row) {
-            $options = $row['options'] ? json_decode($row['options'], true) : [];
+                $sql = iaDb::printf($sql, [
+                    'table' => $this->_iaDb->prefix . $entity,
+                    'column' => $columnNameIso,
+                    'scheme' => $scheme
+                ]);
 
-            if (isset($options['multilingual']) && $options['multilingual']) {
-                $id = '{:' . $langIsoCode . ':}';
+                $this->_iaDb->query($sql);
 
-                if (false === strpos($row['value'], $id)) {
-                    preg_match('#\{\:' . $defaultLanguage['code'] . '\:\}(.*?)(?:$|\{\:[a-z]{2}\:\})#s', $row['value'],
-                        $matches)
-                    && $row['value'] .= $id . $matches[1]; // copying value of the 'default' language
-
-                    $this->_iaDb->update(['value' => $row['value']], iaDb::convertIds($row['name'], 'name'));
+                if (iaCore::ACTION_ADD == $action) {
+                    $this->_iaDb->update(null, iaDb::EMPTY_CONDITION,
+                        [$columnNameIso => '`' . $columnName . '_' . iaLanguage::getMasterLanguage()->iso . '`'], $entity);
                 }
             }
         }
-
-        $this->_iaDb->resetTable();
     }
 }

@@ -10,7 +10,7 @@
                     <a href="{$smarty.const.IA_URL}blog/{$entry.id}-{$entry.alias}">{$entry.title|escape}</a>
                 </h4>
                 <div class="ia-item__additional">
-                    <p>{lang key='posted_on'} {$entry.date_added|date_format:$core.config.date_format} {lang key='by'} {$entry.fullname}</p>
+                    <p>{lang key='posted_on'} {$entry.date_added|date_format} {lang key='by'} {$entry.fullname}</p>
                 </div>
                 <div class="ia-item__body">{$entry.body|strip_tags|truncate:$core.config.blog_max:'...'}</div>
             </div>

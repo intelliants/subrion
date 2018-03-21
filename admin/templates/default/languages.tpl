@@ -1,4 +1,4 @@
-<div id="js-add-phrase-dialog-placeholder" style="margin:0px;height:0px;overflow:hidden;">{preventCsrf}</div>
+<div id="js-add-phrase-dialog-placeholder" style="margin:0;height:0;overflow:hidden;"></div>
 
 {if iaCore::ACTION_READ != $pageAction}
     <form method="post" class="sap-form form-horizontal">
@@ -18,7 +18,7 @@
                     <label class="col col-lg-2 control-label">{lang key='language_iso_code'} <a href="#" class="js-tooltip" title="{$tooltips.language_iso_code}"><i class="i-info"></i></a></label>
 
                     <div class="col col-lg-4">
-                        <input id="input-code" size="2" maxlength="2" type="text" name="code" value="{$item.code}">
+                        <input id="input-code" size="2" maxlength="2" type="text" name="code" value="{$item.code}"{if iaCore::ACTION_EDIT == $pageAction} disabled{/if}>
                     </div>
                 </div>
 
@@ -89,7 +89,7 @@
                             <th>{lang key='master'}</th>
                             <th>{lang key='default'}</th>
                             <th>{lang key='status'}</th>
-                            <th>{lang key='download'}</th>
+                            <th>{lang key='actions'}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -100,7 +100,7 @@
                                     <span class="btn btn-default uploads-list-item__drag-handle"><i class="i-list-2"></i></span>
                                 </td>
                                 <td>
-                                    {$language.title} - <a href="{$smarty.const.IA_ADMIN_URL}languages/phrases/?language={$code}">{lang key='edit_phrases'}</a>
+                                    {$language.title} - <a href="{$smarty.const.IA_ADMIN_URL}phrases/?language={$code}">{lang key='edit_phrases'}</a>
                                 </td>
                                 <td class="iso-val">{$language.iso}</td>
                                 <td>{$language.locale}</td>
@@ -116,18 +116,16 @@
                                     {if $code == $core.config.lang}
                                         <span class="btn btn-xs disabled"><i class="i-checkmark"></i></span>
                                     {elseif iaCore::STATUS_ACTIVE == $language.status}
-                                        <a class="btn btn-success btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/default/{$code}/"><i class="i-checkmark"></i></a>
+                                        <a class="btn btn-success btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/default/{$code}/">{lang key='set_default'}</a>
                                     {/if}
                                 </td>
                                 <td>{$language.status}</td>
                                 <td>
-                                    <a class="btn btn-default btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/download/{$code}/"><i class="i-box-add"></i> {lang key='download'}</a>
-                                </td>
-                                <td>
-                                    <a class="btn btn-default btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/edit/{$language.id}/"><i class="i-cog"></i> {lang key='settings'}</a>
+                                    <a class="btn btn-default btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/download/{$code}/" title="{lang key='download'}"><i class="i-box-add"></i></a>
+                                    <a class="btn btn-default btn-xs" href="{$smarty.const.IA_ADMIN_URL}languages/edit/{$language.id}/" title="{lang key='settings'}"><i class="i-cog"></i></a>
 
                                     {if count($core.languages) > 1 && $code != $core.config.lang}
-                                        <button class="btn btn-danger btn-xs js-remove-lang-cmd" data-href="{$smarty.const.IA_ADMIN_URL}languages/rm/{$code}/"><i class="i-close"></i> {lang key='delete'}</button>
+                                        <button class="btn btn-danger btn-xs js-remove-lang-cmd" data-href="{$smarty.const.IA_ADMIN_URL}languages/rm/{$code}/" title="{lang key='delete'}"><i class="i-close"></i></button>
                                     {/if}
                                 </td>
                             </tr>

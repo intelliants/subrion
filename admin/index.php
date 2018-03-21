@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -81,32 +81,21 @@ class iaBackendController extends iaAbstractControllerBackend
             $statistics[$size] = [];
         }
 
-        foreach ($itemsList as $name => $package) {
-            $itemName = substr($name, 0, -1);
-            switch ($package) {
-                case 'core':
-                    $classInstance = $iaCore->factory('member' == $itemName ? 'users' : $itemName);
-                    break;
-                case 'plugin':
-                    $array = explode(':', $name);
-                    $itemName = isset($array[1]) ? $array[1] : $name;
-                    $classInstance = $iaCore->factoryPlugin($array[0], iaCore::ADMIN,
-                        isset($array[1]) ? $array[1] : null);
-                    break;
-                default:
-                    $classInstance = $iaCore->factoryModule($itemName, $package, iaCore::ADMIN);
-            }
+        foreach ($itemsList as $itemName => $module) {
+            $itemInstance = (iaCore::CORE == $module)
+                ? $iaCore->factory('member' == $itemName ? 'users' : $itemName)
+                : $iaCore->factoryModule($itemName, $module);
 
             if (!$customizationMode && in_array($itemName, $disabledWidgets)) {
                 continue;
             }
 
-            if ($classInstance && method_exists($classInstance, self::STATISTICS_GETTER_METHOD)) {
-                if ($classInstance->dashboardStatistics) {
-                    $data = call_user_func([$classInstance, self::STATISTICS_GETTER_METHOD]);
+            if ($itemInstance && method_exists($itemInstance, self::STATISTICS_GETTER_METHOD)) {
+                if ($itemInstance->dashboardStatistics) {
+                    $data = call_user_func([$itemInstance, self::STATISTICS_GETTER_METHOD]);
 
-                    isset($data['icon']) || $data['icon'] = $name;
-                    isset($data['caption']) || $data['caption'] = $name;
+                    isset($data['icon']) || $data['icon'] = $itemName;
+                    isset($data['caption']) || $data['caption'] = $itemName;
 
                     $data['caption'] = iaLanguage::get($data['caption'], $data['caption']);
 
@@ -179,8 +168,15 @@ class iaBackendController extends iaAbstractControllerBackend
 
         // twitter widget
         if ($customizationMode || !in_array('twitter', $disabledWidgets)) {
-            $data = iaUtil::getPageContent('https://tools.intelliants.com/timeline/');
-            $iaView->assign('timeline', json_decode($data, true));
+            // cache for 24 hours
+            $data = $this->_iaCore->iaCache->get('intelliants_twitter', 86400, true);
+            if (empty($data)) {
+                $data = iaUtil::getPageContent('https://tools.intelliants.com/timeline/');
+                $data = json_decode($data, true);
+
+                $data && $this->_iaCore->iaCache->write('intelliants_twitter', $data);
+            }
+            $iaView->assign('timeline', $data);
         }
 
         if ($customizationMode || !in_array('recent-activity', $disabledWidgets)) {

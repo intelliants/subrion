@@ -120,22 +120,32 @@ $(function () {
     });
 
     $('.js-edit-lang-group').on('click', function () {
-        var $this = $(this),
-            $parent = $($this.data('group')),
+        var $parent = $($(this).data('group')),
             $group = $parent.find('.translate-group__langs');
 
-        $parent.hasClass('is-opened') ? $group.slideUp('fast') : $group.slideDown('fast');
-        $parent.toggleClass('is-opened');
+        $parent.toggleClass('is-opened').hasClass('is-opened') ? $group.slideDown('fast') : $group.slideUp('fast');
     });
 
     $('.js-copy-lang-group').on('click', function () {
-        var $this = $(this),
-            $parent = $($this.data('group')),
-            defaultVal = $parent.find('input:first, textarea:first').val();
+        var $this = $(this);
 
-        $parent.find('.translate-group__langs input, .translate-group__langs textarea').val(defaultVal);
+        if ($this.data('wysiwygEnabled')) {
+            var name = $this.data('name');
+                value = CKEDITOR.instances[name].getData();
 
-        // TODO: add an ability to copy content from CKEDITOR to other instances of it in same group
+            for (var iso in intelli.languages) {
+                if (iso !== intelli.config.lang) {
+                    var ckInstance = CKEDITOR.instances[name + '-' + iso];
+
+                    ckInstance.setData(value);
+                    ckInstance.updateElement();
+                }
+            }
+        } else {
+            var $parent = $($this.data('group')),
+                value = $parent.find('input:first, textarea:first').val();
+            $parent.find('.translate-group__langs input, .translate-group__langs textarea').val(value);
+        }
     });
 
     // switching
@@ -247,7 +257,7 @@ $(function () {
         $('.js-datepicker').datetimepicker(
             {
                 format: 'YYYY-MM-DD HH:mm:ss',
-                locale: intelli.config.lang,
+                locale: intelli.getLocale(),
                 icons: {
                     time: 'i-clock',
                     date: 'i-calendar',
@@ -472,7 +482,7 @@ $(function () {
                             opacity: 0
                         }, 150, function () {
                             $this.hide().prev().show(function () {
-                                $.post(intelli.config.admin_url + '/actions/read.json', {action: 'remove-installer'}, function (response) {
+                                intelli.post(intelli.config.admin_url + '/actions/read.json', {action: 'remove-installer'}, function (response) {
                                     if (!response.error) {
                                         $this.prev().animate(
                                             {
@@ -571,7 +581,7 @@ $(function () {
                                 '<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + response.path + '">'
                                 + '<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.file + '">'
                                 + '<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">',
-                            htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>';
+                            htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.clear_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>';
 
                         $preview.append(htmlInputs).find('.dz-details').append(htmlFancybox);
                         $('[data-dz-name]', $preview).text(response.file);
@@ -582,13 +592,14 @@ $(function () {
                         $submit
                             .attr('disabled', true)
                             .html('<span class="fa fa-refresh fa-spin fa-fw"></span><span class="sr-only">' + _t('uploading_please_wait') + '</span> ' + _t('uploading_please_wait'));
+                        formData.append(intelli.securityTokenKey, intelli.securityToken);
                         formData.append('action', 'dropzone-upload-file');
                         formData.append('field', fieldName);
                         formData.append('item', itemName);
                     });
 
                     this.on('error', function (file) {
-                        if ('canceled' != file.status) {
+                        if ('canceled' !== file.status) {
                             error = true;
                             errorMessage = 'error';
                         }
@@ -602,7 +613,7 @@ $(function () {
                     });
 
                     this.on('removedfile', function (file) {
-                        if ('undefined' == typeof file.status || 'success' == file.status) {
+                        if ('undefined' === typeof file.status || 'success' === file.status) {
                             var params = {
                                 action: 'dropzone-delete-file',
                                 item: itemName,
@@ -618,7 +629,7 @@ $(function () {
                                 params.itemid = itemId;
                             }
 
-                            $.post(intelli.config.admin_url + '/actions/read.json', params).done(function (response) {
+                            intelli.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response) {
                                 intelli.notifFloatBox({
                                     msg: response.message,
                                     type: response.error ? 'error' : 'success',
@@ -628,7 +639,7 @@ $(function () {
                         }
                     });
 
-                    this.on('queuecomplete', function () {
+                    this.on('queuecomplete', function() {
                         if (error) {
                             message = errorMessage;
                             error = false;
@@ -640,24 +651,24 @@ $(function () {
                 }
             });
 
-        if (typeof values == 'object' && values) {
+        if ('object' === typeof values && values) {
             var imageTypes = {
                 primary: $dropzone.data('imagetype-primary'),
                 thumbnail: $dropzone.data('imagetype-thumbnail')
             };
             var existingFiles = [], mock;
 
-            values.forEach(function (entry) {
+            values.forEach(function(entry) {
                 mock = {name: entry.file, size: entry.size};
 
                 dropZone.emit('addedfile', mock);
-                dropZone.createThumbnailFromUrl(mock, intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.thumbnail + '/' + entry.file);
+                dropZone.createThumbnailFromUrl(mock, intelli.config.clear_url + 'uploads/' + entry.path + imageTypes.thumbnail + '/' + entry.file);
 
                 var htmlInputs =
                         '<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + entry.path + '">'
                         + '<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + entry.file + '">'
                         + '<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + entry.size + '">',
-                    htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.ia_url + 'uploads/' + entry.path + imageTypes.primary + '/' + entry.file + '"><span class="fa fa-search-plus"></span></a>';
+                    htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.clear_url + 'uploads/' + entry.path + imageTypes.primary + '/' + entry.file + '"><span class="fa fa-search-plus"></span></a>';
 
                 $(mock.previewElement).append(htmlInputs).find('.dz-details').append(htmlFancybox);
 
