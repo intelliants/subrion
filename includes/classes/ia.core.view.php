@@ -1228,8 +1228,7 @@ SQL;
             $outputHtml = '';
             if ($array = $iaDb->all("`username`, IF(`fullname` != '', `fullname`, `username`) `fullname`, COUNT(`id`) `count`", "`username` != '' AND `status` = 'active' GROUP BY `username`")) {
                 foreach ($array as $item) {
-                    $item['item'] = iaUsers::getItemName();
-                    $outputHtml .= $this->iaSmarty->ia_url(['type' => 'link', 'text' => $item['fullname'], 'data' => $item]) . ', ';
+                    $outputHtml .= $this->iaSmarty->ia_url(['type' => 'link', 'text' => $item['fullname'], 'data' => $item, 'item' => iaUsers::getItemName()]) . ', ';
                 }
                 $outputHtml = substr($outputHtml, 0, -2);
                 $commonStatistics['online'][count($commonStatistics['online']) - 1]['html'] = $outputHtml;
