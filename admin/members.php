@@ -126,7 +126,9 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         $iaField = $this->_iaCore->factory('field');
+
         $sections = $iaField->getGroups($this->_itemName);
+        $iaField->unwrapItemValues($this->_itemName, $entryData);
 
         foreach ($sections[0]['fields'] as &$field) {
             if ('email_language' == $field['name']) {
