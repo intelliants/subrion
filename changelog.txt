@@ -857,3 +857,37 @@
     + Feature #466: Add config: allow animated gifs
     + Feature #468: Properly escape HTML in debug output
 
+>> From 4.1.5 to 4.2.0 <<
+
+    - Bug #76: Some sponsored plan's fields are still available even if plan is expired
+    - Bug #104: Tree improvements
+    - Bug #227: Implement a notice in installator about CloudFlare's Flexible SSL
+    - Bug #309: Adminer does not support PHP 7
+    - Bug #333: Cache twitter timeline
+    - Bug #385: Review hooks inclusion
+    - Bug #406: Send test emails
+    - Bug #448: Watermark does't work
+    - Bug #454: Multi language - New Page creation
+    - Bug #465: Gif format is not uploaded in dropzone
+    - Bug #472: Ajax call responses are only in default language
+    - Bug #482: Backup of DB from admin part is not correct
+    - Bug #489: Not show sql queries in debug panel
+    - Bug #490: Password hashing refactor
+    - Bug #1546: Plugins grid does not resize columns on window resizing
+    - Bug #2176: Number field issues
+    + Feature #45: Make email templates multi-lingual
+    + Feature #150: Implement multi currency functionality
+    + Feature #203: Translate email templates
+    + Feature #248: Implement the HTTP request validity check against CSRF attacks
+    + Feature #307: Implement currency field type
+    + Feature #541: Different Page Title vs Meta Title
+    + Feature #543: Implement 'Field' API entity
+    + Feature #593: Add Order for usergroups
+    + Feature #684: Add plans for plugins
+    + Feature #993: Add file controller
+    + Feature #1439: Add plugin dependency for templates
+    + Feature #1601: Better way for Email Templates sending for multilingual directories
+    + Feature #1774: Transactions over HTTPS
+    + Feature #1885: Gateway Transaction Log
+    + Feature #1899: Minor usability improvements
+    + Feature #2067: Add ability to have multilingual Email Templates
