@@ -556,13 +556,17 @@ final class iaCore
             return;
         }
 
-        // no need to test this for the several endpoints:
-        //  - 'API' page - used to communicate with mobile apps
-        //  - IPN/IRN/other payment notification receiving endpoints
-        if ('api' == $this->iaView->name()
+
+        $exceptions = [
+            self::ACCESS_FRONT => ['api'],
+            self::ACCESS_ADMIN => ['adminer']
+        ];
+
+        if (in_array($this->iaView->name(), $exceptions[$this->getAccessType()])
             || ('ipn' == $this->iaView->url[0] && count($this->iaView->url) > 1)) {
             return;
         }
+
 
         $tokenValid = isset($tokenValue) && $tokenValue === $this->getSecurityToken();
         $referrerValid = true;
