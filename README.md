@@ -44,8 +44,6 @@ Support us with a monthly donation and help us continue our activities. [[Become
 <a href="https://opencollective.com/subrion/backer/5/website" target="_blank"><img src="https://opencollective.com/subrion/backer/5/avatar.svg"></a>
 <a href="https://opencollective.com/subrion/backer/6/website" target="_blank"><img src="https://opencollective.com/subrion/backer/6/avatar.svg"></a>
 <a href="https://opencollective.com/subrion/backer/7/website" target="_blank"><img src="https://opencollective.com/subrion/backer/7/avatar.svg"></a>
-<a href="https://opencollective.com/subrion/backer/8/website" target="_blank"><img src="https://opencollective.com/subrion/backer/8/avatar.svg"></a>
-<a href="https://opencollective.com/subrion/backer/9/website" target="_blank"><img src="https://opencollective.com/subrion/backer/9/avatar.svg"></a>
 
 
 ## Sponsors
@@ -60,8 +58,6 @@ Become a sponsor and get your logo on our README on Github with a link to your s
 <a href="https://opencollective.com/subrion/sponsor/5/website" target="_blank"><img src="https://opencollective.com/subrion/sponsor/5/avatar.svg"></a>
 <a href="https://opencollective.com/subrion/sponsor/6/website" target="_blank"><img src="https://opencollective.com/subrion/sponsor/6/avatar.svg"></a>
 <a href="https://opencollective.com/subrion/sponsor/7/website" target="_blank"><img src="https://opencollective.com/subrion/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/subrion/sponsor/8/website" target="_blank"><img src="https://opencollective.com/subrion/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/subrion/sponsor/9/website" target="_blank"><img src="https://opencollective.com/subrion/sponsor/9/avatar.svg"></a>
 
 
 ## Copyright
