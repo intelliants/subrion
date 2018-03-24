@@ -48,9 +48,6 @@ class iaMailer extends PHPMailer
     protected $_subjects = [];
     protected $_bodies = [];
 
-    protected $_templateName;
-    protected $_recipients = [];
-
 
     /**
      * Class initializer
@@ -298,7 +295,6 @@ class iaMailer extends PHPMailer
     {
         $this->_compileTemplate();
         $this->_setBcc();
-        $this->_callHook('phpEmailToBeSent', $toAdmins);
 
         $results = [];
 
