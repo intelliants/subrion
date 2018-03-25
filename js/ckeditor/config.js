@@ -50,7 +50,7 @@ CKEDITOR.editorConfig = function (config) {
         ['Bold', 'Italic', 'Underline', 'Strike'],
         ['TextColor', 'BGColor'],
         ['Link', 'Unlink'],
-        ['Image', 'Embed']
+        ['Image', 'Embed', 'Youtube']
     ];
 
     if (typeof intelli.admin == 'undefined') {
