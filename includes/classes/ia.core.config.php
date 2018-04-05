@@ -328,6 +328,6 @@ SQL;
             if (is_array($data['options'])) {
                 $data['options'] = json_encode($data['options'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             }
-        } iaDebug::log('CONFIG ITEM: ' . var_export($data, true));
+        }
     }
 }
