@@ -65,7 +65,7 @@ class iaApi
         try {
             if (iaApiRequest::METHOD_OPTIONS == $this->_getRequest()->getMethod()) {
                 $this->_getResponse()->setHeader('Allow', 'GET,POST,PUT,DELETE,OPTIONS');
-                $this->_getResponse()->setHeader('Access-Control-Allow-Headers', 'X-Auth-Token');
+                $this->_getResponse()->setHeader('Access-Control-Allow-Headers', 'X-Auth-Token, Content-Type');
             } elseif (in_array($this->_getRequest()->getEndpoint(), $this->_authEndpoints)) {
                 $this->_auth();
             } else {
