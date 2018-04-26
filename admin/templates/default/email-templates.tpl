@@ -84,14 +84,14 @@
                     <div class="translate-group" id="language-group-body">
                         <div class="translate-group__default">
                             <div class="translate-group__item">
-                                {ia_wysiwyg name="body_{$core.masterLanguage.iso}" source=true}
+                                {ia_wysiwyg name="body_{$core.masterLanguage.iso}" source=true entities=false basicEntities=false}
                                 {if count($core.languages) > 1}<div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>{/if}
                         </div>
                         <div class="translate-group__langs">
                             {foreach $core.languages as $iso => $language}
                                 {if $iso != $core.masterLanguage.iso}
                                 <div class="translate-group__item">
-                                    {ia_wysiwyg name="body_{$iso}" source=true}
+                                    {ia_wysiwyg name="body_{$iso}" source=true entities=false basicEntities=false}
                                     <span class="translate-group__item__code">{$language.title|escape}</span>
                                 </div>
                                 {/if}

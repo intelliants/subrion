@@ -163,6 +163,12 @@ class iaSmarty extends Smarty
         if (isset($params['source'])) {
             $options['startupMode'] = 'source';
         }
+        if (isset($params['entities'])) {
+            $options['entities'] = $params['entities'];
+        }
+        if (isset($params['basicEntities'])) {
+            $options['basicEntities'] = 'basicEntities';
+        }
         $options = json_encode($options);
 
         $iaView = iaCore::instance()->iaView;
