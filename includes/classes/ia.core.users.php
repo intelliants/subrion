@@ -943,6 +943,9 @@ SQL;
         $provider = $hybridauth->authenticate(ucfirst($providerName));
 
         if ($user_profile = $provider->getUserProfile()) {
+            if (empty($user_profile->email)) {
+                throw new Exception('Email is not given by provider');
+            }
             // identify by Hybrid identifier
             $memberId = $this->iaDb->one('member_id', iaDb::convertIds($user_profile->identifier, 'value'),
                 self::getProvidersTable());
