@@ -23,7 +23,7 @@ class Hybrid_Providers_Facebook extends Hybrid_Provider_Model {
      * @link https://developers.facebook.com/docs/facebook-login/permissions
      * @var array $scope
      */
-    public $scope = ['email', 'user_about_me', 'user_birthday', 'user_hometown', 'user_location', 'user_website', 'publish_actions', 'read_custom_friendlists'];
+    public $scope = ['email'];
 
     /**
      * Provider API client
