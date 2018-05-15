@@ -40,6 +40,12 @@ class iaCron extends abstractCore
     protected static $_table = 'cron';
 
 
+    public function init()
+    {
+        parent::init();
+        require_once IA_INCLUDES . 'utils/Cron.php';
+    }
+
     /**
      * Execute cron job with the given id (optional)
      *
@@ -114,6 +120,11 @@ class iaCron extends abstractCore
 
     protected function _getLastScheduledRunTime($job)
     {
+        $cronTab = implode(' ', [$job[1], $job[2], $job[3], $job[4], $job[5]]);
+        $expression = new Cron($cronTab);
+
+        return $expression->getNext();
+/*
         $extjob = [];
 
         $this->_parseElement($job[self::C_MINUTE], $extjob[self::C_MINUTE], 60);
@@ -152,6 +163,7 @@ class iaCron extends abstractCore
         }
 
         return mktime($dateArr['hours'], $dateArr['minutes'], 0, $dateArr['mon'], $dateArr['mday'], $dateArr['year']);
+*/
     }
 
     protected function _parseElement($element, &$targetArray, $numberOfElements)
