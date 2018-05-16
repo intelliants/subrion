@@ -163,7 +163,7 @@ class iaConfig extends abstractCore
         return $result;
     }
 
-    public function fetchCustom($user, $group)
+    public function fetchCustom($user, $group = null)
     {
         $result = [];
 
