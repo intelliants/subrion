@@ -39,9 +39,7 @@ class Smarty_Internal_Compile_Private_Object_Function extends Smarty_Internal_Co
     {
         // check and get attributes
         $_attr = $this->getAttributes($compiler, $args);
-        if ($_attr['nocache'] === true) {
-            $compiler->tag_nocache = true;
-        }
+
         unset($_attr['nocache']);
         $_assign = null;
         if (isset($_attr['assign'])) {
