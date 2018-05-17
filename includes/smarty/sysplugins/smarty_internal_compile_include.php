@@ -120,7 +120,6 @@ class Smarty_Internal_Compile_Include extends Smarty_Internal_CompileBase
             $_caching = Smarty::CACHING_LIFETIME_CURRENT;
         }
         if ($_attr['nocache'] === true) {
-            $compiler->tag_nocache = true;
             if ($merge_compiled_includes) {
                 $_caching = self::CACHING_NOCACHE_CODE;
             } else {

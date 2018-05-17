@@ -40,9 +40,7 @@ class Smarty_Internal_Compile_Private_Registered_Function extends Smarty_Interna
         $compiler->has_output = true;
         // check and get attributes
         $_attr = $this->getAttributes($compiler, $args);
-        if ($_attr['nocache']) {
-            $compiler->tag_nocache = true;
-        }
+
         unset($_attr['nocache']);
         if (isset($compiler->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION][$tag])) {
             $tag_info = $compiler->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION][$tag];
