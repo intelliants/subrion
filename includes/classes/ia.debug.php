@@ -372,13 +372,13 @@ OUTPUT;
                         } else {
                             $hl = 'smarty' == $hook['type'] ? 'html' : $hook['type'];
                             echo "<code class=\"$hl\">",
-                                htmlentities(print_r($hook['code'], true)),
+                                htmlentities(print_r($hook['code'], true), ENT_COMPAT, 'UTF-8'),
                                 '</code>';
                         }
                     }
                 } else {
                     echo "<code class=\"{$hl}\">",
-                        htmlentities(print_r($value, true)),
+                        htmlentities(print_r($value, true), ENT_COMPAT, 'UTF-8'),
                         '</code>';
                 }
                 echo '</pre>';
