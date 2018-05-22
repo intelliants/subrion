@@ -70,12 +70,12 @@ switch ($step) {
                 : '<td class="danger">MySQL 5.x or upper required</td>'
         ];
         $checks['server']['php_version'] = [
-            'required' => version_compare('5.4', PHP_VERSION, '<'),
+            'required' => version_compare('5.6', PHP_VERSION, '<'),
             'class' => true,
             'name' => 'PHP version',
-            'value' => version_compare('5.4', PHP_VERSION, '<')
+            'value' => version_compare('5.6', PHP_VERSION, '<')
                 ? '<td class="success">' . PHP_VERSION . '</td>'
-                : '<td class="danger">PHP version is not compatible. PHP 5.4.x needed. (Current version ' . PHP_VERSION . ')</td>'
+                : '<td class="danger">PHP version is not compatible. PHP 5.6.x needed. (Current version ' . PHP_VERSION . ')</td>'
         ];
         $checks['server']['remote'] = [
             'name' => 'Remote files access support',
