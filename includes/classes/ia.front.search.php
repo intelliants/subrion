@@ -932,14 +932,14 @@ SQL;
         $defaultLimit = 10;
 
         $itemsMap = [
-            'autos' => 'autos_number_perpage',
-            'boats' => 'boats_number_perpage',
-            'products' => 'commerce_products_per_page',
-            'coupons' => 'coupons_per_page',
-            'listings' => 'directory_listings_perpage',
-            'articles' > 'art_perpage',
-            'estates' => 'realestate_num_per_page',
-            'venues' => 'yp_listings_perpage'
+            'auto' => 'autos_number_perpage',
+            'boat' => 'boats_number_perpage',
+            'product' => 'commerce_products_per_page',
+            'coupon' => 'coupons_per_page',
+            'listing' => 'directory_listings_perpage',
+            'article' > 'art_perpage',
+            'estate' => 'realestate_num_per_page',
+            'venue' => 'yp_listings_perpage'
         ];
 
         return isset($itemsMap[$itemName])
