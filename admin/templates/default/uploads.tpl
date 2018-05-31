@@ -37,6 +37,9 @@
                         },
                         resizable: true,
                         height: 600,
+                        customData: {
+                            '__st': '{$securityToken}'
+                        }
                     }).elfinder('instance');
             });
         </script>
