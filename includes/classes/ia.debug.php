@@ -378,7 +378,7 @@ OUTPUT;
                     }
                 } else {
                     echo "<code class=\"{$hl}\">",
-                        htmlentities(print_r($value, true), ENT_COMPAT, 'UTF-8'),
+                        (print_r($value, true)),
                         '</code>';
                 }
                 echo '</pre>';
