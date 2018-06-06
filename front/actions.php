@@ -137,11 +137,12 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
                 $subject = iaLanguage::getf('author_contact_request', ['title' => $_POST['regarding']]);
 
                 // for better delivery we cannot send from customers email, so we add it here
-                $body = '<br>' . $_POST['from_name'] . '<br>' . $_POST['from_email'] . '<br>' . $_POST['email_body'];
+                $body = '<br>' . iaSanitize::tags($_POST['from_name']) . '<br>' . iaSanitize::tags($_POST['from_email'])
+                    . '<br>' . nl2br(iaSanitize::tags($_POST['email_body']));
 
-                $iaMailer->AddAddress($memberInfo['email'], $memberInfo['fullname']);
-                $iaMailer->Subject = $subject;
-                $iaMailer->Body = strip_tags($body);
+                $iaMailer->addAddress($memberInfo['email'], $memberInfo['fullname']);
+                $iaMailer->setSubject($subject);
+                $iaMailer->setBody($body);
 
                 $output['error'] = !$iaMailer->send();
                 $output['message'][] = iaLanguage::get($output['error'] ? 'unable_to_send_email' : 'mail_sent');
