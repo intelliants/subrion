@@ -368,7 +368,7 @@ SQL;
         $this->iaDb->setTable(self::getTable());
 
         $category = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
-        $path = $this->_getPathForRebuild($category['title'], $category[self::COL_PARENT_ID]);
+        $path = $this->_getPathForRebuild($category['title_' . iaLanguage::getMasterLanguage()->code], $category[self::COL_PARENT_ID]);
         $this->iaDb->update(['title_alias' => $path], iaDb::convertIds($category['id']));
 
         $this->iaDb->resetTable();
