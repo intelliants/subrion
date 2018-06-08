@@ -101,6 +101,7 @@ class iaUtil extends abstractUtil
         // allow YouTube and Vimeo
         //$config->set('HTML.AllowedElements', ['iframe']);
         $config->set('HTML.SafeIframe', true);
+        $config->set('HTML.SafeEmbed', true);
         $config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|www\.google\.com/maps/embed\?)%');
 
         $purifier = new HTMLPurifier($config);
