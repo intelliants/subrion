@@ -526,13 +526,7 @@ SQL;
                         if ($field['required'] && !$value) {
                             $errors[$fieldName] = iaLanguage::getf('field_is_empty', ['field' => self::getFieldTitle($field['item'], $fieldName)]);
                         } else {
-                            $item[$fieldName . '_' . $langCode] = $value;
-
                             foreach ($this->iaCore->languages as $code => $language) {
-                                if ($code == $langCode) {
-                                    continue;
-                                }
-
                                 if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()) {
                                     $string = $value;
                                 } else {
