@@ -246,7 +246,8 @@ class iaModule extends abstractCore
                 }
                 if (isset($exists)) {
                     if (!$exists && $shouldBeExist) {
-                        $messageCode = 'installation_module_requirement_exist';
+                        $messageCode = defined('INSTALL') ? 'Requires the &ldquo;:module&rdquo; :type to be installed.'
+                            : 'installation_module_requirement_exist';
                     } elseif ($exists && !$shouldBeExist) {
                         $messageCode = 'installation_module_requirement_doesnot_exist';
                     }
