@@ -104,6 +104,25 @@ class iaUtil extends abstractUtil
         $config->set('HTML.SafeEmbed', true);
         $config->set('URI.SafeIframeRegexp', '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|www\.google\.com/maps/embed\?)%');
 
+        // Set some HTML5 properties
+        $config->set('HTML.DefinitionID', 'html5-definitions'); // unqiue id
+        $config->set('HTML.DefinitionRev', 1);
+        if ($def = $config->maybeGetRawHTMLDefinition()) {
+            $def->addElement('video', 'Block', 'Optional: (source, Flow) | (Flow, source) | Flow', 'Common', [
+                'src' => 'URI',
+                'type' => 'Text',
+                'width' => 'Length',
+                'height' => 'Length',
+                'poster' => 'URI',
+                'preload' => 'Enum#auto,metadata,none',
+                'controls' => 'Bool',
+            ]);
+            $def->addElement('source', 'Block', 'Flow', 'Common', [
+                'src' => 'URI',
+                'type' => 'Text',
+            ]);
+        }
+
         $purifier = new HTMLPurifier($config);
 
         return $purifier->purify($string);
