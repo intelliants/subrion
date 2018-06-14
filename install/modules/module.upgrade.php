@@ -109,7 +109,7 @@ switch ($step) {
         require_once IA_INSTALL . 'classes/ia.patch.parser.php';
         require_once IA_INSTALL . 'classes/ia.patch.applier.php';
 
-        $iaOutput->adminPath = iaCore::instance()->iaDb->one_bind('value', '`name` = :name', ['name' => 'admin_page'], iaCore::getConfigTable());
+        $iaOutput->adminPath = iaCore::instance()->factory('config')->get('admin_page');
 
         $options = isset($_GET['options']) && is_array($_GET['options']) ? $_GET['options'] : [];
 
