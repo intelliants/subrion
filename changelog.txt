@@ -902,7 +902,7 @@
     * Issue #652: Members with status = unconfirmed can log into the system
     * Issue #677: Forget password no email address
     * Issue #680: Email Templates Quotes Signs problems
-    * Issue #681: Fatal error: Can't use function return value in write context in D:\phpStudy\PHPTutorial\WWW\includes\classes\ia.core.users.php on line 567
+    * Issue #681: Fatal error on registration process
     * Issue #683: Complaint to 'Access-Control-Allow-Headers' header in iOS
     * Issue #688: Minor issue on installation process
     * Issue #692: each is deprecated. Upgrade Smarty
