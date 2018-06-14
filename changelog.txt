@@ -891,3 +891,23 @@
     + Feature #1885: Gateway Transaction Log
     + Feature #1899: Minor usability improvements
     + Feature #2067: Add ability to have multilingual Email Templates
+
+>> From 4.2.0 to 4.2.1 <<
+
+    * Issue #585: Check cron's nextrun date calculation bug
+    * Issue #629: Add example of application to tooltip in Dashboard - Settings - Miscellaneous
+    * Issue #638: CSRF Attack On Change Password!
+    * Issue #640: Wrong URLs on the member list page
+    * Issue #647: Database error.
+    * Issue #652: Members with status = unconfirmed can log into the system
+    * Issue #677: Forget password no email address
+    * Issue #680: Email Templates Quotes Signs problems
+    * Issue #681: Fatal error: Can't use function return value in write context in D:\phpStudy\PHPTutorial\WWW\includes\classes\ia.core.users.php on line 567
+    * Issue #683: Complaint to 'Access-Control-Allow-Headers' header in iOS
+    * Issue #688: Minor issue on installation process
+    * Issue #692: each is deprecated. Upgrade Smarty
+    * Issue #694: Hybrid auth: Twitter. User is logged in as Administrator
+    * Issue #698: Uncaught ArgumentCountError
+    * Issue #711: Upload image using ckeditor not working
+    * Issue #714: Rebuild category aliases functionality is working incorrectly with multilingual fields
+    * Issue #717: Multilingual field is not validated

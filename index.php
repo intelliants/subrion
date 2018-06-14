@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '4.2.0.10');
+define('IA_VERSION', '4.2.1');
 
 if (defined('IA_INSTALL')) {
     return IA_VERSION;
