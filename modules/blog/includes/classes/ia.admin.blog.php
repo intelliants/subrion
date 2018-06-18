@@ -134,9 +134,12 @@ SQL;
 
         $stmt = '`status` = :status';
         $this->iaDb->bind($stmt, ['status' => iaCore::STATUS_ACTIVE]);
+
         if ($rows = $this->iaDb->all(['id', 'alias'], $stmt, null, null, self::getTable())) {
+            $page = $this->iaCore->factory('page', iaCore::ADMIN)->getByName('blog', false);
+
             foreach ($rows as $row) {
-                $result[] = IA_URL . 'blog' . IA_URL_DELIMITER . $row['id'] . '-' . $row['alias'];
+                $result[] = IA_CLEAR_URL . $page['alias'] . $row['id'] . '-' . $row['alias'];
             }
         }
 
