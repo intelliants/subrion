@@ -343,26 +343,22 @@ SQL;
 
     protected function _sendEmailNotification(array $transaction)
     {
+        $iaMailer = $this->iaCore->factory('mailer');
+
         // first, do check if gateway has its own email submission
         if ($result = $this->_doGatewayCallback($transaction['gateway'], $transaction)) {
             return $result;
         }
 
         $result1 = true;
-
         $notification = 'transaction_paid';
-        if ($this->iaCore->get($notification)) {
-            $iaUsers = $this->iaCore->factory('users');
-
-            $member = $iaUsers->getById($transaction['member_id']);
+        if ($iaMailer->loadTemplate($notification)) {
+            $member = $this->iaCore->factory('users')->getById($transaction['member_id']);
 
             if (!$member) {
                 return false;
             }
 
-            $iaMailer = $this->iaCore->factory('mailer');
-
-            $iaMailer->loadTemplate('transaction_paid');
             $iaMailer->addAddress($member['email']);
 
             $iaMailer->setReplacements($transaction);
@@ -377,10 +373,8 @@ SQL;
 
         // notify admin
         $result2 = true;
-
-        $notification.= '_admin';
-        if ($this->iaCore->get($notification)) {
-            $iaMailer->loadTemplate($notification);
+        $notification .= '_admin';
+        if ($iaMailer->loadTemplate($notification)) {
             $iaMailer->addAddress($this->iaCore->get('site_email'));
             $iaMailer->setReplacements([
                 'username' => iaUsers::getIdentity()->username,
