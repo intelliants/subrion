@@ -245,6 +245,7 @@ class iaMailer extends PHPMailer
      * Send email notifications to administrators
      *
      * @return bool
+     * @throws \PHPMailer\PHPMailer\Exception
      */
     public function sendToAdministrators()
     {
@@ -290,6 +291,7 @@ class iaMailer extends PHPMailer
      * @param bool $toAdmins if true, send the same email to administrators
      *
      * @return bool
+     * @throws \PHPMailer\PHPMailer\Exception
      */
     public function send($toAdmins = false)
     {
