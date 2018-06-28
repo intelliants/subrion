@@ -330,11 +330,10 @@ abstract class abstractModuleFront extends abstractCore
         setcookie($this->guestAccessCookieName, $ids, time() + $lifetime, '/');
     }
 
-    // this method to be overloaded
-    // each item class should use own token generation logic because of specific set of fields
+    // this method to be overloaded if needed.
     public function generateGuestAccessId(array $itemData)
     {
-        throw new Exception('No guest access key generator method');
+        return md5($this->getItemName() . $itemData['date_added'] . IA_SALT . $itemData['id']);
     }
 
     protected function _checkIfCountersNeedUpdate($action, array $itemData, $previousData, $categoryClassInstance)
