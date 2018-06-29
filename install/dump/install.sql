@@ -1455,7 +1455,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_members_enabled', 'Members functionality', 'admin'),
 ('config_members_autoapproval', 'Members auto-approval', 'admin'),
 ('config_members_per_page', 'Members per page', 'admin'),
-('config_removed_members_keep_images', 'Keep uploaded images, after Member deleted', 'admin'),
+('config_members_keep_uploads', 'Keep member uploaded images after his removal', 'admin'),
 ('config_hybrid_enabled', 'Enable HybridAuth', 'admin'),
 ('config_hybrid_debug_mode', 'Debug mode', 'admin'),
 ('config_gravatar_enabled', 'Enable Gravatars', 'admin'),
