@@ -144,7 +144,7 @@ class iaSitemap extends abstractCore
             case self::LINKS_SET_PACKAGES:
                 foreach ($iaItem->getModuleItems() as $itemName => $module) {
                     if (iaCore::CORE != $module) {
-                        $itemClassInstance = $this->iaCore->factoryItem($itemName);
+                        $itemClassInstance = $this->iaCore->factoryItem($itemName, iaCore::ADMIN);
 
                         if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME)) {
                             $entries = call_user_func([$itemClassInstance, self::GETTER_METHOD_NAME]);
