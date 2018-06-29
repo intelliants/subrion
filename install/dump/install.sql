@@ -946,6 +946,8 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('members', 'members_enabled', '1', '\'1\',\'0\'', 'radio', 2, 1, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('members', 'members_autoapproval', '1', '\'1\',\'0\'', 'radio', 3, 0, 0, '{"wysiwyg":0,"code_editor":0,"show":"members_enabled|1","multilingual":0}'),
 ('members', 'members_per_page', '20', '0', 'text', 4, 1, 0, '{"wysiwyg":0,"code_editor":0,"show":"members_enabled|1","multilingual":0}'),
+('members', 'removed_members_keep_images', '1', '\'1\',\'0\'', 'radio', 2, 1, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
+
 ('members', '', 'HybridAuth', '1', 'divider', 5, 1, 0, ''),
 ('members', 'hybrid_enabled', '0', '\'1\',\'0\'', 'radio', 6, 1, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('members', 'hybrid_debug_mode', '0', '\'1\',\'0\'', 'radio', 7, 1, 0, '{"wysiwyg":0,"code_editor":0,"show":"hybrid_enabled|1","multilingual":0}'),
@@ -1453,6 +1455,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_members_enabled', 'Members functionality', 'admin'),
 ('config_members_autoapproval', 'Members auto-approval', 'admin'),
 ('config_members_per_page', 'Members per page', 'admin'),
+('config_removed_members_keep_images', 'Keep uploaded images, after Member deleted', 'admin'),
 ('config_hybrid_enabled', 'Enable HybridAuth', 'admin'),
 ('config_hybrid_debug_mode', 'Debug mode', 'admin'),
 ('config_gravatar_enabled', 'Enable Gravatars', 'admin'),
