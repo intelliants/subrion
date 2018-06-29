@@ -334,7 +334,7 @@ SQL;
                 // delete associated auth providers
                 $this->iaDb->delete(iaDb::convertIds($entry['id'], 'member_id'), self::$_providersTable);
 
-                if (!$this->iaCore->get('removed_members_keep_images')){
+                if (!$this->iaCore->get('members_keep_uploads')){
                     // delete member uploads folder
                     $folder = IA_UPLOADS . iaUtil::getAccountDir($entry['username']);
                     iaUtil::cascadeDeleteFiles($folder, true) && @rmdir($folder);
