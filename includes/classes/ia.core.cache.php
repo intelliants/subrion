@@ -54,11 +54,13 @@ class iaCache extends abstractUtil
      * @param string $fileName cache file name to get data from
      * @param int $seconds number of seconds until file is considered old
      * @param bool $isObject true - return an object, false - return an array
+     * @param bool $isMultilingual flag for multilingual cache
      *
      * @return bool|mixed|string
      */
-    public function get($fileName, $seconds = 0, $isObject = false)
+    public function get($fileName, $seconds = 0, $isObject = false, $isMultilingual = false)
     {
+        $fileName .= ($isMultilingual ? '_' . $this->iaCore->iaView->language : '');
         $this->_setFileName($fileName);
 
         if (!$this->_cachingEnabled || !is_file($this->_filePath)) {
@@ -71,7 +73,7 @@ class iaCache extends abstractUtil
             if (isset($_SERVER['REQUEST_TIME']) && filemtime($this->_filePath) > ($_SERVER['REQUEST_TIME'] - $seconds)) {
                 $return = $this->_read();
             } else {
-                $this->remove($fileName);
+                $this->remove($fileName, $isMultilingual);
 
                 return false;
             }
@@ -88,10 +90,11 @@ class iaCache extends abstractUtil
      *
      * @param string $fileName file name to write data to (may be encrypted)
      * @param string $Data data to be written
+     * @param bool $isMultilingual flag for multilingual cache
      *
      * @return bool
      */
-    public function write($fileName, $Data)
+    public function write($fileName, $Data, $isMultilingual = false)
     {
         if (!$this->_cachingEnabled) {
             return true;
@@ -100,6 +103,7 @@ class iaCache extends abstractUtil
             $Data = serialize($Data);
         }
 
+        $fileName .= ($isMultilingual ? '_' . $this->iaCore->iaView->language : '');
         $this->_setFileName($fileName);
 
         if (!$file = fopen($this->_filePath, 'wb')) {
@@ -126,11 +130,13 @@ class iaCache extends abstractUtil
      * Delete cache file from the cache directory
      *
      * @param string $fileName file name to be deleted
+     * @param bool $isMultilingual flag for multilingual cache
      *
      * @return bool
      */
-    public function remove($fileName)
+    public function remove($fileName, $isMultilingual = false)
     {
+        $fileName .= ($isMultilingual ? '_' . $this->iaCore->iaView->language : '');
         $this->_setFileName($fileName);
 
         $iaView = &$this->iaCore->iaView;

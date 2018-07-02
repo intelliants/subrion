@@ -883,13 +883,13 @@ SQL;
             return [];
         }
 
-        $key = 'filter_tree_' . md5($packedNodes) . '_' . $this->iaView->language;
+        $key = 'filter_tree_' . md5($packedNodes);
 
-        if ($result = $this->iaCore->iaCache->get($key, 25920000, true)) { // 30 days
+        if ($result = $this->iaCore->iaCache->get($key, 25920000, true, true)) { // 30 days
             return $result;
         } else {
             $result = $this->_parseTreeNodes($itemName, $fieldName, $packedNodes, $this->iaView->language);
-            $this->iaCore->iaCache->write($key, $result);
+            $this->iaCore->iaCache->write($key, $result, true);
 
             return $result;
         }
