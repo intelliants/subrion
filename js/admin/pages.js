@@ -82,6 +82,16 @@ Ext.onReady(function () {
                     displayField: 'title',
                     name: 'module',
                     valueField: 'value'
+                },  {
+                    emptyText: _t('status'),
+                    name: 'status',
+                    xtype: 'combo',
+                    typeAhead: true,
+                    editable: false,
+                    store: grid.stores.statuses,
+                    displayField: 'title',
+                    valueField: 'value',
+                    width: 90
                 }, {
                     handler: function () {
                         intelli.gridHelper.search(grid)
