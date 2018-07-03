@@ -31,7 +31,7 @@ class iaBackendController extends iaAbstractControllerBackend
     protected $_tooltipsEnabled = true;
 
     protected $_gridColumns = ['name', 'status', 'last_updated'];
-    protected $_gridFilters = ['name' => self::LIKE, 'module' => self::EQUAL];
+    protected $_gridFilters = ['name' => self::LIKE, 'module' => self::EQUAL, 'status' => self::EQUAL];
     protected $_gridQueryMainTableAlias = 'p';
 
     protected $_phraseAddSuccess = 'page_added';
