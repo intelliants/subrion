@@ -1,7 +1,16 @@
+
 <div class="sap-form form-horizontal">
     <div class="wrap-list">
         <div class="wrap-group">
             <div class="wrap-group-heading">{lang key='general'}</div>
+
+            {if (!empty($core.config.invoice_logo))}
+                <div class="row">
+                    <div class="col col-lg-offset-4 form-control-static invoice_logo">
+                        <img src="{$core.page.nonProtocolUrl}uploads/{$core.config.invoice_logo}" width="250">
+                    </div>
+                </div>
+            {/if}
 
             <div class="row">
                 <label class="col col-lg-2 control-label">{lang key='invoice_id'}</label>
@@ -101,8 +110,19 @@
             {/if}
         </div>
 
+        {ia_add_js}
+            $(function() {
+                $('.js-print-invoice').click(function (e) {
+                    e.preventDefault();
+                    window.print();
+                });
+            })
+        {/ia_add_js}
+
         <div class="form-actions inline">
             <a class="btn btn-primary" href="{$smarty.const.IA_ADMIN_URL}invoices/">{lang key='back'}</a>
+            <a class="btn btn-warning js-print-invoice" href="{$smarty.const.IA_ADMIN_URL}invoices/">{lang key='print'}</a>
         </div>
+
     </div>
 </div>

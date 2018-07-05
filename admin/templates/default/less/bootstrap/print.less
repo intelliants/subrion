@@ -6,6 +6,7 @@
 // ==========================================================================
 
 @media print {
+    @page { size: auto;  margin: 0mm; }
     *,
     *:before,
     *:after {
@@ -13,6 +14,9 @@
         color: #000 !important; // Black prints faster: h5bp.com/s
         box-shadow: none !important;
         text-shadow: none !important;
+    }
+    title {
+        display: none !important;
     }
 
     a,
@@ -66,6 +70,9 @@
         page-break-after: avoid;
     }
 
+    hr {
+        display: none !important;
+    }
     // Bootstrap specific changes start
 
     // Bootstrap components
@@ -97,5 +104,53 @@
         }
     }
 
+    #panel-left {
+        display: none !important;
+    }
+
+    .m-header {
+        display: none !important;
+    }
+
+    .page {
+        &__heading {
+            display: none !important;
+        }
+
+        .wrap-group {
+            border: 2px dashed @brand-primary;
+            border-radius: 4px;
+            padding: 0;
+
+            .wrap-group-heading {
+                display: none !important;
+            }
+            .row {
+                border-bottom: 1px dashed @brand-primary;
+            }
+
+            .invoice_logo {
+                text-align: center;
+                border-bottom: 1px solid @brand-primary;
+            }
+        }
+    }
+
+    #debug, #debug-toggle {
+        display: none !important;
+    }
+
+    .form-actions {
+        display: none !important;
+    }
+
+    .col-lg-2,
+    .col-lg-4 {
+        display: inline-block;
+    }
+
+    .col-lg-2 {
+        width: 40% !important;
+    }
     // Bootstrap specific changes end
 }
