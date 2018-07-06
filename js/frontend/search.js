@@ -72,10 +72,12 @@ $(function () {
 
         intelli.search.bindEvents(
             function () {
+                $(document).trigger('intelli.search.started');
                 $container.addClass('is-list-loading').append($spinner);
             },
             function () {
                 $container.removeClass('is-list-loading').find('.list-spinner').remove();
+                $(document).trigger('intelli.search.finished');
             }
         );
     }
