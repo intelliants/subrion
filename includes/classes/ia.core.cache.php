@@ -136,29 +136,39 @@ class iaCache extends abstractUtil
      */
     public function remove($fileName, $isMultilingual = false)
     {
-        $fileName .= ($isMultilingual ? '_' . $this->iaCore->iaView->language : '');
+        $iaView = &$this->iaCore->iaView;
+
+        $iaView->loadSmarty(true);
+        $iaView->iaSmarty->clearCache(null);
+        clearstatcache();
+
+        if (!$isMultilingual) {
+            return $this->_removeCacheFile($fileName);
+        }
+
+        $result = [false];
+        foreach ($this->iaCore->languages as $iso => $language) {
+            $result[] = $this->_removeCacheFile($fileName . '_' . $iso);
+        }
+
+        return !in_array(false, $result);
+    }
+
+    protected function _removeCacheFile($fileName)
+    {
         $this->_setFileName($fileName);
 
-        $iaView = &$this->iaCore->iaView;
-        $iaView->loadSmarty(true);
-
         if (!file_exists($this->_filePath)) {
-            $iaView->iaSmarty->clearCache(null);
-            clearstatcache();
-
             return true;
-        } else {
-            if (unlink($this->_filePath)) {
-                $iaView->iaSmarty->clearCache(null);
-                clearstatcache();
-
-                return true;
-            } else {
-                trigger_error(__CLASS__ . 'Unable to remove from cache file', E_USER_NOTICE);
-
-                return false;
-            }
         }
+
+        if (unlink($this->_filePath)) {
+            return true;
+        }
+
+        trigger_error(__CLASS__ . 'Unable to remove from cache file', E_USER_NOTICE);
+
+        return false;
     }
 
     /**
@@ -193,9 +203,8 @@ class iaCache extends abstractUtil
     public function clearConfigCache()
     {
         $this->iaCore->factory('util');
-
+        $this->remove('config', true);
         foreach ($this->iaCore->languages as $iso => $language) {
-            $this->remove('config_' . $iso);
             iaUtil::deleteFile($this->_savePath . 'intelli.config.' . $iso . '.js');
         }
     }
