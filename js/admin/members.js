@@ -1,4 +1,13 @@
 Ext.onReady(function () {
+
+    if (intelli.config.members_keep_uploads == 0) {
+        var delete_single = 'are_you_sure_to_delete_this_member_and_uploads',
+            delete_multiple = 'are_you_sure_to_delete_selected_members_and_uploads';
+    } else {
+        var delete_single = 'are_you_sure_to_delete_this_member',
+            delete_multiple = 'are_you_sure_to_delete_selected_members';
+    }
+
     var grid = new IntelliGrid(
         {
             columns: [
@@ -52,9 +61,10 @@ Ext.onReady(function () {
             statuses: ['active', 'approval', 'suspended', 'unconfirmed'],
             sorters: [{property: 'date_reg', direction: 'DESC'}],
             texts: {
-                delete_single: _t('are_you_sure_to_delete_this_member'),
-                delete_multiple: _t('are_you_sure_to_delete_selected_members')
+                delete_single: _t(delete_single),
+                delete_multiple: _t(delete_multiple)
             }
+
         }, false);
 
     grid.toolbar = new Ext.Toolbar({
