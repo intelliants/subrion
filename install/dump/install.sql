@@ -1525,7 +1525,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_currency_switch', 'Currency switching', 'admin'),
 ('config_funds_min_deposit', 'Minimum deposit', 'admin'),
 ('config_funds_max_deposit', 'Maximum deposit', 'admin'),
-('config_invoice_logo', 'Invoice Logo', 'Invoice Logo', 'admin'),
+('config_invoice_logo', 'Invoice logo', 'Invoice logo', 'admin'),
 ('config_funds_max', 'Maximum balance', 'admin'),
 ('config_api_enabled', 'API enabled', 'admin'),
 ('config_api_push_access_key', 'GCM access key', 'admin'),
@@ -2382,6 +2382,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('position','Position','common'),
 ('previous','Previous','common'),
 ('print','Print','common'),
+('back','Back','common'),
 ('print_invoice','Print invoice','common'),
 ('profile','Profile','common'),
 
