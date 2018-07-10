@@ -1039,7 +1039,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('financial', 'funds_min_deposit', '20', '', 'text', 9, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('financial', 'funds_max_deposit', '300', '', 'text', 10, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('financial', 'funds_max', '1000', '', 'text', 11, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
-('financial', 'invoice_logo', 'invoice_logo.jpg', '', 'image', 12, '', 0, 0, '{\"wysiwyg\":0,\"code_editor\":0,\"show\":\"\",\"multilingual\":0}');
+('financial', 'invoice_logo', 'invoice_logo.jpg', '', 'image', 12, '', 0, 0, '{\"wysiwyg\":0,\"code_editor\":0,\"show\":\"\",\"multilingual\":0}'),
 
 ('api', '', 'General', '1', 'divider', 1, 1, 0, ''),
 ('api', 'api_enabled', '0', '\'1\',\'0\'', 'radio', 1, 1, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
@@ -1525,7 +1525,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_currency_switch', 'Currency switching', 'admin'),
 ('config_funds_min_deposit', 'Minimum deposit', 'admin'),
 ('config_funds_max_deposit', 'Maximum deposit', 'admin'),
-('config_invoice_logo', 'Invoice logo', 'Invoice logo', 'admin'),
+('config_invoice_logo', 'Invoice logo', 'admin'),
 ('config_funds_max', 'Maximum balance', 'admin'),
 ('config_api_enabled', 'API enabled', 'admin'),
 ('config_api_push_access_key', 'GCM access key', 'admin'),
