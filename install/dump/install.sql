@@ -1042,7 +1042,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('financial', 'funds_max_deposit', '300', '', 'text', 10, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('financial', 'funds_max', '1000', '', 'text', 11, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('financial', 'invoice_logo', '', '', 'image', 12, '', 0, '{\"wysiwyg\":0,\"code_editor\":0,\"show\":\"\",\"multilingual\":0}'),
- 
+
 ('api', '', 'General', '1', 'divider', 1, 1, 0, ''),
 ('api', 'api_enabled', '0', '\'1\',\'0\'', 'radio', 1, 1, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('api', 'api_push_access_key', '', '', 'text', 2, 1, 0, '{"wysiwyg":0,"code_editor":0,"show":"api_enabled|1","multilingual":0}'),
