@@ -409,7 +409,7 @@ SQL;
     {
         $itemClassInstance = ($itemName == 'member')
             ? $this->iaCore->factory('users')
-            : $this->iaCore->factoryItem($itemName);
+            : $this->iaCore->factoryItem($itemName, iaCore::FRONT);
 
         if ($itemClassInstance && method_exists($itemClassInstance, $method)) {
             return call_user_func_array([$itemClassInstance, $method], $args);

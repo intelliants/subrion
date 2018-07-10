@@ -297,20 +297,19 @@ SQL;
         $action = (isset($values['status']) && iaCore::STATUS_ACTIVE == $values['status']) ? 'member_approved' : $action;
         $action = (isset($values['status']) && iaCore::STATUS_APPROVAL == $values['status']) ? 'member_disapproved' : $action;
 
-        if ($action && $this->iaCore->get($action)) {
+        if ($action) {
             $condition = $condition ? $condition : "`id`='{$values['id']}'";
 
             $iaMailer = $this->iaCore->factory('mailer');
 
-            $iaMailer->loadTemplate($action);
-            $body = $iaMailer->Body;
+            if ($iaMailer->loadTemplate($action)) {
+                $members = $this->iaDb->all(['email', 'fullname'], $condition);
+                foreach ($members as $member) {
+                    $iaMailer->addAddress($member['email']);
+                    $iaMailer->setReplacements('fullname', $member['fullname']);
 
-            $members = $this->iaDb->all(['email', 'fullname'], $condition);
-            foreach ($members as $member) {
-                $iaMailer->addAddress($member['email']);
-                $iaMailer->Body = str_replace('{%FULLNAME%}', $member['fullname'], $body);
-
-                $iaMailer->send();
+                    $iaMailer->send();
+                }
             }
         }
 
@@ -334,9 +333,11 @@ SQL;
                 // delete associated auth providers
                 $this->iaDb->delete(iaDb::convertIds($entry['id'], 'member_id'), self::$_providersTable);
 
-                // delete member uploads folder
-                $folder = IA_UPLOADS . iaUtil::getAccountDir($entry['username']);
-                iaUtil::cascadeDeleteFiles($folder, true) && @rmdir($folder);
+                if (!$this->iaCore->get('members_keep_uploads')) {
+                    // delete member uploads folder
+                    $folder = IA_UPLOADS . iaUtil::getAccountDir($entry['username']);
+                    iaUtil::cascadeDeleteFiles($folder, true) && @rmdir($folder);
+                }
 
                 $iaLog->write(iaLog::ACTION_DELETE,
                     ['item' => 'member', 'name' => $entry['fullname'], 'id' => $entry['id']]);

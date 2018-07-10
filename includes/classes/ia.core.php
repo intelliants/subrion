@@ -373,9 +373,8 @@ final class iaCore
     public function getConfig($reloadRequired = false)
     {
         if (empty($this->config) || $reloadRequired) {
-            $key = 'config_' . $this->iaView->language;
-
-            $this->config = $this->iaCache->get($key, 604800, true);
+            $key = 'config';
+            $this->config = $this->iaCache->get($key, 604800, true, true);
             iaSystem::renderTime('config', 'Cached Configuration Loaded');
 
             if (empty($this->config) || $reloadRequired) {
@@ -388,7 +387,7 @@ final class iaCore
                 $this->config['module'] = $extras;
                 $this->config['block_positions'] = $this->iaView->positions;
 
-                $this->iaCache->write($key, $this->config);
+                $this->iaCache->write($key, $this->config, true);
                 iaSystem::renderTime('config', 'Configuration written to cache file');
             }
 
