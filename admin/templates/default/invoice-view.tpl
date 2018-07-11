@@ -4,7 +4,7 @@
         <div class="wrap-group">
             <div class="wrap-group-heading">{lang key='general'}</div>
 
-            {if (!empty($core.config.invoice_logo))}
+            {if !empty($core.config.invoice_logo)}
                 <div class="row">
                     <div class="col col-lg-offset-4 form-control-static invoice_logo">
                         <img src="{$core.page.nonProtocolUrl}uploads/{$core.config.invoice_logo}" width="250">
