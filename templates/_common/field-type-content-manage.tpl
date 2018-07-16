@@ -368,6 +368,6 @@ $(function() {
         {/if}
 
         {assign tooltip {lang key="field_tooltip_{$field.item}_{$field.name}" default=''}}
-        {if $tooltip}<p class="help-block help-block--tooltip">{$tooltip}</p>{/if}
+        {if $tooltip}<p class="help-block help-block--tooltip">{$tooltip|escape}</p>{/if}
 </div>
 {if isset($field_after[$fieldName])}{$field_after.$fieldName}{/if}
