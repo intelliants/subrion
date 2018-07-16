@@ -21,7 +21,7 @@
             </div>
         {/if}
         {$tooltip = {lang key="field_tooltip_{$field.item}_{$field.name}" default=''}}
-        {if $tooltip}<div class="help-block">{$tooltip|escape}</div>{/if}
+        {if $tooltip}<div class="help-block">{$tooltip|escape|nl2br}</div>{/if}
     </div>
 
     {if iaField::TEXTAREA == $type || iaField::PICTURES == $type}
