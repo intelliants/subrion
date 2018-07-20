@@ -189,7 +189,7 @@ class iaSmarty extends Smarty
 
         switch ($block['type']) {
             case 'menu':
-                if ($block['contents']) {
+                if ($block['contents'] || 'account' == $block['name']) {
                     $smarty->assign('menu', $block);
 
                     $result = $smarty->fetch($block['tpl']);
