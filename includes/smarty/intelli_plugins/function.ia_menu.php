@@ -2,7 +2,7 @@
 
 function smarty_function_ia_menu($params, Smarty_Internal_Template &$smarty)
 {
-    if (!isset($params['menus']) || empty($params['menus'])) {
+    if (empty($params['menus']) && empty($params['loginout'])) {
         return '';
     }
 
