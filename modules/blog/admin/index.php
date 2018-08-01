@@ -35,6 +35,9 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     protected $_tableBlogTags = 'blog_tags';
     protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
+    protected $_itemName = 'blog';
+    protected $_helperName = 'blog';
+
     protected $_gridFilters = ['status' => self::EQUAL];
     protected $_gridQueryMainTableAlias = 'b';
 
@@ -44,9 +47,10 @@ class iaBackendController extends iaAbstractControllerModuleBackend
 
     public function __construct()
     {
+
         parent::__construct();
 
-        $this->setHelper($this->_iaCore->factoryModule($this->getModuleName(), $this->getModuleName()));
+        $this->_path = IA_ADMIN_URL . 'blog/';
     }
 
     protected function _indexPage(&$iaView)
@@ -54,10 +58,11 @@ class iaBackendController extends iaAbstractControllerModuleBackend
         $iaView->grid('_IA_URL_modules/' . $this->getModuleName() . '/js/admin/index');
     }
 
+
     protected function _gridModifyParams(&$conditions, &$values, array $params)
     {
         if (!empty($_GET['text'])) {
-            $conditions[] = '(`title` LIKE :text OR `body` LIKE :text)';
+            $conditions[] = '(`title_`' . $this->_iaCore->language['iso'] . 'LIKE :text OR `body_`' . $this->_iaCore->language['iso'] . 'LIKE :text)';
             $values['text'] = '%' . iaSanitize::sql($_GET['text']) . '%';
         }
 
@@ -91,53 +96,6 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     protected function _preSaveEntry(array &$entry, array $data, $action)
     {
         parent::_preSaveEntry($entry, $data, $action);
-
-        iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-        $entry['body'] = iaUtil::safeHTML($entry['body']);
-
-        if (!utf8_is_valid($entry['title'])) {
-            $entry['title'] = utf8_bad_replace($entry['title']);
-        }
-
-        if (!utf8_is_valid($entry['body'])) {
-            $entry['body'] = utf8_bad_replace($entry['body']);
-        }
-
-        $entry['alias'] = $this->getHelper()->titleAlias(empty($entry['alias']) ? $entry['title'] : $entry['alias']);
-
-        if (empty($entry['title'])) {
-            $this->addMessage('title_is_empty');
-        }
-
-        if (empty($entry['body'])) {
-            $this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('body')]), false);
-        }
-
-        if (empty($entry['date_added'])) {
-            $entry['date_added'] = date(iaDb::DATETIME_FORMAT);
-        }
-
-        if ($this->getMessages()) {
-            return false;
-        }
-
-        unset($entry['owner'], $entry['tags']);
-
-        if (isset($_FILES['image']['error']) && !$_FILES['image']['error']) {
-            try {
-                $iaField = $this->_iaCore->factory('field');
-
-                $path = $iaField->uploadImage($_FILES['image'], $this->_iaCore->get('blog_image_width'),
-                    $this->_iaCore->get('blog_image_height'), $this->_iaCore->get('blog_thumb_width'),
-                    $this->_iaCore->get('blog_thumb_height'), $this->_iaCore->get('blog_image_resize'));
-
-                empty($entry['image']) || $iaField->deleteUploadedFile('image', $this->getTable(), $this->getEntryId(), $entry['image']);
-                $entry['image'] = $path;
-            } catch (Exception $e) {
-                $this->addMessage($e->getMessage(), false);
-            }
-        }
 
         return !$this->getMessages();
     }
@@ -193,6 +151,7 @@ SQL;
 
         $allTagTitles = $this->_iaDb->keyvalue(['title','id'], null, $this->_tableBlogTags);
 
+
         foreach ($tags as $tag) {
             $tagAlias = iaSanitize::alias(strtolower($tag));
             $tagEntry = [
@@ -216,7 +175,7 @@ SQL;
     {
         $sql =
             'SELECT SQL_CALC_FOUND_ROWS '
-                . 'b.`id`, b.`title`, b.`alias`, b.`date_added`, b.`status`, '
+                . 'b.`id`, b.`title_:lang` `title`, b.`alias`, b.`date_added`, b.`status`, '
                 . 'm.`fullname` `owner`, 1 `update`, 1 `delete` '
             . 'FROM `:prefix:table_blog_entries` b '
             . 'LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) '
@@ -227,6 +186,7 @@ SQL;
             'prefix' => $this->_iaDb->prefix,
             'table_blog_entries' => $this->getTable(),
             'table_members' => iaUsers::getTable(),
+            'lang' => $this->_iaCore->language['iso'],
             'where' => $where ? $where : iaDb::EMPTY_CONDITION,
             'order' => $order,
             'start' => $start,
@@ -238,6 +198,8 @@ SQL;
 
     protected function _assignValues(&$iaView, array &$entryData)
     {
+        parent::_assignValues($iaView, $entryData);
+
         $iaUsers = $this->_iaCore->factory('users');
         $owner = empty($entryData['member_id']) ? iaUsers::getIdentity(true) : $iaUsers->getInfo($entryData['member_id']);
 

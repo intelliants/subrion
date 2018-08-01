@@ -19,5 +19,5 @@ $(function () {
         }
     });
 
-    $('#input-tag').tagsInput({width: '100%', height: 'auto'});
+    $('#field_blog_tags').tagsInput({width: '100%', height: 'auto'});
 });

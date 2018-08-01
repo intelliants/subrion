@@ -32,6 +32,7 @@ class iaBlog extends abstractModuleAdmin
     protected $_tableBlogTags = 'blog_tags';
     protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
+    protected $_itemName = 'blog';
     public $dashboardStatistics = true;
 
 
@@ -74,20 +75,12 @@ class iaBlog extends abstractModuleAdmin
 
     public function delete($id)
     {
-        $result = false;
+        $row = $this->getById($id);
 
-        $this->iaDb->setTable(self::getTable());
+        $result = parent::delete($id);
 
-        // if item exists, then remove it
-        if ($row = $this->iaDb->row_bind(['title', 'image'], '`id` = :id', ['id' => $id])) {
-            $result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
-
-            if ($row['image'] && $result) { // we have to remove the assigned image as well
-                $iaPicture = $this->iaCore->factory('picture');
-                $iaPicture->delete($row['image']);
-            }
-
-            $result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
+        if ($result) {
+            $this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
 
             $sql = <<<SQL
 DELETE FROM `:prefix:table_blog_tags` 
@@ -98,15 +91,11 @@ SQL;
                 'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
                 'table_blog_tags' => $this->_tableBlogTags
             ]);
-            $result[] = (bool)$this->iaDb->query($sql);
+            $this->iaDb->query($sql);
 
-            if ($result) {
-                $this->iaCore->factory('log')->write(iaLog::ACTION_DELETE,
-                    ['module' => 'blog', 'item' => 'blog', 'name' => $row['title'], 'id' => (int)$id]);
-            }
+            $this->iaCore->factory('log')->write(iaLog::ACTION_DELETE,
+                ['module' => 'blog', 'item' => 'blog', 'name' => $row['title'], 'id' => (int)$id]);
         }
-
-        $this->iaDb->resetTable();
 
         return $result;
     }

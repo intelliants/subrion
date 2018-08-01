@@ -34,6 +34,7 @@ class iaBlog extends abstractModuleFront
     protected $_tableBlogTags = 'blog_tags';
     protected $_tableBlogEntriesTags = 'blog_entries_tags';
 
+    protected $_itemName = 'blog';
     public $coreSearchEnabled = true;
 
 
@@ -68,12 +69,12 @@ class iaBlog extends abstractModuleFront
     {
         $order = 'date' == $this->iaCore->get('blog_order') ? '`date_added` DESC' : '`title` ASC';
 
-        $where = 'b.`status` = :status AND b.`lang` = :language';
+        $where = 'b.`status` = :status';
         empty($conditions) || $where .= ' AND ' . $conditions;
-        $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'language' => $this->iaView->language]);
+        $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE]);
 
         $sql = <<<SQL
-SELECT SQL_CALC_FOUND_ROWS b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname` 
+SELECT SQL_CALC_FOUND_ROWS b.*, m.`fullname` 
   FROM `:prefix:table_blog_entries` b 
 LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
 WHERE :where 
@@ -91,66 +92,48 @@ SQL;
             'limit' => (int)$limit
         ]);
 
-        return $this->iaDb->getAll($sql);
+        $rows = $this->iaDb->getAll($sql);
+        $this->_processValues($rows);
+
+        return $rows;
     }
 
     public function getById($id, $decorate = true)
     {
-        $sql = <<<SQL
-SELECT b.`id`, b.`title`, b.`date_added`, b.`body`, b.`alias`, b.`image`, m.`fullname`, b.`member_id` 
-  FROM `:prefix:table_blog_entries` b 
-LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
-WHERE b.`id` = :id AND b.`status` = ':status'
-SQL;
-        $sql = iaDb::printf($sql, [
-            'prefix' => $this->iaDb->prefix,
-            'table_blog_entries' => self::getTable(),
-            'table_members' => iaUsers::getTable(),
-            'id' => (int)$id,
-            'status' => iaCore::STATUS_ACTIVE
-        ]);
+        $row = $this->get(0, 1, $id);
+        $this->_processValues($row, true);
+        $row && $row = array_shift($row);
 
-        return $this->iaDb->getRow($sql);
+        return  $row;
     }
 
     public function delete($id)
     {
-        $result = false;
+        $row = $this->getById($id);
 
-        $this->iaDb->setTable(self::getTable());
+        $result = parent::delete($id);
 
-        // if item exists, then remove it
-        if ($row = $this->iaDb->row_bind(['title', 'image'], '`id` = :id', ['id' => $id])) {
-            $result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id), self::getTable());
-
-            if ($row['image'] && $result) { // we have to remove the assigned image as well
-                $iaPicture = $this->iaCore->factory('picture');
-                $iaPicture->delete($row['image']);
-            }
-
-            $result[] = (bool)$this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
+        if ($result) {
+            $this->iaDb->delete(iaDb::convertIds($id, 'blog_id'), $this->_tableBlogEntriesTags);
 
             $sql = <<<SQL
 DELETE FROM `:prefix:table_blog_tags` 
-WHERE `id` NOT IN (SELECT DISTINCT `tag_id`	FROM `:prefix:table_blog_entries_tags`)
+WHERE `id` NOT IN (SELECT DISTINCT `tag_id` FROM `:prefix:table_blog_entries_tags`)
 SQL;
             $sql = iaDb::printf($sql, [
                 'prefix' => $this->iaDb->prefix,
-                'table_blog_entries_tags' => 'blog_entries_tags',
-                'table_blog_tags' => 'blog_tags'
+                'table_blog_entries_tags' => $this->_tableBlogEntriesTags,
+                'table_blog_tags' => $this->_tableBlogTags
             ]);
-            $result[] = (bool)$this->iaDb->query($sql);
+            $this->iaDb->query($sql);
 
-            if ($result) {
-                $this->iaCore->factory('log')->write(iaLog::ACTION_DELETE,
-                    ['module' => 'blog', 'item' => 'blog', 'name' => $row['title'], 'id' => (int)$id]);
-            }
+            $this->iaCore->factory('log')->write(iaLog::ACTION_DELETE,
+                ['module' => 'blog', 'item' => 'blog', 'name' => $row['title'], 'id' => (int)$id]);
         }
-
-        $this->iaDb->resetTable();
 
         return $result;
     }
+
 
     public function getTags($blogEntryId)
     {

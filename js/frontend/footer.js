@@ -195,7 +195,7 @@ $(function () {
 
         intelli.confirm(_t('sure_rm_file'), '', function (result) {
             if (result) {
-                intelli.post(intelli.config.url + 'actions/read.json', {
+                intelli.post(intelli.config.baseurl + 'actions/read.json', {
                     action: 'delete-file',
                     item: item,
                     field: field,
