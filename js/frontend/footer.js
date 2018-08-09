@@ -274,6 +274,35 @@ $(function () {
         e.preventDefault();
         removeImgItem(this);
     });
+
+    $('.js-edit-lang-group').on('click', function () {
+        var $parent = $($(this).data('group')),
+            $group = $parent.find('.translate-group__langs');
+
+        $parent.toggleClass('is-opened').hasClass('is-opened') ? $group.slideDown('fast') : $group.slideUp('fast');
+    });
+
+    $('.js-copy-lang-group').on('click', function () {
+        var $this = $(this);
+
+        if ($this.data('wysiwygEnabled')) {
+            var name = $this.data('name');
+                value = CKEDITOR.instances[name].getData();
+
+            for (var iso in intelli.languages) {
+                if (iso !== intelli.config.lang) {
+                    var ckInstance = CKEDITOR.instances[name + '-' + iso];
+
+                    ckInstance.setData(value);
+                    ckInstance.updateElement();
+                }
+            }
+        } else {
+            var $parent = $($this.data('group')),
+                value = $parent.find('input:first, textarea:first').val();
+            $parent.find('.translate-group__langs input, .translate-group__langs textarea').val(value);
+        }
+    });
 });
 
 function inputPlaceholder(input, color) {

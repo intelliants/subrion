@@ -515,25 +515,22 @@ SQL;
                 case self::TEXT:
                 case self::TEXTAREA:
                     if ($field['multilingual']) {
-                        $langCode = (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType())
-                            ? $this->iaView->language
-                            : iaLanguage::getMasterLanguage()->code;
+                        $langCode = $this->iaView->language;
+                        if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType() && $this->iaCore->get('show_multilingual_inputs')) {
+                            $langCode = iaLanguage::getMasterLanguage()->code;
+                        }
 
                         $value = isset($data[$fieldName][$langCode])
                             ? $data[$fieldName][$langCode]
                             : null;
 
-                        if ($field['required'] && !$value) {
+                        if ($field['required'] && empty($value)) {
                             $errors[$fieldName] = iaLanguage::getf('field_is_empty', ['field' => self::getFieldTitle($field['item'], $fieldName)]);
                         } else {
                             foreach ($this->iaCore->languages as $code => $language) {
-                                if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()) {
-                                    $string = $value;
-                                } else {
-                                    $string = empty($data[$fieldName][$code]) // copy the master language value if empty
-                                        ? $value
-                                        : $data[$fieldName][$code];
-                                }
+                                $string = empty($data[$fieldName][$code]) // copy the master language value if empty
+                                    ? $value
+                                    : $data[$fieldName][$code];
 
                                 utf8_is_valid($string) || $string = utf8_bad_replace($string);
                                 $string = (self::TEXT == $field['type'])
