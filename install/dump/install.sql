@@ -2731,7 +2731,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('for_plan_only','Specifies if the field should be available only when plan chosen.','tooltip'),
 ('frontend_header_code','This code is inserted before closing HEAD tag. HTML/JS code allowed. (For example Google Analytics code)','tooltip'),
 ('frontend_footer_code','Injected before closing BODY tag. HTML/JS code allowed.','tooltip'),
-('frontend_show_multilingual_inputs','If enabled inputs will be displayed for each language.','tooltip'),
+('show_multilingual_inputs','If enabled inputs will be displayed for each language.','tooltip'),
 
 ('https','Use secure HTTPS protocol for your site. Before enabling this, please make sure you have properly configured your hosting account and/or webserver.','tooltip'),
 ('hybrid_enabled','Implements social signin on your website. You should configure API keys in includes/hybridauth.inc.php file.','tooltip'),
