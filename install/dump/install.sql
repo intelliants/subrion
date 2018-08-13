@@ -939,8 +939,9 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('general', 'site_favicon', '', '', 'image', 13, 0, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('general', '', 'Regional', '1', 'divider', 20, 1, 1, ''),
 ('general', 'lang', 'en', '1', 'select', 33, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
-('general', 'language_switch', '1', '\'1\',\'0\'', 'radio', 36, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
-('general', 'timezone', 'America/New_York', '', 'select', 45, 0, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
+('general', 'timezone', 'America/New_York', '', 'select', 34, 0, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
+('general', 'language_switch', '1', '\'1\',\'0\'', 'radio', 35, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
+('general', 'show_multilingual_inputs', '0', '\'1\',\'0\'', 'radio', 36, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 
 ('members', '', 'General', '1', 'divider', 1, 1, 0,''),
 ('members', 'members_enabled', '1', '\'1\',\'0\'', 'radio', 2, 1, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
@@ -1034,8 +1035,6 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('miscellaneous', 'search_instant', '0', '\'1\',\'0\'', 'radio', 14, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('miscellaneous', '', 'Maps', '', 'divider', 15, 1, 1, ''),
 ('miscellaneous', 'maps_api_key', '', '', 'text', 16, 0, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
-('miscellaneous', '', 'Content', '', 'divider', 17, 1, 1, ''),
-('miscellaneous', 'show_multilingual_inputs', '0', '\'1\',\'0\'', 'radio', 18, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 
 ('financial', '', 'General', '1', 'divider', 1, 1, 0, ''),
 ('financial', 'currency_switch', '0', '\'1\',\'0\'', 'radio', 3, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
