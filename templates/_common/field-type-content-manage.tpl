@@ -42,10 +42,18 @@
                     <div class="translate-group__default">
                         <div class="translate-group__item">
                             {if count($core.languages) > 1}
+                                <div class="row">
+                                    <div class="col-xs-9">
+                                        <input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" class="form-control"
+                                               value="{$value|escape}" maxlength="{$field.length}">
+                                        <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                    </div>
+                                </div>
+                            {else}
                                 <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                <input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" class="form-control"
+                                       value="{$value|escape}" maxlength="{$field.length}">
                             {/if}
-                            <input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" class="form-control"
-                                value="{$value|escape}" maxlength="{$field.length}">
                         </div>
                     </div>
                     <div class="translate-group__langs">
@@ -60,9 +68,13 @@
                                 {$value = $item["{$fieldName}_{$iso}"]}
                             {/if}
                             <div class="translate-group__item">
-                                <span class="translate-group__item__code">{$language.title|escape}</span>
-                                <input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" class="form-control"
-                                    value="{$value|escape}" maxlength="{$field.length}">
+                                <div class="row">
+                                    <div class="col-xs-9">
+                                        <input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" class="form-control"
+                                               value="{$value|escape}" maxlength="{$field.length}">
+                                        <div class="translate-group__item__code">{$language.title|escape}</div>
+                                    </div>
+                                </div>
                             </div>
                         {/foreach}
                     </div>
@@ -98,9 +110,16 @@
                                     {$value = $item["{$fieldName}_{$core.masterLanguage.iso}"]}
                                 {/if}
                                 {if count($core.languages) > 1}
+                                    <div class="row">
+                                        <div class="col-xs-9">
+                                            <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                            {ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
+                                        </div>
+                                    </div>
+                                {else}
                                     <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                    {ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
                                 {/if}
-                                {ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
                             </div>
                         </div>
                         <div class="translate-group__langs">
@@ -115,8 +134,12 @@
                                     {$value = $item["{$fieldName}_{$iso}"]}
                                 {/if}
                                 <div class="translate-group__item">
-                                    <span class="translate-group__item__code">{$language.title|escape}</span>
-                                    {ia_wysiwyg value=$value name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"}
+                                    <div class="row">
+                                        <div class="col-xs-9">
+                                            <span class="translate-group__item__code">{$language.title|escape}</span>
+                                            {ia_wysiwyg value=$value name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"}
+                                        </div>
+                                    </div>
                                 </div>
                             {/foreach}
                         </div>
@@ -135,10 +158,18 @@
                         <div class="translate-group__default">
                             <div class="translate-group__item">
                                 {if count($core.languages) > 1}
+                                    <div class="row">
+                                        <div class="col-xs-9">
+                                            <textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"
+                                                      class="form-control" rows="5">{$value|escape}</textarea>
+                                            <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                        </div>
+                                    </div>
+                                {else}
                                     <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                    <textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"
+                                              class="form-control" rows="5">{$value|escape}</textarea>
                                 {/if}
-                                <textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" 
-                                    class="form-control" rows="5">{$value|escape}</textarea>
                             </div>
                         </div>
                         <div class="translate-group__langs">
@@ -153,9 +184,13 @@
                                     {$value = $item["{$fieldName}_{$iso}"]}
                                 {/if}
                                 <div class="translate-group__item">
-                                    <span class="translate-group__item__code">{$language.title|escape}</span>
-                                    <textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" 
-                                        class="form-control" rows="5">{$value|escape}</textarea>
+                                    <div class="row">
+                                        <div class="col-xs-9">
+                                            <span class="translate-group__item__code">{$language.title|escape}</span>
+                                            <textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"
+                                                      class="form-control" rows="5">{$value|escape}</textarea>
+                                        </div>
+                                    </div>
                                 </div>
                             {/foreach}
                         </div>
