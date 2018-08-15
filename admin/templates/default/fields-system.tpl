@@ -90,7 +90,7 @@
             {if isset($datetime)}
                 value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d %H:%M'}{/if}" data-date-format="YYYY-MM-DD HH:mm:ss"
             {else}
-                value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d'}{/if}"
+                value="{if $item.date_added != '0000-00-00 00:00:00'}{$item.date_added|date_format:'%Y-%m-%d'}{/if}" data-date-format="YYYY-MM-DD"
             {/if}
         {/capture}
 
