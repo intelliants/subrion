@@ -1,7 +1,7 @@
 <table border="0" width="100%">
     <tr>
         <td>
-            <h1>{$core.config.site}</h1>
+            <h1>{$core.config.site|escape}</h1>
         </td>
         <td align="right">
             Company address<br>
