@@ -129,9 +129,9 @@
                             {$core.config.logo_text}
                         {else}
                             {if !empty($core.config.site_logo)}
-                                <img src="{$core.page.nonProtocolUrl}uploads/{$core.config.site_logo}" alt="{$core.config.site}">
+                                <img src="{$core.page.nonProtocolUrl}uploads/{$core.config.site_logo}" alt="{$core.config.site|escape}">
                             {else}
-                                <img src="{$img}logo.png" alt="{$core.config.site}">
+                                <img src="{$img}logo.png" alt="{$core.config.site|escape}">
                             {/if}
                         {/if}
                     </a>

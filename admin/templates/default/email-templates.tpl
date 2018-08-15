@@ -113,7 +113,7 @@
 
     <h4>{lang key='common'}</h4>
     <ul class="js-tags">
-        <li><strong>{literal}{$siteName}{/literal}</strong> - <span>{$core.config.site}</span></li>
+        <li><strong>{literal}{$siteName}{/literal}</strong> - <span>{$core.config.site|escape}</span></li>
         <li><strong>{literal}{$siteUrl}{/literal}</strong> - <span>{$smarty.const.IA_URL}</span></li>
         <li><strong>{literal}{$siteEmail}{/literal}</strong> - <span>{$core.config.site_email}</span></li>
     </ul>
