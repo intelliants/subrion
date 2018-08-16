@@ -939,8 +939,9 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 ('general', 'site_favicon', '', '', 'image', 13, 0, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('general', '', 'Regional', '1', 'divider', 20, 1, 1, ''),
 ('general', 'lang', 'en', '1', 'select', 33, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
-('general', 'language_switch', '1', '\'1\',\'0\'', 'radio', 36, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
-('general', 'timezone', 'America/New_York', '', 'select', 45, 0, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
+('general', 'timezone', 'America/New_York', '', 'select', 34, 0, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
+('general', 'language_switch', '1', '\'1\',\'0\'', 'radio', 35, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
+('general', 'show_multilingual_inputs', '0', '\'1\',\'0\'', 'radio', 36, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 
 ('members', '', 'General', '1', 'divider', 1, 1, 0,''),
 ('members', 'members_enabled', '1', '\'1\',\'0\'', 'radio', 2, 1, 0, '{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
@@ -1527,6 +1528,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_captcha_preview', 'Captcha preview', 'admin'),
 ('config_search_instant', 'Instant search', 'admin'),
 ('config_maps_api_key', 'Maps API key', 'admin'),
+('config_show_multilingual_inputs', 'Show multilingual inputs', 'admin'),
 ('config_currency_switch', 'Currency switching', 'admin'),
 ('config_funds_min_deposit', 'Minimum deposit', 'admin'),
 ('config_funds_max_deposit', 'Maximum deposit', 'admin'),
@@ -2728,6 +2730,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('for_plan_only','Specifies if the field should be available only when plan chosen.','tooltip'),
 ('frontend_header_code','This code is inserted before closing HEAD tag. HTML/JS code allowed. (For example Google Analytics code)','tooltip'),
 ('frontend_footer_code','Injected before closing BODY tag. HTML/JS code allowed.','tooltip'),
+('show_multilingual_inputs','If enabled inputs will be displayed for each language.','tooltip'),
 
 ('https','Use secure HTTPS protocol for your site. Before enabling this, please make sure you have properly configured your hosting account and/or webserver.','tooltip'),
 ('hybrid_enabled','Implements social signin on your website. You should configure API keys in includes/hybridauth.inc.php file.','tooltip'),

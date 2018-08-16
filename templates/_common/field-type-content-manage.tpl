@@ -22,12 +22,69 @@
     <label for="{$name}">
         {$field.title|escape}:
         {if $field.required}<span class="is-required">*</span>{/if}
+        {if $core.config.show_multilingual_inputs && $field.multilingual && count($core.languages) > 1}
+            <div class="btn-group btn-group-xs translate-group-actions">
+                <button type="button" class="btn btn-default js-edit-lang-group" data-group="#language-group-{$fieldName}"><span class="fa fa-globe"></span></button>
+                <button type="button" class="btn btn-default js-copy-lang-group" data-group="#language-group-{$fieldName}"{if $field.use_editor} data-wysiwyg-enabled="true" data-name="{$name}"{/if}><span class="fa fa-copy"></span></button>
+            </div>
+        {/if}
     </label>
 
     {switch $type}
         {case iaField::TEXT break}
-            {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
-            <input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape}{else}{$field.default|escape}{/if}" id="{$name}" maxlength="{$field.length}">
+            {if $field.multilingual && $core.config.show_multilingual_inputs}
+                {if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}
+                    {$value = $field.default}
+                {else}
+                    {$value = $item["{$fieldName}_{$core.masterLanguage.iso}"]}
+                {/if}
+                <div class="translate-group" id="language-group-{$fieldName}">
+                    <div class="translate-group__default">
+                        <div class="translate-group__item">
+                            {if count($core.languages) > 1}
+                                <div class="row">
+                                    <div class="col-xs-8 col-sm-10 col-lg-11">
+                                        <input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" class="form-control"
+                                               value="{$value|escape}" maxlength="{$field.length}">
+                                        <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                    </div>
+                                </div>
+                            {else}
+                                <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                <input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" class="form-control"
+                                       value="{$value|escape}" maxlength="{$field.length}">
+                            {/if}
+                        </div>
+                    </div>
+                    <div class="translate-group__langs">
+                        {foreach $core.languages as $iso => $language}
+                            {if $iso == $core.masterLanguage.code}
+                                {continue}
+                            {/if}
+
+                            {if empty($item["{$fieldName}_{$iso}"])}
+                                {$value = $field.default}
+                            {else}
+                                {$value = $item["{$fieldName}_{$iso}"]}
+                            {/if}
+                            <div class="translate-group__item">
+                                <div class="row">
+                                    <div class="col-xs-8 col-sm-10 col-lg-11">
+                                        <input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" class="form-control"
+                                               value="{$value|escape}" maxlength="{$field.length}">
+                                        <div class="translate-group__item__code">{$language.title|escape}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {/foreach}
+                    </div>
+                </div>
+            {else}
+                {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}
+                    {$value = $item["{$fieldName}_{$core.language.iso}"]}
+                {/if}
+                <input class="form-control" type="text" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" value="{if $value}{$value|escape}{else}{$field.default|escape}{/if}" id="{$name}" maxlength="{$field.length}">
+            {/if}
 
         {case iaField::NUMBER break}
             <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{$value|escape}" id="{$name}" maxlength="{$field.length}">
@@ -39,9 +96,108 @@
             </div>
 
         {case iaField::TEXTAREA break}
-            {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}{$value = $item["{$fieldName}_{$core.language.iso}"]}{/if}
-            {if !$field.use_editor}
-                <textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape}</textarea>
+            {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}
+                {$value = $item["{$fieldName}_{$core.language.iso}"]}
+            {/if}
+            {if $field.use_editor}
+                {if $field.multilingual && $core.config.show_multilingual_inputs}
+                    <div class="translate-group" id="language-group-{$fieldName}">
+                        <div class="translate-group__default">
+                            <div class="translate-group__item">
+                                {if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}
+                                    {$value = $field.default}
+                                {else}
+                                    {$value = $item["{$fieldName}_{$core.masterLanguage.iso}"]}
+                                {/if}
+                                {if count($core.languages) > 1}
+                                    <div class="row">
+                                        <div class="col-xs-8 col-sm-10 col-lg-11">
+                                            <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                            {ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
+                                        </div>
+                                    </div>
+                                {else}
+                                    <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                    {ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
+                                {/if}
+                            </div>
+                        </div>
+                        <div class="translate-group__langs">
+                            {foreach $core.languages as $iso => $language}
+                                {if $iso == $core.masterLanguage.iso}
+                                    {continue}
+                                {/if}
+
+                                {if empty($item["{$fieldName}_{$iso}"])}
+                                    {$value = $field.default}
+                                {else}
+                                    {$value = $item["{$fieldName}_{$iso}"]}
+                                {/if}
+                                <div class="translate-group__item">
+                                    <div class="row">
+                                        <div class="col-xs-8 col-sm-10 col-lg-11">
+                                            <span class="translate-group__item__code">{$language.title|escape}</span>
+                                            {ia_wysiwyg value=$value name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"}
+                                        </div>
+                                    </div>
+                                </div>
+                            {/foreach}
+                        </div>
+                    </div>
+                {else}
+                    {ia_wysiwyg value=$value name="{$field.name}{if $field.multilingual}[{$core.language.iso}]{/if}"}
+                {/if}
+            {else}
+                {if $field.multilingual && $core.config.show_multilingual_inputs}
+                    {if empty($item["{$fieldName}_{$core.masterLanguage.iso}"])}
+                        {$value = $field.default}
+                    {else}
+                        {$value = $item["{$fieldName}_{$core.masterLanguage.iso}"]}
+                    {/if}
+                    <div class="translate-group" id="language-group-{$fieldName}">
+                        <div class="translate-group__default">
+                            <div class="translate-group__item">
+                                {if count($core.languages) > 1}
+                                    <div class="row">
+                                        <div class="col-xs-8 col-sm-10 col-lg-11">
+                                            <textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"
+                                                      class="form-control" rows="5">{$value|escape}</textarea>
+                                            <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                        </div>
+                                    </div>
+                                {else}
+                                    <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
+                                    <textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"
+                                              class="form-control" rows="5">{$value|escape}</textarea>
+                                {/if}
+                            </div>
+                        </div>
+                        <div class="translate-group__langs">
+                            {foreach $core.languages as $iso => $language}
+                                {if $iso == $core.masterLanguage.iso}
+                                    {continue}
+                                {/if}
+
+                                {if empty($item["{$fieldName}_{$iso}"])}
+                                    {$value = $field.default}
+                                {else}
+                                    {$value = $item["{$fieldName}_{$iso}"]}
+                                {/if}
+                                <div class="translate-group__item">
+                                    <div class="row">
+                                        <div class="col-xs-8 col-sm-10 col-lg-11">
+                                            <span class="translate-group__item__code">{$language.title|escape}</span>
+                                            <textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"
+                                                      class="form-control" rows="5">{$value|escape}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            {/foreach}
+                        </div>
+                    </div>
+                {else}
+                    <textarea class="form-control" name="{$fieldName}{if $field.multilingual}[{$core.language.iso}]{/if}" rows="8" id="{$name}">{$value|escape}</textarea>
+                {/if}
                 {if $field.length > 0}
                     {ia_add_js}
 $(function() {
@@ -54,8 +210,6 @@ $(function() {
                     {/ia_add_js}
                     {ia_print_js files='jquery/plugins/jquery.textcounter'}
                 {/if}
-            {else}
-                {ia_wysiwyg value=$value name="{$field.name}{if $field.multilingual}[{$core.language.iso}]{/if}"}
             {/if}
 
         {case iaField::URL break}
