@@ -74,15 +74,28 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
         return $this->getRoot()['id'];
     }
 
-    public function getTopLevel($fields = null)
+    public function getTopLevel($fields = null, array $order = [])
     {
-        return $this->getByLevel(1, $fields);
+        if ($order[0]) {
+            $iaField = $this->iaCore->factory('field');
+            $check_field = $iaField->getField($order[0], $this->getItemName());
+
+            if (isset($check_field)){
+              $order[0] .= '_'.$this->iaCore->language['iso'];
+            }
+        }
+
+        return $this->getByLevel(1, $fields, $order);
     }
 
-    public function getByLevel($level, $fields = null)
+    public function getByLevel($level, $fields = null, $order = null)
     {
         $where = '`status` = :status and `level` = :level';
         $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'level' => $level]);
+
+        if ($order) {
+            $where.= ' ORDER BY ' . implode(" ", $order);
+        }
 
         return $this->getAll($where, $fields);
     }
