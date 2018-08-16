@@ -43,7 +43,7 @@
                         <div class="translate-group__item">
                             {if count($core.languages) > 1}
                                 <div class="row">
-                                    <div class="col-xs-9">
+                                    <div class="col-xs-8 col-sm-10 col-lg-11">
                                         <input type="text" name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}" class="form-control"
                                                value="{$value|escape}" maxlength="{$field.length}">
                                         <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
@@ -69,7 +69,7 @@
                             {/if}
                             <div class="translate-group__item">
                                 <div class="row">
-                                    <div class="col-xs-9">
+                                    <div class="col-xs-8 col-sm-10 col-lg-11">
                                         <input type="text" name="{$fieldName}[{$iso}]" id="{$name}-{$iso}" class="form-control"
                                                value="{$value|escape}" maxlength="{$field.length}">
                                         <div class="translate-group__item__code">{$language.title|escape}</div>
@@ -111,7 +111,7 @@
                                 {/if}
                                 {if count($core.languages) > 1}
                                     <div class="row">
-                                        <div class="col-xs-9">
+                                        <div class="col-xs-8 col-sm-10 col-lg-11">
                                             <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
                                             {ia_wysiwyg value=$value name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"}
                                         </div>
@@ -135,7 +135,7 @@
                                 {/if}
                                 <div class="translate-group__item">
                                     <div class="row">
-                                        <div class="col-xs-9">
+                                        <div class="col-xs-8 col-sm-10 col-lg-11">
                                             <span class="translate-group__item__code">{$language.title|escape}</span>
                                             {ia_wysiwyg value=$value name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"}
                                         </div>
@@ -159,7 +159,7 @@
                             <div class="translate-group__item">
                                 {if count($core.languages) > 1}
                                     <div class="row">
-                                        <div class="col-xs-9">
+                                        <div class="col-xs-8 col-sm-10 col-lg-11">
                                             <textarea name="{$fieldName}[{$core.masterLanguage.iso}]" id="{$name}"
                                                       class="form-control" rows="5">{$value|escape}</textarea>
                                             <div class="translate-group__item__code">{$core.masterLanguage.title|escape}</div>
@@ -185,7 +185,7 @@
                                 {/if}
                                 <div class="translate-group__item">
                                     <div class="row">
-                                        <div class="col-xs-9">
+                                        <div class="col-xs-8 col-sm-10 col-lg-11">
                                             <span class="translate-group__item__code">{$language.title|escape}</span>
                                             <textarea name="{$fieldName}[{$iso}]" id="{$name}-{$iso}"
                                                       class="form-control" rows="5">{$value|escape}</textarea>
