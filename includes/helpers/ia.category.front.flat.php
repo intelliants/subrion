@@ -76,15 +76,6 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
 
     public function getTopLevel($fields = null, array $order = [])
     {
-        if ($order[0]) {
-            $iaField = $this->iaCore->factory('field');
-            $check_field = $iaField->getField($order[0], $this->getItemName());
-
-            if (isset($check_field)){
-              $order[0] .= '_'.$this->iaCore->language['iso'];
-            }
-        }
-
         return $this->getByLevel(1, $fields, $order);
     }
 
@@ -94,12 +85,23 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
         $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'level' => $level]);
 
         if ($order) {
-            $where.= ' ORDER BY ' . implode(" ", $order);
+            $where.= ' ORDER BY ' . implode(" ", $this->SortByField($order));
         }
 
         return $this->getAll($where, $fields);
     }
 
+    public function SortByField(array $args = []){
+        if ($args[0]) {
+            $iaField = $this->iaCore->factory('field');
+            $check_field = $iaField->getField($args[0], $this->getItemName());
+
+            if (isset($check_field))
+                $args[0] .= '_'.$this->iaCore->language['iso'];
+        }
+
+        return $args;
+    }
     public function getParents($entryId)
     {
         $where = sprintf('`id` IN (SELECT `parent_id` FROM `%s` WHERE `child_id` = %d)',
@@ -108,11 +110,13 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
         return $this->getAll($where);
     }
 
-    public function getChildren($entryId, $recursive = false)
+    public function getChildren($entryId, $recursive = false, array $order = [])
     {
         $where = $recursive
             ? sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)', $this->getTableFlat(true), $entryId)
             : iaDb::convertIds($entryId, self::COL_PARENT_ID);
+
+        $where.= ' ORDER BY ' . implode(" ", $this->SortByField($order));
 
         return $this->getAll($where);
     }
