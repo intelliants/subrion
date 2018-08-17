@@ -84,9 +84,8 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
         $where = '`status` = :status and `level` = :level';
         $this->iaDb->bind($where, ['status' => iaCore::STATUS_ACTIVE, 'level' => $level]);
 
-        if ($order) {
+        if ($order)
             $where.= ' ORDER BY ' . implode(" ", $this->SortByField($order));
-        }
 
         return $this->getAll($where, $fields);
     }
@@ -116,7 +115,8 @@ abstract class iaAbstractFrontHelperCategoryFlat extends abstractModuleFront
             ? sprintf('`id` IN (SELECT `child_id` FROM `%s` WHERE `parent_id` = %d)', $this->getTableFlat(true), $entryId)
             : iaDb::convertIds($entryId, self::COL_PARENT_ID);
 
-        $where.= ' ORDER BY ' . implode(" ", $this->SortByField($order));
+        if ($order)
+            $where.= ' ORDER BY ' . implode(" ", $this->SortByField($order));
 
         return $this->getAll($where);
     }
