@@ -1787,6 +1787,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('installation_module_requirement_incorrect','Invalid dependencies specified. Ignored.','admin'),
 ('installation_impossible','Installation is currently impossible.','admin'),
 ('interval','Interval','admin'),
+('invalid_admin_page_url','Invalid admin page URL. Ignored.','admin'),
 ('invalid_base_url','Invalid site URL. Ignored.','admin'),
 ('invalid_image_file','Unable to process image, invalid image file.','admin'),
 ('invalid_plugin_dependencies','Invalid plugin dependencies','admin'),
