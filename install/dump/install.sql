@@ -515,9 +515,6 @@ CREATE TABLE `{install:prefix}members_auth_providers` (
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
-CREATE TRIGGER del_hybridauth_data AFTER DELETE ON `{install:prefix}members`
-FOR EACH ROW DELETE FROM `{install:prefix}members_auth_providers` WHERE `{install:prefix}members_auth_providers`.`member_id` = OLD.`id`;
-
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}menus`;
 CREATE TABLE `{install:prefix}menus` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
