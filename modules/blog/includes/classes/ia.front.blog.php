@@ -248,4 +248,28 @@ SQL;
             $this->iaDb->insert($tagBlogIds);
         }
     }
+
+    public function update(array $itemData, $id)
+    {
+        if (empty($id)) {
+            return false;
+        }
+
+        $currentData = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
+        $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
+        $result = $this->iaDb->getErrorNumber() == 0;
+
+        if ($result) {
+            $this->updateCounters($id, $itemData, iaCore::ACTION_EDIT, $currentData);
+
+            $this->iaCore->startHook('phpListingUpdated', [
+                'itemId' => $id,
+                'itemName' => $this->getItemName(),
+                'itemData' => $itemData,
+                'previousData' => $currentData
+            ]);
+        }
+
+        return $result;
+    }
 }
