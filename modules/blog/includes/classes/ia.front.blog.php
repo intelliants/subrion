@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2019 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -100,7 +100,7 @@ SQL;
 
     public function getById($id, $decorate = true)
     {
-        $row = $this->get(0, 1, $id);
+        $row = $this->get(0, 1, "b.id='".(int)$id."'");
         $this->_processValues($row, true);
         $row && $row = array_shift($row);
 

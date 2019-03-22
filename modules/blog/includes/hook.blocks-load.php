@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2019 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -25,9 +25,12 @@
  ******************************************************************************/
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
-    if ($iaView->blockExists('blogroll') || $iaView->blockExists('new_blog_posts')) {
 
-        $iaBlog = $iaCore->factoryModule('blog', 'blog');
+    $blocksData = [];
+
+    $iaBlog = $iaCore->factoryModule('blog', 'blog');
+
+    if ($iaView->blockExists('blogroll') || $iaView->blockExists('new_blog_posts')) {
 
         $array = $iaBlog->get(0, $iaCore->get('blog_number_block'));
 
@@ -48,4 +51,15 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
 
         $iaView->assign('blogs_archive', $data);
     }
+
+    $sqlRandomRange = $iaCore->iaDb->orderByRand((int)$iaDb->one('MAX(`id`)', null, iaBlog::getTable()), 't1.`id`');
+    if ($iaView->blockExists('blog_featured')) {
+        if ($blogs = $iaBlog->get(0, $iaCore->get('blog_num_block_featured'), 'b.`featured` = 1 ', iaDb::FUNCTION_RAND)) {
+            $blocksData['featured'] = $blogs;
+        }
+    }
+
+    $iaView->assign('blog_blocks_data', $blocksData);
 }
+
+
