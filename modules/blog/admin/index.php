@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2019 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -86,6 +86,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
         $entry['date_added'] = date(iaDb::DATETIME_FORMAT);
         $entry['status'] = iaCore::STATUS_ACTIVE;
         $entry['member_id'] = iaUsers::getIdentity()->id;
+        $entry['featured'] = false;
     }
 
     protected function _entryDelete($entryId)
@@ -96,6 +97,9 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     protected function _preSaveEntry(array &$entry, array $data, $action)
     {
         parent::_preSaveEntry($entry, $data, $action);
+
+        $langCode = iaLanguage::getMasterLanguage()->iso;
+        $entry['alias'] = iaSanitize::alias(empty($data['alias']) ? $data['title'][$langCode] : $data['alias']);
 
         return !$this->getMessages();
     }
