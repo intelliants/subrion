@@ -100,7 +100,7 @@ SQL;
 
     public function getById($id, $decorate = true)
     {
-        $row = $this->get(0, 1, "b.id='".(int)$id."'");
+        $row = $this->get(0, 1, 'b.id = ' . (int)$id);
         $this->_processValues($row, true);
         $row && $row = array_shift($row);
 

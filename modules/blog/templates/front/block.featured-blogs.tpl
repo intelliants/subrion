@@ -2,7 +2,7 @@
     <div class="new-blog-posts">
         {foreach $blog_blocks_data.featured as $one_blog_entry}
             <div class="media">
-                {if $one_blog_entry.image}
+                {if !empty($one_blog_entry.image)}
                     <a href="{$smarty.const.IA_URL}blog/{$one_blog_entry.id}-{$one_blog_entry.alias}"
                        class="media-object pull-left">{ia_image file=$one_blog_entry.image width=60 title=$one_blog_entry.title}</a>
                 {/if}

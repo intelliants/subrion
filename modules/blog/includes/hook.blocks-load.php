@@ -52,7 +52,6 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
         $iaView->assign('blogs_archive', $data);
     }
 
-    $sqlRandomRange = $iaCore->iaDb->orderByRand((int)$iaDb->one('MAX(`id`)', null, iaBlog::getTable()), 't1.`id`');
     if ($iaView->blockExists('blog_featured')) {
         if ($blogs = $iaBlog->get(0, $iaCore->get('blog_num_block_featured'), 'b.`featured` = 1 ', iaDb::FUNCTION_RAND)) {
             $blocksData['featured'] = $blogs;
