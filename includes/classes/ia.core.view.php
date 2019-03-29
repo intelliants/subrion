@@ -1358,7 +1358,7 @@ SQL;
     {
         $result = [];
 
-        $stmt = "`pages` REGEXP('[[:<:]]:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
+        $stmt = "`pages` REGEXP('\\\\b:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
         $stmt = iaDb::printf($stmt, [
             'page' => $this->name(),
             'action' => $this->get('action')
