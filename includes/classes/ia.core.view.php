@@ -1359,7 +1359,7 @@ SQL;
         $result = [];
 
         // compatibility fix for MySQL 5.x
-        $boundary = ((int)$this->iaCore->iaDb->getInfo('server_info') < 8) ? '[[:<:]]' : '\\b';
+        $boundary = ((int)$this->iaCore->iaDb->getInfo('server_info') < 8) ? '[[:<:]]' : "\\\\b";
         $stmt = "`pages` REGEXP('{$boundary}:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
 
         $stmt = iaDb::printf($stmt, [

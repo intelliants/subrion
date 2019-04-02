@@ -99,7 +99,7 @@ class iaSmarty extends Smarty
         // uncomment this to get rid of useless whitespaces in html
         // $this->loadFilter('output', 'trimwhitespace');
 
-        $this->iaCore->startHook('phpSmartyAfterFuncInit', ['iaSmarty' => &$this]);
+        $this->iaCore->startHook('phpSmartyAfterFuncInit', ['iaSmarty' => $this]);
 
         iaSystem::renderTime('main', 'afterSmartyFuncInit');
 
@@ -121,7 +121,7 @@ class iaSmarty extends Smarty
         $this->resources['moment'] = 'js:utils/moment-with-locales.min';
         $this->resources['datepicker'] = 'js:bootstrap/js/bootstrap-datetimepicker.min, css:_IA_URL_js/bootstrap/css/bootstrap-datetimepicker';
 
-        $this->iaCore->startHook('phpSmartyAfterMediaInit', ['iaSmarty' => &$this]);
+        $this->iaCore->startHook('phpSmartyAfterMediaInit', ['iaSmarty' => $this]);
     }
 
     public static function lang($params)
@@ -183,7 +183,7 @@ class iaSmarty extends Smarty
         );
     }
 
-    public static function ia_block_view($params, Smarty_Internal_Template &$smarty)
+    public static function ia_block_view($params, Smarty_Internal_Template $smarty)
     {
         $block = $params['block'];
 
@@ -283,7 +283,7 @@ class iaSmarty extends Smarty
         return $result;
     }
 
-    public static function ia_add_media(array $params, &$smarty)
+    public static function ia_add_media(array $params, $smarty)
     {
         if (!isset($params['files'])) {
             return;
@@ -584,7 +584,7 @@ class iaSmarty extends Smarty
      *
      * @return string
      */
-    public static function printFavorites($params, Smarty_Internal_Template &$smarty)
+    public static function printFavorites($params, Smarty_Internal_Template $smarty)
     {
         if (
             // no need to display for guests by default
@@ -671,7 +671,7 @@ class iaSmarty extends Smarty
         return $output . $extraActions;
     }
 
-    public static function ia_block(array $params, $content, Smarty_Internal_Template &$smarty)
+    public static function ia_block(array $params, $content, Smarty_Internal_Template $smarty)
     {
         $result = '';
 
@@ -726,7 +726,7 @@ class iaSmarty extends Smarty
         $iaView->resources->js->{'code:' . $content} = isset($params['order']) ? $params['order'] : 4;
     }
 
-    public static function ia_print_js($params, Smarty_Internal_Template &$smarty)
+    public static function ia_print_js($params, Smarty_Internal_Template $smarty)
     {
         $smarty->add_js($params);
 
@@ -780,7 +780,7 @@ class iaSmarty extends Smarty
         return '';
     }
 
-    public static function ia_blocks(array $params, Smarty_Internal_Template &$smarty)
+    public static function ia_blocks(array $params, Smarty_Internal_Template $smarty)
     {
         if (!isset($params['block'])) {
             return '';
@@ -817,7 +817,7 @@ class iaSmarty extends Smarty
         return $directCall ? null : self::$_positionsContent[$position];
     }
 
-    public static function width(array $params, Smarty_Internal_Template &$smarty)
+    public static function width(array $params, Smarty_Internal_Template $smarty)
     {
         $position = isset($params['position']) ? $params['position'] : 'center';
         $section = isset($params['section']) ? $params['section'] : 'content';
@@ -897,7 +897,7 @@ class iaSmarty extends Smarty
         return $tag . $width;
     }
 
-    public static function pagination($params, &$smarty)
+    public static function pagination($params, $smarty)
     {
         $output = '';
 
