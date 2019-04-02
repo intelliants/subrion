@@ -72,7 +72,6 @@
                         {if $member && $member.id == $blog_entry.member_id && 'active' != $blog_entry.status}
                             <span class="label label-{$blog_entry.status}" title="{lang key=$blog_entry.status default=$blog_entry.status}"><span class="fa fa-warning"></span> {lang key=$blog_entry.status default=$blog_entry.status}</span>
                         {/if}
-                        {if $blog_entry.sponsored}<span class="label label-warning" title="{lang key='sponsored'}"><span class="fa fa-star"></span> {lang key='sponsored'}</span>{/if}
                         {if $blog_entry.featured}<span class="label label-info" title="{lang key='featured'}"><span class="fa fa-star-o"></span> {lang key='featured'}</span>{/if}
                     </div>
                 </div>

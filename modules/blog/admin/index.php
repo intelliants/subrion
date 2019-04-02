@@ -38,6 +38,9 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     protected $_itemName = 'blog';
     protected $_helperName = 'blog';
 
+    protected $_gridSorting = [
+        'owner' => ['fullname', 'm']
+    ];
     protected $_gridFilters = ['status' => self::EQUAL];
     protected $_gridQueryMainTableAlias = 'b';
 
