@@ -1358,7 +1358,10 @@ SQL;
     {
         $result = [];
 
-        $stmt = "`pages` REGEXP('\\\\b:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
+        // compatibility fix for MySQL 5.x
+        $boundary = ((int)$this->iaCore->iaDb->getInfo('server_info') < 8) ? '[[:<:]]' : '\\b';
+        $stmt = "`pages` REGEXP('{$boundary}:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
+
         $stmt = iaDb::printf($stmt, [
             'page' => $this->name(),
             'action' => $this->get('action')
