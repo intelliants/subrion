@@ -155,6 +155,9 @@ class iaView extends abstractUtil
             $this->iaSmarty->debugging = false;
             $this->iaSmarty->compile_check = true;
 
+            $this->iaSmarty->loadPlugin('smarty_compiler_switch');
+            $this->iaSmarty->registerFilter('post', 'smarty_postfilter_switch');
+
             // @FIXME: please find a solution instead of suppressing the errors
             $this->iaSmarty->muteExpectedErrors();
         }
