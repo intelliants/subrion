@@ -412,7 +412,7 @@
                                     </div>
                                     <div class="main_fields"{if $item.relation != iaField::RELATION_PARENT} style="display:none;"{/if}>
                                         {lang key='field_element_children'}: <a href="#" class="js-cmd-configure-dependent-field"><i class="i-fire"></i></a>
-                                        {if isset($children[$value])}
+                                        {if !empty($children[$value])}
                                             <span class="list">{$children[$value].titles}</span>
                                             <input type="hidden" name="children[]" value="{$children[$value].values}">
                                         {else}
@@ -447,7 +447,7 @@
                                 </div>
                                 <div class="main_fields"{if $item.relation != iaField::RELATION_PARENT} style="display:none;"{/if}>
                                     {lang key='field_element_children'}: <span onclick="wfields(this)"><i class="i-fire"></i></span>
-                                    {if isset($item.children[$smarty.foreach.values.index])}
+                                    {if !empty($item.children[$smarty.foreach.values.index])}
                                         <span class="list">{$item.children[$smarty.foreach.values.index].titles}</span>
                                         <input type="hidden" value="{$item.children[$smarty.foreach.values.index].values}" name="children[]">
                                     {else}
