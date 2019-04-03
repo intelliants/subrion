@@ -25,7 +25,7 @@
                                             <span class="text-danger">{lang key='not_allowed'}</span>
                                         {/if}
                                     </td>
-                                    <td class="text-right"><a class="btn btn-xs btn-default" href="{$smarty.const.ADMIN_URL}permissions/?group={$entry.id}"><i class="i-lock"></i> {lang key='edit'}</a></td>
+                                    <td class="text-right"><a class="btn btn-xs btn-default" href="{$smarty.const.IA_ADMIN_URL}permissions/?group={$entry.id}"><i class="i-lock"></i> {lang key='edit'}</a></td>
                                 </tr>
                             {/foreach}
                         </tbody>
@@ -57,7 +57,7 @@
                             {foreach $members as $entry}
                                 <tr data-name="{$entry.fullname|escape}">
                                     <td>{$entry@iteration}</td>
-                                    <td><a href="{$smarty.const.ADMIN_URL}members/edit/{$entry.id}/">{$entry.fullname|escape}</a></td>
+                                    <td><a href="{$smarty.const.IA_ADMIN_URL}members/edit/{$entry.id}/">{$entry.fullname|escape}</a></td>
                                     <td>{lang key="usergroup_{$entry.usergroup}"}</td>
                                     <td>
                                         {if $entry.admin_access}
@@ -67,7 +67,7 @@
                                         {/if}
                                     </td>
                                     <td class="text-right">
-                                        <a class="btn btn-xs btn-default" href="{$smarty.const.ADMIN_URL}permissions/?user={$entry.id}"><i class="i-lock"></i> {lang key='edit'}</a>
+                                        <a class="btn btn-xs btn-default" href="{$smarty.const.IA_ADMIN_URL}permissions/?user={$entry.id}"><i class="i-lock"></i> {lang key='edit'}</a>
                                     </td>
                                 </tr>
                             {/foreach}
