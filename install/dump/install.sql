@@ -515,6 +515,16 @@ CREATE TABLE `{install:prefix}members_auth_providers` (
 	PRIMARY KEY (`id`)
 ) {install:db_options};
 
+{install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}members_addresses`;
+CREATE TABLE `{install:prefix}members_auth_providers` (
+	`id` int(11) NOT NULL auto_increment,
+	`member_name` varchar(50) NULL,
+	`ip_address` varchar(100) NULL,
+	`user_agent` varchar(100) NULL,
+	`entry_date` datetime NOT NULL,
+	PRIMARY KEY (`id`)
+) {install:db_options};
+
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}menus`;
 CREATE TABLE `{install:prefix}menus` (
 	`id` smallint(5) unsigned NOT NULL auto_increment,
@@ -896,7 +906,10 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`fil
 (5,'templates','read','','modules','modules/templates/','menu',null,5),
 (5,'plugins','read','','modules','modules/plugins/','menu',null,10),
 (5,'packages','read','','modules','modules/packages/','menu',null,15),
-(5,'','','','','','menu','xtns_empt',20);
+(5,'','','','','','menu','xtns_empt',20),
+(3, 'members_address','read','','members_address','ip_addresses_members/','menu',null,20);
+
+
 
 UPDATE `{install:prefix}admin_pages` SET `readonly` = 1 WHERE `name` IN('actions','visual_mode');
 
