@@ -123,7 +123,6 @@ class iaUsers extends abstractCore
             $pass = '';
         }
 
-
         $isBackend = (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType());
 
         if (defined('IA_EXIT') && $authorized != 2) {
@@ -149,7 +148,6 @@ class iaUsers extends abstractCore
             }
             exit();
         } elseif ($authorized == 2 && $login && $pass) {
-
 
             $auth = (bool)$this->getAuth(null, $login, $pass, isset($_POST['remember']));
 
