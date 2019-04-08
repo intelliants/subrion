@@ -910,7 +910,6 @@ INSERT INTO `{install:prefix}admin_pages` (`group`,`name`,`action`,`parent`,`fil
 (3, 'members_address','read','','members_address','ip_addresses_members/','menu',null,20);
 
 
-
 UPDATE `{install:prefix}admin_pages` SET `readonly` = 1 WHERE `name` IN('actions','visual_mode');
 
 INSERT INTO `{install:prefix}admin_pages_groups` (`name`) VALUES
