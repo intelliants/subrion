@@ -1,5 +1,6 @@
 {if isset($blog_entry)}
-    <p class="text-i text-fade-50">{lang key='posted_on'} {$blog_entry.date_added|date_format} {lang key='by'} {$blog_entry.fullname}</p>
+
+    <p class="text-i text-fade-50">{if $blog_entry.featured}<span class="ia-item-view__info__item"><span class="label label-info">{lang key='featured'}</span></span>{/if} {lang key='posted_on'} {$blog_entry.date_added|date_format} {lang key='by'} {$blog_entry.fullname}</p>
     {if $blog_entry.image}
         {ia_image file=$blog_entry.image type='large' title=$blog_entry.title class='img-responsive m-b'}
     {/if}
@@ -31,7 +32,7 @@
     {if $blog_entries}
         <div class="ia-items blogroll">
             {foreach $blog_entries as $blog_entry}
-                <div class="ia-item">
+                <div class="ia-item {if $blog_entry.featured}ia-item--featured{/if}">
                     {if $blog_entry.image}
                         <a href="{$smarty.const.IA_URL}blog/{$blog_entry.id}-{$blog_entry.alias}"
                            class="ia-item__image">{ia_image file=$blog_entry.image title=$blog_entry.title}</a>
@@ -67,7 +68,16 @@
                         </div>
                         <div class="ia-item__body">{$blog_entry.body|strip_tags|truncate:$core.config.blog_max:'...'}</div>
                     </div>
+                    <div class="ia-item__labels">
+                        {if $member && $member.id == $blog_entry.member_id && 'active' != $blog_entry.status}
+                            <span class="label label-{$blog_entry.status}" title="{lang key=$blog_entry.status default=$blog_entry.status}"><span class="fa fa-warning"></span> {lang key=$blog_entry.status default=$blog_entry.status}</span>
+                        {/if}
+                        {if $blog_entry.featured}<span class="label label-info" title="{lang key='featured'}"><span class="fa fa-star-o"></span> {lang key='featured'}</span>{/if}
+                    </div>
                 </div>
+
+
+
             {/foreach}
         </div>
         {navigation aTotal=$pagination.total aTemplate=$pagination.template aItemsPerPage=$core.config.blog_number aNumPageItems=5}

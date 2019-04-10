@@ -414,6 +414,8 @@ function IntelliGrid(params, autoInit) {
                 store: self.store,
                 displayInfo: true,
                 plugins: plugins,
+                inputItemWidth: 60,
+
                 items: pagingBar,
                 listeners: {
                     change: function (paging, pageData, options) {

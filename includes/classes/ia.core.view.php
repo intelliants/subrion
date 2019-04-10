@@ -155,6 +155,9 @@ class iaView extends abstractUtil
             $this->iaSmarty->debugging = false;
             $this->iaSmarty->compile_check = true;
 
+            $this->iaSmarty->loadPlugin('smarty_compiler_switch');
+            $this->iaSmarty->registerFilter('post', 'smarty_postfilter_switch');
+
             // @FIXME: please find a solution instead of suppressing the errors
             $this->iaSmarty->muteExpectedErrors();
         }
@@ -1358,7 +1361,10 @@ SQL;
     {
         $result = [];
 
-        $stmt = "`pages` REGEXP('[[:<:]]:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
+        // compatibility fix for MySQL 5.x
+        $boundary = ((int)$this->iaCore->iaDb->getInfo('server_info') < 8) ? '[[:<:]]' : "\\\\b";
+        $stmt = "`pages` REGEXP('{$boundary}:page(::action)?(,|$)') AND `type` = 'regular' ORDER BY `order` DESC";
+
         $stmt = iaDb::printf($stmt, [
             'page' => $this->name(),
             'action' => $this->get('action')

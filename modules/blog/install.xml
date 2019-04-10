@@ -5,8 +5,12 @@
     <author>Intelliants LLC</author>
     <contributor>Intelliants LLC</contributor>
     <version>4.1.0</version>
-    <date>2016-09-26</date>
-    <compatibility>4.1</compatibility>
+    <date>2019-03-22</date>
+    <compatibility>4.2</compatibility>
+
+    <items>
+        <item table_name="blog_entries">blog</item>
+    </items>
 
     <actions>
         <action name="blogposts" url="blog/" icon="list" pages="blog:add,blog:edit"><![CDATA[]]></action>
@@ -19,9 +23,12 @@
     </adminpages>
 
     <pages>
-        <page menus="main,bottom" name="blog" url="blog/">Blog</page>
+        <page name="blog" url="blog/" menus="main,bottom" fields_item="blog">Blog</page>
         <page name="tag" url="tag/" filename="tag">Tag</page>
         <page name="blog_date" url="blog/date/" filename="date">Blog Archive</page>
+        <page name="blog_add" url="blog/add/" filename="manage" action="add" parent="blog" fields_item="blog">Add Blog</page>
+        <page name="blog_edit" url="blog/edit/" filename="manage" action="edit" parent="blog" fields_item="blog">Edit Blog</page>
+        <page name="blog_delete" url="blog/delete/"  filename="manage" action="delete" parent="blog" >Delete Blog</page>
     </pages>
 
     <permissions>
@@ -31,9 +38,10 @@
         <object meta_object="admin_page" id="blog" action="delete" access="1">Delete blog entry</object>
 
         <object id="blog" access="1">View blog entries</object>
-        <object id="blog" action="add" access="1">Add blog entry</object>
-        <object id="blog" action="edit" access="1">Edit blog entry</object>
+        <object id="blog" action="blog_add" access="1">Add blog entry</object>
+        <object id="blog" action="blog_edit" access="1">Edit blog entry</object>
         <object id="blog" action="delete" access="1">Delete blog entry</object>
+
     </permissions>
 
     <phrases>
@@ -52,6 +60,7 @@
 
         <phrase category="frontend" key="blogroll">Blogroll</phrase>
         <phrase category="frontend" key="no_blog_entries">No blogposts done yet. Be the first to post here.</phrase>
+        <phrase category="frontend" key="no_featured_blog_entries">No featured blogposts done yet.</phrase>
         <phrase category="frontend" key="no_tags">No tags added.</phrase>
         <phrase category="frontend" key="page_title_tag">Blog Tags</phrase>
         <phrase category="frontend" key="posted_on">Posted on</phrase>
@@ -63,6 +72,7 @@
     <config group="blog" name="blog_plugin" type="divider">General</config>
     <config group="blog" name="blog_number_block" type="text" description="Number of displayed entries in Blogroll entries">4</config>
     <config group="blog" name="blog_number_new_block" type="text" description="Number of displayed entries in New Blog Posts block">3</config>
+    <config group="blog" name="blog_num_block_featured" type="text" description="Number of displayed Featured entries in Featured Blogs block">5</config>
     <config group="blog" name="blog_max_block" type="text" description="Number of chars in short description in Latest Blog entries">200</config>
     <config group="blog" name="blog_number" type="text" description="Number of displayed entries">5</config>
     <config group="blog" name="blog_max" type="text" description="Number of chars in short description">500</config>
@@ -82,6 +92,7 @@
         <block title="Blogroll" name="blogroll" position="verybottom" sticky="0" pages="index" order="1" type="smarty" filename="block.blogroll.tpl"><![CDATA[]]></block>
         <block title="New blog posts" name="new_blog_posts" position="left" type="smarty" order="5" filename="block.new-posts.tpl"><![CDATA[]]></block>
         <block title="Blogs Archive" name="blogs_archive" position="left" type="smarty" order="5" filename="block.blogs-archive.tpl"><![CDATA[]]></block>
+        <block title="Featured Blogs" name="blog_featured" position="right" type="smarty"  sticky="0" pages="index,blog" order="5" filename="block.featured-blogs.tpl"><![CDATA[]]></block>
     </blocks>
 
     <hooks>
@@ -90,30 +101,45 @@
         <hook name="sitemapGeneration" page_type="admin" pages="index,sitemap"><![CDATA[$items[] = 'blog:blog';]]></hook>
     </hooks>
 
+    <fields_groups>
+        <group item="blog" name="general" title="General"><![CDATA[]]></group>
+    </fields_groups>
+
+    <fields>
+        <field name="title" item="blog" type="text" group="general" length="70" required="1" multilingual="1" page="blog, blog_add, blog_edit">Title</field>
+        <field name="alias" item="blog" type="text" group="general" length="200" required="0" >Title Alias</field>
+        <field name="body" item="blog" type="textarea" group="general" editor="1" required="1" multilingual="1" page="blog, blog_add, blog_edit">Body</field>
+        <field name="tags" item="blog" type="text" group="general"  required="0"  page="blog, blog_add, blog_edit" >Tags</field>
+        <field name="image" item="blog" type="image" group="general" thumb_width="400" thumb_height="400" width="1200" height="1200" page="blog, blog_add, blog_edit">Image</field>
+    </fields>
+
+
     <install>
         <sql>
             <![CDATA[
 DROP TABLE IF EXISTS `{prefix}blog_entries`, `{prefix}blog_tags`, `{prefix}blog_entries_tags`;
             ]]>
         </sql>
+
         <sql>
             <![CDATA[
 CREATE TABLE IF NOT EXISTS `{prefix}blog_entries` (
-    `id` mediumint(8) unsigned NOT NULL auto_increment,
+    `id` mediumint(7) unsigned NOT NULL auto_increment,
     `member_id` int(11) unsigned NOT NULL,
-    `title` tinytext NOT NULL,
-    `alias` varchar(155) NOT NULL,
-    `body` text NOT NULL,
-    `date_added` datetime NOT NULL,
+    `date_added` datetime,
     `image` tinytext NOT NULL,
-    `status` enum('inactive','active') NOT NULL default 'inactive',
-    `lang` char(2) NOT NULL,
-    PRIMARY KEY (`id`),
-    KEY `LANGUAGE` (`lang`),
-    FULLTEXT KEY `SEARCH` (`title`, `body`)
+    `featured` tinyint(1) unsigned NOT NULL,
+    `featured_start` datetime NULL,
+    `featured_end` datetime NULL,
+    `status` enum('inactive', 'active') NOT NULL default 'active',
+
+    PRIMARY KEY  (`id`)
 ) {mysql_version};
             ]]>
         </sql>
+
+
+
         <sql>
             <![CDATA[
 CREATE TABLE IF NOT EXISTS `{prefix}blog_tags` (

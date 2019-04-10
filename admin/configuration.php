@@ -379,6 +379,11 @@ SQL;
                 break;
 
             case 'admin_page':
+                if ($value != iaSanitize::htmlInjectionFilter($value)) {
+                    $this->_iaCore->iaView->setMessages(iaLanguage::get('invalid_admin_page_url'));
+                    return false;
+                }
+
                 $this->_redirectUrl = iaSanitize::htmlInjectionFilter($value) . '/configuration/system/';
         }
 

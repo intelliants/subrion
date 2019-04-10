@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2019 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -25,25 +25,14 @@
  ******************************************************************************/
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
+
+    $blocksData = [];
+
+    $iaBlog = $iaCore->factoryModule('blog', 'blog');
+
     if ($iaView->blockExists('blogroll') || $iaView->blockExists('new_blog_posts')) {
-        $sql = <<<SQL
-SELECT b.`id`, b.`title`, b.`date_added`, b.`alias`, b.`body`, b.`image`, m.`fullname` 
-    FROM `:prefix:table_blog_entries` b 
-LEFT JOIN `:prefix:table_members` m ON (b.`member_id` = m.`id`) 
-WHERE b.`status` = ':status' && `lang` = ':language'
-ORDER BY b.`date_added` DESC
-LIMIT :start, :limit
-SQL;
-        $sql = iaDb::printf($sql, [
-            'prefix' => $iaDb->prefix,
-            'table_blog_entries' => 'blog_entries',
-            'table_members' => 'members',
-            'status' => iaCore::STATUS_ACTIVE,
-            'language' => $iaView->language,
-            'start' => 0,
-            'limit' => $iaCore->get('blog_number_block')
-        ]);
-        $array = $iaDb->getAll($sql);
+
+        $array = $iaBlog->get(0, $iaCore->get('blog_number_block'));
 
         $iaView->assign('block_blog_entries', $array);
     }
@@ -62,4 +51,14 @@ SQL;
 
         $iaView->assign('blogs_archive', $data);
     }
+
+    if ($iaView->blockExists('blog_featured')) {
+        if ($blogs = $iaBlog->get(0, $iaCore->get('blog_num_block_featured'), 'b.`featured` = 1 ', iaDb::FUNCTION_RAND)) {
+            $blocksData['featured'] = $blogs;
+        }
+    }
+
+    $iaView->assign('blog_blocks_data', $blocksData);
 }
+
+
