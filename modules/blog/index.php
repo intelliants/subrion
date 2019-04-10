@@ -184,7 +184,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                 if (!$id) {
                     return iaView::errorPage(iaView::ERROR_NOT_FOUND);
                 }
-                
+
                 $entry = $iaBlog->getById($id);
 
                 if (empty($entry)) {
@@ -281,8 +281,8 @@ if (iaView::REQUEST_XML == $iaView->getRequestType()) {
     foreach ($entries as $entry) {
         $blogbody = '';
         if ($entry['image']!='') {
-            //Let's add the blog image as well, if used
-            $blogbody.= '<p><img src="' . IA_CLEAR_URL . 'uploads/' . $entry["image"] . '"/></p>';
+            list($path, $file) = explode('|', $entry['image']);
+            $blogbody.= '<p><img src="' . IA_CLEAR_URL . 'uploads/' . $path  .'thumbnail/'. $file . '"/></p>';
         }
         $blogbody.= iaSanitize::tags($entry['body']);
 
