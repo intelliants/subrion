@@ -631,7 +631,6 @@ SQL;
 
         $this->_processValues($row, true);
 
-//       set user session
         self::_setIdentity($row);
 
         $this->iaDb->update(null, iaDb::convertIds($row['id']), ['date_logged' => iaDb::FUNCTION_NOW], self::getTable());
@@ -1066,7 +1065,7 @@ SQL;
     private function addIpAddressMember()
     {
         $data = [
-            'member_name' =>  $this->getIdentity()->username,
+            'member_name' => $this->getIdentity()->username,
             'ip_address' => $_SERVER['REMOTE_ADDR'],
             'user_agent' => $_SERVER['HTTP_USER_AGENT'],
             'entry_date' => $this->getIdentity()->date_logged
