@@ -101,7 +101,6 @@ class iaUsers extends abstractCore
      */
     public function authorize()
     {
-            $this->iaCore->startHook('phpCoreBeforeAuth');
 
         $authorized = 0;
 
@@ -122,6 +121,7 @@ class iaUsers extends abstractCore
         } else {
             $pass = '';
         }
+        $this->iaCore->startHook('phpCoreBeforeAuth', ['login' => $login]);
 
         $isBackend = (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType());
 
@@ -621,7 +621,6 @@ SQL;
             'condition' => $condition
         ]);
 
-
         $row = $this->iaDb->getRow($sql);
 
         if (!$row
@@ -1067,10 +1066,10 @@ SQL;
     private function addIpAddressMember()
     {
         $data = [
-            'member_name' => $_SESSION['user']['username'],
+            'member_name' =>  $this->getIdentity()->username,
             'ip_address' => $_SERVER['REMOTE_ADDR'],
             'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-            'entry_date' => date( 'Y-m-d h:i:s', time())
+            'entry_date' => $this->getIdentity()->date_logged
         ];
 
         $this->iaDb->insert($data, null ,  'members_addresses');

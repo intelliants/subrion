@@ -516,7 +516,7 @@ CREATE TABLE `{install:prefix}members_auth_providers` (
 ) {install:db_options};
 
 {install:drop_tables}DROP TABLE IF EXISTS `{install:prefix}members_addresses`;
-CREATE TABLE `{install:prefix}members_auth_providers` (
+CREATE TABLE `{install:prefix}members_addresses` (
 	`id` int(11) NOT NULL auto_increment,
 	`member_name` varchar(50) NULL,
 	`ip_address` varchar(100) NULL,
