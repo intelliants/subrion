@@ -2184,9 +2184,9 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('browse','Browse','common'),
 ('by','by','common'),
-('page_title_members_address', 'IP Addresses', 'IP Addresses', 'admin', 'en', '', '0'),
-('member_name', 'Name', 'Name', 'admin', 'en', '', '0'),
-('entry_date', 'Entry date', 'Entry date', 'admin', 'en', '', '0'),
+('page_title_members_address', 'IP Addresses', 'admin'),
+('member_name', 'Name', 'admin'),
+('entry_date', 'Entry date', 'admin'),
 
 ('cancel','Cancel','common'),
 ('cancel_upload_confirmation','Are you sure you want to cancel this upload?','common'),
