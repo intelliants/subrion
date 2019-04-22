@@ -1,1 +1,0 @@
-{"@attributes":{"Name":"Daily Exchange Rates","Date":"03.04.2019"},"Currency":[{"@attributes":{"ISOCode":"USD"},"Nominal":"1","Value":"69,8500"},{"@attributes":{"ISOCode":"EUR"},"Nominal":"1","Value":"78,2390"},{"@attributes":{"ISOCode":"KZT"},"Nominal":"1","Value":"0,1841"},{"@attributes":{"ISOCode":"RUB"},"Nominal":"1","Value":"1,0669"}],"date":"04\/03\/2019 9:39:06"}
