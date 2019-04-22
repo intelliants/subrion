@@ -101,7 +101,6 @@ class iaUsers extends abstractCore
      */
     public function authorize()
     {
-        $this->iaCore->startHook('phpCoreBeforeAuth');
 
         $authorized = 0;
 
@@ -122,6 +121,7 @@ class iaUsers extends abstractCore
         } else {
             $pass = '';
         }
+        $this->iaCore->startHook('phpCoreBeforeAuth', ['login' => $login]);
 
         $isBackend = (iaCore::ACCESS_ADMIN == $this->iaCore->getAccessType());
 
@@ -148,9 +148,10 @@ class iaUsers extends abstractCore
             }
             exit();
         } elseif ($authorized == 2 && $login && $pass) {
+
             $auth = (bool)$this->getAuth(null, $login, $pass, isset($_POST['remember']));
 
-            $this->iaCore->startHook('phpUserLogin', ['userInfo' => iaUsers::getIdentity(true), 'password' => $pass]);
+            $this->iaCore->startHook('phpUserLogin', ['userInfo' => iaUsers::getIdentity(true), 'login' => $login, 'password' => $pass]);
 
             if (!$auth) {
                 if ($isBackend) {
@@ -160,6 +161,7 @@ class iaUsers extends abstractCore
                     $this->iaView->name('login');
                 }
             } else {
+                $this->addIpAddressMember();
                 if (isset($_SESSION['referrer'])) { // this variable is set by Login page handler
                     header('Location: ' . $_SESSION['referrer']);
                     unset($_SESSION['referrer']);
@@ -1058,5 +1060,17 @@ SQL;
             ['ids' => implode(',', $ids), 'status' => iaCore::STATUS_ACTIVE]);
 
         return $this->coreSearch($where, 0, 50, null)[1];
+    }
+
+    private function addIpAddressMember()
+    {
+        $data = [
+            'member_name' => $this->getIdentity()->username,
+            'ip_address' => $_SERVER['REMOTE_ADDR'],
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+            'entry_date' => $this->getIdentity()->date_logged
+        ];
+
+        $this->iaDb->insert($data, null ,  'members_addresses');
     }
 }
