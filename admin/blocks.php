@@ -192,7 +192,7 @@ SQL;
         }
 
         $entry['type'] = $data['type'];
-        $entry['classname'] = $data['classname'];
+        $entry['classname'] = iaSanitize::paranoid($data['classname']);
         $entry['position'] = $data['position'];
         $entry['status'] = isset($data['status']) && in_array($data['status'],
             [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]) ? $data['status'] : iaCore::STATUS_ACTIVE;
