@@ -2184,9 +2184,6 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 
 ('browse','Browse','common'),
 ('by','by','common'),
-('page_title_members_address', 'IP Addresses', 'admin'),
-('member_name', 'Name', 'admin'),
-('entry_date', 'Entry date', 'admin'),
 
 ('cancel','Cancel','common'),
 ('cancel_upload_confirmation','Are you sure you want to cancel this upload?','common'),
@@ -2237,6 +2234,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('drop_files_here','Drop images here or click to choose...','common'),
 
 ('email','Email','common'),
+('entry_date', 'Entry date', 'admin'),
 ('edit','Edit','common'),
 ('edit_block','Edit block','common'),
 ('edit_position','Edit position','common'),
@@ -2350,6 +2348,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('mark_as','Mark As:','common'),
 ('member','Member','common'),
 ('members','Members','common'),
+('member_name', 'Name', 'admin'),
 ('month','Month','common'),
 ('month1','January','common'),
 ('month2','February','common'),
@@ -2387,6 +2386,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('other','Other','common'),
 
 ('page','Page','common'),
+('page_title_members_address', 'IP Addresses', 'admin'),
 ('page_url_will_be','Page URL will be','common'),
 ('pages','Pages','common'),
 ('parent','Parent','common'),
