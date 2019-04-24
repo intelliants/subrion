@@ -779,7 +779,6 @@ final class iaCore
 
         if ('db' == $name) { // can't we get rid of this?
             $name = INTELLI_CONNECT;
-
             if (strtolower(INTELLI_CONNECT) == 'pdo') {
 
                 $name = 'mysqli';
