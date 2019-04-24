@@ -107,8 +107,8 @@ class iaSearch extends abstractCore
     {
         $page = isset($params[self::GET_PARAM_PAGE]) ? max((int)$params[self::GET_PARAM_PAGE], 1) : 1;
         $sorting = [
-            isset($params[self::GET_PARAM_SORTING_FIELD]) ? $params[self::GET_PARAM_SORTING_FIELD] : null,
-            isset($params[self::GET_PARAM_SORTING_ORDER]) ? $params[self::GET_PARAM_SORTING_ORDER] : null
+            isset($params[self::GET_PARAM_SORTING_FIELD]) ? mysqli_real_escape_string($params[self::GET_PARAM_SORTING_FIELD]) : null,
+            isset($params[self::GET_PARAM_SORTING_ORDER]) ? mysqli_real_escape_string($params[self::GET_PARAM_SORTING_ORDER]) : null
         ];
 
         $result = [
