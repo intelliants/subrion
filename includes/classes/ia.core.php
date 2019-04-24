@@ -87,6 +87,7 @@ final class iaCore
     protected function __construct()
     {
     }
+
     protected function __clone()
     {
     }
@@ -778,6 +779,12 @@ final class iaCore
 
         if ('db' == $name) { // can't we get rid of this?
             $name = INTELLI_CONNECT;
+
+            if (strtolower(INTELLI_CONNECT) == 'pdo') {
+
+                $name = 'mysqli';
+
+            }
         }
 
         $fileName = iaSystem::CLASSES_PREFIX . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT;
