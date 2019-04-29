@@ -1317,6 +1317,11 @@ SQL;
     {
         $fieldName = iaSanitize::paranoid($fieldName);
         $itemName = iaSanitize::paranoid($itemName);
+
+        if(!is_int($itemId)){
+            return false;
+        }
+
         $itemId = iaSanitize::paranoid($itemId);
         $tableName = $this->iaCore->factory('item')->getItemTable($itemName);
 
