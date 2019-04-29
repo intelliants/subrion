@@ -669,7 +669,7 @@ SQL;
     {
         $this->homePage = (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType()) ? $this->iaCore->get('home_page') : self::DEFAULT_HOMEPAGE;
 
-        $pageName = $this->name();
+        $pageName = iaSanitize::sql($this->name()) ;
         $pageParams = $this->getParams();
 
         define('IA_FRONT_TEMPLATES', IA_HOME . 'templates/');
