@@ -177,7 +177,7 @@ class iaSanitize extends abstractUtil
     }
 
     /**
-     * Un-quotes a quoted string or array more then one level
+     * Un-quotes a quoted string or array more than one level
      *
      * @param array|string $value text to be un-quoted
      *
