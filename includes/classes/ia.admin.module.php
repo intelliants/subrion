@@ -458,8 +458,7 @@ class iaModule extends abstractCore
                     empty($title) || $this->_addPhrase('page_title_' . $page['name'], $title, iaLanguage::CATEGORY_PAGE);
                     empty($contents) || $this->_addPhrase('page_content_' . $page['name'], $content, iaLanguage::CATEGORY_PAGE);
 
-                    if ($page['fields_item']
-                        && !$iaDb->exists('`page_name` = :name AND `item` = :item', $page, 'items_pages')) {
+                    if ($page['fields_item'] && !$iaDb->exists('`page_name` = :name AND `item` = :item', $page, 'items_pages')) {
                         $iaDb->insert(['page_name' => $page['name'], 'item' => $page['fields_item']], null, 'items_pages');
                     }
                 }
