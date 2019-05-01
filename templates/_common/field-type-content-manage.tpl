@@ -95,6 +95,12 @@
                 <input class="form-control js-filter-numeric" type="text" name="{$fieldName}" value="{if $value}{$value|escape}{else}{$field.default|escape}{/if}" id="{$name}" maxlength="{$field.length}">
             </div>
 
+        {case iaField::SWITCHER break}
+            <select class="form-control" name="{$fieldName}" id="{$name}">
+                <option value="0">No</option>
+                <option value="1" {if $value } selected {/if}>Yes</option>
+            </select>
+
         {case iaField::TEXTAREA break}
             {if $field.multilingual && isset($item["{$fieldName}_{$core.language.iso}"])}
                 {$value = $item["{$fieldName}_{$core.language.iso}"]}

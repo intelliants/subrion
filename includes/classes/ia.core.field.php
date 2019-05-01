@@ -40,6 +40,7 @@ class iaField extends abstractCore
     const TEXTAREA = 'textarea';
     const TREE = 'tree';
     const URL = 'url';
+    const SWITCHER = 'switcher';
 
     const RELATION_DEPENDENT = 'dependent';
     const RELATION_PARENT = 'parent';
@@ -568,6 +569,7 @@ SQL;
                     // BREAK stmt omitted intentionally
 
                 case self::COMBO:
+                case self::SWITCHER:
                 case self::RADIO:
                     $item[$fieldName] = $value;
 
@@ -1114,6 +1116,9 @@ SQL;
             case self::ICONPICKER:
             case self::URL:
                 $result.= 'TINYTEXT ';
+                break;
+            case self::SWITCHER:
+                $result.= 'TINYINT(1) ';
                 break;
             case self::TREE:
             case self::IMAGE:
