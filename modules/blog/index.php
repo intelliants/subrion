@@ -143,19 +143,24 @@ if (iaView::REQUEST_XML == $iaView->getRequestType()) {
     $entries = $iaBlog->get(0, 20);
 
     foreach ($entries as $entry) {
-        $blogbody = '';
-        if ($entry['image']!='') {
-            list($path, $file) = explode('|', $entry['image']);
-            $blogbody.= '<p><img src="' . IA_CLEAR_URL . 'uploads/' . $path  .'thumbnail/'. $file . '"/></p>';
-        }
         $blogbody.= iaSanitize::tags($entry['body']);
 
-        $output['item'][] = [
+        $itemValues = [
             'title' => $entry['title'],
             'guid' => $baseUrl . $entry['id'] . '-' . $entry['alias'],
             'pubDate' => date('D, d M Y H:i:s O', strtotime($entry['date_added'])),
             'description' => $blogbody
         ];
+
+        if ($entry['image']) {
+            $itemValues['enclosure'] = ['@attr' => [
+                'url' => IA_CLEAR_URL . 'uploads/'. $entry['image']['path'] . 'thumbnail/' . $entry['image']['file'],
+                'type' => 'image/jpg',
+                'length' => $entry['image']['size']
+            ]];
+        }
+
+        $output['item'][] = $itemValues;
     }
 
     $iaView->assign('channel', $output);
