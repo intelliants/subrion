@@ -1000,18 +1000,29 @@ SQL;
                     return $text;
                 }
 
-                function xmlEncode(array $array, &$parentObject)
+                function xmlEncode($childData, &$parentObject)
                 {
                     static $section;
-                    foreach ($array as $key => $value) {
+                    foreach ($childData as $key => $value) {
+
                         switch (true) {
-                            case is_array($array[key($array)]):
+                            case is_array($childData[key($childData)]):
                                 if (!is_numeric($key)) {
                                     $node = $parentObject->addChild($key);
                                     xmlEncode($value, $node);
                                 } else {
                                     $node = $parentObject->addChild($section);
                                     foreach ($value as $k => $v) {
+                                        if (is_array($v) && isset($v['@attr'])) {
+                                            $child = $node->addChild($k);
+
+                                            foreach ($v['@attr'] as $attrName => $attrValue) {
+                                                $child->addAttribute($attrName, $attrValue);
+                                            }
+
+                                            continue;
+                                        }
+
                                         $node->addChild($k, htmldecode($v));
                                     }
                                 }
