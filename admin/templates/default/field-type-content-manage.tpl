@@ -59,6 +59,11 @@
                 <input type="text" name="{$fieldName}" value="{$value|escape}" id="{$name}" maxlength="{$field.length}">
             {/if}
 
+        {case iaField::SWITCHER break}
+            <div class="col col-lg-4">
+                 {html_radio_switcher value=$value|default:0  name={$fieldName}}
+            </div>
+
         {case iaField::DATE break}
             {assign var='default_date' value=($value && !in_array($value, ['0000-00-00', '0000-00-00 00:00:00'])) ? {$value|escape} : ''}
 
