@@ -9,7 +9,7 @@
     <compatibility>4.2</compatibility>
 
     <items>
-        <item table_name="blog_entries">blog</item>
+        <item table_name="blog_entries" pages="">blog</item>
     </items>
 
     <actions>
