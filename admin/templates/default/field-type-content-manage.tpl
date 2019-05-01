@@ -264,7 +264,7 @@ $(function()
 
         {case iaField::RADIO break}
             {if !empty($field.values)}
-                {html_radios assign='radios' name=$fieldName options=$field.values selected=$value separator='</div>'}
+                {html_radios assign='radios' name=$fieldName options=$field.values selected=$value separator='</div>' label_ids=true}
 
                 <div class="radio">{'<div class="radio">'|implode:$radios}
             {/if}
@@ -299,7 +299,7 @@ $(function()
 
         {case iaField::CHECKBOX break}
             {if !empty($field.values)}
-                {html_checkboxes assign='checkboxes' name=$fieldName options=$field.values selected=$value separator='</div>'}
+                {html_checkboxes assign='checkboxes' name=$fieldName options=$field.values selected=$value separator='</div>' label_ids=true}
 
                 <div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
             {/if}
