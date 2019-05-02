@@ -138,7 +138,7 @@ abstract class iaAbstractControllerBackend
                     $entry = [];
                     $this->_setDefaultValues($entry);
 
-                    // intentionally missing BREAK stmt
+                // intentionally missing BREAK stmt
 
                 case iaCore::ACTION_EDIT:
                     if (iaCore::ACTION_EDIT == $iaView->get('action')) {
@@ -314,6 +314,7 @@ abstract class iaAbstractControllerBackend
     {
         return $this->_table;
     }
+
     public function setTable($tableName)
     {
         $this->_table = $tableName;
@@ -323,6 +324,7 @@ abstract class iaAbstractControllerBackend
     {
         return $this->_helper;
     }
+
     public function setHelper($helperClassInstance)
     {
         $this->_helper = &$helperClassInstance;
@@ -376,6 +378,9 @@ abstract class iaAbstractControllerBackend
             ? $this->_gridSorting[$params['sort']][1] . '.'
             : $this->_gridQueryMainTableAlias;
 
+        if ($column == 'url') {
+            return sprintf(' ORDER BY `%s` %s', $column, $direction);
+        }
         return sprintf(' ORDER BY %s`%s` %s', $tableAlias, $column, $direction);
     }
 
@@ -491,10 +496,10 @@ abstract class iaAbstractControllerBackend
             $this->_gridColumns = array_merge($persistentColumns, $this->_gridColumns);
 
             foreach ($this->_gridColumns as $key => $field) {
-                $result.= is_int($key)
+                $result .= is_int($key)
                     ? $this->_gridQueryMainTableAlias . '`' . $field . '`'
                     : sprintf('%s `%s`', is_numeric($field) ? $field : $this->_gridQueryMainTableAlias . '`' . $field . '`', $key);
-                $result.= ', ';
+                $result .= ', ';
             }
 
             $result = substr($result, 0, -2);
