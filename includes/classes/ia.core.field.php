@@ -194,8 +194,8 @@ SQL;
         is_null($pageName) && $pageName = $this->iaView->name();
         is_null($where) && $where = iaDb::EMPTY_CONDITION;
 
-        $where.= iaDb::printf(" && f.status = ':status'", ['status' => iaCore::STATUS_ACTIVE]);
-        $where.= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
+        $where .= iaDb::printf(" && f.status = ':status'", ['status' => iaCore::STATUS_ACTIVE]);
+        $where .= !empty($itemData['sponsored_plan_id']) && !empty($itemData['sponsored'])
             ? " && (f.plans = '' || FIND_IN_SET('{$itemData['sponsored_plan_id']}', f.plans))"
             : " && f.plans = ''";
 
@@ -209,7 +209,7 @@ SQL;
 
             foreach ($rows as $row) {
                 $iaAcl->checkAccess('field', $itemName . '_' . $row['name'])
-                    && $result[$row['id']] = $row;
+                && $result[$row['id']] = $row;
             }
 
             self::_unpackValues($result);
@@ -320,7 +320,7 @@ SQL;
             $field['class'] = 'fieldzone';
             if ($field['plans']) {
                 foreach (explode(',', $field['plans']) as $p) {
-                    $field['class'].= sprintf(' plan_%d ', $p);
+                    $field['class'] .= sprintf(' plan_%d ', $p);
                 }
             }
 
@@ -566,7 +566,7 @@ SQL;
                 case self::CHECKBOX:
                     is_array($value) && $value = implode(',', $value);
 
-                    // BREAK stmt omitted intentionally
+                // BREAK stmt omitted intentionally
 
                 case self::COMBO:
                 case self::SWITCHER:
@@ -710,6 +710,10 @@ SQL;
                             $title = empty($value['title'])
                                 ? str_replace($validProtocols, '', $value['url'])
                                 : $value['title'];
+
+                            if ($url === 'http://') {
+                                $url = '';
+                            }
 
                             $item[$fieldName] = $url . '|' . $title;
                         } else {
@@ -1104,48 +1108,48 @@ SQL;
 
         switch ($fieldData['type']) {
             case self::DATE:
-                $result.= 'DATETIME ';
+                $result .= 'DATETIME ';
                 break;
             case self::NUMBER:
-                $result.= 'DOUBLE ';
+                $result .= 'DOUBLE ';
                 break;
             case self::TEXT:
-                $result.= 'VARCHAR(' . $fieldData['length'] . ') '
+                $result .= 'VARCHAR(' . $fieldData['length'] . ') '
                     . ($fieldData['default'] ? "DEFAULT '{$fieldData['default']}' " : '');
                 break;
             case self::ICONPICKER:
             case self::URL:
-                $result.= 'TINYTEXT ';
+                $result .= 'TINYTEXT ';
                 break;
             case self::SWITCHER:
-                $result.= 'TINYINT(1) ';
+                $result .= 'TINYINT(1) ';
                 break;
             case self::TREE:
             case self::IMAGE:
             case self::STORAGE:
             case self::PICTURES:
-                $result.= 'TEXT ';
+                $result .= 'TEXT ';
                 break;
             case self::TEXTAREA:
-                $result.= 'MEDIUMTEXT ';
+                $result .= 'MEDIUMTEXT ';
                 break;
             case self::CURRENCY:
-                $result.= 'DECIMAL(' . ($fieldData['length'] + 2) . ',2) unsigned ';
+                $result .= 'DECIMAL(' . ($fieldData['length'] + 2) . ',2) unsigned ';
                 break;
             default:
                 if (isset($fieldData['values'])) {
                     $values = explode(',', $fieldData['values']);
 
-                    $result.= ($fieldData['type'] == self::CHECKBOX) ? 'SET' : 'ENUM';
-                    $result.= "('" . implode("','", $values) . "')";
+                    $result .= ($fieldData['type'] == self::CHECKBOX) ? 'SET' : 'ENUM';
+                    $result .= "('" . implode("','", $values) . "')";
 
                     if (!empty($fieldData['default'])) {
-                        $result.= " DEFAULT '{$fieldData['default']}' ";
+                        $result .= " DEFAULT '{$fieldData['default']}' ";
                     }
                 }
         }
 
-        $result.= $fieldData['allow_null'] ? 'NULL' : 'NOT NULL';
+        $result .= $fieldData['allow_null'] ? 'NULL' : 'NOT NULL';
 
         return $result;
     }
@@ -1394,7 +1398,7 @@ SQL;
                     // check if image removed from the entry of currently logged in user
                     // and reload his identity if so
                     iaUsers::getItemName() == $itemName && iaUsers::hasIdentity()
-                        && $itemId == iaUsers::getIdentity()->id && iaUsers::reloadIdentity();
+                    && $itemId == iaUsers::getIdentity()->id && iaUsers::reloadIdentity();
 
                     return true;
                 }
