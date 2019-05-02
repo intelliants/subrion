@@ -84,11 +84,25 @@
     {else}
         <div class="field field-{$type}" id="{$name}_fieldzone">
             {if !isset($excludedTitles) || !in_array($name, $excludedTitles)}
-                <div class="field__header">{lang key=$fieldName}</div>
+                {if isset($value)}
+                    {if !empty($value[0])}
+                        <div class="field__header">{lang key=$fieldName}</div>
+                    {/if}
+                {else}
+                    <div class="field__header">{lang key=$fieldName}</div>
+                {/if}
             {/if}
-            <div class="field__content">
-                {$_field_text}
-            </div>
+            {if isset($value)}
+                {if !empty($value[0])}
+                    <div class="field__content">
+                        {$_field_text}
+                    </div>
+                {/if}
+            {else}
+                <div class="field__content">
+                    {$_field_text}
+                </div>
+            {/if}
         </div>
     {/if}
 {elseif empty($item.$name) && $field.empty_field}
