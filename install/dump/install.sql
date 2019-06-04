@@ -1047,6 +1047,7 @@ INSERT INTO `{install:prefix}config` (`config_group`, `name`, `value`, `multiple
 
 ('financial', '', 'General', '1', 'divider', 1, 1, 0, ''),
 ('financial', 'currency_switch', '0', '\'1\',\'0\'', 'radio', 3, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
+('financial', 'disable_funds', '0', '\'1\',\'0\'', 'radio', 3, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('financial', '', 'Internal Funds', '1', 'divider', 8, 1, 0, ''),
 ('financial', 'funds_min_deposit', '20', '', 'text', 9, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
 ('financial', 'funds_max_deposit', '300', '', 'text', 10, 0, 1,'{"wysiwyg":0,"code_editor":0,"show":"","multilingual":0}'),
@@ -1539,6 +1540,7 @@ INSERT INTO `{install:prefix}language` (`key`,`value`,`category`) VALUES
 ('config_maps_api_key', 'Maps API key', 'admin'),
 ('config_show_multilingual_inputs', 'Show multilingual inputs', 'admin'),
 ('config_currency_switch', 'Currency switching', 'admin'),
+('config_disable_funds', 'Disable Funds', 'admin'),
 ('config_funds_min_deposit', 'Minimum deposit', 'admin'),
 ('config_funds_max_deposit', 'Maximum deposit', 'admin'),
 ('config_invoice_logo', 'Invoice logo', 'admin'),

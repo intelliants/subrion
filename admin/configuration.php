@@ -28,7 +28,7 @@ class iaBackendController extends iaAbstractControllerBackend
 {
     protected $_name = 'configuration';
 
-    protected $_customConfigParams = ['baseurl', 'admin_page', 'https'];
+    protected $_customConfigParams = ['baseurl', 'admin_page', 'https', 'disable_funds'];
 
     protected $_redirectUrl;
 
@@ -385,6 +385,11 @@ SQL;
                 }
 
                 $this->_redirectUrl = iaSanitize::htmlInjectionFilter($value) . '/configuration/system/';
+
+                break;
+
+            case 'disable_funds':
+                $this->_iaDb->update(['status' => $value ? 'inactive' : 'active'], iaDb::convertIds('member_funds', 'name'), null, 'pages');
         }
 
         return true;
