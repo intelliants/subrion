@@ -50,7 +50,7 @@
 
         </div>
         <div class="plans">
-            {if $member && !$isBalancePayment}
+            {if $member && !$isBalancePayment && !$core.config.disable_funds}
                 <div class="plans__item">
                     <label class="plans__item__header radio">
                         <input type="radio" name="source" value="internal"{if $isFundsEnough} checked{else} disabled{/if}>

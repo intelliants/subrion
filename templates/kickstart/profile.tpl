@@ -35,26 +35,28 @@
                 {/if}
             </div>
 
-            <div class="box box--border">
-                <h4 class="box__caption">{lang key='funds'}</h4>
-                <div class="box__content">
-                    <p>{lang key='current_assets'}: <b>{$member.funds}</b></p>
+            {if (!$core.config.disable_funds) }
+                <div class="box box--border">
+                    <h4 class="box__caption">{lang key='funds'}</h4>
+                    <div class="box__content">
+                        <p>{lang key='current_assets'}: <b>{$member.funds}</b></p>
 
-                    <form method="post" action="{$smarty.const.IA_URL}profile/funds/">
-                        {preventCsrf}
+                        <form method="post" action="{$smarty.const.IA_URL}profile/funds/">
+                            {preventCsrf}
 
-                        <div class="form-group">
-                            <label>{lang key='amount_to_add'}</label>
-                            <div class="input-group">
-                                <input class="form-control" type="text" name="amount" id="amount" placeholder="{$core.config.funds_min_deposit}">
-                                <span class="input-group-btn">
-                                    <button class="btn btn-primary" type="submit"><span class="fa fa-plus"></span> {lang key='add'}</button>
-                                </span>
+                            <div class="form-group">
+                                <label>{lang key='amount_to_add'}</label>
+                                <div class="input-group">
+                                    <input class="form-control" type="text" name="amount" id="amount" placeholder="{$core.config.funds_min_deposit}">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-primary" type="submit"><span class="fa fa-plus"></span> {lang key='add'}</button>
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            {/if}
         </div>
         <div class="col-md-9">
             <div class="alert alert-info">No activities at the moment</div>
@@ -104,7 +106,7 @@
             </div>
         {/capture}
 
-        {if $plans_count}
+        {if $plans_count && !$core.config.disable_funds}
             {capture append='tabs_content' name='funds'}
                 <div class="fieldset">
                     {if $item.funds > 0}
