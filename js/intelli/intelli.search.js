@@ -11,7 +11,17 @@ intelli.search = (function () {
         $form = $('#js-item-filters-form'),
 
         composeParams = function (formValues) {
-            return (formValues != '' ? formValues + '&' : '') + $.param(params);
+            var kv = ((formValues !== '' ? formValues + '&' : '') + $.param(params)).split('&');
+            var acc = [];
+
+            for (var i in kv) {
+                var v = kv[i].split('=');
+                if (v[1]) {
+                    acc.push(kv[i]);
+                }
+            }
+
+            return acc.join('&');
         },
 
         fireEvent = function (name) {
@@ -24,7 +34,7 @@ intelli.search = (function () {
             var result = false,
                 hash = window.location.hash.substring(1);
 
-            if (hash != '') {
+            if (hash) {
                 result = {};
                 hash = hash.split('&');
 
@@ -46,9 +56,28 @@ intelli.search = (function () {
 
     return {
         setParam: function (name, value) {
-            if (undefined !== paramsMapping[name]) {
-                params[paramsMapping[name]] = value;
+            if (undefined === paramsMapping[name]) {
+                return
             }
+
+            params[paramsMapping[name]] = value;
+
+            switch (name) {
+                case 'sortingField':
+                    $('#js-sorting-option-field').text($('[data-field="' + value + '"]', '.js-autos-sorting-options').text());
+                    break;
+                case 'sortingOrder':
+                    $('#js-sorting-option-order').text($('[data-order="' + value + '"]', '.js-autos-sorting-options').text());
+                    break;
+            }
+        },
+
+        getParam: function (name) {
+            if (undefined === paramsMapping[name]) {
+                return null;
+            }
+
+            return params[paramsMapping[name]];
         },
 
         bindEvents: function (fnStart, fnFinish) {
