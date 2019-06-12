@@ -58,12 +58,16 @@ $(function () {
             $defaultOptions = $('#js-default-search-options'),
             $spinner = $('<div class="list-spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>');
 
-        if ($defaultOptions.length) {
-            intelli.search.setParam('sortingField', $defaultOptions.data('field'));
-            intelli.search.setParam('sortingOrder', $defaultOptions.data('order'));
-        }
-
         intelli.search.initFilters();
+
+        if ($defaultOptions.length) {
+            if (!intelli.search.getParam('sortingField')) {
+                intelli.search.setParam('sortingField', $defaultOptions.data('field'));
+            }
+            if (!intelli.search.getParam('sortingOrder')) {
+                intelli.search.setParam('sortingOrder', $defaultOptions.data('order'));
+            }
+        }
 
         $filtersForm.on('submit', function (e) {
             e.preventDefault();
