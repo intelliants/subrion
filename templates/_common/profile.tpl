@@ -43,7 +43,7 @@
     {if $plans_count && !$core.config.disable_funds}
         {capture append='tabs_content' name='funds'}
             <div class="fieldset">
-                {if $item.funds > 0 }
+                {if $item.funds > 0}
                     <div class="fieldset__header">{lang key='funds'}: {$item.funds|string_format:'%d'} {$core.config.currency}</div>
                 {else}
                     <div class="alert alert-info">{lang key='no_funds'}</div>

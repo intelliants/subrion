@@ -35,7 +35,7 @@
                 {/if}
             </div>
 
-            {if (!$core.config.disable_funds) }
+            {if !$core.config.disable_funds}
                 <div class="box box--border">
                     <h4 class="box__caption">{lang key='funds'}</h4>
                     <div class="box__content">
