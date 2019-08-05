@@ -494,7 +494,8 @@ OUTPUT;
     /**
      * Formats the message for logging.
      *
-     * @param  string $message The message to log * @param  array  $context The context
+     * @param string $message The message to log * @param  array  $context The context
+     * @param null $context
      *
      * @return string
      */
@@ -520,7 +521,7 @@ OUTPUT;
             $context = json_decode(json_encode($context), true);
         }
 
-        if ($context instanceof Traversable) {
+        if (is_array($context) || (is_object($context) && ($context instanceof Traversable))) {
             foreach ($context as $key => $value) {
                 $export .= "{$key}: ";
                 $export .= preg_replace([
