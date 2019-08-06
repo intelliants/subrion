@@ -482,7 +482,7 @@ class iaBackendController extends iaAbstractControllerBackend
                     if (substr($file, 0, 1) != '.' && is_file($path . $file)) {
                         $dumpFiles[$name][] = [
                             'filename' => $path . $file,
-                            'title' => substr($file, 0, count($file) - 5),
+                            'title' => pathinfo($file, PATHINFO_FILENAME),
                             'applied' => (boolean)(strpos($path, 'updates/migrations') && in_array($file,
                                     $appliedMigrations))
                         ];
