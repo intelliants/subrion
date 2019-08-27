@@ -56,7 +56,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                 }
 
                 iaBreadcrumb::toEnd($entry['title']);
-                $iaView->title(htmlentities($entry['title']));
+                $iaView->title($entry['title']);
 
                 // add open graph data
                 $openGraph = [
