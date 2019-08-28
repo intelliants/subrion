@@ -2,7 +2,7 @@
     {$search = !isset($nosearch)}
     <div class="row js-tree-control">
         <label class="col col-lg-2 control-label">
-            {lang key=$tree.label|default:'category'} {lang key='field_required'}<br>
+            {if isset($tree.label)}{lang key=$tree.label}{else}{lang key='category'}{/if} {lang key='field_required'}<br>
             <a href="#" class="categories-toggle js-tree-toggler">{lang key='open_close'}</a>
         </label>
         <div class="col col-lg-4">
@@ -13,14 +13,14 @@
                     <input type="text" placeholder="{lang key='start_typing_to_filter'}">
                 </div>
             {/if}
-            <div id="{$tree.selector|default:'js-tree'}" class="tree categories-tree"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}></div>
-            <input type="hidden" name="{$tree.value|default:'tree_id'}" id="{$tree.value|default:'input-tree'}" value="{$tree.id}">
+            <div id="{if isset($tree.selector)}{$tree.selector}{else}js-tree{/if}" class="tree categories-tree"{if iaCore::ACTION_EDIT == $pageAction} style="display:none"{/if}></div>
+            <input type="hidden" name="{if isset($tree.value)}{$tree.value}tree_id{/if}" id="{if isset($tree.value)}{$tree.value}input-tree{/if}" value="{$tree.id}">
             {ia_add_js}
 $(function() {
     new IntelliTree({
         url: '{$tree.url}',
         onchange: intelli.fillUrlBox,
-        nodeSelected: $('#{$tree.value|default:'input-tree'}').val(),
+        nodeSelected: $('#{if isset($tree.value)}{$tree.value}{else}input-tree{/if}').val(),
         nodeOpened: [{$tree.nodes}],
         {if isset($tree.selector)}selector: '#{$tree.selector}',{/if}
         {if isset($tree.value)}value: '#{$tree.value}',{/if}

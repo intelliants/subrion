@@ -8,8 +8,8 @@
                 <input class="form-control" type="text" placeholder="{lang key='start_typing_to_filter'}">
             </div>
         {/if}
-        <div id="{$tree.selector|default:'js-tree'}" class="tree categories-tree">{lang key='loading'}</div>
-        <input type="hidden" name="{$tree.value|default:'tree_id'}" id="{$tree.value|default:'input-tree'}" value="{$tree.id}">
+        <div id="{if isset($tree.selector)}{$tree.selector}{else}js-tree{/if}" class="tree categories-tree">{lang key='loading'}</div>
+        <input type="hidden" name="{if isset($tree.value)}{$tree.value}tree_id{/if}" id="{if isset($tree.value)}{$tree.value}input-tree{/if}" value="{$tree.id}">
         {ia_add_js}
 $(function() {
     new IntelliTree({
