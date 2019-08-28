@@ -9,7 +9,7 @@
             </div>
         {/if}
         <div id="{if isset($tree.selector)}{$tree.selector}{else}js-tree{/if}" class="tree categories-tree">{lang key='loading'}</div>
-        <input type="hidden" name="{if isset($tree.value)}{$tree.value}tree_id{/if}" id="{if isset($tree.value)}{$tree.value}input-tree{/if}" value="{$tree.id}">
+        <input type="hidden" name="{if isset($tree.value)}{$tree.value}{else}tree_id{/if}" id="{if isset($tree.value)}{$tree.value}{else}input-tree{/if}" value="{$tree.id}">
         {ia_add_js}
 $(function() {
     new IntelliTree({
