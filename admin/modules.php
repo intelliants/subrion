@@ -693,7 +693,7 @@ class iaBackendController extends iaAbstractControllerBackend
                         foreach ($response['extensions'] as $entry) {
                             $pluginInfo = (array)$entry;
 
-                            $buttons['docs'] = 'https://subrion.org/template/' . $pluginInfo['name'] . '.html';
+                            $buttons['docs'] = 'https://subrion.org/plugin/' . $pluginInfo['name'] . '.html';
 
                             // exclude installed plugins
                             if (!in_array($pluginInfo['name'], $_local)) {
