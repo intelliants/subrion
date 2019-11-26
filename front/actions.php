@@ -31,7 +31,7 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
         case 'edit-picture-title':
             $title = empty($_POST['value']) ? '' : $_POST['value'];
             $item = isset($_POST['item']) ? $_POST['item'] : null;
-            $field = isset($_POST['field']) ? iaSanitize::sql($_POST['field']) : null;
+            $field = isset($_POST['field']) ? iaSanitize::paranoid($_POST['field']) : null;
             $path = isset($_POST['path']) ? $_POST['path'] : null;
             $itemId = isset($_POST['itemid']) ? (int)$_POST['itemid'] : false;
 
@@ -42,9 +42,12 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
                     $itemValue = $iaDb->one($field, iaDb::convertIds($itemId), $tableName);
                     $memberId = $itemId;
                 } else {
-                    $row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName);
-                    $itemValue = $row[$field];
-                    $memberId = $row['id'];
+                    if ($row = $iaDb->row($field . ', `member_id` `id`', iaDb::convertIds($itemId), $tableName)) {
+                        $itemValue = $row[$field];
+                        $memberId = $row['id'];
+                    } else {
+                        break;
+                    }
                 }
 
                 if (iaUsers::hasIdentity() && $memberId == iaUsers::getIdentity()->id && $itemValue) {
