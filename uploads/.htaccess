@@ -8,11 +8,11 @@
 Options -ExecCGI
 
 # Deny files access for some file extensions
-<FilesMatch "(?i)\.(php|php5|php4|php3|php2|pht|phar|phtml|pl|py|jsp|asp|htm|html|shtml|sh|cgi|svg)$">
+<FilesMatch "(?i)\.(php|php5|php4|php3|php2|pht|phar|phtml|pl|py|jsp|asp|htm|html|shtml|xhtml|sh|cgi|svg)$">
     ForceType text/plain
     Order Deny,Allow
     Deny from All
 </FilesMatch>
 
 # Process script files as plain text
-AddHandler default-handler .php .php5 .php4 .php3 .php2 .pht .phar .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi
+AddHandler default-handler .php .php5 .php4 .php3 .php2 .pht .phar .phtml .pl .py .jsp .asp .htm .shtml .xhtml .sh .cgi
