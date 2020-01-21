@@ -626,8 +626,11 @@ final class iaCore
     public function checkDomain()
     {
         if (is_null($this->checkDomain)) {
-            $dbUrl = str_replace(['http://www.', 'http://'], '', $this->get('baseurl'));
-            $codeUrl = str_replace(['http://www.', 'http://'], '', $this->iaView->domainUrl);
+            $dbUrl = parse_url($this->get('baseurl'), PHP_URL_HOST);
+            $codeUrl = parse_url($this->iaView->domainUrl, PHP_URL_HOST);
+
+            $dbUrl = str_replace('www.', '', $dbUrl);
+            $codeUrl = str_replace('www.', '', $codeUrl);
 
             $this->checkDomain = ($dbUrl == $codeUrl);
         }
