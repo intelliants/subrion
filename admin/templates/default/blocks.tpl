@@ -96,7 +96,7 @@
                 <div class="col col-lg-8">
                     <ul class="nav nav-tabs">
                         {foreach $pagesGroup as $group => $row}
-                            <li{if $row@iteration == 1} class="active"{/if}><a href="#tab-visible_{$row.name}" data-toggle="tab">{$row.title}</a></li>
+                            <li{if $row@iteration == 1} class="active"{/if}><a href="#tab-visible_{$row.name}" data-toggle="tab">{$row.title|escape}</a></li>
                         {/foreach}
                     </ul>
 
@@ -148,7 +148,7 @@
 
                     <ul class="nav nav-tabs">
                         {foreach $pagesGroup as $group => $row}
-                            <li{if $row@iteration == 1} class="active"{/if}><a href="#tab-pages_{$row.name}" data-toggle="tab">{$row.title}</a></li>
+                            <li{if $row@iteration == 1} class="active"{/if}><a href="#tab-pages_{$row.name}" data-toggle="tab">{$row.title|escape}</a></li>
                         {/foreach}
                     </ul>
 
@@ -168,7 +168,7 @@
                                     <div class="checkbox">
                                         <label>
                                             <input type="checkbox" name="pages[]" class="{$classname}" value="{$page.name}"{if in_array($page.name, $menuPages, true)} checked{/if}>
-                                            {if empty($page.title)}{$page.name}{else}{$page.title}{/if}
+                                            {if empty($page.title)}{$page.name|escape}{else}{$page.title|escape}{/if}
                                         </label>
                                     </div>
                                     {/if}
