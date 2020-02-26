@@ -553,103 +553,106 @@ $(function () {
         var submitButtonText = $dropzone.data('submit_btn_text');
         var values = $dropzone.data('values');
 
-        var dropZone = new Dropzone('#' + $dropzone.attr('id'),
-            {
-                url: intelli.config.admin_url + '/actions/read.json',
-                addRemoveLinks: true,
-                acceptedFiles: 'image/*',
-                parallelUploads: 20,
-                maxFiles: $dropzone.data('max_num'),
-                dictRemoveFile: '',
-                dictMaxFilesExceeded: _t('no_more_files'),
-                dictDefaultMessage: _t('drop_files_here'),
-                dictInvalidFileType: _t('field_tooltip_members_avatar'),
-                dictCancelUpload: '',
-                dictCancelUploadConfirmation: _t('cancel_upload_confirmation'),
-                init: function () {
-                    var dropZone = this,
-                        error = false,
-                        errorMessage = '';
+        var dropZone = new Dropzone('#' + $dropzone.attr('id'), {
+            url: intelli.config.admin_url + '/actions/read.json',
+            addRemoveLinks: true,
+            acceptedFiles: 'image/*',
+            parallelUploads: 20,
+            maxFiles: $dropzone.data('max_num'),
+            dictRemoveFile: '',
+            dictMaxFilesExceeded: _t('no_more_files'),
+            dictDefaultMessage: _t('drop_files_here'),
+            dictInvalidFileType: _t('field_tooltip_members_avatar'),
+            dictCancelUpload: '',
+            dictCancelUploadConfirmation: _t('cancel_upload_confirmation'),
+            init: function () {
+                var dropZone = this,
+                    error = false,
+                    errorMessage = '';
 
-                    this.on('success', function (file, response) {
-                        if (response.error) {
-                            return false;
-                        }
+                this.on('success', function (file, response) {
+                    if (typeof response === 'string' || response.error) {
+                        errorMessage = response.error || intelli.admin.lang.error
+                        intelli.notifFloatBox({msg: errorMessage, type: 'error', autohide: true});
 
-                        var $preview = $(file.previewElement),
-                            htmlInputs =
-                                '<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + response.path + '">'
-                                + '<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.file + '">'
-                                + '<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">',
-                            htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.clear_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>';
+                        return false;
+                    }
 
-                        $preview.append(htmlInputs).find('.dz-details').append(htmlFancybox);
-                        $('[data-dz-name]', $preview).text(response.file);
-                    });
+                    var $preview = $(file.previewElement),
+                        htmlInputs =
+                            '<input type="hidden" name="' + fieldName + '_dropzone_paths[]" value="' + response.path + '">'
+                            + '<input type="hidden" name="' + fieldName + '_dropzone_files[]" value="' + response.file + '">'
+                            + '<input type="hidden" name="' + fieldName + '_dropzone_sizes[]" value="' + response.size + '">',
+                        htmlFancybox = '<a class="dz-zoom" rel="ia_lightbox" href="' + intelli.config.clear_url + 'uploads/' + response.path + response.imagetype + '/' + response.file + '"><span class="fa fa-search-plus"></span></a>';
 
-                    var $submit = $('.js-btn-submit');
-                    this.on('sending', function (file, xhr, formData) {
-                        $submit
-                            .attr('disabled', true)
-                            .html('<span class="fa fa-refresh fa-spin fa-fw"></span><span class="sr-only">' + _t('uploading_please_wait') + '</span> ' + _t('uploading_please_wait'));
-                        formData.append(intelli.securityTokenKey, intelli.securityToken);
-                        formData.append('action', 'dropzone-upload-file');
-                        formData.append('field', fieldName);
-                        formData.append('item', itemName);
-                    });
+                    $preview.append(htmlInputs).find('.dz-details').append(htmlFancybox);
+                    $('[data-dz-name]', $preview).text(response.file);
+                });
 
-                    this.on('error', function (file) {
-                        if ('canceled' !== file.status) {
-                            error = true;
-                            errorMessage = 'error';
-                        }
-                    });
+                var $submit = $('.js-btn-submit');
 
-                    this.on('maxfilesexceeded', function (file) {
+                this.on('sending', function (file, xhr, formData) {
+                    $submit
+                        .attr('disabled', true)
+                        .html('<span class="fa fa-refresh fa-spin fa-fw"></span><span class="sr-only">' + _t('uploading_please_wait') + '</span> ' + _t('uploading_please_wait'));
+                    formData.append(intelli.securityTokenKey, intelli.securityToken);
+                    formData.append('action', 'dropzone-upload-file');
+                    formData.append('field', fieldName);
+                    formData.append('item', itemName);
+                });
+
+                this.on('error', function (file) {
+                    if ('canceled' !== file.status) {
                         error = true;
-                        errorMessage = 'no_more_files';
+                        errorMessage = 'error';
+                    }
+                });
 
-                        $(file.previewElement).remove();
-                    });
+                this.on('maxfilesexceeded', function (file) {
+                    error = true;
+                    errorMessage = 'no_more_files';
 
-                    this.on('removedfile', function (file) {
-                        if ('undefined' === typeof file.status || 'success' === file.status) {
-                            var params = {
-                                action: 'dropzone-delete-file',
-                                item: itemName,
-                                field: fieldName,
-                                path: $('input[type="hidden"]:first', file.previewElement).val(),
-                                file: $('[data-dz-name]', file.previewElement).text()
-                            };
+                    $(file.previewElement).remove();
+                });
 
-                            if (typeof existingFiles !== 'undefined' && -1 !== existingFiles.indexOf(file.name)) {
-                                dropZone.options.maxFiles = dropZone.options.maxFiles + 1;
+                this.on('removedfile', function (file) {
+                    if ('undefined' === typeof file.status || 'success' === file.status) {
+                        var params = {
+                            action: 'dropzone-delete-file',
+                            item: itemName,
+                            field: fieldName,
+                            path: $('input[type="hidden"]:first', file.previewElement).val(),
+                            file: $('[data-dz-name]', file.previewElement).text()
+                        };
 
-                                params.action = 'delete-file';
-                                params.itemid = itemId;
-                            }
+                        if (typeof existingFiles !== 'undefined' && -1 !== existingFiles.indexOf(file.name)) {
+                            dropZone.options.maxFiles = dropZone.options.maxFiles + 1;
 
-                            intelli.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response) {
-                                intelli.notifFloatBox({
-                                    msg: response.message,
-                                    type: response.error ? 'error' : 'success',
-                                    autohide: true
-                                });
+                            params.action = 'delete-file';
+                            params.itemid = itemId;
+                        }
+
+                        intelli.post(intelli.config.admin_url + '/actions/read.json', params).done(function(response) {
+                            intelli.notifFloatBox({
+                                msg: response.message,
+                                type: response.error ? 'error' : 'success',
+                                autohide: true
                             });
-                        }
-                    });
+                        });
+                    }
+                });
 
-                    this.on('queuecomplete', function() {
-                        if (error) {
-                            message = errorMessage;
-                            error = false;
-                            errorMessage = '';
-                            intelli.notifFloatBox({msg: _t(message), type: 'error', autohide: true});
-                        }
-                        $submit.attr('disabled', false).html(_t(submitButtonText));
-                    });
-                }
-            });
+                this.on('queuecomplete', function() {
+                    if (error) {
+                        var message = errorMessage;
+                        error = false;
+                        errorMessage = '';
+                        intelli.notifFloatBox({msg: _t(message), type: 'error', autohide: true});
+                    }
+                    $submit.attr('disabled', false).html(_t(submitButtonText));
+                });
+            }
+        });
 
         if ('object' === typeof values && values) {
             var imageTypes = {
