@@ -2375,7 +2375,7 @@ class iaModule extends abstractCore
                 case 'field':
                     list($fieldName, $itemName) = explode('-', $entry['name']);
                     if (empty($fieldName) || empty($itemName)) { // incorrect identity specified by template
-                        continue;
+                        continue 2;
                     }
                     $stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", ['name' => $fieldName, 'item' => $itemName]);
                     break;
