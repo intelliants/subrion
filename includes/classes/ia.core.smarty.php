@@ -744,13 +744,13 @@ class iaSmarty extends Smarty
                     if ($code = trim(substr($resource, 5))) {
                         $output .= PHP_EOL . "\t" . '<script>' . PHP_EOL . $code . PHP_EOL . '</script>';
                     }
-                    continue;
+                    break;
                 case (strpos($resource, 'text:') === 0):
                     if (iaUsers::hasIdentity() && iaCore::ACCESS_ADMIN == iaCore::instance()->getAccessType()) {
                         $text = trim(substr($resource, 5));
                         $output .= "<script>if(document.getElementById('js-ajax-loader-status'))document.getElementById('js-ajax-loader-status').innerHTML = '" . $text . "';</script>" . PHP_EOL;
                     }
-                    continue;
+                    break;
                 default:
                     $output .= PHP_EOL . "\t" . sprintf(self::LINK_SCRIPT_PATTERN, $resource);
             }
