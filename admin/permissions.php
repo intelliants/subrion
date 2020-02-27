@@ -163,7 +163,13 @@ class iaBackendController extends iaAbstractControllerBackend
         $actions = $iaAcl->getActions();
         $groups = [];
 
-        foreach ([iaAcl::OBJECT_PAGE, iaAcl::OBJECT_ADMIN_PAGE] as $i => $pageType) {
+        $pageTypes = [iaAcl::OBJECT_PAGE];
+
+        if (iaUsers::MEMBERSHIP_GUEST != $settings['group']) {
+            $pageTypes[] = iaAcl::OBJECT_ADMIN_PAGE;
+        }
+
+        foreach ($pageTypes as $i => $pageType) {
             $fieldsList = ['name', 'action', 'group', 'parent'];
             $titles = $iaPage->getTitles(iaAcl::OBJECT_PAGE == $pageType ? iaCore::FRONT : iaCore::ADMIN);
             $pages = $this->_iaDb->all($fieldsList,
