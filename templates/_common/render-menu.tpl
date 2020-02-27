@@ -7,9 +7,9 @@
         <ul class="nav navbar-nav navbar-right nav-account">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                    {ia_image file=$member.avatar title=$member.fullname|default:$member.username class='img-circle' gravatar=true email=$member.email}
+                    {ia_image file=$member.avatar title=$member.fullname|escape|default:$member.username|escape class='img-circle' gravatar=true email=$member.email}
 
-                    {$member.fullname|default:$member.username}
+                    {$member.fullname|escape|default:$member.username|escape}
                 </a>
                 <span class="navbar-nav__drop dropdown-toggle" data-toggle="dropdown"><span class="fa fa-angle-down"></span></span>
                 {ia_hooker name='smartyFrontInsideAccountBox'}
@@ -24,7 +24,7 @@
     {/if}
 {elseif in_array($position, ['left', 'right', 'user1', 'user2', 'top'])}
     {if !empty($menu.contents[0]) && 'account' != $menu.name}
-        {ia_block header=$menu.header title=$menu.title movable=true id=$menu.id name=$menu.name collapsible=$menu.collapsible classname=$menu.classname}
+        {ia_block header=$menu.header title=$menu.title|escape movable=true id=$menu.id name=$menu.name collapsible=$menu.collapsible classname=$menu.classname}
             {ia_menu menus=$menu.contents class="list-group {$menu.classname}"}
         {/ia_block}
     {/if}
@@ -33,7 +33,7 @@
 {else}
     <!--__ms_{$menu.id}-->
     {if $menu.header || isset($manageMode)}
-        <div class="nav-menu-header {$menu.classname}">{$menu.title}</div>
+        <div class="nav-menu-header {$menu.classname}">{$menu.title|escape}</div>
     {else}
         <div class="menu {$menu.classname}">
     {/if}

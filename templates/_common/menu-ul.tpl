@@ -7,7 +7,7 @@
                 {if 'mainmenu' == $position && $menu@iteration > $core.config.max_top_menu_items|default:5 && $menu.level < 1}{capture append=dropdown name=$menu.page_name}{/if}
 
                 {if in_array($position, ['left', 'right', 'user1', 'user2', 'top'])}
-                    <a class="list-group-item{if $menu.active} active{/if}" href="{if $menu.url}{$menu.url}{else}{$smarty.const.IA_SELF}#{/if}"{if $menu.nofollow} rel="nofollow"{/if}{if $menu.new_window} target="_blank"{/if}>{$menu.text}</a>
+                    <a class="list-group-item{if $menu.active} active{/if}" href="{if $menu.url}{$menu.url}{else}{$smarty.const.IA_SELF}#{/if}"{if $menu.nofollow} rel="nofollow"{/if}{if $menu.new_window} target="_blank"{/if}>{$menu.text|escape}</a>
                 {else}
                     <li class="m_{$menu.page_name}
                         {if isset($data[$menu.el_id]) || isset($menu_children)} dropdown{/if}
@@ -20,7 +20,7 @@
                                 {if $menu.nofollow} rel="nofollow"{/if}
                                 {if $menu.new_window} target="_blank"{/if}
                         >
-                            {$menu.text}
+                            {$menu.text|escape}
                         </a>
                         {if (isset($data[$menu.el_id]) || isset($menu_children)) && $menu.level == 0  && $position != 'left'}<span class="navbar-nav__drop dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="fa fa-angle-down"></span></span>{/if}
                         {if isset($data[$menu.el_id])}
