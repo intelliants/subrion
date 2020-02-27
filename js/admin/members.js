@@ -13,8 +13,8 @@ Ext.onReady(function () {
             columns: [
                 'selection',
                 {name: 'id', title: _t('id'), width: 80},
-                {name: 'username', title: _t('username'), width: 150, editor: 'text'},
-                {name: 'fullname', title: _t('fullname'), width: 1, editor: 'text'},
+                {name: 'username', title: _t('username'), width: 150, editor: 'text', escape: true},
+                {name: 'fullname', title: _t('fullname'), width: 1, editor: 'text', escape: true},
                 {
                     name: 'usergroup',
                     title: _t('usergroup'),
@@ -32,7 +32,7 @@ Ext.onReady(function () {
                         }
                     }
                 },
-                {name: 'email', title: _t('email'), width: 180, editor: 'text'},
+                {name: 'email', title: _t('email'), width: 180, editor: 'text', escape: true},
                 'status',
                 {name: 'date_reg', title: _t('date'), width: 120},
                 {name: 'date_logged', title: _t('last_login_date'), hidden: true, width: 100},

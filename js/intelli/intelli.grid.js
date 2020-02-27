@@ -568,7 +568,7 @@ function IntelliGrid(params, autoInit) {
                 hideable: ('boolean' === typeof columnData.hideable) ? columnData.hideable : true,
                 id: columnData.id || null,
                 menuDisabled: ('boolean' === typeof columnData.menu) ? !columnData.menu : false,
-                renderer: ('function' === typeof columnData.renderer) ? columnData.renderer : null,
+                renderer: ('function' === typeof columnData.renderer) ? columnData.renderer : (columnData.escape ? 'stripTags' : null),
                 sortable: ('boolean' === typeof columnData.sortable) ? columnData.sortable : true,
                 text: columnData.title || '',
                 xtype: columnData.xtype || null

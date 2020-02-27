@@ -320,6 +320,51 @@ class iaBackendController extends iaAbstractControllerBackend
             }
         }
 
+        if (isset($params['username'])) {
+            if (empty($params['username'])) {
+                $this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('field_member_username')]), false);
+            }
+
+            if (!iaValidate::isUsername($params['username'])) {
+                $this->addMessage('username_incorrect');
+            }
+
+            if ($this->_iaDb->exists('`username` = :username AND `id` != :id', [
+                'username' => $params['username'], 'id' => $params['id'][0]])) {
+                $this->addMessage('username_already_taken');
+            }
+        }
+
+        if (isset($params['email'])) {
+            if (empty($params['email'])) {
+                $this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('email')]), false);
+            }
+
+            if (!iaValidate::isEmail($params['email'])) {
+                $this->addMessage('error_email_incorrect');
+            }
+
+            if ($this->_iaDb->exists('`email` = :email AND `id` != :id', [
+                'email' => $params['email'], 'id' => $params['id'][0]])) {
+                $this->addMessage('error_duplicate_email');
+            }
+        }
+
+        if (isset($params['fullname'])) {
+            $params['fullname'] = iaSanitize::tags($params['fullname']);
+
+            if (empty($params['fullname'])) {
+                $this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('field_member_fullname')]), false);
+            }
+        }
+
+        if ($this->getMessages()) {
+            return [
+                'result' => false,
+                'message' => $this->getMessages()[0],
+            ];
+        }
+
         return parent::_gridUpdate($params);
     }
 
