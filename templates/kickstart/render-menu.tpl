@@ -7,8 +7,8 @@
         <ul class="nav navbar-nav navbar-right nav-account">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                    {ia_image file=$member.avatar type='thumbnail' title=$member.fullname|default:$member.username class='img-circle' gravatar=true email=$member.email}
-                    {$member.fullname|default:$member.username}
+                    {ia_image file=$member.avatar type='thumbnail' title=$member.fullname|escape|default:$member.username|escape class='img-circle' gravatar=true email=$member.email}
+                    {$member.fullname|escape|default:$member.username|escape}
                     <span class="fa fa-angle-down"></span>
                 </a>
                 {ia_hooker name='smartyFrontInsideAccountBox'}
