@@ -722,6 +722,15 @@ SQL;
                     }
             }
 
+            if ($field['multilingual']) {
+                $code = $this->iaView->language;
+
+                if (iaCore::ACCESS_FRONT == $this->iaCore->getAccessType() && $this->iaCore->get('show_multilingual_inputs')) {
+                    $code = iaLanguage::getMasterLanguage()->code;
+                }
+                $fieldName .= '_' . $code;
+            }
+
             if (isset($item[$fieldName])) {
                 // process hook if field value exists
                 $this->iaCore->startHook('phpParsePostAfterCheckField', [
