@@ -101,7 +101,6 @@ class iaUsers extends abstractCore
      */
     public function authorize()
     {
-
         $authorized = 0;
 
         if (isset($_POST['register'])) {
