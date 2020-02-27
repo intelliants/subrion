@@ -129,6 +129,8 @@ final class iaCore
 
         $this->startHook('init');
 
+        $this->_forgeryCheck();
+
         // authorize user
         $iaUsers = $this->factory('users');
         $iaUsers->authorize();
@@ -139,8 +141,6 @@ final class iaCore
 
         $this->iaView->definePage();
         $this->iaView->loadSmarty();
-
-        $this->_forgeryCheck();
 
         $this->startHook('bootstrap');
 
@@ -556,7 +556,6 @@ final class iaCore
             return;
         }
 
-
         $exceptions = [
             self::ACCESS_FRONT => ['api'],
             self::ACCESS_ADMIN => ['adminer']
@@ -566,7 +565,6 @@ final class iaCore
             || ('ipn' == $this->iaView->url[0] && count($this->iaView->url) > 1)) {
             return;
         }
-
 
         $tokenValid = isset($tokenValue) && $tokenValue === $this->getSecurityToken();
         $referrerValid = true;
