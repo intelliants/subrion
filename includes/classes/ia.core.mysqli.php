@@ -825,7 +825,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
                         $value = 'NULL';
                         break;
                     default: // arrays, objects & resources are now actually ignored
-                        continue;
+                        continue 2;
                 }
 
                 $array[] = sprintf($pattern, $columnName, $value);
