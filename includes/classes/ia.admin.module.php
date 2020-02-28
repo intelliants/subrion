@@ -585,8 +585,7 @@ class iaModule extends abstractCore
                 if ($id = $iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`name` = :name AND `item` = :item', $entry)) {
                     unset($entry['name'], $entry['item']);
 
-                    $iaDb->update($entry, iaDb::convertIds($id));
-                    $result = (0 == $iaDb->getErrorNumber());
+                    $result = $iaDb->update($entry, iaDb::convertIds($id));
                 } else {
                     $result = $iaDb->insert($entry);
                 }
@@ -2393,9 +2392,7 @@ class iaModule extends abstractCore
 
             $entryData = $this->iaDb->row('`id`, `' . implode('`,`', array_keys($entry)) . '`', $stmt, $tableName);
 
-            $this->iaDb->update($entry, $stmt, null, $tableName);
-
-            if (0 === $this->iaDb->getErrorNumber()) {
+            if ($this->iaDb->update($entry, $stmt, null, $tableName)) {
                 if ('field' != $type && isset($entry['sticky'])) {
                     $this->iaCore->factory('block')->setVisibility($entryData['id'], $entry['sticky'], $pages);
                 }

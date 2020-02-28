@@ -62,9 +62,7 @@ class iaApiEntityField extends iaApiEntityAbstract
             throw new Exception(iaLanguage::get(iaView::ERROR_FORBIDDEN), iaApiResponse::FORBIDDEN);
         }
 
-        $this->iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
-
-        return (0 == $this->iaDb->getErrorNumber());
+        return $this->iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
     }
 
     public function apiDelete($id, array $params)

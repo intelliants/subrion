@@ -406,7 +406,7 @@ class iaBackendController extends iaAbstractControllerBackend
     {
         $status = $deactivate ? iaCore::STATUS_INACTIVE : iaCore::STATUS_ACTIVE;
 
-        return (bool)$this->_iaDb->update(['status' => $status], iaDb::convertIds($moduleName, 'name'));
+        return $this->_iaDb->update(['status' => $status], iaDb::convertIds($moduleName, 'name'));
     }
 
     private function _reset($domain)

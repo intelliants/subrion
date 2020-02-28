@@ -618,9 +618,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
 
         $table = $tableName ? $this->prefix . $tableName : $this->_table;
 
-        $this->query(sprintf('UPDATE `%s` SET %s %s', $table, $stmtSet, $stmtWhere));
-
-        return $this->getAffected();
+        return $this->query(sprintf('UPDATE `%s` SET %s %s', $table, $stmtSet, $stmtWhere));
     }
 
     public function delete($condition, $tableName = null, $values = [])

@@ -78,8 +78,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _gridUpdate($params)
     {
-        $this->_iaDb->update($params, iaDb::convertIds($params['name'], 'name'));
+        $result = $this->_iaDb->update($params, iaDb::convertIds($params['name'], 'name'));
 
-        return ['result' => (0 == $this->_iaDb->getErrorNumber())];
+        return ['result' => $result];
     }
 }

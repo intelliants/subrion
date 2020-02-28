@@ -560,7 +560,7 @@ SQL;
         $stmt = '`email` = :email AND `sec_key` = :key';
         $this->iaDb->bind($stmt, ['email' => $email, 'key' => $key]);
 
-        $result = (bool)$this->iaDb->update(['sec_key' => '', 'status' => $status], $stmt,
+        $result = $this->iaDb->update(['sec_key' => '', 'status' => $status], $stmt,
             ['date_update' => iaDb::FUNCTION_NOW], self::getTable());
         if ($result) {
             $member = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($email, 'email'), self::getTable());

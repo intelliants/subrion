@@ -150,7 +150,7 @@ SQL;
             'country' => $address['country']
         ];
 
-        return (bool)$this->iaDb->update($values, iaDb::convertIds($transactionId, 'transaction_id'), null, self::getTable());
+        return $this->iaDb->update($values, iaDb::convertIds($transactionId, 'transaction_id'), null, self::getTable());
     }
 
     public function deleteCorrespondingInvoice($transactionId)

@@ -46,9 +46,8 @@ class iaBackendController extends iaAbstractControllerBackend
 
         if (isset($_GET['reset']) || isset($_GET['save'])) {
             $data = isset($_GET['list']) ? $_GET['list'] : '';
-            if ($iaDb->update(['admin_columns' => $data], iaDb::convertIds(iaUsers::getIdentity()->id), null,
-                iaUsers::getTable())
-            ) {
+            if ($iaDb->update(['admin_columns' => $data],
+                iaDb::convertIds(iaUsers::getIdentity()->id), null, iaUsers::getTable())) {
                 iaUsers::reloadIdentity();
             }
 

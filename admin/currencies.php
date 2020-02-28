@@ -120,9 +120,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _entryUpdate(array $entryData, $entryId)
     {
-        $this->_iaDb->update($entryData, iaDb::convertIds($entryId, 'code'));
-
-        return (0 === $this->_iaDb->getErrorNumber());
+        return $this->_iaDb->update($entryData, iaDb::convertIds($entryId, 'code'));
     }
 
     protected function _setDefaultValues(array &$entry)

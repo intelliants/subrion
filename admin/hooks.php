@@ -45,9 +45,9 @@ class iaBackendController extends iaAbstractControllerBackend
                 break;
 
             case 'set':
-                $this->_iaDb->update(['code' => $_POST['code']], iaDb::convertIds($_POST['id']));
+                $result = $this->_iaDb->update(['code' => $_POST['code']], iaDb::convertIds($_POST['id']));
 
-                $output['result'] = (0 == $this->_iaDb->getErrorNumber());
+                $output['result'] = $result;
                 $output['message'] = iaLanguage::get($output['result'] ? 'saved' : 'db_error');
                 break;
 

@@ -233,7 +233,7 @@ class iaBackendController extends iaAbstractControllerBackend
         if (isset($stmt)) {
             $output['result'] = isset($insertion)
                 ? $insertion
-                : (bool)$this->_iaDb->update($params, $stmt);
+                : $this->_iaDb->update($params, $stmt);
             $output['message'] = iaLanguage::get($output['result'] ? $this->_phraseEditSuccess : $this->_phraseSaveError);
 
             empty($output['result']) || $this->getHelper()->createJsCache(true);
@@ -356,9 +356,7 @@ class iaBackendController extends iaAbstractControllerBackend
 
     protected function _entryUpdate(array $entryData, $entryId)
     {
-        $this->_iaDb->update($entryData, iaDb::convertIds($entryId), null, iaLanguage::getLanguagesTable());
-
-        return (0 === $this->_iaDb->getErrorNumber());
+        return $this->_iaDb->update($entryData, iaDb::convertIds($entryId), null, iaLanguage::getLanguagesTable());
     }
 
     protected function _entryDelete($entryId)
