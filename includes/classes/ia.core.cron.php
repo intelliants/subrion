@@ -69,7 +69,10 @@ class iaCron extends abstractCore
         if (is_file(IA_HOME . $data[self::C_CMD])) {
             $nextLaunchTs = self::_getLastScheduledRunTime($data);
 
-            if ($this->iaDb->update(['date_next_launch' => $nextLaunchTs], iaDb::convertIds($job['id']), ['date_prev_launch' => 'UNIX_TIMESTAMP()'])) {
+            $result = $this->iaDb->update(['date_next_launch' => $nextLaunchTs],
+                iaDb::convertIds($job['id']), ['date_prev_launch' => 'UNIX_TIMESTAMP()']);
+
+            if ($result) {
                 $this->_launchFile($data[self::C_CMD]);
             }
         } else {

@@ -159,7 +159,7 @@ abstract class abstractModuleFront extends abstractCore
         }
 
         $currentData = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
-        $result = (bool)$this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
+        $result = $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
 
         if ($result) {
             $this->updateCounters($id, $itemData, iaCore::ACTION_EDIT, $currentData);
@@ -224,7 +224,7 @@ abstract class abstractModuleFront extends abstractCore
         }
 
         $this->iaDb->insert(['item' => $itemName, 'item_id' => $itemId, 'ip' => $ipAddress, 'date' => $date], null, $viewsTable);
-        $result = $this->iaDb->update(null, iaDb::convertIds($itemId), [$columnName => '`' . $columnName . '` + 1'], self::getTable());
+        $result = $this->iaDb->update(null, iaDb::convertIds($itemId), [$columnName => '`' . $columnName . '` + 1'], self::getTable()); // t
 
         return (bool)$result;
     }

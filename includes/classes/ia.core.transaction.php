@@ -102,7 +102,7 @@ class iaTransaction extends abstractCore
             $transactionData['date_updated'] = date(iaDb::DATETIME_FORMAT);
             !(self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status'])
                     || $transactionData['date_paid'] = date(iaDb::DATETIME_FORMAT);
-            $result = (bool)$this->iaDb->update($transactionData, iaDb::convertIds($id), null, self::getTable());
+            $result = $this->iaDb->update($transactionData, iaDb::convertIds($id), null, self::getTable());
 
             if ($result && isset($transactionData['status'])) {
                 $operation = empty($transactionData['item']) ? $transaction['item'] : $transactionData['item'];
@@ -112,9 +112,11 @@ class iaTransaction extends abstractCore
                     $amount = empty($transactionData['amount']) ? $transaction['amount'] : $transactionData['amount'];
 
                     if (self::PASSED == $transactionData['status'] && self::PASSED != $transaction['status']) {
-                        $result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), ['funds' => '`funds` + ' . $amount], iaUsers::getTable());
+                        $result = $this->iaDb->update(null, iaDb::convertIds($itemId), [
+                            'funds' => '`funds` + ' . $amount], iaUsers::getTable());
                     } elseif (self::PASSED != $transactionData['status'] && self::PASSED == $transaction['status']) {
-                        $result = (bool)$this->iaDb->update(null, iaDb::convertIds($itemId), ['funds' => '`funds` - ' . $amount], iaUsers::getTable());
+                        $result = $this->iaDb->update(null, iaDb::convertIds($itemId), [
+                            'funds' => '`funds` - ' . $amount], iaUsers::getTable());
                     }
                 }
 
@@ -142,7 +144,8 @@ class iaTransaction extends abstractCore
     {
         $result = false;
         if ($transactionId) {
-            $result = (bool)$this->iaDb->delete('`id` = :id AND `status` != :status', self::getTable(), ['id' => (int)$transactionId, 'status' => self::PASSED]);
+            $result = (bool)$this->iaDb->delete('`id` = :id AND `status` != :status', self::getTable(),
+                ['id' => (int)$transactionId, 'status' => self::PASSED]);
             empty($result) || $this->iaCore->factory('invoice')->deleteCorrespondingInvoice($transactionId);
         }
 

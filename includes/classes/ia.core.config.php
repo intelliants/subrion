@@ -108,9 +108,7 @@ class iaConfig extends abstractCore
     {
         $maxOrder = $this->iaDb->getMaxOrder(self::getConfigGroupsTable());
 
-        $this->iaDb->insert($data, ['order' => ++$maxOrder], self::getConfigGroupsTable());
-
-        return 0 === $this->iaDb->getErrorNumber();
+        return (bool)$this->iaDb->insert($data, ['order' => ++$maxOrder], self::getConfigGroupsTable());
     }
 
     public function deleteGroup($key, $value)
@@ -227,7 +225,7 @@ SQL;
                 : implode(',', $value);
         }
 
-        return (bool)$this->iaDb->update(['value' => $value], iaDb::convertIds($key, self::KEY_COLUMN), null, self::getTable());
+        return $this->iaDb->update(['value' => $value], iaDb::convertIds($key, self::KEY_COLUMN), null, self::getTable());
     }
 
     public function saveCustom($data, $key, $value, $type, $typeId)

@@ -411,7 +411,15 @@ class iaAcl extends abstractUtil
         }
 
         return $row
-            ? (bool)$iaDb->update(['access' => (int)$access], $stmt, null, $this->_dbTablePrivileges)
-            : (bool)$iaDb->insert(['object' => $object, 'object_id' => $objectId, 'type' => $type, 'type_id' => (int)$typeId, 'action' => $action, 'access' => (int)$access, 'module' => $extras], null, $this->_dbTablePrivileges);
+            ? $iaDb->update(['access' => (int)$access], $stmt, null, $this->_dbTablePrivileges)
+            : (bool)$iaDb->insert([
+                'object' => $object,
+                'object_id' => $objectId,
+                'type' => $type,
+                'type_id' => (int)$typeId,
+                'action' => $action,
+                'access' => (int)$access,
+                'module' => $extras
+            ], null, $this->_dbTablePrivileges);
     }
 }

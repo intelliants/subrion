@@ -324,7 +324,7 @@ interface iaInterfaceDbAdapter
     public function insert(array $values, $rawValues = null, $tableName = null);
 
     /**
-     * Updates a record in a table and returns a number of affected rows
+     * Updates a record in a table and returns a boolean result
      *
      * Ex:  the code below updates a record in 'table_name'
      * 		$iaCore->iaDb->update(array('id' => '50', 'title' => 'My Row Title', 'text' => 'My Row Text'), null, array('date' => 'NOW()'), 'table_name');
@@ -337,7 +337,7 @@ interface iaInterfaceDbAdapter
      * @param array|null $rawValues key=>value array for the record without sanitizing, commonly used for date insert
      * @param string|null $tableName table name to perform update, null uses current set table
      *
-     * @return bool|int
+     * @return bool
      */
     public function update($values, $condition = null, $rawValues = null, $tableName = null);
 

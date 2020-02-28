@@ -128,8 +128,8 @@ class iaBlock extends abstractCore
             unset($itemData['name']);
         }
 
-        $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
-        $result = (0 == $this->iaDb->getErrorNumber());
+        $result = $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
+
         if ($result) {
             $this->_saveBundle($id, $itemData, $bundle);
 

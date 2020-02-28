@@ -82,9 +82,7 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
                     $item['usergroup_id'] = $_POST['usergroup_id'];
                 }
 
-                $iaDb->update($item, iaDb::convertIds(iaUsers::getIdentity()->id));
-
-                if (0 == $iaDb->getErrorNumber()) {
+                if ($iaDb->update($item, iaDb::convertIds(iaUsers::getIdentity()->id))) {
                     $iaCore->startHook('phpUserProfileUpdate', ['userInfo' => iaUsers::getIdentity(true), 'data' => $item]);
                     iaUsers::reloadIdentity();
 

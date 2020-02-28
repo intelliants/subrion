@@ -547,9 +547,7 @@ abstract class iaAbstractControllerBackend
 
     protected function _entryUpdate(array $entryData, $entryId)
     {
-        $this->_iaDb->update($entryData, iaDb::convertIds($entryId));
-
-        return (0 === $this->_iaDb->getErrorNumber());
+        return $this->_iaDb->update($entryData, iaDb::convertIds($entryId));
     }
 
     protected function _reopen($option, $action)

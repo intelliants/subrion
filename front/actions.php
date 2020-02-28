@@ -77,9 +77,8 @@ if (iaView::REQUEST_JSON == $iaView->getRequestType() && isset($_POST['action'])
                         }
 
                         $newValue = is_array($value) ? serialize($pictures) : implode(',', $pictures);
-                        $iaDb->update([$field => $newValue], iaDb::convertIds($itemId), null, $tableName);
 
-                        if (0 == $iaDb->getErrorNumber()) {
+                        if ($iaDb->update([$field => $newValue], iaDb::convertIds($itemId), null, $tableName)) {
                             $output['error'] = false;
                             unset($output['message']);
                         } else {

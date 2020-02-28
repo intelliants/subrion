@@ -91,9 +91,7 @@ class itemModelAdmin extends abstractCore
             return false;
         }
 
-        $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
-
-        $result = (0 === $this->iaDb->getErrorNumber());
+        $result = $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
 
         if ($result) {
             $this->_writeLog(iaCore::ACTION_EDIT, $itemData, $id);

@@ -120,9 +120,7 @@ abstract class iaApiEntityAbstract extends abstractCore
 
         $this->_apiProcessFields($data);
 
-        $this->iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
-
-        return (0 == $this->iaDb->getErrorNumber());
+        return $this->iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
     }
 
     public function apiInsert($data)
@@ -216,9 +214,9 @@ abstract class iaApiEntityAbstract extends abstractCore
                 $this->iaCore->factory('field')->deleteFilesByFieldName($fieldName, $this->getName(), $value);
             }
 
-            $this->iaDb->update([$fieldName => ''], iaDb::convertIds($entryId), null, self::getTable());
+            $result = $this->iaDb->update([$fieldName => ''], iaDb::convertIds($entryId), null, self::getTable());
 
-            if (0 !== $this->iaDb->getErrorNumber()) {
+            if (!$result) {
                 throw new Exception('DB error', iaApiResponse::INTERNAL_ERROR);
             }
         }
@@ -265,9 +263,9 @@ abstract class iaApiEntityAbstract extends abstractCore
                 $value = $content;
         }
 
-        $this->iaDb->update([$fieldName => $value], iaDb::convertIds($entryId), null, self::getTable());
+        $result = $this->iaDb->update([$fieldName => $value], iaDb::convertIds($entryId), null, self::getTable());
 
-        if (0 !== $this->iaDb->getErrorNumber()) {
+        if (!$result) {
             throw new Exception('DB error', iaApiResponse::INTERNAL_ERROR);
         }
 

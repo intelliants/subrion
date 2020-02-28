@@ -106,9 +106,7 @@ class iaApiEntityMember extends iaApiEntityAbstract
             }
         }
 
-        $this->iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
-
-        $result = (0 === $this->iaDb->getErrorNumber());
+        $result = $this->iaDb->update($data, iaDb::convertIds($id), null, $this->getTable());
 
         if ($id == iaUsers::getIdentity()->id && $result) {
             iaUsers::reloadIdentity();

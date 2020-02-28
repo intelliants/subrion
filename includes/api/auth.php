@@ -166,9 +166,7 @@ class iaApiAuth extends abstractCore
             'session' => session_id()
         ];
 
-        $this->iaDb->insert($entry, null, self::getTable());
-
-        if ($this->iaDb->getErrorNumber() > 0) {
+        if (!$this->iaDb->insert($entry, null, self::getTable())) {
             throw new Exception('Unable to issue a token', iaApiResponse::INTERNAL_ERROR);
         }
 
