@@ -239,8 +239,7 @@ SQL;
         }
 
         $currentData = $this->iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id), self::getTable());
-        $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
-        $result = $this->iaDb->getErrorNumber() == 0;
+        $result = $this->iaDb->update($itemData, iaDb::convertIds($id), null, self::getTable());
 
         if ($result) {
             $this->updateCounters($id, $itemData, iaCore::ACTION_EDIT, $currentData);
