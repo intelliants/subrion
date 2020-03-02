@@ -2,7 +2,7 @@
 {if $header}
     <div id="block_{$name}"
          class="box {$classname}{if isset($collapsible) && $collapsible} collapsible{if isset($collapsed) && $collapsed} collapsed{/if}{/if}"
-        {if isset($manageMode)} vm-hidden="{$hidden}" data-type="{$type}"{/if}>
+        {if isset($manageMode)} vm-hidden="{$hidden}" data-type="{$type}" data-block_id="{$id}"{/if}>
         {if isset($position) && 'landing' == $position}
             <div class="container">
         {/if}
@@ -18,7 +18,7 @@
         <div id="content_{$name}" class="box__content"{if isset($display) && !$display} style="display: none;"{/if}>
 {else}
     <div id="block_{$name}" class="box box--no-header {$classname}"
-        {if isset($manageMode)} vm-hidden="{$hidden}" data-type="{$type}"{/if}>
+        {if isset($manageMode)} vm-hidden="{$hidden}" data-type="{$type}" data-block_id="{$id}"{/if}>
         {if isset($position) && 'landing' == $position}
             <div class="container">
         {/if}
