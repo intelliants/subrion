@@ -105,9 +105,41 @@ $(function () {
                 var editor = CKEDITOR['instances']['content_' + blockName]
                 var data = isHtml ? editor.getData() : editor.element.getText()
 
-                saveBlockInline(blockId, data);
+                saveInlineEdit('block', blockId, data);
 
                 $block.removeAttr('contenteditable')
+                editor.destroy()
+                break;
+        }
+    });
+
+    $('.js-page-inline-edit').on('click', function (e) {
+        e.preventDefault();
+
+        var $this = $(this),
+            pageName = $this.data('name'),
+            pageId = 'page-content__' + pageName,
+            $page = $('#' + pageId)
+
+        switch ($this.data('action')) {
+            case 'edit':
+                $this.data('action', 'save')
+                $this.find('.v-icon').removeClass('v-icon--pencil').addClass('v-icon--check-circle-o')
+                $page.attr('contenteditable', true)
+
+                var config = { startupFocus: true };
+
+                CKEDITOR.inline(pageId, config)
+                break;
+
+            case 'save':
+                $this.data('action', 'edit')
+                $this.find('.v-icon').removeClass('v-icon--check-circle-o').addClass('v-icon--pencil')
+                var editor = CKEDITOR['instances'][pageId]
+
+                saveInlineEdit('page', pageName, editor.getData());
+
+                $page.removeAttr('contenteditable')
                 editor.destroy()
                 break;
         }
@@ -133,9 +165,10 @@ $(function () {
     });
 });
 
-function saveBlockInline(id, data) {
+function saveInlineEdit(type, id, data) {
     intelli.post(intelli.visualModeUrl, {
         action: 'save-inline',
+        type: type,
         id: id,
         data: data
     }, function (res) {
