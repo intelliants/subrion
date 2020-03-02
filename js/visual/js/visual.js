@@ -53,7 +53,7 @@ $(function () {
         var $this = $(this),
             id = $this.attr('id').substring(6),
             moveBtn = ($this.parent('.groupWrapper').hasClass('groupWrapper--movable')) ? '<div class="box-visual__actions__item box-visual__actions__item--move"><span class="v-icon v-icon--arrows"></span></div>' : '',
-            editBtn = (-1 !== ['html', 'plain'].indexOf($this.data('type'))) ? '<a class="js-block-inline-edit box-visual__actions__item box-visual__actions__item--edit" data-type="blocks" data-name="' + id + '" href="#" data-action="edit"><span class="v-icon v-icon--pencil"></span></a>' : '',
+            editBtn = (-1 !== ['html', 'plain'].indexOf($this.data('type'))) ? '<a class="js-block-inline-edit box-visual__actions__item box-visual__actions__item--edit" data-type="blocks" data-name="' + id + '" data-id="' + $this.data('block_id') + '" href="#" data-action="edit"><span class="v-icon v-icon--pencil"></span></a>' : '',
             hiddenClass = (1 == $this.attr('vm-hidden')) ? ' box-visual--hidden' : '';
 
         $this.addClass('box-visual ' + hiddenClass).append(
@@ -80,7 +80,8 @@ $(function () {
 
         var $this = $(this),
             $block = $this.closest('.box-visual').find('.box__content'),
-            blockName = $this.data('name')
+            blockName = $this.data('name'),
+            blockId = $this.data('id');
 
         switch ($this.data('action')) {
             case 'edit':
@@ -95,7 +96,7 @@ $(function () {
                 $this.find('.v-icon').removeClass('v-icon--check-circle-o').addClass('v-icon--pencil')
                 var editor = CKEDITOR['instances']['content_' + blockName]
 
-                saveBlockInline(blockName, editor.getData());
+                saveBlockInline(blockId, editor.getData());
 
                 $block.removeAttr('contenteditable')
                 editor.destroy()
@@ -123,10 +124,10 @@ $(function () {
     });
 });
 
-function saveBlockInline(blockName, data) {
+function saveBlockInline(id, data) {
     intelli.post(intelli.visualModeUrl, {
         action: 'save-inline',
-        name: blockName,
+        id: id,
         data: data
     }, function (res) {
         intelli.notifFloatBox({msg: res.message, type: res.result ? 'success' : 'error', autohide: true});

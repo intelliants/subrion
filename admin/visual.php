@@ -41,17 +41,31 @@ class iaBackendController extends iaAbstractControllerBackend
         $this->defaultOutput = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
     }
 
-    private function handleInlineBlockEdit($name, $data)
+    private function handleInlineBlockEdit($id, $contents)
     {
-        if (!iaValidate::isAlphaNumericValid($name)) {
+        $this->_iaCore->factory('util')
+            ->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+        if (empty(intval($id))) {
             return $this->defaultOutput;
         }
 
-//        $this->_iaDb->update();
+        if (!utf8_is_valid($contents)) {
+            $contents = utf8_bad_replace($contents);
+        }
+
+        $contents = iaUtil::safeHTML($contents);
+
+        $where = iaDb::printf("`key` = ':key' AND `code` = ':code'", [
+            'key' => 'block_content_' . $id,
+            'code' => $this->_iaCore->iaView->language,
+        ]);
+
+        $result = $this->_iaDb->update(['value' => $contents], $where, null, iaLanguage::getTable());
 
         return [
-            'result' => true,
-            'message' => iaLanguage::get('saved'),
+            'result' => $result,
+            'message' => iaLanguage::get($result ? 'saved' : 'db_error'),
         ];
     }
 
@@ -62,7 +76,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $output = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 
         if (isset($_POST['action']) && 'save-inline' == $_POST['action']) {
-            return $this->handleInlineBlockEdit($_POST['name'], $_POST['data']);
+            return $this->handleInlineBlockEdit($_POST['id'], $_POST['data']);
         }
 
         if (isset($_POST['action']) && 'save' == $_POST['action']) {
