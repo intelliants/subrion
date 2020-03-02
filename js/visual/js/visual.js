@@ -28,7 +28,7 @@ $(function () {
                 $(ui.helper).addClass('dragging');
             },
             stop: function (e, ui) {
-                $(ui.item).css({width: ''}).removeClass('dragging');
+                $(ui.item).css({ width: '' }).removeClass('dragging');
                 $('.groupWrapper').sortable('enable');
 
                 var blocksPos = [];
@@ -53,15 +53,17 @@ $(function () {
         var $this = $(this),
             id = $this.attr('id').substring(6),
             moveBtn = ($this.parent('.groupWrapper').hasClass('groupWrapper--movable')) ? '<div class="box-visual__actions__item box-visual__actions__item--move"><span class="v-icon v-icon--arrows"></span></div>' : '',
+            editBtn = (-1 !== ['html', 'plain'].indexOf($this.data('type'))) ? '<a class="js-block-inline-edit box-visual__actions__item box-visual__actions__item--edit" data-type="blocks" data-name="' + id + '" href="#" data-action="edit"><span class="v-icon v-icon--pencil"></span></a>' : '',
             hiddenClass = (1 == $this.attr('vm-hidden')) ? ' box-visual--hidden' : '';
 
         $this.addClass('box-visual ' + hiddenClass).append(
             '<div class="box-visual__actions">' +
-            '<a class="js-config-open box-visual__actions__item box-visual__actions__item--settings" data-type="blocks" data-name="' + id + '" href="#"><span class="v-icon v-icon--settings"></span></a>' + moveBtn +
+            '<a class="js-config-open box-visual__actions__item box-visual__actions__item--settings" data-type="blocks" data-name="' + id + '" href="#"><span class="v-icon v-icon--settings"></span></a>' +
+            moveBtn + editBtn +
             '</div>');
     });
 
-    var vmBar = new $.slidebars({siteClose: false});
+    var vmBar = new $.slidebars({ siteClose: false });
 
     $('.js-config-open').on('click', function (e) {
         e.preventDefault();
@@ -70,6 +72,34 @@ $(function () {
 
         if (!vmBar.slidebars.active('left')) {
             openSlideBar(vmBar, $this.data('type'), $this.data('name'));
+        }
+    });
+
+    $('.js-block-inline-edit').on('click', function (e) {
+        e.preventDefault();
+
+        var $this = $(this),
+            $block = $this.closest('.box-visual').find('.box__content'),
+            blockName = $this.data('name')
+
+        switch ($this.data('action')) {
+            case 'edit':
+                $this.data('action', 'save')
+                $this.find('.v-icon').removeClass('v-icon--pencil').addClass('v-icon--check-circle-o')
+                $block.attr('contenteditable', true)
+                CKEDITOR.inline($block.get(0), { startupFocus: true })
+                break;
+
+            case 'save':
+                $this.data('action', 'edit')
+                $this.find('.v-icon').removeClass('v-icon--check-circle-o').addClass('v-icon--pencil')
+                var editor = CKEDITOR['instances']['content_' + blockName]
+
+                saveBlockInline(blockName, editor.getData());
+
+                $block.removeAttr('contenteditable')
+                editor.destroy()
+                break;
         }
     });
 
@@ -92,6 +122,16 @@ $(function () {
         applyCheckboxState(this, checked);
     });
 });
+
+function saveBlockInline(blockName, data) {
+    intelli.post(intelli.visualModeUrl, {
+        action: 'save-inline',
+        name: blockName,
+        data: data
+    }, function (res) {
+        intelli.notifFloatBox({msg: res.message, type: res.result ? 'success' : 'error', autohide: true});
+    });
+}
 
 function openSlideBar(bar, type, name) {
     $('.js-config-save').prop('disabled', false).text('Save');
@@ -140,8 +180,7 @@ function closeSlideBar(bar, type, btn) {
         var pageVisibility = +$('#pos-visible-on-page').prop('checked');
 
         pageVisibility ? $('#' + name + 'Blocks').removeClass('groupWrapper--hidden') : $('#' + name + 'Blocks').addClass('groupWrapper--hidden');
-    }
-    else {
+    } else {
         var globalVisibility = $('#block-visible-everywhere').val();
         var pageVisibility = +$('#block-visible-on-page').prop('checked');
 
@@ -182,8 +221,7 @@ function applyCheckboxState(elem, checked) {
             .addClass('v-icon--check-square');
 
         $checkbox.prop('checked', true);
-    }
-    else {
+    } else {
         $this.removeClass('vm-checkbox--checked');
         $icon
             .addClass('v-icon--square')
