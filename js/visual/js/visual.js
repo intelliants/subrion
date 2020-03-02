@@ -89,7 +89,14 @@ $(function () {
                 $this.data('action', 'save')
                 $this.find('.v-icon').removeClass('v-icon--pencil').addClass('v-icon--check-circle-o')
                 $block.attr('contenteditable', true)
-                CKEDITOR.inline($block.get(0), { startupFocus: true })
+
+                var config = { startupFocus: true };
+
+                if (!isHtml) {
+                    config['removeButtons'] = 'PasteFromWord,Paste,Bold,Italic,Underline,Strike,TextColor,Format,BGColor,Link,Image,Iframe,Unlink,Youtube,Embed'
+                }
+
+                CKEDITOR.inline($block.get(0), config)
                 break;
 
             case 'save':
