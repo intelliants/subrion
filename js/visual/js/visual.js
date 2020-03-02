@@ -90,7 +90,7 @@ $(function () {
                 $this.find('.v-icon').removeClass('v-icon--pencil').addClass('v-icon--check-circle-o')
                 $block.attr('contenteditable', true)
 
-                var config = { startupFocus: true };
+                var config = { startupFocus: true, floatSpaceDockedOffsetY: 35 };
 
                 if (!isHtml) {
                     config['removeButtons'] = 'PasteFromWord,Paste,Bold,Italic,Underline,Strike,TextColor,Format,BGColor,Link,Image,Iframe,Unlink,Youtube,Embed'
