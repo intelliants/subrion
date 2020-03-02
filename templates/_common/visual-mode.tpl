@@ -109,3 +109,5 @@
         *}
     </div>
 </div>
+
+{ia_print_js files='ckeditor/ckeditor'}

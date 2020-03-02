@@ -31,12 +31,39 @@ class iaBackendController extends iaAbstractControllerBackend
     protected $_processAdd = false;
     protected $_processEdit = false;
 
+    private $defaultOutput = [];
+
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->defaultOutput = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
+    }
+
+    private function handleInlineBlockEdit($name, $data)
+    {
+        if (!iaValidate::isAlphaNumericValid($name)) {
+            return $this->defaultOutput;
+        }
+
+//        $this->_iaDb->update();
+
+        return [
+            'result' => true,
+            'message' => iaLanguage::get('saved'),
+        ];
+    }
 
     protected function _jsonAction()
     {
         $this->_iaCore->factory('validate');
 
         $output = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
+
+        if (isset($_POST['action']) && 'save-inline' == $_POST['action']) {
+            return $this->handleInlineBlockEdit($_POST['name'], $_POST['data']);
+        }
 
         if (isset($_POST['action']) && 'save' == $_POST['action']) {
             $type = $_POST['type'];

@@ -687,6 +687,7 @@ class iaSmarty extends Smarty
             $smarty->assign('style', isset($params['style']) ? $params['style'] : '');
             $smarty->assign('title', isset($params['title']) ? $params['title'] : '');
             $smarty->assign('ismenu', isset($params['ismenu']) ? $params['ismenu'] : false);
+            $smarty->assign('type', isset($params['type']) ? $params['type'] : false);
             $smarty->assign('_block_content_', $content);
 
             if (empty($params['tpl'])) {
