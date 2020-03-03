@@ -43,9 +43,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
     private function handleInlineBlockEdit($id, $contents)
     {
-        $this->_iaCore->factory('util')
-            ->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
         if (empty(intval($id))) {
             return $this->defaultOutput;
         }
@@ -71,9 +68,6 @@ class iaBackendController extends iaAbstractControllerBackend
 
     private function handleInlinePageEdit($name, $contents)
     {
-        $this->_iaCore->factory('util')
-            ->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
         if (!utf8_is_valid($contents)) {
             $contents = utf8_bad_replace($contents);
         }
@@ -93,9 +87,32 @@ class iaBackendController extends iaAbstractControllerBackend
         ];
     }
 
+    private function handleInlinePhraseEdit($key, $contents)
+    {
+        if (!utf8_is_valid($contents)) {
+            $contents = utf8_bad_replace($contents);
+        }
+
+        $contents = iaUtil::safeHTML($contents);
+
+        $where = iaDb::printf("`key` = ':key' AND `code` = ':code'", [
+            'key' => $key,
+            'code' => $this->_iaCore->iaView->language,
+        ]);
+
+        $result = $this->_iaDb->update(['value' => $contents], $where, null, iaLanguage::getTable());
+
+        return [
+            'result' => $result,
+            'message' => iaLanguage::get($result ? 'saved' : 'db_error'),
+        ];
+    }
+
     protected function _jsonAction()
     {
         $this->_iaCore->factory('validate');
+        $this->_iaCore->factory('util')
+            ->loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
 
         $output = ['result' => false, 'message' => iaLanguage::get('invalid_parameters')];
 
@@ -105,6 +122,8 @@ class iaBackendController extends iaAbstractControllerBackend
                     return $this->handleInlineBlockEdit($_POST['id'], $_POST['data']);
                 case 'page':
                     return $this->handleInlinePageEdit($_POST['id'], $_POST['data']);
+                case 'phrase':
+                    return $this->handleInlinePhraseEdit($_POST['id'], $_POST['data']);
                 default:
                     return $output;
             }

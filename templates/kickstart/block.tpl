@@ -25,7 +25,11 @@
 {/if}
 
 <!--__b_c_{$id}-->
+{if isset($manageMode) && ($type === 'plain' || empty($header))}
+<div>{$_block_content_}</div>
+{else}
 {$_block_content_}
+{/if}
 <!--__e_c_{$id}-->
 
 {if $header}
