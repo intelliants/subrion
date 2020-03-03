@@ -135,7 +135,20 @@ class iaSmarty extends Smarty
             return iaLanguage::getf($key, $params);
         }
 
-        return iaLanguage::get($key, $default);
+        $phrase = iaLanguage::get($key, $default);
+
+//assign an id to the phrase: mktime() . $key
+
+        if (iaCore::instance()->iaView->manageMode) {
+            if (strip_tags($phrase) !== $phrase) { // if string contains any tags
+                $tags = '<p,<h1,<h2,<h3,<h4,<h5,<h6,<ol,<ul,<pre,<address,<blockquote,<dl,<div,<fieldset,<form,<hr,<noscript,<table';
+
+            } else {
+
+            }
+        }
+
+        return $phrase;
     }
 
     public static function ia_page_url($params)

@@ -79,8 +79,7 @@ $(function () {
         e.preventDefault();
 
         var $this = $(this),
-            $block = $this.closest('.box-visual').find('.box__content'),
-            blockName = $this.data('name'),
+            $block = $this.closest('.box-visual__actions').prev(),
             blockId = $this.data('id'),
             isHtml = $this.data('is_html');
 
@@ -96,13 +95,18 @@ $(function () {
                     config['removeButtons'] = 'PasteFromWord,Paste,Bold,Italic,Underline,Strike,TextColor,Format,BGColor,Link,Image,Iframe,Unlink,Youtube,Embed'
                 }
 
+                CKEDITOR.once('instanceCreated', function (event) {
+                    $block.data('ckeditor_instance_name', event.editor.name)
+                })
+
                 CKEDITOR.inline($block.get(0), config)
+
                 break;
 
             case 'save':
                 $this.data('action', 'edit')
                 $this.find('.v-icon').removeClass('v-icon--check-circle-o').addClass('v-icon--pencil')
-                var editor = CKEDITOR['instances']['content_' + blockName]
+                var editor = CKEDITOR['instances'][$block.data('ckeditor_instance_name')]
                 var data = isHtml ? editor.getData() : editor.element.getText()
 
                 saveInlineEdit('block', blockId, data);
@@ -145,6 +149,46 @@ $(function () {
         }
     });
 
+    $('.js-phrase-inline-edit').on('click', function (e) {
+        e.preventDefault();
+
+        var $this = $(this),
+            $phrase = $this.closest('.box-visual').find('.box-visual__content'),
+            key = $this.data('key'),
+            phraseElementId = $phrase.attr('id'),
+            isHtml = $this.data('is_html');
+
+        switch ($this.data('action')) {
+            case 'edit':
+                $this.data('action', 'save')
+                $this.find('.v-icon').removeClass('v-icon--pencil').addClass('v-icon--check-circle-o')
+                $phrase.attr('contenteditable', true)
+
+                var config = { startupFocus: true };
+
+                if (!isHtml) {
+                    config['removeButtons'] = 'PasteFromWord,Paste,Bold,Italic,Underline,Strike,TextColor,Format,BGColor,Link,Image,Iframe,Unlink,Youtube,Embed'
+                }
+                CKEDITOR.dtd.$editable.span = 1
+
+                CKEDITOR.inline(phraseElementId, config)
+                break;
+
+            case 'save':
+                $this.data('action', 'edit')
+                $this.find('.v-icon').removeClass('v-icon--check-circle-o').addClass('v-icon--pencil')
+                var editor = CKEDITOR['instances'][phraseElementId]
+
+                var data = isHtml ? editor.getData() : editor.element.getText()
+
+                saveInlineEdit('phrase', key, data);
+
+                $phrase.removeAttr('contenteditable')
+                editor.destroy()
+                break;
+        }
+    });
+
     $('.js-config-save').on('click', function (e) {
         e.preventDefault();
 
@@ -172,7 +216,7 @@ function saveInlineEdit(type, id, data) {
         id: id,
         data: data
     }, function (res) {
-        intelli.notifFloatBox({msg: res.message, type: res.result ? 'success' : 'error', autohide: true});
+        intelli.notifFloatBox({ msg: res.message, type: res.result ? 'success' : 'error', autohide: true });
     });
 }
 
