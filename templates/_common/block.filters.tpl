@@ -87,7 +87,7 @@
 
         {if $member}
             <div class="ia-form-filters__actions">
-                <a href="{$smarty.const.IA_URL}search/my/" class="btn btn-xs btn-success" data-loading-text="{lang key='loading'}" id="js-cmd-open-searches">{lang key='my_searches'}</a>
+                <a href="{$smarty.const.IA_URL}search/my/" class="btn btn-xs btn-success" data-loading-text="{lang key='loading' readonly=true}" id="js-cmd-open-searches">{lang key='my_searches'}</a>
                 <div class="modal fade" id="js-modal-searches" tabindex="-1" role="dialog">
                     <div class="modal-dialog" role="document"><div class="modal-content"></div></div>
                 </div>

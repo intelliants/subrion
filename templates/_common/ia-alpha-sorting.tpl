@@ -6,5 +6,5 @@
             <a href="{$url}{$letter}/" class="btn btn-sm btn-default">{$letter}</a>
         {/if}
     {/foreach}
-    <a href="{$url}" class="btn btn-sm btn-warning" title="{lang key='reset'}"><span class="fa fa-remove"></span></a>
+    <a href="{$url}" class="btn btn-sm btn-warning" title="{lang key='reset' readonly=true}"><span class="fa fa-remove"></span></a>
 </div>
