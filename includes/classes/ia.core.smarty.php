@@ -126,8 +126,10 @@ class iaSmarty extends Smarty
 
     public static function lang($params)
     {
+        $iaView = iaCore::instance()->iaView;
         $key = isset($params['key']) ? $params['key'] : '';
         $default = isset($params['default']) ? $params['default'] : null;
+        $readonly = isset($params['readonly']) && $params['readonly'];
 
         if (count($params) > 1 && !isset($params['default'])) {
             unset($params['key']);
@@ -135,20 +137,45 @@ class iaSmarty extends Smarty
             return iaLanguage::getf($key, $params);
         }
 
-        $phrase = iaLanguage::get($key, $default);
+        $text = iaLanguage::get($key, $default);
 
-//assign an id to the phrase: mktime() . $key
-
-        if (iaCore::instance()->iaView->manageMode) {
-            if (strip_tags($phrase) !== $phrase) { // if string contains any tags
-                $tags = '<p,<h1,<h2,<h3,<h4,<h5,<h6,<ol,<ul,<pre,<address,<blockquote,<dl,<div,<fieldset,<form,<hr,<noscript,<table';
-
-            } else {
-
-            }
+        if ($iaView->manageMode && !$readonly) {
+            $text = $iaView->iaSmarty->getManagablePhrase($key, $text);
         }
 
-        return $phrase;
+        return $text;
+    }
+
+    /**
+     * Adds wrapper around the phrase in visual mode which allows inline editing on the frontend
+     * @param $key
+     * @param $text
+     * @return string
+     */
+    public function getManagablePhrase($key, $text)
+    {
+        $blockTags = '<p|<h1|<h2|<h3|<h4|<h5|<h6|<ol|<ul|<pre|<address|<blockquote|<dl|<div|<fieldset|<form|<hr|<noscript|<table';
+        $id = microtime() . $key;
+        $wrapperTag = 'span';
+        $isHtml = true;
+
+        if (strip_tags($text) === $text) { // if string doesn't contain any tags
+            $isHtml = false;
+        } elseif (preg_match("/($blockTags)/i", $text)) { // if string contains block tags
+            $wrapperTag = 'div';
+        }
+
+        return <<<HTML
+<$wrapperTag class="box-visual">
+    <$wrapperTag class="box-visual__content" id="$id">$text</$wrapperTag>
+    <span class="box-visual__actions">
+        <a class="js-phrase-inline-edit box-visual__actions__item box-visual__actions__item--edit"
+           data-type="phrase" data-key="$key" href="#" data-action="edit" data-is_html="$isHtml">
+            <span class="v-icon v-icon--pencil"></span>
+        </a>
+    </span>
+</$wrapperTag>
+HTML;
     }
 
     public static function ia_page_url($params)
