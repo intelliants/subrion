@@ -4,8 +4,8 @@
 
         {if $item.featured || $item.sponsored}
             <div class="ia-item__labels">
-                {if $item.sponsored}<span class="label label-warning" title="{lang key='sponsored'}"><span class="fa fa-star"></span> {lang key='sponsored'}</span>{/if}{* 866 *}
-                {if $item.featured}<span class="label label-info" title="{lang key='featured'}"><span class="fa fa-star-o"></span> {lang key='featured'}</span>{/if}{* 866 *}
+                {if $item.sponsored}<span class="label label-warning" title="{lang key='sponsored' readonly=true}"><span class="fa fa-star"></span> {lang key='sponsored'}</span>{/if}
+                {if $item.featured}<span class="label label-info" title="{lang key='featured' readonly=true}"><span class="fa fa-star-o"></span> {lang key='featured'}</span>{/if}
             </div>
         {/if}
     </div>
