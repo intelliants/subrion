@@ -105,7 +105,7 @@
                 {/if}
                 {if $core.config.search_inventory}
                     <form method="get" action="{$smarty.const.IA_URL}search/" class="search-inventory pull-right">
-                        <input type="text" name="q" placeholder="{lang key='search'}">
+                        <input type="text" name="q" placeholder="{lang key='search' readonly=true}">
                         <button type="submit"><span class="fa fa-search"></span></button>
                     </form>
                 {/if}
@@ -142,7 +142,7 @@
                         <form method="get" action="{$smarty.const.IA_URL}search/" class="search-navbar pull-right">
                             <button class="search-navbar__toggle js-search-navbar-toggle" type="button"><span class="fa fa-search"></span></button>
                             <div class="input-group">
-                                <input type="text" name="q" class="form-control" placeholder="{lang key='search'}">
+                                <input type="text" name="q" class="form-control" placeholder="{lang key='search' readonly=true}">
                                 <div class="input-group-btn">
                                     <button class="btn btn-primary" type="submit">{lang key='search'}</button>
                                 </div>

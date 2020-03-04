@@ -6,12 +6,12 @@
             <div class="form-group">
                 <input class="form-control input-lg" type="text" name="username"
                        value="{if isset($smarty.post.username)}{$smarty.post.username|escape}{/if}"
-                       placeholder="{lang key='username_or_email'}">
+                       placeholder="{lang key='username_or_email' readonly=true}">
             </div>
 
             <div class="form-group">
                 <input class="form-control input-lg" type="password" name="password"
-                       placeholder="{lang key='password'}">
+                       placeholder="{lang key='password' readonly=true}">
             </div>
 
             <div class="form-group">
