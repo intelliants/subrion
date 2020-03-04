@@ -52,7 +52,7 @@
 
                             <div class="caption">
                                 <a class="btn btn-small btn-danger js-cmd-delete-file" href="#"
-                                   title="{lang key='delete'}" data-file="{$item.image}" data-item="blog_entries"
+                                   title="{lang key='delete' readonly=true}" data-file="{$item.image}" data-item="blog_entries"
                                    data-field="image" data-id="{$id}"><i class="i-remove-sign"></i></a>
                             </div>
                         </div>
