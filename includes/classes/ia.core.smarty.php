@@ -155,7 +155,7 @@ class iaSmarty extends Smarty
     public function getManagablePhrase($key, $text)
     {
         $blockTags = '<p|<h1|<h2|<h3|<h4|<h5|<h6|<ol|<ul|<pre|<address|<blockquote|<dl|<div|<fieldset|<form|<hr|<noscript|<table';
-        $id = microtime() . $key;
+        $id = mt_rand(0, 9999999) . $key;
         $wrapperTag = 'span';
         $isHtml = true;
 

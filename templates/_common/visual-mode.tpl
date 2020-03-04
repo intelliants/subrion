@@ -6,7 +6,7 @@
 
 <div class="sb-slide vm-bar">
     <div class="vm-bar__title">Visual mode</div>
-    <a class="vm-bar__exit" href="?manage_exit=y" title="{lang key='exit'}"><span class="v-icon v-icon--exit"></span> {lang key='exit'}</a>
+    <a class="vm-bar__exit" href="?manage_exit=y" title="{lang key='exit' readonly=true}"><span class="v-icon v-icon--exit"></span> {lang key='exit' readonly=true}</a>
 </div>
 
 <div class="sb-slidebar sb-left">
