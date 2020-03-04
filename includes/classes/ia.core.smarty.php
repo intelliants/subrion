@@ -169,10 +169,10 @@ class iaSmarty extends Smarty
 <$wrapperTag class="box-visual">
     <$wrapperTag class="box-visual__content" id="$id">$text</$wrapperTag>
     <span class="box-visual__actions">
-        <a class="js-phrase-inline-edit box-visual__actions__item box-visual__actions__item--edit"
-           data-type="phrase" data-key="$key" href="#" data-action="edit" data-is_html="$isHtml">
+        <span class="js-phrase-inline-edit box-visual__actions__item box-visual__actions__item--edit"
+           data-type="phrase" data-key="$key" data-action="edit" data-is_html="$isHtml">
             <span class="v-icon v-icon--pencil"></span>
-        </a>
+        </span>
     </span>
 </$wrapperTag>
 HTML;
