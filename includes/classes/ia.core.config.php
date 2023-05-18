@@ -79,7 +79,7 @@ class iaConfig extends abstractCore
         if (is_null($where)) {
             $where = iaDb::EMPTY_CONDITION;
         }
-        $where.= ' ORDER BY `order`';
+        $where .= ' ORDER BY `order`';
 
         $rows = $this->iaDb->all(['name', 'module'], $where, null, null, self::getConfigGroupsTable());
 
@@ -118,7 +118,7 @@ class iaConfig extends abstractCore
 
     public function fetch($where)
     {
-        $where.= ' ORDER BY `order`';
+        $where .= ' ORDER BY `order`';
 
         $rows = $this->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, $where, null, null, self::getTable());
 
@@ -137,13 +137,13 @@ class iaConfig extends abstractCore
         $result = [];
 
         is_null($where) && $where = iaDb::EMPTY_CONDITION;
-        $where.= " AND `type` != '" . self::TYPE_DIVIDER . "' ";
-        $where.= 'ORDER BY `order`';
+        $where .= " AND `type` != '" . self::TYPE_DIVIDER . "' ";
+        $where .= 'ORDER BY `order`';
 
         $rows = $this->iaDb->all(['key' => self::KEY_COLUMN, 'value', 'type', 'options'], $where, null, null, self::getTable());
 
         if ($rows) {
-            $langCode = $this->iaCore->language['iso'];
+            $langCode = !empty($this->iaCore->language['iso']) ? $this->iaCore->language['iso'] : '';
 
             foreach ($rows as $row) {
                 $value = $row['value'];

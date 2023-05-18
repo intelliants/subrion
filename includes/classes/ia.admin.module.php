@@ -731,7 +731,7 @@ class iaModule extends abstractCore
             }
         }
 
-        if ($code['uninstall_sql']) {
+        if (!empty($code['uninstall_sql'])) {
             $code['uninstall_sql'] = unserialize($code['uninstall_sql']);
             if ($code['uninstall_sql'] && is_array($code['uninstall_sql'])) {
                 foreach ($code['uninstall_sql'] as $sql) {
@@ -747,11 +747,11 @@ class iaModule extends abstractCore
 
         empty($entry) || $this->_processCategory($entry, self::ACTION_UNINSTALL);
 
-        if ($code['uninstall_code']) {
+        if (!empty($code['uninstall_code'])) {
             $this->_runPhpCode($code['uninstall_code']);
         }
 
-        if ($code['rollback_data']) {
+        if (!empty($code['rollback_data'])) {
             $rollbackData = unserialize($code['rollback_data']);
             if (is_array($rollbackData)) {
                 $existPositions = $this->iaView->positions;

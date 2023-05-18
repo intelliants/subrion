@@ -287,7 +287,9 @@ class iaHelper
         $response = self::getRemoteContent(sprintf(self::PLUGINS_LIST_SOURCE, $coreVersion));
         if ($response !== false) {
             $response = json_decode($response);
-            if (isset($response->extensions) && count($response->extensions)) {
+            $extensions = array($response->extensions);
+
+            if (isset($response->extensions) && count($extensions)) {
                 $result = $response->extensions;
             }
         }

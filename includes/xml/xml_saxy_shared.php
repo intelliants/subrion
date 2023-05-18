@@ -115,7 +115,7 @@ class SAXY_Parser_Base {
 	*/
 	function getCharFromEnd($text, $index) {
 		$len = strlen($text);
-		$char = $text{($len - 1 - $index)};
+		$char = $text[($len - 1 - $index)];
 		
 		return $char;
 	} //getCharFromEnd
@@ -137,7 +137,7 @@ class SAXY_Parser_Base {
 		$quoteType = '';
 		
 		for ($i = 0; $i < $total; $i++) {								
-			$currentChar = $attrText{$i};
+			$currentChar = $attrText[$i];
 			
 			if ($currentState == SAXY_STATE_ATTR_NONE) {
 				if (trim($currentChar != '')) {
