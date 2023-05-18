@@ -757,14 +757,14 @@ HTML;
             : '';
     }
 
-    public static function ia_add_js($params, $content)
+    public static function ia_add_js($params, $content = '')
     {
-        if (!trim($content)) {
+        if (empty($content)) {
             return;
         }
 
         $iaView = &iaCore::instance()->iaView;
-        $iaView->resources->js->{'code:' . $content} = isset($params['order']) ? $params['order'] : 4;
+        $iaView->resources->js->{'code:' . trim($content)} = isset($params['order']) ? $params['order'] : 4;
     }
 
     public static function ia_print_js($params, Smarty_Internal_Template $smarty)

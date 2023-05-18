@@ -8,7 +8,7 @@
   "authors": [
     {
       "name": "The Subrion Community",
-      "email": "tech@subrion.org",
+      "email": "support@subrion.org",
       "homepage": "https://subrion.org",
       "role": "Developer"
     },
@@ -20,7 +20,8 @@
     }
   ],
   "require": {
-    "php": ">=5.6.0",
-    "composer/installers": "~1.0"
+    "php": ">=8.1.0",
+    "composer/installers": "~1.0",
+    "ext-xmlreader": "*"
   }
 }

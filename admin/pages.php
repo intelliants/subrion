@@ -347,7 +347,7 @@ SQL;
         $iaView->assign('menus', $this->_getMenus());
         $iaView->assign('pages', $this->getHelper()->getNonServicePages(['index']));
         $iaView->assign('pagesGroup', $groups);
-        $iaView->assign('parentPageId', $parentPage['id']);
+        $iaView->assign('parentPageId', !empty($parentPage) ? $parentPage['id'] : null);
     }
 
 

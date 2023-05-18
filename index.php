@@ -24,14 +24,14 @@
  *
  ******************************************************************************/
 
-define('IA_VERSION', '4.2.1');
+define('IA_VERSION', '5.0.0');
 
 if (defined('IA_INSTALL')) {
     return IA_VERSION;
 }
 
-if (version_compare(PHP_VERSION, '5.6', '<')) {
-    exit('Subrion ' . IA_VERSION . ' requires PHP 5.6 or higher to run properly.');
+if (version_compare(PHP_VERSION, '8.1', '<')) {
+    exit('Subrion ' . IA_VERSION . ' requires PHP 8.1 or higher to run properly.');
 }
 if (function_exists('apache_get_modules') && !in_array('mod_rewrite', apache_get_modules())) {
     exit('Subrion ' . IA_VERSION . ' requires the mod_rewrite module to run properly.');
@@ -49,7 +49,7 @@ define('IA_INCLUDES', IA_HOME . 'includes/');
 define('IA_CLASSES', IA_INCLUDES . 'classes/');
 define('IA_MODULES', IA_HOME . 'modules/');
 define('IA_UPLOADS', IA_HOME . 'uploads/');
-define('IA_SMARTY', IA_INCLUDES . 'smarty/');
+define('IA_SMARTY', IA_INCLUDES . 'smarty4/');
 define('IA_TMP', IA_HOME . 'tmp/');
 define('IA_CACHEDIR', IA_TMP . 'cache/');
 define('IA_FRONT', IA_HOME . 'front/');
@@ -76,23 +76,6 @@ if ($performInstallation) {
 
     exit('Install directory was not found!');
 }
-
-/*$domain = explode(':', $_SERVER['HTTP_HOST']);
-$domain = reset($domain);
-
-if (strpos($domain, '.') && !filter_var($domain, FILTER_VALIDATE_IP)) {
-    $chunks = array_reverse(explode('.', $domain));
-    if (count($chunks) > 2) {
-        if (!in_array($chunks[1], ['co', 'com', 'net', 'org', 'gov', 'ltd', 'ac', 'edu'])) {
-            $domain = implode('.', [$chunks[1], $chunks[0]]);
-
-            if ($chunks[2] != 'www') {
-                $domain = implode('.', [$chunks[2], $chunks[1], $chunks[0]]);
-            }
-        }
-    }
-    $domain = '.' . $domain;
-}*/
 
 ini_set('session.gc_maxlifetime', 1800); // 30 minutes
 //session_set_cookie_params(1800, '/', $domain, false, true);

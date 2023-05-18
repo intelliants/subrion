@@ -778,12 +778,8 @@ final class iaCore
 
         iaSystem::renderTime('class', 'Loading class ' . $className);
 
-        if ('db' == $name) { // can't we get rid of this?
-            $name = INTELLI_CONNECT;
-
-            if (strtolower(INTELLI_CONNECT) == 'pdo') {
-                $name = 'mysqli';
-            }
+        if ('db' == $name) {
+            $name = 'mysqli';
         }
 
         $fileName = iaSystem::CLASSES_PREFIX . $type . '.' . $name . iaSystem::EXECUTABLE_FILE_EXT;

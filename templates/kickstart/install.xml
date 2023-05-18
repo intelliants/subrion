@@ -34,7 +34,7 @@
         </section>
     </layout>
 
-    <configgroup name="template_kickstart">Template</configgroup>
+    <configgroup name="template_kickstart">Kickstart Template</configgroup>
 
     <config group="template_kickstart"
             type="divider"

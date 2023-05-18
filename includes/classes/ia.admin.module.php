@@ -71,6 +71,8 @@ class iaModule extends abstractCore
 
     protected $_xmlContent = '';
 
+    protected $_xmlFile = '';
+
     public $itemData;
 
     public $error = false;
@@ -104,7 +106,7 @@ class iaModule extends abstractCore
                 'status' => iaCore::STATUS_ACTIVE,
                 'title' => '',
                 'version' => '',
-                'category' => ''
+                'category' => '',
             ],
             'actions' => null,
             'blocks' => null,
@@ -112,7 +114,7 @@ class iaModule extends abstractCore
             'code' => [
                 'install' => null,
                 'upgrade' => null,
-                'uninstall' => null
+                'uninstall' => null,
             ],
             'compatibility' => null,
             'config' => null,
@@ -146,11 +148,16 @@ class iaModule extends abstractCore
             'sql' => [
                 'install' => null,
                 'upgrade' => null,
-                'uninstall' => null
-            ]
+                'uninstall' => null,
+            ],
         ];
 
         $this->_notes = null;
+    }
+
+    public function setXmlFile($path)
+    {
+        $this->_xmlFile = $path;
     }
 
     public function setUrl($url)
@@ -158,36 +165,93 @@ class iaModule extends abstractCore
         $this->_url = $url;
     }
 
-    protected function _lookupGroupId($groupName)
+
+    public function setXml($xmlContent)
     {
-        return (int)$this->iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`name` = :name', ['name' => $groupName], 'admin_pages_groups');
+        $this->_xmlContent = $xmlContent;
+        $this->_parsed = false;
     }
 
-    public function parse($quickMode = false)
+    public function getFromPath($filePath)
+    {
+        $xmlReader = XMLReader::open($filePath);
+        $xmlReader->setParserProperty(XMLReader::VALIDATE, true);
+
+        if ($xmlReader->isValid()) {
+            $this->setXml(file_get_contents($filePath));
+            return true;
+        }
+
+        trigger_error('Could not open the installation XML file: ' . $filePath, E_USER_ERROR);
+        return false;
+    }
+
+    public function _parserStart(XMLParser $parser, string $name, array $attributes)
+    {
+        $this->_inTag = $name;
+        $this->_attributes = $attributes;
+        $this->_currentPath[] = $name;
+
+        if ('section' == $this->_inTag && !empty($attributes['name'])) {
+            $this->_section = $attributes['name'];
+        }
+
+        if ('module' == $this->_inTag && !empty($this->_attributes['name'])) {
+            $this->itemData['type'] = $this->_attributes['type'];
+            $this->itemData['name'] = $this->_attributes['name'];
+        }
+
+        if ('usergroup' == $name) {
+            $this->itemData['usergroups'][] = [
+                'module' => $this->itemData['name'],
+                'name' => $this->itemData['name'] . '_' . ($this->_attr('name', iaUtil::generateToken())),
+                'title' => $attributes['title'],
+                'assignable' => $this->_attr('assignable', false),
+                'visible' => $this->_attr('visible', true),
+                'configs' => [],
+                'permissions' => [],
+            ];
+        }
+    }
+
+    public function _parserEnd(XMLParser $parser, string $name)
+    {
+        array_pop($this->_currentPath);
+    }
+
+    public function parseXML($quickMode = false)
     {
         $this->_resetValues();
         $this->_quickParseMode = $quickMode;
 
-        require_once IA_INCLUDES . 'xml/xml_saxy_parser.php';
+        $xmlParser = xml_parser_create();
 
-        $xmlParser = new SAXY_Parser();
+        xml_parser_set_option($xmlParser, XML_OPTION_TARGET_ENCODING, "UTF-8");
+        xml_parser_set_option($xmlParser, XML_OPTION_CASE_FOLDING, 0);
+        xml_parser_set_option($xmlParser, XML_OPTION_SKIP_WHITE, 1);
 
-        $xmlParser->xml_set_element_handler([&$this, '_parserStart'], [&$this, '_parserEnd']);
-        $xmlParser->xml_set_character_data_handler([&$this, $quickMode ? '_parserQuickData' : '_parserData']);
-        $xmlParser->xml_set_comment_handler([&$this, '_parserComment']);
+        xml_set_element_handler($xmlParser, [&$this, '_parserStart'], [&$this, '_parserEnd']);
+        xml_set_character_data_handler($xmlParser, [&$this, $quickMode ? '_parserQuickData' : '_parserData']);
 
-        $xmlParser->parse($this->_xmlContent);
+        xml_parse($xmlParser, $this->getXmlFromPath());
+
+        xml_parser_free($xmlParser);
 
         $this->_parsed = true;
 
         $this->_checkDependencies();
     }
 
+    protected function _lookupGroupId($groupName)
+    {
+        return (int)$this->iaDb->one_bind(iaDb::ID_COLUMN_SELECTION, '`name` = :name', ['name' => $groupName], 'admin_pages_groups');
+    }
+
     public function doAction($action, $url = '')
     {
         if (empty($action) || !in_array($action, [self::ACTION_INSTALL, self::ACTION_UPGRADE])) {
             $this->error = true;
-            $this->setMessage('Fatal error: Action is invalid');
+            $this->setMessage('Fatal error: Action is invalid.');
 
             return false;
         }
@@ -363,9 +427,7 @@ class iaModule extends abstractCore
             $iaDb->resetTable();
         }
 
-        if ($this->itemData['pages']['admin']) {
-            $this->_processAdminPages($this->itemData['pages']['admin']);
-        }
+        !empty($this->itemData['pages']['admin']) && $this->_processAdminPages($this->itemData['pages']['admin']);
 
         if ($this->itemData['actions']) {
             $iaDb->setTable('admin_actions');
@@ -385,11 +447,9 @@ class iaModule extends abstractCore
             $iaDb->resetTable();
         }
 
-        if ($this->itemData['phrases']) {
-            $this->_processPhrases($this->itemData['phrases']);
-        }
+        !empty($this->itemData['phrases']) && $this->_processPhrases($this->itemData['phrases']);
 
-        if ($this->itemData['config_groups']) {
+        if (!empty($this->itemData['config_groups'])) {
             $this->iaConfig->deleteGroup('module', $this->itemData['name']);
 
             foreach ($this->itemData['config_groups'] as $title => $entry) {
@@ -399,7 +459,7 @@ class iaModule extends abstractCore
             }
         }
 
-        if ($this->itemData['objects']) {
+        if (!empty($this->itemData['objects'])) {
             $iaDb->setTable('acl_objects');
 
             foreach ($this->itemData['objects'] as $obj) {
@@ -418,13 +478,9 @@ class iaModule extends abstractCore
             $iaDb->resetTable();
         }
 
-        if ($this->itemData['config']) {
-            $this->_processConfig($this->itemData['config']);
-        }
+        !empty($this->itemData['config']) && $this->_processConfig($this->itemData['config']);
 
-        if ($this->itemData['email_templates']) {
-            $this->_processEmailTemplates($this->itemData['email_templates']);
-        }
+        !empty($this->itemData['email_templates']) && $this->_processEmailTemplates($this->itemData['email_templates']);
 
         $iaBlock = $this->iaCore->factory('block', iaCore::ADMIN);
 
@@ -514,7 +570,7 @@ class iaModule extends abstractCore
                         'name' => $item['name'],
                         'system' => true,
                         'assignable' => $item['assignable'],
-                        'visible' => $item['visible']
+                        'visible' => $item['visible'],
                     ]);
 
                     $this->_addPhrase('usergroup_' . $item['name'], $item['title']);
@@ -527,7 +583,7 @@ class iaModule extends abstractCore
                             'value' => $config['value'],
                             'type' => iaAcl::GROUP,
                             'type_id' => $usergroupId,
-                            'module' => $this->itemData['name']
+                            'module' => $this->itemData['name'],
                         ]); // add custom config
                     }
                     $iaDb->resetTable();
@@ -542,7 +598,7 @@ class iaModule extends abstractCore
                             'access' => $permission['access'],
                             'type' => iaAcl::GROUP,
                             'type_id' => $usergroupId,
-                            'module' => $permission['module']
+                            'module' => $permission['module'],
                         ];
 
                         $iaDb->insert($data); // add privileges for usergroup
@@ -667,7 +723,7 @@ class iaModule extends abstractCore
 
             // remove associated phrases
             $iaDb->setTable(iaLanguage::getTable());
-            foreach(['title', 'content', 'meta_keywords', 'meta_description', 'meta_title'] as $type) {
+            foreach (['title', 'content', 'meta_keywords', 'meta_description', 'meta_title'] as $type) {
                 $iaDb->delete(sprintf("`key` IN ('page_%s_%s')", $type, implode("','page_{$type}_", $pagesList)));
             }
             $iaDb->resetTable();
@@ -689,7 +745,7 @@ class iaModule extends abstractCore
             iaField::getTableGroups(),
             iaField::getTableImageTypes(),
             'fields_tree_nodes',
-            'cron'
+            'cron',
         ];
         $iaDb->cascadeDelete($tableList, iaDb::convertIds($moduleName, 'module'));
 
@@ -698,7 +754,7 @@ class iaModule extends abstractCore
         $stmt = '`module` LIKE :module';
         $this->iaDb->bind($stmt, ['module' => '%' . $moduleName . '%']);
         if ($itemsList) {
-            $stmt.= " OR `item` IN ('" . implode("','", $itemsList) . "')";
+            $stmt .= " OR `item` IN ('" . implode("','", $itemsList) . "')";
         }
 
         if ($fields = $iaDb->all(['id', 'module'], $stmt)) {
@@ -742,14 +798,13 @@ class iaModule extends abstractCore
 
         $entry = $iaDb->row_bind(iaDb::ALL_COLUMNS_SELECTION, '`name` = :name', ['name' => $moduleName], self::getTable());
 
+        // delete table & modules record
         $iaDb->delete('`name` = :module', self::getTable(), ['module' => $moduleName]);
         $iaDb->delete('`module` = :module', 'items', ['module' => $moduleName]);
 
-        empty($entry) || $this->_processCategory($entry, self::ACTION_UNINSTALL);
+        !empty($entry) && $this->_processCategory($entry, self::ACTION_UNINSTALL);
 
-        if (!empty($code['uninstall_code'])) {
-            $this->_runPhpCode($code['uninstall_code']);
-        }
+        !empty($code['uninstall_code']) && $this->_runPhpCode($code['uninstall_code']);
 
         if (!empty($code['rollback_data'])) {
             $rollbackData = unserialize($code['rollback_data']);
@@ -822,7 +877,7 @@ class iaModule extends abstractCore
                         $values = [
                             ':module' => $requirement['type'],
                             ':name' => $requirement['name'],
-                            ':version' => $ver
+                            ':version' => $ver,
                         ];
                         $messages[] = iaLanguage::getf('required_module_error', $values);
                         $this->error = true;
@@ -883,15 +938,14 @@ class iaModule extends abstractCore
 
         !empty($this->itemData['actions']) && $this->_processActions($this->itemData['actions']);
 
-        if ($this->itemData['phrases']) {
-            $this->_processPhrases($this->itemData['phrases']);
-        }
+        !empty($this->itemData['phrases']) && $this->_processPhrases($this->itemData['phrases']);
 
-        if ($this->itemData['config_groups']) {
+        if (!empty($this->itemData['config_groups'])) {
             foreach ($this->itemData['config_groups'] as $title => $entry) {
-                if ($this->iaConfig->insertGroup($entry)) {
-                    $this->_addPhrase('config_group_' . $entry['name'], $title, iaLanguage::CATEGORY_ADMIN);
-                }
+                if (empty($entry)) continue;
+
+                $this->iaConfig->insertGroup($entry);
+                iaLanguage::addPhrase('config_group_' . $entry['name'], $title, null, $entry['module'], iaLanguage::CATEGORY_ADMIN);
             }
         }
 
@@ -918,13 +972,9 @@ class iaModule extends abstractCore
             $iaDb->resetTable();
         }
 
-        if ($this->itemData['config']) {
-            $this->_processConfig($this->itemData['config']);
-        }
+        !empty($this->itemData['config']) && $this->_processConfig($this->itemData['config']);
 
-        if ($this->itemData['email_templates']) {
-            $this->_processEmailTemplates($this->itemData['email_templates']);
-        }
+        !empty($this->itemData['email_templates']) && $this->_processEmailTemplates($this->itemData['email_templates']);
 
         if ($this->itemData['pages']['custom'] && $this->itemData['type'] == self::TYPE_PACKAGE) {
             $iaDb->setTable('items_pages');
@@ -992,7 +1042,7 @@ class iaModule extends abstractCore
                                     'menu_id' => $id,
                                     'el_id' => $pageId . '_' . iaUtil::generateToken(4),
                                     'level' => 0,
-                                    'page_name' => $page['name']
+                                    'page_name' => $page['name'],
                                 ];
                                 $db = true;
 
@@ -1013,7 +1063,7 @@ class iaModule extends abstractCore
                                     'module' => $this->itemData['name'],
                                     'name' => $this->itemData['name'],
                                     'sticky' => true,
-                                    'removable' => false
+                                    'removable' => false,
                                 ];
 
                                 $menuItem['id'] = $iaBlock->insert($menuItem);
@@ -1023,7 +1073,7 @@ class iaModule extends abstractCore
                                     'menu_id' => $menuItem['id'],
                                     'el_id' => $pageId . '_' . iaUtil::generateToken(5),
                                     'level' => 0,
-                                    'page_name' => $page['name']
+                                    'page_name' => $page['name'],
                                 ];
 
                                 $iaDb->insert($entry, null, iaBlock::getMenusTable());
@@ -1125,7 +1175,7 @@ class iaModule extends abstractCore
                             'value' => $config['value'],
                             'type' => iaAcl::GROUP,
                             'type_id' => $groupId,
-                            'module' => $this->itemData['name']
+                            'module' => $this->itemData['name'],
                         ];
                         $iaDb->insert($data);
                     }
@@ -1141,7 +1191,7 @@ class iaModule extends abstractCore
                             'access' => $permission['access'],
                             'type' => iaAcl::GROUP,
                             'type_id' => $groupId,
-                            'module' => $permission['module']
+                            'module' => $permission['module'],
                         ];
 
                         $iaDb->insert($data);
@@ -1154,7 +1204,7 @@ class iaModule extends abstractCore
 
         $extraEntry = array_merge($this->itemData['info'], [
             'name' => $this->itemData['name'],
-            'type' => $this->itemData['type']
+            'type' => $this->itemData['type'],
         ]);
         unset($extraEntry['date']);
 
@@ -1207,9 +1257,7 @@ class iaModule extends abstractCore
             $iaDb->resetTable();
         }
 
-        if ($this->itemData['item_fields']) {
-            $this->_processFields($this->itemData['item_fields']);
-        }
+        !empty($this->itemData['item_fields']) && $this->_processFields($this->itemData['item_fields']);
 
         if ($this->itemData['cron_jobs']) {
             $this->iaCore->factory('cron');
@@ -1239,9 +1287,7 @@ class iaModule extends abstractCore
 
         $this->_processQueries('install', self::SQL_STAGE_END);
 
-        if ($this->itemData['code']['install']) {
-            $this->_runPhpCode($this->itemData['code']['install']);
-        }
+        !empty($this->itemData['code']['install']) && $this->_runPhpCode($this->itemData['code']['install']);
 
         $this->iaCore->startHook('phpModuleInstallAfter', ['module' => $this->itemData['name']]);
 
@@ -1250,54 +1296,10 @@ class iaModule extends abstractCore
         return true;
     }
 
-    public function setXml($xmlContent)
-    {
-        $this->_xmlContent = $xmlContent;
-        $this->_parsed = false;
-    }
-
-    public function getFromPath($filePath)
-    {
-        $xmlContent = file_get_contents($filePath);
-        if (false !== $xmlContent) {
-            $this->setXml($xmlContent);
-            return true;
-        }
-
-        trigger_error('Could not open the installation XML file: ' . $filePath, E_USER_ERROR);
-        return false;
-    }
-
-    public function _parserStart($parser, $name, $attributes)
-    {
-        $this->_inTag = $name;
-        $this->_attributes = $attributes;
-        $this->_currentPath[] = $name;
-
-        if ('section' == $this->_inTag && isset($attributes['name'])) {
-            $this->_section = $attributes['name'];
-        }
-
-        if ('module' == $this->_inTag && isset($this->_attributes['name'])) {
-            $this->itemData['type'] = $this->_attributes['type'];
-            $this->itemData['name'] = $this->_attributes['name'];
-        }
-
-        if ('usergroup' == $name) {
-            $this->itemData['usergroups'][] = [
-                'module' => $this->itemData['name'],
-                'name' => $this->itemData['name'] . '_' . ($this->_attr('name', iaUtil::generateToken())),
-                'title' => $attributes['title'],
-                'assignable' => $this->_attr('assignable', false),
-                'visible' => $this->_attr('visible', true),
-                'configs' => [],
-                'permissions' => []
-            ];
-        }
-    }
-
     public function _parserQuickData($parser, $text)
     {
+        if (empty(trim((string)$text))) return;
+
         if (in_array($this->_inTag, ['title', 'summary', 'author', 'contributor', 'version', 'date'])) {
             $this->itemData['info'][$this->_inTag] = trim($text);
         }
@@ -1309,14 +1311,16 @@ class iaModule extends abstractCore
         if ('dependency' == $this->_inTag) {
             $this->itemData['dependencies'][$text] = [
                 'type' => $this->_attr('type'),
-                'exist' => $this->_attr('exist', true)
+                'exist' => $this->_attr('exist', true),
             ];
         }
     }
 
     public function _parserData($parser, $text)
     {
-        $text = trim($text);
+        $text = (string)trim($text);
+
+        if (empty($text)) return;
 
         switch ($this->_inTag) {
             case 'title':
@@ -1341,7 +1345,7 @@ class iaModule extends abstractCore
                         'payable' => (int)$this->_attr('payable', true),
                         'pages' => $this->_attr('pages'),
                         'table_name' => $this->_attr('table_name'),
-                        'class_name' => $this->_attr('class_name')
+                        'class_name' => $this->_attr('class_name'),
                     ];
 
                     if (isset($this->_attributes['pages']) && $this->_attributes['pages']) {
@@ -1357,7 +1361,7 @@ class iaModule extends abstractCore
                     $this->itemData['screenshots'][] = [
                         'name' => $this->_attr('name'),
                         'title' => $text,
-                        'type' => $this->_attr('type', 'lightbox')
+                        'type' => $this->_attr('type', 'lightbox'),
                     ];
                 }
                 break;
@@ -1365,7 +1369,7 @@ class iaModule extends abstractCore
             case 'dependency':
                 $this->itemData['dependencies'][$text] = [
                     'type' => $this->_attr('type'),
-                    'exist' => $this->_attr('exist', true)
+                    'exist' => $this->_attr('exist', true),
                 ];
                 break;
 
@@ -1375,7 +1379,7 @@ class iaModule extends abstractCore
                         'name' => $text,
                         'type' => $this->_attr('type', 'package', [self::TYPE_PACKAGE, self::TYPE_PLUGIN]),
                         'min' => $this->_attr(['min_version', 'min'], false),
-                        'max' => $this->_attr(['max_version', 'max'], false)
+                        'max' => $this->_attr(['max_version', 'max'], false),
                     ];
                 }
                 break;
@@ -1390,7 +1394,7 @@ class iaModule extends abstractCore
                         'pages' => $this->_attr('pages'),
                         'text' => $text,
                         'type' => $this->_attr('type', 'regular'),
-                        'url' => $this->_attr('url')
+                        'url' => $this->_attr('url'),
                     ];
                 }
                 break;
@@ -1414,7 +1418,7 @@ class iaModule extends abstractCore
                         'action' => $this->_attr('action', iaCore::ACTION_READ),
                         'parent' => $this->_attr('parent'),
                         'module' => $this->itemData['name'],
-                        'title' => $text
+                        'title' => $text,
                     ];
                 } elseif ($this->_checkPath('pages')) {
                     $url = $this->_attr('url');
@@ -1445,7 +1449,7 @@ class iaModule extends abstractCore
                         'parent' => $this->_attr('parent'),
                         'suburl' => $this->_attr('suburl'),
                         'fields_item' => iaItem::toSingular($this->_attr('fields_item', '')),
-                        'title' => $text
+                        'title' => $text,
                     ];
                 }
                 break;
@@ -1453,7 +1457,7 @@ class iaModule extends abstractCore
             case 'configgroup':
                 $this->itemData['config_groups'][$text] = [
                     'name' => $this->_attr('name'),
-                    'module' => $this->itemData['name']
+                    'module' => $this->itemData['name'],
                 ];
                 break;
 
@@ -1461,7 +1465,7 @@ class iaModule extends abstractCore
                 if ($this->_checkPath('usergroup') && $this->itemData['usergroups']) {
                     $this->itemData['usergroups'][count($this->itemData['usergroups']) - 1]['configs'][] = [
                         'name' => $this->_attr('name'),
-                        'value' => $text
+                        'value' => $text,
                     ];
                 } else {
                     $group = $this->_attr('group');
@@ -1481,7 +1485,7 @@ class iaModule extends abstractCore
                                 'divider' => true,
                                 'subject' => '',
                                 'body' => '',
-                                'description' => $this->_attr('description')
+                                'description' => $this->_attr('description'),
                             ];
 
                             break;
@@ -1499,7 +1503,7 @@ class iaModule extends abstractCore
                         } else {
                             $this->itemData['email_templates'][$name] = [
                                 'active' => (int)$text,
-                                'description' => $this->_attr('description')
+                                'description' => $this->_attr('description'),
                             ];
                         }
 
@@ -1520,8 +1524,8 @@ class iaModule extends abstractCore
                             'wysiwyg' => $this->_attr('wysiwyg', 0),
                             'code_editor' => $this->_attr('code_editor', 0),
                             'show' => $this->_attr('show'),
-                            'multilingual' => $this->_attr('multilingual', 0)
-                        ]
+                            'multilingual' => $this->_attr('multilingual', 0),
+                        ],
                     ];
                 }
                 break;
@@ -1532,13 +1536,13 @@ class iaModule extends abstractCore
                     'action' => $this->_attr('action', iaCore::ACTION_READ),
                     'object' => $this->_attr('object', iaAcl::OBJECT_PAGE),
                     'object_id' => $text,
-                    'module' => $this->itemData['name']
+                    'module' => $this->itemData['name'],
                 ];
 
                 if ($this->_checkPath('permissions')) {
                     $this->itemData['permissions'][] = $entry + [
-                        'type' => $this->_attr('type', iaAcl::GROUP, [iaAcl::USER, iaAcl::GROUP, iaAcl::PLAN]),
-                        'type_id' => $this->_attr('type_id')
+                            'type' => $this->_attr('type', iaAcl::GROUP, [iaAcl::USER, iaAcl::GROUP, iaAcl::PLAN]),
+                            'type_id' => $this->_attr('type_id'),
                         ];
                 } elseif ($this->_checkPath('usergroup') && $this->itemData['usergroups']) {
                     $this->itemData['usergroups'][count($this->itemData['usergroups']) - 1]['permissions'][] = $entry;
@@ -1553,7 +1557,7 @@ class iaModule extends abstractCore
                     'action' => $this->_attr('action', iaCore::ACTION_READ),
                     'access' => $this->_attr('access', '0', [0, 1]),
                     'module' => $this->itemData['name'],
-                    'title' => $text
+                    'title' => $text,
                 ];
                 break;
 
@@ -1570,13 +1574,13 @@ class iaModule extends abstractCore
                             'tabcontainer' => $this->_attr('tabcontainer'),
                             'order' => $this->_attr('order', 0),
                             'title' => $this->_attr('title'),
-                            'description' => $text
+                            'description' => $text,
                         ];
                         break;
                     case $this->_checkPath('groups'):
                         $this->itemData['groups'][$text] = [
                             'name' => $this->_attr('name'),
-                            'module' => $this->itemData['name']
+                            'module' => $this->itemData['name'],
                         ];
                 }
                 break;
@@ -1648,7 +1652,7 @@ class iaModule extends abstractCore
                         'folder_name' => $this->_attr('folder_name', ''),
                         // keys below will not be actually written to DB and handled manually
                         'multiselection' => $this->_attr('multiselection', false),
-                        'image_types' => $this->_attr('image_types')
+                        'image_types' => $this->_attr('image_types'),
                         //'numberRangeForSearch' => isset($this->_attributes['numberRangeForSearch']) ? explode(',', $this->_attributes['numberRangeForSearch']) : '',
                     ];
                 } elseif ($this->_checkPath('changeset')) {
@@ -1665,7 +1669,7 @@ class iaModule extends abstractCore
 
                         if (!isset($phrases[$key])) {
                             $phrases[$key] = [
-                                'api' => $this->_attr('api',null),
+                                'api' => $this->_attr('api', null),
                                 'category' => ('phrase' == $this->_inTag)
                                     ? $this->_attr('category', iaLanguage::CATEGORY_COMMON)
                                     : $this->_inTag,
@@ -1701,7 +1705,7 @@ class iaModule extends abstractCore
                     'module' => $this->itemData['name'],
                     'code' => $text,
                     'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
-                    'order' => $this->_attr('order', 0)
+                    'order' => $this->_attr('order', 0),
                 ];
 
                 break;
@@ -1728,7 +1732,7 @@ class iaModule extends abstractCore
                         'pages' => $this->_attr('pages'),
                         'rss' => $this->_attr('rss'),
                         'filename' => $filename,
-                        'classname' => $this->_attr('classname')
+                        'classname' => $this->_attr('classname'),
                     ];
                 } elseif ($this->_checkPath('changeset')) {
                     $this->itemData['changeset'][] = array_merge($this->_attributes, ['type' => $this->_inTag, 'name' => $text]);
@@ -1754,7 +1758,7 @@ class iaModule extends abstractCore
             case 'sql':
                 $entry = [
                     'query' => $text,
-                    'external' => isset($this->_attributes['external'])
+                    'external' => isset($this->_attributes['external']),
                 ];
 
                 $version = $this->_attr('version', self::VERSION_EMPTY);
@@ -1777,7 +1781,7 @@ class iaModule extends abstractCore
                         'type' => $this->_attr('type', '', ['bool', 'int', 'float', 'string']),
                         'default_value' => $this->_attr('default'),
                         'chargeable' => $this->_attr('chargeable', false),
-                        'title' => $text
+                        'title' => $text,
                     ];
                 }
                 break;
@@ -1791,7 +1795,7 @@ class iaModule extends abstractCore
                         'cropper' => $this->_attr('cropper', false),
                         'module' => $this->itemData['name'],
                         'name' => $text,
-                        'extensions' => $this->_attr('extensions')
+                        'extensions' => $this->_attr('extensions'),
                     ];
                 }
                 break;
@@ -1800,7 +1804,7 @@ class iaModule extends abstractCore
                 if ($this->_checkPath('section')) {
                     $this->itemData['layout'][$this->_section][$text] = [
                         'width' => (int)$this->_attr('width', 3),
-                        'fixed' => (bool)$this->_attr('fixed', false)
+                        'fixed' => (bool)$this->_attr('fixed', false),
                     ];
                 }
 
@@ -1810,7 +1814,7 @@ class iaModule extends abstractCore
                     'movable' => $this->_attr('movable', true),
                     'pages' => $this->_attr('pages', ''),
                     'access' => $this->_attr('access', null),
-                    'default_access' => $this->_attr('default_access', null)
+                    'default_access' => $this->_attr('default_access', null),
                 ];
 
                 break;
@@ -1845,18 +1849,14 @@ class iaModule extends abstractCore
         return $this->_url;
     }
 
+    public function getXmlFromPath()
+    {
+        return file_get_contents($this->_xmlFile);
+    }
+
     public function getMenuGroups()
     {
         return array_unique($this->_menuGroups);
-    }
-
-    public function _parserEnd($parser, $name)
-    {
-        array_pop($this->_currentPath);
-    }
-
-    public function _parserComment($parser)
-    {
     }
 
 
@@ -1869,7 +1869,7 @@ class iaModule extends abstractCore
                 if (self::ACTION_INSTALL == $action) {
                     $entry = [
                         'name' => $entryData['name'],
-                        'title' => $entryData['title']
+                        'title' => $entryData['title'],
                     ];
 
                     $this->iaDb->insert($entry, null, $iaTransaction->getTableGateways());
@@ -2130,7 +2130,7 @@ class iaModule extends abstractCore
                             $entryData = [
                                 'field_id' => $fieldIds[$list[0]],
                                 'element' => $fieldValue,
-                                'child' => $fieldName
+                                'child' => $fieldName,
                             ];
 
                             $this->iaDb->insert($entryData);
@@ -2283,13 +2283,17 @@ class iaModule extends abstractCore
 
         $this->iaDb->setTable('positions');
         $this->iaDb->truncate();
-        foreach ($positions as $position) {
-            $positionsList[] = $position['name'];
 
-            $this->iaDb->insert(['name' => $position['name'], 'menu' => (int)$position['menu'], 'movable' => (int)$position['movable']]);
+        foreach ($positions as $position) {
+            if (empty($position['name'])) continue;
+
+            $positionName = $position['name'];
+            $positionsList[] = $positionName;
+
+            $this->iaDb->insert(['name' => $positionName, 'menu' => (int)$position['menu'], 'movable' => (int)$position['movable']]);
 
             if (null != $position['default_access']) {
-                $positionPages[] = ['object_type' => 'positions', 'page_name' => '', 'object' => $position['name'], 'access' => (int)$position['default_access']];
+                $positionPages[] = ['object_type' => 'positions', 'page_name' => '', 'object' => $positionName, 'access' => (int)$position['default_access']];
             }
 
             if ($position['pages']) {
@@ -2372,7 +2376,7 @@ class iaModule extends abstractCore
 
             switch ($entry['type']) {
                 case 'field':
-                    list($fieldName, $itemName) = explode('-', $entry['name']);
+                    [$fieldName, $itemName] = explode('-', $entry['name']);
                     if (empty($fieldName) || empty($itemName)) { // incorrect identity specified by template
                         continue 2;
                     }
@@ -2392,7 +2396,7 @@ class iaModule extends abstractCore
 
             $entryData = $this->iaDb->row('`id`, `' . implode('`,`', array_keys($entry)) . '`', $stmt, $tableName);
 
-            if ($this->iaDb->update($entry, $stmt, null, $tableName)) {
+            if ($entryData && $this->iaDb->update($entry, $stmt, null, $tableName)) {
                 if ('field' != $type && isset($entry['sticky'])) {
                     $this->iaCore->factory('block')->setVisibility($entryData['id'], $entry['sticky'], $pages);
                 }
@@ -2446,7 +2450,7 @@ class iaModule extends abstractCore
             foreach ($actions as $name => $itemData) {
                 switch ($dbTable) {
                     case 'fields':
-                        list($fieldName, $itemName) = explode('-', $name);
+                        [$fieldName, $itemName] = explode('-', $name);
                         $stmt = iaDb::printf("`name` = ':name' AND `item` = ':item'", ['name' => $fieldName, 'item' => $itemName]);
                         break;
                     case 'blocks': // menus are handled here as well

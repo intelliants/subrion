@@ -29,7 +29,7 @@ class iaSitemap extends abstractCore
     const FILENAME = 'sitemap.xml';
 
     const GETTER_METHOD_NAME = 'getSitemapEntries';
-    
+
     const LINKS_SET_CORE = 1;
     const LINKS_SET_PACKAGES = 2;
     const LINKS_SET_PLUGINS = 3;
@@ -109,7 +109,7 @@ class iaSitemap extends abstractCore
         $iaItem = $this->iaCore->factory('item');
 
         $result = [];
-        
+
         switch ($setType) {
             case self::LINKS_SET_CORE:
                 $modulesList = $this->iaDb->keyvalue(['name', 'type'], iaDb::convertIds(iaCore::STATUS_ACTIVE, 'status'), $iaItem::getModulesTable());
@@ -146,10 +146,12 @@ class iaSitemap extends abstractCore
                     if (iaCore::CORE != $module) {
                         $itemClassInstance = $this->iaCore->factoryItem($itemName, iaCore::ADMIN);
 
-                        if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME)) {
-                            $entries = call_user_func([$itemClassInstance, self::GETTER_METHOD_NAME]);
-                            if (is_array($entries) && $entries) {
-                                $result = array_merge($result, $entries);
+                        if (!empty($itemClassInstance) && is_object($itemClassInstance)) {
+                            if (method_exists($itemClassInstance, self::GETTER_METHOD_NAME)) {
+                                $entries = call_user_func([$itemClassInstance, self::GETTER_METHOD_NAME]);
+                                if (is_array($entries) && $entries) {
+                                    $result = array_merge($result, $entries);
+                                }
                             }
                         }
                     }

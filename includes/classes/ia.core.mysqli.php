@@ -116,6 +116,8 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
      */
     public function sql($string = '')
     {
+        if (empty($string)) return '';
+
         return $this->_link ? mysqli_real_escape_string($this->_link, $string) : '';
     }
 
@@ -231,7 +233,7 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         if ($condition) {
             $condition = ' WHERE ' . $condition;
         }
-        if ($limit && stripos($condition, 'limit') === false) {
+        if ($limit && $condition && stripos($condition, 'limit') === false) {
             $condition .= ' LIMIT ' . $start . ', ' . $limit;
         }
 
@@ -499,7 +501,8 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return is_bool($result) ? $result : array_shift($result);
     }
 
-    public function onefield($field = self::ID_COLUMN_SELECTION, $condition = null, $start = 0, $limit = null, $tableName = null) {
+    public function onefield($field = self::ID_COLUMN_SELECTION, $condition = null, $start = 0, $limit = null, $tableName = null)
+    {
         if (false !== strpos($field, ',')) {
             return false;
         }
@@ -539,7 +542,8 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function all($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $start = 0, $limit = null, $tableName = null) {
+    public function all($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $start = 0, $limit = null, $tableName = null)
+    {
         if (is_null($tableName)) {
             $result = $this->_get('all', $fields, $condition, $start, $limit);
         } else {
@@ -551,7 +555,8 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function assoc($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0, $limit = null) {
+    public function assoc($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0, $limit = null)
+    {
         if (is_null($tableName)) {
             $result = $this->_get('assoc', $fields, $condition, $start, $limit);
         } else {
@@ -563,7 +568,8 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
         return $result;
     }
 
-    public function keyvalue($fields = self::ALL_COLUMNS_SELECTION, $condition = null, $tableName = null, $start = 0, $limit = null) {
+    public function keyvalue($fields = self::ALL_COLUMNS_SELECTION, $condition = null, $tableName = null, $start = 0, $limit = null)
+    {
         if (is_null($tableName)) {
             $result = $this->_get('keyval', $fields, $condition, $start, $limit);
         } else {

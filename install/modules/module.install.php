@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 
-define('IA_VER', '421');
+define('IA_VER', '500');
 
 $iaOutput->layout()->title = 'Installation Wizard';
 
@@ -324,17 +324,34 @@ switch ($step) {
 
                 $iaModuleInstaller = iaHelper::loadCoreClass('module');
 
+                // XML template installer filename
                 $templateInstallationFile = IA_HOME . 'templates/' . iaHelper::getPost('tmpl', '') . IA_DS . 'install.xml';
-                $iaModuleInstaller->getFromPath($templateInstallationFile);
 
-                $iaModuleInstaller->parse();
-                $iaModuleInstaller->checkValidity(iaHelper::getPost('tmpl', ''));
+                $xml = XMLReader::open($templateInstallationFile);
 
-                if ($notes = $iaModuleInstaller->getNotes()) {
+                // The validate parser option must be enabled for this method to work properly
+                $xml->setParserProperty(XMLReader::VALIDATE, true);
+
+                if (!$xml->isValid()) {
                     $error = true;
-                    $errorList[] = 'template';
-                    $message = sprintf('Template installation error: %s', implode('<br>', $notes));
+                    $message = 'Template XML is invalid.';
+                } else {
+                    // Set parser source file
+                    $iaModuleInstaller->setXmlFile($templateInstallationFile);
+
+                    // Parse installation instructions
+                    $iaModuleInstaller->parseXML();
+
+                    // Validate installation instructions
+                    $iaModuleInstaller->checkValidity(iaHelper::getPost('tmpl', ''));
+
+                    if ($notes = $iaModuleInstaller->getNotes()) {
+                        $error = true;
+                        $errorList[] = 'template';
+                        $message = sprintf('Template installation error: %s', implode('<br>', $notes));
+                    }
                 }
+                $xml->close();
 
                 if (!$error) {
                     $config = file_get_contents(IA_INSTALL . 'modules/config.sample');
@@ -376,7 +393,6 @@ HTML;
                     $params = [
                         '{version}' => IA_VERSION,
                         '{date}' => (new \DateTime())->format('d F Y H:i:s'),
-                        '{dbconnector}' => in_array('mysqli', get_loaded_extensions()) && function_exists('mysqli_connect') ? 'mysqli' : 'mysql',
                         '{dbhost}' => iaHelper::getPost('dbhost'),
                         '{dbuser}' => iaHelper::getPost('dbuser'),
                         '{dbpass}' => iaHelper::getPost('dbpwd', '', false),
@@ -450,14 +466,14 @@ HTML;
 
                     $modulesFolder = IA_HOME . 'modules/';
                     foreach ($builtinPlugins as $pluginName) {
-                        $installationFile = file_get_contents($modulesFolder . $pluginName . IA_DS . iaHelper::INSTALLATION_FILE_NAME);
-                        if ($installationFile !== false) {
-                            $iaModuleInstaller->setXml($installationFile);
-                            $iaModuleInstaller->parse();
+                        // Set parser source file
+                        $iaModuleInstaller->setXmlFile($modulesFolder . $pluginName . IA_DS . iaHelper::INSTALLATION_FILE_NAME);
 
-                            if (!$iaModuleInstaller->getNotes()) {
-                                $result = $iaModuleInstaller->install();
-                            }
+                        // Parse installation instructions
+                        $iaModuleInstaller->parseXML();
+
+                        if (!$iaModuleInstaller->getNotes()) {
+                            $result = $iaModuleInstaller->install();
                         }
                     }
                 }

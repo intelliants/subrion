@@ -201,7 +201,7 @@
                 <label class="col col-lg-2 control-label">{lang key='change_status_to'}</label>
 
                 <div class="col col-lg-4">
-                    <select name="expiration_status"{foreach $expiration_statuses as $itemName => $entry} data-{$itemName}="{$entry|implode:','}"{/foreach}>
+                    <select name="expiration_status"{foreach $expiration_statuses as $itemName => $itemStatuses} data-{$itemName}="{implode(',', $itemStatuses)}"{/foreach}>
                         <option value=""{if empty($item.expiration_status)} selected{/if}>{lang key='_do_not_change_'}</option>
                         {if iaCore::ACTION_EDIT == $pageAction && $item.item}
                             {foreach $expiration_statuses[$item.item] as $value}
@@ -263,16 +263,15 @@
                         <label class="col col-lg-2 control-label">{lang key="plan_option_{$itemName}_{$option.name}"}</label>
 
                         <div class="col col-lg-4">
-                            {switch $option.type}
-                                {case 'int' break}
-                                    <input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
-                                {case 'float' break}
-                                    <input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
-                                {case 'bool' break}
-                                    {html_radio_switcher value={$option.values.value} name="options[{$option.id}][value]"}
-                                {default}
-                                    <input type="text" name="options[{$option.id}][value]" value="{$option.values.value|escape}">
-                            {/switch}
+                            {if $option.type == 'int'}
+                                <input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
+                            {elseif $option.type == 'float'}
+                                <input type="text" name="options[{$option.id}][value]" class="js-filter-numeric" value="{$option.values.value}">
+                            {elseif $option.type == 'bool'}
+                                {html_radio_switcher value={$option.values.value} name="options[{$option.id}][value]"}
+                            {else}
+                                <input type="text" name="options[{$option.id}][value]" value="{$option.values.value|escape}">
+                            {/if}
 
                             {if $option.chargeable}
                                 <div class="plan-options__price"{if !$option.values.value} style="display:none;"{/if}>

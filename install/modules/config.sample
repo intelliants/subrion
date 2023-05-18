@@ -4,7 +4,6 @@
  * Config file generated on {date}
  */
 
-define('INTELLI_CONNECT', '{dbconnector}');
 define('INTELLI_DBHOST', '{dbhost}');
 define('INTELLI_DBUSER', '{dbuser}');
 define('INTELLI_DBPASS', '{dbpass}');

@@ -519,110 +519,108 @@ class iaBackendController extends iaAbstractControllerBackend
         while ($file = readdir($directory)) {
             $installationFile = $this->_folder . $file . IA_DS . iaModule::INSTALL_FILE_NAME;
             if (substr($file, 0, 1) != '.' && is_dir($this->_folder . $file) && file_exists($installationFile)) {
-                if ($fileContents = file_get_contents($installationFile)) {
-                    $this->getHelper()->setXml($fileContents);
-                    $this->getHelper()->parse();
+                $this->getHelper()->setXmlFile($installationFile);
+                $this->getHelper()->parseXML();
 
-                    if (iaModule::TYPE_PACKAGE != $this->getHelper()->itemData['type']) {
-                        continue;
-                    }
-
-                    $this->getHelper()->itemData['url'] = '';
-
-                    $data = &$this->getHelper()->itemData;
-
-                    $compatible = $this->_checkCompatibility($this->getHelper()->itemData['compatibility']);
-
-
-                    $status = 'notinstall';
-                    $buttons = [
-                        'readme' => true,
-                        'activate' => false,
-                        'set_default' => false,
-                        'deactivate' => false,
-                        'install' => false,
-                        'uninstall' => false,
-                        'upgrade' => false,
-                        'config' => false,
-                        'manage' => false,
-                        'import' => false
-                    ];
-                    $installed = false;
-                    if (isset($existPackages[$data['name']])) {
-                        $installed = true;
-                        $status = $statuses[$data['name']];
-                    }
-
-                    switch ($status) {
-                        case 'install':
-                        case 'active':
-                            $buttons['deactivate'] = true;
-                            $buttons['set_default'] = true;
-
-                            if (is_dir($this->_folder . $file . '/includes/dumps')) {
-                                $buttons['import'] = true;
-                            }
-
-                            if ($extraConfig = $this->_iaCore->factory('config')->getBy('module', $data['name'])) {
-                                $buttons['config'] = [
-                                    'url' => $extraConfig['config_group'],
-                                    'anchor' => $extraConfig['key']
-                                ];
-                            }
-
-                            if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name',
-                                ['name' => $data['name'] . '_manage'], 'admin_pages')
-                            ) {
-                                $buttons['manage'] = $alias;
-                            }
-
-                            if ($compatible && version_compare($data['info']['version'], $existPackages[$data['name']],
-                                    '>')
-                            ) {
-                                $buttons['upgrade'] = true;
-                            }
-
-                            $buttons['reinstall'] = true;
-
-                            break;
-
-                        case 'inactive':
-
-                            $buttons['activate'] = true;
-                            $buttons['uninstall'] = true;
-
-                            break;
-
-                        case 'notinstall':
-                            $buttons['install'] = true;
-                    }
-
-                    $moduleNames[] = $data['name'];
-
-                    $buttons['docs'] = 'https://subrion.org/package/' . $data['name'] . '.html';
-
-                    $result[] = [
-                        'title' => $data['info']['title'],
-                        'version' => $data['info']['version'],
-                        'description' => $data['info']['title'],
-                        'contributor' => $data['info']['contributor'],
-                        'compatibility' => $data['compatibility'],
-                        'author' => $data['info']['author'],
-                        'summary' => $data['info']['summary'],
-                        'date' => $data['info']['date'],
-                        'name' => $data['name'],
-                        'buttons' => $buttons,
-                        'url' => $data['url'],
-                        'logo' => IA_CLEAR_URL . 'modules/' . $data['name'] . '/docs/img/icon.png',
-                        'file' => $file,
-                        'price' => 0,
-                        'status' => $status,
-                        'installed' => $installed,
-                        'date_updated' => ($status != 'notinstall') ? $dates[$data['name']] : false,
-                        'install' => true,
-                        'remote' => false
-                    ];
+                if (iaModule::TYPE_PACKAGE != $this->getHelper()->itemData['type']) {
+                    continue;
                 }
+
+                $this->getHelper()->itemData['url'] = '';
+
+                $data = &$this->getHelper()->itemData;
+
+                $compatible = $this->_checkCompatibility($this->getHelper()->itemData['compatibility']);
+
+
+                $status = 'notinstall';
+                $buttons = [
+                    'readme' => true,
+                    'activate' => false,
+                    'set_default' => false,
+                    'deactivate' => false,
+                    'install' => false,
+                    'uninstall' => false,
+                    'upgrade' => false,
+                    'config' => false,
+                    'manage' => false,
+                    'import' => false
+                ];
+                $installed = false;
+                if (isset($existPackages[$data['name']])) {
+                    $installed = true;
+                    $status = $statuses[$data['name']];
+                }
+
+                switch ($status) {
+                    case 'install':
+                    case 'active':
+                        $buttons['deactivate'] = true;
+                        $buttons['set_default'] = true;
+
+                        if (is_dir($this->_folder . $file . '/includes/dumps')) {
+                            $buttons['import'] = true;
+                        }
+
+                        if ($extraConfig = $this->_iaCore->factory('config')->getBy('module', $data['name'])) {
+                            $buttons['config'] = [
+                                'url' => $extraConfig['config_group'],
+                                'anchor' => $extraConfig['key']
+                            ];
+                        }
+
+                        if ($alias = $this->_iaDb->one_bind('alias', '`name` = :name',
+                            ['name' => $data['name'] . '_manage'], 'admin_pages')
+                        ) {
+                            $buttons['manage'] = $alias;
+                        }
+
+                        if ($compatible && version_compare($data['info']['version'], $existPackages[$data['name']],
+                                '>')
+                        ) {
+                            $buttons['upgrade'] = true;
+                        }
+
+                        $buttons['reinstall'] = true;
+
+                        break;
+
+                    case 'inactive':
+
+                        $buttons['activate'] = true;
+                        $buttons['uninstall'] = true;
+
+                        break;
+
+                    case 'notinstall':
+                        $buttons['install'] = true;
+                }
+
+                $moduleNames[] = $data['name'];
+
+                $buttons['docs'] = 'https://subrion.org/package/' . $data['name'] . '.html';
+
+                $result[] = [
+                    'title' => $data['info']['title'],
+                    'version' => $data['info']['version'],
+                    'description' => $data['info']['title'],
+                    'contributor' => $data['info']['contributor'],
+                    'compatibility' => $data['compatibility'],
+                    'author' => $data['info']['author'],
+                    'summary' => $data['info']['summary'],
+                    'date' => $data['info']['date'],
+                    'name' => $data['name'],
+                    'buttons' => $buttons,
+                    'url' => $data['url'],
+                    'logo' => IA_CLEAR_URL . 'modules/' . $data['name'] . '/docs/img/icon.png',
+                    'file' => $file,
+                    'price' => 0,
+                    'status' => $status,
+                    'installed' => $installed,
+                    'date_updated' => ($status != 'notinstall') ? $dates[$data['name']] : false,
+                    'install' => true,
+                    'remote' => false
+                ];
             }
         }
 
@@ -1008,8 +1006,8 @@ class iaBackendController extends iaAbstractControllerBackend
                 if (is_dir($path . $file)) {
                     $installFile = $path . $file . IA_DS . iaModule::INSTALL_FILE_NAME;
                     if (file_exists($installFile)) {
-                        $this->getHelper()->getFromPath($installFile);
-                        $this->getHelper()->parse(true);
+                        $this->getHelper()->setXmlFile($installFile);
+                        $this->getHelper()->parseXML(true);
                         $this->getHelper()->checkValidity($file);
 
                         // use valid type only

@@ -1,5 +1,4 @@
-{switch $action}
-    {case 'sql' break}
+{if $action == 'sql'}
     {if isset($queryOut)}
     <div class="box-simple" id="query_box">{$queryOut}</div>
     {/if}
@@ -69,8 +68,7 @@
         </div>
     </div>
     {/if}
-
-    {case 'import' break}
+{elseif $action == 'import'}
     <form method="post" class="sap-form form-horizontal" id="importFile">
         {preventCsrf}
         {if $dumpFiles}
@@ -205,9 +203,7 @@ $(function()
     });
 });
     {/ia_add_js}
-
-    {case 'export' break}
-
+{elseif $action == 'export'}
     {if isset($outerSql)}
         <div class="box-simple box-simple-large">
             <pre>{$outerSql}</pre>
@@ -300,8 +296,7 @@ $(function()
             <input type="submit" name="export" value="{lang key='go'}" class="btn btn-primary">
         </div>
     </form>
-
-    {case 'consistency' break}
+{elseif $action == 'consistency'}
     <form class="sap-form form-horizontal">
         <div class="wrap-list">
             <div class="wrap-group">
@@ -327,8 +322,7 @@ $(function()
             </div>
         </div>
     </form>
-
-    {case 'reset' break}
+{elseif $action == 'reset'}
     <form method="post" class="sap-form form-horizontal">
         {preventCsrf}
         <div class="wrap-list">
@@ -351,6 +345,7 @@ $(function()
             <input type="button" id="js-reset-all" class="btn btn-danger" value="{lang key='reset_all'}">
         </div>
     </form>
-{/switch}
+{/if}
+
 {ia_hooker name='tplAdminDatabaseBeforeFooter'}
 {ia_print_js files='admin/database'}

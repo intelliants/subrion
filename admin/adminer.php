@@ -50,7 +50,7 @@ if (iaCore::ACCESS_ADMIN == $iaCore->getAccessType()) {
     $_GET['username'] = INTELLI_DBUSER;
     $_GET['server'] = INTELLI_DBHOST;
     $_GET['db'] = INTELLI_DBNAME;
-    $_GET['driver'] = INTELLI_CONNECT;
+    $_GET['driver'] = 'mysqli';
 
     $iaView->set('nodebug', 1);
     $iaView->disableLayout();

@@ -14,72 +14,61 @@
             {/if}
             <div class="form-group">
                 <label>{lang key="field_{$field.item}_{$field.name}"}</label>
-                {switch $field.type}
-                    {case iaField::CHECKBOX break}
-                        <div class="radios-list">
-                            {html_checkboxes assign='checkboxes' name=$field.name options=$field.values separator='</div>' selected=$selected}
-                            <div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
+                {if iaField::CHECKBOX == $field.type}
+                    <div class="radios-list">
+                        {html_checkboxes assign='checkboxes' name=$field.name options=$field.values separator='</div>' selected=$selected}
+                        <div class="checkbox">{'<div class="checkbox">'|implode:$checkboxes}
+                    </div>
+                {elseif iaField::COMBO == $field.type}
+                    <select class="form-control js-interactive" name="{$field.name}[]" multiple>
+                        {if !empty($field.values)}
+                            {html_options options=$field.values selected=$selected}
+                        {/if}
+                    </select>
+                {elseif iaField::RADIO == $field.type}
+                    <div class="radios-list">
+                        {if !empty($field.values)}
+                            {html_radios assign='radios' name=$field.name id=$field.name options=$field.values separator='</div>'}
+                            <div class="radio">{'<div class="radio">'|implode:$radios}
+                        {/if}
+                    </div>
+                {elseif iaField::NUMBER == $field.type}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="ia-form__label-mini">{lang key='from'}</label>
+                            <input class="form-control" type="text" name="{$field.name}[f]" maxlength="{$field.length}" placeholder="{$field.range[0]}"{if $selected} value="{$selected.f|escape}"{/if}>
                         </div>
-
-                    {case iaField::COMBO break}
-                        <select class="form-control js-interactive" name="{$field.name}[]" multiple>
-                            {if !empty($field.values)}
-                                {html_options options=$field.values selected=$selected}
-                            {/if}
-                        </select>
-
-                    {case iaField::RADIO break}
-                        <div class="radios-list">
-                            {if !empty($field.values)}
-                                {html_radios assign='radios' name=$field.name id=$field.name options=$field.values separator='</div>'}
-                                <div class="radio">{'<div class="radio">'|implode:$radios}
-                            {/if}
+                        <div class="col-md-6">
+                            <label class="ia-form__label-mini">{lang key='to'}</label>
+                            <input class="form-control" type="text" name="{$field.name}[t]" maxlength="{$field.length}" placeholder="{$field.range[1]}"{if $selected} value="{$selected.t|escape}"{/if}>
                         </div>
-
-                    {case iaField::STORAGE}
-                    {case iaField::IMAGE}
-                    {case iaField::PICTURES break}
-                        <input type="checkbox" name="{$field.name}" value="1"{if $selected} checked{/if}>
-
-                    {case iaField::NUMBER break}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="ia-form__label-mini">{lang key='from'}</label>
+                    </div>
+                {elseif in_array($field.type, [iaField::STORAGE, iaField::IMAGE, iaField::PICTURES])}
+                    <input type="checkbox" name="{$field.name}" value="1"{if $selected} checked{/if}>
+                {elseif in_array($field.type, [iaField::TEXT, iaField::TEXTAREA])}
+                    <input class="form-control" type="text" name="{$field.name}"{if is_string($selected)} value="{$selected|escape}"{/if}>
+                {elseif iaField::CURRENCY == $field.type}
+                    <div class="row">
+                        <div class="col-md-7">
+                            <label class="ia-form__label-mini">{lang key='from'}</label>
+                            <div class="input-group">
+                                <div class="input-group-addon">{$core.currency.code}</div>
                                 <input class="form-control" type="text" name="{$field.name}[f]" maxlength="{$field.length}" placeholder="{$field.range[0]}"{if $selected} value="{$selected.f|escape}"{/if}>
                             </div>
-                            <div class="col-md-6">
-                                <label class="ia-form__label-mini">{lang key='to'}</label>
-                                <input class="form-control" type="text" name="{$field.name}[t]" maxlength="{$field.length}" placeholder="{$field.range[1]}"{if $selected} value="{$selected.t|escape}"{/if}>
-                            </div>
                         </div>
-
-                    {case iaField::TEXT}
-                    {case iaField::TEXTAREA break}
-                        <input class="form-control" type="text" name="{$field.name}"{if is_string($selected)} value="{$selected|escape}"{/if}>
-
-                    {case iaField::CURRENCY break}
-                        <div class="row">
-                            <div class="col-md-7">
-                                <label class="ia-form__label-mini">{lang key='from'}</label>
-                                <div class="input-group">
-                                    <div class="input-group-addon">{$core.currency.code}</div>
-                                    <input class="form-control" type="text" name="{$field.name}[f]" maxlength="{$field.length}" placeholder="{$field.range[0]}"{if $selected} value="{$selected.f|escape}"{/if}>
-                                </div>
-                            </div>
-                            <div class="col-md-5">
-                                <label class="ia-form__label-mini">{lang key='to'}</label>
-                                <input class="form-control" type="text" name="{$field.name}[t]" maxlength="{$field.length}" placeholder="{$field.range[1]}"{if $selected} value="{$selected.t|escape}"{/if}>
-                            </div>
+                        <div class="col-md-5">
+                            <label class="ia-form__label-mini">{lang key='to'}</label>
+                            <input class="form-control" type="text" name="{$field.name}[t]" maxlength="{$field.length}" placeholder="{$field.range[1]}"{if $selected} value="{$selected.t|escape}"{/if}>
                         </div>
-
-                    {case iaField::TREE}
-                        <select class="form-control" name="{$field.name}[]" multiple>
-                            <option value="">&lt;{lang key='any'}&gt;</option>
-                            {if !empty($field.values)}
-                                {html_options options=$field.values selected=$selected}
-                            {/if}
-                        </select>
-                {/switch}
+                    </div>
+                {elseif iaField::TREE == $field.type}
+                    <select class="form-control" name="{$field.name}[]" multiple>
+                        <option value="">&lt;{lang key='any'}&gt;</option>
+                        {if !empty($field.values)}
+                            {html_options options=$field.values selected=$selected}
+                        {/if}
+                    </select>
+                {/if}
             </div>
         {/foreach}
 

@@ -152,7 +152,7 @@ interface iaInterfaceDbAdapter
      *
      * @return array
      */
-    public function getAll($sql, $start = 0, $limit = 0);
+    public function getAll($sql, int $start = 0, int $limit = 0);
 
     /**
      * Returns associative array of rows, first column of the query is used as a key
@@ -240,7 +240,7 @@ interface iaInterfaceDbAdapter
      *
      * @return bool|mixed
      */
-    public function one($field, $condition = '', $tableName = null, $start = 0);
+    public function one($field, string $condition = '', $tableName = null, $start = 0);
 
     /**
      * Returns table column values as an array
@@ -253,7 +253,7 @@ interface iaInterfaceDbAdapter
      *
      * @return array
      */
-    public function onefield($field = self::ID_COLUMN_SELECTION, $condition = null, $start = 0, $limit = null, $tableName = null);
+    public function onefield($field = self::ID_COLUMN_SELECTION, string $condition = null, $start = 0, $limit = null, $tableName = null);
 
     /**
      * Returns one table row as array
@@ -265,7 +265,7 @@ interface iaInterfaceDbAdapter
      *
      * @return array
      */
-    public function row($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $tableName = null, $start = 0);
+    public function row($fields = self::ALL_COLUMNS_SELECTION, string $condition = '', $tableName = null, $start = 0);
 
     /**
      * Returns table rows as array
@@ -278,7 +278,7 @@ interface iaInterfaceDbAdapter
      *
      * @return array
      */
-    public function all($fields = self::ALL_COLUMNS_SELECTION, $condition = '', $start = 0, $limit = null, $tableName = null);
+    public function all($fields = self::ALL_COLUMNS_SELECTION, string $condition = '', $start = 0, $limit = null, $tableName = null);
 
     /**
      * Returns associative array of rows, first column of the query is used as a key

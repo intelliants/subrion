@@ -109,7 +109,7 @@ class iaHelper
     {
         if (!class_exists('iaCore')) {
             define('IA_INCLUDES', IA_HOME . 'includes/');
-            define('IA_SMARTY', IA_INCLUDES . 'smarty/');
+            define('IA_SMARTY', IA_INCLUDES . 'smarty4/');
             define('IA_CLASSES', IA_INCLUDES . 'classes/');
             define('IA_MODULES', IA_HOME . 'modules/');
             define('IA_TMP', IA_HOME . 'tmp/');
@@ -118,7 +118,6 @@ class iaHelper
             if (file_exists(IA_INCLUDES . self::CONFIGURATION_FILE)) {
                 include_once IA_INCLUDES . self::CONFIGURATION_FILE;
             } else {
-                define('INTELLI_CONNECT', in_array('mysqli', get_loaded_extensions()) && function_exists('mysqli_connect') ? 'mysqli' : 'mysql');
                 define('INTELLI_DBHOST', self::getPost('dbhost', 'localhost'));
                 define('INTELLI_DBPORT', self::getPost('dbport', 3306));
                 define('INTELLI_DBUSER', self::getPost('dbuser'));
@@ -335,6 +334,8 @@ class iaHelper
                     require_once self::_composePath([IA_HOME, 'includes', 'utils']) . 'pclzip.lib.php';
                     $zipSource = new PclZip($savePath);
 
+                    die($savePath);
+                    die;
                     if ($zipSource->extract(PCLZIP_OPT_PATH, $extrasFolder . $pluginName)) {
                         $installationFile = file_get_contents($pluginFolder . self::INSTALLATION_FILE_NAME);
                         if ($installationFile !== false) {

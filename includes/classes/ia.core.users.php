@@ -160,7 +160,7 @@ class iaUsers extends abstractCore
                     $this->iaView->name('login');
                 }
             } else {
-                $this->addIpAddressMember();
+                $this->addMemberIpAddress();
                 if (isset($_SESSION['referrer'])) { // this variable is set by Login page handler
                     header('Location: ' . $_SESSION['referrer']);
                     unset($_SESSION['referrer']);
@@ -1061,15 +1061,15 @@ SQL;
         return $this->coreSearch($where, 0, 50, null)[1];
     }
 
-    private function addIpAddressMember()
+    private function addMemberIpAddress()
     {
         $data = [
             'member_name' => $this->getIdentity()->username,
-            'ip_address' => $_SERVER['REMOTE_ADDR'],
+            'ip_address' => $this->iaCore->util()->getIp(false),
             'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-            'entry_date' => $this->getIdentity()->date_logged
+            'entry_date' => $this->getIdentity()->date_logged,
         ];
 
-        $this->iaDb->insert($data, null ,  'members_addresses');
+        $this->iaDb->insert($data, null, 'members_addresses');
     }
 }

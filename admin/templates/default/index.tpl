@@ -8,7 +8,7 @@
         <p>{lang key='loading_widgets'}</p>
     </div>
 {else}
-    <input type="hidden" id="js-disabled-widgets-list" value="{$disabled_widgets|implode:','}">
+    <input type="hidden" id="js-disabled-widgets-list" value="{implode(',', $disabled_widgets)}">
 {/if}
 
 {ia_hooker name='smartyDashboardBeforeContent'}

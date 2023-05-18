@@ -181,6 +181,8 @@ final class iaSystem
                         if (isset($v['args'])) {
                             $separator = '';
                             foreach ($v['args'] as $argument) {
+                                if (empty($argument)) continue;
+
                                 $trace .= $separator . htmlspecialchars(self::_getArgument($argument));
                                 $separator = ', ';
                             }
@@ -191,6 +193,8 @@ final class iaSystem
                         if (isset($v['args'])) {
                             $separator = '';
                             foreach ($v['args'] as $argument) {
+                                if (empty($argument)) continue;
+
                                 $trace .= $separator . htmlspecialchars(self::_getArgument($argument));
                                 $separator = ', ';
                             }
