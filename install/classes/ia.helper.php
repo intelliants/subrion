@@ -109,7 +109,7 @@ class iaHelper
     {
         if (!class_exists('iaCore')) {
             define('IA_INCLUDES', IA_HOME . 'includes/');
-            define('IA_SMARTY', IA_INCLUDES . 'smarty4/');
+            define('IA_SMARTY', IA_INCLUDES . 'smarty/');
             define('IA_CLASSES', IA_INCLUDES . 'classes/');
             define('IA_MODULES', IA_HOME . 'modules/');
             define('IA_TMP', IA_HOME . 'tmp/');

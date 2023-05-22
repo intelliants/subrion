@@ -49,7 +49,7 @@ define('IA_INCLUDES', IA_HOME . 'includes/');
 define('IA_CLASSES', IA_INCLUDES . 'classes/');
 define('IA_MODULES', IA_HOME . 'modules/');
 define('IA_UPLOADS', IA_HOME . 'uploads/');
-define('IA_SMARTY', IA_INCLUDES . 'smarty4/');
+define('IA_SMARTY', IA_INCLUDES . 'smarty/');
 define('IA_TMP', IA_HOME . 'tmp/');
 define('IA_CACHEDIR', IA_TMP . 'cache/');
 define('IA_FRONT', IA_HOME . 'front/');

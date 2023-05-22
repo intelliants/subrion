@@ -83,17 +83,23 @@ switch ($step) {
                 ? '<td class="success">Available</td>'
                 : '<td class="danger">Unavailable (highly recommended to enable "CURL" extension or "allow_url_fopen")</td>'
         ];
+        $checks['server']['curl'] = [
+            'name' => 'cURL extension',
+            'value' => extension_loaded('curl')
+                ? '<td class="success">Available</td>'
+                : '<td class="danger">Unavailable (not required) </td>'
+        ];
         $checks['server']['xml'] = [
             'name' => 'XML support',
             'value' => extension_loaded('xml')
                 ? '<td class="success">Available</td>'
                 : '<td class="danger">Unavailable (recommended)</td>'
         ];
-        $checks['server']['mysql_support'] = [
-            'name' => 'MySQL support (MySQLi)',
-            'value' => function_exists('mysqli_connect')
+        $checks['server']['zip'] = [
+            'name' => 'ZIP support',
+            'value' => extension_loaded('zip')
                 ? '<td class="success">Available</td>'
-                : '<td class="danger">Unavailable (required)</td>'
+                : '<td class="danger">Unavailable (recommended)</td>'
         ];
         $checks['server']['gd'] = [
             'name' => 'GD extension',
@@ -118,7 +124,6 @@ switch ($step) {
 
         $recommendedSettings = [
             ['File Uploads', 'file_uploads', 'ON'],
-            ['Register Globals', 'register_globals', 'OFF']
         ];
         foreach ($recommendedSettings as $item) {
             $checks['recommended'][$item[1]] = [

@@ -119,8 +119,7 @@ class Smarty_Internal_Runtime_Capture
                 $_template->assign($assign, ob_get_contents());
             }
             if (isset($append)) {
-                // MODIFIED BY VBEZRUCHKIN, to make capture compatible with Subrion CMS
-                $_template->append($append, array($buffer => ob_get_contents()), true);
+                $_template->append($append, ob_get_contents());
             }
             $this->namedBuffer[ $buffer ] = ob_get_clean();
         } else {
