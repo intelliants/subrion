@@ -366,7 +366,8 @@ HTML;
         // currently just print out the call directly into html body
         // TODO: check if a call of this resource was already printed out
         if ($iaView->get(self::FLAG_CSS_RENDERED)) {
-            $array = $iaView->resources->css;
+            $array = (array)$iaView->resources->css;
+
             end($array);
             $resource = key($array);
 
@@ -715,7 +716,7 @@ HTML;
     {
         $result = '';
 
-        if (trim($content)) {
+        if (trim((string)$content)) {
             $smarty->assign('collapsible', isset($params['collapsible']) ? $params['collapsible'] : false);
             $smarty->assign('collapsed', isset($params['collapsed']) ? $params['collapsed'] : false);
             $smarty->assign('hidden', isset($params['hidden']) ? $params['hidden'] : false);

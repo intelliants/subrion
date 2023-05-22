@@ -99,14 +99,14 @@ class iaModule extends abstractCore
             'type' => self::TYPE_PLUGIN,
             'name' => '',
             'info' => [
+                'title' => '',
+                'summary' => '',
                 'author' => '',
                 'contributor' => '',
-                'date' => '',
-                'summary' => '',
-                'status' => iaCore::STATUS_ACTIVE,
-                'title' => '',
                 'version' => '',
+                'date' => '',
                 'category' => '',
+                'status' => iaCore::STATUS_ACTIVE,
             ],
             'actions' => null,
             'blocks' => null,
@@ -124,9 +124,9 @@ class iaModule extends abstractCore
             'dependencies' => null,
             'dumps' => null,
             'email_templates' => null,
-            'fields' => null,
-            'groups' => null,
-            'hooks' => null,
+            'fields' => [],
+            'groups' => [],
+            'hooks' => [],
             'items' => null,
             'item_fields' => null,
             'item_field_groups' => null,
@@ -135,9 +135,9 @@ class iaModule extends abstractCore
             'module' => '',
             'objects' => null,
             'pages' => [
-                'admin' => null,
-                'custom' => null,
-                'front' => null,
+                'admin' => [],
+                'custom' => [],
+                'front' => [],
             ],
             'permissions' => null,
             'phrases' => null,
@@ -192,13 +192,13 @@ class iaModule extends abstractCore
         $this->_attributes = $attributes;
         $this->_currentPath[] = $name;
 
-        if ('section' == $this->_inTag && !empty($attributes['name'])) {
-            $this->_section = $attributes['name'];
-        }
-
         if ('module' == $this->_inTag && !empty($this->_attributes['name'])) {
             $this->itemData['type'] = $this->_attributes['type'];
             $this->itemData['name'] = $this->_attributes['name'];
+        }
+
+        if ('section' == $this->_inTag && !empty($attributes['name'])) {
+            $this->_section = $attributes['name'];
         }
 
         if ('usergroup' == $name) {
@@ -221,8 +221,9 @@ class iaModule extends abstractCore
 
     public function parseXML($quickMode = false)
     {
-        $this->_resetValues();
         $this->_quickParseMode = $quickMode;
+
+        $this->_resetValues();
 
         $xmlParser = xml_parser_create();
 
@@ -233,7 +234,7 @@ class iaModule extends abstractCore
         xml_set_element_handler($xmlParser, [&$this, '_parserStart'], [&$this, '_parserEnd']);
         xml_set_character_data_handler($xmlParser, [&$this, $quickMode ? '_parserQuickData' : '_parserData']);
 
-        xml_parse($xmlParser, $this->getXmlFromPath());
+        xml_parse($xmlParser, $this->getXmlFromPath(), true);
 
         xml_parser_free($xmlParser);
 
@@ -896,7 +897,7 @@ class iaModule extends abstractCore
         $this->uninstall($this->itemData['name']);
 
         if (self::TYPE_TEMPLATE == $this->itemData['type']) {
-            if (self::SETUP_REPLACE == $type) {
+            if (self::SETUP_REPLACE == $type || defined('INSTALL')) {
                 $templateName = $this->iaCore->get('tmpl');
 
                 $tablesList = ['hooks', 'blocks', iaLanguage::getTable(), 'pages', iaConfig::getTable(),
@@ -932,9 +933,7 @@ class iaModule extends abstractCore
 
         !empty($this->itemData['image_types']) && $this->_processImageTypes($this->itemData['image_types']);
 
-        if ($this->itemData['pages']['admin']) {
-            $this->_processAdminPages($this->itemData['pages']['admin']);
-        }
+        !empty($this->itemData['pages']['admin']) && $this->_processAdminPages($this->itemData['pages']['admin']);
 
         !empty($this->itemData['actions']) && $this->_processActions($this->itemData['actions']);
 
@@ -1298,7 +1297,8 @@ class iaModule extends abstractCore
 
     public function _parserQuickData($parser, $text)
     {
-        if (empty(trim((string)$text))) return;
+        $text = trim($text);
+        if (empty($text)) return;
 
         if (in_array($this->_inTag, ['title', 'summary', 'author', 'contributor', 'version', 'date'])) {
             $this->itemData['info'][$this->_inTag] = trim($text);
@@ -1318,524 +1318,530 @@ class iaModule extends abstractCore
 
     public function _parserData($parser, $text)
     {
-        $text = (string)trim($text);
+        $text = trim($text);
 
-        if (empty($text)) return;
+        if (end($this->_currentPath) == $this->_inTag) {
+            switch ($this->_inTag) {
+                case 'title':
+                case 'summary':
+                case 'author':
+                case 'contributor':
+                case 'version':
+                case 'date':
+                case 'category':
+                    $this->itemData['info'][$this->_inTag] = $text;
+                    break;
 
-        switch ($this->_inTag) {
-            case 'title':
-            case 'summary':
-            case 'author':
-            case 'contributor':
-            case 'version':
-            case 'date':
-            case 'category':
-                $this->itemData['info'][$this->_inTag] = $text;
-                break;
+                case 'compatibility':
+                case 'url':
+                    $this->itemData[$this->_inTag] = $text;
+                    break;
 
-            case 'compatibility':
-            case 'url':
-                $this->itemData[$this->_inTag] = $text;
-                break;
+                case 'item':
+                    if ($this->_checkPath('items')) {
+                        $this->itemData['items'][$text] = [
+                            'item' => iaItem::toSingular($text),
+                            'payable' => (int)$this->_attr('payable', true),
+                            'pages' => $this->_attr('pages'),
+                            'table_name' => $this->_attr('table_name'),
+                            'class_name' => $this->_attr('class_name'),
+                        ];
 
-            case 'item':
-                if ($this->_checkPath('items')) {
-                    $this->itemData['items'][$text] = [
-                        'item' => iaItem::toSingular($text),
-                        'payable' => (int)$this->_attr('payable', true),
-                        'pages' => $this->_attr('pages'),
-                        'table_name' => $this->_attr('table_name'),
-                        'class_name' => $this->_attr('class_name'),
-                    ];
-
-                    if (isset($this->_attributes['pages']) && $this->_attributes['pages']) {
-                        foreach (explode(',', $this->_attributes['pages']) as $val) {
-                            $this->itemData['pages']['custom'][] = ['name' => $val, 'item' => $text];
+                        if (isset($this->_attributes['pages']) && $this->_attributes['pages']) {
+                            foreach (explode(',', $this->_attributes['pages']) as $val) {
+                                $this->itemData['pages']['custom'][] = ['name' => $val, 'item' => $text];
+                            }
                         }
                     }
-                }
-                break;
+                    break;
 
-            case 'screenshot':
-                if ($this->_checkPath('screenshots')) {
-                    $this->itemData['screenshots'][] = [
+                case 'screenshot':
+                    if ($this->_checkPath('screenshots')) {
+                        $this->itemData['screenshots'][] = [
+                            'name' => $this->_attr('name'),
+                            'title' => $text,
+                            'type' => $this->_attr('type', 'lightbox'),
+                        ];
+                    }
+                    break;
+
+                case 'dependency':
+                    $this->itemData['dependencies'][$text] = [
+                        'type' => $this->_attr('type'),
+                        'exist' => $this->_attr('exist', true),
+                    ];
+                    break;
+
+                case 'extension':
+                    if ($this->_checkPath('requires')) {
+                        $this->itemData['requirements'][] = [
+                            'name' => $text,
+                            'type' => $this->_attr('type', 'package', [self::TYPE_PACKAGE, self::TYPE_PLUGIN]),
+                            'min' => $this->_attr(['min_version', 'min'], false),
+                            'max' => $this->_attr(['max_version', 'max'], false),
+                        ];
+                    }
+                    break;
+
+                case 'action':
+                    if ($this->_checkPath('actions')) {
+                        $this->itemData['actions'][] = [
+                            'attributes' => $this->_attr('attributes'),
+                            'module' => $this->itemData['name'],
+                            'icon' => $this->_attr('icon'),
+                            'name' => $this->_attr('name'),
+                            'pages' => $this->_attr('pages'),
+                            'text' => $text,
+                            'type' => $this->_attr('type', 'regular'),
+                            'url' => $this->_attr('url'),
+                        ];
+                    }
+                    break;
+
+                case 'cron':
+                    $cron = $this->_attributes;
+                    $cron['data'] = $text;
+                    $this->itemData['cron_jobs'][] = $cron;
+                    break;
+
+                case 'page':
+                    if ($this->_checkPath('adminpages')) {
+                        $this->itemData['pages']['admin'][] = [
+                            'name' => $this->_attr('name'),
+                            'filename' => $this->_attr('filename'),
+                            'alias' => $this->_attr('url'),
+                            'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
+                            'group' => $this->_attr('group', 'extensions'),
+                            'order' => $this->_attr('order', null),
+                            'menus' => $this->_attr('menus'),
+                            'action' => $this->_attr('action', iaCore::ACTION_READ),
+                            'parent' => $this->_attr('parent'),
+                            'module' => $this->itemData['name'],
+                            'title' => $text,
+                        ];
+                    } elseif ($this->_checkPath('pages')) {
+                        $url = $this->_attr('url');
+                        $url = $this->itemData['url'] && $url ? str_replace('|PACKAGE|', ltrim($this->_url, IA_URL_DELIMITER), $url) : $url;
+                        $url = empty($url) ? $this->itemData['name'] . IA_URL_DELIMITER : $url;
+
+                        $blocks = trim($this->_attr('blocks'));
+                        $blocks = empty($blocks) ? null : explode(',', $blocks);
+
+                        // TODO: add pages param to display some existing blocks on new page
+                        $this->itemData['pages']['front'][] = [
+                            'name' => $this->_attr('name'),
+                            'filename' => $this->_attr('filename'),
+                            'custom_tpl' => (bool)$this->_attr('template', 0),
+                            'template_filename' => $this->_attr('template', ''),
+                            'menus' => $this->_attr('menus'),
+                            'status' => $this->_attr('status', iaCore::STATUS_ACTIVE),
+                            'alias' => $url,
+                            'custom_url' => $this->_attr('custom_url'),
+                            'service' => $this->_attr('service', false),
+                            'blocks' => $blocks,
+                            'nofollow' => $this->_attr('nofollow', false),
+                            'new_window' => $this->_attr('new_window', false),
+                            'readonly' => $this->_attr('readonly', true),
+                            'module' => $this->itemData['name'],
+                            'group' => $this->_attr('group', ($this->itemData['type'] == self::TYPE_PLUGIN) ? 'extensions' : $this->itemData['type']),
+                            'action' => $this->_attr('action', iaCore::ACTION_READ),
+                            'parent' => $this->_attr('parent'),
+                            'suburl' => $this->_attr('suburl'),
+                            'fields_item' => iaItem::toSingular($this->_attr('fields_item', '')),
+                            'title' => $text,
+                        ];
+                    }
+                    break;
+
+                case 'configgroup':
+                    $this->itemData['config_groups'][$text] = [
                         'name' => $this->_attr('name'),
-                        'title' => $text,
-                        'type' => $this->_attr('type', 'lightbox'),
-                    ];
-                }
-                break;
-
-            case 'dependency':
-                $this->itemData['dependencies'][$text] = [
-                    'type' => $this->_attr('type'),
-                    'exist' => $this->_attr('exist', true),
-                ];
-                break;
-
-            case 'extension':
-                if ($this->_checkPath('requires')) {
-                    $this->itemData['requirements'][] = [
-                        'name' => $text,
-                        'type' => $this->_attr('type', 'package', [self::TYPE_PACKAGE, self::TYPE_PLUGIN]),
-                        'min' => $this->_attr(['min_version', 'min'], false),
-                        'max' => $this->_attr(['max_version', 'max'], false),
-                    ];
-                }
-                break;
-
-            case 'action':
-                if ($this->_checkPath('actions')) {
-                    $this->itemData['actions'][] = [
-                        'attributes' => $this->_attr('attributes'),
                         'module' => $this->itemData['name'],
-                        'icon' => $this->_attr('icon'),
+                    ];
+                    break;
+
+                case 'config':
+                    if ($this->_checkPath('usergroup') && $this->itemData['usergroups']) {
+                        $this->itemData['usergroups'][count($this->itemData['usergroups']) - 1]['configs'][] = [
+                            'name' => $this->_attr('name'),
+                            'value' => $text,
+                        ];
+                    } else {
+                        $group = $this->_attr('group');
+
+                        // compatibity code
+                        // TODO: remove once packages updated
+                        if ('email_templates' == $group) {
+                            $name = $this->_attr('name');
+
+                            if ('divider' == $this->_attr('type')) {
+                                if (!$name) {
+                                    $name = $this->itemData['name'] . '_div_' . iaUtil::generateToken(4);
+                                }
+
+                                $this->itemData['email_templates'][$name] = [
+                                    'active' => true,
+                                    'divider' => true,
+                                    'subject' => '',
+                                    'body' => '',
+                                    'description' => $this->_attr('description'),
+                                ];
+
+                                break;
+                            }
+
+                            if ('_body' == substr($name, -5)) {
+                                $name = substr($name, 0, -5);
+
+                                $this->itemData['email_templates'][$name]['body'] = $text;
+                                $this->itemData['email_templates'][$name]['variables'] = $this->_attr('values');
+                            } elseif ('_subject' == substr($name, -8)) {
+                                $name = substr($name, 0, -8);
+
+                                $this->itemData['email_templates'][$name]['subject'] = $text;
+                            } else {
+                                $this->itemData['email_templates'][$name] = [
+                                    'active' => (int)$text,
+                                    'description' => $this->_attr('description'),
+                                ];
+                            }
+
+                            break;
+                        }
+                        //
+
+                        $this->itemData['config'][] = [
+                            'config_group' => $group,
+                            'name' => $this->_attr('name'),
+                            'value' => $text,
+                            'multiple_values' => $this->_attr('values'),
+                            'type' => $this->_attr('type'),
+                            'description' => $this->_attr('description'),
+                            'private' => $this->_attr('private', true),
+                            'custom' => $this->_attr('custom', true),
+                            'options' => [
+                                'wysiwyg' => $this->_attr('wysiwyg', 0),
+                                'code_editor' => $this->_attr('code_editor', 0),
+                                'show' => $this->_attr('show'),
+                                'multilingual' => $this->_attr('multilingual', 0),
+                            ],
+                        ];
+                    }
+                    break;
+
+                case 'permission':
+                    $entry = [
+                        'access' => $this->_attr('access', 0, [0, 1]),
+                        'action' => $this->_attr('action', iaCore::ACTION_READ),
+                        'object' => $this->_attr('object', iaAcl::OBJECT_PAGE),
+                        'object_id' => $text,
+                        'module' => $this->itemData['name'],
+                    ];
+
+                    if ($this->_checkPath('permissions')) {
+                        $this->itemData['permissions'][] = $entry + [
+                                'type' => $this->_attr('type', iaAcl::GROUP, [iaAcl::USER, iaAcl::GROUP, iaAcl::PLAN]),
+                                'type_id' => $this->_attr('type_id'),
+                            ];
+                    } elseif ($this->_checkPath('usergroup') && $this->itemData['usergroups']) {
+                        $this->itemData['usergroups'][count($this->itemData['usergroups']) - 1]['permissions'][] = $entry;
+                    }
+
+                    break;
+
+                case 'object':
+                    $this->itemData['objects'][] = [
+                        'object' => $this->_attr('id'),
+                        'pre_object' => $this->_attr('meta_object', iaAcl::OBJECT_PAGE),
+                        'action' => $this->_attr('action', iaCore::ACTION_READ),
+                        'access' => $this->_attr('access', '0', [0, 1]),
+                        'module' => $this->itemData['name'],
+                        'title' => $text,
+                    ];
+                    break;
+
+                case 'group':
+                    switch (true) {
+                        case $this->_checkPath('fields_groups'):
+                            $this->itemData['item_field_groups'][] = [
+                                'module' => $this->itemData['name'],
+                                'item' => iaItem::toSingular($this->_attr('item')),
+                                'name' => $this->_attr('name'),
+                                'collapsible' => $this->_attr('collapsible', false),
+                                'collapsed' => $this->_attr('collapsed', false),
+                                'tabview' => $this->_attr('tabview', false),
+                                'tabcontainer' => $this->_attr('tabcontainer'),
+                                'order' => $this->_attr('order', 0),
+                                'title' => $this->_attr('title'),
+                                'description' => $text,
+                            ];
+                            break;
+                        case $this->_checkPath('groups'):
+                            $this->itemData['groups'][$text] = [
+                                'name' => $this->_attr('name'),
+                                'module' => $this->itemData['name'],
+                            ];
+                    }
+                    break;
+
+                case 'field':
+                    if ($this->_checkPath('fields')) {
+                        $values = '';
+
+                        if (isset($this->_attributes['values'])) {
+                            $values = $this->_attributes['values'];
+
+                            if ('tree' != $this->_attr('type')) {
+                                $array = explode((false !== strpos($values, '::')) ? '::' : ',', $values);
+                                $values = [];
+
+                                foreach ($array as $k => $v) {
+                                    $a = explode('||', $v);
+                                    isset($a[1]) ? ($values[$a[0]] = $a[1]) : ($values[$k + 1] = $v);
+                                }
+                            }
+                        }
+
+                        // get item table & class names
+                        $itemTable = empty($this->itemData['items'][$this->_attr('item')]['table_name'])
+                            ? $this->_attr('item')
+                            : $this->itemData['items'][$this->_attr('item')]['table_name'];
+
+                        $itemClass = empty($this->itemData['items'][$this->_attr('item')]['class_name'])
+                            ? $this->_attr('item')
+                            : $this->itemData['items'][$this->_attr('item')]['class_name'];
+
+                        $this->itemData['item_fields'][] = [
+                            'module' => $this->itemData['name'],
+                            'table_name' => $itemTable,
+                            'class_name' => $itemClass,
+                            'title' => $text,
+                            'values' => $values,
+                            'order' => $this->_attr('order', 0),
+                            'item' => iaItem::toSingular($this->_attr('item')),
+                            'item_pages' => $this->_attr('page'),
+                            'group' => $this->_attr('group', $this->itemData['name']), // will be changed to the inserted ID by the further code
+                            'name' => $this->_attr('name'),
+                            'type' => $this->_attr('type'),
+                            'use_editor' => $this->_attr('editor', false),
+                            'timepicker' => $this->_attr('timepicker', false),
+                            'length' => (int)$this->_attr('length'),
+                            'default' => $this->_attr('default'),
+                            'editable' => $this->_attr('editable', true),
+                            'multilingual' => $this->_attr('multilingual', false),
+                            'required' => $this->_attr('required', false),
+                            'required_checks' => $this->_attr('required_checks'),
+                            'extra_actions' => $this->_attr('actions'),
+                            'relation' => $this->_attr('relation', 'regular', ['regular', 'dependent', 'parent']),
+                            'parent' => $this->_attr('parent', ''),
+                            'empty_field' => $this->_attr('empty_field'),
+                            'adminonly' => $this->_attr('adminonly', false),
+                            'allow_null' => $this->_attr('allow_null', false),
+                            'searchable' => $this->_attr('searchable', false),
+                            'sort_order' => $this->_attr('sort', 'asc', ['asc', 'desc']),
+                            'show_as' => $this->_attr('show_as', 'combo'),
+                            'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
+                            'image_width' => $this->_attr('width', 0),
+                            'image_height' => $this->_attr('height', 0),
+                            'thumb_width' => $this->_attr(['thumb_width', 'width'], 0),
+                            'thumb_height' => $this->_attr(['thumb_height', 'height'], 0),
+                            'resize_mode' => $this->_attr('mode', 'crop', ['fit', 'crop']),
+                            'file_prefix' => $this->_attr(['prefix', 'file_prefix']),
+                            'file_types' => $this->_attr(['types', 'file_types']),
+                            'folder_name' => $this->_attr('folder_name', ''),
+                            // keys below will not be actually written to DB and handled manually
+                            'multiselection' => $this->_attr('multiselection', false),
+                            'image_types' => $this->_attr('image_types'),
+                            //'numberRangeForSearch' => isset($this->_attributes['numberRangeForSearch']) ? explode(',', $this->_attributes['numberRangeForSearch']) : '',
+                        ];
+                    } elseif ($this->_checkPath('changeset')) {
+                        $this->itemData['changeset'][] = array_merge($this->_attributes, ['type' => $this->_inTag, 'name' => $text]);
+                    }
+
+                    break;
+
+                case 'phrase':
+                case 'tooltip':
+                    if ($this->_checkPath('phrases') || $this->_checkPath('tooltips')) {
+                        if ($key = trim($this->_attr('key'))) {
+                            $phrases = &$this->itemData['phrases'];
+
+                            if (!isset($phrases[$key])) {
+                                $phrases[$key] = [
+                                    'api' => $this->_attr('api', null),
+                                    'category' => ('phrase' == $this->_inTag)
+                                        ? $this->_attr('category', iaLanguage::CATEGORY_COMMON)
+                                        : $this->_inTag,
+                                    'values' => [],
+                                ];
+                            }
+
+                            $phrases[$key]['values'][$this->_attr('code', $this->iaView->language)] = $text;
+                        }
+                    }
+
+                    break;
+
+                case 'hook':
+                    $type = $this->_attr('type', 'php', ['php', 'html', 'smarty', 'plain']);
+
+                    if ($filename = $this->_attr('filename')) {
+                        switch ($type) {
+                            case 'php':
+                                $filename = 'modules/' . $this->itemData['name'] . '/includes/' . $filename;
+                                break;
+                            case 'smarty':
+                                $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+                        }
+                    }
+
+                    // validate hooks
+                    $hashedHook = md5($this->_attr('name') . $this->itemData['name']);
+                    if (in_array($hashedHook, (array)$this->itemData['hooks'])) return;
+
+                    $this->itemData['hooks'][$hashedHook] = [
                         'name' => $this->_attr('name'),
+                        'type' => $type,
+                        'page_type' => $this->_attr('page_type', 'both', ['both', iaCore::ADMIN, iaCore::FRONT]),
+                        'filename' => $filename,
                         'pages' => $this->_attr('pages'),
-                        'text' => $text,
-                        'type' => $this->_attr('type', 'regular'),
-                        'url' => $this->_attr('url'),
-                    ];
-                }
-                break;
-
-            case 'cron':
-                $cron = $this->_attributes;
-                $cron['data'] = $text;
-                $this->itemData['cron_jobs'][] = $cron;
-                break;
-
-            case 'page':
-                if ($this->_checkPath('adminpages')) {
-                    $this->itemData['pages']['admin'][] = [
-                        'name' => $this->_attr('name'),
-                        'filename' => $this->_attr('filename'),
-                        'alias' => $this->_attr('url'),
+                        'module' => $this->itemData['name'],
+                        'code' => $text,
                         'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
-                        'group' => $this->_attr('group', 'extensions'),
-                        'order' => $this->_attr('order', null),
-                        'menus' => $this->_attr('menus'),
-                        'action' => $this->_attr('action', iaCore::ACTION_READ),
-                        'parent' => $this->_attr('parent'),
-                        'module' => $this->itemData['name'],
-                        'title' => $text,
+                        'order' => $this->_attr('order', 0),
                     ];
-                } elseif ($this->_checkPath('pages')) {
-                    $url = $this->_attr('url');
-                    $url = $this->itemData['url'] && $url ? str_replace('|PACKAGE|', ltrim($this->_url, IA_URL_DELIMITER), $url) : $url;
-                    $url = empty($url) ? $this->itemData['name'] . IA_URL_DELIMITER : $url;
 
-                    $blocks = trim($this->_attr('blocks'));
-                    $blocks = empty($blocks) ? null : explode(',', $blocks);
+                    break;
 
-                    // TODO: add pages param to display some existing blocks on new page
-                    $this->itemData['pages']['front'][] = [
-                        'name' => $this->_attr('name'),
-                        'filename' => $this->_attr('filename'),
-                        'custom_tpl' => (bool)$this->_attr('template', 0),
-                        'template_filename' => $this->_attr('template', ''),
-                        'menus' => $this->_attr('menus'),
-                        'status' => $this->_attr('status', iaCore::STATUS_ACTIVE),
-                        'alias' => $url,
-                        'custom_url' => $this->_attr('custom_url'),
-                        'service' => $this->_attr('service', false),
-                        'blocks' => $blocks,
-                        'nofollow' => $this->_attr('nofollow', false),
-                        'new_window' => $this->_attr('new_window', false),
-                        'readonly' => $this->_attr('readonly', true),
-                        'module' => $this->itemData['name'],
-                        'group' => $this->_attr('group', ($this->itemData['type'] == self::TYPE_PLUGIN) ? 'extensions' : $this->itemData['type']),
-                        'action' => $this->_attr('action', iaCore::ACTION_READ),
-                        'parent' => $this->_attr('parent'),
-                        'suburl' => $this->_attr('suburl'),
-                        'fields_item' => iaItem::toSingular($this->_attr('fields_item', '')),
-                        'title' => $text,
+                case 'block':
+                    if ($this->_checkPath('blocks')) {
+                        $filename = $this->_attr('filename');
+                        if ($this->itemData['type'] != self::TYPE_TEMPLATE && $filename && 'smarty' == $this->_attr('type')) {
+                            $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
+                        }
+
+                        if (empty($text) && empty($this->_attr('filename'))) return;
+
+                        $this->itemData['blocks'][] = [
+                            'name' => $this->_attr('name'),
+                            'title' => $this->_attr('title'),
+                            'content' => $text,
+                            'position' => $this->_attr('position'),
+                            'type' => $this->_attr('type'),
+                            'order' => $this->_attr('order', false),
+                            'module' => $this->itemData['name'],
+                            'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
+                            'header' => $this->_attr('header', true),
+                            'collapsible' => $this->_attr('collapsible', false),
+                            'sticky' => $this->_attr('sticky', true),
+                            'pages' => $this->_attr('pages'),
+                            'rss' => $this->_attr('rss'),
+                            'filename' => $filename,
+                            'classname' => $this->_attr('classname'),
+                        ];
+                    } elseif ($this->_checkPath('changeset')) {
+                        $this->itemData['changeset'][] = array_merge($this->_attributes, ['type' => $this->_inTag, 'name' => $text]);
+                    }
+                    break;
+
+                case 'menu':
+                    if ($this->_checkPath('changeset')) {
+                        $this->itemData['changeset'][] = array_merge($this->_attributes, ['type' => $this->_inTag, 'name' => $text]);
+                    }
+                    break;
+
+                case 'code':
+                    if ($this->_checkPath('install')) {
+                        $this->itemData['code']['install'] = $text;
+                    } elseif ($this->_checkPath('uninstall')) {
+                        $this->itemData['code']['uninstall'] = $text;
+                    } elseif ($this->_checkPath('upgrade')) {
+                        $this->itemData['code']['upgrade'] = $text;
+                    }
+                    break;
+
+                case 'sql':
+                    $entry = [
+                        'query' => $text,
+                        'external' => isset($this->_attributes['external']),
                     ];
-                }
-                break;
 
-            case 'configgroup':
-                $this->itemData['config_groups'][$text] = [
-                    'name' => $this->_attr('name'),
-                    'module' => $this->itemData['name'],
-                ];
-                break;
+                    $version = $this->_attr('version', self::VERSION_EMPTY);
+                    $stage = $this->_attr('stage', self::SQL_STAGE_MIDDLE, [self::SQL_STAGE_START, self::SQL_STAGE_MIDDLE, self::SQL_STAGE_END]);
 
-            case 'config':
-                if ($this->_checkPath('usergroup') && $this->itemData['usergroups']) {
-                    $this->itemData['usergroups'][count($this->itemData['usergroups']) - 1]['configs'][] = [
-                        'name' => $this->_attr('name'),
-                        'value' => $text,
+                    if ($this->_checkPath('install')) {
+                        $this->itemData['sql']['install'][$stage][$version][] = $entry;
+                    } elseif ($this->_checkPath('upgrade')) {
+                        $this->itemData['sql']['upgrade'][$stage][$version][] = $entry;
+                    } elseif ($this->_checkPath('uninstall')) {
+                        $this->itemData['sql']['uninstall'][] = $entry;
+                    }
+                    break;
+
+                case 'option':
+                    if ($this->_checkPath('plan_options')) {
+                        $this->itemData['plan_options'][] = [
+                            'item' => $this->_attr('item'),
+                            'name' => $this->_attr('name'),
+                            'type' => $this->_attr('type', '', ['bool', 'int', 'float', 'string']),
+                            'default_value' => $this->_attr('default'),
+                            'chargeable' => $this->_attr('chargeable', false),
+                            'title' => $text,
+                        ];
+                    }
+                    break;
+
+                case 'type':
+                    if ($this->_checkPath('imagetypes')) {
+                        $this->itemData['image_types'][] = [
+                            'width' => $this->_attr('width'),
+                            'height' => $this->_attr('height'),
+                            'resize_mode' => $this->_attr('resize_mode', 'crop', ['crop', 'fit']),
+                            'cropper' => $this->_attr('cropper', false),
+                            'module' => $this->itemData['name'],
+                            'name' => $text,
+                            'extensions' => $this->_attr('extensions'),
+                        ];
+                    }
+                    break;
+
+                case 'position':
+                    if ($this->_checkPath('section')) {
+                        $this->itemData['layout'][$this->_section][$text] = [
+                            'width' => (int)$this->_attr('width', 3),
+                            'fixed' => (bool)$this->_attr('fixed', false),
+                        ];
+                    }
+
+                    $this->itemData['positions'][] = [
+                        'name' => $text,
+                        'menu' => $this->_attr('menu', false),
+                        'movable' => $this->_attr('movable', true),
+                        'pages' => $this->_attr('pages', ''),
+                        'access' => $this->_attr('access', null),
+                        'default_access' => $this->_attr('default_access', null),
                     ];
-                } else {
-                    $group = $this->_attr('group');
 
-                    // compatibity code
-                    // TODO: remove once packages updated
-                    if ('email_templates' == $group) {
+                    break;
+
+                case 'email':
+                    if ($this->_checkPath('emails')) {
                         $name = $this->_attr('name');
 
-                        if ('divider' == $this->_attr('type')) {
-                            if (!$name) {
-                                $name = $this->itemData['name'] . '_div_' . iaUtil::generateToken(4);
-                            }
-
-                            $this->itemData['email_templates'][$name] = [
-                                'active' => true,
-                                'divider' => true,
-                                'subject' => '',
-                                'body' => '',
-                                'description' => $this->_attr('description'),
-                            ];
-
-                            break;
+                        if (!$name) {
+                            $name = $this->itemData['name'] . '_div_' . iaUtil::generateToken(4);
                         }
 
-                        if ('_body' == substr($name, -5)) {
-                            $name = substr($name, 0, -5);
-
-                            $this->itemData['email_templates'][$name]['body'] = $text;
-                            $this->itemData['email_templates'][$name]['variables'] = $this->_attr('values');
-                        } elseif ('_subject' == substr($name, -8)) {
-                            $name = substr($name, 0, -8);
-
-                            $this->itemData['email_templates'][$name]['subject'] = $text;
-                        } else {
-                            $this->itemData['email_templates'][$name] = [
-                                'active' => (int)$text,
-                                'description' => $this->_attr('description'),
-                            ];
-                        }
-
-                        break;
-                    }
-                    //
-
-                    $this->itemData['config'][] = [
-                        'config_group' => $group,
-                        'name' => $this->_attr('name'),
-                        'value' => $text,
-                        'multiple_values' => $this->_attr('values'),
-                        'type' => $this->_attr('type'),
-                        'description' => $this->_attr('description'),
-                        'private' => $this->_attr('private', true),
-                        'custom' => $this->_attr('custom', true),
-                        'options' => [
-                            'wysiwyg' => $this->_attr('wysiwyg', 0),
-                            'code_editor' => $this->_attr('code_editor', 0),
-                            'show' => $this->_attr('show'),
-                            'multilingual' => $this->_attr('multilingual', 0),
-                        ],
-                    ];
-                }
-                break;
-
-            case 'permission':
-                $entry = [
-                    'access' => $this->_attr('access', 0, [0, 1]),
-                    'action' => $this->_attr('action', iaCore::ACTION_READ),
-                    'object' => $this->_attr('object', iaAcl::OBJECT_PAGE),
-                    'object_id' => $text,
-                    'module' => $this->itemData['name'],
-                ];
-
-                if ($this->_checkPath('permissions')) {
-                    $this->itemData['permissions'][] = $entry + [
-                            'type' => $this->_attr('type', iaAcl::GROUP, [iaAcl::USER, iaAcl::GROUP, iaAcl::PLAN]),
-                            'type_id' => $this->_attr('type_id'),
+                        $this->itemData['email_templates'][$name] = [
+                            'subject' => $this->_attr('subject'),
+                            'body' => $text,
+                            'variables' => $this->_attr('variables'),
+                            'description' => $this->_attr('description'),
+                            'divider' => $this->_attr('divider', 0),
+                            'order' => $this->_attr('order'),
                         ];
-                } elseif ($this->_checkPath('usergroup') && $this->itemData['usergroups']) {
-                    $this->itemData['usergroups'][count($this->itemData['usergroups']) - 1]['permissions'][] = $entry;
-                }
-
-                break;
-
-            case 'object':
-                $this->itemData['objects'][] = [
-                    'object' => $this->_attr('id'),
-                    'pre_object' => $this->_attr('meta_object', iaAcl::OBJECT_PAGE),
-                    'action' => $this->_attr('action', iaCore::ACTION_READ),
-                    'access' => $this->_attr('access', '0', [0, 1]),
-                    'module' => $this->itemData['name'],
-                    'title' => $text,
-                ];
-                break;
-
-            case 'group':
-                switch (true) {
-                    case $this->_checkPath('fields_groups'):
-                        $this->itemData['item_field_groups'][] = [
-                            'module' => $this->itemData['name'],
-                            'item' => iaItem::toSingular($this->_attr('item')),
-                            'name' => $this->_attr('name'),
-                            'collapsible' => $this->_attr('collapsible', false),
-                            'collapsed' => $this->_attr('collapsed', false),
-                            'tabview' => $this->_attr('tabview', false),
-                            'tabcontainer' => $this->_attr('tabcontainer'),
-                            'order' => $this->_attr('order', 0),
-                            'title' => $this->_attr('title'),
-                            'description' => $text,
-                        ];
-                        break;
-                    case $this->_checkPath('groups'):
-                        $this->itemData['groups'][$text] = [
-                            'name' => $this->_attr('name'),
-                            'module' => $this->itemData['name'],
-                        ];
-                }
-                break;
-
-            case 'field':
-                if ($this->_checkPath('fields')) {
-                    $values = '';
-
-                    if (isset($this->_attributes['values'])) {
-                        $values = $this->_attributes['values'];
-
-                        if ('tree' != $this->_attr('type')) {
-                            $array = explode((false !== strpos($values, '::')) ? '::' : ',', $values);
-                            $values = [];
-
-                            foreach ($array as $k => $v) {
-                                $a = explode('||', $v);
-                                isset($a[1]) ? ($values[$a[0]] = $a[1]) : ($values[$k + 1] = $v);
-                            }
-                        }
                     }
-
-                    // get item table & class names
-                    $itemTable = empty($this->itemData['items'][$this->_attr('item')]['table_name'])
-                        ? $this->_attr('item')
-                        : $this->itemData['items'][$this->_attr('item')]['table_name'];
-
-                    $itemClass = empty($this->itemData['items'][$this->_attr('item')]['class_name'])
-                        ? $this->_attr('item')
-                        : $this->itemData['items'][$this->_attr('item')]['class_name'];
-
-                    $this->itemData['item_fields'][] = [
-                        'module' => $this->itemData['name'],
-                        'table_name' => $itemTable,
-                        'class_name' => $itemClass,
-                        'title' => $text,
-                        'values' => $values,
-                        'order' => $this->_attr('order', 0),
-                        'item' => iaItem::toSingular($this->_attr('item')),
-                        'item_pages' => $this->_attr('page'),
-                        'group' => $this->_attr('group', $this->itemData['name']), // will be changed to the inserted ID by the further code
-                        'name' => $this->_attr('name'),
-                        'type' => $this->_attr('type'),
-                        'use_editor' => $this->_attr('editor', false),
-                        'timepicker' => $this->_attr('timepicker', false),
-                        'length' => (int)$this->_attr('length'),
-                        'default' => $this->_attr('default'),
-                        'editable' => $this->_attr('editable', true),
-                        'multilingual' => $this->_attr('multilingual', false),
-                        'required' => $this->_attr('required', false),
-                        'required_checks' => $this->_attr('required_checks'),
-                        'extra_actions' => $this->_attr('actions'),
-                        'relation' => $this->_attr('relation', 'regular', ['regular', 'dependent', 'parent']),
-                        'parent' => $this->_attr('parent', ''),
-                        'empty_field' => $this->_attr('empty_field'),
-                        'adminonly' => $this->_attr('adminonly', false),
-                        'allow_null' => $this->_attr('allow_null', false),
-                        'searchable' => $this->_attr('searchable', false),
-                        'sort_order' => $this->_attr('sort', 'asc', ['asc', 'desc']),
-                        'show_as' => $this->_attr('show_as', 'combo'),
-                        'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
-                        'image_width' => $this->_attr('width', 0),
-                        'image_height' => $this->_attr('height', 0),
-                        'thumb_width' => $this->_attr(['thumb_width', 'width'], 0),
-                        'thumb_height' => $this->_attr(['thumb_height', 'height'], 0),
-                        'resize_mode' => $this->_attr('mode', 'crop', ['fit', 'crop']),
-                        'file_prefix' => $this->_attr(['prefix', 'file_prefix']),
-                        'file_types' => $this->_attr(['types', 'file_types']),
-                        'folder_name' => $this->_attr('folder_name', ''),
-                        // keys below will not be actually written to DB and handled manually
-                        'multiselection' => $this->_attr('multiselection', false),
-                        'image_types' => $this->_attr('image_types'),
-                        //'numberRangeForSearch' => isset($this->_attributes['numberRangeForSearch']) ? explode(',', $this->_attributes['numberRangeForSearch']) : '',
-                    ];
-                } elseif ($this->_checkPath('changeset')) {
-                    $this->itemData['changeset'][] = array_merge($this->_attributes, ['type' => $this->_inTag, 'name' => $text]);
-                }
-
-                break;
-
-            case 'phrase':
-            case 'tooltip':
-                if ($this->_checkPath('phrases') || $this->_checkPath('tooltips')) {
-                    if ($key = trim($this->_attr('key'))) {
-                        $phrases = &$this->itemData['phrases'];
-
-                        if (!isset($phrases[$key])) {
-                            $phrases[$key] = [
-                                'api' => $this->_attr('api', null),
-                                'category' => ('phrase' == $this->_inTag)
-                                    ? $this->_attr('category', iaLanguage::CATEGORY_COMMON)
-                                    : $this->_inTag,
-                                'values' => [],
-                            ];
-                        }
-
-                        $phrases[$key]['values'][$this->_attr('code', $this->iaView->language)] = $text;
-                    }
-                }
-
-                break;
-
-            case 'hook':
-                $type = $this->_attr('type', 'php', ['php', 'html', 'smarty', 'plain']);
-
-                if ($filename = $this->_attr('filename')) {
-                    switch ($type) {
-                        case 'php':
-                            $filename = 'modules/' . $this->itemData['name'] . '/includes/' . $filename;
-                            break;
-                        case 'smarty':
-                            $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-                    }
-                }
-
-                $this->itemData['hooks'][] = [
-                    'name' => $this->_attr('name'),
-                    'type' => $type,
-                    'page_type' => $this->_attr('page_type', 'both', ['both', iaCore::ADMIN, iaCore::FRONT]),
-                    'filename' => $filename,
-                    'pages' => $this->_attr('pages'),
-                    'module' => $this->itemData['name'],
-                    'code' => $text,
-                    'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
-                    'order' => $this->_attr('order', 0),
-                ];
-
-                break;
-
-            case 'block':
-                if ($this->_checkPath('blocks')) {
-                    $filename = $this->_attr('filename');
-                    if ($this->itemData['type'] != self::TYPE_TEMPLATE && $filename && 'smarty' == $this->_attr('type')) {
-                        $filename = sprintf(self::BLOCK_FILENAME_PATTERN, $this->itemData['name'], $filename);
-                    }
-
-                    $this->itemData['blocks'][] = [
-                        'name' => $this->_attr('name'),
-                        'title' => $this->_attr('title'),
-                        'content' => $text,
-                        'position' => $this->_attr('position'),
-                        'type' => $this->_attr('type'),
-                        'order' => $this->_attr('order', false),
-                        'module' => $this->itemData['name'],
-                        'status' => $this->_attr('status', iaCore::STATUS_ACTIVE, [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE]),
-                        'header' => $this->_attr('header', true),
-                        'collapsible' => $this->_attr('collapsible', false),
-                        'sticky' => $this->_attr('sticky', true),
-                        'pages' => $this->_attr('pages'),
-                        'rss' => $this->_attr('rss'),
-                        'filename' => $filename,
-                        'classname' => $this->_attr('classname'),
-                    ];
-                } elseif ($this->_checkPath('changeset')) {
-                    $this->itemData['changeset'][] = array_merge($this->_attributes, ['type' => $this->_inTag, 'name' => $text]);
-                }
-                break;
-
-            case 'menu':
-                if ($this->_checkPath('changeset')) {
-                    $this->itemData['changeset'][] = array_merge($this->_attributes, ['type' => $this->_inTag, 'name' => $text]);
-                }
-                break;
-
-            case 'code':
-                if ($this->_checkPath('install')) {
-                    $this->itemData['code']['install'] = $text;
-                } elseif ($this->_checkPath('uninstall')) {
-                    $this->itemData['code']['uninstall'] = $text;
-                } elseif ($this->_checkPath('upgrade')) {
-                    $this->itemData['code']['upgrade'] = $text;
-                }
-                break;
-
-            case 'sql':
-                $entry = [
-                    'query' => $text,
-                    'external' => isset($this->_attributes['external']),
-                ];
-
-                $version = $this->_attr('version', self::VERSION_EMPTY);
-                $stage = $this->_attr('stage', self::SQL_STAGE_MIDDLE, [self::SQL_STAGE_START, self::SQL_STAGE_MIDDLE, self::SQL_STAGE_END]);
-
-                if ($this->_checkPath('install')) {
-                    $this->itemData['sql']['install'][$stage][$version][] = $entry;
-                } elseif ($this->_checkPath('upgrade')) {
-                    $this->itemData['sql']['upgrade'][$stage][$version][] = $entry;
-                } elseif ($this->_checkPath('uninstall')) {
-                    $this->itemData['sql']['uninstall'][] = $entry;
-                }
-                break;
-
-            case 'option':
-                if ($this->_checkPath('plan_options')) {
-                    $this->itemData['plan_options'][] = [
-                        'item' => $this->_attr('item'),
-                        'name' => $this->_attr('name'),
-                        'type' => $this->_attr('type', '', ['bool', 'int', 'float', 'string']),
-                        'default_value' => $this->_attr('default'),
-                        'chargeable' => $this->_attr('chargeable', false),
-                        'title' => $text,
-                    ];
-                }
-                break;
-
-            case 'type':
-                if ($this->_checkPath('imagetypes')) {
-                    $this->itemData['image_types'][] = [
-                        'width' => $this->_attr('width'),
-                        'height' => $this->_attr('height'),
-                        'resize_mode' => $this->_attr('resize_mode', 'crop', ['crop', 'fit']),
-                        'cropper' => $this->_attr('cropper', false),
-                        'module' => $this->itemData['name'],
-                        'name' => $text,
-                        'extensions' => $this->_attr('extensions'),
-                    ];
-                }
-                break;
-
-            case 'position':
-                if ($this->_checkPath('section')) {
-                    $this->itemData['layout'][$this->_section][$text] = [
-                        'width' => (int)$this->_attr('width', 3),
-                        'fixed' => (bool)$this->_attr('fixed', false),
-                    ];
-                }
-
-                $this->itemData['positions'][] = [
-                    'name' => $text,
-                    'menu' => $this->_attr('menu', false),
-                    'movable' => $this->_attr('movable', true),
-                    'pages' => $this->_attr('pages', ''),
-                    'access' => $this->_attr('access', null),
-                    'default_access' => $this->_attr('default_access', null),
-                ];
-
-                break;
-
-            case 'email':
-                if ($this->_checkPath('emails')) {
-                    $name = $this->_attr('name');
-
-                    if (!$name) {
-                        $name = $this->itemData['name'] . '_div_' . iaUtil::generateToken(4);
-                    }
-
-                    $this->itemData['email_templates'][$name] = [
-                        'subject' => $this->_attr('subject'),
-                        'body' => $text,
-                        'variables' => $this->_attr('variables'),
-                        'description' => $this->_attr('description'),
-                        'divider' => $this->_attr('divider', 0),
-                        'order' => $this->_attr('order'),
-                    ];
-                }
+            }
         }
     }
 

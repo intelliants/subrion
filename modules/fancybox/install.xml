@@ -4,10 +4,10 @@
     <summary>Plugin will add lightbox effect to images based on Fancybox javascript library</summary>
     <author>Intelliants LLC</author>
     <contributor>Intelliants LLC</contributor>
-    <version>4.1.0</version>
+    <version>5.0.0</version>
     <date>2017-02-13</date>
     <category>lightbox</category>
-    <compatibility>4.1</compatibility>
+    <compatibility>5.0</compatibility>
 
     <config group="pictures" name="fancybox_divider" type="divider">fancyBox</config>
     <config group="pictures" name="fancybox_slide_transition" custom="1" type="select" values="elastic,fade" description="fancyBox slide effect" private="0">elastic</config>

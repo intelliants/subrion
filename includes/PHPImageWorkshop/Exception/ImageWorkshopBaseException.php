@@ -4,9 +4,9 @@ namespace PHPImageWorkshop\Exception;
 
 /**
  * ImageWorkshopBaseException
- * 
+ *
  * The inherited exception class
- * 
+ *
  * @link http://phpimageworkshop.com
  * @author Bjørn Børresen | Sybio (Clément Guillemain  / @Sybio01)
  * @license http://en.wikipedia.org/wiki/MIT_License
@@ -19,13 +19,13 @@ class ImageWorkshopBaseException extends \Exception
      *
      * @param string $message
      * @param integer $code
-     * @param \Exception|Exception $previous
+     * @param \Exception $previous
      */
     public function __construct($message, $code = 0, \Exception $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
-    
+
     /**
      * __toString method
      *

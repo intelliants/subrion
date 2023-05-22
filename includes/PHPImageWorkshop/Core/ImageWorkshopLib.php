@@ -4,9 +4,6 @@ namespace PHPImageWorkshop\Core;
 
 use PHPImageWorkshop\Core\Exception\ImageWorkshopLibException as ImageWorkshopLibException;
 
-// If no autoloader, uncomment these lines:
-require_once(__DIR__.'/Exception/ImageWorkshopLibException.php');
-
 /**
  * ImageWorkshopLib class
  *
@@ -23,17 +20,17 @@ class ImageWorkshopLib
      * @var integer
      */
     const ERROR_FONT_NOT_FOUND = 3;
-    
+
     /**
      * Calculate the left top positions of a layer inside a parent layer container
      * $position: http://phpimageworkshop.com/doc/22/corners-positions-schema-of-an-image.html
      *
-     * @param integer $containerWidth
-     * @param integer $containerHeight
-     * @param integer $layerWidth
-     * @param integer $layerHeight
-     * @param integer $layerPositionX
-     * @param integer $layerPositionY
+     * @param int $containerWidth
+     * @param int $containerHeight
+     * @param int $layerWidth
+     * @param int $layerHeight
+     * @param int $layerPositionX
+     * @param int $layerPositionY
      * @param string $position
      *
      * @return array
@@ -69,7 +66,7 @@ class ImageWorkshopLib
             'y' => $layerPositionY,
         );
     }
-    
+
     /**
      * Convert Hex color to RGB color format
      *
@@ -85,16 +82,16 @@ class ImageWorkshopLib
             'B' => (int) base_convert(substr($hex, 4, 2), 16, 10),
         );
     }
-    
+
     /**
      * Generate a new image resource var
      *
-     * @param integer $width
-     * @param integer $height
+     * @param int $width
+     * @param int $height
      * @param string $color
-     * @param integer $opacity
+     * @param int $opacity
      *
-     * @return resource
+     * @return resource|object
      */
     public static function generateImage($width = 100, $height = 100, $color = 'ffffff', $opacity = 127)
     {
@@ -111,20 +108,19 @@ class ImageWorkshopLib
     /**
      * Return dimension of a text
      *
-     * @param $fontSize
-     * @param $fontAngle
-     * @param $fontFile
-     * @param $text
+     * @param float $fontSize
+     * @param float $fontAngle
+     * @param string $fontFile
+     * @param string $text
      *
-     * @return array or boolean
-     * @throws ImageWorkshopLibException
+     * @return array|false
      */
     public static function getTextBoxDimension($fontSize, $fontAngle, $fontFile, $text)
     {
         if (!file_exists($fontFile)) {
             throw new ImageWorkshopLibException('Can\'t find a font file at this path : "'.$fontFile.'".', static::ERROR_FONT_NOT_FOUND);
         }
-        
+
         $box = imagettfbbox($fontSize, $fontAngle, $fontFile, $text);
 
         if (!$box) {
@@ -175,19 +171,19 @@ class ImageWorkshopLib
             'height' => $rbottom - $rtop + 1,
         );
     }
-    
+
     /**
      * Copy an image on another one and converse transparency
      *
-     * @param resource $destImg
-     * @param resource $srcImg
-     * @param integer $destX
-     * @param integer $destY
-     * @param integer $srcX
-     * @param integer $srcY
-     * @param integer $srcW
-     * @param integer $srcH
-     * @param integer $pct
+     * @param resource|object $destImg
+     * @param resource|object $srcImg
+     * @param int $destX
+     * @param int $destY
+     * @param int $srcX
+     * @param int $srcY
+     * @param int $srcW
+     * @param int $srcH
+     * @param int $pct
      */
     public static function imageCopyMergeAlpha(&$destImg, &$srcImg, $destX, $destY, $srcX, $srcY, $srcW, $srcH, $pct = 0)
     {
@@ -200,32 +196,33 @@ class ImageWorkshopLib
         $pct = (int) $pct;
         $destW = imageSX($destImg);
         $destH = imageSY($destImg);
+        $alpha = 0;
 
         for ($y = 0; $y < $srcH + $srcY; $y++) {
             for ($x = 0; $x < $srcW + $srcX; $x++) {
                 if ($x + $destX >= 0 && $x + $destX < $destW && $x + $srcX >= 0 && $x + $srcX < $srcW && $y + $destY >= 0 && $y + $destY < $destH && $y + $srcY >= 0 && $y + $srcY < $srcH) {
                     $destPixel = imageColorsForIndex($destImg, imageColorat($destImg, $x + $destX, $y + $destY));
                     $srcImgColorat = imageColorat($srcImg, $x + $srcX, $y + $srcY);
-                    
+
                     if ($srcImgColorat >= 0) {
                         $srcPixel = imageColorsForIndex($srcImg, $srcImgColorat);
-    
+
                         $srcAlpha = 1 - ($srcPixel['alpha'] / 127);
                         $destAlpha = 1 - ($destPixel['alpha'] / 127);
                         $opacity = $srcAlpha * $pct / 100;
-    
+
                         if ($destAlpha >= $opacity) {
                             $alpha = $destAlpha;
                         }
-    
+
                         if ($destAlpha < $opacity) {
                             $alpha = $opacity;
                         }
-    
+
                         if ($alpha > 1) {
                             $alpha = 1;
                         }
-    
+
                         if ($opacity > 0) {
                             $destRed = round((($destPixel['red'] * $destAlpha * (1 - $opacity))));
                             $destGreen = round((($destPixel['green'] * $destAlpha * (1 - $opacity))));
@@ -236,21 +233,21 @@ class ImageWorkshopLib
                             $red = round(($destRed + $srcRed) / ($destAlpha * (1 - $opacity) + $opacity));
                             $green = round(($destGreen + $srcGreen) / ($destAlpha * (1 - $opacity) + $opacity));
                             $blue = round(($destBlue + $srcBlue) / ($destAlpha * (1 - $opacity) + $opacity));
-    
+
                             if ($red   > 255) {
                                 $red   = 255;
                             }
-    
+
                             if ($green > 255) {
                                 $green = 255;
                             }
-    
+
                             if ($blue  > 255) {
                                 $blue  = 255;
                             }
-    
+
                             $alpha = round((1 - $alpha) * 127);
-                            $color = imageColorAllocateAlpha($destImg, $red, $green, $blue, $alpha);
+                            $color = imageColorAllocateAlpha($destImg, $red, $green, $blue, (int) $alpha);
                             imageSetPixel($destImg, $x + $destX, $y + $destY, $color);
                         }
                     }
@@ -258,16 +255,16 @@ class ImageWorkshopLib
             }
         }
     }
-    
+
     /**
      * Merge two image var
      *
-     * @param resource $destinationImage
-     * @param resource $sourceImage
-     * @param integer $destinationPosX
-     * @param integer $destinationPosY
-     * @param integer $sourcePosX
-     * @param integer $sourcePosY
+     * @param resource|object $destinationImage
+     * @param resource|object $sourceImage
+     * @param int $destinationPosX
+     * @param int $destinationPosY
+     * @param int $sourcePosX
+     * @param int $sourcePosY
      */
     public static function mergeTwoImages(&$destinationImage, $sourceImage, $destinationPosX = 0, $destinationPosY = 0, $sourcePosX = 0, $sourcePosY = 0)
     {

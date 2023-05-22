@@ -63,7 +63,7 @@ class iaSanitize extends abstractUtil
      */
     public static function html($string, $mode = ENT_QUOTES)
     {
-        return htmlspecialchars($string, $mode, 'UTF-8');
+        return htmlspecialchars((string)$string, $mode, 'UTF-8');
     }
 
     /**
@@ -119,7 +119,7 @@ class iaSanitize extends abstractUtil
             if (preg_match('#.*([\.\s]).*#s', $_tmp, $matches, PREG_OFFSET_CAPTURE)) {
                 $end_pos = $matches[1][1];
                 $text = utf8_substr($text, 0, $end_pos + 1);
-                $text.= ' ...';
+                $text .= ' ...';
             }
         }
 

@@ -4,14 +4,11 @@ namespace PHPImageWorkshop\Exception;
 
 use PHPImageWorkshop\Exception\ImageWorkshopBaseException as ImageWorkshopBaseException;
 
-// If no autoloader, uncomment these lines:
-//require_once(__DIR__.'/ImageWorkshopBaseException.php');
-
 /**
  * ImageWorkshopException
- * 
+ *
  * Manage ImageWorkshop exceptions
- * 
+ *
  * @link http://phpimageworkshop.com
  * @author Sybio (Clément Guillemain  / @Sybio01)
  * @license http://en.wikipedia.org/wiki/MIT_License
@@ -19,4 +16,8 @@ use PHPImageWorkshop\Exception\ImageWorkshopBaseException as ImageWorkshopBaseEx
  */
 class ImageWorkshopException extends ImageWorkshopBaseException
 {
+    public static function invalidUnitArgument()
+    {
+        return new self("Invalid unit value: should be ImageWorkshopLayer::UNIT_PIXEL or ImageWorkshopLayer::UNIT_PERCENT");
+    }
 }

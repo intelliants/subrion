@@ -2,19 +2,9 @@
 
 namespace PHPImageWorkshop;
 
-require_once IA_INCLUDES . 'PHPImageWorkshop/Core/ImageWorkshopLayer.php';
-require_once IA_INCLUDES . 'PHPImageWorkshop/Core/ImageWorkshopLib.php';
-require_once IA_INCLUDES . 'PHPImageWorkshop/Exception/ImageWorkshopBaseException.php';
-require_once IA_INCLUDES . 'PHPImageWorkshop/Exception/ImageWorkshopException.php';
-require_once IA_INCLUDES . 'PHPImageWorkshop/Exif/ExifOrientations.php';
-
 use PHPImageWorkshop\Core\ImageWorkshopLayer as ImageWorkshopLayer;
 use PHPImageWorkshop\Core\ImageWorkshopLib as ImageWorkshopLib;
-use PHPImageWorkshop\Exception\ImageWorkshopException as ImageWorkshopException;
-
-// If no autoloader, uncomment these lines:
-//require_once(__DIR__.'/Core/ImageWorkshopLayer.php');
-//require_once(__DIR__.'/Exception/ImageWorkshopException.php');
+use PHPImageWorkshop\Exception\ImageWorkshopException;
 
 /**
  * ImageWorkshop class
@@ -32,17 +22,17 @@ class ImageWorkshop
      * @var integer
      */
     const ERROR_NOT_AN_IMAGE_FILE = 1;
-    
+
     /**
      * @var integer
      */
     const ERROR_IMAGE_NOT_FOUND = 2;
-    
+
     /**
      * @var integer
      */
     const ERROR_NOT_READABLE_FILE = 3;
-    
+
     /**
      * @var integer
      */
@@ -57,6 +47,7 @@ class ImageWorkshop
      * @param bool $fixOrientation
      *
      * @return ImageWorkshopLayer
+     *
      * @throws ImageWorkshopException
      */
     public static function initFromPath($path, $fixOrientation = false)
@@ -66,12 +57,13 @@ class ImageWorkshop
         }
 
         if (false === ($imageSizeInfos = @getImageSize($path))) {
-            throw new ImageWorkshopException('Can\'t open the file at "'.$path.'" : file is not readable, did you check permissions (755 / 777) ?', static::ERROR_NOT_READABLE_FILE);
+            throw new ImageWorkshopException('Can\'t open the file at "' . $path . '" : file is not readable, did you check permissions (755 / 777) ?', static::ERROR_NOT_READABLE_FILE);
         }
 
         $mimeContentType = explode('/', $imageSizeInfos['mime']);
-        if (!$mimeContentType || !isset($mimeContentType[1])) {
-            throw new ImageWorkshopException('Not an image file (jpeg/png/gif) at "'.$path.'"', static::ERROR_NOT_AN_IMAGE_FILE);
+        if (!isset($mimeContentType[1])) {
+            $givenType = isset($mimeContentType[1]) ? $mimeContentType[1] : 'none';
+            throw new ImageWorkshopException('Not an image file (jpeg/png/gif) at "'.$path.'" (given format: "'.$givenType.'")', static::ERROR_NOT_AN_IMAGE_FILE);
         }
 
         $mimeContentType = $mimeContentType[1];
@@ -81,7 +73,7 @@ class ImageWorkshop
             case 'jpeg':
                 $image = imageCreateFromJPEG($path);
 
-                if (function_exists('read_exif_data') && false !== ($data = @read_exif_data($path))) {
+                if (function_exists('exif_read_data') && false !== ($data = @exif_read_data($path))) {
                     $exif = $data;
                 }
             break;
@@ -94,9 +86,12 @@ class ImageWorkshop
                 $image = imageCreateFromPNG($path);
             break;
 
-            default:
-                throw new ImageWorkshopException('Not an image file (jpeg/png/gif) at "'.$path.'"', static::ERROR_NOT_AN_IMAGE_FILE);
+            case 'webp':
+                $image = imagecreatefromwebp($path);
             break;
+
+            default:
+                throw new ImageWorkshopException('Not an image file (jpeg/png/gif) at "'.$path.'" (given format: "'.$mimeContentType.'")', static::ERROR_NOT_AN_IMAGE_FILE);
         }
 
         if (false === $image) {
@@ -111,16 +106,16 @@ class ImageWorkshop
 
         return $layer;
     }
-    
+
     /**
      * Initialize a text layer
      *
      * @param string $text
      * @param string $fontPath
-     * @param integer $fontSize
+     * @param int $fontSize
      * @param string $fontColor
-     * @param integer $textRotation
-     * @param integer $backgroundColor
+     * @param int $textRotation
+     * @param string $backgroundColor
      *
      * @return ImageWorkshopLayer
      */
@@ -130,15 +125,15 @@ class ImageWorkshop
 
         $layer = static::initVirginLayer($textDimensions['width'], $textDimensions['height'], $backgroundColor);
         $layer->write($text, $fontPath, $fontSize, $fontColor, $textDimensions['left'], $textDimensions['top'], $textRotation);
-        
+
         return $layer;
     }
-    
+
     /**
      * Initialize a new virgin layer
      *
-     * @param integer $width
-     * @param integer $height
+     * @param int $width
+     * @param int $height
      * @param string $backgroundColor
      *
      * @return ImageWorkshopLayer
@@ -146,19 +141,19 @@ class ImageWorkshop
     public static function initVirginLayer($width = 100, $height = 100, $backgroundColor = null)
     {
         $opacity = 0;
-        
+
         if (null === $backgroundColor || $backgroundColor == 'transparent') {
             $opacity = 127;
             $backgroundColor = 'ffffff';
         }
-        
+
         return new ImageWorkshopLayer(ImageWorkshopLib::generateImage($width, $height, $backgroundColor, $opacity));
     }
-    
+
     /**
      * Initialize a layer from a resource image var
      *
-     * @param \resource $image
+     * @param resource $image
      *
      * @return ImageWorkshopLayer
      */
@@ -175,14 +170,13 @@ class ImageWorkshop
      * @param string $imageString
      *
      * @return ImageWorkshopLayer
-     * @throws ImageWorkshopException
      */
     public static function initFromString($imageString)
     {
         if (!$image = @imageCreateFromString($imageString)) {
             throw new ImageWorkshopException('Can\'t generate an image from the given string.', static::ERROR_CREATE_IMAGE_FROM_STRING);
         }
-        
+
         return new ImageWorkshopLayer($image);
     }
 }

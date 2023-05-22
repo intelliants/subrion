@@ -4,7 +4,7 @@
     <summary>Adds blog functionality to Subrion powered website</summary>
     <author>Intelliants LLC</author>
     <contributor>Intelliants LLC</contributor>
-    <version>4.1.0</version>
+    <version>5.0.0</version>
     <date>2019-03-22</date>
     <compatibility>4.2</compatibility>
 
@@ -112,7 +112,6 @@
         <field name="tags" item="blog" type="text" group="general"  required="0"  page="blog, blog_add, blog_edit" >Tags</field>
         <field name="image" item="blog" type="image" group="general" thumb_width="400" thumb_height="400" width="1200" height="1200" page="blog, blog_add, blog_edit">Image</field>
     </fields>
-
 
     <install>
         <sql>
