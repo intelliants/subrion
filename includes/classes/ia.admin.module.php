@@ -61,7 +61,6 @@ class iaModule extends abstractCore
     protected $_attributes;
     protected $_section;
 
-    protected $_url;
     protected $_menuGroups = [];
 
     protected $_parsed = false;
@@ -72,6 +71,8 @@ class iaModule extends abstractCore
     protected $_xmlContent = '';
 
     protected $_xmlFile = '';
+
+    protected $_moduleUrl = '';
 
     public $itemData;
 
@@ -143,7 +144,7 @@ class iaModule extends abstractCore
             'phrases' => null,
             'requirements' => null,
             'screenshots' => null,
-            'url' => null,
+            'url' => '',
             'usergroups' => null,
             'sql' => [
                 'install' => null,
@@ -158,11 +159,7 @@ class iaModule extends abstractCore
     public function setXmlFile($path)
     {
         $this->_xmlFile = $path;
-    }
-
-    public function setUrl($url)
-    {
-        $this->_url = $url;
+        $this->_parsed = false;
     }
 
 
@@ -257,9 +254,9 @@ class iaModule extends abstractCore
             return false;
         }
 
-        $this->_url = $url;
+        $this->_moduleUrl = $url;
 
-        $this->_parsed || $this->parse();
+        $this->_parsed || $this->parseXML();
 
         $this->checkValidity();
 
@@ -689,6 +686,7 @@ class iaModule extends abstractCore
             return false;
         }
 
+
         $this->iaCore->startHook('phpModuleUninstallBefore', ['module' => $moduleName]);
 
         if ($this->iaCore->get('default_package') == $moduleName) {
@@ -792,7 +790,9 @@ class iaModule extends abstractCore
             $code['uninstall_sql'] = unserialize($code['uninstall_sql']);
             if ($code['uninstall_sql'] && is_array($code['uninstall_sql'])) {
                 foreach ($code['uninstall_sql'] as $sql) {
-                    $iaDb->query(str_replace('{prefix}', $iaDb->prefix, $sql['query']));
+                    if (!empty($sql['query'])) {
+                        $iaDb->query(str_replace('{prefix}', $iaDb->prefix, $sql['query']));
+                    }
                 }
             }
         }
@@ -1218,7 +1218,7 @@ class iaModule extends abstractCore
         $this->_processQueries('install', self::SQL_STAGE_MIDDLE);
 
         if (self::TYPE_PACKAGE == $this->itemData['type']) {
-            $extraEntry['url'] = $this->_url;
+            $extraEntry['url'] = '';
         }
 
         if ($this->itemData['items']) {
@@ -1276,6 +1276,7 @@ class iaModule extends abstractCore
         if (self::TYPE_PLUGIN == $this->itemData['type']) {
             $extraEntry['removable'] = !('blog' != $this->itemData['name'] && in_array($this->itemData['name'], $this->_builtinPlugins));
         }
+
 
         if (!$this->isUpdate) {
             $this->iaCore->startHook('phpModuleInstallBeforeSql', ['module' => $this->itemData['name'], 'data' => &$this->itemData['info']]);
@@ -1420,8 +1421,8 @@ class iaModule extends abstractCore
                             'title' => $text,
                         ];
                     } elseif ($this->_checkPath('pages')) {
-                        $url = $this->_attr('url');
-                        $url = $this->itemData['url'] && $url ? str_replace('|PACKAGE|', ltrim($this->_url, IA_URL_DELIMITER), $url) : $url;
+                        $url = (string)$this->_attr('url');
+                        $url = $this->itemData['url'] && $url ? str_replace('|PACKAGE|', ltrim($this->_moduleUrl, IA_URL_DELIMITER), $url) : $url;
                         $url = empty($url) ? $this->itemData['name'] . IA_URL_DELIMITER : $url;
 
                         $blocks = trim($this->_attr('blocks'));
@@ -1848,11 +1849,6 @@ class iaModule extends abstractCore
     public function getNotes()
     {
         return $this->_notes;
-    }
-
-    public function getUrl()
-    {
-        return $this->_url;
     }
 
     public function getXmlFromPath()

@@ -341,7 +341,7 @@ class iaBackendController extends iaAbstractControllerBackend
         $installFile = $this->_folder . $moduleName . IA_DS . iaModule::INSTALL_FILE_NAME;
 
         if (file_exists($installFile)) {
-            $this->getHelper()->setXml(file_get_contents($installFile));
+            $this->getHelper()->setXmlFile($installFile);
 
             $url = '';
             $_GET['type'] = isset($_GET['type']) ? $_GET['type'] : 2;
@@ -390,7 +390,7 @@ class iaBackendController extends iaAbstractControllerBackend
             if (!file_exists($installFile)) {
                 $this->addMessage('file_doesnt_exist');
             } else {
-                $this->getHelper()->setXml(file_get_contents($installFile));
+                $this->getHelper()->setXmlFile($installFile);
                 $this->getHelper()->uninstall($moduleName);
 
                 $this->addMessage('package_uninstalled');
@@ -738,11 +738,11 @@ class iaBackendController extends iaAbstractControllerBackend
         if (!file_exists($installationFile)) {
             $result['message'] = iaLanguage::get('file_doesnt_exist');
         } else {
-            $iaModule->setXml(file_get_contents($installationFile));
+            $iaModule->setXmlFile($installationFile);
             $result['error'] = false;
         }
 
-        $iaModule->parse();
+        $iaModule->parseXML();
 
         if (!$this->_checkCompatibility($iaModule->itemData['compatibility'])) {
             $result['message'] = iaLanguage::get('incompatible');
@@ -847,8 +847,10 @@ class iaBackendController extends iaAbstractControllerBackend
         }
 
         if (!$iaModule->error) {
+            $iaModule->setXmlFile($installFile);
             $iaModule->getFromPath($installFile);
-            $iaModule->parse();
+            $iaModule->parseXML();
+
             $iaModule->checkValidity();
             $iaModule->rollback();
             $iaModule->install();

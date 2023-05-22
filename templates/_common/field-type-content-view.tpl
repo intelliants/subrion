@@ -6,32 +6,25 @@
 
 {if $item[$name]}
     {capture assign='_field_text'}
-        {switch $type}
-        {case iaField::TEXT break}
+        {if $type == iaField::TEXT}
             {$item.$name|escape}
-
-        {case iaField::TEXTAREA break}
+        {elseif $type == iaField::TEXTAREA}
             {if $field.use_editor}
                 {$item.$name}
             {else}
                 {$item.$name|escape|nl2br}
             {/if}
-
-        {case iaField::NUMBER break}
+        {elseif $type == iaField::NUMBER}
             {$item.$name|escape}
-
-        {case iaField::CURRENCY break}
+        {elseif $type == iaField::CURRENCY}
             {$item["{$name}_formatted"]}
-
-        {case iaField::CHECKBOX break}
+        {elseif $type == iaField::CHECKBOX}
             {arrayToLang values=$item.$name item=$field.item name=$name}
-
-        {case iaField::STORAGE break}
+        {elseif $type == iaField::STORAGE}
             {foreach $item[$name] as $entry}
                 <a href="{$core.page.nonProtocolUrl}uploads/{$entry.path}{$entry.file}">{if $entry.title}{$entry.title|escape}{else}{lang key='download'} {$entry@iteration}{/if}</a>{if !$entry@last}, {/if}
             {/foreach}
-
-        {case iaField::IMAGE break}
+        {elseif $type == iaField::IMAGE}
             {$entry = $item.$name}
             <div class="thumbnail" style="width: {$field.thumb_width}px;">
                 {if $field.thumb_width == $field.image_width && $field.thumb_height == $field.image_height}
@@ -43,22 +36,18 @@
                     {if !empty($entry.title)}<div class="caption"><h5>{$entry.title|default:''}</h5></div>{/if}
                 {/if}
             </div>
-
-        {case iaField::COMBO}
-        {case iaField::RADIO break}
+        {elseif in_array($type, [iaField::COMBO, iaField::RADIO])}
             {lang key="{$fieldName}+{$item.$name}" default='&nbsp;'}
-
-        {case iaField::DATE break}
+        {elseif $type == iaField::DATE}
             {if $field.timepicker}
                 {$item.$name|date_format:"{$core.config.date_format} %H:%M:%S"}
             {else}
                 {$item.$name|date_format:$core.config.date_format}
             {/if}
-        {case iaField::URL break}
+        {elseif $type == iaField::URL}
             {$value = '|'|explode:$item.$name}
             <a href="{$value[0]}"{if $field.url_nofollow} rel="nofollow"{/if} target="_blank">{$value[1]|escape}</a>
-
-        {case iaField::PICTURES break}
+        {elseif $type == iaField::PICTURES}
             {if $item[$name]}
                 {ia_add_media files='fotorama'}
                 <div id="{$name}" class="ia-gallery">
@@ -74,9 +63,9 @@
                     </div>
                 </div>
             {/if}
-        {case iaField::TREE}
+        {elseif $type == iaField::TREE}
             {displayTreeNodes ids=$item.$name nodes=$field.values}
-        {/switch}
+        {/if}
     {/capture}
 
     {if !isset($wrappedValues)}
