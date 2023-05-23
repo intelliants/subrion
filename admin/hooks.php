@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2023 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -32,7 +32,7 @@ class iaBackendController extends iaAbstractControllerBackend
     protected $_processEdit = false;
 
     protected $_gridColumns = "`id`, `name`, `module`, `order`, `type`, `status`, `filename`, 1 `delete`, IF(`filename` = '', 1, 0) `open`";
-    protected $_gridFilters = ['name' => 'like', 'type' => 'equal'];
+    protected $_gridFilters = ['name' => 'like', 'module' => 'equal', 'type' => 'equal'];
 
 
     protected function _gridRead($params)

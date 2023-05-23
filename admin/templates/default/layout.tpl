@@ -155,9 +155,7 @@
                                         <li><a data-toggle="modal" href="#feedback-modal"><span class="fa fa-commenting-o"></span> Submit feedback</a></li>
                                     {/if}
                                     <li><a href="https://subrion.org/desk/" target="_blank"><span class="fa fa-support"></span> Helpdesk</a></li>
-                                    <li><a href="https://subrion.org/forums/" target="_blank"><span class="fa fa-comments-o"></span> User forums</a></li>
                                     <li><a href="https://github.com/intelliants/subrion" target="_blank"><span class="fa fa-github"></span> Github</a></li>
-                                    <li><a href="https://dev.subrion.org/projects/subrion-cms/wiki" target="_blank"><span class="fa fa-wikipedia-w"></span> Wiki</a></li>
                                 </ul>
                             </li>
                             <li class="navbar-nav__user">

@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2023 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -103,6 +103,7 @@ class iaSmarty extends Smarty
 
         iaSystem::renderTime('main', 'afterSmartyFuncInit');
 
+        // set default global variables
         $this->assign('tabs_content', []);
         $this->assign('tabs_before', []);
         $this->assign('tabs_after', []);
