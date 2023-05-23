@@ -146,6 +146,3 @@
         {include 'item-view-tabs.tpl'}
     </form>
 {/if}
-
-{_v($tabs_content)}
-test
