@@ -30,8 +30,8 @@ if (defined('IA_INSTALL')) {
     return IA_VERSION;
 }
 
-if (version_compare(PHP_VERSION, '8.1', '<')) {
-    exit('Subrion ' . IA_VERSION . ' requires PHP 8.1 or higher to run properly.');
+if (version_compare(PHP_VERSION, '8.0', '<')) {
+    exit('Subrion ' . IA_VERSION . ' requires PHP 8.0 or higher to run properly.');
 }
 if (function_exists('apache_get_modules') && !in_array('mod_rewrite', apache_get_modules())) {
     exit('Subrion ' . IA_VERSION . ' requires the mod_rewrite module to run properly.');
