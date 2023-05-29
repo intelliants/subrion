@@ -1133,9 +1133,6 @@ SQL;
             case self::SWITCHER:
                 $result .= 'TINYINT(1) ';
                 break;
-            case self::SWITCHER:
-                $result.= 'TINYINT(1) ';
-                break;
             case self::TREE:
             case self::IMAGE:
             case self::STORAGE:
