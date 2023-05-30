@@ -2,6 +2,12 @@
 
 namespace PHPImageWorkshop;
 
+require_once IA_INCLUDES . 'PHPImageWorkshop/Core/ImageWorkshopLayer.php';
+require_once IA_INCLUDES . 'PHPImageWorkshop/Core/ImageWorkshopLib.php';
+require_once IA_INCLUDES . 'PHPImageWorkshop/Exception/ImageWorkshopBaseException.php';
+require_once IA_INCLUDES . 'PHPImageWorkshop/Exception/ImageWorkshopException.php';
+require_once IA_INCLUDES . 'PHPImageWorkshop/Exif/ExifOrientations.php';
+
 use PHPImageWorkshop\Core\ImageWorkshopLayer as ImageWorkshopLayer;
 use PHPImageWorkshop\Core\ImageWorkshopLib as ImageWorkshopLib;
 use PHPImageWorkshop\Exception\ImageWorkshopException;
