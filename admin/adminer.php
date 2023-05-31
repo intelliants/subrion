@@ -79,7 +79,7 @@ if (iaCore::ACCESS_ADMIN == $iaCore->getAccessType()) {
                 return INTELLI_DBNAME;
             }
 
-            public function databases()
+            public function databases($yc = true)
             {
                 // database name, will be escaped by Adminer
                 return [INTELLI_DBNAME];
