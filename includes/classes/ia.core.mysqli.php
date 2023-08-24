@@ -821,6 +821,8 @@ class iaDb extends abstractUtil implements iaInterfaceDbAdapter
                     case is_bool($value):
                         $value = $value ? 1 : 0;
                         break;
+                    case is_int($value):
+                        break;
                     case is_scalar($value):
                         $pattern = "`%s` = '%s'";
                         $value = iaSanitize::sql($value);
